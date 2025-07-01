@@ -185,6 +185,16 @@ public:
         return m_vertex_edge_adjacencies;
     }
 
+    /// @brief Get the vertex-face adjacency matrix.
+    const std::vector<std::vector<index_t>>& vertex_face_adjacencies() const
+    {
+        if (!are_adjacencies_initialized()) {
+            throw std::runtime_error(
+                "Vertex-face adjacencies not initialized. Call init_adjacencies() first.");
+        }
+        return m_vertex_face_adjacencies;
+    }
+
     /// @brief Get the edge-vertex adjacency matrix.
     const std::vector<std::vector<index_t>>& edge_vertex_adjacencies() const
     {
@@ -340,6 +350,8 @@ protected:
     std::vector<std::vector<index_t>> m_vertex_vertex_adjacencies;
     /// @brief Edges adjacent to vertices
     std::vector<std::vector<index_t>> m_vertex_edge_adjacencies;
+    /// @brief Faces adjacent to vertices
+    std::vector<std::vector<index_t>> m_vertex_face_adjacencies;
     /// @brief Vertices adjacent to edges (i.e., vertices are on a triangle that contains the edge but not the edge itself)
     std::vector<std::vector<index_t>> m_edge_vertex_adjacencies;
 

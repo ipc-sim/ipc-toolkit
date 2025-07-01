@@ -1,18 +1,23 @@
 #include "normal_collisions_builder.hpp"
 
+#include <ipc/collisions/normal/ogc.hpp>
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
+#include <ipc/tangent/closest_point.hpp>
 
 namespace ipc {
 
 NormalCollisionsBuilder::NormalCollisionsBuilder(
-    const bool _use_area_weighting, const bool _enable_shape_derivatives)
+    const bool _use_area_weighting,
+    const bool _enable_shape_derivatives,
+    const bool _use_ogc)
     : use_area_weighting(_use_area_weighting)
     , enable_shape_derivatives(_enable_shape_derivatives)
+    , use_ogc(_use_ogc)
 {
 }
 
@@ -69,21 +74,41 @@ void NormalCollisionsBuilder::add_edge_vertex_collisions(
         const auto& [ei, vi] = candidates[i];
         const auto [v, e0, e1, _] =
             candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
+
         const PointEdgeDistanceType dtype = point_edge_distance_type(v, e0, e1);
         const double distance_sqr = point_edge_distance(v, e0, e1, dtype);
 
-        if (!is_active(distance_sqr))
+        if (!is_active(distance_sqr)
+            || (use_ogc
+                && !ogc::is_edge_vertex_feasible(
+                    mesh, vertices, candidates[i], dtype))) {
             continue;
+        }
 
         // ÷ 2 to handle double counting for correct integration
-        const double weight =
-            use_area_weighting ? (0.5 * mesh.vertex_area(vi)) : 1;
+        double weight = use_area_weighting ? (0.5 * mesh.vertex_area(vi)) : 1;
 
         Eigen::SparseVector<double> weight_gradient;
         if (enable_shape_derivatives) {
             weight_gradient = use_area_weighting
                 ? (0.5 * mesh.vertex_area_gradient(vi))
                 : Eigen::SparseVector<double>(vertices.size());
+        }
+
+        // ÷ n to handle duplicate counting for correct integration
+        if (use_ogc && int(dtype) < int(PointEdgeDistanceType::P_E)) {
+            // Divide by the number of incident edges of vj
+            // NOTE: This only works for OGC because vj is in the block of
+            // vi iff vi is in the block of vj.
+            const index_t vj = mesh.edges()(ei, int(dtype));
+            const int n = mesh.vertex_edge_adjacencies()[vj].size();
+            assert(n >= 1);
+            if (n > 1) {
+                weight /= n;
+                if (use_area_weighting && enable_shape_derivatives) {
+                    weight_gradient /= n;
+                }
+            }
         }
 
         add_edge_vertex_collision(
@@ -145,8 +170,12 @@ void NormalCollisionsBuilder::add_edge_edge_collisions(
         const double distance_sqr =
             edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype);
 
-        if (!is_active(distance_sqr))
+        if (!is_active(distance_sqr)
+            || (use_ogc
+                && !ogc::is_edge_edge_feasible(
+                    mesh, vertices, candidates[i], actual_dtype))) {
             continue;
+        }
 
         const double eps_x = edge_edge_mollifier_threshold(
             mesh.rest_positions().row(ea0i), mesh.rest_positions().row(ea1i),
@@ -245,18 +274,46 @@ void NormalCollisionsBuilder::add_face_vertex_collisions(
         const double distance_sqr =
             point_triangle_distance(v, f0, f1, f2, dtype);
 
-        if (!is_active(distance_sqr))
+        if (!is_active(distance_sqr)
+            || (use_ogc
+                && !ogc::is_face_vertex_feasible(
+                    mesh, vertices, candidates[i], dtype))) {
             continue;
+        }
 
         // ÷ 4 to handle double counting and PT + EE for correct integration
-        const double weight =
-            use_area_weighting ? (0.25 * mesh.vertex_area(vi)) : 1;
+        double weight = use_area_weighting ? (0.25 * mesh.vertex_area(vi)) : 1;
 
         Eigen::SparseVector<double> weight_gradient;
         if (enable_shape_derivatives) {
             weight_gradient = use_area_weighting
                 ? (0.25 * mesh.vertex_area_gradient(vi))
                 : Eigen::SparseVector<double>(vertices.size());
+        }
+
+        // ÷ n to handle duplicate counting for correct integration
+        if (use_ogc) {
+            int n = 1; // Default to 1 for P_T
+            if (int(dtype) < int(PointTriangleDistanceType::P_E0)) {
+                // Divide by the number of incident faces of vj
+                // NOTE: This only works for OGC because vj is in the block of
+                // vi iff vi is in the block of vj.
+                const index_t vj = mesh.faces()(fi, int(dtype));
+                n = mesh.vertex_face_adjacencies()[vj].size();
+            } else if (int(dtype) < int(PointTriangleDistanceType::P_T)) {
+                // Divide by the number of incident edges of vj
+                // NOTE: This only works for OGC because if vj is in the block
+                // of ei then vi is in the block of ei on its neighboring face.
+                const index_t ej = mesh.faces_to_edges()(fi, int(dtype) - 3);
+                n = mesh.edge_vertex_adjacencies()[ej].size();
+            }
+            assert(n >= 1);
+            if (n > 1) {
+                weight /= n;
+                if (use_area_weighting && enable_shape_derivatives) {
+                    weight_gradient /= n;
+                }
+            }
         }
 
         switch (dtype) {
@@ -312,12 +369,12 @@ void NormalCollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collisions(
                                 double& weight,
                                 Eigen::SparseVector<double>& weight_gradient) {
         const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vj];
-assert(
+        assert(
             std::is_sorted(incident_vertices.begin(), incident_vertices.end()));
         const bool is_vi_incident = std::binary_search(
             incident_vertices.begin(), incident_vertices.end(), vi);
         const index_t incident_edge_amt =
-incident_vertices.size() - index_t(is_vi_incident);
+            incident_vertices.size() - index_t(is_vi_incident);
 
         if (incident_edge_amt > 1) {
             // ÷ 2 to handle double counting for correct integration
@@ -361,11 +418,11 @@ void NormalCollisionsBuilder::add_face_vertex_positive_vertex_vertex_collisions(
                                 double& weight,
                                 Eigen::SparseVector<double>& weight_gradient) {
         const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vj];
-assert(
+        assert(
             std::is_sorted(incident_vertices.begin(), incident_vertices.end()));
         if (mesh.is_vertex_on_boundary(vj)
             || std::binary_search(
-incident_vertices.begin(), incident_vertices.end(), vi)) {
+                incident_vertices.begin(), incident_vertices.end(), vi)) {
             return; // Skip boundary vertices and incident vertices
         }
 
@@ -408,12 +465,12 @@ void NormalCollisionsBuilder::add_face_vertex_negative_edge_vertex_collisions(
         assert(vi != mesh.edges()(ei, 0) && vi != mesh.edges()(ei, 1));
 
         const auto& incident_vertices = mesh.edge_vertex_adjacencies()[ei];
-assert(
+        assert(
             std::is_sorted(incident_vertices.begin(), incident_vertices.end()));
         const bool is_vi_incident = std::binary_search(
             incident_vertices.begin(), incident_vertices.end(), vi);
         const index_t incident_triangle_amt =
-incident_vertices.size() - index_t(is_vi_incident);
+            incident_vertices.size() - index_t(is_vi_incident);
 
         if (incident_triangle_amt > 1) {
             // ÷ 4 to handle double counting and PT + EE for correct integration

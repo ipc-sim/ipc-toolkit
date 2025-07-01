@@ -51,7 +51,8 @@ void NormalCollisions::build(
     };
 
     tbb::enumerable_thread_specific<NormalCollisionsBuilder> storage(
-        use_area_weighting(), enable_shape_derivatives());
+        use_area_weighting(), enable_shape_derivatives(),
+        collision_set_type() == CollisionSetType::OGC);
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), candidates.vv_candidates.size()),
@@ -85,7 +86,7 @@ void NormalCollisions::build(
                 r.end());
         });
 
-    if (use_improved_max_approximator()) {
+    if (collision_set_type() == CollisionSetType::IMPROVED_MAX_APPROX) {
         if (candidates.ev_candidates.size() > 0) {
             // Convert edge-vertex to vertex-vertex
             const auto vv_candidates = candidates.edge_vertex_to_vertex_vertex(
@@ -161,30 +162,30 @@ void NormalCollisions::set_use_area_weighting(const bool use_area_weighting)
             "Re-build collisions for this to have an effect.");
     }
 
-    if (!use_area_weighting && use_improved_max_approximator()) {
+    if (!use_area_weighting
+        && collision_set_type() == CollisionSetType::IMPROVED_MAX_APPROX) {
         logger().warn(
-            "Disabling area weighting while using the improved max approximator may lead to incorrect results.");
+            "Disabling area weighting while using the improved max approximation may lead to incorrect results.");
     }
 
     m_use_area_weighting = use_area_weighting;
 }
 
-void NormalCollisions::set_use_improved_max_approximator(
-    const bool use_improved_max_approximator)
+void NormalCollisions::set_collision_set_type(const CollisionSetType type)
 {
-    if (!empty()
-        && use_improved_max_approximator != m_use_improved_max_approximator) {
+    if (!empty() && type != m_collision_set_type) {
         logger().warn(
-            "Setting use_improved_max_approximator after building collisions. "
+            "Setting collision_set_type after building collisions. "
             "Re-build collisions for this to have an effect.");
     }
 
-    if (!use_area_weighting() && use_improved_max_approximator) {
+    if (!use_area_weighting()
+        && type == CollisionSetType::IMPROVED_MAX_APPROX) {
         logger().warn(
             "Enabling the improved max approximator while not using area weighting may lead to incorrect results.");
     }
 
-    m_use_improved_max_approximator = use_improved_max_approximator;
+    m_collision_set_type = type;
 }
 
 void NormalCollisions::set_enable_shape_derivatives(

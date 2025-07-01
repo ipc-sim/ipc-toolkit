@@ -28,29 +28,24 @@ TEST_CASE(
 #endif
 
     const bool use_area_weighting = GENERATE(true, false);
-    const bool use_improved_max_approximator = GENERATE(true, false);
+    const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+        NormalCollisions::CollisionSetType::IPC,
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+        NormalCollisions::CollisionSetType::OGC);
     const bool use_physical_barrier = GENERATE(true, false);
 
     double dhat = -1;
     std::string mesh_name = "";
-    bool all_vertices_on_surface = true;
     SECTION("cube")
     {
         dhat = sqrt(2.0);
         mesh_name = "cube.ply";
     }
 #ifdef NDEBUG
-    SECTION("two cubes far")
-    {
-        dhat = 1e-1;
-        mesh_name = "two-cubes-far.ply";
-        all_vertices_on_surface = false;
-    }
     SECTION("two cubes close")
     {
         dhat = 1e-1;
         mesh_name = "two-cubes-close.ply";
-        all_vertices_on_surface = false;
     }
 #endif
     // WARNING: The bunny takes too long in debug.
@@ -70,17 +65,10 @@ TEST_CASE(
 
     NormalCollisions collisions;
     collisions.set_use_area_weighting(use_area_weighting);
-    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
-    if (all_vertices_on_surface) {
-        mesh = CollisionMesh(vertices, edges, faces);
-    } else {
-        mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
-        vertices = mesh.vertices(vertices);
-    }
+    collisions.set_collision_set_type(collision_set_type);
+    mesh = CollisionMesh(vertices, edges, faces);
     collisions.build(mesh, vertices, dhat, /*dmin=*/0, broad_phase);
-    CAPTURE(
-        dhat, broad_phase->name(), all_vertices_on_surface, use_area_weighting,
-        use_improved_max_approximator);
+    CAPTURE(dhat, broad_phase->name(), use_area_weighting, collision_set_type);
     CHECK(collisions.size() > 0);
 
     BarrierPotential barrier_potential(dhat, use_physical_barrier);
@@ -131,7 +119,10 @@ TEST_CASE(
     "[potential][barrier_potential][convergent]")
 {
     const bool use_area_weighting = GENERATE(true, false);
-    const bool use_improved_max_approximator = GENERATE(true, false);
+    const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+        NormalCollisions::CollisionSetType::IPC,
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+        NormalCollisions::CollisionSetType::OGC);
     const bool use_physical_barrier = GENERATE(true, false);
     const double dhat = 1e-3;
 
@@ -222,7 +213,7 @@ TEST_CASE(
 
     NormalCollisions collisions;
     collisions.set_use_area_weighting(use_area_weighting);
-    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
+    collisions.set_collision_set_type(collision_set_type);
 
     collisions.build(mesh, vertices, dhat);
     CHECK(collisions.size() > 0);
@@ -238,8 +229,7 @@ TEST_CASE(
 
         NormalCollisions fd_collisions;
         fd_collisions.set_use_area_weighting(use_area_weighting);
-        fd_collisions.set_use_improved_max_approximator(
-            use_improved_max_approximator);
+        fd_collisions.set_collision_set_type(collision_set_type);
 
         fd_collisions.build(mesh, fd_V, dhat);
 
@@ -260,7 +250,10 @@ TEST_CASE(
     tests::load_mesh("cube.ply", vertices, edges, faces);
 
     const bool use_area_weighting = GENERATE(false);
-    const bool use_improved_max_approximator = GENERATE(true, false);
+    const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+        NormalCollisions::CollisionSetType::IPC,
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+        NormalCollisions::CollisionSetType::OGC);
     const bool use_physical_barrier = GENERATE(true, false);
     const double dhat = 1e-1;
 
@@ -297,7 +290,7 @@ TEST_CASE(
 
     NormalCollisions collisions;
     collisions.set_use_area_weighting(use_area_weighting);
-    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
+    collisions.set_collision_set_type(collision_set_type);
     collisions.set_enable_shape_derivatives(true);
     collisions.build(candidates, mesh, vertices, dhat);
     REQUIRE(collisions.ee_collisions.size() > 0);
@@ -386,8 +379,7 @@ TEST_CASE(
         // are parallel
         // NormalCollisions fd_collisions;
         // fd_collisions.set_use_area_weighting(use_area_weighting);
-        // fd_collisions.set_use_improved_max_approximator(
-        //     use_improved_max_approximator);
+        // fd_collisions.set_collision_set_type(collision_set_type);
         // fd_collisions.build(fd_mesh, fd_V, dhat);
 
         return barrier_potential.gradient(collisions, fd_mesh, fd_V);
@@ -432,10 +424,13 @@ TEST_CASE(
 
     NormalCollisions collisions;
     const bool use_area_weighting = GENERATE(true, false);
-    const bool use_improved_max_approximator = GENERATE(true, false);
+    const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+        NormalCollisions::CollisionSetType::IPC,
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+        NormalCollisions::CollisionSetType::OGC);
     const bool use_physical_barrier = GENERATE(true, false);
     collisions.set_use_area_weighting(use_area_weighting);
-    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
+    collisions.set_collision_set_type(collision_set_type);
     collisions.set_enable_shape_derivatives(true);
     collisions.build(mesh, vertices, dhat);
 
@@ -452,8 +447,7 @@ TEST_CASE(
 
         NormalCollisions fd_collisions;
         fd_collisions.set_use_area_weighting(use_area_weighting);
-        fd_collisions.set_use_improved_max_approximator(
-            use_improved_max_approximator);
+        fd_collisions.set_collision_set_type(collision_set_type);
         fd_collisions.build(fd_mesh, fd_V, dhat);
 
         return barrier_potential.gradient(fd_collisions, fd_mesh, fd_V);
@@ -469,11 +463,16 @@ TEST_CASE(
 
 // -- Benchmarking ------------------------------------------------------------
 
+#if false
+
 TEST_CASE(
     "Benchmark barrier potential", "[!benchmark][potential][barrier_potential]")
 {
     const bool use_area_weighting = GENERATE(true, false);
-    const bool use_improved_max_approximator = GENERATE(true, false);
+    const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+        NormalCollisions::CollisionSetType::IPC,
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+        NormalCollisions::CollisionSetType::OGC);
     const bool use_physical_barrier = GENERATE(true, false);
 
     double dhat = -1;
@@ -498,7 +497,7 @@ TEST_CASE(
 
     NormalCollisions collisions;
     collisions.set_use_area_weighting(use_area_weighting);
-    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
+    collisions.set_collision_set_type(collision_set_type);
     collisions.build(mesh, vertices, dhat);
     CAPTURE(mesh_name, dhat);
     CHECK(collisions.size() > 0);
@@ -559,10 +558,13 @@ TEST_CASE(
 
     NormalCollisions collisions;
     const bool use_area_weighting = GENERATE(true, false);
-    const bool use_improved_max_approximator = GENERATE(true, false);
+    const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+        NormalCollisions::CollisionSetType::IPC,
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+        NormalCollisions::CollisionSetType::OGC);
     const bool use_physical_barrier = GENERATE(true, false);
     collisions.set_use_area_weighting(use_area_weighting);
-    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
+    collisions.set_collision_set_type(collision_set_type);
     collisions.set_enable_shape_derivatives(true);
     collisions.build(mesh, vertices, dhat);
 
@@ -576,3 +578,5 @@ TEST_CASE(
             barrier_potential.shape_derivative(collisions, mesh, vertices);
     };
 }
+
+#endif

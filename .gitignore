@@ -669,3 +669,4 @@ python/update_bindings.py
 
 # External test data
 tests/data
+notebooks/*.png

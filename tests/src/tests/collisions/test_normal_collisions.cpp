@@ -68,15 +68,17 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
     SECTION("Collisions")
     {
         const bool use_area_weighting = GENERATE(false, true);
-        const bool use_improved_max_approximator = GENERATE(false, true);
+        const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+            NormalCollisions::CollisionSetType::IPC,
+            NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+            NormalCollisions::CollisionSetType::OGC);
         const bool use_physical_barrier = GENERATE(false, true);
         const bool enable_shape_derivatives = GENERATE(false, true);
         const double dhat = 0.25;
 
         NormalCollisions collisions;
         collisions.set_use_area_weighting(use_area_weighting);
-        collisions.set_use_improved_max_approximator(
-            use_improved_max_approximator);
+        collisions.set_collision_set_type(collision_set_type);
         collisions.set_enable_shape_derivatives(enable_shape_derivatives);
 
         collisions.build(mesh, vertices, dhat, min_distance, broad_phase);
@@ -163,24 +165,28 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
     SECTION("Collisions")
     {
         const bool use_area_weighting = GENERATE(false, true);
-        const bool use_improved_max_approximator = GENERATE(false, true);
+        const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+            NormalCollisions::CollisionSetType::IPC,
+            NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+            NormalCollisions::CollisionSetType::OGC);
         const bool use_physical_barrier = GENERATE(false, true);
         const bool enable_shape_derivatives = GENERATE(false, true);
 
         NormalCollisions collisions;
         collisions.set_use_area_weighting(use_area_weighting);
-        collisions.set_use_improved_max_approximator(
-            use_improved_max_approximator);
+        collisions.set_collision_set_type(collision_set_type);
         collisions.set_enable_shape_derivatives(enable_shape_derivatives);
 
         const double dhat = 0.25;
         collisions.build(
             mesh, vertices, dhat, /*min_distance=*/0.8, broad_phase);
 
-        const int expected_num_collisions =
-            6 + int(use_improved_max_approximator);
-        const int expected_num_vv_collisions =
-            2 + int(use_improved_max_approximator);
+        const int expected_num_collisions = 6
+            + int(collision_set_type
+                  == NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
+        const int expected_num_vv_collisions = 2
+            + int(collision_set_type
+                  == NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
 
         CHECK(collisions.size() == expected_num_collisions);
         CHECK(collisions.vv_collisions.size() == expected_num_vv_collisions);
@@ -327,7 +333,8 @@ TEST_CASE("NormalCollisions::to_string", "[collisions]")
 
     NormalCollisions collisions;
     collisions.set_use_area_weighting(true);
-    collisions.set_use_improved_max_approximator(true);
+    collisions.set_collision_set_type(
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
     collisions.build(mesh, vertices, dhat);
 
     std::sort(collisions.vv_collisions.begin(), collisions.vv_collisions.end());
@@ -353,12 +360,12 @@ TEST_CASE("NormalCollisions::to_string", "[collisions]")
     std::string s = collisions.to_string(mesh, vertices);
 
     CHECK(s == R"ipc_Qu8mg5v7(
-vv: 1 5, w: 1, d: 0.000913492
-vv: 160 163, w: 1, d: 0.000277936
-ev: 14=(24, 46) 205, w: 0.0140559, d: 0.00500364
-ev: 719=(237, 261) 128, w: 0.0122856, d: 0.00727213
-ee: 14=(24, 46) 456=(161, 205), w: -0.00297853, dtype: 0, d: 0.00538125
-ee: 346=(76, 128) 718=(236, 261), w: -0.00328539, dtype: 5, d: 0.00717647
-fv: 17=(46, 24, 72) 205, w: 0.0137957, d: 0.00500269
-fv: 471=(155, 238, 259) 64, w: 0.0160469, d: 0.00639199)ipc_Qu8mg5v7");
+vv: 4 140, w: -0.0128182, d: 0.00568928
+vv: 119 243, w: -0.0263598, d: 0.00727215
+ev: 14=(18, 37) 187, w: 0.0140559, d: 0.00500364
+ev: 719=(219, 243) 119, w: 0.0122856, d: 0.00727213
+ee: 14=(18, 37) 456=(144, 187), w: -0.00297852, dtype: 0, d: 0.00538125
+ee: 346=(67, 119) 718=(218, 243), w: -0.00328539, dtype: 5, d: 0.00717647
+fv: 17=(37, 18, 63) 187, w: 0.0137957, d: 0.00500269
+fv: 471=(140, 220, 241) 55, w: 0.0160469, d: 0.006392)ipc_Qu8mg5v7");
 }

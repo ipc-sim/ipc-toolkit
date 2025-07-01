@@ -51,3 +51,10 @@ Cubic Barrier
 
 .. doxygenclass:: ipc::CubicBarrier
     :allow-dot-graphs:
+
+
+Two-Stage Barrier
+~~~~~~~~~~~~~~~~~~
+
+.. doxygenclass:: ipc::TwoStageBarrier
+    :allow-dot-graphs:

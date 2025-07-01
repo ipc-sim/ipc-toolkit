@@ -58,10 +58,18 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
 
     NormalCollisions collisions;
     const bool use_area_weighting = GENERATE(false, true);
+    const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+        NormalCollisions::CollisionSetType::IPC,
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+        NormalCollisions::CollisionSetType::OGC);
     // TODO: Debug why the improved max approx. requires area weighting.
-    const bool use_improved_max_approximator = use_area_weighting;
+    if (use_area_weighting
+        ^ (collision_set_type
+           == NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX)) {
+        return;
+    }
     collisions.set_use_area_weighting(use_area_weighting);
-    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
+    collisions.set_collision_set_type(collision_set_type);
     collisions.build(mesh, vertices, dhat_a);
 
     REQUIRE(collisions.size() > 0);
@@ -71,8 +79,7 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
         == Catch::Approx(gap * gap));
 
     CAPTURE(
-        use_area_weighting, use_improved_max_approximator, dhat_a, dhat_p, Y,
-        eps_c, gap);
+        use_area_weighting, collision_set_type, dhat_a, dhat_p, Y, eps_c, gap);
 
     // --- Check the potential gradients ---------------------------------------
 

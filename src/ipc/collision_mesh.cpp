@@ -229,13 +229,16 @@ void CollisionMesh::init_adjacencies()
     remove_duplicates(m_vertex_vertex_adjacencies);
     remove_duplicates(m_vertex_edge_adjacencies);
 
-    m_edge_vertex_adjacencies.resize(m_edges.rows());
+    m_vertex_face_adjacencies.resize(num_vertices());
+    m_edge_vertex_adjacencies.resize(num_edges());
     for (int i = 0; i < m_faces.rows(); i++) {
         for (int j = 0; j < 3; ++j) {
+            m_vertex_face_adjacencies[m_faces(i, j)].push_back(i);
             m_edge_vertex_adjacencies[m_faces_to_edges(i, j)].push_back(
                 m_faces(i, (j + 2) % 3));
         }
     }
+    remove_duplicates(m_vertex_face_adjacencies);
     remove_duplicates(m_edge_vertex_adjacencies);
 
     // Is the vertex on the boundary of the triangle mesh in 3D or polyline in

@@ -2,6 +2,7 @@
 
 #include <ipc/collision_mesh.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <Eigen/Core>
 #include <tbb/enumerable_thread_specific.h>
@@ -11,7 +12,9 @@ namespace ipc {
 class NormalCollisionsBuilder {
 public:
     NormalCollisionsBuilder(
-        const bool use_area_weighting, const bool enable_shape_derivatives);
+        const bool use_area_weighting,
+        const bool enable_shape_derivatives,
+        const bool use_ogc);
 
     void add_vertex_vertex_collisions(
         const CollisionMesh& mesh,
@@ -165,6 +168,7 @@ protected:
 
     const bool use_area_weighting;
     const bool enable_shape_derivatives;
+    const bool use_ogc;
 };
 
 } // namespace ipc
