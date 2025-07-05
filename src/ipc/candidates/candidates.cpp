@@ -2,7 +2,6 @@
 
 #include <ipc/config.hpp>
 #include <ipc/ipc.hpp>
-#include <ipc/broad_phase/default_broad_phase.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_line.hpp>
@@ -16,8 +15,8 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
+#include <atomic>
 #include <fstream>
-#include <shared_mutex>
 
 namespace ipc {
 
@@ -231,20 +230,13 @@ double Candidates::compute_collision_free_stepsize(
         return 1; // No possible collisions, so can take full step.
     }
 
-    double earliest_toi = 1;
-    std::shared_mutex earliest_toi_mutex;
+    std::atomic<double> earliest_toi(1.0);
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, size()),
         [&](tbb::blocked_range<size_t> r) {
             for (size_t i = r.begin(); i < r.end(); i++) {
-                // Use the mutex to read as well in case writing double takes
-                // more than one clock cycle.
-                double tmax;
-                {
-                    std::shared_lock lock(earliest_toi_mutex);
-                    tmax = earliest_toi;
-                }
+                double tmax = earliest_toi.load(std::memory_order_relaxed);
 
                 const CollisionStencil& candidate = (*this)[i];
 
@@ -255,16 +247,18 @@ double Candidates::compute_collision_free_stepsize(
                     toi, min_distance, tmax, narrow_phase_ccd);
 
                 if (are_colliding) {
-                    std::unique_lock lock(earliest_toi_mutex);
-                    if (toi < earliest_toi) {
-                        earliest_toi = toi;
-                    }
+                    // Update the earliest time of impact (TOI) atomically
+                    double prev = earliest_toi.load(std::memory_order_relaxed);
+                    while (toi < prev
+                           && !earliest_toi.compare_exchange_weak(
+                               prev, toi, std::memory_order_relaxed)) { }
                 }
             }
         });
 
-    assert(earliest_toi >= 0 && earliest_toi <= 1.0);
-    return earliest_toi;
+    double result = earliest_toi.load(std::memory_order_relaxed);
+    assert(result >= 0 && result <= 1.0);
+    return result;
 }
 
 double Candidates::compute_noncandidate_conservative_stepsize(
@@ -338,30 +332,47 @@ Eigen::VectorXd Candidates::compute_per_vertex_safe_distances(
 {
     assert(inflation_radius >= min_distance);
 
-    Eigen::VectorXd min_distances = Eigen::VectorXd::Constant(
-        mesh.num_vertices(), inflation_radius - min_distance);
-
-    for (size_t i = 0; i < size(); i++) {
-        const CollisionStencil& candidate = (*this)[i];
-
-        const double d = sqrt(candidate.compute_distance(
-                             vertices, mesh.edges(), mesh.faces()))
-            - min_distance;
-
-        // Compute the distance for each vertex in the candidate
-        for (const index_t vid :
-             candidate.vertex_ids(mesh.edges(), mesh.faces())) {
-            if (vid < 0) {
-                break; // No more vertices in this candidate
-            }
-            // Distribute the distance to the vertices
-            min_distances[vid] = std::min(min_distances[vid], d);
-        }
+    // Initialize atomic distances for each vertex
+    std::vector<std::atomic<double>> min_distances(mesh.num_vertices());
+    for (size_t i = 0; i < mesh.num_vertices(); ++i) {
+        min_distances[i].store(
+            inflation_radius - min_distance, std::memory_order_relaxed);
     }
 
-    assert((min_distances.array() >= 0).all());
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                const CollisionStencil& candidate = (*this)[i];
 
-    return min_distances;
+                const double d = sqrt(candidate.compute_distance(
+                                     vertices, mesh.edges(), mesh.faces()))
+                    - min_distance;
+
+                // Compute the distance for each vertex in the candidate
+                for (const index_t vid :
+                     candidate.vertex_ids(mesh.edges(), mesh.faces())) {
+                    if (vid < 0) {
+                        break; // No more vertices in this candidate
+                    }
+                    // Update the minimum distance atomically
+                    double old_val =
+                        min_distances[vid].load(std::memory_order_relaxed);
+                    while (d < old_val
+                           && !min_distances[vid].compare_exchange_weak(
+                               old_val, d, std::memory_order_relaxed)) { }
+                }
+            }
+        });
+
+    // Convert atomic distances to a vector
+    Eigen::VectorXd result(mesh.num_vertices());
+    for (size_t i = 0; i < mesh.num_vertices(); ++i) {
+        result[i] = min_distances[i].load(std::memory_order_relaxed);
+    }
+    assert((result.array() >= 0).all());
+
+    return result;
 }
 
 // ============================================================================
