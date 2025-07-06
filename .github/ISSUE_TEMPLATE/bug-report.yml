@@ -1,6 +1,5 @@
 name: Bug report
 description: File an issue about a bug
-title: ''
 labels: bug
 assignees: zfergus
 body:
