@@ -1,0 +1,32 @@
+name: Bug report
+description: File an issue about a bug
+title: ''
+labels: bug
+assignees: zfergus
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Important information
+        Please limit issues to bugs and incorrect behavior of the IPC Toolkit. If you have a question, or want to request a new feature, please use the separate "Discussions" tab and *not* under "Issues".
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem description
+      placeholder: >-
+        Provide a short description, state the expected behavior and what actually happens. Include relevant information like what OS and version (e.g. macOS, Linux, Windows) and compiler and version: (e.g. GCC, Clang, MSVC). If an issue regarding the Python bindings, please also include the version of Python you are using.
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Reproducible example code
+      placeholder: >-
+        The code should be minimal, have no external dependencies, and isolate the
+        function(s) that cause breakage. Please submit matched and complete C++ and
+        Python snippets that can be easily compiled and run to diagnose the
+        issue. If possible, make a PR with a failing test to provide a
+        starting point for me to work on.
+      render: text
