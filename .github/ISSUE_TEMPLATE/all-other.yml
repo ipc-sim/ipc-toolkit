@@ -1,6 +1,5 @@
 name: Other
 description: Ask a question or request a new feature
-title: ''
 body:
   - type: markdown
     attributes:
