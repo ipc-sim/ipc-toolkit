@@ -175,8 +175,6 @@ html_theme_options = {
     "repo_name": "ipc-sim/ipc-toolkit",
     "icon": {"repo": "fontawesome/brands/github"},
 
-    "edit_uri": "blob/main/docs/source",
-
     "features": [
         "navigation.expand",
         "navigation.tabs",
@@ -192,8 +190,6 @@ html_theme_options = {
         "text": "Roboto",  # used for all the pages' text
         "code": "Roboto Mono"  # used for literal code blocks
     },
-
-    "toc_title": "Contents",
 
     "version_dropdown": True,
     "version_json": "https://ipctk.xyz/versions.json",
