@@ -1,3 +1,36 @@
+:root [data-md-color-scheme="slate"] {
+    --md-default-bg-color: #2e303e;
+}
+
+html {
+    /* a bit less goofily large than the material default */
+    /* font-size: 125%; */
+}
+
+/* justify and slightly decrease spacing */
+p,
+ul,
+li {
+    text-align: justify;
+    line-height: 1.25;
+}
+
+td p {
+    text-align: left;
+}
+
+/* Emphasize sections of nav on left hand side */
+
+nav.md-nav {
+    padding-left: 5px;
+}
+
+/* Decrease spacing on the left side nav bar */
+.md-nav__link {
+    margin-top: 0.25rem;
+    text-align: left;
+}
+
 .md-grid {
     max-width: max(1250px, 75vw) !important;
 }
@@ -53,35 +86,14 @@ table.autosummary {
     font-size: 0.75rem !important;
 }
 
-/* .breatheparameterlist li tt + p {
-    display: inline;
-  }
-
-dd.field-odd {
-    padding: 0 !important;;
-    margin: 0 !important;;
+#__nav_1_label,
+#__nav_2_label,
+#__nav_3_label,
+#__nav_4_label,
+#__nav_5_label,
+#__nav_6_label,
+#__nav_7_label,
+.md-nav--secondary .md-nav__title,
+.md-nav--primary .md-nav__title {
+    margin-bottom: 10px;
 }
-
-dl.api-field {
-width: 100%;
-overflow: hidden;
-}
-
-dl.api-field > dt {
-float: left;
-width: 60%;
-padding: 0;
-margin: 10px;
-}
-
-dl.api-field > dd {
-float: left;
-width: calc(40%-10px);
-padding: 0 !important;
-margin: 0 !important;
-}
-
-dl.api-field > dd > p {
-padding: 0 !important;
-margin: 0 !important;
-} */

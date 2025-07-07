@@ -13,13 +13,13 @@ We provide Python bindings for functions in the toolkit using [pybind11](https:/
 
 To install the latest release, you can use `pip`:
 
-```
+```sh
 pip install ipctk
 ```
 
 If you wish to install the current development code, you can compile the library from scratch. Either clone the [repo](https://github.com/ipc-sim/ipc-toolkit) manually or use `git+` with `pip`:
 
-```
+```sh
 pip install git+https://github.com/ipc-sim/ipc-toolkit
 ```
 
@@ -46,11 +46,11 @@ Alternatively, you can use `cmake` directly. To do this, use the following comma
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DIPC_TOOLKIT_BUILD_PYTHON=ON ..
-make -j4
+make -j$(nproc)
 ```
 
 ## Help/Documentation
 
 * A tutorial on how to use the toolkit can be found [here](https://ipctk.xyz/tutorial/getting_started.html).
 * We provide a Jupyter notebook (`python/example.ipynb`) with some simple examples.
-* A function reference can be found [here](https://ipctk.xyz/python.html).
+* A function reference can be found [here](https://ipctk.xyz/).

@@ -34,4 +34,4 @@ To build the edge matrix you can use :cpp:`igl::edges(faces, edges);` in C++ or 
 My question is not answered here. What should I do?
 ---------------------------------------------------
 
-Please open an issue on `GitHub <https://github.com/ipc-sim/ipc-toolkit/issues>`_ and we will do our best to help you.
+Please open an Q&A discussion post on `GitHub <https://github.com/ipc-sim/ipc-toolkit/discussions>`_ and we will do our best to help you.

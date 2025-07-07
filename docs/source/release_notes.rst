@@ -1,5 +1,5 @@
-Changelog
-=========
+Release Notes
+=============
 
 .. role:: cpp(code)
    :language: c++
