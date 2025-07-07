@@ -67,6 +67,10 @@ jobs:
           pip uninstall -y ipctk
           git checkout $HEAD
           cp source/_static/versions.json build/html/
+          # Copy the custom.css to each version's build
+          for version in $(git tag -l); do
+              cp source/_static/css/custom.css build/html/$version/_static/css/
+          done
           cd ..
 
       - name: Build ipctk
