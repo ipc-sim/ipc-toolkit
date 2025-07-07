@@ -11,10 +11,10 @@
       
       
       
-        <link rel="prev" href="changelog.html">
+        <link rel="prev" href="release_notes.html">
       
       
-        <link rel="next" href="tutorial/getting_started.html">
+        <link rel="next" href="dependencies.html">
       
       
       <link rel="icon" href="_static/favicon.ico">
@@ -45,7 +45,7 @@
         <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.6ec1c446c2c357833.min.css?v=e2e8fea8" />
         <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css?v=08871587" />
-        <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=b388d4a6" />
+        <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=430b6dbd" />
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -70,6 +70,11 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
+      
+        
+        <a href="#citation" class="md-skip">
+          Skip to content
+        </a>
       
     </div>
     <div data-md-component="announce">
@@ -223,7 +228,24 @@
   
     
   
-  General
+  About
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="building.html" class="md-tabs__link">
+        
+  
+    
+  
+  Building
 
       </a>
     </li>
@@ -252,12 +274,12 @@
   
   
     <li class="md-tabs__item">
-      <a href="cpp.html" class="md-tabs__link">
+      <a href="cpp-api/potentials.html" class="md-tabs__link">
         
   
     
   
-  C++
+  C++ API
 
       </a>
     </li>
@@ -269,12 +291,12 @@
   
   
     <li class="md-tabs__item">
-      <a href="python.html" class="md-tabs__link">
+      <a href="python-api/potentials.html" class="md-tabs__link">
         
   
     
   
-  Python
+  Python API
 
       </a>
     </li>
@@ -369,7 +391,7 @@
   
   
   <span class="md-ellipsis">
-    General
+    About
     
   </span>
   
@@ -380,7 +402,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_1">
             <span class="md-nav__icon md-icon"></span>
-            General
+            About
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -397,7 +419,7 @@
   
   
   <span class="md-ellipsis">
-    <span title="/index.rst (reference label)">Home</span>
+    Home
     
   </span>
   
@@ -416,12 +438,12 @@
   
   
     <li class="md-nav__item">
-      <a href="changelog.html" class="md-nav__link">
+      <a href="release_notes.html" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    <span title="/changelog.rst (reference label)">Changelog</span>
+    <span title="/release_notes.rst (reference label)">Release Notes</span>
     
   </span>
   
@@ -447,6 +469,19 @@
       
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    <span title="/license.rst (reference label)">License</span>
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="#" class="md-nav__link md-nav__link--active">
         
   
@@ -459,6 +494,58 @@
 
       </a>
       
+        
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#citation" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/license.rst#citation (reference label)">Citation</span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dependencies.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/dependencies.rst (reference label)">Dependencies</span>
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -498,7 +585,7 @@
   
   
   <span class="md-ellipsis">
-    Tutorial
+    Building
     
   </span>
   
@@ -508,6 +595,103 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Building
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="building.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/building.rst (reference label)">Library</span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="python.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python.rst (reference label)">Python Bindings</span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Tutorial
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             Tutorial
           </label>
@@ -731,15 +915,15 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
-    C++
+    C++ API
     
   </span>
   
@@ -747,36 +931,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
-            C++
+            C++ API
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="cpp.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    <span title="/cpp.rst (reference label)">Getting Started</span>
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
             
               
                 
@@ -1164,15 +1324,15 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
-    Python
+    Python API
     
   </span>
   
@@ -1180,36 +1340,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            Python
+            Python API
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="python.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    <span title="/python.rst (reference label)">Getting Started</span>
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
             
               
                 
@@ -1597,10 +1733,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -1613,8 +1749,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Developers
           </label>
@@ -1713,11 +1849,27 @@
                   <div class="md-sidebar__inner">
                     
 
-  
-
 <nav class="md-nav md-nav--secondary">
   
   
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#citation" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/license.rst#citation (reference label)">Citation</span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -1733,10 +1885,8 @@
                   
 
 
-  
-  
-
 <h1 id="license">License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h1>
+<p>IPC Toolkit is released under an MIT license, and all of its dependencies are under similar permissive licenses (MIT, Apache, or MPL).</p>
 <div class="highlight-md notranslate"><div class="highlight"><pre><span></span><code>MIT License
 
 Copyright (c) 2020 IPC-Sim
@@ -1760,6 +1910,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 </code></pre></div>
 </div>
+<h2 id="citation">Citation<a class="headerlink" href="#citation" title="Link to this heading">¶</a></h2>
+<p>IPC Toolkit is created and maintained by academics: citations let us know our work is having impact! Please cite the IPC Toolkit or otherwise give a shout-out if and when it contributes to published works.</p>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><code><span class="nc">@software</span><span class="p">{</span><span class="nl">ipc_toolkit</span><span class="p">,</span>
+<span class="w">    </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Zachary Ferguson and others}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{{IPC Toolkit}}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">url</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://github.com/ipc-sim/ipc-toolkit}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2020}</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+<p>Additionally, you can cite the original IPC paper:</p>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><code><span class="nc">@article</span><span class="p">{</span><span class="nl">Li2020IPC</span><span class="p">,</span>
+<span class="w">    </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Minchen Li and Zachary Ferguson and Teseo Schneider and Timothy Langlois and</span>
+<span class="s">        Denis Zorin and Daniele Panozzo and Chenfanfu Jiang and Danny M. Kaufman}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Incremental Potential Contact: Intersection- and Inversion-free Large Deformation Dynamics}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{{ACM} Trans. Graph. (SIGGRAPH)}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2020}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">volume</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{39}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">number</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{4}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">articleno</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{49}</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
 
 
 
@@ -1780,7 +1953,7 @@ SOFTWARE.
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Jul 06, 2025
+    Jul 07, 2025
   </span>
 
     
