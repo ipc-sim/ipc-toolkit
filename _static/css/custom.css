@@ -2,33 +2,11 @@
     --md-default-bg-color: #2e303e;
 }
 
-html {
-    /* a bit less goofily large than the material default */
-    /* font-size: 125%; */
-}
-
 /* justify and slightly decrease spacing */
 p,
 ul,
 li {
-    text-align: justify;
     line-height: 1.25;
-}
-
-td p {
-    text-align: left;
-}
-
-/* Emphasize sections of nav on left hand side */
-
-nav.md-nav {
-    padding-left: 5px;
-}
-
-/* Decrease spacing on the left side nav bar */
-.md-nav__link {
-    margin-top: 0.25rem;
-    text-align: left;
 }
 
 .md-grid {
@@ -85,15 +63,3 @@ dl.py.objdesc>dd>details.toggle-details>summary>svg.tb-icon {
 table.autosummary {
     font-size: 0.75rem !important;
 }
-
-/* #__nav_1_label,
-#__nav_2_label,
-#__nav_3_label,
-#__nav_4_label,
-#__nav_5_label,
-#__nav_6_label,
-#__nav_7_label,
-.md-nav--secondary .md-nav__title,
-.md-nav--primary .md-nav__title {
-    margin-bottom: 10px;
-} */
