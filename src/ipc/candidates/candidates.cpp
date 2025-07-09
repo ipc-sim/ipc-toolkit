@@ -13,6 +13,7 @@
 #include <igl/remove_unreferenced.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
+#include <tbb/parallel_reduce.h>
 #include <tbb/parallel_sort.h>
 
 #include <atomic>
@@ -275,24 +276,37 @@ double Candidates::compute_noncandidate_conservative_stepsize(
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
 
-    std::vector<bool> is_vertex_a_candidates(mesh.num_vertices(), false);
-    for (size_t i = 0; i < size(); i++) {
-        for (const index_t vid : (*this)[i].vertex_ids(E, F)) {
-            if (vid < 0) {
-                break;
-            }
-            is_vertex_a_candidates[vid] = true;
-        }
+    std::vector<std::atomic<bool>> is_vertex_a_candidates(mesh.num_vertices());
+    for (size_t i = 0; i < mesh.num_vertices(); ++i) {
+        is_vertex_a_candidates[i].store(false, std::memory_order_relaxed);
     }
 
-    double max_displacement = 0;
-    for (size_t i = 0; i < displacements.rows(); i++) {
-        if (!is_vertex_a_candidates[i]) {
-            continue;
-        }
-        max_displacement =
-            std::max(max_displacement, displacements.row(i).norm());
-    }
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            for (size_t i = r.begin(); i < r.end(); ++i) {
+                for (const index_t vid : (*this)[i].vertex_ids(E, F)) {
+                    if (vid < 0) {
+                        break;
+                    }
+                    is_vertex_a_candidates[vid].store(
+                        true, std::memory_order_relaxed);
+                }
+            }
+        });
+
+    double max_displacement = tbb::parallel_reduce(
+        tbb::blocked_range<size_t>(0, displacements.rows()), 0.0,
+        [&](const tbb::blocked_range<size_t>& r, double local_max) -> double {
+            for (size_t i = r.begin(); i < r.end(); ++i) {
+                if (!is_vertex_a_candidates[i]) {
+                    continue;
+                }
+                local_max = std::max(local_max, displacements.row(i).norm());
+            }
+            return local_max;
+        },
+        [](double a, double b) { return std::max(a, b); });
 
     return 0.5 * dhat / max_displacement;
 }

@@ -144,8 +144,15 @@ public:
     /// @return Vertex ID in the full mesh.
     index_t to_full_vertex_id(const index_t id) const
     {
-        assert(id < num_vertices());
+        assert(id < m_vertex_to_full_vertex.size());
         return m_vertex_to_full_vertex[id];
+    }
+
+    /// @brief Get the complete mapping of vertex IDs to their corresponding vertex IDs in the full mesh.
+    /// @return Vector of size num_vertices() where each entry is the full vertex ID corresponding to the collision mesh vertex ID.
+    const Eigen::VectorXi& to_full_vertex_id() const
+    {
+        return m_vertex_to_full_vertex;
     }
 
     /// @brief Map a vector quantity on the collision mesh to the full mesh.
