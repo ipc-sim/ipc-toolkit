@@ -78,7 +78,7 @@ jobs:
           git fetch --all --tags
 
           # Checkout the versioned docs from the gh-pages branch
-          git checkout gh-pages -- 'v*'
+          git checkout origin/gh-pages -- 'v*'
 
           # Move the versioned docs to the build directory
           mkdir -p docs/build/html
