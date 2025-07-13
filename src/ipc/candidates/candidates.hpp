@@ -12,6 +12,7 @@
 
 namespace ipc {
 
+/// @brief A class for storing and managing collision candidates.
 class Candidates {
 public:
     Candidates() = default;

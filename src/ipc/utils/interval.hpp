@@ -52,6 +52,9 @@ template <> struct fmt::formatter<filib::Interval> : ostream_formatter { };
 
 namespace ipc {
 
+/// @defgroup interval
+/// @{
+
 /// @brief 2D vector of intervals
 using Vector2I = Eigen::Vector2<filib::Interval>;
 /// @brief 3D vector of intervals
@@ -91,6 +94,8 @@ filib::Interval squared_norm(Eigen::ConstRef<VectorXI> v); // L2 norm
 /// @param v The n-dimensional interval
 /// @return The L2 norm of the interval
 filib::Interval norm(Eigen::ConstRef<VectorXI> v); // L2 norm
+
+/// @}
 
 } // namespace ipc
 

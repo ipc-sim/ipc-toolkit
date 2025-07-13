@@ -14,3 +14,9 @@ Positive Semi-Definite Projection
 .. doxygenfunction:: ipc::project_to_pd
 
 .. doxygenenum:: ipc::PSDProjectionMethod
+
+Eigen Extensions
+----------------
+
+.. doxygengroup:: eigen_ext
+    :content-only:

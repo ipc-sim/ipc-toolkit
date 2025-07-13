@@ -3,16 +3,16 @@
     :hidden:
 
     Home <self>
-    release_notes.rst
-    license.rst
-    dependencies.rst
+    about/release_notes.rst
+    about/license.rst
+    about/dependencies.rst
 
 .. toctree::
     :caption: Building
     :hidden:
 
-    Library <building.rst>
-    python.rst
+    Library <building/building.rst>
+    building/python.rst
 
 .. toctree::
     :caption: Tutorial
@@ -31,49 +31,49 @@
     :caption: C++ API
     :hidden:
 
-    cpp-api/potentials.rst
-    cpp-api/collision_mesh.rst
-    cpp-api/candidates.rst
-    cpp-api/normal_collisions.rst
-    cpp-api/tangential_collisions.rst
-    cpp-api/friction.rst
-    cpp-api/broad_phase.rst
-    cpp-api/ccd.rst
-    cpp-api/distance.rst
-    cpp-api/tangent.rst
-    cpp-api/barrier.rst
     cpp-api/adhesion.rst
+    cpp-api/barrier/index.rst
+    cpp-api/broad_phase.rst
+    cpp-api/candidates.rst
+    cpp-api/ccd.rst
+    cpp-api/collision_mesh.rst
+    cpp-api/distance.rst
+    cpp-api/friction.rst
     cpp-api/intersections.rst
     cpp-api/interval.rst
+    cpp-api/normal_collisions.rst
+    cpp-api/potentials/index.rst
+    cpp-api/tangent.rst
+    cpp-api/tangential_collisions.rst
     cpp-api/utils.rst
 
 .. toctree::
     :caption: Python API
     :hidden:
 
-    python-api/potentials.rst
-    python-api/collision_mesh.rst
-    python-api/candidates.rst
-    python-api/normal_collisions.rst
-    python-api/tangential_collisions.rst
-    python-api/friction.rst
-    python-api/broad_phase.rst
-    python-api/ccd.rst
-    python-api/distance.rst
-    python-api/tangent.rst
-    python-api/barrier.rst
     python-api/adhesion.rst
+    python-api/barrier.rst
+    python-api/broad_phase.rst
+    python-api/candidates.rst
+    python-api/ccd.rst
+    python-api/collision_mesh.rst
+    python-api/distance.rst
+    python-api/friction.rst
     python-api/intersections.rst
     python-api/interval.rst
+    python-api/normal_collisions.rst
+    python-api/potentials.rst
+    python-api/tangent.rst
+    python-api/tangential_collisions.rst
     python-api/utils.rst
 
 .. toctree::
     :caption: Developers
     :hidden:
 
-    contributing
-    style_guide
-    Code of Conduct <code_of_conduct.md>
+    developers/contributing.rst
+    developers/style_guide.rst
+    Code of Conduct <developers/code_of_conduct.md>
 
 .. image:: _static/logo.png
     :alt: IPC Toolkit

@@ -6,6 +6,7 @@
 
 namespace ipc {
 
+/// @brief Sweep and Prune broad phase collision detection.
 class SweepAndPrune : public BroadPhase {
 public:
     SweepAndPrune() = default;

@@ -9,6 +9,7 @@
 
 namespace ipc {
 
+/// @brief A candidate for vertex-vertex collision detection.
 class VertexVertexCandidate : virtual public CollisionStencil {
 public:
     VertexVertexCandidate(index_t vertex0_id, index_t vertex1_id);

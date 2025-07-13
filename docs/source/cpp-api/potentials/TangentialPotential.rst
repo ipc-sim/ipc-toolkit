@@ -1,0 +1,4 @@
+TangentialPotential
+===================
+
+.. doxygenclass:: ipc::TangentialPotential

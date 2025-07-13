@@ -4,7 +4,7 @@ License
 
 IPC Toolkit is released under an MIT license, and all of its dependencies are under similar permissive licenses (MIT, Apache, or MPL).
 
-.. literalinclude:: ../../LICENSE
+.. literalinclude:: ../../../LICENSE
     :language: md
 
 Citation

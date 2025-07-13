@@ -10,6 +10,7 @@
 
 namespace ipc {
 
+/// @brief Spatial hash broad phase collision detection.
 class SpatialHash : public BroadPhase {
 public: // data
     /// @brief The left bottom corner of the world bounding box.

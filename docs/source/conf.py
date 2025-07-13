@@ -101,7 +101,7 @@ breathe_default_members = (
     "private-members",
 )
 breathe_show_define_initializer = True
-# breathe_show_include = True
+breathe_show_include = True
 
 autodoc_default_options = {
     "members": True,
@@ -176,14 +176,14 @@ html_theme_options = {
     "icon": {"repo": "fontawesome/brands/github"},
 
     "features": [
-        "navigation.expand",
+        "content.tabs.link",
+        "navigation.footer",
         "navigation.tabs",
         "navigation.top",
         "navigation.tracking",
         "search.highlight",
         "search.share",
         "toc.follow",
-        "content.tabs.link"
     ],
 
     "font": {
