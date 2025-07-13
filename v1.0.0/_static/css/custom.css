@@ -17,6 +17,10 @@ span.colon {
     margin-left: -1em;
 }
 
+dl.cpp {
+    font-size: 0.64rem;
+}
+
 dl.cpp.objdesc,
 dl.py.objdesc {
     /* border: 0.05rem solid var(--md-primary-fg-color); */
@@ -28,6 +32,7 @@ dl.py.objdesc {
 
 dl.cpp.objdesc>dt,
 dl.py.objdesc>dt {
+    font-size: 0.64rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
 }
