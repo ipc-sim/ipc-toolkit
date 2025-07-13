@@ -27,4 +27,4 @@ xml:
 	cd "$(SOURCEDIR)" && doxygen Doxyfile
 
 livehtml:
-	sphinx-autobuild --host 0.0.0.0 --port 8001 -j auto -a -q "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS) $(O)
+	sphinx-autobuild --host 0.0.0.0 -j auto -a -q "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS) $(O)
