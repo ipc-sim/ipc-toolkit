@@ -8,6 +8,7 @@
 
 namespace ipc {
 
+/// @brief Inexact Continuous Collision Detection (CCD)
 class InexactCCD : public NarrowPhaseCCD {
 public:
     /// The default conservative rescaling value used to avoid taking steps

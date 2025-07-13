@@ -23,5 +23,8 @@ clean:
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
+xml:
+	cd "$(SOURCEDIR)" && doxygen Doxyfile
+
 livehtml:
-	sphinx-autobuild --host 0.0.0.0 "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS) $(O)
+	sphinx-autobuild --host 0.0.0.0 -j auto -a -q "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS) $(O)

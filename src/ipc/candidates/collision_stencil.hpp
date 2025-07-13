@@ -119,7 +119,7 @@ public:
         return compute_distance_hessian(dof(vertices, edges, faces));
     }
 
-    /// @brief Compute the coefficients of the stencil s.t. d(x) = ‖∑ cᵢ xᵢ‖².
+    /// @brief Compute the coefficients of the stencil s.t. \f$d(x) = \|\sum c_i \mathbf{x}_i\|^2\f$.
     /// @param vertices Collision mesh vertices
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces

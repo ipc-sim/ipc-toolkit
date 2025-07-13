@@ -20,5 +20,5 @@ void define_tangential_adhesion_potential(py::module_& m)
         .def_property(
             "eps_a", &TangentialAdhesionPotential::eps_a,
             &TangentialAdhesionPotential::set_eps_a,
-            "Get the tangential adhesion mollifier parameter :math:`\epsilon_a`.");
+            "Get the tangential adhesion mollifier parameter :math:`\\epsilon_a`.");
 }

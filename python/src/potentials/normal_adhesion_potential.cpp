@@ -16,7 +16,7 @@ void define_normal_adhesion_potential(py::module_& m)
             "The distance of largest adhesion force (:math:`\\hat{d}_{p}`) (:math:`0 < \\hat{d}_{p} < \\hat{d}_{a}`).")
         .def_readwrite(
             "dhat_a", &NormalAdhesionPotential::dhat_a,
-            "The adhesion activation distance (:math:`\\hat{d}_{a}`.")
+            "The adhesion activation distance (:math:`\\hat{d}_{a}`).")
         .def_readwrite(
             "Y", &NormalAdhesionPotential::Y,
             "The Young's modulus (:math:`Y`)).")

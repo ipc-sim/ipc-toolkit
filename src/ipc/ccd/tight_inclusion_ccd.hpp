@@ -4,6 +4,7 @@
 
 namespace ipc {
 
+/// @brief Tight-Inclusion Continuous Collision Detection (CCD) algorithm.
 class TightInclusionCCD : public NarrowPhaseCCD {
 public:
     /// The default tolerance used with Tight-Inclusion CCD.

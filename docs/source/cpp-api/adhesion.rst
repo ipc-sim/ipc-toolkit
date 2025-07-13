@@ -1,19 +1,42 @@
 Adhesion
 ========
 
+Functions
+---------
+
+.. list-table::
+    :header-rows: 1
+
+    * - Name
+      - Description
+    * - :func:`normal_adhesion_potential`
+      - The normal adhesion potential.
+    * - :func:`normal_adhesion_potential_first_derivative`
+      - The first derivative of the normal adhesion potential wrt d.
+    * - :func:`normal_adhesion_potential_second_derivative`
+      - The second derivative of the normal adhesion potential wrt d.
+    * - :func:`max_normal_adhesion_force_magnitude`
+      - The maximum normal adhesion force magnitude.
+    * - :func:`tangential_adhesion_f0`
+      - The tangential adhesion mollifier function.
+    * - :func:`tangential_adhesion_f1`
+      - The first derivative of the tangential adhesion mollifier function.
+    * - :func:`tangential_adhesion_f2`
+      - The second derivative of the tangential adhesion mollifier function.
+    * - :func:`tangential_adhesion_f1_over_x`
+      - The first derivative of the tangential adhesion mollifier function divided by y.
+    * - :func:`tangential_adhesion_f2_x_minus_f1_over_x3`
+      - The second derivative of the tangential adhesion mollifier function times y minus the first derivative all divided by y cubed.
+
+
 Normal Adhesion Potential
 -------------------------
 
-.. doxygenfunction:: normal_adhesion_potential
-.. doxygenfunction:: normal_adhesion_potential_first_derivative
-.. doxygenfunction:: normal_adhesion_potential_second_derivative
-.. doxygenfunction:: max_normal_adhesion_force_magnitude
+.. doxygengroup:: normal_adhesion
+   :content-only:
 
 Tangential Adhesion Potential
 -----------------------------
 
-.. doxygenfunction:: tangential_adhesion_f0
-.. doxygenfunction:: tangential_adhesion_f1
-.. doxygenfunction:: tangential_adhesion_f2
-.. doxygenfunction:: tangential_adhesion_f1_over_x
-.. doxygenfunction:: tangential_adhesion_f2_x_minus_f1_over_x3
+.. doxygengroup:: tangential_adhesion
+   :content-only:

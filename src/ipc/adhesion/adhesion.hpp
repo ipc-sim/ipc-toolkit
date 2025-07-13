@@ -5,6 +5,8 @@ namespace ipc {
 // Fang and Li et al. [2023]:
 
 // -- Normal Adhesion ----------------------------------------------------------
+/// @defgroup normal_adhesion Normal Adhesion
+/// @{
 
 /// @brief The normal adhesion potential.
 /// @param d distance
@@ -41,7 +43,11 @@ double normal_adhesion_potential_second_derivative(
 double max_normal_adhesion_force_magnitude(
     const double dhat_p, const double dhat_a, const double a2);
 
+/// @}
+
 // -- Tangential Adhesion ------------------------------------------------------
+/// @defgroup tangential_adhesion Tangential Adhesion
+/// @{
 
 /// @brief The tangential adhesion mollifier function.
 /// @param y The tangential relative speed.
@@ -73,5 +79,7 @@ double tangential_adhesion_f1_over_x(const double y, const double eps_a);
 /// @return The second derivative of the tangential adhesion mollifier function times y minus the first derivative all divided by y cubed.
 double
 tangential_adhesion_f2_x_minus_f1_over_x3(const double y, const double eps_a);
+
+/// @}
 
 } // namespace ipc

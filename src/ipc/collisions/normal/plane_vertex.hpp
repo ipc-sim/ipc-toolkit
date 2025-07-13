@@ -12,7 +12,7 @@ public:
         Eigen::ConstRef<VectorMax3d> plane_normal,
         const index_t vertex_id);
 
-    int num_vertices() const override { return 1; };
+    int num_vertices() const override { return 1; }
 
     std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,

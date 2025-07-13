@@ -34,7 +34,7 @@ public:
 
     /// @brief Get the units of the barrier function.
     /// @param dhat The activation distance of the barrier.
-    /// @return
+    /// @return The units of the barrier function.
     virtual double units(const double dhat) const = 0;
 };
 
