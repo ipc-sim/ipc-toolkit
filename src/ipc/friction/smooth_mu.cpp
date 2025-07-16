@@ -76,7 +76,7 @@ double smooth_mu_f1_over_x(
         * smooth_friction_f1_over_x(y, eps_v);
 }
 
-double smooth_mu_f2_x_minus_f1_over_x3(
+double smooth_mu_f2_x_minus_mu_f1_over_x3(
     const double y, const double mu_s, const double mu_k, const double eps_v)
 {
     assert(eps_v > 0);

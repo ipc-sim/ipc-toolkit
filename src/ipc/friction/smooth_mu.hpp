@@ -62,7 +62,7 @@ double smooth_mu_f1_over_x(
 /// @param mu_k Coefficient of kinetic friction.
 /// @param eps_v Velocity threshold below which static friction force is applied.
 /// @return The value of the expression at y.
-double smooth_mu_f2_x_minus_f1_over_x3(
+double smooth_mu_f2_x_minus_mu_f1_over_x3(
     const double y, const double mu_s, const double mu_k, const double eps_v);
 
 } // namespace ipc

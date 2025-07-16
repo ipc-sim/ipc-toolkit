@@ -76,7 +76,7 @@ TEST_CASE("Smooth mu", "[friction][mollifier][mu]")
         smooth_mu_f2(x, mu_s, mu_k, eps_v)
         == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 
-    double f2 = smooth_mu_f2_x_minus_f1_over_x3(x, mu_s, mu_k, eps_v);
+    double f2 = smooth_mu_f2_x_minus_mu_f1_over_x3(x, mu_s, mu_k, eps_v);
     f2 *= x * x * x;
     f2 += smooth_mu_f1(x, mu_s, mu_k, eps_v);
     f2 /= x;
