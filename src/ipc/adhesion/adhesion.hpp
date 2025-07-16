@@ -80,6 +80,24 @@ double tangential_adhesion_f1_over_x(const double y, const double eps_a);
 double
 tangential_adhesion_f2_x_minus_f1_over_x3(const double y, const double eps_a);
 
+// ~~ Smooth μ variants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Here a0, a1, and a2 refer to the mollifier functions above.
+
+double smooth_mu_a0(
+    const double y, const double mu_s, const double mu_k, const double eps_v);
+
+double smooth_mu_a1(
+    const double y, const double mu_s, const double mu_k, const double eps_v);
+
+double smooth_mu_a2(
+    const double y, const double mu_s, const double mu_k, const double eps_v);
+
+double smooth_mu_a1_over_x(
+    const double y, const double mu_s, const double mu_k, const double eps_v);
+
+double smooth_mu_a2_x_minus_mu_a1_over_x3(
+    const double y, const double mu_s, const double mu_k, const double eps_v);
+
 /// @}
 
 } // namespace ipc
