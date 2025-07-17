@@ -147,7 +147,8 @@ bool read_ipc_friction_data(
         E, F, mmcvids, lambda, coords, bases, tangential_collisions);
     tests::mmcvids_to_collisions(E, F, mmcvids, collisions);
     for (int i = 0; i < tangential_collisions.size(); i++) {
-        tangential_collisions[i].mu = mu;
+        tangential_collisions[i].mu_s = mu;
+        tangential_collisions[i].mu_k = mu;
     }
 
     return true;
@@ -226,7 +227,8 @@ TEST_CASE(
         CHECK(
             collision.normal_force_magnitude
             == Catch::Approx(expected_collision.normal_force_magnitude));
-        CHECK(collision.mu == Catch::Approx(expected_collision.mu));
+        CHECK(collision.mu_s == Catch::Approx(expected_collision.mu_s));
+        CHECK(collision.mu_k == Catch::Approx(expected_collision.mu_k));
 
         CHECK(
             collision.vertex_ids(E, F) == expected_collision.vertex_ids(E, F));

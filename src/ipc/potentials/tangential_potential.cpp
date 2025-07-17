@@ -153,7 +153,7 @@ double TangentialPotential::operator()(
         * collision.relative_velocity(velocities);
 
     return collision.weight * collision.normal_force_magnitude
-        * mu_f0(u.norm(), collision.mu, collision.mu);
+        * mu_f0(u.norm(), collision.mu_s, collision.mu_k);
 }
 
 VectorMax12d TangentialPotential::gradient(
@@ -179,7 +179,7 @@ VectorMax12d TangentialPotential::gradient(
 
     // Compute μ(‖u‖) f₁(‖u‖)/‖u‖
     const double mu_f1_over_norm_u =
-        mu_f1_over_x(u.norm(), collision.mu, collision.mu);
+        mu_f1_over_x(u.norm(), collision.mu_s, collision.mu_k);
 
     // μ(‖u‖) N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u ∈ (n×2)(2×1) = (n×1)
     return T
@@ -217,7 +217,7 @@ MatrixMax12d TangentialPotential::hessian(
 
     // Compute μ(‖u‖) f₁(‖u‖)/‖u‖
     const double mu_f1_over_norm_u =
-        mu_f1_over_x(norm_u, collision.mu, collision.mu);
+        mu_f1_over_x(norm_u, collision.mu_s, collision.mu_k);
 
     // Compute N(xᵗ)
     const double scale = collision.weight * collision.normal_force_magnitude;
@@ -255,7 +255,7 @@ MatrixMax12d TangentialPotential::hessian(
         // ∇²D(v) = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         //  ⟹ only need to project the inner 2x2 matrix to PSD
         const double f2 =
-            mu_f2_x_minus_mu_f1_over_x3(norm_u, collision.mu, collision.mu);
+            mu_f2_x_minus_mu_f1_over_x3(norm_u, collision.mu_s, collision.mu_k);
 
         MatrixMax2d inner_hess = f2 * u * u.transpose();
         inner_hess.diagonal().array() += mu_f1_over_norm_u;
@@ -316,8 +316,8 @@ VectorMax12d TangentialPotential::force(
     const VectorMax2d tau = T.transpose() * velocities;
 
     // Compute μ(‖τ‖) f₁(‖τ‖)/‖τ‖
-    const double mu_s = no_mu ? 1.0 : collision.mu;
-    const double mu_k = no_mu ? 1.0 : collision.mu;
+    const double mu_s = no_mu ? 1.0 : collision.mu_s;
+    const double mu_k = no_mu ? 1.0 : collision.mu_k;
     const double mu_f1_over_norm_tau = mu_f1_over_x(tau.norm(), mu_s, mu_k);
 
     // F = -μ N f₁(‖τ‖)/‖τ‖ T τ
@@ -436,7 +436,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
     // Compute μ f₁(‖τ‖)/‖τ‖
     const double tau_norm = tau.norm();
     const double mu_f1_over_norm_tau =
-        mu_f1_over_x(tau_norm, collision.mu, collision.mu);
+        mu_f1_over_x(tau_norm, collision.mu_s, collision.mu_k);
 
     // Compute ∇(μ f₁(‖τ‖)/‖τ‖)
     VectorMax12d grad_mu_f1_over_norm_tau;
@@ -445,8 +445,8 @@ MatrixMax12d TangentialPotential::force_jacobian(
         grad_mu_f1_over_norm_tau.setZero(n);
     } else {
         // ∇ (f₁(‖τ‖)/‖τ‖) = (f₂(‖τ‖)‖τ‖ - f₁(‖τ‖)) / ‖τ‖³ τᵀ ∇τ
-        double f2 =
-            mu_f2_x_minus_mu_f1_over_x3(tau_norm, collision.mu, collision.mu);
+        double f2 = mu_f2_x_minus_mu_f1_over_x3(
+            tau_norm, collision.mu_s, collision.mu_k);
         assert(std::isfinite(f2));
         grad_mu_f1_over_norm_tau = f2 * tau.transpose() * jac_tau;
     }
