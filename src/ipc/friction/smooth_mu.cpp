@@ -41,14 +41,14 @@ double smooth_mu_f0(
     assert(eps_v > 0);
     if (mu_s == mu_k || std::abs(y) >= eps_v) {
         // If the static and kinetic friction coefficients are equal, simplify.
-        const double c = eps_v * (17 * mu_k - 7 * mu_s) / 30;
-        return mu_k * smooth_friction_f0(y, eps_v) - c;
+        return mu_k * smooth_friction_f0(y, eps_v);
     } else {
         const double delta_mu = mu_k - mu_s;
+        const double c = eps_v * (17 * mu_k - 7 * mu_s) / 30;
         const double z = std::abs(y) / eps_v;
         return y * z
-            * (z * (z * (z * (z / 3 - 1.4) + 1.5) * delta_mu - mu_s / 3)
-               + mu_s);
+            * (z * (z * (z * (z / 3 - 1.4) + 1.5) * delta_mu - mu_s / 3) + mu_s)
+            + c;
     }
 }
 
