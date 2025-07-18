@@ -55,6 +55,7 @@ double smooth_friction_f2(const double y, const double eps_v);
 ///     \end{cases}
 /// \f\]
 ///
+/// @note The `x` in the function name refers to the parameter `y`.
 /// @param y The tangential relative speed.
 /// @param eps_v Velocity threshold below which static friction force is applied.
 /// @return The value of the derivative of smooth_friction_f0 divided by y.
@@ -69,6 +70,7 @@ double smooth_friction_f1_over_x(const double y, const double eps_v);
 ///     \end{cases}
 /// \f\]
 ///
+/// @note The `x` in the function name refers to the parameter `y`.
 /// @param y The tangential relative speed.
 /// @param eps_v Velocity threshold below which static friction force is applied.
 /// @return The derivative of f1 times y minus f1 all divided by y cubed.

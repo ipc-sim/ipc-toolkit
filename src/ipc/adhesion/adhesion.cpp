@@ -131,16 +131,16 @@ tangential_adhesion_f2_x_minus_f1_over_x3(const double y, const double eps_a)
 // Here a0, a1, and a2 refer to the mollifier functions above.
 
 double smooth_mu_a0(
-    const double y, const double mu_s, const double mu_k, const double eps_v)
+    const double y, const double mu_s, const double mu_k, const double eps_a)
 {
-    assert(eps_v > 0);
+    assert(eps_a > 0);
     const double delta_mu = mu_k - mu_s;
-    if (mu_s == mu_k || y <= 0 || y >= eps_v) {
+    if (mu_s == mu_k || y <= 0 || y >= eps_a) {
         // If the static and kinetic friction coefficients are equal, simplify.
-        const double c = (7 / 30.) * eps_v * delta_mu;
-        return mu_k * tangential_adhesion_f0(y, eps_v) - c;
+        const double c = (7 / 30.) * eps_a * delta_mu;
+        return mu_k * tangential_adhesion_f0(y, eps_a) - c;
     } else {
-        const double z = y / eps_v;
+        const double z = y / eps_a;
         return y * z
             * (z * (z * (z * (z / 3 - 1.4) + 1.5) * delta_mu - mu_s / 3)
                + mu_s);
@@ -148,38 +148,38 @@ double smooth_mu_a0(
 }
 
 double smooth_mu_a1(
-    const double y, const double mu_s, const double mu_k, const double eps_v)
+    const double y, const double mu_s, const double mu_k, const double eps_a)
 {
-    return smooth_mu(y, mu_s, mu_k, eps_v) * tangential_adhesion_f1(y, eps_v);
+    return smooth_mu(y, mu_s, mu_k, eps_a) * tangential_adhesion_f1(y, eps_a);
 }
 
 double smooth_mu_a2(
-    const double y, const double mu_s, const double mu_k, const double eps_v)
+    const double y, const double mu_s, const double mu_k, const double eps_a)
 {
-    return smooth_mu_derivative(y, mu_s, mu_k, eps_v)
-        * tangential_adhesion_f1(y, eps_v)
-        + smooth_mu(y, mu_s, mu_k, eps_v) * tangential_adhesion_f2(y, eps_v);
+    return smooth_mu_derivative(y, mu_s, mu_k, eps_a)
+        * tangential_adhesion_f1(y, eps_a)
+        + smooth_mu(y, mu_s, mu_k, eps_a) * tangential_adhesion_f2(y, eps_a);
 }
 
 double smooth_mu_a1_over_x(
-    const double y, const double mu_s, const double mu_k, const double eps_v)
+    const double y, const double mu_s, const double mu_k, const double eps_a)
 {
     // This is a known formulation: μ(y) f₁(y) / y
     // where we use the robust division by y to avoid division by zero.
-    return smooth_mu(y, mu_s, mu_k, eps_v)
-        * tangential_adhesion_f1_over_x(y, eps_v);
+    return smooth_mu(y, mu_s, mu_k, eps_a)
+        * tangential_adhesion_f1_over_x(y, eps_a);
 }
 
 double smooth_mu_a2_x_minus_mu_a1_over_x3(
-    const double y, const double mu_s, const double mu_k, const double eps_v)
+    const double y, const double mu_s, const double mu_k, const double eps_a)
 {
-    assert(eps_v > 0);
-    if (mu_s == mu_k || y <= 0 || y >= eps_v) {
+    assert(eps_a > 0);
+    if (mu_s == mu_k || y <= 0 || y >= eps_a) {
         // If the static and kinetic friction coefficients are equal, simplify.
-        return mu_k * tangential_adhesion_f2_x_minus_f1_over_x3(y, eps_v);
+        return mu_k * tangential_adhesion_f2_x_minus_f1_over_x3(y, eps_a);
     } else {
         const double delta_mu = mu_k - mu_s;
-        const double z = 1 / eps_v;
+        const double z = 1 / eps_a;
         return z * z
             * (z * (z * y * (z * y * 8 - 21) + 12) * delta_mu - mu_s / y);
     }
