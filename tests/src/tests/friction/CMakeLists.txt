@@ -3,6 +3,7 @@ set(SOURCES
   test_force_jacobian.cpp
   test_friction.cpp
   test_smooth_friction_mollifier.cpp
+  test_smooth_mu.cpp
 
   # Benchmarks
 

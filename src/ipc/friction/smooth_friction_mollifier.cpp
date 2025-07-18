@@ -20,7 +20,9 @@ double smooth_friction_f1(const double y, const double eps_v)
     if (std::abs(y) >= eps_v) {
         return 1;
     }
-    return y * (2 - y / eps_v) / eps_v;
+
+    const double y_over_eps_v = y / eps_v;
+    return y_over_eps_v * (2 - y_over_eps_v);
 }
 
 double smooth_friction_f2(const double y, const double eps_v)

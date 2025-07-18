@@ -31,8 +31,23 @@ public:
         double mu)
     {
         this->build(
+            mesh, vertices, collisions, normal_potential, normal_stiffness, mu,
+            mu);
+    }
+
+    void build(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        const NormalCollisions& collisions,
+        const NormalPotential& normal_potential,
+        double normal_stiffness,
+        double mu_s,
+        double mu_k)
+    {
+        this->build(
             mesh, vertices, collisions, normal_potential, normal_stiffness,
-            Eigen::VectorXd::Constant(vertices.rows(), mu));
+            Eigen::VectorXd::Constant(vertices.rows(), mu_s),
+            Eigen::VectorXd::Constant(vertices.rows(), mu_k));
     }
 
     void build(
@@ -41,7 +56,8 @@ public:
         const NormalCollisions& collisions,
         const NormalPotential& normal_potential,
         const double normal_stiffness,
-        Eigen::ConstRef<Eigen::VectorXd> mus,
+        Eigen::ConstRef<Eigen::VectorXd> mu_k,
+        Eigen::ConstRef<Eigen::VectorXd> mu_s,
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
 
