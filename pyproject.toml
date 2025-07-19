@@ -13,13 +13,12 @@ version = "1.4.0"
 authors = [{ name = "Zachary Ferguson", email = "zy.fergus@gmail.com" }]
 description = "A set of reusable functions to integrate Incremental Potential Contact (IPC) into a simulation."
 readme = "docs/PYPI_README.md"
-license = { file = "LICENSE" }
+license-files = ["LICENSE"]
 classifiers = [
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
     "Topic :: Games/Entertainment :: Simulation",
     "Topic :: Scientific/Engineering :: Physics",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
 ]

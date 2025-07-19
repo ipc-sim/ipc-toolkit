@@ -257,7 +257,6 @@ void define_broad_phase(py::module_& m)
 
             Parameters:
                 dim: The dimension of the simulation (i.e., 2 or 3).
-                candidates: The detected collision candidates.
             )ipc_Qu8mg5v7",
             "dim"_a)
         .def_readwrite(

@@ -20,8 +20,8 @@ void define_line_line_distance(py::module_& m)
         Parameters:
             ea0: The first vertex of the edge defining the first line.
             ea1: The second vertex of the edge defining the first line.
-            ea0: The first vertex of the edge defining the second line.
-            ea1: The second vertex of the edge defining the second line.
+            eb0: The first vertex of the edge defining the second line.
+            eb1: The second vertex of the edge defining the second line.
 
         Returns:
             The distance between the two lines.
@@ -42,8 +42,8 @@ void define_line_line_distance(py::module_& m)
         Parameters:
             ea0: The first vertex of the edge defining the first line.
             ea1: The second vertex of the edge defining the first line.
-            ea0: The first vertex of the edge defining the second line.
-            ea1: The second vertex of the edge defining the second line.
+            eb0: The first vertex of the edge defining the second line.
+            eb1: The second vertex of the edge defining the second line.
 
         Returns:
             The gradient of the distance wrt ea0, ea1, eb0, and eb1.
@@ -64,8 +64,8 @@ void define_line_line_distance(py::module_& m)
         Parameters:
             ea0: The first vertex of the edge defining the first line.
             ea1: The second vertex of the edge defining the first line.
-            ea0: The first vertex of the edge defining the second line.
-            ea1: The second vertex of the edge defining the second line.
+            eb0: The first vertex of the edge defining the second line.
+            eb1: The second vertex of the edge defining the second line.
 
         Returns:
             The hessian of the distance wrt ea0, ea1, eb0, and eb1.

@@ -20,4 +20,4 @@ Smooth :math:`\mu`
 .. doxygenfunction:: smooth_mu_f1
 .. doxygenfunction:: smooth_mu_f2
 .. doxygenfunction:: smooth_mu_f1_over_x
-.. doxygenfunction:: smooth_mu_f2_x_minus_f1_over_x3
+.. doxygenfunction:: smooth_mu_f2_x_minus_mu_f1_over_x3
