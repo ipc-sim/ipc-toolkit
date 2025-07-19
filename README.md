@@ -28,7 +28,7 @@ This is not a full simulation library. As such it does not include any physics o
 
 ## Build
 
-Instruction for building and including the IPC Toolkit in your CMake project can be found on the website [here](https://ipctk.xyz/building.html).
+Instruction for building and including the IPC Toolkit in your CMake project can be found on the website [here](https://ipctk.xyz/build.html).
 
 ### Dependencies
 
@@ -46,7 +46,7 @@ For more information see the [Python documentation](https://ipctk.xyz/python.htm
 
 ## Usage
 
-See the [tutorial](https://ipctk.xyz/tutorial/getting_started.html) for a quick introduction to the toolkit, or the [documentation](https://ipctk.xyz/cpp-api/potentials.html) for a full reference.
+See the [tutorials](https://ipctk.xyz/tutorials/getting_started.html) for a quick introduction to the toolkit, or the [documentation](https://ipctk.xyz/cpp-api/potentials.html) for a full reference.
 
 ## Contributing
 

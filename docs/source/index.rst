@@ -8,25 +8,25 @@
     about/dependencies.rst
 
 .. toctree::
-    :caption: Building
+    :caption: Build
     :hidden:
 
-    Library <building/building.rst>
-    building/python.rst
+    Library <build/c++.rst>
+    build/python.rst
 
 .. toctree::
-    :caption: Tutorial
+    :caption: Tutorials
     :hidden:
 
-    tutorial/getting_started.rst
-    tutorial/advanced_friction.rst
-    tutorial/convergent.rst
-    tutorial/nonlinear_ccd.rst
-    tutorial/adhesion.rst
-    tutorial/simulation.rst
-    tutorial/misc.rst
-    tutorial/faq.rst
-    tutorial/references.rst
+    tutorials/getting_started.rst
+    tutorials/advanced_friction.rst
+    tutorials/convergent.rst
+    tutorials/nonlinear_ccd.rst
+    tutorials/adhesion.rst
+    tutorials/simulation.rst
+    tutorials/misc.rst
+    tutorials/faq.rst
+    tutorials/references.rst
 
 .. toctree::
     :caption: C++ API
@@ -119,7 +119,7 @@ This is not a full simulation library. As such it does not include any physics o
 
 **Usage**
 
-See the `tutorial <https://ipctk.xyz/tutorial/getting_started.html>`_ for a quick introduction to the toolkit, or the `documentation <https://ipctk.xyz/cpp.html>`_ for a full reference.
+See the `tutorials <https://ipctk.xyz/tutorials/getting_started.html>`_ for a quick introduction to the toolkit, or the `documentation <https://ipctk.xyz/cpp.html>`_ for a full reference.
 
 **Python Bindings**
 
