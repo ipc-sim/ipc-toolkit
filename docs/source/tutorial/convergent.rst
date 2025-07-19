@@ -65,7 +65,7 @@ Applying mesh vertices as nodes (and quadrature points), we numerically integrat
 
 where :math:`w_{\bar{x}}` are the quadrature weights, each given by one-third of the sum of the areas (in material space) of the boundary triangles incident to :math:`\bar{x}`.
 
-.. note::
+.. tip::
     The area weighted quadrature is enabled by setting ``use_area_weighting`` to ``true`` in ``Collisions``.
 
 We next need to smoothly approximate the max operator in the barrier potentials. However, common approaches such as an :math:`L^p`-norm or LogSumExp would decrease sparsity in subsequent numerical solves by increasing the stencil size per collision evaluation. We instead leverage the locality of our barrier function to approximate the max operator by removing duplicate distance pairs. Our resulting approximators for a triangulated surface is
@@ -78,7 +78,12 @@ We next need to smoothly approximate the max operator in the barrier potentials.
 
 where :math:`V_{\text{int}} \subseteq V` is the subset of internal surface nodes and :math:`E_{\text{int}} \subseteq E` is the subset of internal surface edges (i.e., edges incident to two triangles). For locally convex regions this estimator is tight while remaining smooth. In turn, for nonconvex regions, it improves over direct summation.
 
-.. note::
+.. figure:: /_static/img/improved_max_approx.png
+    :align: center
+
+    Comparison of the improved max approximator (right) to and exact max (left) and the direct summation (middle). For obtuse angles, the improved max approximator is tight, while for acute angles it might overestimate the max in concave regions.
+
+.. tip::
     The improved max approximator is enabled by setting ``use_improved_max_approximator`` to ``true`` in ``Collisions``.
 
 The corresponding discrete barrier potential is then simply
@@ -115,7 +120,7 @@ The barrier stiffness (:math:`\kappa`) then has units of pressure (e.g., :math:`
 This implies we can get good solver convergence even when using a fixed :math:`\kappa` by setting it relative to the material's Young's modulus (:math:`\kappa = 0.1 E` works well in many examples).
 The intention is to treat the barrier as a thin elastic region around the mesh, and having consistent units makes it easier to pick the stiffness for this "material".
 
-.. note::
+.. tip::
     The physical barrier is enabled by setting ``use_physical_barrier`` to ``true`` in ``BarrierPotential``.
 
 .. _convergent-friction-formulation:

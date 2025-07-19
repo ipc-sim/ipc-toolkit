@@ -95,7 +95,7 @@ The tangential adhesion potential models resistance to sliding (parallel to surf
 It is structured similar to the friction model with a smooth transition between sticking and sliding and lagged normal forces and tangential bases.
 
 .. math::
-    A_{t}(\mathbf{u}) = \sum_{k \in C} \mu_a \lambda_{k}^a f_{0}^a(\|\mathbf{T}_k^⊤ \mathbf{u}\|; \epsilon_a)
+    A_{t}(\mathbf{u}) = \sum_{k \in C} \mu_a \lambda_{k}^a f_{0}^a(\|\mathbf{T}_k^\top \mathbf{u}\|; \epsilon_a)
 
 where :math:`C` is the lagged collisions, :math:`\lambda_k^a` is the normal adhesion force magnitude for the :math:`k`-th collision, :math:`\mathbf{T}_k` is the tangential basis for the :math:`k`-th collision, and :math:`f_0^a` is the smooth tangential adhesion function used to approximate the non-smooth transition from sticking to sliding.
 
@@ -108,6 +108,11 @@ For relative displacement magnitude :math:`y`:
     \end{cases}
 
 where :math:`\epsilon_a` (``eps_a``) is the adhesion threshold (in units of displacement) used to smoothly transition from sticking to sliding.
+
+.. figure:: /_static/img/f0a.png
+    :align: center
+
+    Tangential adhesion mollifier :math:`f_0^a(y)` for :math:`\epsilon_a = 0.001`.
 
 We can build a tangential adhesion potential object and compute the adhesion potential for a given set of tangential collisions.
 
@@ -153,3 +158,47 @@ We can also compute the first and second derivatives of the tangential adhesion 
             adhesion_potential_grad = A_t.gradient(tangential_collisions, collision_mesh, displacement)
 
             adhesion_potential_hess = A_t.hessian(tangential_collisions, collision_mesh, displacement)
+
+.. figure:: /_static/img/f1a.png
+    :align: center
+
+    Tangential adhesion force mollifier :math:`f_1^a(y) = \frac{\mathrm{d}}{\mathrm{d}y} f_0^a(y)` for :math:`\epsilon_a = 0.001`.
+
+Separate Coefficients for Static and Kinetic Tangential Adhesion
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Similar to the friction model (see, `friction <advanced_friction.html#separate-coefficients-for-static-and-kinetic-friction>`_), we can define separate coefficients for static (``mu_s``) and kinetic (``mu_k``) tangential adhesion.
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            ipc::TangentialCollisions tangential_collisions;
+            tangential_collisions.build(
+                collision_mesh, vertices, collisions, B, barrier_stiffness,
+                mu_s, mu_k);
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            tangential_collisions = ipctk.TangentialCollisions()
+            tangential_collisions.build(
+                collision_mesh, vertices, collisions, B, barrier_stiffness,
+                mu_s, mu_k)
+
+The tangential adhesion force mollifier is then multiplied by the smooth coefficient of tangential adhesion:
+
+.. figure:: /_static/img/mu_f1a.png
+   :align: center
+
+   Smooth coefficient of tangential adhesion multiplied by the tangential adhesion mollifier :math:`\mu(\|\mathbf{u}\|) f_1^a(\|\mathbf{u}\|)` where :math:`\mu_s = 1`, :math:`\mu_k = 0.1`, and :math:`\epsilon_v = 0.001`.
+
+We integrate their product to obtain a smooth tangential adhesion mollifier:
+
+.. figure:: /_static/img/int_mu_f1a_dx.png
+   :align: center
+
+   Integrated mollifier :math:`\int \mu(y) f_1^a(y) \mathrm{d} y` where :math:`\mu_s = 1`, :math:`\mu_k = 0.1`, and :math:`\epsilon_v = 0.001`.

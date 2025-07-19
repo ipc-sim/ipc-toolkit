@@ -19,6 +19,7 @@
     :hidden:
 
     tutorial/getting_started.rst
+    tutorial/advanced_friction.rst
     tutorial/convergent.rst
     tutorial/nonlinear_ccd.rst
     tutorial/adhesion.rst

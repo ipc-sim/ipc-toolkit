@@ -22,6 +22,13 @@ public:
 public:
     TangentialCollisions() = default;
 
+    /// @brief Build the tangential collisions.
+    /// @param mesh The collision mesh.
+    /// @param vertices The vertices of the mesh.
+    /// @param collisions The set of normal collisions.
+    /// @param normal_potential The normal potential.
+    /// @param normal_stiffness Stiffness of the normal potential.
+    /// @param mu The coefficient of friction.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
@@ -35,6 +42,14 @@ public:
             mu);
     }
 
+    /// @brief Build the tangential collisions.
+    /// @param mesh The collision mesh.
+    /// @param vertices The vertices of the mesh.
+    /// @param collisions The set of normal collisions.
+    /// @param normal_potential The normal potential.
+    /// @param normal_stiffness Stiffness of the normal potential.
+    /// @param mu_s The static friction coefficient.
+    /// @param mu_k The kinetic friction coefficient.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
@@ -50,6 +65,15 @@ public:
             Eigen::VectorXd::Constant(vertices.rows(), mu_k));
     }
 
+    /// @brief Build the tangential collisions.
+    /// @param mesh The collision mesh.
+    /// @param vertices The vertices of the mesh.
+    /// @param collisions The set of normal collisions.
+    /// @param normal_potential The normal potential.
+    /// @param normal_stiffness Stiffness of the normal potential.
+    /// @param mu_k The kinetic friction coefficient per vertex.
+    /// @param mu_s The static friction coefficient per vertex.
+    /// @param blend_mu Function to blend vertex-based coefficients of friction.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,

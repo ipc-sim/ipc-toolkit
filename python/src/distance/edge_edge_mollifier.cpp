@@ -24,12 +24,7 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_cross_squarednorm_gradient",
-        py::overload_cast<
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>>(
-            &edge_edge_cross_squarednorm_gradient),
+        &edge_edge_cross_squarednorm_gradient,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the squared norm of the edge cross product.
 
@@ -46,12 +41,7 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_cross_squarednorm_hessian",
-        py::overload_cast<
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>>(
-            &edge_edge_cross_squarednorm_hessian),
+        &edge_edge_cross_squarednorm_hessian,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the squared norm of the edge cross product.
 
