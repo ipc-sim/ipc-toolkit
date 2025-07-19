@@ -11,7 +11,7 @@
       
       
       
-        <link rel="prev" href="getting_started.html">
+        <link rel="prev" href="advanced_friction.html">
       
       
         <link rel="next" href="nonlinear_ccd.html">
@@ -658,6 +658,30 @@
   
   <span class="md-ellipsis">
     <span title="/tutorial/getting_started.rst (reference label)">Getting Started</span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="advanced_friction.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorial/advanced_friction.rst (reference label)">Advanced Friction</span>
     
   </span>
   
@@ -1966,8 +1990,8 @@ Python</label></div>
 <div class="math notranslate nohighlight">
 \[\frac{1}{2} \sum_{\bar{x} \in \bar{V}} w_{\bar{x}} \max _{t \in T \backslash x(\bar{x})} b(d(x(\bar{x}), t), \hat{d}),\]</div>
 <p>where <span class="math notranslate nohighlight">\(w_{\bar{x}}\)</span> are the quadrature weights, each given by one-third of the sum of the areas (in material space) of the boundary triangles incident to <span class="math notranslate nohighlight">\(\bar{x}\)</span>.</p>
-<div class="note admonition">
-<p class="admonition-title">Note</p>
+<div class="tip admonition">
+<p class="admonition-title">Tip</p>
 <p>The area weighted quadrature is enabled by setting <code class="docutils literal notranslate"><span class="pre">use_area_weighting</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code> in <code class="docutils literal notranslate"><span class="pre">Collisions</span></code>.</p>
 </div>
 <p>We next need to smoothly approximate the max operator in the barrier potentials. However, common approaches such as an <span class="math notranslate nohighlight">\(L^p\)</span>-norm or LogSumExp would decrease sparsity in subsequent numerical solves by increasing the stencil size per collision evaluation. We instead leverage the locality of our barrier function to approximate the max operator by removing duplicate distance pairs. Our resulting approximators for a triangulated surface is</p>
@@ -1977,8 +2001,14 @@ Python</label></div>
 &amp; \approx \max _{t \in T \backslash x} b(d(x, t), \hat{d}),
 \end{aligned}\end{split}\]</div>
 <p>where <span class="math notranslate nohighlight">\(V_{\text{int}} \subseteq V\)</span> is the subset of internal surface nodes and <span class="math notranslate nohighlight">\(E_{\text{int}} \subseteq E\)</span> is the subset of internal surface edges (i.e., edges incident to two triangles). For locally convex regions this estimator is tight while remaining smooth. In turn, for nonconvex regions, it improves over direct summation.</p>
-<div class="note admonition">
-<p class="admonition-title">Note</p>
+<figure class="align-center" id="id6">
+<img alt="../_images/improved_max_approx.png" src="../_images/improved_max_approx.png" />
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+Comparison of the improved max approximator (right) to and exact max (left) and the direct summation (middle). For obtuse angles, the improved max approximator is tight, while for acute angles it might overestimate the max in concave regions.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<div class="tip admonition">
+<p class="admonition-title">Tip</p>
 <p>The improved max approximator is enabled by setting <code class="docutils literal notranslate"><span class="pre">use_improved_max_approximator</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code> in <code class="docutils literal notranslate"><span class="pre">Collisions</span></code>.</p>
 </div>
 <p>The corresponding discrete barrier potential is then simply</p>
@@ -2004,8 +2034,8 @@ Python</label></div>
 <p>The barrier stiffness (<span class="math notranslate nohighlight">\(\kappa\)</span>) then has units of pressure (e.g., <span class="math notranslate nohighlight">\(\text{Pa}\)</span>), the same as Young’s modulus (<span class="math notranslate nohighlight">\(E\)</span>) in elasticity.
 This implies we can get good solver convergence even when using a fixed <span class="math notranslate nohighlight">\(\kappa\)</span> by setting it relative to the material’s Young’s modulus (<span class="math notranslate nohighlight">\(\kappa = 0.1 E\)</span> works well in many examples).
 The intention is to treat the barrier as a thin elastic region around the mesh, and having consistent units makes it easier to pick the stiffness for this “material”.</p>
-<div class="note admonition">
-<p class="admonition-title">Note</p>
+<div class="tip admonition">
+<p class="admonition-title">Tip</p>
 <p>The physical barrier is enabled by setting <code class="docutils literal notranslate"><span class="pre">use_physical_barrier</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code> in <code class="docutils literal notranslate"><span class="pre">BarrierPotential</span></code>.</p>
 </div>
 <h2 id="friction"><span id="convergent-friction-formulation"></span>Friction<a class="headerlink" href="#friction" title="Link to this heading">¶</a></h2>
@@ -2068,7 +2098,7 @@ The intention is to treat the barrier as a thin elastic region around the mesh, 
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="getting_started.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Getting Started">
+          <a href="advanced_friction.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Advanced Friction">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2078,7 +2108,7 @@ The intention is to treat the barrier as a thin elastic region around the mesh, 
                 Previous
               </span>
               <div class="md-ellipsis">
-                Getting Started
+                Advanced Friction
               </div>
             </div>
           </a>

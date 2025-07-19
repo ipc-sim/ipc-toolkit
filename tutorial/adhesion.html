@@ -676,6 +676,30 @@
   
   
     <li class="md-nav__item">
+      <a href="advanced_friction.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorial/advanced_friction.rst (reference label)">Advanced Friction</span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="convergent.html" class="md-nav__link">
         
   
@@ -812,6 +836,16 @@
     
     <span class="md-ellipsis">
       <span title="/tutorial/adhesion.rst#id2 (reference label)">Derivatives</span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#separate-coefficients-for-static-and-kinetic-tangential-adhesion" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorial/adhesion.rst#separate-coefficients-for-static-and-kinetic-tangential-adhesion (reference label)">Separate Coefficients for Static and Kinetic Tangential Adhesion</span>
     </span>
   </a>
   
@@ -1938,6 +1972,16 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#separate-coefficients-for-static-and-kinetic-tangential-adhesion" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorial/adhesion.rst#separate-coefficients-for-static-and-kinetic-tangential-adhesion (reference label)">Separate Coefficients for Static and Kinetic Tangential Adhesion</span>
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2042,7 +2086,7 @@ Python</label></div>
 <p>The tangential adhesion potential models resistance to sliding (parallel to surfaces).</p>
 <p>It is structured similar to the friction model with a smooth transition between sticking and sliding and lagged normal forces and tangential bases.</p>
 <div class="math notranslate nohighlight">
-\[A_{t}(\mathbf{u}) = \sum_{k \in C} \mu_a \lambda_{k}^a f_{0}^a(\|\mathbf{T}_k^⊤ \mathbf{u}\|; \epsilon_a)\]</div>
+\[A_{t}(\mathbf{u}) = \sum_{k \in C} \mu_a \lambda_{k}^a f_{0}^a(\|\mathbf{T}_k^\top \mathbf{u}\|; \epsilon_a)\]</div>
 <p>where <span class="math notranslate nohighlight">\(C\)</span> is the lagged collisions, <span class="math notranslate nohighlight">\(\lambda_k^a\)</span> is the normal adhesion force magnitude for the <span class="math notranslate nohighlight">\(k\)</span>-th collision, <span class="math notranslate nohighlight">\(\mathbf{T}_k\)</span> is the tangential basis for the <span class="math notranslate nohighlight">\(k\)</span>-th collision, and <span class="math notranslate nohighlight">\(f_0^a\)</span> is the smooth tangential adhesion function used to approximate the non-smooth transition from sticking to sliding.</p>
 <p>For relative displacement magnitude <span class="math notranslate nohighlight">\(y\)</span>:</p>
 <div class="math notranslate nohighlight">
@@ -2051,6 +2095,12 @@ Python</label></div>
 \frac{4 \epsilon_a}{3} &amp; 2 \epsilon_a \leq y
 \end{cases}\end{split}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\epsilon_a\)</span> (<code class="docutils literal notranslate"><span class="pre">eps_a</span></code>) is the adhesion threshold (in units of displacement) used to smoothly transition from sticking to sliding.</p>
+<figure class="align-center" id="id3">
+<img alt="../_images/f0a.png" src="../_images/f0a.png" />
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+Tangential adhesion mollifier <span class="math notranslate nohighlight">\(f_0^a(y)\)</span> for <span class="math notranslate nohighlight">\(\epsilon_a = 0.001\)</span>.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></figcaption>
+</figure>
 <p>We can build a tangential adhesion potential object and compute the adhesion potential for a given set of tangential collisions.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="3:2">
 <input checked type="radio" id="__tabbed_3_1" name="__tabbed_3"><input type="radio" id="__tabbed_3_2" name="__tabbed_3"><div class="tabbed-labels docutils">
@@ -2098,7 +2148,51 @@ Python</label></div>
 </div>
 </div>
 </div>
+</div><figure class="align-center" id="id4">
+<img alt="../_images/f1a.png" src="../_images/f1a.png" />
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+Tangential adhesion force mollifier <span class="math notranslate nohighlight">\(f_1^a(y) = \frac{\mathrm{d}}{\mathrm{d}y} f_0^a(y)\)</span> for <span class="math notranslate nohighlight">\(\epsilon_a = 0.001\)</span>.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<h3 id="separate-coefficients-for-static-and-kinetic-tangential-adhesion">Separate Coefficients for Static and Kinetic Tangential Adhesion<a class="headerlink" href="#separate-coefficients-for-static-and-kinetic-tangential-adhesion" title="Link to this heading">¶</a></h3>
+<p>Similar to the friction model (see, <a class="reference external" href="advanced_friction.html#separate-coefficients-for-static-and-kinetic-friction">friction</a>), we can define separate coefficients for static (<code class="docutils literal notranslate"><span class="pre">mu_s</span></code>) and kinetic (<code class="docutils literal notranslate"><span class="pre">mu_k</span></code>) tangential adhesion.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2">
+<input checked type="radio" id="__tabbed_5_1" name="__tabbed_5"><input type="radio" id="__tabbed_5_2" name="__tabbed_5"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_5_1">
+C++</label><label class="tabbed-label" for="__tabbed_5_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipc</span><span class="o">::</span><span class="n">TangentialCollisions</span><span class="w"> </span><span class="n">tangential_collisions</span><span class="p">;</span>
+<span class="n">tangential_collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span>
+<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span>
+<span class="w">    </span><span class="n">mu_s</span><span class="p">,</span><span class="w"> </span><span class="n">mu_k</span><span class="p">);</span>
+</code></pre></div>
 </div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">tangential_collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">TangentialCollisions</span><span class="p">()</span>
+<span class="n">tangential_collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">barrier_stiffness</span><span class="p">,</span>
+    <span class="n">mu_s</span><span class="p">,</span> <span class="n">mu_k</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><p>The tangential adhesion force mollifier is then multiplied by the smooth coefficient of tangential adhesion:</p>
+<figure class="align-center" id="id5">
+<img alt="../_images/mu_f1a.png" src="../_images/mu_f1a.png" />
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+Smooth coefficient of tangential adhesion multiplied by the tangential adhesion mollifier <span class="math notranslate nohighlight">\(\mu(\|\mathbf{u}\|) f_1^a(\|\mathbf{u}\|)\)</span> where <span class="math notranslate nohighlight">\(\mu_s = 1\)</span>, <span class="math notranslate nohighlight">\(\mu_k = 0.1\)</span>, and <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<p>We integrate their product to obtain a smooth tangential adhesion mollifier:</p>
+<figure class="align-center" id="id6">
+<img alt="../_images/int_mu_f1a_dx.png" src="../_images/int_mu_f1a_dx.png" />
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+Integrated mollifier <span class="math notranslate nohighlight">\(\int \mu(y) f_1^a(y) \mathrm{d} y\)</span> where <span class="math notranslate nohighlight">\(\mu_s = 1\)</span>, <span class="math notranslate nohighlight">\(\mu_k = 0.1\)</span>, and <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></figcaption>
+</figure>
 
 
 
