@@ -108,8 +108,10 @@ Smooth :math:`\mu`
 When adding separate coefficients for static and kinetic friction, we need to maintain the :math:`C^1` continuity of the friction force. This lead us to define a smooth coefficient of friction :math:`\mu(y)` that transitions between the static and kinetic coefficients based on the magnitude of the relative velocity :math:`y = \|\mathbf{u}\|`. The smooth coefficient of friction is defined as
 
 .. math::
-    \mu(y) = \begin{cases} \mu_{s} + \left(\mu_{k} - \mu_{s}\right) \left(\frac{3 y^{2}}{\epsilon_{v}^{2}} - \frac{2 y^{3}}{\epsilon_{v}^{3}}\right) & \text{for}\: 0 \leq y \leq \epsilon_{v}\\
-        \mu_{k} & \text{otherwise}.
+    \mu(y) = \begin{cases}
+        2(\mu_{k} - \mu_{s})\frac{y^{2}}{\epsilon_{v}^{2}} + \mu_{s} & \text{for}\: y \leq \frac{\epsilon_{v}}{2} \\
+        -2(\mu_{k} - \mu_{s})\frac{\left(\epsilon_{v} - y\right)^{2}}{\epsilon_{v}^{2}} + \mu_k & \text{for}\: y \leq \epsilon_{v} \\
+        \mu_{k} & \text{for}\: y > \epsilon_{v}
     \end{cases}
 
 We plot the smooth coefficient of friction :math:`\mu(y)` below:
@@ -132,13 +134,9 @@ Replacing the constant coefficient of friction :math:`\mu` with a smooth functio
 However, :math:`\frac{\mathrm{d}}{\mathrm{d}y} \mu(y) f_0(y) \neq \mu(y) f_1(y)`, so we need to adjust the integrated mollifier by integrating the product of the smooth coefficient of friction and the mollifier:
 
 .. math::
-    \int \mu(y) f_1(y) \mathrm{d} y = \begin{cases}
-        \frac{\epsilon_{v}^{6} \left(17 \mu_{k} - 7 \mu_{s}\right) + 30 \epsilon_{v}^{4} \mu_{s} y^{2} - 10 \epsilon_{v}^{3} \mu_{s} y^{3} + 45 \epsilon_{v}^{2} \left(\mu_{k} - \mu_{s}\right) y^{4} + 42 \epsilon_{v} \left(- \mu_{k} + \mu_{s}\right) y^{5} + 10 \left(\mu_{k} - \mu_{s}\right) y^{6}}{30 \epsilon_{v}^{5}} & \text{for}\: \epsilon_{v} > y \\
-        \mu_{k} y & \text{otherwise}
-    \end{cases}.
-
-
-
+    \int \mu(y) f_1(y) \mathrm{d} y = \begin{cases} \frac{\frac{\epsilon_{v}^{5} \left(27 \mu_{k} - 11 \mu_{s}\right)}{48} + \epsilon_{v}^{3} \mu_{s} y^{2} - \frac{\epsilon_{v}^{2} \mu_{s} y^{3}}{3} + \epsilon_{v} y^{4} \left(\mu_{k} - \mu_{s}\right) + \frac{2 y^{5} \left(- \mu_{k} + \mu_{s}\right)}{5}}{\epsilon_{v}^{4}} & \text{for}\: y \leq \frac{\epsilon_{v}}{2} \\
+    \frac{\epsilon_{v}^{5} \left(9 \mu_{k} - 4 \mu_{s}\right) + 15 \epsilon_{v}^{3} y^{2} \left(- \mu_{k} + 2 \mu_{s}\right) + 5 \epsilon_{v}^{2} y^{3} \left(9 \mu_{k} - 10 \mu_{s}\right) - 30 \epsilon_{v} y^{4} \left(\mu_{k} - \mu_{s}\right) + 6 y^{5} \left(\mu_{k} - \mu_{s}\right)}{15 \epsilon_{v}^{4}} & \text{for}\: y \leq \epsilon_{v} \\
+    \mu_{k} y & \text{for}\: y > \epsilon_v \end{cases}
 
 The following plot shows the behavior of the integrated mollifier multiplied by the smooth coefficient of friction:
 
@@ -155,11 +153,10 @@ While this approach provides a smooth transition between static and kinetic fric
 1. The product :math:`\mu(y) f_1(y)` underestimates the friction force in the static regime, which may lead to less accurate simulations of static friction.
     - This is, when :math:`\mu_k < \mu_s` and :math:`|y| \leq \epsilon_v`, :math:`\max(\mu(y) f_1(y)) < \mu_s`.
     - We could address this by scaling by :math:`\frac{\max(\mu(y) f_1(y))}{\mu_s}`, but computing the maximum is non-trivial.
-2. The combined function :math:`\mu(y) f_1(y)` is a degree 5 polynomial, which is more complex than the original mollifier :math:`f_1(y)` (degree 2). This may lead to more difficult to optimize problems. There are two options to address this:
-    a. Replacing :math:`\mu(y)` with a piecewise quadratic function would reduce the degree to 4, but it would still be more complex than the original mollifier.
-    b. Replacing :math:`\mu(y) f_1(y)` with a piecewise quadratic function that has the desired behavior. This help with 1. as well. However making it backwards compatible with the original mollifier is challenging.
+2. The combined function :math:`\mu(y) f_1(y)` is a degree 4 polynomial, which is more complex than the original mollifier :math:`f_1(y)` (degree 2). This may lead to more difficult to optimize problems.
+    - We could replace :math:`\mu(y) f_1(y)` with a piecewise quadratic function that has the desired behavior. This help with (1) as well. However making it backwards compatible with the original mollifier is challenging.
 
-If you have suggestions for improving this approach or alternative methods, please reach out on our `GitHub Discussions <https://github.com/ipc-sim/ipc-toolkit/discussions>`.
+If you have suggestions for improving this approach or alternative methods, please reach out on our `GitHub Discussions <https://github.com/ipc-sim/ipc-toolkit/discussions>`_.
 
 Future Directions
 -----------------
