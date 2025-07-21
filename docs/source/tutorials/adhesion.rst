@@ -201,4 +201,4 @@ We integrate their product to obtain a smooth tangential adhesion mollifier:
 .. figure:: /_static/img/int_mu_f1a_dx.png
    :align: center
 
-   Integrated mollifier :math:`\int \mu(y) f_1^a(y) \mathrm{d} y` where :math:`\mu_s = 1`, :math:`\mu_k = 0.1`, and :math:`\epsilon_v = 0.001`.
+   Integrated mollifier :math:`\int \mu(y) f_1^a(y) \mathrm{d} y` where :math:`y=\|\mathbf{u}\|`, :math:`\mu_s = 1`, :math:`\mu_k = 0.1`, and :math:`\epsilon_v = 0.001`.
