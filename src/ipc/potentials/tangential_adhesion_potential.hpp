@@ -25,10 +25,33 @@ public:
     }
 
 protected:
-    double f0(const double x) const override;
-    double f1_over_x(const double x) const override;
-    double f2_x_minus_f1_over_x3(const double x) const override;
+    /// @brief Compute the value of the ∫ μ(y) f₁(y) dy, where f₁ is the first derivative of the smooth mollifier.
+    /// @param x The tangential relative speed.
+    /// @param mu_s Coefficient of static adhesion.
+    /// @param mu_k Coefficient of kinetic adhesion.
+    /// @return The value of the integral at x.
+    double
+    mu_f0(const double x, const double mu_s, const double mu_k) const override;
 
+    /// @brief Compute the value of the [μ(y) f₁(y)] / x, where f₁ is the first derivative of the smooth mollifier.
+    /// @param x The tangential relative speed.
+    /// @param mu_s Coefficient of static adhesion.
+    /// @param mu_k Coefficient of kinetic adhesion.
+    /// @return The value of the product at x.
+    double mu_f1_over_x(
+        const double x, const double mu_s, const double mu_k) const override;
+
+    /// @brief Compute the value of [(d/dx (μ(y) f₁(y))) x - μ(y) f₁(y)] / x³, where f₁ is the first derivative of the smooth mollifier.
+    /// @param x The tangential relative speed.
+    /// @param mu_s Coefficient of static adhesion.
+    /// @param mu_k Coefficient of kinetic adhesion.
+    /// @return The value of the derivative at x.
+    double mu_f2_x_minus_mu_f1_over_x3(
+        const double x, const double mu_s, const double mu_k) const override;
+
+    /// @brief Check if the potential is dynamic.
+    /// @param speed The tangential relative speed.
+    /// @return True if the potential is dynamic, false otherwise.
     bool is_dynamic(const double speed) const override
     {
         return speed > eps_a();

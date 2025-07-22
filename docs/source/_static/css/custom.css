@@ -1,9 +1,24 @@
+:root [data-md-color-scheme="slate"] {
+    --md-default-bg-color: #2e303e;
+}
+
+/* justify and slightly decrease spacing */
+p,
+ul,
+li {
+    line-height: 1.25;
+}
+
 .md-grid {
     max-width: max(1250px, 75vw) !important;
 }
 
 span.colon {
     margin-left: -1em;
+}
+
+dl.cpp {
+    font-size: 0.64rem;
 }
 
 dl.cpp.objdesc,
@@ -17,6 +32,7 @@ dl.py.objdesc {
 
 dl.cpp.objdesc>dt,
 dl.py.objdesc>dt {
+    font-size: 0.64rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
 }
@@ -52,36 +68,3 @@ dl.py.objdesc>dd>details.toggle-details>summary>svg.tb-icon {
 table.autosummary {
     font-size: 0.75rem !important;
 }
-
-/* .breatheparameterlist li tt + p {
-    display: inline;
-  }
-
-dd.field-odd {
-    padding: 0 !important;;
-    margin: 0 !important;;
-}
-
-dl.api-field {
-width: 100%;
-overflow: hidden;
-}
-
-dl.api-field > dt {
-float: left;
-width: 60%;
-padding: 0;
-margin: 10px;
-}
-
-dl.api-field > dd {
-float: left;
-width: calc(40%-10px);
-padding: 0 !important;
-margin: 0 !important;
-}
-
-dl.api-field > dd > p {
-padding: 0 !important;
-margin: 0 !important;
-} */

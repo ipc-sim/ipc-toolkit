@@ -12,7 +12,7 @@ public:
         Eigen::ConstRef<VectorMax3d> plane_normal,
         const index_t vertex_id);
 
-    int num_vertices() const override { return 1; };
+    int num_vertices() const override { return 1; }
 
     std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
@@ -74,6 +74,19 @@ public:
 
     /// @brief The vertex's id.
     index_t vertex_id;
+
+protected:
+    /// @brief Compute the normal vector of the stencil.
+    /// @param positions Vertex positions.
+    /// @return Normal vector of the stencil.
+    VectorMax3d compute_unnormalized_normal(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
+
+    /// @brief Compute the Jacobian of the normal vector of the stencil.
+    /// @param positions Vertex positions.
+    /// @return Jacobian of the normal vector of the stencil.
+    MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 };
 
 } // namespace ipc

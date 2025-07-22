@@ -663,6 +663,7 @@ src/ipc/config.hpp
 tests/src/tests/config.hpp
 
 docs/_doxygen
+!docs/source/build
 
 notebooks/*.[ch]pp
 python/update_bindings.py

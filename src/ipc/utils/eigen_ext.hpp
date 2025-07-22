@@ -13,23 +13,48 @@ template <typename T> using ConstRowRef = const RowRef<const T>&;
 
 namespace ipc {
 
-// Boolean scalar
+/**
+ * \defgroup eigen_ext Eigen Extensions
+ * \brief Extensions to Eigen types for IPC.
+ * @{
+ */
+
+/// @brief An array of boolean scalars
 using ArrayXb = Eigen::Array<bool, Eigen::Dynamic, 1>;
+/// @brief A Vector of boolean scalars
 using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+/// @brief A Vector of boolean scalars with a fixed size of 3x1
 using Vector3b = Eigen::Matrix<bool, 3, 1>;
+/// @brief A dynamic size matrix of boolean scalars
 using MatrixXb = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
 
+/// @brief A dynamic size vector with a fixed maximum size.
+/// @tparam T The type of the vector elements.
+/// @tparam dim The size of the vector.
+/// @tparam max_dim The maximum size of the vector.
 template <typename T, int dim, int max_dim = dim>
 using Vector = Eigen::Matrix<T, dim, 1, Eigen::ColMajor, max_dim, 1>;
+
+/// @brief A dynamic size row vector with a fixed maximum size.
+/// @tparam T The type of the vector elements.
+/// @tparam dim The size of the vector.
+/// @tparam max_dim The maximum size of the vector.
 template <typename T, int dim, int max_dim = dim>
 using RowVector = Eigen::Matrix<T, 1, dim, Eigen::RowMajor, 1, max_dim>;
 
+/// @brief A static size matrix of size of 1×1
 using Vector1d = Eigen::Vector<double, 1>;
+/// @brief A static size matrix of size of 6×1
 using Vector6d = Eigen::Vector<double, 6>;
+/// @brief A static size matrix of size of 9×1
 using Vector9d = Eigen::Vector<double, 9>;
+/// @brief A static size matrix of size of 12×1
 using Vector12d = Eigen::Vector<double, 12>;
+/// @brief A static size matrix of size of 6×6
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
+/// @brief A static size matrix of size of 9×9
 using Matrix9d = Eigen::Matrix<double, 9, 9>;
+/// @brief A static size matrix of size of 12×12
 using Matrix12d = Eigen::Matrix<double, 12, 12>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1
@@ -137,6 +162,20 @@ using ArrayMax4d = ArrayMax4<double>;
 /// @brief A dynamic size array with a fixed maximum size of 4×1
 using ArrayMax4i = ArrayMax4<int>;
 
+/**@}*/
+
+/// @brief Cross product matrix for 3D vectors.
+/// @param v Vector to create the cross product matrix for.
+/// @return The cross product matrix of the vector.
+inline Eigen::Matrix3d cross_product_matrix(Eigen::ConstRef<Eigen::Vector3d> v)
+{
+    Eigen::Matrix3d m;
+    m << 0, -v(2), v(1), //
+        v(2), 0, -v(0),  //
+        -v(1), v(0), 0;
+    return m;
+}
+
 /// @brief Matrix projection onto positive definite cone
 /// @param A Symmetric matrix to project
 /// @param eps Minimum eigenvalue threshold
@@ -176,6 +215,9 @@ project_to_psd(
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
     const PSDProjectionMethod method = PSDProjectionMethod::CLAMP);
 
+/// @brief Convert a 2D or 3D vector to a 3D vector.
+/// @param v Vector to convert, can be 2D or 3D.
+/// @return Converted 3D vector. If 2D, the z-component is set to 0.
 inline Eigen::Vector3d to_3D(Eigen::ConstRef<VectorMax3d> v)
 {
     assert(v.size() == 2 || v.size() == 3);

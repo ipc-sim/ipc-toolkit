@@ -25,7 +25,7 @@ public:
     /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
     /// @param vertices Vertices of the collision mesh.
-    /// @throws std::runtime_error If the collision collisions were not built with shape derivatives enabled.
+    /// @throw std::runtime_error If the collision collisions were not built with shape derivatives enabled.
     /// @returns The derivative of the force with respect to X, the rest vertices.
     Eigen::SparseMatrix<double> shape_derivative(
         const NormalCollisions& collisions,

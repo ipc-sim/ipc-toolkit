@@ -15,6 +15,7 @@ namespace ipc {
 
 class Candidates; // Forward declaration
 
+/// @brief Base class for broad phase collision detection methods.
 class BroadPhase {
 public:
     virtual ~BroadPhase() { clear(); }

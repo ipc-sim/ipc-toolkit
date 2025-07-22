@@ -5,7 +5,7 @@ repos:
       - id: clang-format
         name: clang-format
         description: "Use clang-format to format C/C++ code"
-        entry: clang-format-18
+        entry: clang-format-20
         args:
           - --style=file
           - --verbose

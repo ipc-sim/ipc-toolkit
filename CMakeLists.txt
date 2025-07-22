@@ -62,7 +62,7 @@ cmake_policy(SET CMP0114 NEW) # Support the Xcode "new build system"
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX
-        VERSION "1.4.0")
+        VERSION "1.5.0")
 
 include(CheckLanguage)
 check_language(CUDA)

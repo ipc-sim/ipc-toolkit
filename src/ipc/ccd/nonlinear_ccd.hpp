@@ -34,12 +34,15 @@ public:
     using NonlinearTrajectory::operator();
 
     /// @brief Compute the point's position over a time interval t
+    /// @param[in] t The time interval
+    /// @return The point's position at time t as an interval
     virtual VectorMax3I operator()(const filib::Interval& t) const = 0;
 
     /// @brief Compute the maximum distance from the nonlinear trajectory to a linearized trajectory
     /// @note This uses interval arithmetic to compute the maximum distance. If you know a tighter bound on the maximum distance, it is recommended to override this function.
     /// @param[in] t0 Start time of the trajectory
     /// @param[in] t1 End time of the trajectory
+    /// @return The maximum distance from the nonlinear trajectory to a linearized trajectory
     virtual double
     max_distance_from_linear(const double t0, const double t1) const;
 };
@@ -90,6 +93,7 @@ bool point_edge_nonlinear_ccd(
         TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
 /// @brief Perform nonlinear CCD between two linear edges moving along nonlinear trajectories.
+/// @ingroup ccd
 /// @param[in] ea0 First edge's first endpoint's trajectory
 /// @param[in] ea1 First edge's second endpoint's trajectory
 /// @param[in] eb0 Second edge's first endpoint's trajectory
@@ -147,7 +151,7 @@ bool point_triangle_nonlinear_ccd(
 /// @param[in] tmax Maximum time to check for collision.
 /// @param[in] min_distance Minimum separation distance between the objects.
 /// @param[in] conservative_rescaling Conservative rescaling of the time of impact.
-/// @return
+/// @return True if a collision was detected, false otherwise.
 bool conservative_piecewise_linear_ccd(
     const std::function<double(const double)>& distance,
     const std::function<double(const double, const double)>&

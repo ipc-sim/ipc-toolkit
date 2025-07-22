@@ -10,6 +10,7 @@
 
 namespace ipc {
 
+/// @brief Sweep and Tiniest Queue broad phase collision detection.
 class SweepAndTiniestQueue : public BroadPhase {
 public:
     SweepAndTiniestQueue() = default;

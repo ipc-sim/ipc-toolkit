@@ -38,7 +38,7 @@ pip install git+https://github.com/ipc-sim/ipc-toolkit
 
 ## Help/Documentation
 
-* A tutorial on how to use the toolkit can be found [here](https://ipctk.xyz/tutorial/getting_started.html).
+* Tutorials on how to use the toolkit can be found [here](https://ipctk.xyz/tutorials/getting_started.html).
 * A function reference can be found [here](https://ipctk.xyz/python.html).
 
 ## Contributing

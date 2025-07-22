@@ -9,6 +9,7 @@
 
 namespace ipc {
 
+/// @brief A candidate for vertex-vertex collision detection.
 class VertexVertexCandidate : virtual public CollisionStencil {
 public:
     VertexVertexCandidate(index_t vertex0_id, index_t vertex1_id);
@@ -76,6 +77,13 @@ public:
     index_t vertex0_id;
     /// @brief ID of the second vertex
     index_t vertex1_id;
+
+protected:
+    VectorMax3d compute_unnormalized_normal(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
+
+    MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 };
 
 } // namespace ipc

@@ -313,10 +313,10 @@ public:
 };
 
 // ============================================================================
-// 2-Stage activation function from [Chen et al. 2024]
+// 2-Stage activation function from [Chen et al. 2025]
 // ============================================================================
 
-/// @brief Cubic barrier function from [Chen et al. 2024].
+/// @brief 2-Stage activation function from [Chen et al. 2025].
 class TwoStageBarrier : public Barrier {
 public:
     TwoStageBarrier() = default;

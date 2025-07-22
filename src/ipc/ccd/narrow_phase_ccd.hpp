@@ -4,6 +4,7 @@
 
 namespace ipc {
 
+/// @brief Narrow Phase Continuous Collision Detection (CCD) interface.
 class NarrowPhaseCCD {
 public:
     NarrowPhaseCCD() = default;

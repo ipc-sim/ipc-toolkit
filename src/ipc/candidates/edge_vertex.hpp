@@ -9,6 +9,7 @@
 
 namespace ipc {
 
+/// @brief A candidate for edge-vertex collision detection.
 class EdgeVertexCandidate : virtual public CollisionStencil {
 public:
     EdgeVertexCandidate(index_t edge_id, index_t vertex_id);
@@ -79,6 +80,13 @@ public:
     index_t edge_id;
     /// @brief ID of the vertex
     index_t vertex_id;
+
+protected:
+    VectorMax3d compute_unnormalized_normal(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
+
+    MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 };
 
 } // namespace ipc

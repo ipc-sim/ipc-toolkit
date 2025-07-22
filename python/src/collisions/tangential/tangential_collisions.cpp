@@ -18,28 +18,38 @@ void define_tangential_collisions(py::module_& m)
             "normal_stiffness"_a, "mu"_a)
         .def(
             "build",
+            py::overload_cast<
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+                const NormalCollisions&, const NormalPotential&, double, double,
+                double>(&TangentialCollisions::build),
+            "mesh"_a, "vertices"_a, "collisions"_a, "normal_potential"_a,
+            "normal_stiffness"_a, "mu_s"_a, "mu_k"_a)
+        .def(
+            "build",
             [](TangentialCollisions& self, const CollisionMesh& mesh,
                Eigen::ConstRef<Eigen::MatrixXd> vertices,
                const NormalCollisions& collisions,
                const NormalPotential& normal_potential,
                const double normal_stiffness,
-               Eigen::ConstRef<Eigen::VectorXd> mus) {
+               Eigen::ConstRef<Eigen::VectorXd> mu_s,
+               Eigen::ConstRef<Eigen::VectorXd> mu_k) {
                 self.build(
                     mesh, vertices, collisions, normal_potential,
-                    normal_stiffness, mus);
+                    normal_stiffness, mu_s, mu_k);
             },
             "mesh"_a, "vertices"_a, "collisions"_a, "normal_potential"_a,
-            "normal_stiffness"_a, "mus"_a)
+            "normal_stiffness"_a, "mu_s"_a, "mu_k"_a)
         .def(
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
                 const NormalCollisions&, const NormalPotential&, const double,
                 Eigen::ConstRef<Eigen::VectorXd>,
+                Eigen::ConstRef<Eigen::VectorXd>,
                 const std::function<double(double, double)>&>(
                 &TangentialCollisions::build),
             "mesh"_a, "vertices"_a, "collisions"_a, "normal_potential"_a,
-            "normal_stiffness"_a, "mus"_a, "blend_mu"_a)
+            "normal_stiffness"_a, "mu_s"_a, "mu_k"_a, "blend_mu"_a)
         .def(
             "__len__", &TangentialCollisions::size,
             "Get the number of friction collisions.")

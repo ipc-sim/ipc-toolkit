@@ -44,6 +44,19 @@ VectorMax4d PlaneVertexNormalCollision::compute_coefficients(
     return coeffs;
 }
 
+VectorMax3d PlaneVertexNormalCollision::compute_unnormalized_normal(
+    Eigen::ConstRef<VectorMax12d> positions) const
+{
+    return plane_normal;
+}
+
+MatrixMax<double, 3, 12>
+PlaneVertexNormalCollision::compute_unnormalized_normal_jacobian(
+    Eigen::ConstRef<VectorMax12d> positions) const
+{
+    return MatrixMax<double, 3, 12>::Zero(positions.size(), positions.size());
+}
+
 bool PlaneVertexNormalCollision::ccd(
     Eigen::ConstRef<VectorMax12d> vertices_t0,
     Eigen::ConstRef<VectorMax12d> vertices_t1,

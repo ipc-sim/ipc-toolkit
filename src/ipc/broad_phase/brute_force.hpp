@@ -4,6 +4,7 @@
 
 namespace ipc {
 
+/// @brief Brute force broad phase collision detection.
 class BruteForce : public BroadPhase {
 public:
     BruteForce() = default;

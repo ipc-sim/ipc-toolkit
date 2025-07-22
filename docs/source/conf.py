@@ -101,7 +101,7 @@ breathe_default_members = (
     "private-members",
 )
 breathe_show_define_initializer = True
-# breathe_show_include = True
+breathe_show_include = True
 
 autodoc_default_options = {
     "members": True,
@@ -175,25 +175,21 @@ html_theme_options = {
     "repo_name": "ipc-sim/ipc-toolkit",
     "icon": {"repo": "fontawesome/brands/github"},
 
-    "edit_uri": "blob/main/docs/source",
-
     "features": [
-        "navigation.expand",
+        "content.tabs.link",
+        "navigation.footer",
         "navigation.tabs",
         "navigation.top",
         "navigation.tracking",
         "search.highlight",
         "search.share",
         "toc.follow",
-        "content.tabs.link"
     ],
 
     "font": {
         "text": "Roboto",  # used for all the pages' text
         "code": "Roboto Mono"  # used for literal code blocks
     },
-
-    "toc_title": "Contents",
 
     "version_dropdown": True,
     "version_json": "https://ipctk.xyz/versions.json",

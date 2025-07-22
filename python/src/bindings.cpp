@@ -86,6 +86,7 @@ PYBIND11_MODULE(ipctk, m)
 
     // friction
     define_smooth_friction_mollifier(m);
+    define_smooth_mu(m);
 
     // implicits
     define_plane_implicit(m);

@@ -12,14 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.0.0
+        uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 10
 
       - name: Set up Python
-        uses: actions/setup-python@v5.1.1
+        uses: actions/setup-python@v5.6.0
         with:
-          python-version: "3.10"
+          python-version: "3.13"
 
       - name: Requirements
         run: |
@@ -43,31 +43,54 @@ jobs:
           ccache -V && ccache --show-config
           ccache --show-stats && ccache --zero-stats
 
-      - name: Build release docs
+      # - name: Build release docs
+      #   run: |
+      #     HEAD=$(git rev-parse HEAD)
+      #     git fetch --all --tags
+      #     cd docs
+      #     for version in $(git tag -l); do
+      #         echo "Processing $version:"
+      #         git checkout $version
+
+      #         # Fix links
+      #         grep -rli 'url = {https://ipc-sim.github.io/ipc-toolkit/}' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit\//github.com\/ipc-sim\/ipc-toolkit/g' @
+      #         grep -rli 'ipc-sim.github.io/ipc-toolkit' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit/ipctk.xyz/g' @
+
+      #         pip install --force-reinstall -v "ipctk==$version"
+      #         sphinx-build source build/html/$version \
+      #           -D html_theme_options.version_dropdown=true \
+      #           -D html_theme_options.version_json=https://ipctk.xyz/versions.json
+
+      #         # Discard changes
+      #         git reset --hard
+      #     done
+      #     pip uninstall -y ipctk
+      #     git checkout $HEAD
+      #     cp source/_static/versions.json build/html/
+      #     # Copy the custom.css to each version's build
+      #     for version in $(git tag -l); do
+      #         cp source/_static/css/custom.css build/html/$version/_static/css/
+      #     done
+      #     cd ..
+
+      - name: Copy release docs
         run: |
-          HEAD=$(git rev-parse HEAD)
           git fetch --all --tags
-          cd docs
+
+          # Checkout the versioned docs from the gh-pages branch
+          git checkout origin/gh-pages -- 'v*'
+
+          # Move the versioned docs to the build directory
+          mkdir -p docs/build/html
+          mv v* docs/build/html/
+
+          # Copy the custom.css to each version's build
           for version in $(git tag -l); do
-              echo "Processing $version:"
-              git checkout $version
-
-              # Fix links
-              grep -rli 'url = {https://ipc-sim.github.io/ipc-toolkit/}' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit\//github.com\/ipc-sim\/ipc-toolkit/g' @
-              grep -rli 'ipc-sim.github.io/ipc-toolkit' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit/ipctk.xyz/g' @
-
-              pip install --force-reinstall -v "ipctk==$version"
-              sphinx-build source build/html/$version \
-                -D html_theme_options.version_dropdown=true \
-                -D html_theme_options.version_json=https://ipctk.xyz/versions.json
-
-              # Discard changes
-              git reset --hard
+              cp docs/source/_static/css/custom.css docs/build/html/$version/_static/css/
           done
-          pip uninstall -y ipctk
-          git checkout $HEAD
-          cp source/_static/versions.json build/html/
-          cd ..
+
+          # Copy versions.json to the root of the build
+          cp docs/source/_static/versions.json docs/build/html/
 
       - name: Build ipctk
         run: |
