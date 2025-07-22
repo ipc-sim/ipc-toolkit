@@ -74,6 +74,19 @@ public:
 
     /// @brief The vertex's id.
     index_t vertex_id;
+
+protected:
+    /// @brief Compute the normal vector of the stencil.
+    /// @param positions Vertex positions.
+    /// @return Normal vector of the stencil.
+    VectorMax3d compute_unnormalized_normal(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
+
+    /// @brief Compute the Jacobian of the normal vector of the stencil.
+    /// @param positions Vertex positions.
+    /// @return Jacobian of the normal vector of the stencil.
+    MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 };
 
 } // namespace ipc

@@ -83,6 +83,13 @@ public:
     index_t face_id;
     /// @brief ID of the vertex
     index_t vertex_id;
+
+protected:
+    VectorMax3d compute_unnormalized_normal(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
+
+    MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 };
 
 } // namespace ipc
