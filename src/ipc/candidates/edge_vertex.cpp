@@ -102,8 +102,6 @@ EdgeVertexCandidate::compute_unnormalized_normal_jacobian(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     const int dim = this->dim(positions.size());
-    assert(dim == 3);
-
     if (dim == 2) {
         // In 2D, the normal is simply the perpendicular vector to the edge
         MatrixMax<double, 3, 12> dn(2, 6);
