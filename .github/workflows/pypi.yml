@@ -33,16 +33,16 @@ jobs:
         arch:
           # - x86_64
           - arm64
-        exclude:
-          - os: ubuntu-latest
-            arch: arm64
-          - os: windows-latest
-            arch: arm64
+        # exclude:
+        #   - os: ubuntu-latest
+        #     arch: arm64
+        #   - os: windows-latest
+        #     arch: arm64
         include:
-          - os: ubuntu-latest
-            name: Linux
-          - os: windows-latest
-            name: Windows
+          # - os: ubuntu-latest
+          #   name: Linux
+          # - os: windows-latest
+          #   name: Windows
           - os: macOS-latest
             name: macOS
 
