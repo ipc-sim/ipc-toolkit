@@ -15,6 +15,10 @@ on:
       - 'pyproject.toml'
       - 'setup.py'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   Build:
     name: ${{ matrix.name }} Python ${{ matrix.python-version }}
