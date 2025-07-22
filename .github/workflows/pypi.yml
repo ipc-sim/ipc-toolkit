@@ -37,10 +37,10 @@ jobs:
             name: macOS
 
     steps:
-      - uses: actions/checkout@v4.0.0
+      - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v3
         # to supply options, put them in 'env', like:
         env:
           MACOSX_DEPLOYMENT_TARGET: "11.0"
@@ -49,7 +49,7 @@ jobs:
           CIBW_BUILD: ${{ matrix.python-version }}-*
           CIBW_SKIP: "cp36-* cp37-* cp38-* pp* *musllinux* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
 
@@ -57,12 +57,12 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.0.0
+      - uses: actions/checkout@v4
 
       - name: Build sdist
         run: pipx run build --sdist
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: dist/*.tar.gz
 
@@ -75,14 +75,14 @@ jobs:
     # alternatively, to publish when a GitHub Release is created, use the following rule:
     # if: github.event_name == 'release' && github.event.action == 'published'
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           # unpacks default artifact into dist/
           # if `name: artifact` is omitted, the action will create extra parent dir
           name: artifact
           path: dist
 
-      - uses: pypa/gh-action-pypi-publish@v1.8.1
+      - uses: pypa/gh-action-pypi-publish@v1.12.4
         with:
           user: __token__
           # To test:
