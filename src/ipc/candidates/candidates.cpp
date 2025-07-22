@@ -389,6 +389,71 @@ Eigen::VectorXd Candidates::compute_per_vertex_safe_distances(
     return result;
 }
 
+// Eigen::VectorXd Candidates::compute_per_vertex_collision_free_stepsize(
+//     const CollisionMesh& mesh,
+//     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+//     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+//     const double min_distance,
+//     const NarrowPhaseCCD& narrow_phase_ccd) const
+// {
+//     // Initialize atomic step size for each vertex
+//     std::vector<std::atomic<double>> max_step(mesh.num_vertices());
+//     for (size_t i = 0; i < mesh.num_vertices(); ++i) {
+//         max_step[i].store(1.0, std::memory_order_relaxed);
+//     }
+
+//     tbb::parallel_for(
+//         tbb::blocked_range<size_t>(0, size()),
+//         [&](const tbb::blocked_range<size_t>& r) {
+//             for (size_t i = r.begin(); i < r.end(); i++) {
+//                 const CollisionStencil& candidate = (*this)[i];
+//                 const auto vertex_ids =
+//                     candidate.vertex_ids(mesh.edges(), mesh.faces());
+
+//                 double tmax = 1.0;
+//                 for (const index_t vid : vertex_ids) {
+//                     if (vid < 0) {
+//                         break; // No more vertices in this candidate
+//                     }
+//                     // Get the maximum time of impact for this vertex
+//                     tmax = std::min(
+//                         tmax, max_step[vid].load(std::memory_order_relaxed));
+//                 }
+
+//                 double toi;
+//                 const bool collides = candidate.ccd(
+//                     candidate.dof(vertices_t0, mesh.edges(), mesh.faces()),
+//                     candidate.dof(vertices_t1, mesh.edges(), mesh.faces()),
+//                     toi, min_distance, tmax, narrow_phase_ccd);
+
+//                 if (collides) {
+//                     // Compute the distance for each vertex in the candidate
+//                     for (const index_t vid : vertex_ids) {
+//                         if (vid < 0) {
+//                             break; // No more vertices in this candidate
+//                         }
+//                         // Update the max_step atomically
+//                         double old_val =
+//                             max_step[vid].load(std::memory_order_relaxed);
+//                         while (toi < old_val
+//                                && !max_step[vid].compare_exchange_weak(
+//                                    old_val, toi, std::memory_order_relaxed))
+//                                    { }
+//                     }
+//                 }
+//             }
+//         });
+
+//     // Convert atomic distances to a vector
+//     Eigen::VectorXd result(mesh.num_vertices());
+//     for (size_t i = 0; i < mesh.num_vertices(); ++i) {
+//         result[i] = max_step[i].load(std::memory_order_relaxed);
+//     }
+//     assert((result.array() >= 0).all());
+
+//     return result;
+// }
+
 // ============================================================================
 
 size_t Candidates::size() const

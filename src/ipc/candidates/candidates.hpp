@@ -125,6 +125,21 @@ public:
         const double inflation_radius,
         const double min_distance = 0.0) const;
 
+    /// @brief Compute the maximum distance every vertex can move (independently) without colliding with any other element.
+    /// @note Cap the value at one.
+    /// @param mesh The collision mesh.
+    /// @param vertices_t0 Surface vertex starting positions (rowwise).
+    /// @param vertices_t1 Surface vertex ending positions (rowwise).
+    /// @param min_distance The minimum distance allowable between any two elements.
+    /// @return A vector of values in [0, 1], one for each vertex.
+    // Eigen::VectorXd compute_per_vertex_collision_free_stepsize(
+    //     const CollisionMesh& mesh,
+    //     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    //     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+    //     const double min_distance = 0.0,
+    //     const NarrowPhaseCCD& narrow_phase_ccd =
+    //         DEFAULT_NARROW_PHASE_CCD) const;
+
     // == Convert to subelement candidates ====================================
 
     /// @brief Convert edge-vertex candidates to vertex-vertex candidates.
