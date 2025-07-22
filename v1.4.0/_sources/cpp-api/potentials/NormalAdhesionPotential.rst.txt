@@ -1,0 +1,4 @@
+NormalAdhesionPotential
+========================
+
+.. doxygenclass:: ipc::NormalAdhesionPotential

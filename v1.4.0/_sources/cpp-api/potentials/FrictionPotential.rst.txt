@@ -1,0 +1,4 @@
+FrictionPotential
+=================
+
+.. doxygenclass:: ipc::FrictionPotential
