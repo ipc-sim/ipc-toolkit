@@ -47,10 +47,11 @@ jobs:
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: ${{ matrix.arch }}
           CIBW_BUILD: ${{ matrix.python-version }}-*
-          CIBW_SKIP: "cp36-* cp37-* cp38-* pp* *musllinux* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
+          CIBW_SKIP: "cp38-* pp* *musllinux* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
 
       - uses: actions/upload-artifact@v4
         with:
+          name: wheelhouse-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.arch }}
           path: ./wheelhouse/*.whl
 
   build_sdist:
@@ -64,6 +65,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
+          name: sdist
           path: dist/*.tar.gz
 
   upload_pypi:
@@ -75,11 +77,18 @@ jobs:
     # alternatively, to publish when a GitHub Release is created, use the following rule:
     # if: github.event_name == 'release' && github.event.action == 'published'
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download wheels
+        uses: actions/download-artifact@v4
         with:
-          # unpacks default artifact into dist/
-          # if `name: artifact` is omitted, the action will create extra parent dir
-          name: artifact
+          pattern: wheelhouse-*
+          merge-multiple: true
+          path: dist
+
+      - name: Download source distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          merge-multiple: true
           path: dist
 
       - uses: pypa/gh-action-pypi-publish@v1.12.4z
