@@ -98,17 +98,6 @@ VectorMax3d FaceVertexCandidate::compute_unnormalized_normal(
         .cross(positions.tail<3>() - positions.segment<3>(3));
 }
 
-namespace {
-    inline Eigen::Matrix3d cross_mat(const Eigen::Vector3d& v)
-    {
-        Eigen::Matrix3d m;
-        m << 0, -v(2), v(1), //
-            v(2), 0, -v(0),  //
-            -v(1), v(0), 0;
-        return m;
-    }
-} // namespace
-
 MatrixMax<double, 3, 12>
 FaceVertexCandidate::compute_unnormalized_normal_jacobian(
     Eigen::ConstRef<VectorMax12d> positions) const
@@ -117,11 +106,11 @@ FaceVertexCandidate::compute_unnormalized_normal_jacobian(
     MatrixMax<double, 3, 12> dn(3, 12);
     dn.leftCols<3>().setZero();
     dn.middleCols<3>(3) =
-        cross_mat(positions.tail<3>() - positions.segment<3>(6));
+        cross_product_matrix(positions.tail<3>() - positions.segment<3>(6));
     dn.middleCols<3>(6) =
-        cross_mat(positions.segment<3>(3) - positions.tail<3>());
+        cross_product_matrix(positions.segment<3>(3) - positions.tail<3>());
     dn.rightCols<3>() =
-        cross_mat(positions.segment<3>(6) - positions.segment<3>(3));
+        cross_product_matrix(positions.segment<3>(6) - positions.segment<3>(3));
     return dn;
 }
 
