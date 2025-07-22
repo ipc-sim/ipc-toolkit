@@ -6,6 +6,115 @@ Release Notes
 .. role:: cmake(code)
    :language: cmake
 
+v1.4.0 (July 22, 2025)
+----------------------
+
+Highlights
+~~~~~~~~~~
+
+- Add adhesion potentials for sticky interactions, allowing for more realistic simulations of contact between objects.
+
+  - Based on the paper "Augmented Incremental Potential Contact for Sticky Interactions" by :cite:t:`Fang2023AugmentedStickyInteractions`
+
+- Implement new barrier functions from the literature.
+
+  - :cpp:class:`ipc::NormalizedClampedLogBarrier`: unit-less clamped log barrier function.
+  - :cpp:class:`ipc::ClampedLogSqBarrier`: clamped log barrier with a quadratic log term from :cite:`Huang2024GIPC`
+  - :cpp:class:`ipc::CubicBarrier`: cubic barrier function from :cite:`Ando2024Cubic`
+
+- Add support for separate static and kinetic coefficients in tangential collisions.
+
+What's Changed
+~~~~~~~~~~~~~~
+
+- Adhesion in `#85 <https://github.com/ipc-sim/ipc-toolkit/pull/85>`_
+
+  - Implement the adhesion potentials from "Augmented Incremental Potential Contact for Sticky Interactions" :cite:t:`Fang2023AugmentedStickyInteractions`
+  - Files moved from `ipc/friction <https://github.com/ipc-sim/ipc-toolkit/tree/v1.3.1/src/ipc/friction>`_ to generic `ipc/tangential <https://github.com/ipc-sim/ipc-toolkit/tree/v1.4.0/src/ipc/tangential>`_ and `ipc/collisions/tangential <https://github.com/ipc-sim/ipc-toolkit/tree/v1.4.0/src/ipc/collisions/tangential>`_ folders.
+  - Renamed ``Collision`` classes to :cpp:class:`ipc::NormalCollision`
+  - Renamed ``FrictionCollision`` classes to :cpp:class:`ipc::TangentialCollision`
+  - Renamed ``DistanceBasedPotential`` to :cpp:class:`ipc::NormalPotential`
+
+    - Added :cpp:func:`ipc::NormalPotential::force_magnitude` and :cpp:func:`ipc::NormalPotential::force_magnitude_gradient` methods
+
+  - Added :cpp:class:`ipc::TangentialPotential` parent class to :cpp:class:`ipc::FrictionPotential` and :cpp:class:`ipc::TangentialAdhesionPotential`
+  - `Tutorial <https://ipctk.xyz/tutorials/adhesion.html>`_ added by `@antoinebou12 <https://github.com/antoinebou12>`_ in `#144 <https://github.com/ipc-sim/ipc-toolkit/pull/144>`_
+  - Use normal potential in tangential collisions by `@maxpaik16 <https://github.com/maxpaik16>`_ in `#142 <https://github.com/ipc-sim/ipc-toolkit/pull/142>`_
+
+    - Replaces the ``const BarrierPotential&`` parameter with a ``const NormalPotential&``
+    - This allows tangential adhesion to be properly set up in simulation.
+
+- Add :cpp:class:`ipc::NormalizedClampedLogBarrier` in `#143 <https://github.com/ipc-sim/ipc-toolkit/pull/143>`_
+- Add :cpp:member:`ipc::AdditiveCCD::max_iterations` parameter in `#145 <https://github.com/ipc-sim/ipc-toolkit/pull/145>`_
+- Add cubic barrier with elasticity-inclusive dynamic stiffness in `#148 <https://github.com/ipc-sim/ipc-toolkit/pull/148>`_
+
+  - Implement the cubic barrier and elasticity-inclusive dynamic stiffness from :cite:`Ando2024Cubic`
+  - Implement :math:`log^2`-barrier from GIPC :cite:`Huang2024GIPC`
+  - Add :cpp:func:`ipc::CollisionStencil::compute_coefficients` -- computes the coefficients :math:`\vec{c}` s.t. :math:`d(x) = \Vert \sum c_i x_i\Vert^2`
+  - Add :cpp:func:`ipc::CollisionStencil::compute_distance` taking :math:`V`, :math:`E`, :math:`F` directly
+
+- Replace ``BroadPhaseMethod`` enum with ``shared_ptr<BroadPhase>`` in `#152 <https://github.com/ipc-sim/ipc-toolkit/pull/152>`_
+
+  - Python BroadPhase in `#155 <https://github.com/ipc-sim/ipc-toolkit/pull/155>`_
+
+- Remove ``ContinuousCollisionCandidate`` inheritance in `#156 <https://github.com/ipc-sim/ipc-toolkit/pull/156>`_
+
+  - Replace it with the :cpp:class:`ipc::CollisionStencil` class.
+
+- Replace ``const Eigen::Matrix&`` with ``Eigen::ConstRef<Matrix>`` in `#157 <https://github.com/ipc-sim/ipc-toolkit/pull/157>`_
+
+  - This allows for more efficient passing of matrices to functions.
+
+- Separate Static and Kinetic Coefficients of Friction in `#177 <https://github.com/ipc-sim/ipc-toolkit/pull/177>`_
+
+  - Enhancements to tangential collision handling by distinguishing between static and kinetic friction coefficients (``mu_s`` and ``mu_k``) and implementing smooth transitions between them.
+  - Updated :cpp:class:`ipc::TangentialCollision` class to replace ``mu`` with separate ``mu_s`` (static friction coefficient) and ``mu_k`` (kinetic friction coefficient). This change applies to the class definition and all related methods.
+  - New :cpp:func:`ipc::smooth_mu` functions: Added functions to compute smooth transitions between static and kinetic friction coefficients, including derivatives and related mathematical formulations. These functions improve the modeling of friction forces at varying tangential velocities.
+  - Integration with adhesion module: Incorporated smooth friction coefficient calculations into the adhesion module.
+  - Tutorial added in `#178 <https://github.com/ipc-sim/ipc-toolkit/pull/178>`_
+
+Python Specific
+~~~~~~~~~~~~~~~
+
+- Add faster ``can_collide`` functions to Python in `#135 <https://github.com/ipc-sim/ipc-toolkit/pull/135>`_
+- Add ``PyBroadPhase`` and ``PyNarrowPhaseCCD`` classes to wrap the :py:class:`ipctk.BroadPhase` and :py:class:`ipctk.NarrowPhaseCCD` classes, respectively, allowing for custom implementations of these classes in Python.
+- Add new constructors to candidate classes (:py:class:`ipctk.EdgeEdgeCandidate`, :py:class:`ipctk.EdgeFaceCandidate`, :py:class:`ipctk.EdgeVertexCandidate`, :py:class:`ipctk.FaceFaceCandidate`, :py:class:`ipctk.FaceVertexCandidate`, :py:class:`ipctk.VertexVertexCandidate`) that accept tuples for easier initialization.
+- Include a call to ``std::atexit`` to reset the thread limiter upon program exit to ensure proper cleanup.
+- :WARNING: Python :py:class:`ipctk.NarrowPhaseCCD` implementations will not work with multi-threading because of GIL locking.
+- Switch from ``py::arg`` to ``_a`` literals in `#168 <https://github.com/ipc-sim/ipc-toolkit/pull/168>`_
+
+Miscellaneous
+~~~~~~~~~~~~~
+
+- Add ``/Wall`` and ``/MP`` compiler flags for MSVC in `#134 <https://github.com/ipc-sim/ipc-toolkit/pull/134>`_
+- Enable CUDA by default if CUDA is detected by CMake in `#134 <https://github.com/ipc-sim/ipc-toolkit/pull/134>`_
+- Devcontainer by `@antoinebou12 <https://github.com/antoinebou12>`_ in `#136 <https://github.com/ipc-sim/ipc-toolkit/pull/136>`_
+- Update dependencies for CMake 4.0 in `#158 <https://github.com/ipc-sim/ipc-toolkit/pull/158>`_
+- Organize folder structure for generated Xcode project in `#159 <https://github.com/ipc-sim/ipc-toolkit/pull/159>`_
+
+  - Refactor CMake configurations and improve project structure
+  - Updated CMake recipes for third-party libraries to set appropriate folder properties for IDE organization.
+  - Changed the CPMAddPackage references for scalable-ccd to a more recent commit.
+  - Enhanced logging functionality by adding a new ``log_and_throw_error`` function to improve error handling.
+  - Improved documentation in the style guide for naming conventions.
+  - Move generated ``config.hpp`` file from ``src/ipc`` to ``build/include/src/ipc``
+  - Update CUDA builds in ``CMakePresets.json``
+  - Remove ``virtual`` tag from :cpp:func:`ipc::BroadPhase::detect_collision_candidates`
+
+- Index typedef in `#161 <https://github.com/ipc-sim/ipc-toolkit/pull/161>`_
+
+  - Add a ``index_t`` typedef for vertex/edge/face ids. Changes default from ``long`` to ``int32_t``.
+
+- Update Tight Inclusion package version to 1.0.6 in `#165 <https://github.com/ipc-sim/ipc-toolkit/pull/165>`_
+- Fix cmake for non-top-level inclusion by `@sin3point14 <https://github.com/sin3point14>`_ in `#167 <https://github.com/ipc-sim/ipc-toolkit/pull/167>`_
+- Improve and clean up documentation:
+
+  - Fix Error in Docs in `#169 <https://github.com/ipc-sim/ipc-toolkit/pull/169>`_
+  - Update docs in `#173 <https://github.com/ipc-sim/ipc-toolkit/pull/173>`_
+  - Update docs.yml in `#174 <https://github.com/ipc-sim/ipc-toolkit/pull/174>`_
+  - Refactor and clean-up C++ API docs in `#175 <https://github.com/ipc-sim/ipc-toolkit/pull/175>`_
+
+
 v1.3.1 (Nov 08, 2024)
 ---------------------
 
@@ -100,7 +209,7 @@ Details
 
 -  Fix 🐛 Python bindings for Numpy 2 in `#100 <https://github.com/ipc-sim/ipc-toolkit/pull/100>`__
 -  Make faces an optional parameter to ``CollisionMesh`` in `#105 <https://github.com/ipc-sim/ipc-toolkit/pull/105>`__
--  Fix Python documentation by @rc in `#108 <https://github.com/ipc-sim/ipc-toolkit/pull/108>`__
+-  Fix Python documentation by `@rc <https://github.com/rc>`_  in `#108 <https://github.com/ipc-sim/ipc-toolkit/pull/108>`__
 -  Polymorphic CCD in `#110 <https://github.com/ipc-sim/ipc-toolkit/pull/110>`__
 
    -  Add narrow phase CCD parent class; pass CCD object to choose method
