@@ -183,7 +183,7 @@ TEST_CASE("Face-vertex collision normal", "[fv][normal]")
     CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
     if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
         std::cout << "Jacobian:\n" << jacobian << std::endl;
-        std::cout << "FD Jacobian:\n" << fd_jacobian << std ::endl;
+        std::cout << "FD Jacobian:\n" << fd_jacobian << std::endl;
     }
 }
 
