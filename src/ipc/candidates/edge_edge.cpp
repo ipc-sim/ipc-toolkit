@@ -95,6 +95,44 @@ VectorMax4d EdgeEdgeCandidate::compute_coefficients(
     return coeffs;
 }
 
+VectorMax3d EdgeEdgeCandidate::compute_unnormalized_normal(
+    Eigen::ConstRef<VectorMax12d> positions) const
+{
+    assert(positions.size() == 12);
+    const Eigen::Vector3d n =
+        (positions.segment<3>(3) - positions.head<3>())
+            .cross(positions.tail<3>() - positions.segment<3>(6));
+    assert(n.norm() > 0.0);
+    return n;
+}
+
+namespace {
+    inline Eigen::Matrix3d cross_mat(Eigen::ConstRef<Eigen::Vector3d> v)
+    {
+        Eigen::Matrix3d m;
+        m << 0, -v(2), v(1), //
+            v(2), 0, -v(0),  //
+            -v(1), v(0), 0;
+        return m;
+    }
+} // namespace
+
+MatrixMax<double, 3, 12>
+EdgeEdgeCandidate::compute_unnormalized_normal_jacobian(
+    Eigen::ConstRef<VectorMax12d> positions) const
+{
+    assert(positions.size() == 12);
+    MatrixMax<double, 3, 12> dn(3, 12);
+    dn.leftCols<3>() = cross_mat(positions.tail<3>() - positions.segment<3>(6));
+    dn.middleCols<3>(3) =
+        cross_mat(positions.segment<3>(6) - positions.tail<3>());
+    dn.middleCols<3>(6) =
+        cross_mat(positions.head<3>() - positions.segment<3>(3));
+    dn.rightCols<3>() =
+        cross_mat(positions.segment<3>(3) - positions.head<3>());
+    return dn;
+}
+
 bool EdgeEdgeCandidate::ccd(
     Eigen::ConstRef<VectorMax12d> vertices_t0,
     Eigen::ConstRef<VectorMax12d> vertices_t1,
