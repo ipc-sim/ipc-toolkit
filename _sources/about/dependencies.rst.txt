@@ -1,6 +1,11 @@
 Dependencies
 ============
 
+.. figure:: /_static/graphviz/dependencies.svg
+   :align: center
+
+   Default dependencies of the ``ipc::toolkit`` library. Excludes CUDA and Python bindings.
+
 The IPC Toolkit depends on a handful of third-party libraries, which are used to provide various functionality.
 
 **All required dependencies are downloaded through CMake** depending on the build options, and are built automatically when you build the IPC Toolkit. You do not need to install them separately.
