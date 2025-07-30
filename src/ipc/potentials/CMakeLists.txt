@@ -7,8 +7,8 @@ set(SOURCES
   normal_adhesion_potential.hpp
   normal_potential.cpp
   normal_potential.hpp
+  potential.cpp
   potential.hpp
-  potential.tpp
   tangential_adhesion_potential.cpp
   tangential_adhesion_potential.hpp
   tangential_potential.cpp

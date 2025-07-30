@@ -114,7 +114,7 @@ autodoc_default_options = {
 # -- GraphViz configuration ----------------------------------
 graphviz_output_format = 'svg'
 
-graphviz_dot_args = ["-Ecolor=#CE93D8", "-Kdot"]
+graphviz_dot_args = ["-Ecolor=#CE93D8", "-Kdot", "-Gbgcolor=transparent", "-Nfontname=Menlo"]
 
 # python_apigen_modules = {
 #     "ipctk": "",

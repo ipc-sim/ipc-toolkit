@@ -15,8 +15,7 @@ TEST_CASE("Vertex-vertex collision normal", "[vv][normal]")
 {
     const int dim = GENERATE(2, 3);
 
-    Eigen::MatrixXd V(2, dim);
-    V.setZero();
+    Eigen::MatrixXd V = Eigen::MatrixXd::Zero(2, dim);
     V(0, 0) = -1;
     V(1, 0) = 1;
 
@@ -41,7 +40,8 @@ TEST_CASE("Vertex-vertex collision normal", "[vv][normal]")
     Eigen::MatrixXd fd_jacobian;
     VectorMax12d x = vv.dof(V, E, F);
     fd::finite_jacobian(
-        x, [&vv](const Eigen::MatrixXd& x) { return vv.compute_normal(x); },
+        x,
+        [&vv](const Eigen::MatrixXd& x_fd) { return vv.compute_normal(x_fd); },
         fd_jacobian);
     CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
 }
@@ -87,7 +87,8 @@ TEST_CASE("Edge-vertex collision normal", "[ev][normal]")
     Eigen::MatrixXd fd_jacobian;
     VectorMax12d x = ev.dof(V, E, F);
     fd::finite_jacobian(
-        x, [&ev](const Eigen::MatrixXd& x) { return ev.compute_normal(x); },
+        x,
+        [&ev](const Eigen::MatrixXd& x_fd) { return ev.compute_normal(x_fd); },
         fd_jacobian);
     CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
     if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
@@ -131,7 +132,8 @@ TEST_CASE("Edge-edge collision normal", "[ee][normal]")
     Eigen::MatrixXd fd_jacobian;
     VectorMax12d x = ee.dof(V, E, F);
     fd::finite_jacobian(
-        x, [&ee](const Eigen::MatrixXd& x) { return ee.compute_normal(x); },
+        x,
+        [&ee](const Eigen::MatrixXd& x_fd) { return ee.compute_normal(x_fd); },
         fd_jacobian);
     CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
     if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
@@ -178,7 +180,8 @@ TEST_CASE("Face-vertex collision normal", "[fv][normal]")
     Eigen::MatrixXd fd_jacobian;
     VectorMax12d x = fv.dof(V, E, F);
     fd::finite_jacobian(
-        x, [&fv](const Eigen::MatrixXd& x) { return fv.compute_normal(x); },
+        x,
+        [&fv](const Eigen::MatrixXd& x_fd) { return fv.compute_normal(x_fd); },
         fd_jacobian);
     CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
     if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
@@ -209,7 +212,8 @@ TEST_CASE("Plane-vertex collision normal", "[pv][normal]")
     Eigen::MatrixXd fd_jacobian;
     VectorMax12d x = pv.dof(V, E, F);
     fd::finite_jacobian(
-        x, [&pv](const Eigen::MatrixXd& x) { return pv.compute_normal(x); },
+        x,
+        [&pv](const Eigen::MatrixXd& x_fd) { return pv.compute_normal(x_fd); },
         fd_jacobian);
     CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
     if (!fd::compare_jacobian(jacobian, fd_jacobian)) {

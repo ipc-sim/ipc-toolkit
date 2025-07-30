@@ -1,7 +1,7 @@
-#pragma once
-
 #include "potential.hpp"
 
+#include <ipc/collisions/normal/normal_collisions.hpp>
+#include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
 #include <tbb/blocked_range.h>
@@ -133,5 +133,8 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
         [](const Eigen::SparseMatrix<double>& a,
            const Eigen::SparseMatrix<double>& b) { return a + b; });
 }
+
+template class Potential<NormalCollisions>;
+template class Potential<TangentialCollisions>;
 
 } // namespace ipc
