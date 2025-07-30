@@ -79,5 +79,3 @@ public:
 };
 
 } // namespace ipc
-
-#include "potential.tpp"

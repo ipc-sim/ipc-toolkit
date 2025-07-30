@@ -2,6 +2,7 @@
 
 #include <ipc/utils/merge_thread_local.hpp>
 
+#include <SimpleBVH/BVH.hpp>
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
@@ -10,6 +11,16 @@ using namespace std::placeholders;
 
 namespace ipc {
 
+BVH::BVH()
+    : BroadPhase()
+    , vertex_bvh(std::make_unique<SimpleBVH::BVH>())
+    , edge_bvh(std::make_unique<SimpleBVH::BVH>())
+    , face_bvh(std::make_unique<SimpleBVH::BVH>())
+{
+}
+
+BVH::~BVH() = default;
+
 void BVH::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
@@ -17,9 +28,9 @@ void BVH::build(
     const double inflation_radius)
 {
     BroadPhase::build(vertices, edges, faces, inflation_radius);
-    init_bvh(vertex_boxes, vertex_bvh);
-    init_bvh(edge_boxes, edge_bvh);
-    init_bvh(face_boxes, face_bvh);
+    init_bvh(vertex_boxes, *vertex_bvh);
+    init_bvh(edge_boxes, *edge_bvh);
+    init_bvh(face_boxes, *face_bvh);
 }
 
 void BVH::build(
@@ -30,9 +41,9 @@ void BVH::build(
     const double inflation_radius)
 {
     BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
-    init_bvh(vertex_boxes, vertex_bvh);
-    init_bvh(edge_boxes, edge_bvh);
-    init_bvh(face_boxes, face_bvh);
+    init_bvh(vertex_boxes, *vertex_bvh);
+    init_bvh(edge_boxes, *edge_bvh);
+    init_bvh(face_boxes, *face_bvh);
 }
 
 void BVH::init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh)
@@ -51,9 +62,9 @@ void BVH::init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh)
 
 void BVH::clear()
 {
-    vertex_bvh.clear();
-    edge_bvh.clear();
-    face_bvh.clear();
+    vertex_bvh->clear();
+    edge_bvh->clear();
+    face_bvh->clear();
 }
 
 template <typename Candidate, bool swap_order, bool triangular>
@@ -111,7 +122,7 @@ void BVH::detect_vertex_vertex_candidates(
 
     detect_candidates<
         VertexVertexCandidate, /*swap_order=*/false, /*triangular=*/true>(
-        vertex_boxes, vertex_bvh, can_vertices_collide, candidates);
+        vertex_boxes, *vertex_bvh, can_vertices_collide, candidates);
 }
 
 void BVH::detect_edge_vertex_candidates(
@@ -124,7 +135,7 @@ void BVH::detect_edge_vertex_candidates(
     // In 2D and for codimensional edge-vertex collisions, there are more
     // vertices than edges, so we want to iterate over the edges.
     detect_candidates(
-        edge_boxes, vertex_bvh,
+        edge_boxes, *vertex_bvh,
         std::bind(&BVH::can_edge_vertex_collide, this, _1, _2), candidates);
 }
 
@@ -137,7 +148,7 @@ void BVH::detect_edge_edge_candidates(
 
     detect_candidates<
         EdgeEdgeCandidate, /*swap_order=*/false, /*triangular=*/true>(
-        edge_boxes, edge_bvh, std::bind(&BVH::can_edges_collide, this, _1, _2),
+        edge_boxes, *edge_bvh, std::bind(&BVH::can_edges_collide, this, _1, _2),
         candidates);
 }
 
@@ -150,7 +161,7 @@ void BVH::detect_face_vertex_candidates(
 
     // The ratio vertices:faces is 1:2, so we want to iterate over the vertices.
     detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
-        vertex_boxes, face_bvh,
+        vertex_boxes, *face_bvh,
         std::bind(&BVH::can_face_vertex_collide, this, _1, _2), candidates);
 }
 
@@ -163,7 +174,7 @@ void BVH::detect_edge_face_candidates(
 
     // The ratio edges:faces is 3:2, so we want to iterate over the faces.
     detect_candidates<EdgeFaceCandidate, /*swap_order=*/true>(
-        face_boxes, edge_bvh,
+        face_boxes, *edge_bvh,
         std::bind(&BVH::can_edge_face_collide, this, _1, _2), candidates);
 }
 
@@ -176,7 +187,7 @@ void BVH::detect_face_face_candidates(
 
     detect_candidates<
         FaceFaceCandidate, /*swap_order=*/false, /*triangular=*/true>(
-        face_boxes, face_bvh, std::bind(&BVH::can_faces_collide, this, _1, _2),
+        face_boxes, *face_bvh, std::bind(&BVH::can_faces_collide, this, _1, _2),
         candidates);
 }
 } // namespace ipc

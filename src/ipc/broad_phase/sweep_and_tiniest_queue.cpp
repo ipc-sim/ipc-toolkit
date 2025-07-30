@@ -6,6 +6,22 @@
 
 namespace ipc {
 
+struct SweepAndTiniestQueue::Boxes {
+    ~Boxes() = default;
+
+    std::vector<scalable_ccd::cuda::AABB> vertex_boxes;
+    std::vector<scalable_ccd::cuda::AABB> edge_boxes;
+    std::vector<scalable_ccd::cuda::AABB> face_boxes;
+};
+
+SweepAndTiniestQueue::SweepAndTiniestQueue()
+    : BroadPhase()
+    , boxes(std::make_unique<Boxes>())
+{
+}
+
+SweepAndTiniestQueue::~SweepAndTiniestQueue() = default;
+
 void SweepAndTiniestQueue::build(
     Eigen::ConstRef<Eigen::MatrixXd> _vertices,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
