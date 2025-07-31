@@ -6,14 +6,13 @@
 
 #include <ipc/broad_phase/broad_phase.hpp>
 
-#include <scalable_ccd/cuda/broad_phase/broad_phase.cuh>
-
 namespace ipc {
 
 /// @brief Sweep and Tiniest Queue broad phase collision detection.
 class SweepAndTiniestQueue : public BroadPhase {
 public:
-    SweepAndTiniestQueue() = default;
+    SweepAndTiniestQueue();
+    ~SweepAndTiniestQueue();
 
     /// @brief Get the name of the broad phase method.
     /// @return The name of the broad phase method.
@@ -83,9 +82,9 @@ private:
     bool can_edge_face_collide(size_t ei, size_t fi) const override;
     bool can_faces_collide(size_t fai, size_t fbi) const override;
 
-    std::vector<scalable_ccd::cuda::AABB> vertex_boxes;
-    std::vector<scalable_ccd::cuda::AABB> edge_boxes;
-    std::vector<scalable_ccd::cuda::AABB> face_boxes;
+    // Pimpl pattern to hide scalable_ccd::AABB details
+    struct Boxes;
+    std::unique_ptr<Boxes> boxes;
 };
 
 } // namespace ipc

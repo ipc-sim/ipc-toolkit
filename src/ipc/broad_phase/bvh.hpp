@@ -2,14 +2,19 @@
 
 #include <ipc/broad_phase/broad_phase.hpp>
 
-#include <SimpleBVH/BVH.hpp>
+#include <memory>
+
+namespace SimpleBVH {
+class BVH;
+}
 
 namespace ipc {
 
 /// @brief Bounding Volume Hierarchy (BVH) broad phase collision detection.
 class BVH : public BroadPhase {
 public:
-    BVH() = default;
+    BVH();
+    ~BVH();
 
     /// @brief Get the name of the broad phase method.
     /// @return The name of the broad phase method.
@@ -97,11 +102,11 @@ protected:
         std::vector<Candidate>& candidates);
 
     /// @brief BVH containing the vertices.
-    SimpleBVH::BVH vertex_bvh;
+    std::unique_ptr<SimpleBVH::BVH> vertex_bvh;
     /// @brief BVH containing the edges.
-    SimpleBVH::BVH edge_bvh;
+    std::unique_ptr<SimpleBVH::BVH> edge_bvh;
     /// @brief BVH containing the faces.
-    SimpleBVH::BVH face_bvh;
+    std::unique_ptr<SimpleBVH::BVH> face_bvh;
 };
 
 } // namespace ipc

@@ -1,12 +1,6 @@
 #include "broad_phase.hpp"
 
 #include <ipc/config.hpp>
-#include <ipc/broad_phase/brute_force.hpp>
-#include <ipc/broad_phase/bvh.hpp>
-#include <ipc/broad_phase/hash_grid.hpp>
-#include <ipc/broad_phase/spatial_hash.hpp>
-#include <ipc/broad_phase/sweep_and_prune.hpp>
-#include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 #include <ipc/candidates/candidates.hpp>
 
 namespace ipc {

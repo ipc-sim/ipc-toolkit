@@ -1,8 +1,23 @@
 #include "sweep_and_prune.hpp"
 
+#include <scalable_ccd/broad_phase/aabb.hpp>
 #include <scalable_ccd/broad_phase/sort_and_sweep.hpp>
 
 namespace ipc {
+
+struct SweepAndPrune::Boxes {
+    ~Boxes() = default;
+
+    std::vector<scalable_ccd::AABB> vertices;
+    std::vector<scalable_ccd::AABB> edges;
+    std::vector<scalable_ccd::AABB> faces;
+};
+
+SweepAndPrune::SweepAndPrune() : BroadPhase(), boxes(std::make_unique<Boxes>())
+{
+}
+
+SweepAndPrune::~SweepAndPrune() = default;
 
 void SweepAndPrune::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
@@ -15,9 +30,10 @@ void SweepAndPrune::build(
 
     clear();
 
-    scalable_ccd::build_vertex_boxes(vertices, vertex_boxes, inflation_radius);
-    scalable_ccd::build_edge_boxes(vertex_boxes, edges, edge_boxes);
-    scalable_ccd::build_face_boxes(vertex_boxes, faces, face_boxes);
+    scalable_ccd::build_vertex_boxes(
+        vertices, boxes->vertices, inflation_radius);
+    scalable_ccd::build_edge_boxes(boxes->vertices, edges, boxes->edges);
+    scalable_ccd::build_face_boxes(boxes->vertices, faces, boxes->faces);
 }
 
 void SweepAndPrune::build(
@@ -33,24 +49,24 @@ void SweepAndPrune::build(
     clear();
 
     scalable_ccd::build_vertex_boxes(
-        vertices_t0, vertices_t1, vertex_boxes, inflation_radius);
-    scalable_ccd::build_edge_boxes(vertex_boxes, edges, edge_boxes);
-    scalable_ccd::build_face_boxes(vertex_boxes, faces, face_boxes);
+        vertices_t0, vertices_t1, boxes->vertices, inflation_radius);
+    scalable_ccd::build_edge_boxes(boxes->vertices, edges, boxes->edges);
+    scalable_ccd::build_face_boxes(boxes->vertices, faces, boxes->faces);
 }
 
 void SweepAndPrune::clear()
 {
     BroadPhase::clear();
-    vertex_boxes.clear();
-    edge_boxes.clear();
-    face_boxes.clear();
+    boxes->vertices.clear();
+    boxes->edges.clear();
+    boxes->faces.clear();
 }
 
 void SweepAndPrune::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
     std::vector<std::pair<int, int>> overlaps;
-    scalable_ccd::sort_and_sweep(vertex_boxes, vv_sort_axis, overlaps);
+    scalable_ccd::sort_and_sweep(boxes->vertices, vv_sort_axis, overlaps);
 
     for (const auto& [vai, vbi] : overlaps) {
         if (can_vertices_collide(vai, vbi)) {
@@ -64,7 +80,7 @@ void SweepAndPrune::detect_edge_vertex_candidates(
 {
     std::vector<std::pair<int, int>> overlaps;
     scalable_ccd::sort_and_sweep(
-        edge_boxes, vertex_boxes, ev_sort_axis, overlaps);
+        boxes->edges, boxes->vertices, ev_sort_axis, overlaps);
 
     for (const auto& [ei, vi] : overlaps) {
         if (can_edge_vertex_collide(ei, vi)) {
@@ -77,7 +93,7 @@ void SweepAndPrune::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
     std::vector<std::pair<int, int>> overlaps;
-    scalable_ccd::sort_and_sweep(edge_boxes, ee_sort_axis, overlaps);
+    scalable_ccd::sort_and_sweep(boxes->edges, ee_sort_axis, overlaps);
 
     for (const auto& [eai, ebi] : overlaps) {
         if (can_edges_collide(eai, ebi)) {
@@ -91,7 +107,7 @@ void SweepAndPrune::detect_face_vertex_candidates(
 {
     std::vector<std::pair<int, int>> overlaps;
     scalable_ccd::sort_and_sweep(
-        face_boxes, vertex_boxes, fv_sort_axis, overlaps);
+        boxes->faces, boxes->vertices, fv_sort_axis, overlaps);
 
     for (const auto& [fi, vi] : overlaps) {
         if (can_face_vertex_collide(fi, vi)) {
@@ -105,7 +121,7 @@ void SweepAndPrune::detect_edge_face_candidates(
 {
     std::vector<std::pair<int, int>> overlaps;
     scalable_ccd::sort_and_sweep(
-        edge_boxes, face_boxes, ef_sort_axis, overlaps);
+        boxes->edges, boxes->faces, ef_sort_axis, overlaps);
 
     for (const auto& [ei, fi] : overlaps) {
         if (can_edge_face_collide(ei, fi)) {
@@ -118,7 +134,7 @@ void SweepAndPrune::detect_face_face_candidates(
     std::vector<FaceFaceCandidate>& candidates) const
 {
     std::vector<std::pair<int, int>> overlaps;
-    scalable_ccd::sort_and_sweep(face_boxes, ff_sort_axis, overlaps);
+    scalable_ccd::sort_and_sweep(boxes->faces, ff_sort_axis, overlaps);
 
     for (const auto& [fai, fbi] : overlaps) {
         if (can_faces_collide(fai, fbi)) {
@@ -131,7 +147,7 @@ void SweepAndPrune::detect_face_face_candidates(
 
 bool SweepAndPrune::can_edge_vertex_collide(size_t ei, size_t vi) const
 {
-    const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
+    const auto& [e0i, e1i, _] = boxes->edges[ei].vertex_ids;
 
     // Checked by scalable_ccd::sort_and_sweep
     assert(vi != e0i && vi != e1i);
@@ -141,8 +157,8 @@ bool SweepAndPrune::can_edge_vertex_collide(size_t ei, size_t vi) const
 
 bool SweepAndPrune::can_edges_collide(size_t eai, size_t ebi) const
 {
-    const auto& [ea0i, ea1i, _] = edge_boxes[eai].vertex_ids;
-    const auto& [eb0i, eb1i, __] = edge_boxes[ebi].vertex_ids;
+    const auto& [ea0i, ea1i, _] = boxes->edges[eai].vertex_ids;
+    const auto& [eb0i, eb1i, __] = boxes->edges[ebi].vertex_ids;
 
     // Checked by scalable_ccd::sort_and_sweep
     assert(ea0i != eb0i && ea0i != eb1i && ea1i != eb0i && ea1i != eb1i);
@@ -153,7 +169,7 @@ bool SweepAndPrune::can_edges_collide(size_t eai, size_t ebi) const
 
 bool SweepAndPrune::can_face_vertex_collide(size_t fi, size_t vi) const
 {
-    const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
+    const auto& [f0i, f1i, f2i] = boxes->faces[fi].vertex_ids;
 
     // Checked by scalable_ccd::sort_and_sweep
     assert(vi != f0i && vi != f1i && vi != f2i);
@@ -164,8 +180,8 @@ bool SweepAndPrune::can_face_vertex_collide(size_t fi, size_t vi) const
 
 bool SweepAndPrune::can_edge_face_collide(size_t ei, size_t fi) const
 {
-    const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
-    const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
+    const auto& [e0i, e1i, _] = boxes->edges[ei].vertex_ids;
+    const auto& [f0i, f1i, f2i] = boxes->faces[fi].vertex_ids;
 
     // Checked by scalable_ccd::sort_and_sweep
     assert(
@@ -179,8 +195,8 @@ bool SweepAndPrune::can_edge_face_collide(size_t ei, size_t fi) const
 
 bool SweepAndPrune::can_faces_collide(size_t fai, size_t fbi) const
 {
-    const auto& [fa0i, fa1i, fa2i] = face_boxes[fai].vertex_ids;
-    const auto& [fb0i, fb1i, fb2i] = face_boxes[fbi].vertex_ids;
+    const auto& [fa0i, fa1i, fa2i] = boxes->faces[fai].vertex_ids;
+    const auto& [fb0i, fb1i, fb2i] = boxes->faces[fbi].vertex_ids;
 
     // Checked by scalable_ccd::sort_and_sweep
     assert(

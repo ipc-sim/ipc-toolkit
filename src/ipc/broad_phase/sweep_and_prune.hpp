@@ -2,14 +2,13 @@
 
 #include <ipc/broad_phase/broad_phase.hpp>
 
-#include <scalable_ccd/broad_phase/aabb.hpp>
-
 namespace ipc {
 
 /// @brief Sweep and Prune broad phase collision detection.
 class SweepAndPrune : public BroadPhase {
 public:
-    SweepAndPrune() = default;
+    SweepAndPrune();
+    ~SweepAndPrune();
 
     /// @brief Get the name of the broad phase method.
     /// @return The name of the broad phase method.
@@ -79,9 +78,9 @@ protected:
     bool can_edge_face_collide(size_t ei, size_t fi) const override;
     bool can_faces_collide(size_t fai, size_t fbi) const override;
 
-    std::vector<scalable_ccd::AABB> vertex_boxes;
-    std::vector<scalable_ccd::AABB> edge_boxes;
-    std::vector<scalable_ccd::AABB> face_boxes;
+    // Pimpl pattern to hide scalable_ccd::AABB details
+    struct Boxes;
+    std::unique_ptr<Boxes> boxes;
 
     mutable int vv_sort_axis = 0;
     mutable int ev_sort_axis = 0;

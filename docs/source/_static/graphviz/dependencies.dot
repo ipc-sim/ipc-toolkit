@@ -1,0 +1,81 @@
+digraph "IPC Toolkit Dependencies" {
+    bgcolor = "transparent";
+    splines = ortho;
+    layout = dot;
+    // nodesep = 0.1;
+    ranksep = 0.5;
+    node [fontname = "Menlo"; style = filled; penwidth = 2;];
+    edge [penwidth = 2; fontname = "Menlo";];
+    subgraph clusterLegend {
+        label = "Legend";
+        color = "grey";
+        fontcolor = "grey";
+        fontname = "Avenir Medium";
+        penwidth = 2;
+        node [fontname = "Avenir Light";];
+        edge [fontname = "Avenir Light";];
+        legendNode0 [label = "Static Library";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+        legendNode1 [label = "Shared Library";shape = box;style = "rounded,filled";fillcolor = "#CCE7F8";color = "#6596B2";];
+        legendNode2 [label = "Interface Library";shape = box;style = "rounded,filled";fillcolor = "#FFE6CC";color = "#DAA52D";];
+        legendNode0 -> legendNode1 [label = "Public"; color = "#8FB976"; fontcolor = "#8FB976";];
+        legendNode2 -> legendNode0 [label = "Interface"; color = "#DAA52D"; fontcolor = "#DAA52D";];
+        legendNode1 -> legendNode2 [label = "Private"; color = "#BE6562"; fontcolor = "#BE6562";];
+    }
+    // Force ipc_toolkit to top
+    subgraph {
+        rank = "source";
+        "node5";
+    }
+    "node0" [label = "Eigen3_Eigen\n(Eigen3::Eigen)";shape = box;style = "rounded,filled";fillcolor = "#FFE6CC";color = "#DAA52D";];
+    "node1" [label = "filib\n(filib::filib)";shape = box;style = "rounded,filled";fillcolor = "#CCE7F8";color = "#6596B2";];
+    "node2" [label = "igl_core\n(igl::core)";shape = box;style = "rounded,filled";fillcolor = "#FFE6CC";color = "#DAA52D";];
+    "node2" -> "node0" [color = "#DAA52D";];
+    // igl_core -> Eigen3_Eigen
+    "node3" [label = "igl_predicates\n(igl::predicates)";shape = box;style = "rounded,filled";fillcolor = "#FFE6CC";color = "#DAA52D";];
+    "node3" -> "node2" [color = "#DAA52D";];
+    // igl_predicates -> igl_core
+    "node4" [label = "predicates\n(predicates::predicates)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+    "node3" -> "node4" [color = "#DAA52D";];
+    // igl_predicates -> predicates
+    "node5" [label = "ipc_toolkit\n(ipc::toolkit)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+    "node5" -> "node0" [color = "#8FB976";];
+    // ipc_toolkit -> Eigen3_Eigen
+    "node5" -> "node1" [color = "#8FB976";];
+    // ipc_toolkit -> filib
+    "node5" -> "node2" [color = "#BE6562";];
+    // ipc_toolkit -> igl_core
+    "node5" -> "node3" [color = "#BE6562";];
+    // ipc_toolkit -> igl_predicates
+    "node6" [label = "robin_map\n(tsl::robin_map)";shape = box;style = "rounded,filled";fillcolor = "#FFE6CC";color = "#DAA52D";];
+    "node5" -> "node6" [color = "#8FB976";];
+    // ipc_toolkit -> robin_map
+    "node7" [label = "scalable_ccd\n(scalable_ccd::scalable_ccd)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+    "node7" -> "node0" [color = "#8FB976";];
+    // scalable_ccd -> Eigen3_Eigen
+    "node8" [label = "spdlog\n(spdlog::spdlog)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+    "node7" -> "node8" [color = "#8FB976";];
+    // scalable_ccd -> spdlog
+    "node9" [label = "tbb\n(TBB::tbb)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+    "node7" -> "node9" [color = "#BE6562";];
+    // scalable_ccd -> tbb
+    "node5" -> "node7" [color = "#BE6562";];
+    // ipc_toolkit -> scalable_ccd
+    "node10" [label = "simple_bvh\n(simple_bvh::simple_bvh)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+    "node10" -> "node0" [color = "#8FB976";];
+    // simple_bvh -> Eigen3_Eigen
+    "node5" -> "node10" [color = "#BE6562";];
+    // ipc_toolkit -> simple_bvh
+    "node5" -> "node8" [color = "#8FB976";];
+    // ipc_toolkit -> spdlog
+    "node5" -> "node9" [color = "#BE6562";];
+    // ipc_toolkit -> tbb
+    "node11" [label = "tight_inclusion\n(tight_inclusion::tight_inclusion)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+    "node11" -> "node0" [color = "#8FB976";];
+    // tight_inclusion -> Eigen3_Eigen
+    "node11" -> "node8" [color = "#8FB976";];
+    // tight_inclusion -> spdlog
+    "node5" -> "node11" [color = "#BE6562";];
+    // ipc_toolkit -> tight_inclusion
+    "node12" [label = "absl_hash\n(absl::hash)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+    "node5" -> "node12" [color = "#8FB976";];
+}

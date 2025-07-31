@@ -1,5 +1,11 @@
 #include "friction_potential.hpp"
 
+#include <ipc/utils/local_to_global.hpp>
+
+#include <tbb/combinable.h>
+#include <tbb/enumerable_thread_specific.h>
+#include <tbb/parallel_for.h>
+
 namespace ipc {
 
 // -- Cumulative methods -------------------------------------------------------
