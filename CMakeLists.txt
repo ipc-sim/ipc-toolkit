@@ -192,13 +192,13 @@ endif()
 # Faster unordered map
 if(IPC_TOOLKIT_WITH_ROBIN_MAP)
   include(robin_map)
-  target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
+  target_link_libraries(ipc_toolkit PRIVATE tsl::robin_map)
 endif()
 
 # Hashes
 if(IPC_TOOLKIT_WITH_ABSEIL)
   include(abseil)
-  target_link_libraries(ipc_toolkit PUBLIC absl::hash)
+  target_link_libraries(ipc_toolkit PRIVATE absl::hash)
 endif()
 
 # Intervals

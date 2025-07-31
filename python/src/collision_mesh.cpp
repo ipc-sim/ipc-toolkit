@@ -2,21 +2,25 @@
 
 #include <ipc/collision_mesh.hpp>
 #include <ipc/utils/logger.hpp>
-#include <ipc/utils/unordered_map_and_set.hpp>
 
 using namespace ipc;
 
-#ifdef IPC_TOOLKIT_WITH_ABSEIL
-using MapCanCollide = std::unordered_map<
-    std::pair<size_t, size_t>,
-    bool,
-    absl::Hash<std::pair<size_t, size_t>>>;
-#else
-using MapCanCollide = std::unordered_map<
-    std::pair<size_t, size_t>,
-    bool,
-    Hash<std::pair<size_t, size_t>>>;
-#endif
+namespace {
+
+struct PairHash {
+    std::size_t operator()(const std::pair<size_t, size_t>& p) const noexcept
+    {
+        const size_t h1 = std::hash<size_t>()(p.first);
+        const size_t h2 = std::hash<size_t>()(p.second);
+        // A simplified version of boost::hash_combine
+        return h1 ^ (h2 + 0x9e3779b97f4a7c15 + (h1 << 6) + (h1 >> 2));
+    }
+};
+
+using MapCanCollide =
+    std::unordered_map<std::pair<size_t, size_t>, bool, PairHash>;
+
+} // namespace
 
 /// @brief A functor which the value of the pair if it is in the map, otherwise a default value.
 class SparseCanCollide {
@@ -270,7 +274,9 @@ void define_collision_mesh(py::module_& m)
             )ipc_Qu8mg5v7",
             "full_displacements"_a)
         .def(
-            "to_full_vertex_id", &CollisionMesh::to_full_vertex_id,
+            "to_full_vertex_id",
+            py::overload_cast<const index_t>(
+                &CollisionMesh::to_full_vertex_id, py::const_),
             R"ipc_Qu8mg5v7(
             Map a vertex ID to the corresponding vertex ID in the full mesh.
 
@@ -281,6 +287,15 @@ void define_collision_mesh(py::module_& m)
                 Vertex ID in the full mesh.
             )ipc_Qu8mg5v7",
             "id"_a)
+        .def(
+            "to_full_vertex_id",
+            py::overload_cast<>(&CollisionMesh::to_full_vertex_id, py::const_),
+            R"ipc_Qu8mg5v7(
+            Get the complete mapping of vertex IDs to their corresponding vertex IDs in the full mesh.
+
+            Returns:
+                Vector of size num_vertices() where each entry is the full vertex ID corresponding to the collision mesh vertex ID.
+            )ipc_Qu8mg5v7")
         .def(
             "to_full_dof",
             py::overload_cast<Eigen::ConstRef<Eigen::VectorXd>>(
