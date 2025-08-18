@@ -45,8 +45,6 @@ void BodyForces::update(const RigidBodies& bodies)
 double BodyForces::operator()(
     const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
 {
-    assert(predicted_poses().size() == bodies.num_bodies());
-
     const int ndof = x.size() / bodies.num_bodies();
 
     double energy = 0.0;
@@ -60,8 +58,6 @@ double BodyForces::operator()(
 Eigen::VectorXd BodyForces::gradient(
     const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
 {
-    assert(predicted_poses().size() == bodies.num_bodies());
-
     const int ndof = x.size() / bodies.num_bodies();
 
     Eigen::VectorXd grad = Eigen::VectorXd::Zero(x.size());
@@ -77,8 +73,6 @@ Eigen::MatrixXd BodyForces::hessian(
     Eigen::ConstRef<Eigen::VectorXd> x,
     const PSDProjectionMethod project_hessian_to_psd)
 {
-    assert(predicted_poses().size() == bodies.num_bodies());
-
     const int ndof = x.size() / bodies.num_bodies();
 
     Eigen::MatrixXd hess(x.size(), x.size());
