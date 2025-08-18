@@ -4,18 +4,6 @@
 
 namespace ipc::rigid {
 
-namespace {
-    inline Eigen::Matrix3d
-    cross_product_matrix(Eigen::ConstRef<Eigen::Vector3d> x)
-    {
-        Eigen::Matrix3d X;
-        X << 0, -x.z(), x.y(), //
-            x.z(), 0, -x.x(),  //
-            -x.y(), x.x(), 0;
-        return X;
-    }
-} // namespace
-
 Eigen::Matrix3d
 rotation_vector_to_matrix(Eigen::ConstRef<Eigen::Vector3d> theta)
 {
