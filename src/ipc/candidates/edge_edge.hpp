@@ -9,6 +9,7 @@
 
 namespace ipc {
 
+/// @brief A candidate for edge-edge collision detection.
 class EdgeEdgeCandidate : virtual public CollisionStencil {
 public:
     EdgeEdgeCandidate(index_t edge0_id, index_t edge1_id);
@@ -18,6 +19,10 @@ public:
 
     int num_vertices() const override { return 4; };
 
+    /// @brief Get the vertex IDs for the edge-edge pair
+    /// @param edges The edge connectivity matrix
+    /// @param faces The face connectivity matrix
+    /// @return An array of vertex IDs in the order: [ea0i, ea1i, eb0i, eb1i]
     std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const override
@@ -78,6 +83,13 @@ public:
     index_t edge0_id;
     /// @brief ID of the second edge.
     index_t edge1_id;
+
+protected:
+    VectorMax3d compute_unnormalized_normal(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
+
+    MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 };
 
 } // namespace ipc

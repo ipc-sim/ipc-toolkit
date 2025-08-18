@@ -104,7 +104,7 @@ Eigen::Vector3d point_triangle_relative_velocity(
 
 /// @brief Compute the point-triangle relative velocity matrix.
 /// @param dim Dimension (2 or 3)
-/// @param coords Baricentric coordinates of the closest point on the triangle
+/// @param coords Barycentric coordinates of the closest point on the triangle
 /// @return The relative velocity matrix
 MatrixMax<double, 3, 12> point_triangle_relative_velocity_matrix(
     const int dim, Eigen::ConstRef<Eigen::Vector2d> coords);

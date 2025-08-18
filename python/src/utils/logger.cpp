@@ -2,7 +2,6 @@
 
 #include <ipc/utils/logger.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_logger(py::module_& m)
@@ -24,5 +23,5 @@ void define_logger(py::module_& m)
         [](const spdlog::level::level_enum& level) {
             logger().set_level(level);
         },
-        "Set log level", py::arg("level"));
+        "Set log level", "level"_a);
 }

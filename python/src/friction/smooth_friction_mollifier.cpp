@@ -2,7 +2,6 @@
 
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_smooth_friction_mollifier(py::module_& m)
@@ -28,7 +27,7 @@ void define_smooth_friction_mollifier(py::module_& m)
         Returns:
             The value of the mollifier function at y.
         )ipc_Qu8mg5v7",
-        py::arg("y"), py::arg("eps_v"));
+        "y"_a, "eps_v"_a);
 
     m.def(
         "smooth_friction_f1", &smooth_friction_f1,
@@ -49,7 +48,7 @@ void define_smooth_friction_mollifier(py::module_& m)
         Returns:
             The value of the derivative of the smooth friction mollifier at y.
         )ipc_Qu8mg5v7",
-        py::arg("y"), py::arg("eps_v"));
+        "y"_a, "eps_v"_a);
 
     m.def(
         "smooth_friction_f2", &smooth_friction_f2,
@@ -70,7 +69,7 @@ void define_smooth_friction_mollifier(py::module_& m)
         Returns:
             The value of the second derivative of the smooth friction mollifier at y.
         )ipc_Qu8mg5v7",
-        py::arg("y"), py::arg("eps_v"));
+        "y"_a, "eps_v"_a);
 
     m.def(
         "smooth_friction_f1_over_x", &smooth_friction_f1_over_x,
@@ -91,7 +90,7 @@ void define_smooth_friction_mollifier(py::module_& m)
         Returns:
             The value of the derivative of smooth_friction_f0 divided by y.
         )ipc_Qu8mg5v7",
-        py::arg("y"), py::arg("eps_v"));
+        "y"_a, "eps_v"_a);
 
     m.def(
         "smooth_friction_f2_x_minus_f1_over_x3",
@@ -113,5 +112,5 @@ void define_smooth_friction_mollifier(py::module_& m)
         Returns:
             The derivative of f1 times y minus f1 all divided by y cubed.
         )ipc_Qu8mg5v7",
-        py::arg("y"), py::arg("eps_v"));
+        "y"_a, "eps_v"_a);
 }

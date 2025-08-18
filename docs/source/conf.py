@@ -21,7 +21,10 @@ import pathlib
 # -- Project information -----------------------------------------------------
 
 from datetime import datetime
-import ipctk
+
+import sys
+sys.path.append(str(pathlib.Path(__file__).parents[2] / "python"))
+from _find_ipctk import ipctk  # noqa
 
 project = "IPC Toolkit"
 copyright = f'2020-{datetime.now().year}, IPC-Sim Organization; MIT License'
@@ -98,7 +101,7 @@ breathe_default_members = (
     "private-members",
 )
 breathe_show_define_initializer = True
-# breathe_show_include = True
+breathe_show_include = True
 
 autodoc_default_options = {
     "members": True,
@@ -111,7 +114,7 @@ autodoc_default_options = {
 # -- GraphViz configuration ----------------------------------
 graphviz_output_format = 'svg'
 
-graphviz_dot_args = ["-Ecolor=#CE93D8", "-Kdot"]
+graphviz_dot_args = ["-Ecolor=#CE93D8", "-Kdot", "-Gbgcolor=transparent", "-Nfontname=Menlo"]
 
 # python_apigen_modules = {
 #     "ipctk": "",
@@ -172,25 +175,21 @@ html_theme_options = {
     "repo_name": "ipc-sim/ipc-toolkit",
     "icon": {"repo": "fontawesome/brands/github"},
 
-    "edit_uri": "blob/main/docs/source",
-
     "features": [
-        "navigation.expand",
+        "content.tabs.link",
+        "navigation.footer",
         "navigation.tabs",
         "navigation.top",
         "navigation.tracking",
         "search.highlight",
         "search.share",
         "toc.follow",
-        "content.tabs.link"
     ],
 
     "font": {
         "text": "Roboto",  # used for all the pages' text
         "code": "Roboto Mono"  # used for literal code blocks
     },
-
-    "toc_title": "Contents",
 
     "version_dropdown": True,
     "version_json": "https://ipctk.xyz/versions.json",

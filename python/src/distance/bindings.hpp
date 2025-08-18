@@ -1,7 +1,6 @@
 #pragma once
 
 #include <pybind11/pybind11.h>
-namespace py = pybind11;
 
 void define_distance_type(py::module_& m);
 void define_edge_edge_mollifier(py::module_& m);

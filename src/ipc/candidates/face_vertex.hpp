@@ -9,6 +9,7 @@
 
 namespace ipc {
 
+/// @brief A candidate for face-vertex collision detection.
 class FaceVertexCandidate : virtual public CollisionStencil {
 public:
     FaceVertexCandidate(index_t face_id, index_t vertex_id);
@@ -18,6 +19,10 @@ public:
 
     int num_vertices() const override { return 4; };
 
+    /// @brief Get the vertex IDs for the face-vertex pair
+    /// @param edges The edge connectivity matrix
+    /// @param faces The face connectivity matrix
+    /// @return An array of vertex IDs in the order: [vi, f0i, f1i, f2i]
     std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const override
@@ -78,6 +83,13 @@ public:
     index_t face_id;
     /// @brief ID of the vertex
     index_t vertex_id;
+
+protected:
+    VectorMax3d compute_unnormalized_normal(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
+
+    MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 };
 
 } // namespace ipc

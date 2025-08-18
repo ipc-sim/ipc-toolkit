@@ -2,7 +2,6 @@
 
 #include <ipc/collisions/normal/normal_collisions.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_normal_collisions(py::module_& m)
@@ -25,9 +24,8 @@ void define_normal_collisions(py::module_& m)
                 dmin: Minimum distance.
                 broad_phase: Broad-phase to use.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"), py::arg("dhat"),
-            py::arg("dmin") = 0,
-            py::arg("broad_phase") = make_default_broad_phase())
+            "mesh"_a, "vertices"_a, "dhat"_a, "dmin"_a = 0,
+            "broad_phase"_a = make_default_broad_phase())
         .def(
             "build",
             py::overload_cast<
@@ -44,8 +42,7 @@ void define_normal_collisions(py::module_& m)
                 dhat: The activation distance of the barrier.
                 dmin:  Minimum distance.
             )ipc_Qu8mg5v7",
-            py::arg("candidates"), py::arg("mesh"), py::arg("vertices"),
-            py::arg("dhat"), py::arg("dmin") = 0)
+            "candidates"_a, "mesh"_a, "vertices"_a, "dhat"_a, "dmin"_a = 0)
         .def(
             "compute_minimum_distance",
             &NormalCollisions::compute_minimum_distance,
@@ -59,7 +56,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 The minimum distance between any non-adjacent elements.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"))
+            "mesh"_a, "vertices"_a)
         .def(
             "__len__", &NormalCollisions::size, "Get the number of collisions.")
         .def(
@@ -81,7 +78,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 A reference to the collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def(
             "is_vertex_vertex", &NormalCollisions::is_vertex_vertex,
             R"ipc_Qu8mg5v7(
@@ -93,7 +90,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 If the collision at i is a vertex-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def(
             "is_edge_vertex", &NormalCollisions::is_edge_vertex,
             R"ipc_Qu8mg5v7(
@@ -105,7 +102,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 If the collision at i is an edge-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def(
             "is_edge_edge", &NormalCollisions::is_edge_edge,
             R"ipc_Qu8mg5v7(
@@ -117,7 +114,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 If the collision at i is an edge-edge collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def(
             "is_face_vertex", &NormalCollisions::is_face_vertex,
             R"ipc_Qu8mg5v7(
@@ -129,7 +126,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 If the collision at i is an face-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def(
             "is_plane_vertex", &NormalCollisions::is_plane_vertex,
             R"ipc_Qu8mg5v7(
@@ -141,10 +138,8 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 If the collision at i is an plane-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
-        .def(
-            "__str__", &NormalCollisions::to_string, py::arg("mesh"),
-            py::arg("vertices"))
+            "i"_a)
+        .def("__str__", &NormalCollisions::to_string, "mesh"_a, "vertices"_a)
         .def_property(
             "use_area_weighting", &NormalCollisions::use_area_weighting,
             &NormalCollisions::set_use_area_weighting,

@@ -47,6 +47,24 @@ VectorMax4d VertexVertexCandidate::compute_coefficients(
     return coeffs;
 }
 
+VectorMax3d VertexVertexCandidate::compute_unnormalized_normal(
+    Eigen::ConstRef<VectorMax12d> positions) const
+{
+    const int dim = this->dim(positions.size());
+    return positions.head(dim) - positions.tail(dim);
+}
+
+MatrixMax<double, 3, 12>
+VertexVertexCandidate::compute_unnormalized_normal_jacobian(
+    Eigen::ConstRef<VectorMax12d> positions) const
+{
+    const int dim = this->dim(positions.size());
+    MatrixMax<double, 3, 12> dn(dim, positions.size());
+    dn.leftCols(dim) = MatrixMax3d::Identity(dim, dim);
+    dn.rightCols(dim) = -MatrixMax3d::Identity(dim, dim);
+    return dn;
+}
+
 bool VertexVertexCandidate::ccd(
     Eigen::ConstRef<VectorMax12d> vertices_t0,
     Eigen::ConstRef<VectorMax12d> vertices_t1,

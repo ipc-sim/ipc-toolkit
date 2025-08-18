@@ -4,8 +4,6 @@
 
 #include <ipc/ccd/inexact_ccd.hpp>
 
-namespace py = pybind11;
-
 void define_inexact_ccd(py::module_& m)
 {
 #ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
@@ -20,7 +18,7 @@ void define_inexact_ccd(py::module_& m)
             Parameters:
                 conservative_rescaling: The conservative rescaling of the time of impact.
             )ipc_Qu8mg5v7",
-            py::arg("conservative_rescaling") =
+            "conservative_rescaling"_a =
                 InexactCCD::DEFAULT_CONSERVATIVE_RESCALING)
         .def_readonly_static(
             "DEFAULT_CONSERVATIVE_RESCALING",

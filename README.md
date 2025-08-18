@@ -26,97 +26,27 @@ IPC Toolkit is a set of reusable functions to integrate Incremental Potential Co
 
 This is not a full simulation library. As such it does not include any physics or solvers. For a full simulation implementation, we recommend [PolyFEM](https://polyfem.github.io/) (a finite element library) or [Rigid IPC](https://github.com/ipc-sim/rigid-ipc) (rigid-body dynamics) both of which utilize the IPC Toolkit.
 
-<!--- BEGIN C++ README 1 --->
-
 ## Build
 
-The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
-CMake provides functionality for doing this called [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html) (requires CMake ≥ 3.14).
-We use a very similar process to download all external dependencies (using [CPM](https://github.com/cpm-cmake/CPM.cmake)).
-
-For example,
-
-```cmake
-include(FetchContent)
-FetchContent_Declare(
-    ipc_toolkit
-    GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit.git
-    GIT_TAG ${IPC_TOOLKIT_GIT_TAG}
-)
-FetchContent_MakeAvailable(ipc_toolkit)
-```
-
-where `IPC_TOOLKIT_GIT_TAG` is set to the version of the toolkit you want to use. This will download and add the toolkit to CMake. The toolkit can then be linked against using
-
-```cmake
-# Link against the IPC Toolkit
-target_link_libraries(${PROJECT_NAME} PUBLIC ipc::toolkit)
-```
-
-where `PROJECT_NAME` is the name of your library/binary.
-
-<!--- BEGIN C++ README 2 --->
+Instruction for building and including the IPC Toolkit in your CMake project can be found on the website [here](https://ipctk.xyz/build.html).
 
 ### Dependencies
 
-**All required dependencies are downloaded through CMake** depending on the build options.
+The IPC Toolkit depends on a handful of third-party libraries, which are used to provide various functionality.
 
-The following libraries are used in this project:
+**All required dependencies are downloaded through CMake** depending on the build options, and are built automatically when you build the IPC Toolkit. You do not need to install them separately.
 
-* [Eigen](https://eigen.tuxfamily.org/): linear algebra
-* [libigl](https://github.com/libigl/libigl): basic geometry functions and predicates
-* [oneTBB](https://github.com/oneapi-src/oneTBB): parallelism
-* [Tight-Inclusion](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): provably conservative CCD of [Wang and Ferguson et al. 2021]
-* [SimpleBVH](https://github.com/ipc-sim/SimpleBVH): a simple bounding volume hierarchy data structure
-* [Scalable-CCD](https://github.com/Continuous-Collision-Detection/Scalable-CCD): scalable (GPU) CCD of [Belgrod et al. 2023]
-* [spdlog](https://github.com/gabime/spdlog): logging information
-
-#### Optional
-
-The following dependencies are optionally used based on CMake options:
-
-* [robin-map](https://github.com/Tessil/robin-map): faster hash set/map than `std::unordered_set`/`std::unordered_map`
-    * Enable by using the CMake option `IPC_TOOLKIT_WITH_ROBIN_MAP`
-    * Enabled by default
-* [Abseil](https://abseil.io/): hashing utilities
-    * Enable by using the CMake option `IPC_TOOLKIT_WITH_ABSEIL`
-    * Enabled by default
-* [filib](https://github.com/zfergus/filib): interval arithmetic for nonlinear trajectories/CCD
-    * Enable by using the CMake option `IPC_TOOLKIT_WITH_FILIB`
-    * Enabled by default
-* [rational-cpp](https://github.io/zfergus/rational-cpp): rational arithmetic used for exact intersection checks
-    * Enable by using the CMake option `IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
-    * Requires [GMP](https://gmplib.org/) to be installed at a system level
-* [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection): inexact CCD
-    * Included for comparison with the original IPC library
-    * Enable by using the CMake option `IPC_TOOLKIT_WITH_INEXACT_CCD`
-
-<!--- FILIB DEPENDENCY NOTE --->
-
-## Usage
-
-See the [tutorial](https://ipctk.xyz/tutorial/getting_started.html) for a quick introduction to the toolkit, or the [documentation](https://ipctk.xyz/cpp.html) for a full reference.
-
-## Unit Tests
-
-We provide unit tests to ensure the correctness of our algorithmic pieces.
-To enable the unit tests use the CMake option `IPC_TOOLKIT_BUILD_TESTS`.
-
-### Dependencies
-
-The following are downloaded when unit tests are enabled:
-
-* [Catch2](https://github.com/catchorg/Catch2.git): testing framework
-* [finite-diff](https://github.com/zfergus/finite-diff): finite-difference comparisons
-* [Nlohman's JSON library](https://github.com/nlohmann/json): loading test data from JSON files
-
-<!--- END C++ README --->
+A full list of dependencies can be found on the [dependencies page](https://ipctk.xyz/dependencies.html).
 
 ## Python Bindings
 
 We provide Python bindings for functions in the toolkit using [pybind11](https://github.com/pybind/pybind11).
 
 For more information see the [Python documentation](https://ipctk.xyz/python.html).
+
+## Usage
+
+See the [tutorials](https://ipctk.xyz/tutorials/getting_started.html) for a quick introduction to the toolkit, or the [documentation](https://ipctk.xyz/cpp-api/potentials.html) for a full reference.
 
 ## Contributing
 
@@ -131,7 +61,7 @@ Simply fork this repository and make a Pull Request! We would appreciate:
 
 ## Citation
 
-If you use the IPC Toolkit in your project, please consider citing our work:
+IPC Toolkit is created and maintained by academics: citations let us know our work is having impact! Please cite the IPC Toolkit or otherwise give a shout-out if and when it contributes to published works.
 
 ```bibtex
 @software{ipc_toolkit,
@@ -159,4 +89,8 @@ Additionally, you can cite the original IPC paper:
 
 ## License
 
-MIT License © 2020, the IPC-Sim organization (See <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE</code></a> for details).
+This project is licensed under the MIT License.
+
+You are free to use, modify, and distribute this code in your projects, even commercial ones, as long as you include the original copyright and license notice. A copy of the full license text can be found in the <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE</code></a> file.
+
+If you use this code in a product you distribute to others, you are required to **include a copy of the original copyright and license notice**. This is typically done in the product's documentation, an "About" or "Third-Party Licenses" section, or in a clear open-source software statement.

@@ -140,3 +140,66 @@ TEST_CASE("Tangential adhesion mollifier", "[adhesion][tangential]")
 
     CHECK(f2 == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 }
+
+TEST_CASE("Tangential smooth mu adhesion mollifier", "[adhesion][tangential]")
+{
+    static constexpr double EPSILON = 1e-4;
+    static constexpr double MARGIN = 1e-6;
+    // NOTE: Use h=1e-10 for finite difference because min eps_a=1e-8
+    static constexpr double H = 1e-10;
+    const double mu_s = GENERATE(range(0.0, 1.0, 0.1));
+    const double mu_k = GENERATE(range(0.0, 1.0, 0.1));
+    const double eps_a = std::pow(10, GENERATE(range(-8, 0, 1)));
+    const double x = std::pow(10, GENERATE(range(-8, 0, 1)));
+
+    if (x == 1e-8 && eps_a == 1e-8) {
+        return;
+    }
+
+    CAPTURE(x, eps_a, x / eps_a, mu_s, mu_k);
+
+    Eigen::Matrix<double, 1, 1> X;
+    X << x;
+
+    // Check gradient
+
+    Eigen::VectorXd fd_a1(1);
+    fd::finite_gradient(
+        X,
+        [&](const Eigen::VectorXd& _X) {
+            return smooth_mu_a0(_X[0], mu_s, mu_k, eps_a);
+        },
+        fd_a1, fd::AccuracyOrder::SECOND, H);
+
+    CHECK(
+        smooth_mu_a1(x, mu_s, mu_k, eps_a)
+        == Catch::Approx(fd_a1[0]).margin(MARGIN).epsilon(EPSILON));
+
+    CHECK(
+        smooth_mu_a1_over_x(x, mu_s, mu_k, eps_a) * x
+        == Catch::Approx(fd_a1[0]).margin(MARGIN).epsilon(EPSILON));
+
+    // Check hessian
+    if (x == eps_a) {
+        return;
+    }
+
+    Eigen::VectorXd fd_a2(1);
+    fd::finite_gradient(
+        X,
+        [&](const Eigen::VectorXd& _X) {
+            return smooth_mu_a1(_X[0], mu_s, mu_k, eps_a);
+        },
+        fd_a2, fd::AccuracyOrder::SECOND, H);
+
+    CHECK(
+        smooth_mu_a2(x, mu_s, mu_k, eps_a)
+        == Catch::Approx(fd_a2[0]).margin(MARGIN).epsilon(EPSILON));
+
+    double a2 = smooth_mu_a2_x_minus_mu_a1_over_x3(x, mu_s, mu_k, eps_a);
+    a2 *= x * x * x;
+    a2 += smooth_mu_a1(x, mu_s, mu_k, eps_a);
+    a2 /= x;
+
+    CHECK(a2 == Catch::Approx(fd_a2[0]).margin(MARGIN).epsilon(EPSILON));
+}

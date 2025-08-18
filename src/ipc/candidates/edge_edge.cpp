@@ -95,6 +95,31 @@ VectorMax4d EdgeEdgeCandidate::compute_coefficients(
     return coeffs;
 }
 
+VectorMax3d EdgeEdgeCandidate::compute_unnormalized_normal(
+    Eigen::ConstRef<VectorMax12d> positions) const
+{
+    assert(positions.size() == 12);
+    return (positions.segment<3>(3) - positions.head<3>())
+        .cross(positions.tail<3>() - positions.segment<3>(6));
+}
+
+MatrixMax<double, 3, 12>
+EdgeEdgeCandidate::compute_unnormalized_normal_jacobian(
+    Eigen::ConstRef<VectorMax12d> positions) const
+{
+    assert(positions.size() == 12);
+    MatrixMax<double, 3, 12> dn(3, 12);
+    dn.leftCols<3>() =
+        cross_product_matrix(positions.tail<3>() - positions.segment<3>(6));
+    dn.middleCols<3>(3) =
+        cross_product_matrix(positions.segment<3>(6) - positions.tail<3>());
+    dn.middleCols<3>(6) =
+        cross_product_matrix(positions.head<3>() - positions.segment<3>(3));
+    dn.rightCols<3>() =
+        cross_product_matrix(positions.segment<3>(3) - positions.head<3>());
+    return dn;
+}
+
 bool EdgeEdgeCandidate::ccd(
     Eigen::ConstRef<VectorMax12d> vertices_t0,
     Eigen::ConstRef<VectorMax12d> vertices_t1,

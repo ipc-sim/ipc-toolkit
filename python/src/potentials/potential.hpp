@@ -2,7 +2,6 @@
 
 #include <ipc/potentials/potential.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 /// @brief Define the methods of the templated generic Potential class.
@@ -32,7 +31,7 @@ void define_potential_methods(PyClass& potential)
             Returns:
                 The potential for a set of collisions.
             )ipc_Qu8mg5v7",
-            py::arg("collisions"), py::arg("mesh"), py::arg("X"))
+            "collisions"_a, "mesh"_a, "X"_a)
         .def(
             "gradient",
             py::overload_cast<
@@ -50,7 +49,7 @@ void define_potential_methods(PyClass& potential)
             Returns:
                 The gradient of the potential w.r.t. X. This will have a size of |X|.
             )ipc_Qu8mg5v7",
-            py::arg("collisions"), py::arg("mesh"), py::arg("X"))
+            "collisions"_a, "mesh"_a, "X"_a)
         .def(
             "hessian",
             py::overload_cast<
@@ -69,8 +68,8 @@ void define_potential_methods(PyClass& potential)
             Returns:
                 The Hessian of the potential w.r.t. X. This will have a size of |X|×|X|.
             )ipc_Qu8mg5v7",
-            py::arg("collisions"), py::arg("mesh"), py::arg("X"),
-            py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE)
+            "collisions"_a, "mesh"_a, "X"_a,
+            "project_hessian_to_psd"_a = PSDProjectionMethod::NONE)
         .def(
             "__call__",
             py::overload_cast<const TCollision&, Eigen::ConstRef<VectorMax12d>>(
@@ -85,7 +84,7 @@ void define_potential_methods(PyClass& potential)
             Returns:
                 The potential.
             )ipc_Qu8mg5v7",
-            py::arg("collision"), py::arg("x"))
+            "collision"_a, "x"_a)
         .def(
             "gradient",
             py::overload_cast<const TCollision&, Eigen::ConstRef<VectorMax12d>>(
@@ -100,7 +99,7 @@ void define_potential_methods(PyClass& potential)
             Returns:
                 The gradient of the potential.
             )ipc_Qu8mg5v7",
-            py::arg("collision"), py::arg("x"))
+            "collision"_a, "x"_a)
         .def(
             "hessian",
             py::overload_cast<
@@ -117,6 +116,6 @@ void define_potential_methods(PyClass& potential)
             Returns:
                 The hessian of the potential.
             )ipc_Qu8mg5v7",
-            py::arg("collision"), py::arg("x"),
-            py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE);
+            "collision"_a, "x"_a,
+            "project_hessian_to_psd"_a = PSDProjectionMethod::NONE);
 }

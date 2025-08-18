@@ -126,6 +126,7 @@ public:
     {
     }
 
+    // BEGIN_RIGID_2D_CALL
     VectorMax3d operator()(const double t) const override
     {
         const Eigen::Matrix2d R =
@@ -134,7 +135,9 @@ public:
 
         return R * position + translation + t * delta_translation;
     }
+    // END_RIGID_2D_CALL
 
+    // BEGIN_RIGID_2D_MAX_DISTANCE_FROM_LINEAR
     double
     max_distance_from_linear(const double t0, const double t1) const override
     {
@@ -147,6 +150,7 @@ public:
         const VectorMax3d p_t1 = (*this)(t1);
         return ((*this)((t0 + t1) / 2) - ((p_t1 - p_t0) * 0.5 + p_t0)).norm();
     }
+    // END_RIGID_2D_MAX_DISTANCE_FROM_LINEAR
 
 protected:
     Eigen::Vector2d position;

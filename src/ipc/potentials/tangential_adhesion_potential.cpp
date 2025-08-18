@@ -10,19 +10,22 @@ TangentialAdhesionPotential::TangentialAdhesionPotential(const double eps_a)
     set_eps_a(eps_a);
 }
 
-double TangentialAdhesionPotential::f0(const double x) const
+double TangentialAdhesionPotential::mu_f0(
+    const double x, const double mu_s, const double mu_k) const
 {
-    return tangential_adhesion_f0(x, eps_a());
+    return smooth_mu_a0(x, mu_s, mu_k, eps_a());
 }
 
-double TangentialAdhesionPotential::f1_over_x(const double x) const
+double TangentialAdhesionPotential::mu_f1_over_x(
+    const double x, const double mu_s, const double mu_k) const
 {
-    return tangential_adhesion_f1_over_x(x, eps_a());
+    return smooth_mu_a1_over_x(x, mu_s, mu_k, eps_a());
 }
 
-double TangentialAdhesionPotential::f2_x_minus_f1_over_x3(const double x) const
+double TangentialAdhesionPotential::mu_f2_x_minus_mu_f1_over_x3(
+    const double x, const double mu_s, const double mu_k) const
 {
-    return tangential_adhesion_f2_x_minus_f1_over_x3(x, eps_a());
+    return smooth_mu_a2_x_minus_mu_a1_over_x3(x, mu_s, mu_k, eps_a());
 }
 
 } // namespace ipc

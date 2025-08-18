@@ -62,7 +62,7 @@ cmake_policy(SET CMP0114 NEW) # Support the Xcode "new build system"
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX
-        VERSION "1.4.0")
+        VERSION "1.5.0")
 
 include(CheckLanguage)
 check_language(CUDA)
@@ -154,23 +154,23 @@ target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
 
 # libigl
 include(libigl)
-target_link_libraries(ipc_toolkit PUBLIC igl::core igl::predicates)
+target_link_libraries(ipc_toolkit PRIVATE igl::core igl::predicates)
 
 # TBB
 include(onetbb)
-target_link_libraries(ipc_toolkit PUBLIC TBB::tbb)
+target_link_libraries(ipc_toolkit PRIVATE TBB::tbb)
 
 # Provably conservative CCD of [Wang and Ferguson et al. 2021]
 include(tight_inclusion)
-target_link_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
+target_link_libraries(ipc_toolkit PRIVATE tight_inclusion::tight_inclusion)
 
 # Scalable CCD (STQ broad phase and GPU Tight Inclusion)
 include(scalable_ccd)
-target_link_libraries(ipc_toolkit PUBLIC scalable_ccd::scalable_ccd)
+target_link_libraries(ipc_toolkit PRIVATE scalable_ccd::scalable_ccd)
 
 # SimpleBVH
 include(simple_bvh)
-target_link_libraries(ipc_toolkit PUBLIC simple_bvh::simple_bvh)
+target_link_libraries(ipc_toolkit PRIVATE simple_bvh::simple_bvh)
 
 # Logger
 include(spdlog)
@@ -184,13 +184,13 @@ target_link_libraries(ipc_toolkit PRIVATE tinygltf::tinygltf)
 if(IPC_TOOLKIT_WITH_INEXACT_CCD)
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
   include(evouga_ccd)
-  target_link_libraries(ipc_toolkit PUBLIC evouga::ccd)
+  target_link_libraries(ipc_toolkit PRIVATE evouga::ccd)
 endif()
 
 # rational-cpp (requires GMP)
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   include(rational_cpp)
-  target_link_libraries(ipc_toolkit PUBLIC rational::rational)
+  target_link_libraries(ipc_toolkit PRIVATE rational::rational)
 endif()
 
 # Faster unordered map

@@ -38,7 +38,7 @@ pip install git+https://github.com/ipc-sim/ipc-toolkit
 
 ## Help/Documentation
 
-* A tutorial on how to use the toolkit can be found [here](https://ipctk.xyz/tutorial/getting_started.html).
+* Tutorials on how to use the toolkit can be found [here](https://ipctk.xyz/tutorials/getting_started.html).
 * A function reference can be found [here](https://ipctk.xyz/python.html).
 
 ## Contributing
@@ -82,4 +82,8 @@ Additionally, you can cite the original IPC paper:
 
 ## License
 
-MIT License © 2020, the IPC-Sim organization (See <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE.txt</code></a> for details)
+This project is licensed under the MIT License.
+
+You are free to use, modify, and distribute this code in your projects, even commercial ones, as long as you include the original copyright and license notice. A copy of the full license text can be found in the <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE</code></a> file.
+
+If you use this code in a product you distribute to others, you are required to **include a copy of the original copyright and license notice**. This is typically done in the product's documentation, an "About" or "Third-Party Licenses" section, or in a clear open-source software statement.

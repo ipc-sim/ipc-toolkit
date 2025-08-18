@@ -24,6 +24,7 @@ struct HashItem {
     }
 };
 
+/// @brief Hash grid broad phase collision detection.
 class HashGrid : public BroadPhase {
 public:
     HashGrid() = default;

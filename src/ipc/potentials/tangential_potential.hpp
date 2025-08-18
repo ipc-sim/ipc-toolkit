@@ -141,9 +141,33 @@ public:
         const double dmin = 0) const;
 
 protected:
-    virtual double f0(const double x) const = 0;
-    virtual double f1_over_x(const double x) const = 0;
-    virtual double f2_x_minus_f1_over_x3(const double x) const = 0;
+    /// @brief Compute the value of the ∫ μ(y) f₁(y) dy, where f₁ is the first derivative of the smooth mollifier.
+    /// @param x The tangential relative speed.
+    /// @param mu_s Coefficient of static friction.
+    /// @param mu_k Coefficient of kinetic friction.
+    /// @return The value of the integral at x.
+    virtual double
+    mu_f0(const double x, const double mu_s, const double mu_k) const = 0;
+
+    /// @brief Compute the value of the [μ(y) f₁(y)] / x, where f₁ is the first derivative of the smooth mollifier.
+    /// @param x The tangential relative speed.
+    /// @param mu_s Coefficient of static friction.
+    /// @param mu_k Coefficient of kinetic friction.
+    /// @return The value of the product at x.
+    virtual double mu_f1_over_x(
+        const double x, const double mu_s, const double mu_k) const = 0;
+
+    /// @brief Compute the value of [(d/dx (μ(y) f₁(y))) x - μ(y) f₁(y)] / x³, where f₁ is the first derivative of the smooth mollifier.
+    /// @param x The tangential relative speed.
+    /// @param mu_s Coefficient of static friction.
+    /// @param mu_k Coefficient of kinetic friction.
+    /// @return The value of the derivative at x.
+    virtual double mu_f2_x_minus_mu_f1_over_x3(
+        const double x, const double mu_s, const double mu_k) const = 0;
+
+    /// @brief Check if the speed is dynamic.
+    /// @param speed The tangential relative speed.
+    /// @return True if the speed is dynamic, false otherwise.
     virtual bool is_dynamic(const double speed) const = 0;
 };
 

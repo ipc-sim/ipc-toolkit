@@ -1,8 +1,6 @@
 #include <common.hpp>
 #include <bindings.hpp>
 
-namespace py = pybind11;
-
 PYBIND11_MODULE(ipctk, m)
 {
     // py::options options;
@@ -88,6 +86,7 @@ PYBIND11_MODULE(ipctk, m)
 
     // friction
     define_smooth_friction_mollifier(m);
+    define_smooth_mu(m);
 
     // implicits
     define_plane_implicit(m);

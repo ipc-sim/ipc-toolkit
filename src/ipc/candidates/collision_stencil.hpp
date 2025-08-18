@@ -36,7 +36,6 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> faces) const = 0;
 
     /// @brief Get the vertex attributes of the collision stencil.
-    /// @tparam T Type of the attributes
     /// @param vertices Vertex attributes
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
@@ -63,7 +62,6 @@ public:
     }
 
     /// @brief Select this stencil's DOF from the full matrix of DOF.
-    /// @tparam T Type of the DOF
     /// @param X Full matrix of DOF (rowwise).
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
@@ -121,7 +119,7 @@ public:
         return compute_distance_hessian(dof(vertices, edges, faces));
     }
 
-    /// @brief Compute the coefficients of the stencil s.t. d(x) = ‖∑ cᵢ xᵢ‖².
+    /// @brief Compute the coefficients of the stencil s.t. \f$d(x) = \|\sum c_i \mathbf{x}_i\|^2\f$.
     /// @param vertices Collision mesh vertices
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
@@ -132,6 +130,40 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> faces) const
     {
         return compute_coefficients(dof(vertices, edges, faces));
+    }
+
+    /// @brief Compute the normal of the stencil.
+    /// @param vertices Collision mesh vertices
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @param flip_if_negative If true, flip the normal if the point is on the negative side.
+    /// @param sign If not nullptr, set to the sign of the normal before any flipping.
+    /// @return Normal of the stencil.
+    VectorMax3d compute_normal(
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        const bool flip_if_negative = true,
+        double* sign = nullptr) const
+    {
+        return compute_normal(
+            dof(vertices, edges, faces), flip_if_negative, sign);
+    }
+
+    /// @brief Compute the Jacobian of the normal of the stencil.
+    /// @param vertices Collision mesh vertices
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @param flip_if_negative If true, flip the normal if the point is on the negative side.
+    /// @return Jacobian of the normal of the stencil.
+    MatrixMax<double, 3, 12> compute_normal_jacobian(
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        const bool flip_if_negative = true) const
+    {
+        return compute_normal_jacobian(
+            dof(vertices, edges, faces), flip_if_negative);
     }
 
     // ----------------------------------------------------------------------
@@ -165,6 +197,24 @@ public:
     virtual VectorMax4d
     compute_coefficients(Eigen::ConstRef<VectorMax12d> positions) const = 0;
 
+    /// @brief Compute the normal of the stencil.
+    /// @param positions Stencil's vertex positions.
+    /// @param flip_if_negative If true, flip the normal if the point is on the negative side.
+    /// @param sign If not nullptr, set to the sign of the normal before any flipping.
+    /// @return Normal of the stencil.
+    VectorMax3d compute_normal(
+        Eigen::ConstRef<VectorMax12d> positions,
+        bool flip_if_negative = true,
+        double* sign = nullptr) const;
+
+    /// @brief Compute the Jacobian of the normal of the stencil.
+    /// @param positions Stencil's vertex positions.
+    /// @param flip_if_negative If true, flip the normal if the point is on the negative side.
+    /// @return Jacobian of the normal of the stencil.
+    MatrixMax<double, 3, 12> compute_normal_jacobian(
+        Eigen::ConstRef<VectorMax12d> positions,
+        bool flip_if_negative = true) const;
+
     /// @brief Perform narrow-phase CCD on the candidate.
     /// @param[in] vertices_t0 Stencil vertices at the start of the time step.
     /// @param[in] vertices_t1 Stencil vertices at the end of the time step.
@@ -191,6 +241,19 @@ public:
         std::ostream& out,
         Eigen::ConstRef<VectorMax12d> vertices_t0,
         Eigen::ConstRef<VectorMax12d> vertices_t1) const;
+
+protected:
+    /// @brief Compute the unnormalized normal of the stencil.
+    /// @param positions Stencil's vertex positions.
+    /// @return Unnormalized normal of the stencil.
+    virtual VectorMax3d compute_unnormalized_normal(
+        Eigen::ConstRef<VectorMax12d> positions) const = 0;
+
+    /// @brief Compute the Jacobian of the unnormalized normal of the stencil.
+    /// @param positions Stencil's vertex positions.
+    /// @return Jacobian of the unnormalized normal of the stencil.
+    virtual MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
+        Eigen::ConstRef<VectorMax12d> positions) const = 0;
 };
 
 } // namespace ipc

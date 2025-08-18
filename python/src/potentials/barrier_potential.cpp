@@ -2,7 +2,6 @@
 
 #include <ipc/potentials/barrier_potential.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_barrier_potential(py::module_& m)
@@ -16,7 +15,7 @@ void define_barrier_potential(py::module_& m)
             Parameters:
                 dhat: The activation distance of the barrier.
             )ipc_Qu8mg5v7",
-            py::arg("dhat"), py::arg("use_physical_barrier") = false)
+            "dhat"_a, "use_physical_barrier"_a = false)
         .def(
             py::init<
                 const std::shared_ptr<Barrier>, const double, const bool>(),
@@ -27,8 +26,7 @@ void define_barrier_potential(py::module_& m)
                 barrier: The barrier function.
                 dhat: The activation distance of the barrier.
             )ipc_Qu8mg5v7",
-            py::arg("barrier"), py::arg("dhat"),
-            py::arg("use_physical_barrier") = false)
+            "barrier"_a, "dhat"_a, "use_physical_barrier"_a = false)
         .def_property(
             "dhat", &BarrierPotential::dhat, &BarrierPotential::set_dhat,
             "Barrier activation distance.")

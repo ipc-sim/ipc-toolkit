@@ -2,7 +2,6 @@
 
 #include <ipc/collisions/tangential/tangential_collisions.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_tangential_collisions(py::module_& m)
@@ -15,9 +14,16 @@ void define_tangential_collisions(py::module_& m)
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
                 const NormalCollisions&, const NormalPotential&, double,
                 double>(&TangentialCollisions::build),
-            py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
-            py::arg("normal_potential"), py::arg("normal_stiffness"),
-            py::arg("mu"))
+            "mesh"_a, "vertices"_a, "collisions"_a, "normal_potential"_a,
+            "normal_stiffness"_a, "mu"_a)
+        .def(
+            "build",
+            py::overload_cast<
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+                const NormalCollisions&, const NormalPotential&, double, double,
+                double>(&TangentialCollisions::build),
+            "mesh"_a, "vertices"_a, "collisions"_a, "normal_potential"_a,
+            "normal_stiffness"_a, "mu_s"_a, "mu_k"_a)
         .def(
             "build",
             [](TangentialCollisions& self, const CollisionMesh& mesh,
@@ -25,25 +31,25 @@ void define_tangential_collisions(py::module_& m)
                const NormalCollisions& collisions,
                const NormalPotential& normal_potential,
                const double normal_stiffness,
-               Eigen::ConstRef<Eigen::VectorXd> mus) {
+               Eigen::ConstRef<Eigen::VectorXd> mu_s,
+               Eigen::ConstRef<Eigen::VectorXd> mu_k) {
                 self.build(
                     mesh, vertices, collisions, normal_potential,
-                    normal_stiffness, mus);
+                    normal_stiffness, mu_s, mu_k);
             },
-            py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
-            py::arg("normal_potential"), py::arg("normal_stiffness"),
-            py::arg("mus"))
+            "mesh"_a, "vertices"_a, "collisions"_a, "normal_potential"_a,
+            "normal_stiffness"_a, "mu_s"_a, "mu_k"_a)
         .def(
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
                 const NormalCollisions&, const NormalPotential&, const double,
                 Eigen::ConstRef<Eigen::VectorXd>,
+                Eigen::ConstRef<Eigen::VectorXd>,
                 const std::function<double(double, double)>&>(
                 &TangentialCollisions::build),
-            py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
-            py::arg("normal_potential"), py::arg("normal_stiffness"),
-            py::arg("mus"), py::arg("blend_mu"))
+            "mesh"_a, "vertices"_a, "collisions"_a, "normal_potential"_a,
+            "normal_stiffness"_a, "mu_s"_a, "mu_k"_a, "blend_mu"_a)
         .def(
             "__len__", &TangentialCollisions::size,
             "Get the number of friction collisions.")
@@ -68,10 +74,10 @@ void define_tangential_collisions(py::module_& m)
             Returns:
                 A reference to the collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def_static(
             "default_blend_mu", &TangentialCollisions::default_blend_mu,
-            py::arg("mu0"), py::arg("mu1"))
+            "mu0"_a, "mu1"_a)
         .def_readwrite("vv_collisions", &TangentialCollisions::vv_collisions)
         .def_readwrite("ev_collisions", &TangentialCollisions::ev_collisions)
         .def_readwrite("ee_collisions", &TangentialCollisions::ee_collisions)

@@ -5,7 +5,6 @@
 
 #include <igl/edges.h>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_ipc(py::module_& m)
@@ -31,10 +30,9 @@ void define_ipc(py::module_& m)
         Returns:
             True if <b>any</b> collisions occur.
         )ipc_Qu8mg5v7",
-        py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-        py::arg("min_distance") = 0.0,
-        py::arg("broad_phase") = make_default_broad_phase(),
-        py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD);
+        "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
+        "broad_phase"_a = make_default_broad_phase(),
+        "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD);
 
     m.def(
         "compute_collision_free_stepsize", &compute_collision_free_stepsize,
@@ -55,10 +53,9 @@ void define_ipc(py::module_& m)
         Returns:
             A step-size :math:`\in [0, 1]` that is collision free. A value of 1.0 if a full step and 0.0 is no step.
         )ipc_Qu8mg5v7",
-        py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-        py::arg("min_distance") = 0.0,
-        py::arg("broad_phase") = make_default_broad_phase(),
-        py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD);
+        "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
+        "broad_phase"_a = make_default_broad_phase(),
+        "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD);
 
     m.def(
         "has_intersections", &has_intersections,
@@ -73,8 +70,7 @@ void define_ipc(py::module_& m)
         Returns:
             A boolean for if the mesh has intersections.
         )ipc_Qu8mg5v7",
-        py::arg("mesh"), py::arg("vertices"),
-        py::arg("broad_phase") = make_default_broad_phase());
+        "mesh"_a, "vertices"_a, "broad_phase"_a = make_default_broad_phase());
 
     m.def(
         "edges",
@@ -92,5 +88,5 @@ void define_ipc(py::module_& m)
         Returns:
             #E by 2 list of edges in no particular order
         )ipc_Qu8mg5v7",
-        py::arg("F"));
+        "F"_a);
 }
