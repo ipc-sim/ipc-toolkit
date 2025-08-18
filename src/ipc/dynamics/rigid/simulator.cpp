@@ -97,8 +97,7 @@ void Simulator::step()
             grad_norm, hess.norm(), alpha);
     } while (dx > m_time_integrator->dt * 1e-3 && ++iter < 100);
     logger().info(
-        "converged: iter={} dx={:g} norm(grad)={:g} norm(hess)={:g}", iter, dx,
-        grad_norm);
+        "converged: iter={} dx={:g} norm(grad)={:g}", iter, dx, grad_norm);
 
     for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
         poses[i].position = x.segment<3>(6 * i);
