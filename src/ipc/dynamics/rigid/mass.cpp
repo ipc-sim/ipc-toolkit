@@ -56,7 +56,7 @@ namespace {
         assert(faces.rows() > 0 && faces.cols() == 3);
 
         // order:  1, x, y, z, x^2, y^2, z^2, xy, yz, zx
-        std::array<double, 10> integral = { 0.0 };
+        std::array<double, 10> integral {};
 
         for (int i = 0; i < faces.rows(); i++) {
             // Get vertices of triangle i.
