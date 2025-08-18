@@ -120,7 +120,7 @@ TEST_CASE("Interval sinc_norm_x", "[sinc][interval]")
     CHECK(expected_y.SUP == Catch::Approx(y.SUP).margin(1e-8));
 }
 
-TEST_CASE("∇sinc(||x||)", "[sinc][vector][diff]")
+TEST_CASE("Grad sinc(||x||)", "[sinc][vector][diff]")
 {
     double sign = GENERATE(-1, 1);
     double val = GENERATE(0, 1e-8, igl::PI / 2, igl::PI, 5, 20, 100);
@@ -135,7 +135,7 @@ TEST_CASE("∇sinc(||x||)", "[sinc][vector][diff]")
     CHECK(fd::compare_gradient(grad, fgrad));
 }
 
-TEST_CASE("∇²sinc(||x||)", "[sinc][vector][diff]")
+TEST_CASE("Hess sinc(||x||)", "[sinc][vector][diff]")
 {
     double sign = GENERATE(-1, 1);
     double val = GENERATE(0, 1e-8, igl::PI / 2, igl::PI, 5, 20, 100);

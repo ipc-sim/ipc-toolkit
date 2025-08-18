@@ -10,7 +10,7 @@
 
 using namespace ipc::rigid;
 
-TEST_CASE("𝔰𝔬(3) ↦ SO(3)", "[rigid][pose]")
+TEST_CASE("so(3) -> SO(3)", "[rigid][pose]")
 {
     double angle;
     Eigen::Vector3d axis;
@@ -41,7 +41,7 @@ TEST_CASE("𝔰𝔬(3) ↦ SO(3)", "[rigid][pose]")
     CHECK((R_actual - R_expected).norm() == Catch::Approx(0).margin(1e-12));
 }
 
-TEST_CASE("∇²(𝔰𝔬(3) ↦ SO(3))", "[!benchmark][rigid][pose]")
+TEST_CASE("Benchmark so(3) -> SO(3)", "[!benchmark][rigid][pose]")
 {
     Eigen::Vector3d theta = Eigen::Vector3d::Random();
 
@@ -59,7 +59,7 @@ TEST_CASE("∇²(𝔰𝔬(3) ↦ SO(3))", "[!benchmark][rigid][pose]")
 }
 
 #if false
-TEST_CASE("Interval 𝔰𝔬(3) ↦ SO(3)", "[!benchmark][physics][pose]")
+TEST_CASE("Interval so(3) -> SO(3)", "[!benchmark][physics][pose]")
 {
     using namespace ipc::rigid;
     double angle;
@@ -79,19 +79,19 @@ TEST_CASE("Interval 𝔰𝔬(3) ↦ SO(3)", "[!benchmark][physics][pose]")
 
     Pose<double> p = Pose<double>::Zero(3);
     p.rotation = angle * axis;
-    BENCHMARK("Double 𝔰𝔬(3) ↦ SO(3)")
+    BENCHMARK("Double so(3) -> SO(3)")
     {
         Eigen::Matrix3d R = p.construct_rotation_matrix();
     };
     Pose<ipc::rigid::Interval> pI = p.cast<ipc::rigid::Interval>();
-    BENCHMARK("Interval 𝔰𝔬(3) ↦ SO(3)")
+    BENCHMARK("Interval so(3) -> SO(3)")
     {
         Matrix3I R = pI.construct_rotation_matrix();
     };
 }
 #endif
 
-TEST_CASE("𝔰𝔬(3) ↦ SO(3) derivatives", "[rigid][pose]")
+TEST_CASE("so(3) -> SO(3) derivatives", "[rigid][pose]")
 {
     double angle;
     Eigen::Vector3d axis;
@@ -150,7 +150,7 @@ TEST_CASE("𝔰𝔬(3) ↦ SO(3) derivatives", "[rigid][pose]")
     }
 }
 
-TEST_CASE("SO(3) ↦ 𝔰𝔬(3)", "[rigid][pose]")
+TEST_CASE("SO(3) -> so(3)", "[rigid][pose]")
 {
     double angle = GENERATE(
         0.0, 1e-8, 1e-6, igl::PI / 4, igl::PI / 2, igl::PI * 0.75,
@@ -182,7 +182,7 @@ TEST_CASE("SO(3) ↦ 𝔰𝔬(3)", "[rigid][pose]")
     //           << std::endl;
 }
 
-TEST_CASE("Benchmark SO(3) ↦ 𝔰𝔬(3)", "[!benchmark][rigid][pose]")
+TEST_CASE("Benchmark SO(3) -> so(3)", "[!benchmark][rigid][pose]")
 {
     Eigen::Matrix3d R = Eigen::Matrix3d::Random();
     Eigen::JacobiSVD<Eigen::Matrix3d> svd(
