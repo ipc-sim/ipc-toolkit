@@ -90,7 +90,6 @@ rotation_vector_to_matrix_hessian(Eigen::ConstRef<Eigen::Vector3d> theta)
     Eigen::Matrix<double, 9, 9> d2R;
     for (int j = 0; j < 3; ++j) {
         const Eigen::Matrix3d K_dKj = K * dK[j];
-        const Eigen::Matrix3d K_dKj_plus_K_dKj_T = K_dKj + K_dKj.transpose();
         for (int i = j; i < 3; ++i) {
             const Eigen::Matrix3d dKj_dKi = dK[j] * dK[i];
             d2R.col(j * 3 + i) =
