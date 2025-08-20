@@ -42,6 +42,20 @@ void define_rigid_simulator(py::module_& m)
                 "Pose(position={}, rotation={})", p.position, p.rotation);
         });
 
+    py::class_<RigidBody>(m, "RigidBody")
+        .def(
+            py::init<
+                Eigen::Ref<Eigen::MatrixXd>, Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>, const double, Pose&>(),
+            py::arg("vertices"), py::arg("edges"), py::arg("faces"),
+            py::arg("density"), py::arg("initial_pose"))
+        .def_property_readonly("mass", &RigidBody::mass)
+        .def_property_readonly(
+            "moment_of_inertia", &RigidBody::moment_of_inertia)
+        .def_property_readonly("J", &RigidBody::J)
+        .def_property_readonly("R0", &RigidBody::R0)
+        .def_property_readonly("external_force", &RigidBody::external_force);
+
     py::class_<RigidBodies, std::shared_ptr<RigidBodies>, CollisionMesh>(
         m, "RigidBodies")
         .def(
@@ -75,7 +89,7 @@ void define_rigid_simulator(py::module_& m)
         .def("step", &rigid::Simulator::step)
         .def("reset", &rigid::Simulator::reset)
         .def_property_readonly(
-            "poses_history", &rigid::Simulator::poses_history,
+            "pose_history", &rigid::Simulator::pose_history,
             R"ipc_Qu8mg5v7(
              Get the history of poses in the simulation.
 

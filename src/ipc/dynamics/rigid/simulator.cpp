@@ -28,7 +28,7 @@ Simulator::Simulator(
         // v0.segment<3>(12 * i).y() = 10;
 
         // ω = R₀ᵀω₀ (ω₀ expressed in body coordinates)
-        Eigen::Vector3d omega(-100 * igl::PI / 180, 0, 0);
+        Eigen::Vector3d omega(0, -100 * igl::PI / 180, 0);
         omega = (*m_bodies)[i].R0().transpose() * omega;
         Eigen::Matrix3d Q_t0 = initial_poses[i].rotation_matrix();
         v0.segment<9>(12 * i + 3) =
@@ -84,7 +84,7 @@ void Simulator::step()
         }
         Eigen::MatrixXd hess =
             m_inertial_term->hessian(*m_bodies, x, PSDProjectionMethod::ABS);
-        Eigen::VectorXd step = -hess.lu().solve(grad);
+        Eigen::VectorXd step = -hess.llt().solve(grad);
         dx = step.norm();
         double alpha = 1.0;
         double Ex = (*m_inertial_term)(*m_bodies, x);

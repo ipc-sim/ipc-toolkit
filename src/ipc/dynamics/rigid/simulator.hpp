@@ -14,17 +14,17 @@ class InertialTerm;
 class Simulator {
 public:
     /// @brief Create a simulation box
-    /// @param corners Corners of the simulation box
-    /// @param gravity Gravity vector
+    /// @param bodies Rigid bodies in the simulation
+    /// @param initial_poses Initial poses of the rigid bodies
+    /// @param dt Time step
     Simulator(
-        const std::shared_ptr<RigidBodies> _bodies,
+        const std::shared_ptr<RigidBodies> bodies,
         const std::vector<Pose>& initial_poses,
         const double dt);
 
     /// @brief Run the simulation
     /// @param t_end End time
-    /// @param dt Time step
-    /// @param callback
+    /// @param callback Callback function to be called at each step
     void run(
         // const double dt,
         const double t_end,
@@ -43,12 +43,12 @@ public:
     // Accessors
     // -----------------------------------------------------------------------
 
-    const std::list<std::vector<Pose>>& poses_history() const
+    const std::list<std::vector<Pose>>& pose_history() const
     {
         return m_pose_history;
     }
 
-    const std::shared_ptr<RigidBodies>& bodies() const { return m_bodies; }
+    std::shared_ptr<const RigidBodies> bodies() const { return m_bodies; }
 
     double t() const { return m_t; }
     // double dt() const { return m_time_integrator->dt; }
