@@ -1,5 +1,6 @@
 #include "rigid_body.hpp"
 
+#include <ipc/broad_phase/bvh.hpp>
 #include <ipc/dynamics/rigid/mass.hpp>
 #include <ipc/utils/sinc.hpp>
 
@@ -159,7 +160,7 @@ RigidBody::RigidBody(
     // mass_matrix.diagonal().head(pos_ndof()).setConstant(mass);
     // mass_matrix.diagonal().tail(rot_ndof()) = moment_of_inertia;
 
-    // r_max = this->vertices.rowwise().norm().maxCoeff();
+    m_bounding_radius = vertices.rowwise().norm().maxCoeff();
 
     // average_edge_length = 0;
     // for (long i = 0; i < edges.rows(); i++) {
@@ -173,7 +174,8 @@ RigidBody::RigidBody(
     // }
     // assert(std::isfinite(average_edge_length));
 
-    // init_bvh();
+    m_bvh = std::make_shared<BVH>();
+    m_bvh->build(vertices, edges, faces);
 }
 
 } // namespace ipc::rigid

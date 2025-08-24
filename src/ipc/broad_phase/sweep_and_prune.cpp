@@ -54,6 +54,31 @@ void SweepAndPrune::build(
     scalable_ccd::build_face_boxes(boxes->vertices, faces, boxes->faces);
 }
 
+void SweepAndPrune::build(
+    const std::vector<AABB>& vertex_boxes,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces)
+{
+    assert(edges.size() == 0 || edges.cols() == 2);
+    assert(faces.size() == 0 || faces.cols() == 3);
+
+    clear();
+
+    // Convert from ipc::AABB to scalable_ccd::AABB (additional element_id)
+    boxes->vertices.resize(vertex_boxes.size());
+    for (int i = 0; i < vertex_boxes.size(); ++i) {
+        boxes->vertices[i].min = vertex_boxes[i].min;
+        boxes->vertices[i].max = vertex_boxes[i].max;
+        for (int j = 0; j < 3; ++j) {
+            boxes->vertices[i].vertex_ids[j] = vertex_boxes[i].vertex_ids[j];
+        }
+        boxes->vertices[i].element_id = i;
+    }
+
+    scalable_ccd::build_edge_boxes(boxes->vertices, edges, boxes->edges);
+    scalable_ccd::build_face_boxes(boxes->vertices, faces, boxes->faces);
+}
+
 void SweepAndPrune::clear()
 {
     BroadPhase::clear();

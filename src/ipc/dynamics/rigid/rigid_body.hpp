@@ -4,6 +4,10 @@
 #include <ipc/dynamics/rigid/pose.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
+namespace ipc {
+class BVH;
+}
+
 namespace ipc::rigid {
 
 class RigidBody {
@@ -30,6 +34,8 @@ public:
     const Eigen::DiagonalMatrix<double, 3>& J() const { return m_J; }
     const MatrixMax3d& R0() const { return m_R0; }
     const Pose& external_force() const { return m_external_force; }
+    std::shared_ptr<const BVH> bvh() const { return m_bvh; }
+    double bounding_radius() const { return m_bounding_radius; }
 
 private:
     /// @brief Total mass of the rigid body
@@ -49,6 +55,13 @@ private:
 
     /// @brief External force and torque applied to the rigid body
     Pose m_external_force;
+
+    /// @brief Statically constructed bounding volume hierarchy for collision detection
+    /// @note This is defined in the inertial reference frame
+    std::shared_ptr<BVH> m_bvh;
+
+    /// @brief Bounding radius of the rigid body
+    double m_bounding_radius;
 };
 
 } // namespace ipc::rigid

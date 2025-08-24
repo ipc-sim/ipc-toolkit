@@ -77,6 +77,27 @@ double suggest_good_voxel_size(
     return voxel_size;
 }
 
+double suggest_good_voxel_size(const std::vector<AABB>& boxes)
+{
+    assert(boxes.size() > 0);
+
+    Eigen::VectorXd box_sizes(boxes.size());
+    for (size_t i = 0; i < boxes.size(); ++i) {
+        box_sizes(i) = (boxes[i].max - boxes[i].min).maxCoeff();
+    }
+
+    double voxel_size;
+    igl::median(box_sizes, voxel_size);
+
+    if (voxel_size <= 0) {
+        voxel_size = std::numeric_limits<double>::max();
+    }
+    assert(std::isfinite(voxel_size));
+
+    logger().trace("suggesting voxel size of {}", voxel_size);
+    return voxel_size;
+}
+
 double mean_edge_length(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
