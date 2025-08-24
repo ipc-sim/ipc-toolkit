@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/utils/eigen_ext.hpp>
+#include <ipc/broad_phase/aabb.hpp>
 
 namespace ipc {
 
@@ -25,6 +25,11 @@ double suggest_good_voxel_size(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     const double inflation_radius = 0);
+
+/// @brief Suggest a good voxel size for the given mesh.
+/// @param boxes The axis-aligned bounding boxes of the mesh.
+/// @return The suggested voxel size.
+double suggest_good_voxel_size(const std::vector<AABB>& boxes);
 
 /// @brief Compute the average edge length of a mesh.
 /// @param vertices_t0 The vertex positions of the mesh at time t0.

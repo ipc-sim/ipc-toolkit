@@ -11,12 +11,9 @@ void BroadPhase::build(
     Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
-    assert(edges.size() == 0 || edges.cols() == 2);
-    assert(faces.size() == 0 || faces.cols() == 3);
     clear();
     build_vertex_boxes(vertices, vertex_boxes, inflation_radius);
-    build_edge_boxes(vertex_boxes, edges, edge_boxes);
-    build_face_boxes(vertex_boxes, faces, face_boxes);
+    build(edges, faces);
 }
 
 void BroadPhase::build(
@@ -26,11 +23,32 @@ void BroadPhase::build(
     Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
-    assert(edges.size() == 0 || edges.cols() == 2);
-    assert(faces.size() == 0 || faces.cols() == 3);
     clear();
     build_vertex_boxes(
         vertices_t0, vertices_t1, vertex_boxes, inflation_radius);
+    build(edges, faces);
+}
+
+void BroadPhase::build(
+    const std::vector<AABB>& _vertex_boxes,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces)
+{
+    clear();
+
+    assert(&(this->vertex_boxes) != &_vertex_boxes);
+    this->vertex_boxes = _vertex_boxes;
+
+    build(edges, faces);
+}
+
+void BroadPhase::build(
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces)
+{
+    assert(vertex_boxes.size() > 0);
+    assert(edges.size() == 0 || edges.cols() == 2);
+    assert(faces.size() == 0 || faces.cols() == 3);
     build_edge_boxes(vertex_boxes, edges, edge_boxes);
     build_face_boxes(vertex_boxes, faces, face_boxes);
 }

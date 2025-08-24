@@ -38,6 +38,15 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> faces,
         double inflation_radius = 0) override;
 
+    /// @brief Build the broad phase from precomputed AABBs.
+    /// @param vertex_boxes Precomputed vertex AABBs
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    void build(
+        const std::vector<AABB>& vertex_boxes,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) override;
+
     /// @brief Clear any built data.
     void clear() override;
 

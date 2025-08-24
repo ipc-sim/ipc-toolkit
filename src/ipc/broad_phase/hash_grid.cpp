@@ -18,46 +18,20 @@ using namespace std::placeholders;
 namespace ipc {
 
 void HashGrid::build(
-    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
-    Eigen::ConstRef<Eigen::MatrixXi> faces,
-    const double inflation_radius)
+    Eigen::ConstRef<Eigen::MatrixXi> faces)
 {
-    BroadPhase::build(vertices, edges, faces, inflation_radius);
-    // BroadPhase::build also calls clear()
+    BroadPhase::build(edges, faces);
 
-    ArrayMax3d mesh_min = vertices.colwise().minCoeff().array();
-    ArrayMax3d mesh_max = vertices.colwise().maxCoeff().array();
-    AABB::conservative_inflation(mesh_min, mesh_max, inflation_radius);
+    ArrayMax3d mesh_min = vertex_boxes[0].min;
+    ArrayMax3d mesh_max = vertex_boxes[0].max;
+    for (const auto& box : vertex_boxes) {
+        mesh_min = mesh_min.min(box.min);
+        mesh_max = mesh_max.max(box.max);
+    }
 
     const double cell_size =
-        suggest_good_voxel_size(vertices, edges, inflation_radius);
-    resize(mesh_min, mesh_max, cell_size);
-
-    insert_boxes();
-}
-
-void HashGrid::build(
-    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
-    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-    Eigen::ConstRef<Eigen::MatrixXi> edges,
-    Eigen::ConstRef<Eigen::MatrixXi> faces,
-    const double inflation_radius)
-{
-    BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
-    // BroadPhase::build also calls clear()
-
-    const ArrayMax3d mesh_min_t0 = vertices_t0.colwise().minCoeff();
-    const ArrayMax3d mesh_max_t0 = vertices_t0.colwise().maxCoeff();
-    const ArrayMax3d mesh_min_t1 = vertices_t1.colwise().minCoeff();
-    const ArrayMax3d mesh_max_t1 = vertices_t1.colwise().maxCoeff();
-
-    ArrayMax3d mesh_min = mesh_min_t0.min(mesh_min_t1);
-    ArrayMax3d mesh_max = mesh_max_t0.max(mesh_max_t1);
-    AABB::conservative_inflation(mesh_min, mesh_max, inflation_radius);
-
-    const double cell_size = suggest_good_voxel_size(
-        vertices_t0, vertices_t1, edges, inflation_radius);
+        suggest_good_voxel_size(edges.rows() > 0 ? edge_boxes : vertex_boxes);
     resize(mesh_min, mesh_max, cell_size);
 
     insert_boxes();
@@ -66,9 +40,9 @@ void HashGrid::build(
 void HashGrid::resize(
     Eigen::ConstRef<ArrayMax3d> domain_min,
     Eigen::ConstRef<ArrayMax3d> domain_max,
-    double cell_size)
+    const double cell_size)
 {
-    assert(cell_size != 0.0);
+    assert(cell_size > 0.0);
     assert(std::isfinite(cell_size));
 
     m_domain_min = domain_min;
@@ -76,6 +50,8 @@ void HashGrid::resize(
     m_cell_size = cell_size;
     m_grid_size =
         ((domain_max - domain_min) / cell_size).ceil().cast<int>().max(1);
+
+    assert(m_grid_size.maxCoeff() < 200'000);
 
     logger().trace(
         "hash-grid resized with a size of {:d}x{:d}x{:d}", grid_size()[0],

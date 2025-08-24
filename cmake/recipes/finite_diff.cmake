@@ -7,7 +7,7 @@ endif()
 message(STATUS "Third-party: creating target 'finitediff::finitediff'")
 
 include(CPM)
-CPMAddPackage("gh:zfergus/finite-diff@1.0.1")
+CPMAddPackage("gh:zfergus/finite-diff@1.0.3")
 
 # Folder name for IDE
 set_target_properties(finitediff_finitediff PROPERTIES FOLDER "ThirdParty")

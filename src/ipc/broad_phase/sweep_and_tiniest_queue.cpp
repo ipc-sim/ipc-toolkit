@@ -66,6 +66,33 @@ void SweepAndTiniestQueue::build(
     scalable_ccd::cuda::build_face_boxes(boxes->vertices, faces, boxes->faces);
 }
 
+void SweepAndTiniestQueue::build(
+    const std::vector<AABB>& vertex_boxes,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces)
+{
+    assert(edges.size() == 0 || edges.cols() == 2);
+    assert(faces.size() == 0 || faces.cols() == 3);
+
+    clear();
+
+    // Convert from ipc::AABB to scalable_ccd::cuda::AABB
+    boxes->vertices.resize(vertex_boxes.size());
+    for (int i = 0; i < vertex_boxes.size(); ++i) {
+        for (int d = 0; d < 3; ++d) {
+            boxes->vertices[i].min[d] =
+                vertex_boxes[i].min.size() > d ? vertex_boxes[i].min[d] : 0;
+            boxes->vertices[i].max[d] =
+                vertex_boxes[i].max.size() > d ? vertex_boxes[i].max[d] : 0;
+            boxes->vertices[i].vertex_ids[d] = vertex_boxes[i].vertex_ids[d];
+        }
+        boxes->vertices[i].element_id = i;
+    }
+
+    scalable_ccd::cuda::build_edge_boxes(boxes->vertices, edges, boxes->edges);
+    scalable_ccd::cuda::build_face_boxes(boxes->vertices, faces, boxes->faces);
+}
+
 void SweepAndTiniestQueue::clear()
 {
     BroadPhase::clear();

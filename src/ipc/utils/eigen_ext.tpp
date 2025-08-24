@@ -31,8 +31,7 @@ project_to_pd(
         Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
         eigensolver(A);
     if (eigensolver.info() != Eigen::Success) {
-        logger().error("unable to project matrix onto positive definite cone");
-        throw std::runtime_error(
+        log_and_throw_error(
             "unable to project matrix onto positive definite cone");
     }
     // Check if all eigen values are positive.
@@ -76,10 +75,8 @@ project_to_psd(
         Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
         eigensolver(A);
     if (eigensolver.info() != Eigen::Success) {
-        logger().error(
+        log_and_throw_error(
             "unable to project matrix onto positive semi-definite cone");
-        throw std::runtime_error(
-            "unable to project matrix onto positive definite cone");
     }
     // Check if all eigen values are zero or positive.
     // The eigenvalues are sorted in increasing order.
