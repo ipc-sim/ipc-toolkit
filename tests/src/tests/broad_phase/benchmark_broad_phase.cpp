@@ -65,6 +65,11 @@ TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
         F_stack.bottomRows(F.rows()) = F.array() + n;
         F = F_stack;
 
+        Eigen::MatrixXi E_stack(2 * E.rows(), E.cols());
+        E_stack.topRows(E.rows()) = E;
+        E_stack.bottomRows(E.rows()) = E.array() + n;
+        E = E_stack;
+
         testcase_name = fmt::format("Interobject dx={}", dx);
     }
 
@@ -75,13 +80,15 @@ TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
+    const auto broad_phases = tests::broad_phases();
 
-    BENCHMARK(fmt::format("BP {} ({})", testcase_name, broad_phase->name()))
-    {
-        Candidates candidates;
-        candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
-    };
+    for (const auto& broad_phase : broad_phases) {
+        BENCHMARK(fmt::format("BP {} ({})", testcase_name, broad_phase->name()))
+        {
+            Candidates candidates;
+            candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
+        };
+    }
 }
 
 TEST_CASE(
@@ -125,14 +132,17 @@ TEST_CASE(
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
-    if (broad_phase->name() == "BruteForce") {
-        SKIP("Not benchmarking brute force");
-    }
+    const auto broad_phases = tests::broad_phases();
 
-    BENCHMARK(fmt::format("BP Real Data ({})", broad_phase->name()))
-    {
-        Candidates candidates;
-        candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
-    };
+    for (const auto& broad_phase : broad_phases) {
+        if (broad_phase->name() == "BruteForce") {
+            continue;
+        }
+
+        BENCHMARK(fmt::format("BP Real Data ({})", broad_phase->name()))
+        {
+            Candidates candidates;
+            candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
+        };
+    }
 }
