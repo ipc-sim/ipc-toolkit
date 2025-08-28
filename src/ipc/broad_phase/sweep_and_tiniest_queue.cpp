@@ -79,13 +79,15 @@ void SweepAndTiniestQueue::build(
     // Convert from ipc::AABB to scalable_ccd::cuda::AABB
     boxes->vertices.resize(vertex_boxes.size());
     for (int i = 0; i < vertex_boxes.size(); ++i) {
-        for (int d = 0; d < 3; ++d) {
-            boxes->vertices[i].min[d] =
-                vertex_boxes[i].min.size() > d ? vertex_boxes[i].min[d] : 0;
-            boxes->vertices[i].max[d] =
-                vertex_boxes[i].max.size() > d ? vertex_boxes[i].max[d] : 0;
-            boxes->vertices[i].vertex_ids[d] = vertex_boxes[i].vertex_ids[d];
-        }
+        boxes->vertices[i].min = Scalar3(
+            vertex_boxes[i].min.x(), vertex_boxes[i].min.y(),
+            vertex_boxes[i].min.size() > 2 ? vertex_boxes[i].min.z() : 0);
+        boxes->vertices[i].max = Scalar3(
+            vertex_boxes[i].max.x(), vertex_boxes[i].max.y(),
+            vertex_boxes[i].max.size() > 2 ? vertex_boxes[i].max.z() : 0);
+        boxes->vertices[i].vertex_ids = int3(
+            vertex_boxes[i].vertex_ids[0], vertex_boxes[i].vertex_ids[1],
+            vertex_boxes[i].vertex_ids[2]);
         boxes->vertices[i].element_id = i;
     }
 
