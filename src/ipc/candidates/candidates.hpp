@@ -131,7 +131,7 @@ public:
     /// @param edges The edge connectivity.
     /// @param faces The face connectivity.
     /// @return True if the write was successful, false otherwise.
-    bool save_obj(
+    bool write_obj(
         const std::string& filename,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,

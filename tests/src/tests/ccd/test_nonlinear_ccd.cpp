@@ -179,12 +179,11 @@ TEST_CASE("Nonlinear Point-Point CCD", "[ccd][nonlinear][point-point]")
     }
 #endif
 
+    NonlinearCCD ccd;
+    ccd.conservative_rescaling = 0.9;
+
     double toi;
-    bool collision = point_point_nonlinear_ccd(
-        p0, *p1, toi, /*tmax=*/1.0, /*min_distance=*/0,
-        TightInclusionCCD::DEFAULT_TOLERANCE,
-        TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
-        /*conservative_rescaling=*/0.9);
+    bool collision = ccd.point_point_ccd(p0, *p1, toi);
 
     CHECK(collision);
     CHECK(toi <= 0.5);
@@ -199,12 +198,11 @@ TEST_CASE("Nonlinear Point-Edge CCD", "[ccd][nonlinear][point-edge]")
     const RotationalTrajectory e1(
         Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), 2 * igl::PI);
 
+    NonlinearCCD ccd;
+    ccd.conservative_rescaling = 0.9;
+
     double toi;
-    bool collision = point_edge_nonlinear_ccd(
-        p, e0, e1, toi, /*tmax=*/1.0, /*min_distance=*/0,
-        TightInclusionCCD::DEFAULT_TOLERANCE,
-        TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
-        /*conservative_rescaling=*/0.9);
+    bool collision = ccd.point_edge_ccd(p, e0, e1, toi);
 
     CHECK(collision);
     CHECK(toi <= 0.25);
@@ -226,14 +224,11 @@ TEST_CASE("Rigid 2D Trajectory", "[ccd][nonlinear][point-edge]")
         Eigen::Vector2d(+1, 0), Eigen::Vector2d::Zero(),
         Eigen::Vector2d::Zero(), 0, igl::PI);
 
+    NonlinearCCD ccd;
+    ccd.conservative_rescaling = 0.9;
+
     double toi;
-    bool collision = ipc::point_edge_nonlinear_ccd(
-        p, e0, e1, toi, /*tmax=*/1.0, /*min_distance=*/0,
-        TightInclusionCCD::DEFAULT_TOLERANCE,
-        TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
-        // increase the conservative_rescaling from 0.8 to 0.9 to get a more
-        // accurate estimate
-        /*conservative_rescaling=*/0.9);
+    bool collision = ccd.point_edge_ccd(p, e0, e1, toi);
 
     CHECK(collision);
     CHECK((0.49 <= toi && toi <= 0.5)); // conservative estimate
@@ -250,7 +245,7 @@ TEST_CASE("Nonlinear Edge-Edge CCD", "[ccd][nonlinear][edge-edge]")
     const StaticTrajectory eb1(Eigen::Vector3d(1, 0.5, 0));
 
     double toi;
-    bool collision = edge_edge_nonlinear_ccd(ea0, ea1, eb0, eb1, toi);
+    bool collision = NonlinearCCD().edge_edge_ccd(ea0, ea1, eb0, eb1, toi);
 
     CHECK(collision);
     CHECK(toi <= 30 / 360.0);
@@ -269,12 +264,11 @@ TEST_CASE("Nonlinear Point-Triangle CCD", "[ccd][nonlinear][point-triangle]")
         Eigen::Vector3d(x, 0, -1), Eigen::Vector3d::Zero(), igl::PI);
     const StaticTrajectory p(Eigen::Vector3d(0, 0.5, 0));
 
+    NonlinearCCD ccd;
+    ccd.conservative_rescaling = 0.9;
+
     double toi;
-    bool collision = point_triangle_nonlinear_ccd(
-        p, t0, t1, t2, toi, /*tmax=*/1.0, /*min_distance=*/0,
-        TightInclusionCCD::DEFAULT_TOLERANCE,
-        TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
-        /*conservative_rescaling=*/0.9);
+    bool collision = ccd.point_triangle_ccd(p, t0, t1, t2, toi);
 
     CHECK(collision);
     CHECK(toi <= 0.5);
