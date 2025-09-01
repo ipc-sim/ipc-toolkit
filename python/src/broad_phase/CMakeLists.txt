@@ -4,6 +4,7 @@ set(SOURCES
   brute_force.cpp
   bvh.cpp
   hash_grid.cpp
+  lbvh.cpp
   spatial_hash.cpp
   sweep_and_prune.cpp
   sweep_and_tiniest_queue.cpp

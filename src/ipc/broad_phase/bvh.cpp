@@ -47,6 +47,7 @@ void BVH::init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh)
 
 void BVH::clear()
 {
+    BroadPhase::clear();
     vertex_bvh->clear();
     edge_bvh->clear();
     face_bvh->clear();
