@@ -67,11 +67,16 @@ void SweepAndPrune::build(
     // Convert from ipc::AABB to scalable_ccd::AABB (additional element_id)
     boxes->vertices.resize(vertex_boxes.size());
     for (int i = 0; i < vertex_boxes.size(); ++i) {
-        boxes->vertices[i].min = vertex_boxes[i].min;
-        boxes->vertices[i].max = vertex_boxes[i].max;
-        for (int j = 0; j < 3; ++j) {
-            boxes->vertices[i].vertex_ids[j] = vertex_boxes[i].vertex_ids[j];
-        }
+        boxes->vertices[i].min =
+            vertex_boxes[i].min.cast<scalable_ccd::Scalar>();
+        boxes->vertices[i].max =
+            vertex_boxes[i].max.cast<scalable_ccd::Scalar>();
+        assert(vertex_boxes[i].vertex_ids[0] >= 0);
+        assert(vertex_boxes[i].vertex_ids[1] < 0);
+        assert(vertex_boxes[i].vertex_ids[2] < 0);
+        boxes->vertices[i].vertex_ids[0] = vertex_boxes[i].vertex_ids[0];
+        boxes->vertices[i].vertex_ids[1] = -vertex_boxes[i].vertex_ids[0] - 1;
+        boxes->vertices[i].vertex_ids[2] = boxes->vertices[i].vertex_ids[1];
         boxes->vertices[i].element_id = i;
     }
 

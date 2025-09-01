@@ -266,3 +266,26 @@ TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball][.]")
         mesh, V0, V1, broad_phase, true,
         (tests::DATA_DIR / "cloth_ball_bf_ccd_candidates.json").string());
 }
+
+TEST_CASE("Broad phase build from boxes", "[broad_phase]")
+{
+    using namespace ipc;
+
+    std::vector<AABB> boxes(100);
+    for (int i = 0; i < boxes.size(); ++i) {
+        boxes[i].min = Eigen::Array3d(i * 0.6, 0, 0);
+        boxes[i].max = Eigen::Array3d(boxes[i].min.x() + 1.0, 0, 0);
+        boxes[i].vertex_ids = { i, -1, -1 };
+    }
+    REQUIRE(boxes[0].intersects(boxes[1]));
+    REQUIRE(!boxes[0].intersects(boxes[2]));
+
+    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
+    broad_phase->build(boxes, Eigen::MatrixXi(), Eigen::MatrixXi());
+
+    std::vector<VertexVertexCandidate> candidates;
+    broad_phase->detect_vertex_vertex_candidates(candidates);
+
+    CAPTURE(broad_phase->name());
+    CHECK(candidates.size() == boxes.size() - 1);
+}
