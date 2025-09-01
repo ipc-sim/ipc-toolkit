@@ -41,6 +41,13 @@ public:
         this->SUP = y;
     }
 
+    static Interval empty()
+    {
+        return Interval(
+            std::numeric_limits<double>::infinity(),
+            -std::numeric_limits<double>::infinity());
+    }
+
     // friend std::ostream& operator<<(std::ostream& out, const Interval& i)
     // {
     //     return out << "[" << i.INF << ", " << i.SUP << "]";
@@ -105,6 +112,7 @@ template <typename BinOp>
 struct ScalarBinaryOpTraits<double, filib::Interval, BinOp> {
     typedef filib::Interval ReturnType;
 };
+
 } // namespace Eigen
 
 #endif

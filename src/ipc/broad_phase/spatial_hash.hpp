@@ -12,43 +12,6 @@ namespace ipc {
 
 /// @brief Spatial hash broad phase collision detection.
 class SpatialHash : public BroadPhase {
-public: // data
-    /// @brief The left bottom corner of the world bounding box.
-    ArrayMax3d left_bottom_corner;
-
-    /// @brief The right top corner of the world bounding box.
-    ArrayMax3d right_top_corner;
-
-    /// @brief The number of voxels in each dimension.
-    ArrayMax3i voxel_count;
-
-    /// @brief 1.0 / voxel_size
-    double one_div_voxelSize;
-
-    /// @brief The number of voxels in the first two dimensions.
-    int voxel_count_0x1;
-
-    // // The index of the first edge in voxel_occupancies
-    int edge_start_ind;
-    // // The index of the first triangle in voxel_occupancies
-    int tri_start_ind;
-
-    /// @brief Map from voxel index to the primitive indices it contains.
-    unordered_map<int, std::vector<int>> voxel_to_primitives;
-
-    /// @brief Map from point index to the voxel indices it occupies.
-    std::vector<std::vector<int>> point_to_voxels;
-
-    /// @brief Map from edge index to the voxel indices it occupies.
-    std::vector<std::vector<int>> edge_to_voxels;
-
-    /// @brief Map from face index to the voxel indices it occupies.
-    std::vector<std::vector<int>> face_to_voxels;
-
-protected:
-    int dim;
-    double built_in_radius;
-
 public: // constructor
     SpatialHash() = default;
 
@@ -79,7 +42,11 @@ public: // constructor
     /// @return The name of the broad phase method.
     std::string name() const override { return "SpatialHash"; }
 
-public: // API
+    // ------------------------------------------------------------------------
+    // BroadPhase::build()
+
+    using BroadPhase::build;
+
     void build(
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
@@ -102,6 +69,17 @@ public: // API
     }
 
     void build(
+        const std::vector<AABB>& vertex_boxes,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) override
+    {
+        build(vertex_boxes, edges, faces, /*voxel_size=*/-1);
+    }
+
+    // ------------------------------------------------------------------------
+    // SpatialHash::build(..., voxel_size)
+
+    void build(
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces,
@@ -114,6 +92,12 @@ public: // API
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces,
         double inflation_radius,
+        double voxel_size);
+
+    void build(
+        const std::vector<AABB>& vertex_boxes,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         double voxel_size);
 
     void clear() override
@@ -182,7 +166,47 @@ public: // API
     void detect_face_face_candidates(
         std::vector<FaceFaceCandidate>& candidates) const override;
 
+    // ========================================================================
+    // Data
+
+    /// @brief The left bottom corner of the world bounding box.
+    ArrayMax3d left_bottom_corner;
+
+    /// @brief The right top corner of the world bounding box.
+    ArrayMax3d right_top_corner;
+
+    /// @brief The number of voxels in each dimension.
+    ArrayMax3i voxel_count;
+
+    /// @brief 1.0 / voxel_size
+    double one_div_voxelSize;
+
+    /// @brief The number of voxels in the first two dimensions.
+    int voxel_count_0x1;
+
+    // // The index of the first edge in voxel_occupancies
+    int edge_start_ind;
+    // // The index of the first triangle in voxel_occupancies
+    int tri_start_ind;
+
+    /// @brief Map from voxel index to the primitive indices it contains.
+    unordered_map<int, std::vector<int>> voxel_to_primitives;
+
+    /// @brief Map from point index to the voxel indices it occupies.
+    std::vector<std::vector<int>> point_to_voxels;
+
+    /// @brief Map from edge index to the voxel indices it occupies.
+    std::vector<std::vector<int>> edge_to_voxels;
+
+    /// @brief Map from face index to the voxel indices it occupies.
+    std::vector<std::vector<int>> face_to_voxels;
+
 protected: // helper functions
+    void build(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        double voxel_size);
+
     void query_point_for_points(int vi, unordered_set<int>& vert_inds) const;
 
     void query_point_for_edges(int vi, unordered_set<int>& edge_inds) const;
@@ -213,6 +237,8 @@ protected: // helper functions
         Eigen::ConstRef<ArrayMax3i> voxel_axis_index) const;
 
     int voxel_axis_index_to_voxel_index(int ix, int iy, int iz) const;
+
+    int dim;
 
 private:
     /// @brief Detect candidate collisions between type A and type B.
