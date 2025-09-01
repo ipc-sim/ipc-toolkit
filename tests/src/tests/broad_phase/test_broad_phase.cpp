@@ -275,7 +275,7 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
     for (int i = 0; i < boxes.size(); ++i) {
         boxes[i].min = Eigen::Array3d(i * 0.6, 0, 0);
         boxes[i].max = Eigen::Array3d(boxes[i].min.x() + 1.0, 0, 0);
-        boxes[i].vertex_ids = { i, -1, -1 };
+        boxes[i].vertex_ids = { { i, -1, -1 } };
     }
     REQUIRE(boxes[0].intersects(boxes[1]));
     REQUIRE(!boxes[0].intersects(boxes[2]));
