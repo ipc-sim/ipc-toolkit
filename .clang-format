@@ -1,5 +1,4 @@
 ---
-Language: Cpp
 BasedOnStyle: WebKit
 AlignAfterOpenBracket: AlwaysBreak
 AlignTrailingComments:
@@ -38,6 +37,5 @@ IncludeCategories:
     SortPriority:    1
     CaseSensitive:   true
 PackConstructorInitializers: CurrentLine
-RemoveEmptyLinesInUnwrappedLines: true
 SortIncludes: CaseInsensitive
 ...

@@ -2,6 +2,7 @@ set(SOURCES
   # Tests
   test_aabb.cpp
   test_broad_phase.cpp
+  test_lbvh.cpp
   test_spatial_hash.cpp
   test_stq.cpp
   test_voxel_size_heuristic.cpp

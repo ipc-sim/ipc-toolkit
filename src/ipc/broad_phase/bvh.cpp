@@ -1,6 +1,7 @@
 #include "bvh.hpp"
 
 #include <ipc/utils/merge_thread_local.hpp>
+#include <ipc/utils/profiler.hpp>
 
 #include <SimpleBVH/BVH.hpp>
 #include <tbb/blocked_range.h>
@@ -37,6 +38,8 @@ void BVH::init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh)
         return;
     }
 
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::init_bvh");
+
     std::vector<std::array<Eigen::Vector3d, 2>> vector_boxes(boxes.size());
     for (int i = 0; i < boxes.size(); i++) {
         vector_boxes[i] = { { to_3D(boxes[i].min), to_3D(boxes[i].max) } };
@@ -47,6 +50,7 @@ void BVH::init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh)
 
 void BVH::clear()
 {
+    BroadPhase::clear();
     vertex_bvh->clear();
     edge_bvh->clear();
     face_bvh->clear();
@@ -105,6 +109,8 @@ void BVH::detect_vertex_vertex_candidates(
         return;
     }
 
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_vertex_vertex_candidates");
+
     detect_candidates<
         VertexVertexCandidate, /*swap_order=*/false, /*triangular=*/true>(
         vertex_boxes, *vertex_bvh, can_vertices_collide, candidates);
@@ -116,6 +122,8 @@ void BVH::detect_edge_vertex_candidates(
     if (edge_boxes.size() == 0 || vertex_boxes.size() == 0) {
         return;
     }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_edge_vertex_candidates");
 
     // In 2D and for codimensional edge-vertex collisions, there are more
     // vertices than edges, so we want to iterate over the edges.
@@ -131,6 +139,8 @@ void BVH::detect_edge_edge_candidates(
         return;
     }
 
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_edge_edge_candidates");
+
     detect_candidates<
         EdgeEdgeCandidate, /*swap_order=*/false, /*triangular=*/true>(
         edge_boxes, *edge_bvh, std::bind(&BVH::can_edges_collide, this, _1, _2),
@@ -143,6 +153,8 @@ void BVH::detect_face_vertex_candidates(
     if (face_boxes.size() == 0 || vertex_boxes.size() == 0) {
         return;
     }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_face_vertex_candidates");
 
     // The ratio vertices:faces is 1:2, so we want to iterate over the vertices.
     detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
@@ -157,6 +169,8 @@ void BVH::detect_edge_face_candidates(
         return;
     }
 
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_edge_face_candidates");
+
     // The ratio edges:faces is 3:2, so we want to iterate over the faces.
     detect_candidates<EdgeFaceCandidate, /*swap_order=*/true>(
         face_boxes, *edge_bvh,
@@ -169,6 +183,8 @@ void BVH::detect_face_face_candidates(
     if (face_boxes.size() == 0) {
         return;
     }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_face_face_candidates");
 
     detect_candidates<
         FaceFaceCandidate, /*swap_order=*/false, /*triangular=*/true>(
