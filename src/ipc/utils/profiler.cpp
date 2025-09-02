@@ -3,6 +3,7 @@
 #ifdef IPC_TOOLKIT_WITH_PROFILER
 
 #include <fstream>
+#include <queue>
 
 namespace ipc {
 

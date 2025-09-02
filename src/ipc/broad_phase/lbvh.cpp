@@ -370,9 +370,11 @@ namespace {
         do {
             const LBVH::Node& node = lbvh[node_idx];
 
+#if defined(__GNUC__) || defined(__clang__)
             // Prefetch child nodes to reduce cache misses
             __builtin_prefetch(&lbvh[node.left], 0, 1);
             __builtin_prefetch(&lbvh[node.right], 0, 1);
+#endif
 
             const LBVH::Node& child_l = lbvh[node.left];
             const LBVH::Node& child_r = lbvh[node.right];
