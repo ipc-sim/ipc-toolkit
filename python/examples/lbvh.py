@@ -7,7 +7,7 @@ import numpy as np
 import pathlib
 
 mesh = meshio.read(pathlib.Path(
-    __file__).parents[2] / "tests/data/cloth_ball92.ply")
+    __file__).parents[2] / "tests/data/puffer-ball/20.ply")
 
 lbvh = ipctk.LBVH()
 lbvh.build(mesh.points, np.array([], dtype=int), mesh.cells_dict["triangle"])

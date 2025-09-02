@@ -6,7 +6,7 @@
 #include <ipc/broad_phase/bvh.hpp>
 #include <ipc/broad_phase/lbvh.hpp>
 // #include <ipc/broad_phase/vulkan/shaders/single_radixsort.hpp>
-// #include <ipc/utils/profiler.hpp>
+#include <ipc/utils/profiler.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -164,6 +164,11 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         mesh_t0 = "cloth_ball92.ply";
         mesh_t1 = "cloth_ball93.ply";
     }
+    // SECTION("Puffer-Ball")
+    // {
+    //     mesh_t0 = "puffer-ball/20.ply";
+    //     mesh_t1 = "puffer-ball/21.ply";
+    // }
 
     Eigen::MatrixXd vertices_t0, vertices_t1;
     Eigen::MatrixXi edges, faces;
@@ -248,68 +253,3 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     ipc::profiler().clear();
 #endif
 }
-
-// TEST_CASE("Radix sort", "[radix_sort]")
-// {
-//     constexpr size_t size = 100'000;
-//     constexpr size_t max_value = 0xFFFFFFFF;
-
-//     std::random_device rd;
-//     std::mt19937 gen(rd());
-//     std::uniform_int_distribution<uint32_t> distrib(0, max_value);
-
-//     using MortonCode = std::array<uint32_t, 2>;
-//     std::vector<MortonCode> data(size);
-//     for (size_t i = 0; i < size; ++i) {
-//         data[i][0] = distrib(gen);
-//         data[i][1] = 0;
-//     }
-
-//     // Radix sort
-
-//     kp::Manager mgr;
-
-//     auto t_data = mgr.tensor(
-//         data.data(), data.size(), sizeof(MortonCode),
-//         kp::Memory::DataTypes::eCustom);
-//     auto t_sorted_data = mgr.tensor(
-//         data.size(), sizeof(MortonCode), kp::Memory::DataTypes::eCustom);
-
-//     std::vector<std::shared_ptr<kp::Memory>> params = { {
-//         mgr.tensor(1, sizeof(LBVH::AABB), kp::Memory::DataTypes::eCustom),
-//         t_data,
-//         t_sorted_data,
-//     } };
-
-//     auto algorithm = mgr.algorithm(
-//         params,
-//         SPVShader(SINGLE_RADIXSORT_SPV.begin(), SINGLE_RADIXSORT_SPV.end()),
-//         kp::Workgroup({ { 1, 1, 1 } }), {},
-//         std::vector<uint32_t>(1, data.size()));
-
-//     mgr.sequence()
-//         ->record<kp::OpSyncDevice>(params)
-//         ->record<kp::OpAlgoDispatch>(algorithm)
-//         ->record<kp::OpSyncLocal>(params)
-//         ->eval();
-
-//     std::vector<MortonCode> sorted_data =
-//     t_sorted_data->vector<MortonCode>();
-
-//     {
-//         CAPTURE(sorted_data);
-//         REQUIRE(
-//             std::is_sorted(
-//                 sorted_data.begin(), sorted_data.end(),
-//                 [](const MortonCode& a, const MortonCode& b) {
-//                     return a[0] < b[0];
-//                 }));
-//     }
-
-//     // Compare against CPU sort
-//     std::sort(
-//         data.begin(), data.end(),
-//         [](const MortonCode& a, const MortonCode& b) { return a[0] < b[0];
-//         });
-//     CHECK(data == sorted_data);
-// }
