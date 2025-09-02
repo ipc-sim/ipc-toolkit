@@ -184,7 +184,7 @@ void LBVH::init_bvh(
 
                     morton_codes[i].morton_code = morton_3D(
                         mapped_center.x(), mapped_center.y(),
-                        mapped_center.z());
+                        mapped_center.size() == 3 ? mapped_center.z() : 0);
                     morton_codes[i].box_id = i;
                 }
             });
