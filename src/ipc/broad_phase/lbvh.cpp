@@ -15,7 +15,7 @@ namespace ipc {
 namespace {
     // Expands a 21-bit integer into 63 bits by inserting 2 zeros after each
     // bit.
-    uint64_t expand_bits(uint64_t v)
+    uint64_t expand_bits_2(uint64_t v)
     {
         v = (v | v << 32) & 0x1F00000000FFFF;
         v = (v | v << 16) & 0x1F0000FF0000FF;
@@ -33,10 +33,33 @@ namespace {
         x = std::clamp(x * scale, 0.0, scale - 1);
         y = std::clamp(y * scale, 0.0, scale - 1);
         z = std::clamp(z * scale, 0.0, scale - 1);
-        uint64_t xx = expand_bits(uint64_t(x));
-        uint64_t yy = expand_bits(uint64_t(y));
-        uint64_t zz = expand_bits(uint64_t(z));
+        uint64_t xx = expand_bits_2(uint64_t(x));
+        uint64_t yy = expand_bits_2(uint64_t(y));
+        uint64_t zz = expand_bits_2(uint64_t(z));
         return (xx << 2) | (yy << 1) | zz;
+    }
+
+    // Expands a 32-bit integer into 64 bits by inserting 1 zero after each bit.
+    uint64_t expand_bits_1(uint64_t v)
+    {
+        v = (v | (v << 16)) & 0x0000FFFF0000FFFF;
+        v = (v | (v << 8)) & 0x00FF00FF00FF00FF;
+        v = (v | (v << 4)) & 0x0F0F0F0F0F0F0F0F;
+        v = (v | (v << 2)) & 0x3333333333333333;
+        v = (v | (v << 1)) & 0x5555555555555555;
+        return v;
+    }
+
+    // Calculates a 63-bit Morton code for the given 2D point located within the
+    // unit square [0,1].
+    uint64_t morton_2D(double x, double y)
+    {
+        constexpr double scale = 1 << 21;
+        x = std::clamp(x * scale, 0.0, scale - 1);
+        y = std::clamp(y * scale, 0.0, scale - 1);
+        uint64_t xx = expand_bits_1(uint64_t(x));
+        uint64_t yy = expand_bits_1(uint64_t(y));
+        return (xx << 1) | yy;
     }
 } // namespace
 
@@ -182,9 +205,14 @@ void LBVH::init_bvh(
                     const ArrayMax3d mapped_center =
                         (center - mesh_aabb.min) / mesh_width;
 
-                    morton_codes[i].morton_code = morton_3D(
-                        mapped_center.x(), mapped_center.y(),
-                        mapped_center.size() == 3 ? mapped_center.z() : 0);
+                    if (mapped_center.size() == 2) {
+                        morton_codes[i].morton_code =
+                            morton_2D(mapped_center.x(), mapped_center.y());
+                    } else {
+                        morton_codes[i].morton_code = morton_3D(
+                            mapped_center.x(), mapped_center.y(),
+                            mapped_center.z());
+                    }
                     morton_codes[i].box_id = i;
                 }
             });
