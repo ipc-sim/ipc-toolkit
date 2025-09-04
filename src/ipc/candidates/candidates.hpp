@@ -44,13 +44,25 @@ public:
         const std::shared_ptr<BroadPhase> broad_phase =
             make_default_broad_phase());
 
+    /// @brief Get the number of collision candidates.
+    /// @return The number of collision candidates.
     size_t size() const;
 
+    /// @brief Check if there are no collision candidates.
+    /// @return True if there are no collision candidates, false otherwise.
     bool empty() const;
 
+    /// @brief Clear all collision candidates.
     void clear();
 
+    /// @brief Get a collision stencil by index.
+    /// @param i The index of the collision stencil.
+    /// @return A reference to the collision stencil.
     CollisionStencil& operator[](size_t i);
+
+    /// @brief Get a collision stencil by index.
+    /// @param i The index of the collision stencil.
+    /// @return A const reference to the collision stencil.
     const CollisionStencil& operator[](size_t i) const;
 
     /// @brief Determine if the step is collision free from the set of candidates.

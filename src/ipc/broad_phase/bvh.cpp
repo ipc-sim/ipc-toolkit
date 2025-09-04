@@ -22,25 +22,10 @@ BVH::BVH()
 BVH::~BVH() = default;
 
 void BVH::build(
-    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
-    Eigen::ConstRef<Eigen::MatrixXi> faces,
-    const double inflation_radius)
+    Eigen::ConstRef<Eigen::MatrixXi> faces)
 {
-    BroadPhase::build(vertices, edges, faces, inflation_radius);
-    init_bvh(vertex_boxes, *vertex_bvh);
-    init_bvh(edge_boxes, *edge_bvh);
-    init_bvh(face_boxes, *face_bvh);
-}
-
-void BVH::build(
-    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
-    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-    Eigen::ConstRef<Eigen::MatrixXi> edges,
-    Eigen::ConstRef<Eigen::MatrixXi> faces,
-    const double inflation_radius)
-{
-    BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
+    BroadPhase::build(edges, faces); // Build edge_boxes and face_boxes
     init_bvh(vertex_boxes, *vertex_bvh);
     init_bvh(edge_boxes, *edge_bvh);
     init_bvh(face_boxes, *face_bvh);
@@ -74,9 +59,9 @@ void BVH::detect_candidates(
     const std::function<bool(size_t, size_t)>& can_collide,
     std::vector<Candidate>& candidates)
 {
-    // O(n^2) or O(n^3) to build
-    // O(klog(n)) to do a single look up
-    // O(knlog(n)) to do all look ups
+    // O(n) or O(n⋅log(n)) to build
+    // O(k⋅log(n)) to do a single look up
+    // O(k⋅n⋅log(n)) to do all look ups
 
     tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
 

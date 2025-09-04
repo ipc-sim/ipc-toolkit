@@ -20,9 +20,9 @@
 
 namespace ipc::tests {
 
-BroadPhaseGenerator::BroadPhaseGenerator()
+std::vector<std::shared_ptr<BroadPhase>> broad_phases()
 {
-    m_broad_phases = { {
+    return { {
         std::make_shared<BruteForce>(),
         std::make_shared<HashGrid>(),
         std::make_shared<SpatialHash>(),
@@ -33,6 +33,8 @@ BroadPhaseGenerator::BroadPhaseGenerator()
 #endif
     } };
 }
+
+BroadPhaseGenerator::BroadPhaseGenerator() { m_broad_phases = broad_phases(); }
 
 // Attempts to move the generator to the next element.
 // Returns true if successful (and thus has another element that can be

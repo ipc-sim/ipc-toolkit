@@ -63,6 +63,18 @@ namespace {
 } // namespace
 
 void SpatialHash::build(
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
+    double inflation_radius,
+    double voxel_size)
+{
+    clear();
+    build_vertex_boxes(vertices, vertex_boxes, inflation_radius);
+    build(edges, faces, voxel_size);
+}
+
+void SpatialHash::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
@@ -70,26 +82,47 @@ void SpatialHash::build(
     double inflation_radius,
     double voxel_size)
 {
-    const size_t num_vertices = vertices_t0.rows();
-    dim = vertices_t0.cols();
+    clear();
+    build_vertex_boxes(
+        vertices_t0, vertices_t1, vertex_boxes, inflation_radius);
+    build(edges, faces, voxel_size);
+}
 
-    assert(vertices_t1.rows() == num_vertices && vertices_t1.cols() == dim);
+void SpatialHash::build(
+    const std::vector<AABB>& _vertex_boxes,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
+    double voxel_size)
+{
+    // WARNING: Clear will reset vertex_boxes if this assert is triggered
+    assert(&(this->vertex_boxes) != &_vertex_boxes);
+    clear();
+    this->vertex_boxes = _vertex_boxes;
+    build(edges, faces, voxel_size);
+}
 
-    // also calls clear()
-    BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
+void SpatialHash::build(
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
+    double voxel_size)
+{
+    const size_t num_vertices = vertex_boxes.size();
+    assert(num_vertices > 0);
+    dim = vertex_boxes[0].min.size();
+
+    BroadPhase::build(edges, faces);
 
     if (voxel_size <= 0) {
         voxel_size = suggest_good_voxel_size(
-            vertices_t0, vertices_t1, edges, inflation_radius);
+            edges.rows() > 0 ? edge_boxes : vertex_boxes);
     }
 
-    left_bottom_corner = vertices_t0.colwise().minCoeff().cwiseMin(
-        vertices_t1.colwise().minCoeff());
-    right_top_corner = vertices_t0.colwise().maxCoeff().cwiseMax(
-        vertices_t1.colwise().maxCoeff());
-
-    AABB::conservative_inflation(
-        left_bottom_corner, right_top_corner, inflation_radius);
+    left_bottom_corner = vertex_boxes[0].min;
+    right_top_corner = vertex_boxes[0].max;
+    for (const auto& box : vertex_boxes) {
+        left_bottom_corner = left_bottom_corner.min(box.min);
+        right_top_corner = right_top_corner.max(box.max);
+    }
 
     one_div_voxelSize = 1.0 / voxel_size;
 
@@ -110,14 +143,10 @@ void SpatialHash::build(
     std::vector<Eigen::Array3i> vertex_max_voxel_axis_index(
         num_vertices, Eigen::Array3i::Zero());
     tbb::parallel_for(size_t(0), num_vertices, [&](size_t vi) {
-        ArrayMax3d v_min = vertices_t0.row(vi).cwiseMin(vertices_t1.row(vi));
-        ArrayMax3d v_max = vertices_t0.row(vi).cwiseMax(vertices_t1.row(vi));
-        AABB::conservative_inflation(v_min, v_max, inflation_radius);
-
         vertex_min_voxel_axis_index[vi].head(dim) =
-            locate_voxel_axis_index(v_min);
+            locate_voxel_axis_index(vertex_boxes[vi].min);
         vertex_max_voxel_axis_index[vi].head(dim) =
-            locate_voxel_axis_index(v_max);
+            locate_voxel_axis_index(vertex_boxes[vi].max);
     });
 
     // ------------------------------------------------------------------------

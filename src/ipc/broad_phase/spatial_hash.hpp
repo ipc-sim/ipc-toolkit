@@ -20,6 +20,11 @@ public: // constructor
     /// @return The name of the broad phase method.
     std::string name() const override { return "SpatialHash"; }
 
+    // ------------------------------------------------------------------------
+    // BroadPhase::build()
+
+    using BroadPhase::build;
+
     /// @brief Build the spatial hash for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges
@@ -52,8 +57,23 @@ public: // constructor
             /*voxel_size=*/-1);
     }
 
+    /// @brief Build the spatial hash from vertex boxes.
+    /// @param vertex_boxes AABB boxes for each vertex.
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    void build(
+        const std::vector<AABB>& vertex_boxes,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) override
+    {
+        build(vertex_boxes, edges, faces, /*voxel_size=*/-1);
+    }
+
+    // ------------------------------------------------------------------------
+    // SpatialHash::build(..., voxel_size)
+
     /// @brief Build the spatial hash for static collision detection.
-    /// @param vertices Ending vertices of the vertices.
+    /// @param vertices Vertex positions
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
@@ -63,10 +83,7 @@ public: // constructor
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces,
         double inflation_radius,
-        double voxel_size)
-    {
-        build(vertices, vertices, edges, faces, inflation_radius, voxel_size);
-    }
+        double voxel_size);
 
     /// @brief Build the spatial hash for continuous collision detection.
     /// @param vertices_t0 Starting vertices of the vertices.
@@ -83,8 +100,24 @@ public: // constructor
         double inflation_radius,
         double voxel_size);
 
+    /// @brief Build the spatial hash for static collision detection.
+
+    /// @brief Build the spatial hash from vertex boxes.
+    /// @param vertex_boxes AABB boxes for each vertex.
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @param voxel_size Size of the voxels used in the spatial hash.
+    void build(
+        const std::vector<AABB>& vertex_boxes,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        double voxel_size);
+
     /// @brief Clear any built data.
     void clear() override;
+
+    // ========================================================================
+    // BroadPhase API
 
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisions.
@@ -117,6 +150,10 @@ public: // constructor
         std::vector<FaceFaceCandidate>& candidates) const override;
 
 private: // helper functions
+    void build(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        double voxel_size);
     int locate_voxel_index(Eigen::ConstRef<VectorMax3d> p) const;
 
     ArrayMax3i locate_voxel_axis_index(Eigen::ConstRef<VectorMax3d> p) const;
