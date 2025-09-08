@@ -51,7 +51,17 @@ double IntervalNonlinearTrajectory::max_distance_from_linear(
 
 // ============================================================================
 
-bool conservative_piecewise_linear_ccd(
+NonlinearCCD::NonlinearCCD(
+    const double _tolerance,
+    const long _max_iterations,
+    const double _conservative_rescaling)
+    : tolerance(_tolerance)
+    , max_iterations(_max_iterations)
+    , conservative_rescaling(_conservative_rescaling)
+{
+}
+
+bool NonlinearCCD::conservative_piecewise_linear_ccd(
     const std::function<double(const double)>& distance,
     const std::function<double(const double, const double)>&
         max_distance_from_linear,
@@ -150,15 +160,12 @@ bool conservative_piecewise_linear_ccd(
 
 // ============================================================================
 
-bool point_point_nonlinear_ccd(
+bool NonlinearCCD::point_point_ccd(
     const NonlinearTrajectory& p0,
     const NonlinearTrajectory& p1,
     double& toi,
-    const double tmax,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     return conservative_piecewise_linear_ccd(
         [&](const double t) {
@@ -187,16 +194,13 @@ bool point_point_nonlinear_ccd(
         toi, tmax, min_distance, conservative_rescaling);
 }
 
-bool point_edge_nonlinear_ccd(
+bool NonlinearCCD::point_edge_ccd(
     const NonlinearTrajectory& p,
     const NonlinearTrajectory& e0,
     const NonlinearTrajectory& e1,
     double& toi,
-    const double tmax,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     return conservative_piecewise_linear_ccd(
         [&](const double t) {
@@ -226,17 +230,14 @@ bool point_edge_nonlinear_ccd(
         toi, tmax, min_distance, conservative_rescaling);
 }
 
-bool edge_edge_nonlinear_ccd(
+bool NonlinearCCD::edge_edge_ccd(
     const NonlinearTrajectory& ea0,
     const NonlinearTrajectory& ea1,
     const NonlinearTrajectory& eb0,
     const NonlinearTrajectory& eb1,
     double& toi,
-    const double tmax,
-    const double min_sep_distance,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling)
+    const double min_distance,
+    const double tmax) const
 {
     return conservative_piecewise_linear_ccd(
         [&](const double t) {
@@ -265,20 +266,17 @@ bool edge_edge_nonlinear_ccd(
                 output_tolerance,             // delta_actual
                 no_zero_toi);                 // no zero toi
         },
-        toi, tmax, min_sep_distance, conservative_rescaling);
+        toi, tmax, min_distance, conservative_rescaling);
 }
 
-bool point_triangle_nonlinear_ccd(
+bool NonlinearCCD::point_triangle_ccd(
     const NonlinearTrajectory& p,
     const NonlinearTrajectory& t0,
     const NonlinearTrajectory& t1,
     const NonlinearTrajectory& t2,
     double& toi,
-    const double tmax,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     return conservative_piecewise_linear_ccd(
         [&](const double t) {
