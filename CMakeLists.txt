@@ -297,7 +297,7 @@ endif()
 # Xcode
 ################################################################################
 
-if (CMAKE_GENERATOR STREQUAL "Xcode")
+if (IPC_TOOLKIT_TOPLEVEL_PROJECT AND CMAKE_GENERATOR STREQUAL "Xcode")
   set(CMAKE_XCODE_SCHEME_LAUNCH_CONFIGURATION "${CMAKE_BUILD_TYPE}")
   set_target_properties(ipc_toolkit PROPERTIES XCODE_GENERATE_SCHEME ON)
   if(IPC_TOOLKIT_BUILD_TESTS)
