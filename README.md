@@ -1,23 +1,30 @@
-# [Siggraph 2025] Geometric Contact Potential
+<p align="center">
+<a href="https://ipctk.xyz"><img alt="IPC Toolkit" src="docs/source/_static/logo.png" width="80%"></a>
+</p>
 
-<a href="https://github.com/geometryprocessing/GCP-toolkit/actions/workflows/continuous.yml"><img src="https://github.com/geometryprocessing/GCP-toolkit/actions/workflows/continuous.yml/badge.svg"></a>
-<a href="https://github.com/geometryprocessing/GCP-toolkit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/geometryprocessing/GCP-toolkit.svg?color=blue"></a>
-
-![Teaser](./docs/teaser.png)
+<p align="center">
+<a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg"></a>
+<a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg"></a>
+<a href="https://ipctk.xyz"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg"></a>
+<a href="https://codecov.io/github/ipc-sim/ipc-toolkit"><img src="https://codecov.io/github/ipc-sim/ipc-toolkit/graph/badge.svg?token=9BR6GPKRY8"/></a>
+<a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue"></a>
+</p>
 
 ## Description
 
-GCP toolkit is a set of reusable functions to integrate [Geometric Contact Potential](https://huangzizhou.github.io/research/smooth-contact.html) (GCP) into a simulation, built on top of the [IPC toolkit](https://github.com/ipc-sim/ipc-toolkit).
+IPC Toolkit is a set of reusable functions to integrate Incremental Potential Contact (IPC) into a simulation.
 
-## Features
+### Features
 
-[Geometric Contact Potential](https://huangzizhou.github.io/research/smooth-contact.html) introduces a new type of barrier-based collision model, with the following features different from IPC:
+* IPC barrier function and its derivatives and adaptive barrier stiffness algorithm
+* Broad- and narrow-phase continuous collision detection (CCD) of linear and nonlinear trajectories
+* Distance computation and derivatives between edges in 2D and triangles in 3D
+* Distance barrier potential and its derivatives
+* Smooth and lagged dissipative friction potential and its derivatives
 
-* **Large $\hat{d}$ allowed**: In IPC, if $\hat{d}$ is larger than any edge length, spurious contact forces would push neighboring vertices apart, which does not happen to GCP.
-* **Convergence under refinement**: The GCP potential is derived from a continuous formulation, and the discretized potential converges to the continuous version under mesh refinement.
-* **No spurious forces**: GCP elliminates the spurious forces of IPC in various cases (check the paper for details) by considering the local normal and tangent directions.
+### Limitations
 
-## Limitations
+This is not a full simulation library. As such it does not include any physics or solvers. For a full simulation implementation, we recommend [PolyFEM](https://polyfem.github.io/) (a finite element library) or [Rigid IPC](https://github.com/ipc-sim/rigid-ipc) (rigid-body dynamics) both of which utilize the IPC Toolkit.
 
 ## Build
 
