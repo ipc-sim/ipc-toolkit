@@ -2,41 +2,25 @@
 
 #include <ipc/broad_phase/broad_phase.hpp>
 
-#include <SimpleBVH/BVH.hpp>
+#include <memory>
+
+namespace SimpleBVH {
+class BVH;
+}
 
 namespace ipc {
 
+/// @brief Bounding Volume Hierarchy (BVH) broad phase collision detection.
 class BVH : public BroadPhase {
 public:
-    BVH() = default;
+    BVH();
+    ~BVH();
 
     /// @brief Get the name of the broad phase method.
     /// @return The name of the broad phase method.
     std::string name() const override { return "BVH"; }
 
-    /// @brief Build the broad phase for static collision detection.
-    /// @param vertices Vertex positions
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @param inflation_radius Radius of inflation around all elements.
-    void build(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces,
-        const double inflation_radius = 0) override;
-
-    /// @brief Build the broad phase for continuous collision detection.
-    /// @param vertices_t0 Starting vertices of the vertices.
-    /// @param vertices_t1 Ending vertices of the vertices.
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @param inflation_radius Radius of inflation around all elements.
-    void build(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces,
-        const double inflation_radius = 0) override;
+    using BroadPhase::build;
 
     /// @brief Clear any built data.
     void clear() override;
@@ -72,6 +56,14 @@ public:
         std::vector<FaceFaceCandidate>& candidates) const override;
 
 protected:
+    /// @brief Build the broad phase for collision detection.
+    /// @note Assumes the vertex_boxes have been built.
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    void build(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) override;
+
     /// @brief Initialize a BVH from a set of boxes.
     /// @param[in] boxes Set of boxes to initialize the BVH with.
     /// @param[out] bvh The BVH to initialize.
@@ -96,11 +88,11 @@ protected:
         std::vector<Candidate>& candidates);
 
     /// @brief BVH containing the vertices.
-    SimpleBVH::BVH vertex_bvh;
+    std::unique_ptr<SimpleBVH::BVH> vertex_bvh;
     /// @brief BVH containing the edges.
-    SimpleBVH::BVH edge_bvh;
+    std::unique_ptr<SimpleBVH::BVH> edge_bvh;
     /// @brief BVH containing the faces.
-    SimpleBVH::BVH face_bvh;
+    std::unique_ptr<SimpleBVH::BVH> face_bvh;
 };
 
 } // namespace ipc

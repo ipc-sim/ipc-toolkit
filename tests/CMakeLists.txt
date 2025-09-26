@@ -48,6 +48,14 @@ source_group(TREE "${PROJECT_SOURCE_DIR}/tests" FILES ${IPC_TOOLKIT_TESTS_SOURCE
 
 target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit)
 
+# libigl (use igl::edges)
+include(libigl)
+target_link_libraries(ipc_toolkit_tests PRIVATE igl::core)
+
+# OneTBB (use tbb::global_control and tbb::parallel_sort)
+include(onetbb)
+target_link_libraries(ipc_toolkit_tests PRIVATE TBB::tbb)
+
 include(catch2)
 target_link_libraries(ipc_toolkit_tests PRIVATE Catch2::Catch2)
 

@@ -142,4 +142,102 @@ void define_adhesion(py::module_& m)
             The second derivative of the tangential adhesion mollifier function times y minus the first derivative all divided by y cubed.
         )ipc_Qu8mg5v7",
         "y"_a, "eps_a"_a);
+
+    m.def(
+        "smooth_mu_a0", &smooth_mu_a0,
+        R"ipc_Qu8mg5v7(
+        Compute the value of the ∫ μ(y) a₁(y) dy, where a₁ is the first derivative of the smooth tangential adhesion mollifier.
+
+        Note:
+            The `a0`/`a1` are unrelated to the `a0`/`a1` in the normal adhesion.
+
+        Parameters:
+            y: The tangential relative speed.
+            mu_s: Coefficient of static adhesion.
+            mu_k: Coefficient of kinetic adhesion.
+            eps_a: Velocity threshold below which static adhesion force is applied.
+
+        Returns:
+            The value of the integral at y.
+        )ipc_Qu8mg5v7",
+        "y"_a, "mu_s"_a, "mu_k"_a, "eps_a"_a);
+
+    m.def(
+        "smooth_mu_a1", &smooth_mu_a1,
+        R"ipc_Qu8mg5v7(
+        Compute the value of the μ(y) a₁(y), where a₁ is the first derivative of the smooth tangential adhesion mollifier.
+
+        Note:
+            The `a1` is unrelated to the `a1` in the normal adhesion.
+
+        Parameters:
+            y: The tangential relative speed.
+            mu_s: Coefficient of static adhesion.
+            mu_k: Coefficient of kinetic adhesion.
+            eps_a: Velocity threshold below which static adhesion force is applied.
+
+        Returns:
+            The value of the product at y.
+        )ipc_Qu8mg5v7",
+        "y"_a, "mu_s"_a, "mu_k"_a, "eps_a"_a);
+
+    m.def(
+        "smooth_mu_a2", &smooth_mu_a2,
+        R"ipc_Qu8mg5v7(
+        Compute the value of d/dy (μ(y) a₁(y)), where a₁ is the first derivative of the smooth tangential adhesion mollifier.
+
+        Note:
+            The `a1`/`a2` are unrelated to the `a1`/`a2` in the normal adhesion.
+
+        Parameters:
+            y: The tangential relative speed.
+            mu_s: Coefficient of static adhesion.
+            mu_k: Coefficient of kinetic adhesion.
+            eps_a: Velocity threshold below which static adhesion force is applied.
+
+        Returns:
+            The value of the derivative at y.
+        )ipc_Qu8mg5v7",
+        "y"_a, "mu_s"_a, "mu_k"_a, "eps_a"_a);
+
+    m.def(
+        "smooth_mu_a1_over_x", &smooth_mu_a1_over_x,
+        R"ipc_Qu8mg5v7(
+        Compute the value of the μ(y) a₁(y) / y, where a₁ is the first derivative of the smooth tangential adhesion mollifier.
+
+        Notes:
+            The `x` in the function name refers to the parameter `y`.
+            The `a1` is unrelated to the `a1` in the normal adhesion.
+
+        Parameters:
+            y: The tangential relative speed.
+            mu_s: Coefficient of static adhesion.
+            mu_k: Coefficient of kinetic adhesion.
+            eps_a: Velocity threshold below which static adhesion force is applied.
+
+        Returns:
+            The value of the product at y.
+        )ipc_Qu8mg5v7",
+        "y"_a, "mu_s"_a, "mu_k"_a, "eps_a"_a);
+
+    m.def(
+        "smooth_mu_a2_x_minus_mu_a1_over_x3",
+        &smooth_mu_a2_x_minus_mu_a1_over_x3,
+        R"ipc_Qu8mg5v7(
+        Compute the value of the [(d/dy μ(y) a₁(y)) ⋅ y - μ(y) a₁(y)] / y³, where a₁ and a₂ are the first and second derivatives of the smooth tangential adhesion mollifier.
+
+        Notes:
+            The `x` in the function name refers to the parameter `y`.
+            The `a1`/`a2` are unrelated to the `a1`/`a2` in the normal adhesion.
+
+        Parameters:
+            y: The tangential relative speed.
+            mu_s: Coefficient of static adhesion.
+            mu_k: Coefficient of kinetic adhesion.
+            eps_a: Velocity threshold below which static adhesion force is applied.
+
+        Returns:
+            The value of the expression at y.
+        )ipc_Qu8mg5v7",
+        "y"_a, "mu_s"_a, "mu_k"_a, "eps_a"_a);
 }

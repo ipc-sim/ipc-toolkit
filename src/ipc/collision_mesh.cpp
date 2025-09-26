@@ -5,7 +5,7 @@
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/logger.hpp>
-#include <ipc/utils/math.hpp>
+// #include <ipc/utils/math.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <tbb/blocked_range.h>

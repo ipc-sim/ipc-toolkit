@@ -17,3 +17,12 @@ Tangential Adhesion Potential
 .. autofunction:: ipctk.tangential_adhesion_f2
 .. autofunction:: ipctk.tangential_adhesion_f1_over_x
 .. autofunction:: ipctk.tangential_adhesion_f2_x_minus_f1_over_x3
+
+Smooth :math:`\mu`
+------------------
+
+.. autofunction:: ipctk.smooth_mu_a0
+.. autofunction:: ipctk.smooth_mu_a1
+.. autofunction:: ipctk.smooth_mu_a2
+.. autofunction:: ipctk.smooth_mu_a1_over_x
+.. autofunction:: ipctk.smooth_mu_a2_x_minus_mu_a1_over_x3

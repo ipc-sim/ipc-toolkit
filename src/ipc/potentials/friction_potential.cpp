@@ -1,5 +1,7 @@
 #include "friction_potential.hpp"
 
+#include <ipc/friction/smooth_mu.hpp>
+
 namespace ipc {
 
 FrictionPotential::FrictionPotential(const double eps_v) : Super()
@@ -7,18 +9,21 @@ FrictionPotential::FrictionPotential(const double eps_v) : Super()
     set_eps_v(eps_v);
 }
 
-double FrictionPotential::f0(const double x) const
+double FrictionPotential::mu_f0(
+    const double x, const double mu_s, const double mu_k) const
 {
-    return smooth_friction_f0(x, eps_v());
+    return smooth_mu_f0(x, mu_s, mu_k, eps_v());
 }
 
-double FrictionPotential::f1_over_x(const double x) const
+double FrictionPotential::mu_f1_over_x(
+    const double x, const double mu_s, const double mu_k) const
 {
-    return smooth_friction_f1_over_x(x, eps_v());
+    return smooth_mu_f1_over_x(x, mu_s, mu_k, eps_v());
 }
 
-double FrictionPotential::f2_x_minus_f1_over_x3(const double x) const
+double FrictionPotential::mu_f2_x_minus_mu_f1_over_x3(
+    const double x, const double mu_s, const double mu_k) const
 {
-    return smooth_friction_f2_x_minus_f1_over_x3(x, eps_v());
+    return smooth_mu_f2_x_minus_mu_f1_over_x3(x, mu_s, mu_k, eps_v());
 }
 } // namespace ipc

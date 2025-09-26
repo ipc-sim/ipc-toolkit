@@ -122,8 +122,11 @@ void define_tangential_collision(py::module_& m)
             &TangentialCollision::normal_force_magnitude,
             "Normal force magnitude")
         .def_readwrite(
-            "mu", &TangentialCollision::mu,
-            "Ratio between normal and tangential forces (e.g., friction coefficient)")
+            "mu_s", &TangentialCollision::mu_s,
+            "Ratio between normal and static tangential forces (e.g., friction coefficient)")
+        .def_readwrite(
+            "mu_k", &TangentialCollision::mu_k,
+            "Ratio between normal and kinetic tangential forces (e.g., friction coefficient)")
         .def_readwrite("weight", &TangentialCollision::weight, "Weight")
         .def_property(
             "weight_gradient",

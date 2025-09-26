@@ -57,7 +57,7 @@ double update_barrier_stiffness(
     const double dmin = 0);
 
 /// @brief Compute the semi-implicit stiffness for a single collision.
-/// See [Ando 2024] for details.
+/// @note See [Ando 2024] for details.
 /// @param stencil Collision stencil.
 /// @param vertices Vertex positions.
 /// @param mass Vertex masses.
@@ -72,7 +72,7 @@ double semi_implicit_stiffness(
     const double dmin);
 
 /// @brief Compute the semi-implicit stiffness's for all collisions.
-/// See [Ando 2024] for details.
+/// @note See [Ando 2024] for details.
 /// @param mesh Collision mesh.
 /// @param vertices Vertex positions.
 /// @param collisions Normal collisions or collision candidates.

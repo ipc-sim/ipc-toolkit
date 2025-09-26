@@ -15,14 +15,7 @@ namespace ipc {
 
 class Candidates; // Forward declaration
 
-enum class BroadPhaseMethod {
-    HASH_GRID,
-    BRUTE_FORCE,
-    SPATIAL_HASH,
-    BVH,
-    SWEEP_AND_TINIEST_QUEUE
-};
-
+/// @brief Base class for broad phase collision detection methods.
 class BroadPhase {
 public:
     BroadPhase() { }
@@ -55,6 +48,15 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces,
         const double inflation_radius = 0);
+
+    /// @brief Build the broad phase for collision detection.
+    /// @param vertex_boxes AABBs for the vertices.
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    virtual void build(
+        const std::vector<AABB>& vertex_boxes,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces);
 
     /// @brief Clear any built data.
     virtual void clear();
@@ -99,6 +101,14 @@ public:
         default_can_vertices_collide;
 
 protected:
+    /// @brief Build the broad phase for collision detection.
+    /// @note Assumes the vertex_boxes have been built.
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    virtual void build(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces);
+
     virtual bool can_edge_vertex_collide(size_t ei, size_t vi) const;
     virtual bool can_edges_collide(size_t eai, size_t ebi) const;
     virtual bool can_face_vertex_collide(size_t fi, size_t vi) const;
@@ -111,7 +121,4 @@ protected:
     std::vector<AABB> edge_boxes;
     std::vector<AABB> face_boxes;
 };
-
-std::shared_ptr<BroadPhase>
-build_broad_phase(const BroadPhaseMethod& broad_phase_method);
 } // namespace ipc

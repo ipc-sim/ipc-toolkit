@@ -35,6 +35,8 @@ private:
     int m_current = 0;
 };
 
+std::vector<std::shared_ptr<BroadPhase>> broad_phases();
+
 // ============================================================================
 
 bool load_mesh(

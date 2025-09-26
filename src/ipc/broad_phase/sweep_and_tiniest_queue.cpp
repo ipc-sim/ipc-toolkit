@@ -6,6 +6,22 @@
 
 namespace ipc {
 
+struct SweepAndTiniestQueue::Boxes {
+    ~Boxes() = default;
+
+    std::vector<scalable_ccd::cuda::AABB> vertices;
+    std::vector<scalable_ccd::cuda::AABB> edges;
+    std::vector<scalable_ccd::cuda::AABB> faces;
+};
+
+SweepAndTiniestQueue::SweepAndTiniestQueue()
+    : BroadPhase()
+    , boxes(std::make_unique<Boxes>())
+{
+}
+
+SweepAndTiniestQueue::~SweepAndTiniestQueue() = default;
+
 void SweepAndTiniestQueue::build(
     Eigen::ConstRef<Eigen::MatrixXd> _vertices,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
@@ -21,9 +37,9 @@ void SweepAndTiniestQueue::build(
     const Eigen::MatrixXd vertices = to_X3d(_vertices);
 
     scalable_ccd::cuda::build_vertex_boxes(
-        vertices, vertex_boxes, inflation_radius);
-    scalable_ccd::cuda::build_edge_boxes(vertex_boxes, edges, edge_boxes);
-    scalable_ccd::cuda::build_face_boxes(vertex_boxes, faces, face_boxes);
+        vertices, boxes->vertices, inflation_radius);
+    scalable_ccd::cuda::build_edge_boxes(boxes->vertices, edges, boxes->edges);
+    scalable_ccd::cuda::build_face_boxes(boxes->vertices, faces, boxes->faces);
 }
 
 void SweepAndTiniestQueue::build(
@@ -45,17 +61,51 @@ void SweepAndTiniestQueue::build(
     const Eigen::MatrixXd vertices_t1 = to_X3d(_vertices_t1);
 
     scalable_ccd::cuda::build_vertex_boxes(
-        vertices_t0, vertices_t1, vertex_boxes, inflation_radius);
-    scalable_ccd::cuda::build_edge_boxes(vertex_boxes, edges, edge_boxes);
-    scalable_ccd::cuda::build_face_boxes(vertex_boxes, faces, face_boxes);
+        vertices_t0, vertices_t1, boxes->vertices, inflation_radius);
+    scalable_ccd::cuda::build_edge_boxes(boxes->vertices, edges, boxes->edges);
+    scalable_ccd::cuda::build_face_boxes(boxes->vertices, faces, boxes->faces);
+}
+
+void SweepAndTiniestQueue::build(
+    const std::vector<AABB>& vertex_boxes,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces)
+{
+    assert(edges.size() == 0 || edges.cols() == 2);
+    assert(faces.size() == 0 || faces.cols() == 3);
+
+    clear();
+
+    // Convert from ipc::AABB to scalable_ccd::cuda::AABB
+    boxes->vertices.resize(vertex_boxes.size());
+    for (int i = 0; i < vertex_boxes.size(); ++i) {
+        boxes->vertices[i].min.x = vertex_boxes[i].min.x();
+        boxes->vertices[i].min.y = vertex_boxes[i].min.y();
+        boxes->vertices[i].min.z =
+            vertex_boxes[i].min.size() > 2 ? vertex_boxes[i].min.z() : 0;
+
+        boxes->vertices[i].max.x = vertex_boxes[i].max.x();
+        boxes->vertices[i].max.y = vertex_boxes[i].max.y();
+        boxes->vertices[i].max.z =
+            vertex_boxes[i].max.size() > 2 ? vertex_boxes[i].max.z() : 0;
+
+        boxes->vertices[i].min.x = vertex_boxes[i].vertex_ids[0];
+        boxes->vertices[i].min.y = vertex_boxes[i].vertex_ids[1];
+        boxes->vertices[i].min.z = vertex_boxes[i].vertex_ids[2];
+
+        boxes->vertices[i].element_id = i;
+    }
+
+    scalable_ccd::cuda::build_edge_boxes(boxes->vertices, edges, boxes->edges);
+    scalable_ccd::cuda::build_face_boxes(boxes->vertices, faces, boxes->faces);
 }
 
 void SweepAndTiniestQueue::clear()
 {
     BroadPhase::clear();
-    vertex_boxes.clear();
-    edge_boxes.clear();
-    face_boxes.clear();
+    boxes->vertices.clear();
+    boxes->edges.clear();
+    boxes->faces.clear();
 }
 
 void SweepAndTiniestQueue::detect_vertex_vertex_candidates(
@@ -64,7 +114,7 @@ void SweepAndTiniestQueue::detect_vertex_vertex_candidates(
     scalable_ccd::cuda::BroadPhase broad_phase;
     // TODO: Precompute d_vertex_boxes
     broad_phase.build(
-        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(vertex_boxes));
+        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(boxes->vertices));
 
     for (const auto& [vai, vbi] : broad_phase.detect_overlaps()) {
         if (can_vertices_collide(vai, vbi)) {
@@ -79,8 +129,8 @@ void SweepAndTiniestQueue::detect_edge_vertex_candidates(
     scalable_ccd::cuda::BroadPhase broad_phase;
     // TODO: Precompute d_vertex_boxes and d_edge_boxes
     broad_phase.build(
-        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(edge_boxes),
-        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(vertex_boxes));
+        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(boxes->edges),
+        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(boxes->vertices));
 
     for (const auto& [ei, vi] : broad_phase.detect_overlaps()) {
         if (can_edge_vertex_collide(ei, vi)) {
@@ -95,7 +145,7 @@ void SweepAndTiniestQueue::detect_edge_edge_candidates(
     scalable_ccd::cuda::BroadPhase broad_phase;
     // TODO: Precompute d_edge_boxes
     broad_phase.build(
-        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(edge_boxes));
+        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(boxes->edges));
 
     for (const auto& [eai, ebi] : broad_phase.detect_overlaps()) {
         if (can_edges_collide(eai, ebi)) {
@@ -110,8 +160,8 @@ void SweepAndTiniestQueue::detect_face_vertex_candidates(
     scalable_ccd::cuda::BroadPhase broad_phase;
     // TODO: Precompute d_vertex_boxes and d_face_boxes
     broad_phase.build(
-        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(face_boxes),
-        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(vertex_boxes));
+        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(boxes->faces),
+        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(boxes->vertices));
 
     for (const auto& [fi, vi] : broad_phase.detect_overlaps()) {
         if (can_face_vertex_collide(fi, vi)) {
@@ -126,8 +176,8 @@ void SweepAndTiniestQueue::detect_edge_face_candidates(
     scalable_ccd::cuda::BroadPhase broad_phase;
     // TODO: Precompute d_face_boxes and d_edge_boxes
     broad_phase.build(
-        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(edge_boxes),
-        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(face_boxes));
+        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(boxes->edges),
+        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(boxes->faces));
 
     for (const auto& [ei, fi] : broad_phase.detect_overlaps()) {
         if (can_edge_face_collide(ei, fi)) {
@@ -142,7 +192,7 @@ void SweepAndTiniestQueue::detect_face_face_candidates(
     scalable_ccd::cuda::BroadPhase broad_phase;
     // TODO: Precompute d_face_boxes
     broad_phase.build(
-        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(face_boxes));
+        std::make_shared<scalable_ccd::cuda::DeviceAABBs>(boxes->faces));
 
     for (const auto& [fai, fbi] : broad_phase.detect_overlaps()) {
         if (can_faces_collide(fai, fbi)) {
@@ -155,7 +205,7 @@ void SweepAndTiniestQueue::detect_face_face_candidates(
 
 bool SweepAndTiniestQueue::can_edge_vertex_collide(size_t ei, size_t vi) const
 {
-    const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
+    const auto& [e0i, e1i, _] = boxes->edges[ei].vertex_ids;
 
     // Checked by scalable_ccd
     assert(vi != e0i && vi != e1i);
@@ -165,8 +215,8 @@ bool SweepAndTiniestQueue::can_edge_vertex_collide(size_t ei, size_t vi) const
 
 bool SweepAndTiniestQueue::can_edges_collide(size_t eai, size_t ebi) const
 {
-    const auto& [ea0i, ea1i, _] = edge_boxes[eai].vertex_ids;
-    const auto& [eb0i, eb1i, __] = edge_boxes[ebi].vertex_ids;
+    const auto& [ea0i, ea1i, _] = boxes->edges[eai].vertex_ids;
+    const auto& [eb0i, eb1i, __] = boxes->edges[ebi].vertex_ids;
 
     // Checked by scalable_ccd
     assert(ea0i != eb0i && ea0i != eb1i && ea1i != eb0i && ea1i != eb1i);
@@ -177,7 +227,7 @@ bool SweepAndTiniestQueue::can_edges_collide(size_t eai, size_t ebi) const
 
 bool SweepAndTiniestQueue::can_face_vertex_collide(size_t fi, size_t vi) const
 {
-    const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
+    const auto& [f0i, f1i, f2i] = boxes->faces[fi].vertex_ids;
 
     // Checked by scalable_ccd
     assert(vi != f0i && vi != f1i && vi != f2i);
@@ -188,8 +238,8 @@ bool SweepAndTiniestQueue::can_face_vertex_collide(size_t fi, size_t vi) const
 
 bool SweepAndTiniestQueue::can_edge_face_collide(size_t ei, size_t fi) const
 {
-    const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
-    const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
+    const auto& [e0i, e1i, _] = boxes->edges[ei].vertex_ids;
+    const auto& [f0i, f1i, f2i] = boxes->faces[fi].vertex_ids;
 
     // Checked by scalable_ccd
     assert(
@@ -203,8 +253,8 @@ bool SweepAndTiniestQueue::can_edge_face_collide(size_t ei, size_t fi) const
 
 bool SweepAndTiniestQueue::can_faces_collide(size_t fai, size_t fbi) const
 {
-    const auto& [fa0i, fa1i, fa2i] = face_boxes[fai].vertex_ids;
-    const auto& [fb0i, fb1i, fb2i] = face_boxes[fbi].vertex_ids;
+    const auto& [fa0i, fa1i, fa2i] = boxes->faces[fai].vertex_ids;
+    const auto& [fb0i, fb1i, fb2i] = boxes->faces[fbi].vertex_ids;
 
     // Checked by scalable_ccd
     assert(

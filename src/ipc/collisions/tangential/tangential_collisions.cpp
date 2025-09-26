@@ -17,11 +17,13 @@ void TangentialCollisions::build_for_smooth_contact(
     const SmoothCollisions& collisions,
     const ParameterType& params,
     const double barrier_stiffness,
-    const Eigen::VectorXd& mus,
+    Eigen::ConstRef<Eigen::VectorXd> mu_k,
+    Eigen::ConstRef<Eigen::VectorXd> mu_s,
     const std::function<double(double, double)>& blend_mu)
 {
     barrier_stiffness_ = barrier_stiffness;
-    assert(mus.size() == vertices.rows());
+    assert(mu_k.size() == vertices.rows());
+    assert(mu_s.size() == vertices.rows());
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
@@ -50,7 +52,8 @@ void TangentialCollisions::build_for_smooth_contact(
                 const auto& [v0i, v1i, _, __] =
                     FC_vv.back().vertex_ids(edges, faces);
 
-                FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
+                FC_vv.back().mu_k = blend_mu(mu_k(v0i), mu_k(v1i));
+                FC_vv.back().mu_s = blend_mu(mu_s(v0i), mu_s(v1i));
                 ptr = &(FC_vv.back());
             } else if (
                 const auto cev =
@@ -67,10 +70,16 @@ void TangentialCollisions::build_for_smooth_contact(
                 const auto& [vi, e0i, e1i, _] =
                     FC_ev.back().vertex_ids(edges, faces);
 
-                const double edge_mu =
-                    (mus(e1i) - mus(e0i)) * FC_ev.back().closest_point[0]
-                    + mus(e0i);
-                FC_ev.back().mu = blend_mu(edge_mu, mus(vi));
+                const double edge_mu_k =
+                    (mu_k(e1i) - mu_k(e0i)) * FC_ev.back().closest_point[0]
+                    + mu_k(e0i);
+                FC_ev.back().mu_k = blend_mu(edge_mu_k, mu_k(vi));
+
+                const double edge_mu_s =
+                    (mu_s(e1i) - mu_s(e0i)) * FC_ev.back().closest_point[0]
+                    + mu_s(e0i);
+                FC_ev.back().mu_s = blend_mu(edge_mu_s, mu_s(vi));
+
                 ptr = &(FC_ev.back());
             } else if (
                 const auto cee =
@@ -94,13 +103,22 @@ void TangentialCollisions::build_for_smooth_contact(
                         cc[0], cc[1], 0., EdgeEdgeDistanceType::EA_EB),
                     collision_points, contact_force);
 
-                double ea_mu = (mus(vert_ids[1]) - mus(vert_ids[0]))
+                double ea_mu_k = (mu_k(vert_ids[1]) - mu_k(vert_ids[0]))
                         * FC_ee.back().closest_point[0]
-                    + mus(vert_ids[0]);
-                double eb_mu = (mus(vert_ids[3]) - mus(vert_ids[2]))
+                    + mu_k(vert_ids[0]);
+                double eb_mu_k = (mu_k(vert_ids[3]) - mu_k(vert_ids[2]))
                         * FC_ee.back().closest_point[1]
-                    + mus(vert_ids[2]);
-                FC_ee.back().mu = blend_mu(ea_mu, eb_mu);
+                    + mu_k(vert_ids[2]);
+                FC_ee.back().mu_k = blend_mu(ea_mu_k, eb_mu_k);
+
+                double ea_mu_s = (mu_s(vert_ids[1]) - mu_s(vert_ids[0]))
+                        * FC_ee.back().closest_point[0]
+                    + mu_s(vert_ids[0]);
+                double eb_mu_s = (mu_s(vert_ids[3]) - mu_s(vert_ids[2]))
+                        * FC_ee.back().closest_point[1]
+                    + mu_s(vert_ids[2]);
+                FC_ee.back().mu_s = blend_mu(ea_mu_s, eb_mu_s);
+
                 ptr = &(FC_ee.back());
             } else if (
                 const auto cfv =
@@ -117,10 +135,16 @@ void TangentialCollisions::build_for_smooth_contact(
                 const auto& [vi, f0i, f1i, f2i] =
                     FC_fv.back().vertex_ids(edges, faces);
 
-                double face_mu = mus(f0i)
-                    + FC_fv.back().closest_point[0] * (mus(f1i) - mus(f0i))
-                    + FC_fv.back().closest_point[1] * (mus(f2i) - mus(f0i));
-                FC_fv.back().mu = blend_mu(face_mu, mus(vi));
+                double face_mu_k = mu_k(f0i)
+                    + FC_fv.back().closest_point[0] * (mu_k(f1i) - mu_k(f0i))
+                    + FC_fv.back().closest_point[1] * (mu_k(f2i) - mu_k(f0i));
+                FC_fv.back().mu_k = blend_mu(face_mu_k, mu_k(vi));
+
+                double face_mu_s = mu_s(f0i)
+                    + FC_fv.back().closest_point[0] * (mu_s(f1i) - mu_s(f0i))
+                    + FC_fv.back().closest_point[1] * (mu_s(f2i) - mu_s(f0i));
+                FC_fv.back().mu_s = blend_mu(face_mu_s, mu_s(vi));
+
                 ptr = &(FC_fv.back());
             }
             if (ptr)
@@ -137,7 +161,8 @@ void TangentialCollisions::build_for_smooth_contact(
                 const auto& [v0i, v1i, _, __] =
                     FC_vv.back().vertex_ids(edges, faces);
 
-                FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
+                FC_vv.back().mu_s = blend_mu(mu_s(v0i), mu_s(v1i));
+                FC_vv.back().mu_k = blend_mu(mu_k(v0i), mu_k(v1i));
                 ptr = &(FC_vv.back());
             } else if (
                 const auto cev =
@@ -154,10 +179,16 @@ void TangentialCollisions::build_for_smooth_contact(
                 const auto& [vi, e0i, e1i, _] =
                     FC_ev.back().vertex_ids(edges, faces);
 
-                const double edge_mu =
-                    (mus(e1i) - mus(e0i)) * FC_ev.back().closest_point[0]
-                    + mus(e0i);
-                FC_ev.back().mu = blend_mu(edge_mu, mus(vi));
+                const double edge_mu_k =
+                    (mu_k(e1i) - mu_k(e0i)) * FC_ev.back().closest_point[0]
+                    + mu_k(e0i);
+                FC_ev.back().mu_k = blend_mu(edge_mu_k, mu_k(vi));
+
+                const double edge_mu_s =
+                    (mu_s(e1i) - mu_s(e0i)) * FC_ev.back().closest_point[0]
+                    + mu_s(e0i);
+                FC_ev.back().mu_s = blend_mu(edge_mu_s, mu_s(vi));
+
                 ptr = &(FC_ev.back());
             }
             if (ptr)
@@ -172,11 +203,13 @@ void TangentialCollisions::build(
     const NormalCollisions& collisions,
     const NormalPotential& normal_potential,
     const double normal_stiffness,
-    Eigen::ConstRef<Eigen::VectorXd> mus,
+    Eigen::ConstRef<Eigen::VectorXd> mu_s,
+    Eigen::ConstRef<Eigen::VectorXd> mu_k,
     const std::function<double(double, double)>& blend_mu)
 {
     barrier_stiffness_ = normal_stiffness;
-    assert(mus.size() == vertices.rows());
+    assert(mu_s.size() == vertices.rows());
+    assert(mu_k.size() == vertices.rows());
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
@@ -196,7 +229,8 @@ void TangentialCollisions::build(
             normal_stiffness);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
 
-        FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
+        FC_vv.back().mu_s = blend_mu(mu_s(v0i), mu_s(v1i));
+        FC_vv.back().mu_k = blend_mu(mu_k(v0i), mu_k(v1i));
     }
 
     FC_ev.reserve(C_ev.size());
@@ -206,9 +240,12 @@ void TangentialCollisions::build(
             normal_stiffness);
         const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
 
-        const double edge_mu =
-            (mus(e1i) - mus(e0i)) * FC_ev.back().closest_point[0] + mus(e0i);
-        FC_ev.back().mu = blend_mu(edge_mu, mus(vi));
+        const double edge_mu_s =
+            (mu_s(e1i) - mu_s(e0i)) * FC_ev.back().closest_point[0] + mu_s(e0i);
+        FC_ev.back().mu_s = blend_mu(edge_mu_s, mu_s(vi));
+        const double edge_mu_k =
+            (mu_k(e1i) - mu_k(e0i)) * FC_ev.back().closest_point[0] + mu_k(e0i);
+        FC_ev.back().mu_k = blend_mu(edge_mu_k, mu_k(vi));
     }
 
     FC_ee.reserve(C_ee.size());
@@ -228,11 +265,21 @@ void TangentialCollisions::build(
             c_ee, c_ee.dof(vertices, edges, faces), normal_potential,
             normal_stiffness);
 
-        double ea_mu =
-            (mus(ea1i) - mus(ea0i)) * FC_ee.back().closest_point[0] + mus(ea0i);
-        double eb_mu =
-            (mus(eb1i) - mus(eb0i)) * FC_ee.back().closest_point[1] + mus(eb0i);
-        FC_ee.back().mu = blend_mu(ea_mu, eb_mu);
+        double ea_mu_s =
+            (mu_s(ea1i) - mu_s(ea0i)) * FC_ee.back().closest_point[0]
+            + mu_s(ea0i);
+        double eb_mu_s =
+            (mu_s(eb1i) - mu_s(eb0i)) * FC_ee.back().closest_point[1]
+            + mu_s(eb0i);
+        FC_ee.back().mu_s = blend_mu(ea_mu_s, eb_mu_s);
+
+        double ea_mu_k =
+            (mu_k(ea1i) - mu_k(ea0i)) * FC_ee.back().closest_point[0]
+            + mu_k(ea0i);
+        double eb_mu_k =
+            (mu_k(eb1i) - mu_k(eb0i)) * FC_ee.back().closest_point[1]
+            + mu_k(eb0i);
+        FC_ee.back().mu_k = blend_mu(ea_mu_k, eb_mu_k);
     }
 
     FC_fv.reserve(C_fv.size());
@@ -242,10 +289,15 @@ void TangentialCollisions::build(
             normal_stiffness);
         const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
 
-        double face_mu = mus(f0i)
-            + FC_fv.back().closest_point[0] * (mus(f1i) - mus(f0i))
-            + FC_fv.back().closest_point[1] * (mus(f2i) - mus(f0i));
-        FC_fv.back().mu = blend_mu(face_mu, mus(vi));
+        double face_mu_s = mu_s(f0i)
+            + FC_fv.back().closest_point[0] * (mu_s(f1i) - mu_s(f0i))
+            + FC_fv.back().closest_point[1] * (mu_s(f2i) - mu_s(f0i));
+        FC_fv.back().mu_s = blend_mu(face_mu_s, mu_s(vi));
+
+        double face_mu_k = mu_k(f0i)
+            + FC_fv.back().closest_point[0] * (mu_k(f1i) - mu_k(f0i))
+            + FC_fv.back().closest_point[1] * (mu_k(f2i) - mu_k(f0i));
+        FC_fv.back().mu_k = blend_mu(face_mu_k, mu_k(vi));
     }
 }
 

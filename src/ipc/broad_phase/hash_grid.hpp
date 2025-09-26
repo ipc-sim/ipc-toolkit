@@ -24,6 +24,7 @@ struct HashItem {
     }
 };
 
+/// @brief Hash grid broad phase collision detection.
 class HashGrid : public BroadPhase {
 public:
     HashGrid() = default;
@@ -32,29 +33,7 @@ public:
     /// @return The name of the broad phase method.
     std::string name() const override { return "HashGrid"; }
 
-    /// @brief Build the broad phase for static collision detection.
-    /// @param vertices Vertex positions
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @param inflation_radius Radius of inflation around all elements.
-    void build(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces,
-        double inflation_radius = 0) override;
-
-    /// @brief Build the broad phase for continuous collision detection.
-    /// @param vertices_t0 Starting vertices of the vertices.
-    /// @param vertices_t1 Ending vertices of the vertices.
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @param inflation_radius Radius of inflation around all elements.
-    void build(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces,
-        double inflation_radius = 0) override;
+    using BroadPhase::build;
 
     /// @brief Clear the hash grid.
     void clear() override
@@ -100,6 +79,14 @@ public:
     const ArrayMax3d& domain_max() const { return m_domain_max; }
 
 protected:
+    /// @brief Build the broad phase for collision detection.
+    /// @note Assumes the vertex_boxes have been built.
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    void build(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) override;
+
     void resize(
         Eigen::ConstRef<ArrayMax3d> domain_min,
         Eigen::ConstRef<ArrayMax3d> domain_max,
