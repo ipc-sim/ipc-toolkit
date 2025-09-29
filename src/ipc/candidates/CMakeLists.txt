@@ -17,6 +17,7 @@ set(SOURCES
   # plane_vertex.hpp
   vertex_vertex.cpp
   vertex_vertex.hpp
+  face_face.hpp
 )
 
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

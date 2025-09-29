@@ -6,6 +6,7 @@ set(SOURCES
   # Benchmarks
 
   # Utilities
+  test_eigen.cpp
 )
 
 target_sources(ipc_toolkit_tests PRIVATE ${SOURCES})

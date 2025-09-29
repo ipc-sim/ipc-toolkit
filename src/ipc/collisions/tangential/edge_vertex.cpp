@@ -18,6 +18,15 @@ EdgeVertexTangentialCollision::EdgeVertexTangentialCollision(
 EdgeVertexTangentialCollision::EdgeVertexTangentialCollision(
     const EdgeVertexNormalCollision& collision,
     Eigen::ConstRef<VectorMax12d> positions,
+    const double normal_force)
+    : EdgeVertexTangentialCollision(collision)
+{
+    TangentialCollision::init(collision, positions, normal_force);
+}
+
+EdgeVertexTangentialCollision::EdgeVertexTangentialCollision(
+    const EdgeVertexNormalCollision& collision,
+    Eigen::ConstRef<VectorMax12d> positions,
     const NormalPotential& normal_potential,
     const double normal_stiffness)
     : EdgeVertexTangentialCollision(collision)

@@ -18,6 +18,15 @@ FaceVertexTangentialCollision::FaceVertexTangentialCollision(
 FaceVertexTangentialCollision::FaceVertexTangentialCollision(
     const FaceVertexNormalCollision& collision,
     Eigen::ConstRef<VectorMax12d> positions,
+    const double normal_force)
+    : FaceVertexTangentialCollision(collision)
+{
+    TangentialCollision::init(collision, positions, normal_force);
+}
+
+FaceVertexTangentialCollision::FaceVertexTangentialCollision(
+    const FaceVertexNormalCollision& collision,
+    Eigen::ConstRef<VectorMax12d> positions,
     const NormalPotential& normal_potential,
     const double normal_stiffness)
     : FaceVertexTangentialCollision(collision)

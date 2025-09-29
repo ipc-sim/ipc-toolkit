@@ -10,9 +10,11 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/distance/line_line.hpp>
 
 #include <finitediff.hpp>
 #include <igl/edges.h>
+#include <ipc/ipc.hpp>
 
 using namespace ipc;
 

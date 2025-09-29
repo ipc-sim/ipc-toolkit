@@ -7,6 +7,7 @@
 #include <ipc/collisions/tangential/face_vertex.hpp>
 #include <ipc/collisions/tangential/tangential_collision.hpp>
 #include <ipc/collisions/tangential/vertex_vertex.hpp>
+#include <ipc/smooth_contact/smooth_collisions.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Core>
@@ -85,6 +86,17 @@ public:
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
 
+    void build_for_smooth_contact(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const SmoothCollisions& collisions,
+        const ParameterType& params,
+        const double barrier_stiffness,
+        Eigen::ConstRef<Eigen::VectorXd> mu_k,
+        Eigen::ConstRef<Eigen::VectorXd> mu_s,
+        const std::function<double(double, double)>& blend_mu =
+            default_blend_mu);
+
     // ------------------------------------------------------------------------
 
     /// @brief Get the number of friction collisions.
@@ -123,6 +135,8 @@ public:
     std::vector<EdgeEdgeTangentialCollision> ee_collisions;
     /// @brief Face-vertex tangential collisions.
     std::vector<FaceVertexTangentialCollision> fv_collisions;
+
+    double barrier_stiffness_;
 };
 
 } // namespace ipc

@@ -18,6 +18,21 @@ set(SOURCES
   vertex_to_min_edge.cpp
   vertex_to_min_edge.hpp
   world_bbox_diagonal_length.hpp
+  quadrature.cpp
+  quadrature.hpp
+  tangents.cpp
+  tangents.hpp
+  math.cpp
+  math.hpp
+  math.tpp
+  autodiff.h
+  AutodiffTypes.hpp
+  MaybeParallelFor.hpp
+  MaybeParallelFor.tpp
+  par_for.hpp
+  par_for.cpp
+  MatrixCache.hpp
+  MatrixCache.cpp
 )
 
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

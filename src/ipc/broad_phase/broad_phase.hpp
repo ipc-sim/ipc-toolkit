@@ -120,5 +120,4 @@ protected:
     std::vector<AABB> edge_boxes;
     std::vector<AABB> face_boxes;
 };
-
 } // namespace ipc

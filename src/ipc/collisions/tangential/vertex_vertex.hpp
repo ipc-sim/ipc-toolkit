@@ -17,6 +17,11 @@ public:
     VertexVertexTangentialCollision(
         const VertexVertexNormalCollision& collision,
         Eigen::ConstRef<VectorMax12d> positions,
+        const double normal_force);
+
+    VertexVertexTangentialCollision(
+        const VertexVertexNormalCollision& collision,
+        Eigen::ConstRef<VectorMax12d> positions,
         const NormalPotential& normal_potential,
         const double normal_stiffness);
 

@@ -10,6 +10,7 @@ class TangentialPotential : public Potential<TangentialCollisions> {
     using Super = Potential;
 
 public:
+    using Potential<TangentialCollisions>::element_size;
     virtual ~TangentialPotential() { }
 
     // -- Cumulative methods ---------------------------------------------------
@@ -70,6 +71,59 @@ public:
         const double normal_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
+
+    Eigen::VectorXd smooth_contact_force(
+        const TangentialCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+        Eigen::ConstRef<Eigen::MatrixXd> velocities,
+        const double dmin = 0,
+        const bool no_mu = false) const;
+
+    Eigen::SparseMatrix<double> smooth_contact_force_jacobian(
+        const TangentialCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+        Eigen::ConstRef<Eigen::MatrixXd> velocities,
+        const ParameterType& params,
+        const DiffWRT wrt,
+        const double dmin = 0,
+        const bool no_mu = false) const;
+
+    Vector<double, -1, element_size> smooth_contact_force(
+        const TangentialCollision& collision,
+        const Vector<double, -1, element_size>& rest_positions,       // = x
+        const Vector<double, -1, element_size>& lagged_displacements, // = u
+        const Vector<double, -1, element_size>& velocities,           // = v
+        const bool no_mu = false,
+        const bool no_contact_force_multiplier = false) const;
+
+    Eigen::MatrixXd smooth_contact_force_jacobian(
+        const TangentialCollision& collision,
+        const Vector<double, -1, element_size>& rest_positions,       // = x
+        const Vector<double, -1, element_size>& lagged_displacements, // = u
+        const Vector<double, -1, element_size>& velocities,           // = v
+        const DiffWRT wrt,
+        const bool no_mu) const;
+
+    /// @brief Compute the friction force Jacobian assuming the contact force magnitude being 1.
+    /// @param collision The collision
+    /// @param rest_positions Rest positions of the vertices (rowwise).
+    /// @param lagged_displacements Previous displacements of the vertices (rowwise).
+    /// @param velocities Current displacements of the vertices (rowwise).
+    /// @param barrier_potential Barrier potential (used for normal force magnitude).
+    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param wrt Variable to differentiate the friction force with respect to.
+    /// @param dmin Minimum distance (used for normal force magnitude).
+    /// @return Friction force Jacobian
+    MatrixMax<double, element_size, element_size> force_jacobian_unit(
+        const TangentialCollision& collision,
+        const Vector<double, -1, element_size>& lagged_positions,
+        const Vector<double, -1, element_size>& velocities,
+        const DiffWRT wrt,
+        const bool no_mu = false) const;
 
     // -- Single collision methods ---------------------------------------------
 

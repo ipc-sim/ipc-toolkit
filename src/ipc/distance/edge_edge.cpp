@@ -10,6 +10,28 @@
 
 namespace ipc {
 
+namespace {
+    Eigen::Vector3d point_to_3d(const Eigen::Ref<const Eigen::Vector2d>& p)
+    {
+        Eigen::Vector3d p3;
+        p3.setZero();
+        p3.head<2>() = p;
+        return p3;
+    }
+} // namespace
+
+double edge_edge_distance_2d(
+    const Eigen::Ref<const Eigen::Vector2d>& ea0,
+    const Eigen::Ref<const Eigen::Vector2d>& ea1,
+    const Eigen::Ref<const Eigen::Vector2d>& eb0,
+    const Eigen::Ref<const Eigen::Vector2d>& eb1,
+    EdgeEdgeDistanceType dtype)
+{
+    return edge_edge_distance(
+        point_to_3d(ea0), point_to_3d(ea1), point_to_3d(eb0), point_to_3d(eb1),
+        dtype);
+}
+
 double edge_edge_distance(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
