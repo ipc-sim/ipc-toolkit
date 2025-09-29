@@ -12,7 +12,6 @@
 #include <ipc/smooth_contact/distance/point_edge.hpp>
 
 #include <finitediff.hpp>
-#include <iostream>
 
 using namespace ipc;
 

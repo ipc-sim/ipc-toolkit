@@ -26,4 +26,5 @@ double FrictionPotential::mu_f2_x_minus_mu_f1_over_x3(
 {
     return smooth_mu_f2_x_minus_mu_f1_over_x3(x, mu_s, mu_k, eps_v());
 }
+
 } // namespace ipc

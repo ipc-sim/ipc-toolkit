@@ -11,7 +11,6 @@
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <finitediff.hpp>
-#include <iostream>
 
 using namespace ipc;
 

@@ -9,7 +9,6 @@
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <ipc/smooth_contact/primitives/edge3.hpp>
-#include <iomanip>
 
 #include <finitediff.hpp>
 #include <igl/PI.h>

@@ -5,7 +5,6 @@
 #include <ipc/config.hpp>
 
 #include <igl/edges.h>
-#include <igl/writeOBJ.h>
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/smooth_contact/smooth_collisions.hpp>
 
