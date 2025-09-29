@@ -373,7 +373,8 @@ void check_smooth_friction_force_jacobian(
     TangentialCollisions friction_collisions;
     friction_collisions.build_for_smooth_contact(
         mesh, X + Ut, collisions, params, barrier_stiffness,
-        Eigen::VectorXd::Ones(mesh.num_vertices()) * mu, Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
+        Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
+        Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
     CHECK(friction_collisions.size());
 
     const FrictionPotential D(epsv_times_h);
@@ -523,7 +524,8 @@ void check_smooth_friction_force_jacobian(
         TangentialCollisions fd_friction_collisions;
         fd_friction_collisions.build_for_smooth_contact(
             fd_mesh, fd_lagged_positions, fd_collisions, params,
-            barrier_stiffness, Eigen::VectorXd::Ones(mesh.num_vertices()) * mu, Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
+            barrier_stiffness, Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
+            Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
 
         return D.smooth_contact_force(
             fd_friction_collisions, fd_mesh, fd_X, Ut, velocities);
@@ -555,7 +557,8 @@ void check_smooth_friction_force_jacobian(
         TangentialCollisions fd_friction_collisions;
         fd_friction_collisions.build_for_smooth_contact(
             mesh, fd_lagged_positions, fd_collisions, params, barrier_stiffness,
-            Eigen::VectorXd::Ones(mesh.num_vertices()) * mu, Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
+            Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
+            Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
 
         return D.smooth_contact_force(
             fd_friction_collisions, mesh, X, fd_Ut, velocities);
