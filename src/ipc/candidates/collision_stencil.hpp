@@ -68,13 +68,13 @@ public:
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @return This stencil's DOF.
-    Vector<double, -1, 12>
+    VectorMax12d
     dof(Eigen::ConstRef<Eigen::MatrixXd> X,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const
     {
         const int dim = X.cols();
-        Vector<double, -1, 12> x(num_vertices() * dim);
+        VectorMax12d x(num_vertices() * dim);
         const auto idx = vertex_ids(edges, faces);
         for (int i = 0; i < num_vertices(); i++) {
             x.segment(i * dim, dim) = X.row(idx[i]);
@@ -100,7 +100,7 @@ public:
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @return Distance gradient of the stencil w.r.t. the stencil's vertex positions.
-    Vector<double, -1, 12> compute_distance_gradient(
+    VectorMax12d compute_distance_gradient(
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const
@@ -113,7 +113,7 @@ public:
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
-    MatrixMax<double, 12, 12> compute_distance_hessian(
+    MatrixMax12d compute_distance_hessian(
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const
@@ -177,27 +177,27 @@ public:
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance of the stencil.
     virtual double compute_distance(
-        Eigen::ConstRef<Vector<double, -1, 12>>& positions) const = 0;
+        Eigen::ConstRef<VectorMax12d>& positions) const = 0;
 
     /// @brief Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
     /// @param positions Stencil's vertex positions.
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance gradient of the stencil w.r.t. the stencil's vertex positions.
-    virtual Vector<double, -1, 12> compute_distance_gradient(
-        Eigen::ConstRef<Vector<double, -1, 12>> positions) const = 0;
+    virtual VectorMax12d compute_distance_gradient(
+        Eigen::ConstRef<VectorMax12d> positions) const = 0;
 
     /// @brief Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
     /// @param positions Stencil's vertex positions.
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
-    virtual MatrixMax<double, 12, 12> compute_distance_hessian(
-        Eigen::ConstRef<Vector<double, -1, 12>> positions) const = 0;
+    virtual MatrixMax12d compute_distance_hessian(
+        Eigen::ConstRef<VectorMax12d> positions) const = 0;
 
     /// @brief Compute the coefficients of the stencil s.t. d(x) = ‖∑ cᵢ xᵢ‖².
     /// @param positions Stencil's vertex positions.
     /// @return Coefficients of the stencil.
     virtual VectorMax4d compute_coefficients(
-        Eigen::ConstRef<Vector<double, -1, 12>> positions) const = 0;
+        Eigen::ConstRef<VectorMax12d> positions) const = 0;
 
     /// @brief Compute the normal of the stencil.
     /// @param positions Stencil's vertex positions.
@@ -226,8 +226,8 @@ public:
     /// @param[in] narrow_phase_ccd The narrow phase CCD algorithm to use.
     /// @return If the candidate had a collision over the time interval.
     virtual bool
-    ccd(Eigen::ConstRef<Vector<double, -1, 12>> vertices_t0,
-        Eigen::ConstRef<Vector<double, -1, 12>> vertices_t1,
+    ccd(Eigen::ConstRef<VectorMax12d> vertices_t0,
+        Eigen::ConstRef<VectorMax12d> vertices_t1,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,

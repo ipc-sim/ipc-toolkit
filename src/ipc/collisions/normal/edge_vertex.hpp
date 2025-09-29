@@ -25,7 +25,7 @@ public:
     {
     }
 
-    virtual PointEdgeDistanceType known_dtype() const override
+    PointEdgeDistanceType known_dtype() const override
     {
         // The distance type is known because of NormalCollisions::build()
         return PointEdgeDistanceType::P_E;

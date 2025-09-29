@@ -25,7 +25,7 @@ public:
     {
     }
 
-    virtual PointTriangleDistanceType known_dtype() const override
+    PointTriangleDistanceType known_dtype() const override
     {
         // The distance type is known because of NormalCollisions::build()
         return PointTriangleDistanceType::P_T;

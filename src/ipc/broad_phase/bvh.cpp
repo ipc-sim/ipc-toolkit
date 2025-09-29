@@ -175,5 +175,4 @@ void BVH::detect_face_face_candidates(
         face_boxes, *face_bvh, std::bind(&BVH::can_faces_collide, this, _1, _2),
         candidates);
 }
-
 } // namespace ipc

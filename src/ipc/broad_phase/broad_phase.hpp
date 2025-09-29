@@ -18,7 +18,6 @@ class Candidates; // Forward declaration
 /// @brief Base class for broad phase collision detection methods.
 class BroadPhase {
 public:
-    BroadPhase() { }
     virtual ~BroadPhase() { clear(); }
 
     /// @brief Get the name of the broad phase method.

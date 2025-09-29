@@ -56,8 +56,8 @@ MatrixMax<double, 3, 12> CollisionStencil::compute_normal_jacobian(
 
 std::ostream& CollisionStencil::write_ccd_query(
     std::ostream& out,
-    Eigen::ConstRef<Vector<double, -1, 12>> vertices_t0,
-    Eigen::ConstRef<Vector<double, -1, 12>> vertices_t1) const
+    Eigen::ConstRef<VectorMax12d> vertices_t0,
+    Eigen::ConstRef<VectorMax12d> vertices_t1) const
 {
     assert(vertices_t0.size() == vertices_t1.size());
 

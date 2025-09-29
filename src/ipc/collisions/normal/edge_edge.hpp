@@ -29,7 +29,7 @@ public:
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
     /// @brief Does the distance potentially have to be mollified?
-    virtual bool is_mollified() const override { return true; }
+    bool is_mollified() const override { return true; }
 
     /// @brief Compute the mollifier threshold for the distance.
     /// @param rest_positions The stencil's rest vertex positions.
