@@ -7,16 +7,17 @@ namespace ipc::ogc {
 bool check_vertex_feasible_region(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    Eigen::ConstRef<Eigen::Vector3d> x,
+    Eigen::ConstRef<VectorMax3d> x,
     const index_t vi)
 {
     assert(mesh.are_adjacencies_initialized());
+    assert(x.size() == vertices.cols());
 
-    const Eigen::Vector3d x_vi = vertices.row(vi);
-    const Eigen::Vector3d v_to_x = x - x_vi;
+    const VectorMax3d x_vi = vertices.row(vi);
+    const VectorMax3d v_to_x = x - x_vi;
 
     for (const index_t vj : mesh.vertex_vertex_adjacencies()[vi]) {
-        const Eigen::Vector3d x_vj = vertices.row(vj);
+        const VectorMax3d x_vj = vertices.row(vj);
         if (v_to_x.dot(x_vi - x_vj) < 0) {
             // Vertex xi is not in the feasible region of vertex vi
             return false;
@@ -32,6 +33,7 @@ bool check_edge_feasible_region(
     const index_t ei)
 {
     assert(mesh.are_adjacencies_initialized());
+    assert(vertices.cols() == 3); // 3D only
 
     const Eigen::Vector3d x = vertices.row(xi);
     const Eigen::Vector3d x0 = vertices.row(mesh.edges()(ei, 0));

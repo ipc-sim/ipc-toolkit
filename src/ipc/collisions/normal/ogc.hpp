@@ -16,7 +16,7 @@ namespace ipc::ogc {
 bool check_vertex_feasible_region(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    Eigen::ConstRef<Eigen::Vector3d> x,
+    Eigen::ConstRef<VectorMax3d> x,
     const index_t vi);
 
 /// @brief Check if vertex `xi` is in the feasible region of vertex `vi`.
