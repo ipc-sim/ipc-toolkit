@@ -10,6 +10,8 @@
 #include <igl/readCSV.h>
 #include <igl/readDMAT.h>
 
+#include <optional>
+
 using namespace ipc;
 
 void test_face_face_broad_phase(
