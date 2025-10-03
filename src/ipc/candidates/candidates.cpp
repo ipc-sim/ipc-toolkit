@@ -42,7 +42,7 @@ void Candidates::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double inflation_radius,
-    const std::shared_ptr<BroadPhase> broad_phase)
+    const std::shared_ptr<BroadPhase>& broad_phase)
 {
     assert(broad_phase != nullptr);
 
@@ -114,7 +114,7 @@ void Candidates::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double inflation_radius,
-    const std::shared_ptr<BroadPhase> broad_phase)
+    const std::shared_ptr<BroadPhase>& broad_phase)
 {
     assert(broad_phase != nullptr);
 
@@ -317,7 +317,7 @@ double Candidates::compute_cfl_stepsize(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double dhat,
     const double min_distance,
-    const std::shared_ptr<BroadPhase> broad_phase,
+    const std::shared_ptr<BroadPhase>& broad_phase,
     const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(vertices_t0.rows() == mesh.num_vertices());

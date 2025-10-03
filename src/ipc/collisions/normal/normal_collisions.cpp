@@ -21,7 +21,7 @@ void NormalCollisions::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double dhat,
     const double dmin,
-    const std::shared_ptr<BroadPhase> broad_phase)
+    const std::shared_ptr<BroadPhase>& broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
@@ -87,7 +87,7 @@ void NormalCollisions::build(
         });
 
     if (collision_set_type() == CollisionSetType::IMPROVED_MAX_APPROX) {
-        if (candidates.ev_candidates.size() > 0) {
+        if (!candidates.ev_candidates.empty()) {
             // Convert edge-vertex to vertex-vertex
             const auto vv_candidates = candidates.edge_vertex_to_vertex_vertex(
                 mesh, vertices, is_active);
@@ -101,7 +101,7 @@ void NormalCollisions::build(
                 });
         }
 
-        if (candidates.ee_candidates.size() > 0) {
+        if (!candidates.ee_candidates.empty()) {
             // Convert edge-edge to edge-vertex
             const auto ev_candidates =
                 candidates.edge_edge_to_edge_vertex(mesh, vertices, is_active);
@@ -115,7 +115,7 @@ void NormalCollisions::build(
                 });
         }
 
-        if (candidates.fv_candidates.size() > 0) {
+        if (!candidates.fv_candidates.empty()) {
             // Convert face-vertex to edge-vertex
             const auto ev_candidates = candidates.face_vertex_to_edge_vertex(
                 mesh, vertices, is_active);
@@ -222,10 +222,7 @@ double NormalCollisions::compute_minimum_distance(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const double dist = (*this)[i].compute_distance(
                     (*this)[i].dof(vertices, edges, faces));
-
-                if (dist < partial_min_dist) {
-                    partial_min_dist = dist;
-                }
+                partial_min_dist = std::min(partial_min_dist, dist);
             }
             return partial_min_dist;
         },

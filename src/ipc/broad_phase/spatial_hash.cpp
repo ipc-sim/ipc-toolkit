@@ -124,13 +124,13 @@ void SpatialHash::build(
         right_top_corner = right_top_corner.max(box.max);
     }
 
-    one_div_voxelSize = 1.0 / voxel_size;
+    one_div_voxel_size = 1.0 / voxel_size;
 
     const ArrayMax3d range = right_top_corner - left_bottom_corner;
-    voxel_count = (range * one_div_voxelSize).ceil().template cast<int>();
+    voxel_count = (range * one_div_voxel_size).ceil().template cast<int>();
     if (voxel_count.minCoeff() <= 0) {
         // cast overflow due to huge search direction
-        one_div_voxelSize = 1.0 / (range.maxCoeff() * 1.01);
+        one_div_voxel_size = 1.0 / (range.maxCoeff() * 1.01);
         voxel_count.setOnes();
     }
     voxel_count_0x1 = voxel_count[0] * voxel_count[1];
@@ -257,7 +257,7 @@ namespace {
 void SpatialHash::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
-    if (vertex_boxes.size() == 0) {
+    if (vertex_boxes.empty()) {
         return;
     }
 
@@ -272,7 +272,7 @@ void SpatialHash::detect_vertex_vertex_candidates(
 void SpatialHash::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
-    if (edge_boxes.size() == 0 || vertex_boxes.size() == 0) {
+    if (edge_boxes.empty() || vertex_boxes.empty()) {
         return;
     }
 
@@ -288,7 +288,7 @@ void SpatialHash::detect_edge_vertex_candidates(
 void SpatialHash::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
-    if (edge_boxes.size() == 0) {
+    if (edge_boxes.empty()) {
         return;
     }
 
@@ -303,7 +303,7 @@ void SpatialHash::detect_edge_edge_candidates(
 void SpatialHash::detect_face_vertex_candidates(
     std::vector<FaceVertexCandidate>& candidates) const
 {
-    if (face_boxes.size() == 0 || vertex_boxes.size() == 0) {
+    if (face_boxes.empty() || vertex_boxes.empty()) {
         return;
     }
 
@@ -320,7 +320,7 @@ void SpatialHash::detect_face_vertex_candidates(
 void SpatialHash::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
-    if (edge_boxes.size() == 0 || face_boxes.size() == 0) {
+    if (edge_boxes.empty() || face_boxes.empty()) {
         return;
     }
 
@@ -336,7 +336,7 @@ void SpatialHash::detect_edge_face_candidates(
 void SpatialHash::detect_face_face_candidates(
     std::vector<FaceFaceCandidate>& candidates) const
 {
-    if (face_boxes.size() == 0) {
+    if (face_boxes.empty()) {
         return;
     }
 
@@ -358,7 +358,7 @@ int SpatialHash::locate_voxel_index(Eigen::ConstRef<VectorMax3d> p) const
 ArrayMax3i
 SpatialHash::locate_voxel_axis_index(Eigen::ConstRef<VectorMax3d> p) const
 {
-    return ((p.array() - left_bottom_corner) * one_div_voxelSize)
+    return ((p.array() - left_bottom_corner) * one_div_voxel_size)
         .floor()
         .template cast<int>();
 }

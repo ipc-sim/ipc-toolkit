@@ -19,10 +19,10 @@ struct SpatialHash::Impl {
     std::vector<std::vector<int>> face_to_voxels;
 
     /// @brief The index of the first edge in voxel_occupancies
-    int edge_start_ind;
+    int edge_start_ind = -1;
 
     /// @brief The index of the first triangle in voxel_occupancies
-    int tri_start_ind;
+    int tri_start_ind = -1;
 
     // --- Methods ------------------------------------------------------------
 

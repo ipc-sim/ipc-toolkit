@@ -33,9 +33,9 @@ spdlog::logger& logger()
 }
 
 // Use a custom logger
-void set_logger(std::shared_ptr<spdlog::logger> x)
+void set_logger(std::shared_ptr<spdlog::logger> logger)
 {
-    get_shared_logger() = std::move(x);
+    get_shared_logger() = std::move(logger);
 }
 
 void log_and_throw_error(const std::string& msg)

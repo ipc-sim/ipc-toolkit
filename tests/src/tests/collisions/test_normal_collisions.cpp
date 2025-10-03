@@ -45,7 +45,7 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
         Candidates candidates;
         candidates.build(mesh, vertices, V1, thickness, broad_phase);
 
-        CHECK(candidates.size() > 0);
+        CHECK(!candidates.empty());
         CHECK(candidates.vv_candidates.size() == candidates.size());
 
         CHECK(!candidates.is_step_collision_free(

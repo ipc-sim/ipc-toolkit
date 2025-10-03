@@ -67,8 +67,9 @@ project_to_psd(
 {
     assert(A.isApprox(A.transpose()) && "A must be symmetric");
 
-    if (method == PSDProjectionMethod::NONE)
+    if (method == PSDProjectionMethod::NONE) {
         return A;
+    }
 
     // https://math.stackexchange.com/q/2776803
     Eigen::SelfAdjointEigenSolver<

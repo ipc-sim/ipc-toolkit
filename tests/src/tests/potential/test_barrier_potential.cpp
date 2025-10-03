@@ -69,7 +69,7 @@ TEST_CASE(
     mesh = CollisionMesh(vertices, edges, faces);
     collisions.build(mesh, vertices, dhat, /*dmin=*/0, broad_phase);
     CAPTURE(dhat, broad_phase->name(), use_area_weighting, collision_set_type);
-    CHECK(collisions.size() > 0);
+    CHECK(!collisions.empty());
 
     BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
@@ -216,7 +216,7 @@ TEST_CASE(
     collisions.set_collision_set_type(collision_set_type);
 
     collisions.build(mesh, vertices, dhat);
-    CHECK(collisions.size() > 0);
+    CHECK(!collisions.empty());
 
     BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
@@ -293,7 +293,7 @@ TEST_CASE(
     collisions.set_collision_set_type(collision_set_type);
     collisions.set_enable_shape_derivatives(true);
     collisions.build(candidates, mesh, vertices, dhat);
-    REQUIRE(collisions.ee_collisions.size() > 0);
+    REQUIRE(!collisions.ee_collisions.empty());
 
     BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
@@ -500,7 +500,7 @@ TEST_CASE(
     collisions.set_collision_set_type(collision_set_type);
     collisions.build(mesh, vertices, dhat);
     CAPTURE(mesh_name, dhat);
-    CHECK(collisions.size() > 0);
+    CHECK(!collisions.empty());
 
     BarrierPotential barrier_potential(dhat, use_physical_barrier);
 

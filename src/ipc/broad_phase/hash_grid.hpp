@@ -102,7 +102,7 @@ protected:
         const AABB& aabb, const long id, std::vector<HashItem>& items) const;
 
     /// @brief Create the hash of a cell location.
-    inline long hash(int x, int y, int z) const
+    long hash(int x, int y, int z) const
     {
         assert(x >= 0 && y >= 0 && z >= 0);
         assert(
@@ -143,7 +143,7 @@ private:
         std::vector<Candidate>& candidates) const;
 
 protected:
-    double m_cell_size;
+    double m_cell_size = -1;
     ArrayMax3i m_grid_size;
     ArrayMax3d m_domain_min;
     ArrayMax3d m_domain_max;

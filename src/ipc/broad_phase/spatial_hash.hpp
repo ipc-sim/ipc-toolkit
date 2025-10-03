@@ -154,6 +154,7 @@ private: // helper functions
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces,
         double voxel_size);
+
     int locate_voxel_index(Eigen::ConstRef<VectorMax3d> p) const;
 
     ArrayMax3i locate_voxel_axis_index(Eigen::ConstRef<VectorMax3d> p) const;
@@ -187,13 +188,13 @@ private: // helper functions
     std::unique_ptr<Impl> impl;
 
     /// @brief 1.0 / voxel_size
-    double one_div_voxelSize;
+    double one_div_voxel_size = -1;
 
     /// @brief The number of voxels in the first two dimensions.
-    int voxel_count_0x1;
+    int voxel_count_0x1 = -1;
 
     /// @brief The dimension of the space (2D or 3D).
-    int dim;
+    int dim = -1;
 };
 
 } // namespace ipc

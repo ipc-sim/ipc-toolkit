@@ -16,14 +16,11 @@ bool check_vertex_feasible_region(
     const VectorMax3d x_vi = vertices.row(vi);
     const VectorMax3d v_to_x = x - x_vi;
 
-    for (const index_t vj : mesh.vertex_vertex_adjacencies()[vi]) {
-        const VectorMax3d x_vj = vertices.row(vj);
-        if (v_to_x.dot(x_vi - x_vj) < 0) {
-            // Vertex xi is not in the feasible region of vertex vi
-            return false;
-        }
-    }
-    return true;
+    return std::all_of(
+        mesh.vertex_vertex_adjacencies()[vi].begin(),
+        mesh.vertex_vertex_adjacencies()[vi].end(), [&](const index_t vj) {
+            return v_to_x.dot(x_vi - vertices.row(vj)) >= 0;
+        });
 }
 
 bool check_edge_feasible_region(
@@ -45,18 +42,15 @@ bool check_edge_feasible_region(
         return false;
     }
 
-    for (const index_t x2i : mesh.edge_vertex_adjacencies()[ei]) {
-        const Eigen::Vector3d x2 = vertices.row(x2i);
-        // Perpendicular foot of for x2
-        const Eigen::Vector3d p =
-            (x1 - x0) * point_edge_closest_point(x2, x0, x1) + x0;
-        if ((x - p).dot(p - x2) <= 0) {
-            // Vertex xi is not in the feasible region of vertex vi
-            return false;
-        }
-    }
-
-    return true;
+    return std::all_of(
+        mesh.edge_vertex_adjacencies()[ei].begin(),
+        mesh.edge_vertex_adjacencies()[ei].end(), [&](const index_t x2i) {
+            const Eigen::Vector3d x2 = vertices.row(x2i);
+            // Perpendicular foot of for x2
+            const Eigen::Vector3d p =
+                (x1 - x0) * point_edge_closest_point(x2, x0, x1) + x0;
+            return (x - p).dot(p - x2) > 0;
+        });
 }
 
 bool is_edge_vertex_feasible(

@@ -72,7 +72,7 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
     collisions.set_collision_set_type(collision_set_type);
     collisions.build(mesh, vertices, dhat_a);
 
-    REQUIRE(collisions.size() > 0);
+    REQUIRE(!collisions.empty());
 
     REQUIRE(
         collisions.compute_minimum_distance(mesh, vertices)

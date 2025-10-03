@@ -18,28 +18,16 @@ public:
     Interval(const interval& i) : interval(i) { }
 
     /// @brief Construct an empty Interval
-    Interval()
-    {
-        this->INF = 0;
-        this->SUP = 0;
-    }
+    Interval() : interval({ 0, 0 }) { }
 
     /// @brief Construct an Interval from a single value
     /// @param x The value
-    explicit Interval(double x)
-    {
-        this->INF = x;
-        this->SUP = x;
-    }
+    explicit Interval(double x) : interval({ x, x }) { }
 
     /// @brief Construct an Interval from two values
     /// @param x The infimum value
     /// @param y The supremum value
-    Interval(double x, double y)
-    {
-        this->INF = x;
-        this->SUP = y;
-    }
+    Interval(double x, double y) : interval({ x, y }) { }
 
     static Interval empty()
     {
@@ -89,15 +77,15 @@ using MatrixMax3I = MatrixMax3<filib::Interval>;
 
 /// @brief Compute the squared L2 norm of an n-dimensional interval
 /// @note This should be used instead of the .squaredNorm() method of Eigen because it avoids negative values in intermediate computations.
-/// @param v The n-dimensional interval
+/// @param x The n-dimensional interval
 /// @return The squared L2 norm of the interval
-filib::Interval squared_norm(Eigen::ConstRef<VectorXI> v); // L2 norm
+filib::Interval squared_norm(Eigen::ConstRef<VectorXI> x); // L2 norm
 
 /// @brief Compute the L2 norm of a n-dimensional interval
 /// @note This should be used instead of the .norm() method of Eigen because it avoids negative values in intermediate computations.
-/// @param v The n-dimensional interval
+/// @param x The n-dimensional interval
 /// @return The L2 norm of the interval
-filib::Interval norm(Eigen::ConstRef<VectorXI> v); // L2 norm
+filib::Interval norm(Eigen::ConstRef<VectorXI> x); // L2 norm
 
 } // namespace ipc
 

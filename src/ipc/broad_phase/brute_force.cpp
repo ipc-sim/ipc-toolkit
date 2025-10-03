@@ -22,7 +22,7 @@ void BruteForce::detect_candidates(
     tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
 
     tbb::parallel_for(
-        tbb::blocked_range2d<size_t>(0ul, boxes0.size(), 0ul, boxes1.size()),
+        tbb::blocked_range2d<size_t>(0UL, boxes0.size(), 0UL, boxes1.size()),
         [&](const tbb::blocked_range2d<size_t>& r) {
             auto& local_candidates = storage.local();
 

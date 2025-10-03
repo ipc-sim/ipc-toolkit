@@ -21,7 +21,7 @@ public:
     using Super::hessian;
 
     /// @brief Variable to differentiate the friction force with respect to.
-    enum class DiffWRT {
+    enum class DiffWRT : uint8_t {
         REST_POSITIONS,       ///< Differentiate w.r.t. rest positions
         LAGGED_DISPLACEMENTS, ///< Differentiate w.r.t. lagged displacements
         VELOCITIES            ///< Differentiate w.r.t. current velocities

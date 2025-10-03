@@ -193,7 +193,7 @@ project_to_pd(
     double eps = 1e-8);
 
 /// @brief Enumeration of implemented PSD projection methods
-enum class PSDProjectionMethod {
+enum class PSDProjectionMethod : uint8_t {
     NONE,  ///< No PSD projection
     CLAMP, ///< Clamp negative eigenvalues to zero
     ABS    ///< Flip negative eigenvalues to positive

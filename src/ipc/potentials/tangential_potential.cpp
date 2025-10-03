@@ -406,7 +406,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
         }
 
         // Vertex-vertex does not have a closest point
-        if (beta.size()) {
+        if (beta.size() != 0) {
             // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
             const MatrixMax<double, 2, 12> jac_beta =
                 collision.compute_closest_point_jacobian(lagged_positions);

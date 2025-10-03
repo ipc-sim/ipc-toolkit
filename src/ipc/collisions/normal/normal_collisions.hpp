@@ -24,7 +24,7 @@ public:
     /// This choice is described in the "Offset Geometric Contact" [Chen et al.
     /// 2025] using the notation: \f$\mathcal{F}\f$ and \f$\mathcal{E}\f$ for
     /// the face and edge sets, respectively.
-    enum class CollisionSetType {
+    enum class CollisionSetType : uint8_t {
         /// @brief IPC set type, which uses the original formulation described in [Li et al. 2020].
         IPC,
         /// @brief Improved max approximation set type, which uses the improved max approximation formulation described in [Li et al. 2023].
@@ -47,7 +47,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double dhat,
         const double dmin = 0,
-        const std::shared_ptr<BroadPhase> broad_phase =
+        const std::shared_ptr<BroadPhase>& broad_phase =
             make_default_broad_phase());
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
