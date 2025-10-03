@@ -261,6 +261,24 @@ void CollisionMesh::init_adjacencies()
             }
         }
     }
+
+    // The adjacencies should be sorted for binary search
+    assert(
+        std::is_sorted(
+            m_vertex_vertex_adjacencies.begin(),
+            m_vertex_vertex_adjacencies.end()));
+    assert(
+        std::is_sorted(
+            m_vertex_edge_adjacencies.begin(),
+            m_vertex_edge_adjacencies.end()));
+    assert(
+        std::is_sorted(
+            m_vertex_face_adjacencies.begin(),
+            m_vertex_face_adjacencies.end()));
+    assert(
+        std::is_sorted(
+            m_edge_vertex_adjacencies.begin(),
+            m_edge_vertex_adjacencies.end()));
 }
 
 void CollisionMesh::init_areas()

@@ -47,7 +47,7 @@ collision_mesh = ipctk.CollisionMesh(vertices, ipctk.edges(faces), faces)
 # Build the collision set
 C = ipctk.NormalCollisions()
 C.use_area_weighting = True
-C.use_improved_max_approximator = True
+C.collision_set_type = ipctk.NormalCollisions.CollisionSetType.IMPROVED_MAX_APPROX
 C.build(collision_mesh, vertices, dhat)
 
 # Create a barrier potential

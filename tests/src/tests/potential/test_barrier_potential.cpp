@@ -463,8 +463,6 @@ TEST_CASE(
 
 // -- Benchmarking ------------------------------------------------------------
 
-#if false
-
 TEST_CASE(
     "Benchmark barrier potential", "[!benchmark][potential][barrier_potential]")
 {
@@ -578,5 +576,3 @@ TEST_CASE(
             barrier_potential.shape_derivative(collisions, mesh, vertices);
     };
 }
-
-#endif

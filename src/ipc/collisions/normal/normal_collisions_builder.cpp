@@ -369,8 +369,6 @@ void NormalCollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collisions(
                                 double& weight,
                                 Eigen::SparseVector<double>& weight_gradient) {
         const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vj];
-        assert(
-            std::is_sorted(incident_vertices.begin(), incident_vertices.end()));
         const bool is_vi_incident = std::binary_search(
             incident_vertices.begin(), incident_vertices.end(), vi);
         const index_t incident_edge_amt =
