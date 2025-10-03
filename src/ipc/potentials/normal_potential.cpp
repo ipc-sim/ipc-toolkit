@@ -167,7 +167,7 @@ void NormalPotential::shape_derivative(
             "Shape derivative is not computed for collisions!");
     }
 
-    if (collision.weight_gradient.nonZeros()) {
+    if (collision.weight_gradient.nonZeros() > 0) {
         VectorMax12d grad_f = gradient(collision, positions);
         assert(collision.weight != 0);
         grad_f.array() /= collision.weight; // remove weight

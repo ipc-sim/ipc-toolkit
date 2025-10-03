@@ -5,7 +5,7 @@
 
 namespace ipc {
 
-/// @brief A class for encapsolating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh.
+/// @brief A class for encapsulating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh.
 class CollisionMesh {
 public:
     /// @brief Construct a new Collision Mesh object.
@@ -365,7 +365,10 @@ protected:
 
 private:
     /// @brief By default all primitives can collide with all other primitives.
-    static int default_can_collide(size_t, size_t) { return true; }
+    static bool default_can_collide(size_t /*unused*/, size_t /*unused*/)
+    {
+        return true;
+    }
 };
 
 } // namespace ipc
