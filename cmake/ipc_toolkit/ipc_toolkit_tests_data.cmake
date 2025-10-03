@@ -1,4 +1,4 @@
-# ipc-toolkit-tests-data (https://github.com/ipc-sim/ipc-toolkit-tests-data)
+# ipc-toolkit-test-data (https://github.com/ipc-sim/ipc-toolkit-test-data)
 # License: MIT
 
 if(TARGET ipc_toolkit_test_data_download)
@@ -29,7 +29,7 @@ else()
         PREFIX "${FETCHCONTENT_BASE_DIR}/tests/data"
         SOURCE_DIR ${IPC_TOOLKIT_TESTS_DATA_DIR}
 
-        GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit-tests-data.git
+        GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit-test-data.git
         GIT_TAG 0c6ce752d020db32f62da37d7b8ca9f73c204b36
 
         CONFIGURE_COMMAND ""

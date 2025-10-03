@@ -1,3 +1,8 @@
+// NOTE: This is an internal header file, not meant to be used outside of the
+// IPC Toolkit library. It includes Abseil and tsl robin_map which is a private
+// dependency of the IPC Toolkit library. To use this outside of the library,
+// one needs to link against absl::hash and tsl::robin_map.
+
 #pragma once
 
 #include <ipc/config.hpp>

@@ -6,8 +6,23 @@ using namespace ipc;
 
 void define_normal_collisions(py::module_& m)
 {
-    py::class_<NormalCollisions>(m, "NormalCollisions")
-        .def(py::init())
+    py::class_<NormalCollisions> normal_collisions(m, "NormalCollisions");
+
+    py::enum_<NormalCollisions::CollisionSetType>(
+        normal_collisions, "CollisionSetType")
+        .value(
+            "IPC", NormalCollisions::CollisionSetType::IPC,
+            "IPC set type, which uses the original formulation described in [Li et al. 2020].")
+        .value(
+            "IMPROVED_MAX_APPROX",
+            NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+            "Improved max approximation set type, which uses the improved max approximation formulation described in [Li et al. 2023].")
+        .value(
+            "OGC", NormalCollisions::CollisionSetType::OGC,
+            "Offset Geometric Contact set type, which uses the formulation described in [Chen et al. 2025].")
+        .export_values();
+
+    normal_collisions.def(py::init())
         .def(
             "build",
             py::overload_cast<
@@ -145,10 +160,16 @@ void define_normal_collisions(py::module_& m)
             &NormalCollisions::set_use_area_weighting,
             "If the NormalCollisions should use the convergent formulation.")
         .def_property(
-            "use_improved_max_approximator",
-            &NormalCollisions::use_improved_max_approximator,
-            &NormalCollisions::set_use_improved_max_approximator,
-            "If the NormalCollisions should use the improved max approximator.")
+            "collision_set_type", &NormalCollisions::collision_set_type,
+            &NormalCollisions::set_collision_set_type,
+            R"ipc_Qu8mg5v7(
+            The type of collision set to use.
+
+            This can be either:
+              - IPC (Implicit Potential Collisions)
+              - IMPROVED_MAX_APPROX (Improved Max Approximation)
+              - OGC (Offset Geometric Contact)
+            )ipc_Qu8mg5v7")
         .def_property(
             "enable_shape_derivatives",
             &NormalCollisions::enable_shape_derivatives,
