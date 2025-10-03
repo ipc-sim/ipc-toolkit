@@ -65,7 +65,7 @@ public:
     /// @brief Maximum corner of the AABB.
     ArrayMax3d max;
     /// @brief Vertex IDs attached to the AABB.
-    std::array<index_t, 3> vertex_ids = { -1, -1, -1 };
+    std::array<index_t, 3> vertex_ids = { { -1, -1, -1 } };
 };
 
 /// @brief Build one AABB per vertex position (row of V).
