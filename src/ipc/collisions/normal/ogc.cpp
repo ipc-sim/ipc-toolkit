@@ -19,7 +19,8 @@ bool check_vertex_feasible_region(
     return std::all_of(
         mesh.vertex_vertex_adjacencies()[vi].begin(),
         mesh.vertex_vertex_adjacencies()[vi].end(), [&](const index_t vj) {
-            return v_to_x.dot(x_vi - vertices.row(vj)) >= 0;
+            const VectorMax3d x_vj = vertices.row(vj);
+            return v_to_x.dot(x_vi - x_vj) >= 0;
         });
 }
 
