@@ -69,7 +69,7 @@ void define_spatial_hash(py::module_& m)
             "voxel_count", &SpatialHash::voxel_count,
             "The number of voxels in each dimension.")
         .def_readwrite(
-            "one_div_voxelSize", &SpatialHash::one_div_voxelSize,
+            "one_div_voxel_size", &SpatialHash::one_div_voxel_size,
             "1.0 / voxel_size")
         .def_readwrite(
             "voxel_count_0x1", &SpatialHash::voxel_count_0x1,

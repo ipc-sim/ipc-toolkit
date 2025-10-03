@@ -8,7 +8,11 @@
 
 namespace ipc {
 
-inline bool default_can_point_plane_collide(size_t, size_t) { return true; }
+inline bool
+default_can_point_plane_collide(size_t /*unused*/, size_t /*unused*/)
+{
+    return true;
+}
 
 /// @brief Construct a set of point-plane distance collisions used to compute
 /// the barrier potential.

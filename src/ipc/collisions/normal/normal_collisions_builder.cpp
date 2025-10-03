@@ -72,8 +72,9 @@ void NormalCollisionsBuilder::add_edge_vertex_collisions(
         const PointEdgeDistanceType dtype = point_edge_distance_type(v, e0, e1);
         const double distance_sqr = point_edge_distance(v, e0, e1, dtype);
 
-        if (!is_active(distance_sqr))
+        if (!is_active(distance_sqr)) {
             continue;
+        }
 
         // ÷ 2 to handle double counting for correct integration
         const double weight =
@@ -145,8 +146,9 @@ void NormalCollisionsBuilder::add_edge_edge_collisions(
         const double distance_sqr =
             edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype);
 
-        if (!is_active(distance_sqr))
+        if (!is_active(distance_sqr)) {
             continue;
+        }
 
         const double eps_x = edge_edge_mollifier_threshold(
             mesh.rest_positions().row(ea0i), mesh.rest_positions().row(ea1i),
@@ -245,8 +247,9 @@ void NormalCollisionsBuilder::add_face_vertex_collisions(
         const double distance_sqr =
             point_triangle_distance(v, f0, f1, f2, dtype);
 
-        if (!is_active(distance_sqr))
+        if (!is_active(distance_sqr)) {
             continue;
+        }
 
         // ÷ 4 to handle double counting and PT + EE for correct integration
         const double weight =

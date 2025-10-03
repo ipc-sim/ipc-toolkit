@@ -114,7 +114,11 @@ protected:
     virtual bool can_edge_face_collide(size_t ei, size_t fi) const;
     virtual bool can_faces_collide(size_t fai, size_t fbi) const;
 
-    static bool default_can_vertices_collide(size_t, size_t) { return true; }
+    static bool
+    default_can_vertices_collide(size_t /*unused*/, size_t /*unused*/)
+    {
+        return true;
+    }
 
     std::vector<AABB> vertex_boxes;
     std::vector<AABB> edge_boxes;

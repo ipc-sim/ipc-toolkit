@@ -1,0 +1,37 @@
+name: Clang-Tidy Check
+
+on:
+  push:
+    paths:
+      - '.github/workflows/clang-tidy-check.yml'
+      - '.clang-tidy'
+      - 'src/**'
+  pull_request:
+    paths:
+      - '.github/workflows/clang-tidy-check.yml'
+      - '.clang-tidy'
+      - 'src/**'
+
+jobs:
+  clang-tidy:
+    name: Run Clang-Tidy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy cmake build-essential
+
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+
+      - name: Run Clang-Tidy
+        run: |
+          run-clang-tidy -quiet -p build $(find src -name '*.cpp')
