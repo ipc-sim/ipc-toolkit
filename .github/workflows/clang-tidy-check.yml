@@ -2,10 +2,7 @@ name: Clang-Tidy Check
 
 on:
   push:
-    paths:
-      - '.github/workflows/clang-tidy-check.yml'
-      - '.clang-tidy'
-      - 'src/**'
+    branches: [main]
   pull_request:
     paths:
       - '.github/workflows/clang-tidy-check.yml'
@@ -26,6 +23,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang-tidy cmake build-essential
 
+      - name: Get number of CPU cores
+        uses: SimenB/github-actions-cpu-cores@v2.0.0
+        id: cpu-cores
+
       - name: Configure CMake
         run: |
           mkdir -p build
@@ -34,4 +35,4 @@ jobs:
 
       - name: Run Clang-Tidy
         run: |
-          run-clang-tidy -quiet -p build $(find src -name '*.cpp')
+          run-clang-tidy -quiet -j ${{ steps.cpu-cores.outputs.count }} -p build $(find src -name '*.cpp')
