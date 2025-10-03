@@ -25,11 +25,11 @@ std::vector<std::shared_ptr<BroadPhase>> broad_phases()
 {
     return { {
         std::make_shared<BruteForce>(),
-        // std::make_shared<HashGrid>(),
-        // std::make_shared<SpatialHash>(),
+        std::make_shared<HashGrid>(),
+        std::make_shared<SpatialHash>(),
         std::make_shared<BVH>(),
         std::make_shared<LBVH>(),
-    // std::make_shared<SweepAndPrune>(),
+        std::make_shared<SweepAndPrune>(),
 #ifdef IPC_TOOLKIT_WITH_CUDA
         std::make_shared<SweepAndTiniestQueue>(),
 #endif

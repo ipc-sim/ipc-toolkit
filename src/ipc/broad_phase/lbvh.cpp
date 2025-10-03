@@ -4,6 +4,7 @@
 #include <ipc/utils/profiler.hpp>
 
 #include <tbb/blocked_range.h>
+#include <tbb/concurrent_queue.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
@@ -522,13 +523,74 @@ namespace {
         const std::function<bool(size_t, size_t)>& can_collide,
         tbb::enumerable_thread_specific<std::vector<Candidate>>& storage)
     {
-        tbb::task_group g; // TBB task group to manage parallel work
+        // tbb::task_group g; // TBB task group to manage parallel work
 
-        g.run_and_wait([&] {
-            traverse_lbvh<Candidate, swap_order, triangular>(
-                source, target, /*source_root*/ 0, /*target_root*/ 0,
-                can_collide, g, storage);
-        });
+        // g.run_and_wait([&] {
+        //     traverse_lbvh<Candidate, swap_order, triangular>(
+        //         source, target, /*source_root*/ 0, /*target_root*/ 0,
+        //         can_collide, g, storage);
+        // });
+
+        tbb::concurrent_queue<std::pair<size_t, size_t>> query_queue;
+        query_queue.push({ 0, 0 }); // root vs root
+
+        while (!query_queue.empty()) {
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(
+                    size_t(0), query_queue.unsafe_size()),
+                [&](const tbb::blocked_range<size_t>& r) {
+                    for (size_t i = r.begin(); i < r.end(); ++i) {
+                        std::pair<size_t, size_t> indices;
+                        while (!query_queue.try_pop(indices)) { }
+
+                        const auto& [source_idx, target_idx] = indices;
+
+                        // 1. Check for bounding box intersection
+                        if (!source[source_idx].intersects(
+                                target[target_idx])) {
+                            continue;
+                        }
+
+                        // 2. Handle leaf nodes (base case)
+                        if (source[source_idx].is_leaf()
+                            && target[target_idx].is_leaf()) {
+                            attempt_add_candidate<
+                                Candidate, swap_order, triangular>(
+                                source[source_idx], target[target_idx],
+                                can_collide, storage.local());
+                            continue;
+                        }
+
+                        // 3. Handle mixed or internal nodes
+                        if (source[source_idx].is_leaf()) {
+                            query_queue.push(
+                                { source_idx, target[target_idx].left });
+                            query_queue.push(
+                                { source_idx, target[target_idx].right });
+                        } else if (target[target_idx].is_leaf()) {
+                            query_queue.push(
+                                { source[source_idx].left, target_idx });
+                            query_queue.push(
+                                { source[source_idx].right, target_idx });
+                        } else {
+                            // Both internal nodes, test all four
+                            // combinations.
+                            query_queue.push(
+                                { source[source_idx].left,
+                                  target[target_idx].left });
+                            query_queue.push(
+                                { source[source_idx].left,
+                                  target[target_idx].right });
+                            query_queue.push(
+                                { source[source_idx].right,
+                                  target[target_idx].left });
+                            query_queue.push(
+                                { source[source_idx].right,
+                                  target[target_idx].right });
+                        }
+                    }
+                });
+        }
     }
 } // namespace
 
