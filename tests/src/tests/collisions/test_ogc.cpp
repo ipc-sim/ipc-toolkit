@@ -128,7 +128,7 @@ TEST_CASE("Check edge-edge feasibility", "[ogc]")
 {
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
-    tests::load_mesh("pentagon-dome.obj", vertices, edges, faces);
+    REQUIRE(tests::load_mesh("pentagon-dome.obj", vertices, edges, faces));
 
     vertices.conservativeResize(vertices.rows() * 2, vertices.cols());
     vertices.bottomRows(vertices.rows() / 2) =
@@ -158,7 +158,7 @@ TEST_CASE("Check face-vertex feasibility", "[ogc]")
 {
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
-    tests::load_mesh("pentagon-dome.obj", vertices, edges, faces);
+    REQUIRE(tests::load_mesh("pentagon-dome.obj", vertices, edges, faces));
 
     vertices.conservativeResize(vertices.rows() + 1, vertices.cols());
     vertices.row(vertices.rows() - 1) = Eigen::RowVector3d(0, 1, 0);
