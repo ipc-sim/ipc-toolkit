@@ -5,7 +5,7 @@ Convergent Formulation
 
 In addition to the original implementation of :cite:t:`Li2020IPC`, we also implement the convergent formulation of :cite:t:`Li2023Convergent`.
 
-Fully enabling the convergent formulation requires to set three flags: ``use_area_weighting`` and ``use_improved_max_approximator`` in ``Collisions`` (before calling ``build``) and ``use_physical_barrier`` in ``BarrierPotential``.
+Fully enabling the convergent formulation requires to set three things: ``use_area_weighting`` and ``collision_set_type`` in ``Collisions`` (before calling ``build``) and ``use_physical_barrier`` in ``BarrierPotential``.
 
 .. md-tab-set::
 
@@ -14,7 +14,8 @@ Fully enabling the convergent formulation requires to set three flags: ``use_are
         .. code-block:: c++
 
             collisions.set_use_area_weighting(true);
-            collisions.set_use_improved_max_approximator(true);
+            collisions.set_collision_set_type(
+                ipc::NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
             collisions.build(collision_mesh, vertices, dhat);
 
             barrier_potential.set_use_physical_barrier(true);
@@ -25,14 +26,15 @@ Fully enabling the convergent formulation requires to set three flags: ``use_are
         .. code-block:: python
 
             collisions.use_area_weighting = True
-            collisions.use_improved_max_approximator = True
+            collisions.collision_set_type = \
+                ipctk.NormalCollisions.CollisionSetType.IMPROVED_MAX_APPROX
             collisions.build(collision_mesh, vertices, dhat)
 
             barrier_potential.use_physical_barrier = True
             b = barrier_potential(collisions, mesh, vertices);
 
 .. important::
-    The flags ``use_area_weighting`` and ``use_improved_max_approximator`` should be set before calling ``build`` for them to take effect. By default, they are ``false``.
+    The members ``use_area_weighting`` and ``collision_set_type`` should be set before calling ``build`` for them to take effect. By default, they are ``false`` and ``IPC``.
 
 Technical Details
 -----------------
@@ -84,7 +86,7 @@ where :math:`V_{\text{int}} \subseteq V` is the subset of internal surface nodes
     Comparison of the improved max approximator (right) to and exact max (left) and the direct summation (middle). For obtuse angles, the improved max approximator is tight, while for acute angles it might overestimate the max in concave regions.
 
 .. tip::
-    The improved max approximator is enabled by setting ``use_improved_max_approximator`` to ``true`` in ``Collisions``.
+    The improved max approximator is enabled by setting ``collision_set_type`` to ``IMPROVED_MAX_APPROX`` in ``Collisions``.
 
 The corresponding discrete barrier potential is then simply
 

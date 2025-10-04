@@ -321,10 +321,15 @@ class TwoStageBarrier : public Barrier {
 public:
     TwoStageBarrier() = default;
 
-    /// @brief Weak barrier function.
+    /// @brief Two-stage activation barrier.
     ///
     /// \f\[
-    ///     b(d) = -\frac{2}{3\hat{d}} (d - \hat{d})^3
+    ///     b(d) = \begin{cases}
+    ///         -\frac{\hat{d}^2}{4} \left(\ln\left(\frac{2d}{\hat{d}}\right) -
+    ///         \tfrac{1}{2}\right) & d < \frac{\hat{d}}{2}\\
+    ///         \tfrac{1}{2} (\hat{d} - d)^2 & d < \hat{d}\\
+    ///         0 & d \ge \hat{d}
+    ///     \end{cases}
     /// \f\]
     ///
     /// @param d The distance.
@@ -335,7 +340,11 @@ public:
     /// @brief Derivative of the barrier function.
     ///
     /// \f\[
-    ///     b'(d) = -2 (d - \hat{d})^2
+    ///     b'(d) = \begin{cases}
+    //          -\frac{\hat{d}}{4d} & d < \frac{\hat{d}}{2}\\
+    //          d - \hat{d} & d < \hat{d}\\
+    //          0 & d \ge \hat{d}
+    //      \end{cases}
     /// \f\]
     ///
     /// @param d The distance.
@@ -346,7 +355,11 @@ public:
     /// @brief Second derivative of the barrier function.
     ///
     /// \f\[
-    ///     b''(d) = -4 (d - \hat{d})
+    ///     b''(d) = \begin{cases}
+    ///         \frac{\hat{d}}{4d^2} & d < \frac{\hat{d}}{2}\\
+    ///         1 & d < \hat{d}\\
+    ///         0 & d \ge \hat{d}
+    /// \end{cases}
     /// \f\]
     ///
     /// @param d The distance.

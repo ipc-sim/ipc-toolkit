@@ -107,6 +107,9 @@ void define_candidates(py::module_& m)
                 mesh: The collision mesh.
                 displacements: Surface vertex displacements (rowwise).
                 dhat: Barrier activation distance.
+
+            Returns:
+                A step-size :math:`\in [0, 1]` that is collision free for non-candidate elements.
             )ipc_Qu8mg5v7",
             "mesh"_a, "displacements"_a, "dhat"_a)
         .def(
@@ -122,11 +125,93 @@ void define_candidates(py::module_& m)
                 min_distance: Minimum distance allowable between any two elements.
                 broad_phase: Broad phase algorithm to use.
                 narrow_phase_ccd: Narrow phase CCD algorithm to use.
+
+            Returns:
+                A step-size :math:`\in [0, 1]` that is collision free.
             )ipc_Qu8mg5v7",
             "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "dhat"_a,
             "min_distance"_a = 0.0,
             "broad_phase"_a = make_default_broad_phase(),
             "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD)
+        .def(
+            "compute_per_vertex_safe_distances",
+            &Candidates::compute_per_vertex_safe_distances,
+            R"ipc_Qu8mg5v7(
+            Compute the maximum distance each vertex can move independently without colliding with any other element.
+
+            Notes:
+                - Caps the value at the inflation radius used to build the candidates.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Collision mesh vertex positions (rowwise).
+                inflation_radius: The inflation radius used to build the candidates.
+                min_distance: The minimum allowable distance between any two elements.
+
+            Returns:
+                A vector of minimum distances, one for each vertex.
+            )ipc_Qu8mg5v7",
+            "mesh"_a, "vertices"_a, "inflation_radius"_a,
+            "min_distance"_a = 0.0)
+        .def(
+            "edge_vertex_to_vertex_vertex",
+            &Candidates::edge_vertex_to_vertex_vertex,
+            R"ipc_Qu8mg5v7(
+            Converts edge-vertex candidates to vertex-vertex candidates.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Collision mesh vertex positions (rowwise).
+                is_active: A function to determine if a candidate is active.
+
+            Returns:
+                A list of vertex-vertex candidates.
+            )ipc_Qu8mg5v7",
+            "mesh"_a, "vertices"_a, "is_active"_a = [](double) { return true; })
+        .def(
+            "face_vertex_to_vertex_vertex",
+            &Candidates::face_vertex_to_vertex_vertex,
+            R"ipc_Qu8mg5v7(
+            Converts face-vertex candidates to vertex-vertex candidates.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Collision mesh vertex positions (rowwise).
+                is_active: A function to determine if a candidate is active.
+
+            Returns:
+                A list of vertex-vertex candidates.
+            )ipc_Qu8mg5v7",
+            "mesh"_a, "vertices"_a, "is_active"_a = [](double) { return true; })
+        .def(
+            "face_vertex_to_edge_vertex",
+            &Candidates::face_vertex_to_edge_vertex,
+            R"ipc_Qu8mg5v7(
+            Converts face-vertex candidates to edge-vertex candidates.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Collision mesh vertex positions (rowwise).
+                is_active: A function to determine if a candidate is active.
+
+            Returns:
+                A list of edge-vertex candidates.
+            )ipc_Qu8mg5v7",
+            "mesh"_a, "vertices"_a, "is_active"_a = [](double) { return true; })
+        .def(
+            "edge_edge_to_edge_vertex", &Candidates::edge_edge_to_edge_vertex,
+            R"ipc_Qu8mg5v7( Converts
+            edge-edge candidates to edge-vertex candidates.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Collision mesh vertex positions (rowwise).
+                is_active: A function to determine if a candidate is active.
+
+            Returns:
+                A list of edge-vertex candidates.
+            )ipc_Qu8mg5v7",
+            "mesh"_a, "vertices"_a, "is_active"_a = [](double) { return true; })
         .def(
             "save_obj", &Candidates::save_obj, "filename"_a, "vertices"_a,
             "edges"_a, "faces"_a)

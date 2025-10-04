@@ -101,6 +101,7 @@ public:
     /// @param mesh The collision mesh.
     /// @param displacements Surface vertex displacements (rowwise).
     /// @param dhat Barrier activation distance.
+    /// @return A step-size \f$\in [0, 1]\f$ that is collision free for non-candidate elements.
     double compute_noncandidate_conservative_stepsize(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> displacements,
@@ -114,6 +115,7 @@ public:
     /// @param min_distance The minimum distance allowable between any two elements.
     /// @param broad_phase The broad phase algorithm to use.
     /// @param narrow_phase_ccd The narrow phase CCD algorithm to use.
+    /// @returns A step-size \f$\in [0, 1]\f$ that is collision free.
     double compute_cfl_stepsize(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,

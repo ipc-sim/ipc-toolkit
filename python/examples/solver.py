@@ -1,9 +1,13 @@
+import pathlib
 import numpy as np
 import scipy
 import meshio
-import ipctk
 
-mesh = meshio.read("../tests/data/two-cubes-close.ply")
+from find_ipctk import ipctk
+
+root = pathlib.Path(__file__).parents[2]
+
+mesh = meshio.read(root / "tests/data/two-cubes-close.ply")
 vertices = mesh.points
 faces = mesh.cells_dict["triangle"]
 

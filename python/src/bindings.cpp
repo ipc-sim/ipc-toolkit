@@ -60,6 +60,7 @@ PYBIND11_MODULE(ipctk, m)
     define_face_vertex_normal_collision(m);
     define_plane_vertex_normal_collision(m);
     define_vertex_vertex_normal_collision(m);
+    define_ogc(m);
 
     // tangent
     define_closest_point(m);

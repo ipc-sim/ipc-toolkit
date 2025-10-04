@@ -135,7 +135,7 @@ TwoStageBarrier::first_derivative(const double d, const double dhat) const
     if (d >= dhat) {
         return 0.0;
     } else if (d >= 0.5 * dhat) {
-        return -(dhat - d);
+        return d - dhat;
     } else {
         return -0.25 * dhat * dhat / d;
     }
