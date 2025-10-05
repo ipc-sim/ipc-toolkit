@@ -134,8 +134,7 @@ GradType<-1> Point3::smooth_point3_term_tangent_gradient(
             std::tie(values(a), tmp_grad[a]) = opposite_direction_penalty_grad(
                 tangents.row(a), direc, alpha, beta);
             for (int b = 0; b < nn; b++)
-                if (_otypes.tangent_type(b) == HeavisideType::VARIANT
-                    && b != a)
+                if (_otypes.tangent_type(b) == HeavisideType::VARIANT && b != a)
                     acc_val_1(b) *= values(a);
         }
     }
