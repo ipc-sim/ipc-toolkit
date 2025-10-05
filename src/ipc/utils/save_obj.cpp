@@ -13,10 +13,10 @@ template <>
 void save_obj(
     std::ostream& out,
     Eigen::ConstRef<Eigen::MatrixXd> V,
-    Eigen::ConstRef<Eigen::MatrixXi>,
-    Eigen::ConstRef<Eigen::MatrixXi>,
+    Eigen::ConstRef<Eigen::MatrixXi> /*unused*/,
+    Eigen::ConstRef<Eigen::MatrixXi> /*unused*/,
     const std::vector<VertexVertexCandidate>& vv_candidates,
-    const int)
+    const int /*unused*/)
 {
     out << "o VV\n";
     for (const auto& vv_candidate : vv_candidates) {

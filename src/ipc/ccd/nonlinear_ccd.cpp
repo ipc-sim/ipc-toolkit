@@ -15,9 +15,9 @@
 namespace ipc {
 
 #ifdef USE_FIXED_PIECES
-static constexpr size_t FIXED_NUM_PIECES = 100l;
+static constexpr size_t FIXED_NUM_PIECES = 100L;
 #else
-static constexpr size_t MAX_NUM_SUBDIVISIONS = 1000l;
+static constexpr size_t MAX_NUM_SUBDIVISIONS = 1000L;
 #endif
 
 // ============================================================================
@@ -233,7 +233,7 @@ bool edge_edge_nonlinear_ccd(
     const NonlinearTrajectory& eb1,
     double& toi,
     const double tmax,
-    const double min_sep_distance,
+    const double min_distance,
     const double tolerance,
     const long max_iterations,
     const double conservative_rescaling)
@@ -265,7 +265,7 @@ bool edge_edge_nonlinear_ccd(
                 output_tolerance,             // delta_actual
                 no_zero_toi);                 // no zero toi
         },
-        toi, tmax, min_sep_distance, conservative_rescaling);
+        toi, tmax, min_distance, conservative_rescaling);
 }
 
 bool point_triangle_nonlinear_ccd(

@@ -1,0 +1,54 @@
+Checks: >
+  -*,
+
+  # Standard C++ Guidelines (Modernization, Idioms)
+  modernize-*,
+  performance-*,
+  readability-*,
+
+  # Bug Detection and Safety
+  bugprone-*,
+
+  # Specific high-value checks (even if not in a group above)
+  google-runtime-int,
+  cppcoreguidelines-pro-type-member-init,
+
+  # Exclusions/Suppressions (Checks often considered too aggressive or subjective)
+  -bugprone-throwing-static-initialization,
+  -cppcoreguidelines-owning-memory,
+  -modernize-use-trailing-return-type,
+  -readability-avoid-const-params-in-decls,
+  -readability-avoid-nested-conditional-operator,
+  -readability-container-contains,
+  -readability-else-after-return,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+  -readability-implicit-bool-conversion,
+  -readability-isolate-declaration,
+  -readability-magic-numbers,
+  -readability-math-missing-parentheses,
+  -readability-redundant-access-specifiers
+
+WarningsAsErrors: '*'
+HeaderFilterRegex: '.*(ipc/).*'
+UseColor: true
+FormatStyle: file
+ExtraArgs:
+  - '-isysroot/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk'
+CheckOptions:
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.ConstantParameterCase: lower_case
+  readability-identifier-naming.ConstantParameterIgnoredRegexp: '^(_.*)$'
+  readability-identifier-naming.FunctionCase: lower_case
+  readability-identifier-naming.FunctionIgnoredRegexp: '^(AbslHashValue|.*[123][Ddf].*)$'
+  readability-identifier-naming.GlobalConstantCase: UPPER_CASE
+  readability-identifier-naming.MemberCase: lower_case
+  readability-identifier-naming.MemberIgnoredRegexp: '^([A-Z])$'
+  readability-identifier-naming.MethodCase: lower_case
+  readability-identifier-naming.MethodIgnoredRegexp: '^(.*[123][Ddf].*)$'
+  readability-identifier-naming.ParameterIgnoredRegexp: '^(_.*)$'
+  readability-identifier-naming.StructCase: CamelCase
+  readability-identifier-naming.VariableCase: aNy_CasE
+  readability-identifier-naming.VariableIgnoredRegexp: '^(_.*)$'
+  readability-identifier-naming.EnumCase: CamelCase
+  readability-identifier-naming.EnumConstantCase: UPPER_CASE

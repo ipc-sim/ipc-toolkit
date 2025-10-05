@@ -69,7 +69,7 @@ void HashGrid::insert_boxes(
     tbb::enumerable_thread_specific<std::vector<HashItem>> storage;
 
     tbb::parallel_for(
-        tbb::blocked_range<long>(0l, long(boxes.size())),
+        tbb::blocked_range<long>(0L, long(boxes.size())),
         [&](const tbb::blocked_range<long>& range) {
             auto& local_items = storage.local();
             for (long i = range.begin(); i != range.end(); i++) {
@@ -158,7 +158,7 @@ void HashGrid::detect_candidates(
 #endif
 
     tbb::parallel_for(
-        tbb::blocked_range2d<long>(0l, num_items - 1, 0l, num_items),
+        tbb::blocked_range2d<long>(0L, num_items - 1, 0L, num_items),
         [&](const tbb::blocked_range2d<long>& r) {
             auto& local_candidates = storage.local();
 
@@ -237,7 +237,7 @@ void HashGrid::detect_candidates(
 #endif
 
     tbb::parallel_for(
-        tbb::blocked_range2d<long>(0l, items.size() - 1, 0l, items.size()),
+        tbb::blocked_range2d<long>(0L, items.size() - 1, 0L, items.size()),
         [&](const tbb::blocked_range2d<long>& r) {
             auto& local_candidates = storage.local();
 

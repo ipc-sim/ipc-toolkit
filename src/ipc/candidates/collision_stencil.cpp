@@ -35,7 +35,6 @@ MatrixMax<double, 3, 12> CollisionStencil::compute_normal_jacobian(
     MatrixMax<double, 3, 12> dn =
         compute_unnormalized_normal_jacobian(positions);
 
-#if true
     // Derivative of normalization (n̂ = n / ‖n‖)
     const double n_norm = n.norm();
     n /= n_norm; // n̂
@@ -44,7 +43,6 @@ MatrixMax<double, 3, 12> CollisionStencil::compute_normal_jacobian(
         (MatrixMax3d::Identity(dim, dim) - n * n.transpose()) / n_norm;
 
     dn = A * dn;
-#endif
 
     if (flip_if_negative
         && (positions.head(dim) - positions.tail(dim)).dot(n) < 0) {

@@ -164,7 +164,7 @@ bool conservative_piecewise_linear_ccd(
         double& /*toi*/)>& linear_ccd,
     double& toi,
     const double tmax = 1.0,
-    const double min_distance = 0,
+    const double min_sep_distance = 0,
     const double conservative_rescaling =
         TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 

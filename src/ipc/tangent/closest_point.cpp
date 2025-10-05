@@ -68,17 +68,17 @@ Eigen::Vector2d edge_edge_closest_point(
     const Eigen::Vector3d ea = ea1 - ea0;
     const Eigen::Vector3d eb = eb1 - eb0;
 
-    Eigen::Matrix<double, 2, 2> coefMtr;
-    coefMtr(0, 0) = ea.squaredNorm();
-    coefMtr(0, 1) = coefMtr(1, 0) = -eb.dot(ea);
-    coefMtr(1, 1) = eb.squaredNorm();
+    Eigen::Matrix<double, 2, 2> A;
+    A(0, 0) = ea.squaredNorm();
+    A(0, 1) = A(1, 0) = -eb.dot(ea);
+    A(1, 1) = eb.squaredNorm();
 
     Eigen::Vector2d rhs;
     rhs[0] = -eb_to_ea.dot(ea);
     rhs[1] = eb_to_ea.dot(eb);
 
-    const Eigen::Vector2d x = coefMtr.ldlt().solve(rhs);
-    assert((coefMtr * x - rhs).norm() < 1e-10);
+    const Eigen::Vector2d x = A.ldlt().solve(rhs);
+    assert((A * x - rhs).norm() < 1e-10);
     return x;
 }
 

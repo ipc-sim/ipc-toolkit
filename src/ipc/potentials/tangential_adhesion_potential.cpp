@@ -6,8 +6,9 @@ namespace ipc {
 
 TangentialAdhesionPotential::TangentialAdhesionPotential(const double eps_a)
     : Super()
+    , m_eps_a(eps_a)
 {
-    set_eps_a(eps_a);
+    assert(eps_a > 0);
 }
 
 double TangentialAdhesionPotential::mu_f0(

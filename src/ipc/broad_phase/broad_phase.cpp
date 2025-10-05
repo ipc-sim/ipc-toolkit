@@ -46,7 +46,7 @@ void BroadPhase::build(
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces)
 {
-    assert(vertex_boxes.size() > 0);
+    assert(!vertex_boxes.empty());
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
     build_edge_boxes(vertex_boxes, edges, edge_boxes);

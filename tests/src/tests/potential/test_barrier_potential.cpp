@@ -83,7 +83,7 @@ TEST_CASE(
     CAPTURE(
         dhat, broad_phase->name(), all_vertices_on_surface, use_area_weighting,
         use_improved_max_approximator);
-    CHECK(collisions.size() > 0);
+    CHECK(!collisions.empty());
 
     BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
@@ -227,7 +227,7 @@ TEST_CASE(
     collisions.set_use_improved_max_approximator(use_improved_max_approximator);
 
     collisions.build(mesh, vertices, dhat);
-    CHECK(collisions.size() > 0);
+    CHECK(!collisions.empty());
 
     BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
@@ -302,7 +302,7 @@ TEST_CASE(
     collisions.set_use_improved_max_approximator(use_improved_max_approximator);
     collisions.set_enable_shape_derivatives(true);
     collisions.build(candidates, mesh, vertices, dhat);
-    REQUIRE(collisions.ee_collisions.size() > 0);
+    REQUIRE(!collisions.ee_collisions.empty());
 
     BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
@@ -503,7 +503,7 @@ TEST_CASE(
     collisions.set_use_improved_max_approximator(use_improved_max_approximator);
     collisions.build(mesh, vertices, dhat);
     CAPTURE(mesh_name, dhat);
-    CHECK(collisions.size() > 0);
+    CHECK(!collisions.empty());
 
     BarrierPotential barrier_potential(dhat, use_physical_barrier);
 

@@ -116,9 +116,7 @@ double compute_point_plane_collision_free_stepsize(
                         plane_normal, toi);
 
                     if (are_colliding) {
-                        if (toi < current_toi) {
-                            current_toi = toi;
-                        }
+                        current_toi = std::min(current_toi, toi);
                     }
                 }
             }

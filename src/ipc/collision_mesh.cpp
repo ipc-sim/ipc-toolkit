@@ -9,6 +9,8 @@
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
 
+#include <algorithm>
+
 namespace ipc {
 
 CollisionMesh::CollisionMesh(
@@ -290,9 +292,8 @@ void CollisionMesh::init_areas()
         double edge_len = (e1 - e0).norm();
 
         for (int j = 0; j < m_edges.cols(); j++) {
-            if (vertex_edge_areas[m_edges(i, j)] < 0) {
-                vertex_edge_areas[m_edges(i, j)] = 0;
-            }
+            vertex_edge_areas[m_edges(i, j)] =
+                std::max(vertex_edge_areas[m_edges(i, j)], 0.0);
             vertex_edge_areas[m_edges(i, j)] += 0.5 * edge_len;
         }
     }
@@ -309,14 +310,12 @@ void CollisionMesh::init_areas()
             double face_area = 0.5 * (f1 - f0).cross(f2 - f0).norm();
 
             for (int j = 0; j < m_faces.cols(); ++j) {
-                if (vertex_face_areas[m_faces(i, j)] < 0) {
-                    vertex_face_areas[m_faces(i, j)] = 0;
-                }
+                vertex_face_areas[m_faces(i, j)] =
+                    std::max(vertex_face_areas[m_faces(i, j)], 0.0);
                 vertex_face_areas[m_faces(i, j)] += face_area / 3.0;
 
-                if (m_edge_areas[m_faces_to_edges(i, j)] < 0) {
-                    m_edge_areas[m_faces_to_edges(i, j)] = 0;
-                }
+                m_edge_areas[m_faces_to_edges(i, j)] =
+                    std::max(m_edge_areas[m_faces_to_edges(i, j)], 0.0);
                 m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3.0;
             }
         }

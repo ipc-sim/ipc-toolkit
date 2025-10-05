@@ -47,7 +47,7 @@ void test_face_face_broad_phase(
     std::vector<FaceFaceCandidate> bf_ff_candidates;
     bf.detect_face_face_candidates(bf_ff_candidates);
 
-    CHECK(ff_candidates.size() > 0);
+    CHECK(!ff_candidates.empty());
     CHECK(ff_candidates.size() == bf_ff_candidates.size());
 }
 
