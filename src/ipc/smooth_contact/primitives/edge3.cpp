@@ -22,7 +22,7 @@ namespace {
         const Eigen::Ref<const Vector3d>& f0,
         const Eigen::Ref<const Vector3d>& f1,
         const ParameterType& param,
-        ORIENTATION_TYPES& otypes,
+        OrientationTypes& otypes,
         const bool orientable)
     {
         otypes.set_size(2);
@@ -41,8 +41,8 @@ namespace {
                 otypes.compute_type(-dn.dot(t0), param.alpha_t, param.beta_t);
             otypes.tangent_type(1) =
                 otypes.compute_type(-dn.dot(t1), param.alpha_t, param.beta_t);
-            if (otypes.tangent_type(0) == HEAVISIDE_TYPE::ZERO
-                || otypes.tangent_type(1) == HEAVISIDE_TYPE::ZERO)
+            if (otypes.tangent_type(0) == HeavisideType::ZERO
+                || otypes.tangent_type(1) == HeavisideType::ZERO)
                 return false;
         }
 
@@ -65,15 +65,15 @@ namespace {
         const Eigen::Ref<const Vector3d>& f1,
         const double alpha,
         const double beta,
-        const ORIENTATION_TYPES& otypes)
+        const OrientationTypes& otypes)
     {
         double tangent_term = 1.;
-        if (otypes.tangent_type(0) != HEAVISIDE_TYPE::ONE) {
+        if (otypes.tangent_type(0) != HeavisideType::ONE) {
             const Vector3d t0 = PointEdgeDistance<
                 double, 3>::point_line_closest_point_direction(f0, e0, e1);
             tangent_term *= opposite_direction_penalty(t0, -dn, alpha, beta);
         }
-        if (otypes.tangent_type(1) != HEAVISIDE_TYPE::ONE) {
+        if (otypes.tangent_type(1) != HeavisideType::ONE) {
             const Vector3d t1 = PointEdgeDistance<
                 double, 3>::point_line_closest_point_direction(f1, e0, e1);
             tangent_term *= opposite_direction_penalty(t1, -dn, alpha, beta);
@@ -90,7 +90,7 @@ namespace {
         const Eigen::Ref<const Vector3d>& f1,
         const double alpha,
         const double beta,
-        const ORIENTATION_TYPES& otypes)
+        const OrientationTypes& otypes)
     {
         Vector2d vals;
         vals << 1., 1.;
@@ -100,7 +100,7 @@ namespace {
 
         for (int d : { 0, 1 }) {
             const Eigen::Ref<const Vector3d> f = d == 0 ? f0 : f1;
-            if (otypes.tangent_type(d) != HEAVISIDE_TYPE::ONE) {
+            if (otypes.tangent_type(d) != HeavisideType::ONE) {
                 const auto [t, g] = PointEdgeDistanceDerivatives<
                     3>::point_line_closest_point_direction_grad(f, e0, e1);
                 const auto [tmp_val, tmp_grad] =
@@ -133,7 +133,7 @@ namespace {
         const Eigen::Ref<const Vector3d>& f1,
         const double alpha,
         const double beta,
-        const ORIENTATION_TYPES& otypes)
+        const OrientationTypes& otypes)
     {
         Vector2d vals;
         vals << 1., 1.;
@@ -146,7 +146,7 @@ namespace {
 
         for (int d : { 0, 1 }) {
             const Eigen::Ref<const Vector3d> f = d == 0 ? f0 : f1;
-            if (otypes.tangent_type(d) != HEAVISIDE_TYPE::ONE) {
+            if (otypes.tangent_type(d) != HeavisideType::ONE) {
                 const auto [t, g, h] = PointEdgeDistanceDerivatives<
                     3>::point_line_closest_point_direction_hessian(f, e0, e1);
                 auto [tmp_val, tmp_grad, tmp_hess] =
@@ -199,7 +199,7 @@ namespace {
         const Eigen::Ref<const Vector3d>& f0,
         const Eigen::Ref<const Vector3d>& f1,
         const ParameterType& param,
-        const ORIENTATION_TYPES& otypes,
+        const OrientationTypes& otypes,
         const bool orientable)
     {
         const Vector3d dn = direc.normalized();
@@ -220,7 +220,7 @@ namespace {
         const Eigen::Ref<const Vector3d>& f0,
         const Eigen::Ref<const Vector3d>& f1,
         const ParameterType& param,
-        const ORIENTATION_TYPES& otypes,
+        const OrientationTypes& otypes,
         const bool orientable)
     {
         assert(otypes.size() == 2);
@@ -258,7 +258,7 @@ namespace {
         const Eigen::Ref<const Vector3d>& f0,
         const Eigen::Ref<const Vector3d>& f1,
         const ParameterType& param,
-        const ORIENTATION_TYPES& otypes,
+        const OrientationTypes& otypes,
         const bool orientable)
     {
         assert(otypes.size() == 2);
@@ -331,7 +331,7 @@ namespace {
         const Eigen::Ref<const Vector3<scalar>>& f0,
         const Eigen::Ref<const Vector3<scalar>>& f1,
         const ParameterType& param,
-        const ORIENTATION_TYPES& otypes,
+        const OrientationTypes& otypes,
         const bool orientable)
     {
         scalar tangent_term = scalar(1.);
@@ -339,7 +339,7 @@ namespace {
             PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
                 f0, e0, e1)
                 .normalized();
-        if (otypes.tangent_type(0) != HEAVISIDE_TYPE::ONE)
+        if (otypes.tangent_type(0) != HeavisideType::ONE)
             tangent_term = tangent_term
                 * Math<scalar>::smooth_heaviside(
                                -dn.dot(t0), param.alpha_t, param.beta_t);
@@ -349,13 +349,13 @@ namespace {
                 f1, e0, e1)
                 .normalized();
 
-        if (otypes.tangent_type(1) != HEAVISIDE_TYPE::ONE)
+        if (otypes.tangent_type(1) != HeavisideType::ONE)
             tangent_term = tangent_term
                 * Math<scalar>::smooth_heaviside(
                                -dn.dot(t1), param.alpha_t, param.beta_t);
 
         scalar normal_term = scalar(1.);
-        if (orientable && otypes.normal_type(0) != HEAVISIDE_TYPE::ONE) {
+        if (orientable && otypes.normal_type(0) != HeavisideType::ONE) {
             const Vector3<scalar> edge = (e0 - e1).normalized();
             const Vector3<scalar> d = project<scalar>(dn, edge).normalized();
             normal_term = Math<scalar>::smooth_heaviside(
@@ -447,7 +447,7 @@ Edge3::Edge3(
     }
 }
 
-int Edge3::n_vertices() const { return n_edge_neighbors_3d; }
+int Edge3::n_vertices() const { return N_EDGE_NEIGHBORS_3D; }
 
 double Edge3::potential(
     const Eigen::Ref<const Vector3d>& d,
@@ -512,10 +512,10 @@ double smooth_edge3_normal_term(
     const Eigen::Ref<const Vector3d>& f1,
     const double alpha,
     const double beta,
-    const ORIENTATION_TYPES& otypes)
+    const OrientationTypes& otypes)
 {
-    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE
-        || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
+    if (otypes.normal_type(0) == HeavisideType::ONE
+        || otypes.normal_type(1) == HeavisideType::ONE)
         return 1.;
 
     const Vector3d t0 =
@@ -540,13 +540,13 @@ GradType<15> smooth_edge3_normal_term_gradient(
     const Eigen::Ref<const Vector3d>& f1,
     const double alpha,
     const double beta,
-    const ORIENTATION_TYPES& otypes)
+    const OrientationTypes& otypes)
 {
     double val = 1.;
     Vector15d gradient = Vector15d::Zero();
 
-    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE
-        || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
+    if (otypes.normal_type(0) == HeavisideType::ONE
+        || otypes.normal_type(1) == HeavisideType::ONE)
         return std::make_tuple(val, gradient);
 
     {
@@ -582,14 +582,14 @@ HessianType<15> smooth_edge3_normal_term_hessian(
     const Eigen::Ref<const Vector3d>& f1,
     const double alpha,
     const double beta,
-    const ORIENTATION_TYPES& otypes)
+    const OrientationTypes& otypes)
 {
     double val = 1.;
     Vector15d gradient = Vector15d::Zero();
     Matrix15d hessian = Matrix15d::Zero();
 
-    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE
-        || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
+    if (otypes.normal_type(0) == HeavisideType::ONE
+        || otypes.normal_type(1) == HeavisideType::ONE)
         return std::make_tuple(val, gradient, hessian);
 
     {

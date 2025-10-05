@@ -59,7 +59,7 @@ GradType<13> edge_edge_mollifier_gradient(
     const Eigen::Ref<const Vector3<double>>& ea1,
     const Eigen::Ref<const Vector3<double>>& eb0,
     const Eigen::Ref<const Vector3<double>>& eb1,
-    const std::array<HEAVISIDE_TYPE, 4>& mtypes,
+    const std::array<HeavisideType, 4>& mtypes,
     const double& dist_sqr)
 {
     Vector<double, 13> input;
@@ -110,7 +110,7 @@ GradType<13> edge_edge_mollifier_gradient(
     for (int i = 0; i < 4; i++) {
         const double len = edge_lengths(1 - i / 2);
         const auto [val2, g2] = func_aux_grad(
-            point_edge_dists(i), len, input(12), mollifier_threshold_eps);
+            point_edge_dists(i), len, input(12), MOLLIFIER_THRESHOLD_EPS);
 
         Eigen::Vector3i ind;
         ind << 3 + i, 2 - i / 2, 0;
@@ -148,7 +148,7 @@ HessianType<13> edge_edge_mollifier_hessian(
     const Eigen::Ref<const Vector3<double>>& ea1,
     const Eigen::Ref<const Vector3<double>>& eb0,
     const Eigen::Ref<const Vector3<double>>& eb1,
-    const std::array<HEAVISIDE_TYPE, 4>& mtypes,
+    const std::array<HeavisideType, 4>& mtypes,
     const double& dist_sqr)
 {
     Vector<double, 13> input;
@@ -211,7 +211,7 @@ HessianType<13> edge_edge_mollifier_hessian(
     for (int i = 0; i < 4; i++) {
         const double len = edge_lengths(1 - i / 2);
         const auto [val, g, h] = func_aux_hess(
-            point_edge_dists(i), len, input(12), mollifier_threshold_eps);
+            point_edge_dists(i), len, input(12), MOLLIFIER_THRESHOLD_EPS);
 
         Eigen::Vector3i ind;
         ind << 3 + i, 2 - i / 2, 0;
@@ -278,30 +278,30 @@ HessianType<13> edge_edge_mollifier_hessian(
     return std::make_tuple(mollifier.prod(), grad, hess);
 }
 
-std::array<HEAVISIDE_TYPE, 4> edge_edge_mollifier_type(
+std::array<HeavisideType, 4> edge_edge_mollifier_type(
     const Eigen::Ref<const Vector3<double>>& ea0,
     const Eigen::Ref<const Vector3<double>>& ea1,
     const Eigen::Ref<const Vector3<double>>& eb0,
     const Eigen::Ref<const Vector3<double>>& eb1,
     const double& dist_sqr)
 {
-    std::array<HEAVISIDE_TYPE, 4> mtypes;
+    std::array<HeavisideType, 4> mtypes;
     mtypes[0] = (point_edge_distance(ea0, eb0, eb1) - dist_sqr)
-            >= dist_sqr * mollifier_threshold_eps
-        ? HEAVISIDE_TYPE::ONE
-        : HEAVISIDE_TYPE::VARIANT;
+            >= dist_sqr * MOLLIFIER_THRESHOLD_EPS
+        ? HeavisideType::ONE
+        : HeavisideType::VARIANT;
     mtypes[1] = (point_edge_distance(ea1, eb0, eb1) - dist_sqr)
-            >= dist_sqr * mollifier_threshold_eps
-        ? HEAVISIDE_TYPE::ONE
-        : HEAVISIDE_TYPE::VARIANT;
+            >= dist_sqr * MOLLIFIER_THRESHOLD_EPS
+        ? HeavisideType::ONE
+        : HeavisideType::VARIANT;
     mtypes[2] = (point_edge_distance(eb0, ea0, ea1) - dist_sqr)
-            >= dist_sqr * mollifier_threshold_eps
-        ? HEAVISIDE_TYPE::ONE
-        : HEAVISIDE_TYPE::VARIANT;
+            >= dist_sqr * MOLLIFIER_THRESHOLD_EPS
+        ? HeavisideType::ONE
+        : HeavisideType::VARIANT;
     mtypes[3] = (point_edge_distance(eb1, ea0, ea1) - dist_sqr)
-            >= dist_sqr * mollifier_threshold_eps
-        ? HEAVISIDE_TYPE::ONE
-        : HEAVISIDE_TYPE::VARIANT;
+            >= dist_sqr * MOLLIFIER_THRESHOLD_EPS
+        ? HeavisideType::ONE
+        : HeavisideType::VARIANT;
     return mtypes;
 }
 
@@ -342,7 +342,7 @@ GradType<13> point_face_mollifier_gradient(
 
         Vector3d tmp_grad;
         std::tie(vals(i), tmp_grad) = func_aux_grad(
-            point_edge_dist, vert_edge_dist, dist_sqr, mollifier_threshold_eps);
+            point_edge_dist, vert_edge_dist, dist_sqr, MOLLIFIER_THRESHOLD_EPS);
 
         grads.row(i) = tmp_grad.head<2>().transpose() * dist_grad;
         grads(i, 12) += tmp_grad(2);
@@ -402,7 +402,7 @@ HessianType<13> point_face_mollifier_hessian(
         Vector3d tmp_grad;
         Matrix3d tmp_hess;
         std::tie(vals(i), tmp_grad, tmp_hess) = func_aux_hess(
-            point_edge_dist, vert_edge_dist, dist_sqr, mollifier_threshold_eps);
+            point_edge_dist, vert_edge_dist, dist_sqr, MOLLIFIER_THRESHOLD_EPS);
 
         grads.row(i) = tmp_grad.head<2>().transpose() * dist_grad;
         grads(i, 12) += tmp_grad(2);

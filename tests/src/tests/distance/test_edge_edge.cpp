@@ -310,7 +310,7 @@ TEST_CASE(
 
 TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
 {
-    ORIENTATION_TYPES otypes;
+    OrientationTypes otypes;
     otypes.set_size(2);
     const double alpha = 0.85;
     const double beta = 0.2;

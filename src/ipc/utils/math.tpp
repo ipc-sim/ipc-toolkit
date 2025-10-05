@@ -11,51 +11,65 @@ namespace {
     /// @return
     template <typename scalar> scalar quadratic_spline_aux(const scalar& x)
     {
-        if (x <= 0)
+        if (x <= 0) {
             return scalar(0.);
-        if (x <= 1)
+        }
+        if (x <= 1) {
             return Math<scalar>::sqr(x) / 2.;
-        if (x <= 2)
+        }
+        if (x <= 2) {
             return (-3 + x * (6 - 2 * x)) / 2.;
-        if (x < 3)
+        }
+        if (x < 3) {
             return Math<scalar>::sqr(3. - x) / 2.;
+        }
         return scalar(0.);
     }
 
     template <typename scalar> scalar smooth_heaviside_standard(const scalar& x)
     {
-        if (x <= -3)
+        if (x <= -3) {
             return scalar(0.);
-        if (x <= -2)
+        }
+        if (x <= -2) {
             return Math<scalar>::cubic(3. + x) / 6.;
-        if (x <= -1)
+        }
+        if (x <= -1) {
             return (((-2 * x - 9) * x - 9) * x + 3) / 6;
-        if (x < 0)
+        }
+        if (x < 0) {
             return Math<scalar>::cubic(x) / 6. + 1.;
+        }
 
         return scalar(1.);
     }
 
     [[maybe_unused]] double smooth_heaviside_standard_grad(const double& x)
     {
-        if (x <= -3 || x >= 0)
+        if (x <= -3 || x >= 0) {
             return 0.;
-        if (x <= -2)
+        }
+        if (x <= -2) {
             return Math<double>::sqr(3. + x) / 2.;
-        if (x <= -1)
+        }
+        if (x <= -1) {
             return -(x * x + 3 * x + 1.5);
+        }
 
         return Math<double>::sqr(x) / 2.;
     }
 
     [[maybe_unused]] double smooth_heaviside_standard_hess(const double& x)
     {
-        if (x <= -3 || x >= 0)
+        if (x <= -3 || x >= 0) {
             return 0.;
-        if (x <= -2)
+        }
+        if (x <= -2) {
             return 3. + x;
-        if (x <= -1)
+        }
+        if (x <= -1) {
             return -3 - 2 * x;
+        }
 
         return x;
     }
@@ -63,18 +77,20 @@ namespace {
 
 template <typename scalar> double Math<scalar>::sign(const double& x)
 {
-    if (x > 0)
+    if (x > 0) {
         return 1.;
-    else
+    } else {
         return -1.;
+    }
 }
 
 template <typename scalar> scalar Math<scalar>::abs(const scalar& x)
 {
-    if (x >= 0)
+    if (x >= 0) {
         return x;
-    else
+    } else {
         return -x;
+    }
 }
 
 template <typename scalar> scalar Math<scalar>::sqr(const scalar& x)
@@ -89,30 +105,36 @@ template <typename scalar> scalar Math<scalar>::cubic(const scalar& x)
 
 template <typename scalar> scalar Math<scalar>::cubic_spline(const scalar& x)
 {
-    if (abs(x) >= 1)
+    if (abs(x) >= 1) {
         return scalar(0.);
-    if (abs(x) >= 0.5)
+    }
+    if (abs(x) >= 0.5) {
         return cubic(1 - abs(x)) * (4. / 3.);
+    }
 
     return 2. / 3. - 4. * (x * x) * (1 - abs(x));
 }
 template <typename scalar>
 double Math<scalar>::cubic_spline_grad(const double& x)
 {
-    if (Math<double>::abs(x) >= 1)
+    if (Math<double>::abs(x) >= 1) {
         return 0.;
-    if (Math<double>::abs(x) >= 0.5)
+    }
+    if (Math<double>::abs(x) >= 0.5) {
         return -4. * Math<double>::sqr(1 - Math<double>::abs(x)) * sign(x);
+    }
 
     return 4. * x * (3. * Math<double>::abs(x) - 2.);
 }
 template <typename scalar>
 double Math<scalar>::cubic_spline_hess(const double& x)
 {
-    if (Math<double>::abs(x) >= 1)
+    if (Math<double>::abs(x) >= 1) {
         return 0.;
-    if (Math<double>::abs(x) >= 0.5)
+    }
+    if (Math<double>::abs(x) >= 0.5) {
         return 8. * (1 - Math<double>::abs(x));
+    }
 
     return 8. * (3. * Math<double>::abs(x) - 1.);
 }
@@ -166,42 +188,46 @@ double Math<scalar>::smooth_heaviside_hess(
 template <typename scalar> scalar Math<scalar>::mollifier(const scalar& x)
 {
     if constexpr (isADHessian<scalar>::value) {
-        if (x <= 0)
+        if (x <= 0) {
             return scalar(0.);
-        else if (x < 1) {
+        } else if (x < 1) {
             const double deriv = 2. * (1. - x.getValue()), hess = -2.;
             return scalar(
                 x.getValue() * (2. - x.getValue()), deriv * x.getGradient(),
                 x.getGradient() * hess * x.getGradient().transpose()
                     + deriv * x.getHessian());
-        } else
+        } else {
             return scalar(1.);
+        }
         // return smooth_heaviside<scalar>(x - 1.);
     } else {
-        if (x <= 0)
+        if (x <= 0) {
             return scalar(0.);
-        else if (x < 1)
+        } else if (x < 1) {
             return x * (2. - x);
-        else
+        } else {
             return scalar(1.);
+        }
         // return smooth_heaviside<scalar>(x - 1.);
     }
 }
 
 template <typename scalar> double Math<scalar>::mollifier_grad(const double& x)
 {
-    if (x <= 0 || x >= 1)
+    if (x <= 0 || x >= 1) {
         return 0.;
-    else
+    } else {
         return 2. * (1. - x);
+    }
 }
 
 template <typename scalar> double Math<scalar>::mollifier_hess(const double& x)
 {
-    if (x <= 0 || x >= 1)
+    if (x <= 0 || x >= 1) {
         return 0.;
-    else
+    } else {
         return -2.;
+    }
 }
 
 // support is [0, 1]
@@ -234,10 +260,12 @@ double Math<scalar>::inv_barrier_hess(const double& x, const int& r)
 
 template <typename scalar> scalar Math<scalar>::L_ns(const scalar& x)
 {
-    if (x <= 0.)
+    if (x <= 0.) {
         return scalar(0.);
-    if (x >= 1.)
+    }
+    if (x >= 1.) {
         return scalar(1.);
+    }
     return x;
 }
 

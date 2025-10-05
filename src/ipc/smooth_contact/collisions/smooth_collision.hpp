@@ -15,7 +15,7 @@ enum class CollisionType {
 
 class SmoothCollision {
 public:
-    constexpr static int element_size = 3 * max_vert_3d;
+    constexpr static int element_size = 3 * MAX_VERT_3D;
 
     SmoothCollision(
         long primitive0_,

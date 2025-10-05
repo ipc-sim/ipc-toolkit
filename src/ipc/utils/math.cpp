@@ -22,37 +22,43 @@ namespace {
 
 } // namespace
 
-HEAVISIDE_TYPE ORIENTATION_TYPES::compute_type(
+HeavisideType OrientationTypes::compute_type(
     const double& val, const double& alpha, const double& beta)
 {
-    if (val <= -alpha)
-        return HEAVISIDE_TYPE::ZERO;
-    if (val >= beta)
-        return HEAVISIDE_TYPE::ONE;
+    if (val <= -alpha) {
+        return HeavisideType::ZERO;
+    }
+    if (val >= beta) {
+        return HeavisideType::ONE;
+    }
 
-    return HEAVISIDE_TYPE::VARIANT;
+    return HeavisideType::VARIANT;
 }
 
-void ORIENTATION_TYPES::set_size(const int size)
+void OrientationTypes::set_size(const int size)
 {
-    size_ = size;
-    tangent_types.assign(size_, HEAVISIDE_TYPE::VARIANT);
-    normal_types.assign(size_, HEAVISIDE_TYPE::VARIANT);
+    m_size = size;
+    tangent_types.assign(m_size, HeavisideType::VARIANT);
+    normal_types.assign(m_size, HeavisideType::VARIANT);
 }
 
-bool ORIENTATION_TYPES::are_tangent_types_all_one() const
+bool OrientationTypes::are_tangent_types_all_one() const
 {
-    for (const auto& b : tangent_types)
-        if (b != HEAVISIDE_TYPE::ONE)
+    for (const auto& b : tangent_types) {
+        if (b != HeavisideType::ONE) {
             return false;
+        }
+    }
     return true;
 }
 
-bool ORIENTATION_TYPES::exists_normal_type_one() const
+bool OrientationTypes::exists_normal_type_one() const
 {
-    for (const auto& b : normal_types)
-        if (b == HEAVISIDE_TYPE::ONE)
+    for (const auto& b : normal_types) {
+        if (b == HeavisideType::ONE) {
             return true;
+        }
+    }
     return false;
 }
 
@@ -77,9 +83,10 @@ normalize_vector_hess(const Eigen::Ref<const Eigen::Vector3d>& t)
     Eigen::Matrix3d grad =
         (Eigen::Matrix3d::Identity() - y * y.transpose()) / norm;
     std::array<Eigen::Matrix<double, 3, 3>, 3> hess;
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 3; i++) {
         hess[i] = -(y(i) * grad + y * grad.row(i) + grad.col(i) * y.transpose())
             / norm;
+    }
 
     return std::make_tuple(y, grad, hess);
 }

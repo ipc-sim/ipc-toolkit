@@ -38,7 +38,7 @@ Face::Face(
         && mesh.is_orient_vertex(_vert_ids[2]);
     is_active_ = !orientable || a.cross(b).dot(d) > 0;
 }
-int Face::n_vertices() const { return n_face_neighbors_3d; }
+int Face::n_vertices() const { return N_FACE_NEIGHBORS_3D; }
 double Face::potential(const Vector3d& d, const Vector9d& x) const
 {
     return smooth_face_term<double>(x.head<3>(), x.segment<3>(3), x.tail<3>());

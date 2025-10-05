@@ -9,7 +9,7 @@ class Point3 : public Primitive {
 public:
     constexpr static int n_core_points = 1;
     constexpr static int dim = 3;
-    constexpr static int max_size = n_vert_neighbors_3d * dim;
+    constexpr static int max_size = N_VERT_NEIGHBORS_3D * dim;
     // d is a vector from this point to the other primitive
     Point3(
         const long& id,
@@ -88,7 +88,7 @@ public:
 
 private:
     int n_neighbors;
-    ORIENTATION_TYPES _otypes;
+    OrientationTypes _otypes;
 
     std::vector<long> local_to_global_vids;
     std::map<long, int> global_to_local_vids;

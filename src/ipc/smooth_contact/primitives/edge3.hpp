@@ -32,7 +32,7 @@ public:
         const Eigen::Ref<const Vector12d>& x) const;
 
 private:
-    ORIENTATION_TYPES otypes;
+    OrientationTypes otypes;
 
     bool has_neighbor_1, has_neighbor_2;
     bool orientable;
@@ -46,7 +46,7 @@ double smooth_edge3_normal_term(
     const Eigen::Ref<const Vector3d>& f1,
     const double alpha,
     const double beta,
-    const ORIENTATION_TYPES& otypes);
+    const OrientationTypes& otypes);
 
 GradType<15> smooth_edge3_normal_term_gradient(
     const Eigen::Ref<const Vector3d>& dn,
@@ -56,7 +56,7 @@ GradType<15> smooth_edge3_normal_term_gradient(
     const Eigen::Ref<const Vector3d>& f1,
     const double alpha,
     const double beta,
-    const ORIENTATION_TYPES& otypes);
+    const OrientationTypes& otypes);
 
 HessianType<15> smooth_edge3_normal_term_hessian(
     const Eigen::Ref<const Vector3d>& dn,
@@ -66,5 +66,5 @@ HessianType<15> smooth_edge3_normal_term_hessian(
     const Eigen::Ref<const Vector3d>& f1,
     const double alpha,
     const double beta,
-    const ORIENTATION_TYPES& otypes);
+    const OrientationTypes& otypes);
 } // namespace ipc

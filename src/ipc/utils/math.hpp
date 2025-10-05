@@ -5,34 +5,34 @@
 #include <ipc/config.hpp>
 
 namespace ipc {
-enum class HEAVISIDE_TYPE { ZERO = 0, ONE = 1, VARIANT = 2 };
+enum class HeavisideType { ZERO = 0, ONE = 1, VARIANT = 2 };
 
-struct ORIENTATION_TYPES {
+struct OrientationTypes {
 
-    static HEAVISIDE_TYPE
+    static HeavisideType
     compute_type(const double& val, const double& alpha, const double& beta);
 
-    int size() const { return size_; }
+    int size() const { return m_size; }
     void set_size(const int size);
-    const HEAVISIDE_TYPE& tangent_type(const int& i) const
+    const HeavisideType& tangent_type(const int& i) const
     {
         return tangent_types[i];
     }
-    const HEAVISIDE_TYPE& normal_type(const int& i) const
+    const HeavisideType& normal_type(const int& i) const
     {
         return normal_types[i];
     }
-    HEAVISIDE_TYPE& tangent_type(const int& i) { return tangent_types[i]; }
-    HEAVISIDE_TYPE& normal_type(const int& i) { return normal_types[i]; }
+    HeavisideType& tangent_type(const int& i) { return tangent_types[i]; }
+    HeavisideType& normal_type(const int& i) { return normal_types[i]; }
 
     bool are_tangent_types_all_one() const;
     bool exists_normal_type_one() const;
 
-    int size_ = 0;
-    std::vector<HEAVISIDE_TYPE> tangent_types, normal_types;
+    int m_size = 0;
+    std::vector<HeavisideType> tangent_types, normal_types;
 };
 
-constexpr double mollifier_threshold_eps = 1e-2;
+constexpr double MOLLIFIER_THRESHOLD_EPS = 1e-2;
 
 template <typename scalar> struct Math {
     static double sign(const double& x);
@@ -101,12 +101,15 @@ slice_positions(const Eigen::VectorXd& positions, const int offset = 0)
         points;
     points.setZero(nrows, cols);
 
-    for (int i = 0, id = 0; i < nrows; i++)
-        for (int d = 0; d < cols; d++, id++)
-            if constexpr (std::is_same<T, double>::value)
+    for (int i = 0, id = 0; i < nrows; i++) {
+        for (int d = 0; d < cols; d++, id++) {
+            if constexpr (std::is_same<T, double>::value) {
                 points(i, d) = positions(id);
-            else
+            } else {
                 points(i, d) = T(id + offset, positions(id));
+            }
+        }
+    }
 
     return points;
 }

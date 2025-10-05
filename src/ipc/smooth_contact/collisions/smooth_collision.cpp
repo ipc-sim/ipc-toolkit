@@ -106,8 +106,8 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::SmoothCollisionTemplate(
 
     if ((pA->n_vertices() + pB->n_vertices()) * dim > element_size)
         logger().error(
-            "Too many neighbors for collision pair! {} > {}! Increase max_vert_3d in common.hpp",
-            pA->n_vertices() + pB->n_vertices(), max_vert_3d);
+            "Too many neighbors for collision pair! {} > {}! Increase MAX_VERT_3D in common.hpp",
+            pA->n_vertices() + pB->n_vertices(), MAX_VERT_3D);
 
     int i = 0;
     Super::vertex_ids_.assign(

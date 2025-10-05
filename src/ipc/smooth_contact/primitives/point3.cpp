@@ -59,10 +59,10 @@ Point3::Point3(
     n_neighbors = local_to_global_vids.size() - 1;
     _vert_ids = local_to_global_vids;
 
-    if (_vert_ids.size() > n_vert_neighbors_3d)
+    if (_vert_ids.size() > N_VERT_NEIGHBORS_3D)
         logger().error(
-            "Too many neighbors for point3 primitive! {} > {}! Increase n_vert_neighbors_3d in common.hpp",
-            _vert_ids.size(), n_vert_neighbors_3d);
+            "Too many neighbors for point3 primitive! {} > {}! Increase N_VERT_NEIGHBORS_3D in common.hpp",
+            _vert_ids.size(), N_VERT_NEIGHBORS_3D);
 
     is_active_ =
         smooth_point3_term_type(vertices(local_to_global_vids, Eigen::all), d);
@@ -130,11 +130,11 @@ GradType<-1> Point3::smooth_point3_term_tangent_gradient(
     Eigen::VectorXd acc_val_1 = Eigen::VectorXd::Ones(nn, 1);
     std::vector<Vector6d> tmp_grad(nn);
     for (int a = 0; a < nn; a++) {
-        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
+        if (_otypes.tangent_type(a) == HeavisideType::VARIANT) {
             std::tie(values(a), tmp_grad[a]) = opposite_direction_penalty_grad(
                 tangents.row(a), direc, alpha, beta);
             for (int b = 0; b < nn; b++)
-                if (_otypes.tangent_type(b) == HEAVISIDE_TYPE::VARIANT
+                if (_otypes.tangent_type(b) == HeavisideType::VARIANT
                     && b != a)
                     acc_val_1(b) *= values(a);
         }
@@ -142,7 +142,7 @@ GradType<-1> Point3::smooth_point3_term_tangent_gradient(
 
     Eigen::VectorXd tangent_grad = Eigen::VectorXd::Zero((nn + 1) * 3);
     for (int a = 0; a < nn; a++) {
-        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
+        if (_otypes.tangent_type(a) == HeavisideType::VARIANT) {
             const int id = (a + 1) * 3;
             tangent_grad.segment<3>(id) = tmp_grad[a].head<3>() * acc_val_1(a);
             tangent_grad.segment<3>(0) += tmp_grad[a].tail<3>() * acc_val_1(a);
@@ -165,7 +165,7 @@ HessianType<-1> Point3::smooth_point3_term_tangent_hessian(
     std::vector<Vector6d> tmp_grad(nn);
     std::vector<Matrix6d> tmp_hess(nn);
     for (int a = 0; a < nn; a++) {
-        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
+        if (_otypes.tangent_type(a) == HeavisideType::VARIANT) {
             std::tie(values(a), tmp_grad[a], tmp_hess[a]) =
                 opposite_direction_penalty_hess(
                     tangents.row(a), direc, alpha, beta);
@@ -186,14 +186,14 @@ HessianType<-1> Point3::smooth_point3_term_tangent_hessian(
         Eigen::MatrixXd::Zero(tangent_grad.size(), tangent_grad.size());
     Eigen::Vector3d tmp;
     for (int a = 0; a < nn; a++) {
-        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
+        if (_otypes.tangent_type(a) == HeavisideType::VARIANT) {
             const int id = (a + 1) * 3;
             tangent_grad.segment<3>(id) = tmp_grad[a].head<3>() * acc_val_1(a);
             tangent_grad.segment<3>(0) += tmp_grad[a].tail<3>() * acc_val_1(a);
 
             tmp.setZero();
             for (int b = 0; b < nn; b++)
-                if (_otypes.tangent_type(b) == HEAVISIDE_TYPE::VARIANT
+                if (_otypes.tangent_type(b) == HeavisideType::VARIANT
                     && b != a) {
                     tmp += tmp_grad[b].tail<3>() * acc_val_2(a, b);
                     tangent_hess.block<3, 3>(id, (b + 1) * 3) =
@@ -233,7 +233,7 @@ GradType<-1> Point3::smooth_point3_term_normal_gradient(
 {
     Eigen::VectorXd grad =
         Eigen::VectorXd::Zero(tangents.size() + direc.size());
-    if (!orientable || _otypes.normal_type(0) == HEAVISIDE_TYPE::ONE)
+    if (!orientable || _otypes.normal_type(0) == HeavisideType::ONE)
         return std::make_tuple(1., grad);
 
     double normal_term = 0.;
@@ -243,7 +243,7 @@ GradType<-1> Point3::smooth_point3_term_normal_gradient(
         const Eigen::Ref<const RowVector3<double>> t2 =
             tangents.row(faces(a, 2) - 1);
 
-        if (_otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT) {
+        if (_otypes.normal_type(a) == HeavisideType::VARIANT) {
             const int id1 = faces(a, 1) * 3;
             const int id2 = faces(a, 2) * 3;
             const auto [y, dy] =
@@ -272,7 +272,7 @@ GradType<-1> Point3::smooth_point3_term_normal_gradient(
 
     //     T normal_term_ad(0.);
     //     for (int a = 0; a < faces.rows(); a++) {
-    //         if (_otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT)
+    //         if (_otypes.normal_type(a) == HeavisideType::VARIANT)
     //             normal_term_ad =
     //                 normal_term_ad
     //                 + Math<T>::smooth_heaviside(
@@ -301,7 +301,7 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
 {
     Eigen::VectorXd grad = Eigen::VectorXd::Zero((tangents.rows() + 1) * 3);
     Eigen::MatrixXd hess = Eigen::MatrixXd::Zero(grad.size(), grad.size());
-    if (!orientable || _otypes.normal_type(0) == HEAVISIDE_TYPE::ONE)
+    if (!orientable || _otypes.normal_type(0) == HeavisideType::ONE)
         return std::make_tuple(1., grad, hess);
 
     // double normal_term = 0.;
@@ -310,7 +310,7 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
     //     1) - 1); const Eigen::Ref<const RowVector3<double>> t2 =
     //     tangents.row(faces(a, 2) - 1);
 
-    //     if (_otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT)
+    //     if (_otypes.normal_type(a) == HeavisideType::VARIANT)
     //     {
     //         const int id1 = faces(a, 1) * 3;
     //         const int id2 = faces(a, 2) * 3;
@@ -352,7 +352,7 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
 
         T normal_term_ad(0.);
         for (int a = 0; a < faces.rows(); a++) {
-            if (_otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT)
+            if (_otypes.normal_type(a) == HeavisideType::VARIANT)
                 normal_term_ad =
                     normal_term_ad
                     + Math<T>::smooth_heaviside(
@@ -389,7 +389,7 @@ bool Point3::smooth_point3_term_type(
         const RowVector3<double> t = X.row(edges(a, 1)) - X.row(edges(a, 0));
         _otypes.tangent_type(a) = _otypes.compute_type(
             -dn.dot(t) / t.norm(), _param.alpha_t, _param.beta_t);
-        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::ZERO)
+        if (_otypes.tangent_type(a) == HeavisideType::ZERO)
             return false;
     }
 
@@ -410,7 +410,7 @@ bool Point3::smooth_point3_term_type(
 
     if (normal_term >= 1) {
         for (int a = 0; a < faces.rows(); a++)
-            _otypes.normal_type(a) = HEAVISIDE_TYPE::ONE;
+            _otypes.normal_type(a) = HeavisideType::ONE;
     }
 
     return normal_term > 0;
@@ -562,7 +562,7 @@ scalar Point3::smooth_point3_term(
     scalar normal_term(0.);
     for (int a = 0; a < edges.rows(); a++) {
         const RowVector3<scalar> t = X.row(edges(a, 1)) - X.row(edges(a, 0));
-        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT)
+        if (_otypes.tangent_type(a) == HeavisideType::VARIANT)
             tangent_term =
                 tangent_term
                 * Math<scalar>::smooth_heaviside(
@@ -572,7 +572,7 @@ scalar Point3::smooth_point3_term(
     }
     weight /= 3.;
 
-    if (!orientable || _otypes.normal_type(0) == HEAVISIDE_TYPE::ONE)
+    if (!orientable || _otypes.normal_type(0) == HeavisideType::ONE)
         normal_term = scalar(1.);
     else {
         for (int a = 0; a < faces.rows(); a++) {

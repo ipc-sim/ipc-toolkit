@@ -7,21 +7,21 @@ namespace ipc {
 
 constexpr static int n_vert_neighbors_2d = 3;
 constexpr static int n_edge_neighbors_2d = 2;
-constexpr static int max_vert_2d =
+constexpr static int MAX_VERT_2D =
     2 * std::max(n_vert_neighbors_2d, n_edge_neighbors_2d);
-constexpr static int n_vert_neighbors_3d = 20; // increase me if needed
-constexpr static int n_edge_neighbors_3d = 4;
-constexpr static int n_face_neighbors_3d = 3;
-constexpr static int max_vert_3d = n_vert_neighbors_3d * 2;
+constexpr static int N_VERT_NEIGHBORS_3D = 20; // increase me if needed
+constexpr static int N_EDGE_NEIGHBORS_3D = 4;
+constexpr static int N_FACE_NEIGHBORS_3D = 3;
+constexpr static int MAX_VERT_3D = N_VERT_NEIGHBORS_3D * 2;
 
 template <int dim> class MaxVertices;
 template <> class MaxVertices<2> {
 public:
-    static constexpr int value = max_vert_2d;
+    static constexpr int value = MAX_VERT_2D;
 };
 template <> class MaxVertices<3> {
 public:
-    static constexpr int value = max_vert_3d;
+    static constexpr int value = MAX_VERT_3D;
 };
 
 struct ParameterType {
