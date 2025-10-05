@@ -211,7 +211,7 @@ template <int dim> using GradType = std::tuple<double, Vector<double, dim>>;
 template <int dim>
 using HessianType =
     std::tuple<double, Vector<double, dim>, Eigen::Matrix<double, dim, dim>>;
-    
+
 /**@}*/
 
 /// @brief Cross product matrix for 3D vectors.

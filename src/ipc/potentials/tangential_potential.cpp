@@ -581,7 +581,8 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
                     * force_jacobian_unit(
                             collision,
                             collision.dof(lagged_positions, edges, faces),
-                            collision.dof(velocities, edges, faces), wrt, false);
+                            collision.dof(velocities, edges, faces), wrt,
+                            false);
                 // smooth_contact_force_jacobian(
                 //     collision, collision.dof(rest_positions, edges, faces),
                 //     collision.dof(lagged_displacements, edges, faces),
@@ -726,8 +727,8 @@ TangentialPotential::smooth_contact_force(
 
     // F = -μ N f₁(‖τ‖)/‖τ‖ T τ
     // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
-    return -collision.weight
-        * (no_contact_force_multiplier ? 1.0 : N) * mu_f1_over_norm_tau * T * tau;
+    return -collision.weight * (no_contact_force_multiplier ? 1.0 : N)
+        * mu_f1_over_norm_tau * T * tau;
 }
 
 Eigen::MatrixXd TangentialPotential::smooth_contact_force_jacobian(

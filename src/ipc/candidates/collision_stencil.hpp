@@ -176,8 +176,8 @@ public:
     /// @param positions Stencil's vertex positions.
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance of the stencil.
-    virtual double compute_distance(
-        Eigen::ConstRef<VectorMax12d>& positions) const = 0;
+    virtual double
+    compute_distance(Eigen::ConstRef<VectorMax12d>& positions) const = 0;
 
     /// @brief Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
     /// @param positions Stencil's vertex positions.
@@ -190,14 +190,14 @@ public:
     /// @param positions Stencil's vertex positions.
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
-    virtual MatrixMax12d compute_distance_hessian(
-        Eigen::ConstRef<VectorMax12d> positions) const = 0;
+    virtual MatrixMax12d
+    compute_distance_hessian(Eigen::ConstRef<VectorMax12d> positions) const = 0;
 
     /// @brief Compute the coefficients of the stencil s.t. d(x) = ‖∑ cᵢ xᵢ‖².
     /// @param positions Stencil's vertex positions.
     /// @return Coefficients of the stencil.
-    virtual VectorMax4d compute_coefficients(
-        Eigen::ConstRef<VectorMax12d> positions) const = 0;
+    virtual VectorMax4d
+    compute_coefficients(Eigen::ConstRef<VectorMax12d> positions) const = 0;
 
     /// @brief Compute the normal of the stencil.
     /// @param positions Stencil's vertex positions.
