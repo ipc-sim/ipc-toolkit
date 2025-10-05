@@ -18,7 +18,7 @@ Edge2::Edge2(
             > 0;
 }
 
-int Edge2::n_vertices() const { return n_edge_neighbors_2d; }
+int Edge2::n_vertices() const { return N_EDGE_NEIGHBORS_2D; }
 
 double Edge2::potential(const Vector2d& d, const Vector4d& x) const
 {

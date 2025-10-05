@@ -25,8 +25,8 @@ void SparseMatrixCache::init(const size_t size)
 
     size_ = size;
     tmp_.resize(size_, size_);
-    mat_.resize(size_, size_);
-    mat_.setZero();
+    m_mat.resize(size_, size_);
+    m_mat.setZero();
 }
 
 void SparseMatrixCache::init(const size_t rows, const size_t cols)
@@ -35,8 +35,8 @@ void SparseMatrixCache::init(const size_t rows, const size_t cols)
 
     size_ = rows == cols ? rows : 0;
     tmp_.resize(rows, cols);
-    mat_.resize(rows, cols);
-    mat_.setZero();
+    m_mat.resize(rows, cols);
+    m_mat.setZero();
 }
 
 void SparseMatrixCache::init(const MatrixCache& other)
@@ -63,16 +63,16 @@ void SparseMatrixCache::init(
 
     values_.resize(other.values_.size());
 
-    tmp_.resize(other.mat_.rows(), other.mat_.cols());
-    mat_.resize(other.mat_.rows(), other.mat_.cols());
-    mat_.setZero();
+    tmp_.resize(other.m_mat.rows(), other.m_mat.cols());
+    m_mat.resize(other.m_mat.rows(), other.m_mat.cols());
+    m_mat.setZero();
     std::fill(values_.begin(), values_.end(), 0);
 }
 
 void SparseMatrixCache::set_zero()
 {
     tmp_.setZero();
-    mat_.setZero();
+    m_mat.setZero();
 
     std::fill(values_.begin(), values_.end(), 0);
 }
@@ -109,15 +109,15 @@ void SparseMatrixCache::prune()
     if (mapping().empty()) {
         tmp_.setFromTriplets(entries_.begin(), entries_.end());
         tmp_.makeCompressed();
-        mat_ += tmp_;
+        m_mat += tmp_;
 
         tmp_.setZero();
         tmp_.data().squeeze();
-        mat_.makeCompressed();
+        m_mat.makeCompressed();
 
         entries_.clear();
 
-        mat_.makeCompressed();
+        m_mat.makeCompressed();
     }
 }
 
@@ -132,20 +132,20 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
         if (compute_mapping && size_ > 0) {
             assert(main_cache_ == nullptr);
 
-            values_.resize(mat_.nonZeros());
-            inner_index_.resize(mat_.nonZeros());
-            outer_index_.resize(mat_.rows() + 1);
-            mapping_.resize(mat_.rows());
+            values_.resize(m_mat.nonZeros());
+            inner_index_.resize(m_mat.nonZeros());
+            outer_index_.resize(m_mat.rows() + 1);
+            mapping_.resize(m_mat.rows());
 
-            // note: mat_ is column major
-            const auto inn_ptr = mat_.innerIndexPtr();
-            const auto out_ptr = mat_.outerIndexPtr();
+            // note: m_mat is column major
+            const auto inn_ptr = m_mat.innerIndexPtr();
+            const auto out_ptr = m_mat.outerIndexPtr();
             inner_index_.assign(inn_ptr, inn_ptr + inner_index_.size());
             outer_index_.assign(out_ptr, out_ptr + outer_index_.size());
 
             size_t index = 0;
             // loop over columns of the matrix
-            for (size_t i = 0; i < mat_.cols(); ++i) {
+            for (size_t i = 0; i < m_mat.cols(); ++i) {
                 const auto start = outer_index_[i];
                 const auto end = outer_index_[i + 1];
 
@@ -200,7 +200,7 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
         const auto& outer_index = main_cache()->outer_index_;
         const auto& inner_index = main_cache()->inner_index_;
         // directly write the values to the matrix
-        mat_ = Eigen::Map<const Eigen::SparseMatrix<double, Eigen::ColMajor>>(
+        m_mat = Eigen::Map<const Eigen::SparseMatrix<double, Eigen::ColMajor>>(
             size_, size_, values_.size(), &outer_index[0], &inner_index[0],
             &values_[0]);
 
@@ -208,7 +208,7 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
         current_e_index_ = -1;
     }
     std::fill(values_.begin(), values_.end(), 0);
-    return mat_;
+    return m_mat;
 }
 
 std::shared_ptr<MatrixCache>
@@ -225,7 +225,7 @@ SparseMatrixCache::operator+(const SparseMatrixCache& a) const
         std::make_shared<SparseMatrixCache>(a);
 
     if (a.mapping().empty() || mapping().empty()) {
-        out->mat_ = a.mat_ + mat_;
+        out->m_mat = a.m_mat + m_mat;
         const size_t this_e_size = second_cache_entries_.size();
         const size_t a_e_size = a.second_cache_entries_.size();
 
@@ -286,7 +286,7 @@ void SparseMatrixCache::operator+=(const MatrixCache& o)
 void SparseMatrixCache::operator+=(const SparseMatrixCache& o)
 {
     if (mapping().empty() || o.mapping().empty()) {
-        mat_ += o.mat_;
+        m_mat += o.m_mat;
 
         const size_t this_e_size = second_cache_entries_.size();
         const size_t o_e_size = o.second_cache_entries_.size();
@@ -323,12 +323,12 @@ void SparseMatrixCache::operator+=(const SparseMatrixCache& o)
 
 DenseMatrixCache::DenseMatrixCache(const size_t size)
 {
-    mat_.setZero(size, size);
+    m_mat.setZero(size, size);
 }
 
 DenseMatrixCache::DenseMatrixCache(const size_t rows, const size_t cols)
 {
-    mat_.setZero(rows, cols);
+    m_mat.setZero(rows, cols);
 }
 
 DenseMatrixCache::DenseMatrixCache(const MatrixCache& other) { init(other); }
@@ -338,11 +338,11 @@ DenseMatrixCache::DenseMatrixCache(const DenseMatrixCache& other)
     init(other);
 }
 
-void DenseMatrixCache::init(const size_t size) { mat_.setZero(size, size); }
+void DenseMatrixCache::init(const size_t size) { m_mat.setZero(size, size); }
 
 void DenseMatrixCache::init(const size_t rows, const size_t cols)
 {
-    mat_.setZero(rows, cols);
+    m_mat.setZero(rows, cols);
 }
 
 void DenseMatrixCache::init(const MatrixCache& other)
@@ -352,15 +352,15 @@ void DenseMatrixCache::init(const MatrixCache& other)
 
 void DenseMatrixCache::init(const DenseMatrixCache& other)
 {
-    mat_.setZero(other.mat_.rows(), other.mat_.cols());
+    m_mat.setZero(other.m_mat.rows(), other.m_mat.cols());
 }
 
-void DenseMatrixCache::set_zero() { mat_.setZero(); }
+void DenseMatrixCache::set_zero() { m_mat.setZero(); }
 
 void DenseMatrixCache::add_value(
     const int e, const int i, const int j, const double value)
 {
-    mat_(i, j) += value;
+    m_mat(i, j) += value;
 }
 
 void DenseMatrixCache::prune() { }
@@ -368,7 +368,7 @@ void DenseMatrixCache::prune() { }
 Eigen::SparseMatrix<double, Eigen::ColMajor>
 DenseMatrixCache::get_matrix(const bool compute_mapping)
 {
-    return mat_.sparseView();
+    return m_mat.sparseView();
 }
 
 std::shared_ptr<MatrixCache>
@@ -382,7 +382,7 @@ DenseMatrixCache::operator+(const DenseMatrixCache& a) const
 {
     std::shared_ptr<DenseMatrixCache> out =
         std::make_shared<DenseMatrixCache>(a);
-    out->mat_ += mat_;
+    out->m_mat += m_mat;
     return out;
 }
 
@@ -391,6 +391,6 @@ void DenseMatrixCache::operator+=(const MatrixCache& o)
     *this += dynamic_cast<const DenseMatrixCache&>(o);
 }
 
-void DenseMatrixCache::operator+=(const DenseMatrixCache& o) { mat_ += o.mat_; }
+void DenseMatrixCache::operator+=(const DenseMatrixCache& o) { m_mat += o.m_mat; }
 
 } // namespace ipc

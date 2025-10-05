@@ -5,10 +5,10 @@
 
 namespace ipc {
 
-constexpr static int n_vert_neighbors_2d = 3;
-constexpr static int n_edge_neighbors_2d = 2;
+constexpr static int N_VERT_NEIGHBORS_2D = 3;
+constexpr static int N_EDGE_NEIGHBORS_2D = 2;
 constexpr static int MAX_VERT_2D =
-    2 * std::max(n_vert_neighbors_2d, n_edge_neighbors_2d);
+    2 * std::max(N_VERT_NEIGHBORS_2D, N_EDGE_NEIGHBORS_2D);
 constexpr static int N_VERT_NEIGHBORS_3D = 20; // increase me if needed
 constexpr static int N_EDGE_NEIGHBORS_3D = 4;
 constexpr static int N_FACE_NEIGHBORS_3D = 3;

@@ -10,7 +10,7 @@ class TangentialPotential : public Potential<TangentialCollisions> {
     using Super = Potential;
 
 public:
-    using Potential<TangentialCollisions>::element_size;
+    using Potential<TangentialCollisions>::ELEMENT_SIZE;
     virtual ~TangentialPotential() { }
 
     // -- Cumulative methods ---------------------------------------------------
@@ -92,19 +92,19 @@ public:
         const double dmin = 0,
         const bool no_mu = false) const;
 
-    Vector<double, -1, element_size> smooth_contact_force(
+    Vector<double, -1, ELEMENT_SIZE> smooth_contact_force(
         const TangentialCollision& collision,
-        const Vector<double, -1, element_size>& rest_positions,       // = x
-        const Vector<double, -1, element_size>& lagged_displacements, // = u
-        const Vector<double, -1, element_size>& velocities,           // = v
+        const Vector<double, -1, ELEMENT_SIZE>& rest_positions,       // = x
+        const Vector<double, -1, ELEMENT_SIZE>& lagged_displacements, // = u
+        const Vector<double, -1, ELEMENT_SIZE>& velocities,           // = v
         const bool no_mu = false,
         const bool no_contact_force_multiplier = false) const;
 
     Eigen::MatrixXd smooth_contact_force_jacobian(
         const TangentialCollision& collision,
-        const Vector<double, -1, element_size>& rest_positions,       // = x
-        const Vector<double, -1, element_size>& lagged_displacements, // = u
-        const Vector<double, -1, element_size>& velocities,           // = v
+        const Vector<double, -1, ELEMENT_SIZE>& rest_positions,       // = x
+        const Vector<double, -1, ELEMENT_SIZE>& lagged_displacements, // = u
+        const Vector<double, -1, ELEMENT_SIZE>& velocities,           // = v
         const DiffWRT wrt,
         const bool no_mu) const;
 
@@ -118,10 +118,10 @@ public:
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return Friction force Jacobian
-    MatrixMax<double, element_size, element_size> force_jacobian_unit(
+    MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> force_jacobian_unit(
         const TangentialCollision& collision,
-        const Vector<double, -1, element_size>& lagged_positions,
-        const Vector<double, -1, element_size>& velocities,
+        const Vector<double, -1, ELEMENT_SIZE>& lagged_positions,
+        const Vector<double, -1, ELEMENT_SIZE>& velocities,
         const DiffWRT wrt,
         const bool no_mu = false) const;
 

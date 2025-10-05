@@ -66,7 +66,7 @@ public:
         const SparseMatrixCache& other, const bool copy_main_cache_ptr = false);
 
     /// set matrix values to zero
-    /// modifies tmp_, mat_, and values (setting all to zero)
+    /// modifies tmp_, m_mat, and values (setting all to zero)
     void set_zero() override;
 
     inline void reserve(const size_t size) override { entries_.reserve(size); }
@@ -74,11 +74,11 @@ public:
     inline size_t capacity() const override { return entries_.capacity(); }
     inline size_t non_zeros() const override
     {
-        return mapping_.empty() ? mat_.nonZeros() : values_.size();
+        return mapping_.empty() ? m_mat.nonZeros() : values_.size();
     }
     inline size_t triplet_count() const override
     {
-        return entries_.size() + mat_.nonZeros();
+        return entries_.size() + m_mat.nonZeros();
     }
     inline bool is_sparse() const override { return true; }
     inline size_t mapping_size() const { return mapping_.size(); }
@@ -97,13 +97,13 @@ public:
     ///     in this case, modifies inner_index_, outer_index_, map, and
     ///     second_cache_ to reflect the matrix structure also empties
     ///     second_cache_entries and sets values_ to zero
-    /// otherwise, update mat_ directly using the cached indices and values_
-    ///     in this case, modifies mat_ and sets values_ to zero
+    /// otherwise, update m_mat directly using the cached indices and values_
+    ///     in this case, modifies m_mat and sets values_ to zero
     Eigen::SparseMatrix<double, Eigen::ColMajor>
     get_matrix(const bool compute_mapping = true) override;
-    /// if caches have yet to be constructed, add the saved triplets to mat_
-    /// modifies tmp_ and mat_, also sets entries_ to be empty after writing its
-    /// values to mat_
+    /// if caches have yet to be constructed, add the saved triplets to m_mat
+    /// modifies tmp_ and m_mat, also sets entries_ to be empty after writing its
+    /// values to m_mat
     void prune() override; ///< add saved entries to stored matrix
 
     std::shared_ptr<MatrixCache> operator+(const MatrixCache& a) const override;
@@ -113,7 +113,7 @@ public:
 
     const Eigen::SparseMatrix<double, Eigen::ColMajor>& mat() const
     {
-        return mat_;
+        return m_mat;
     }
     const std::vector<Eigen::Triplet<double>>& entries() const
     {
@@ -122,7 +122,7 @@ public:
 
 private:
     size_t size_;
-    Eigen::SparseMatrix<double, Eigen::ColMajor> tmp_, mat_;
+    Eigen::SparseMatrix<double, Eigen::ColMajor> tmp_, m_mat;
     std::vector<Eigen::Triplet<double>>
         entries_; ///< contains global matrix indices and corresponding value
     std::vector<std::vector<std::pair<int, size_t>>>
@@ -181,8 +181,8 @@ public:
 
     inline void reserve(const size_t size) override { }
     inline size_t entries_size() const override { return 0; }
-    inline size_t capacity() const override { return mat_.size(); }
-    inline size_t non_zeros() const override { return mat_.size(); }
+    inline size_t capacity() const override { return m_mat.size(); }
+    inline size_t non_zeros() const override { return m_mat.size(); }
     inline size_t triplet_count() const override { return non_zeros(); }
     inline bool is_sparse() const override { return false; }
 
@@ -197,9 +197,9 @@ public:
     void operator+=(const MatrixCache& o) override;
     void operator+=(const DenseMatrixCache& o);
 
-    const Eigen::MatrixXd& mat() const { return mat_; }
+    const Eigen::MatrixXd& mat() const { return m_mat; }
 
 private:
-    Eigen::MatrixXd mat_;
+    Eigen::MatrixXd m_mat;
 };
 } // namespace ipc

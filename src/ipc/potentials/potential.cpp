@@ -64,12 +64,12 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
             for (size_t i = start; i < end; i++) {
                 const TCollision& collision = collisions[i];
 
-                const Vector<double, -1, Potential<TCollisions>::element_size>
+                const Vector<double, -1, Potential<TCollisions>::ELEMENT_SIZE>
                     local_grad = this->gradient(
                         collision,
                         collision.dof(X, mesh.edges(), mesh.faces()));
 
-                const std::array<index_t, TCollision::element_size> vids =
+                const std::array<index_t, TCollision::ELEMENT_SIZE> vids =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_gradient_to_global_gradient(
@@ -116,13 +116,13 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
                 const TCollision& collision = collisions[i];
 
                 const MatrixMax<
-                    double, Potential<TCollisions>::element_size,
-                    Potential<TCollisions>::element_size>
+                    double, Potential<TCollisions>::ELEMENT_SIZE,
+                    Potential<TCollisions>::ELEMENT_SIZE>
                     local_hess = this->hessian(
                         collisions[i], collisions[i].dof(X, edges, faces),
                         project_hessian_to_psd);
 
-                const std::array<index_t, TCollision::element_size> vids =
+                const std::array<index_t, TCollision::ELEMENT_SIZE> vids =
                     collision.vertex_ids(edges, faces);
 
                 local_hessian_to_global_triplets(

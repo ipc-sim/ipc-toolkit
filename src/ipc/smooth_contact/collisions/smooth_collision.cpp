@@ -51,25 +51,31 @@ template <typename PrimitiveA, typename PrimitiveB>
 std::string SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::name() const
 {
     if constexpr (
-        std::is_same_v<PrimitiveA, Edge2> && std::is_same_v<PrimitiveB, Point2>)
+        std::is_same_v<PrimitiveA, Edge2> && std::is_same_v<PrimitiveB, Point2>) {
         return "edge-vert";
+    }
     if constexpr (
         std::is_same_v<PrimitiveA, Point2>
-        && std::is_same_v<PrimitiveB, Point2>)
+        && std::is_same_v<PrimitiveB, Point2>) {
         return "vert-vert";
+    }
     if constexpr (
-        std::is_same_v<PrimitiveA, Face> && std::is_same_v<PrimitiveB, Point3>)
+        std::is_same_v<PrimitiveA, Face> && std::is_same_v<PrimitiveB, Point3>) {
         return "face-vert";
+    }
     if constexpr (
-        std::is_same_v<PrimitiveA, Edge3> && std::is_same_v<PrimitiveB, Point3>)
+        std::is_same_v<PrimitiveA, Edge3> && std::is_same_v<PrimitiveB, Point3>) {
         return "edge-vert";
+    }
     if constexpr (
-        std::is_same_v<PrimitiveA, Edge3> && std::is_same_v<PrimitiveB, Edge3>)
+        std::is_same_v<PrimitiveA, Edge3> && std::is_same_v<PrimitiveB, Edge3>) {
         return "edge-edge";
+    }
     if constexpr (
         std::is_same_v<PrimitiveA, Point3>
-        && std::is_same_v<PrimitiveB, Point3>)
+        && std::is_same_v<PrimitiveB, Point3>) {
         return "vert-vert";
+    }
 
     throw std::runtime_error("Invalid collision pair type!");
     return "vert-vert";
@@ -104,10 +110,11 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::SmoothCollisionTemplate(
     pA = std::make_unique<PrimitiveA>(primitive0_, mesh, V, d, param);
     pB = std::make_unique<PrimitiveB>(primitive1_, mesh, V, -d, param);
 
-    if ((pA->n_vertices() + pB->n_vertices()) * dim > element_size)
+    if ((pA->n_vertices() + pB->n_vertices()) * dim > ELEMENT_SIZE) {
         logger().error(
             "Too many neighbors for collision pair! {} > {}! Increase MAX_VERT_3D in common.hpp",
             pA->n_vertices() + pB->n_vertices(), MAX_VERT_3D);
+    }
 
     int i = 0;
     Super::vertex_ids_.assign(
@@ -132,7 +139,7 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::SmoothCollisionTemplate(
 
 template <typename PrimitiveA, typename PrimitiveB>
 double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
-    Eigen::ConstRef<Vector<double, -1, element_size>> positions,
+    Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
     const ParameterType& params) const
 {
     Vector<double, n_core_points * dim> x;
@@ -153,21 +160,23 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
         PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, double>::mollifier(
             x, dist * dist);
 
-    if (params.r == 0)
+    if (params.r == 0) {
         logger().error("Invalid param!");
+    }
 
-    if (dist < 1e-12)
+    if (dist < 1e-12) {
         logger().warn(
             "pair distance {:.3e}, dhat {:.3e}, r {}, barrier {:.3e}, mollifier {:.3e}, orient {:.3e} {:.3e}",
             dist, Super::dhat(), params.r, a3, a4, a1, a2);
+    }
 
     return a1 * a2 * a3 * a4;
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
 auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
-    Eigen::ConstRef<Vector<double, -1, element_size>> positions,
-    const ParameterType& params) const -> Vector<double, -1, element_size>
+    Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
+    const ParameterType& params) const -> Vector<double, -1, ELEMENT_SIZE>
 {
     const auto core_indices = get_core_indices();
 
@@ -241,11 +250,11 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
 
     // grad of tangent/normal terms
     double orient = 0;
-    Vector<double, -1, element_size> gOrient;
+    Vector<double, -1, ELEMENT_SIZE> gOrient;
     {
-        Vector<double, -1, element_size>
-            gA = Vector<double, -1, element_size>::Zero(n_dofs()),
-            gB = Vector<double, -1, element_size>::Zero(n_dofs());
+        Vector<double, -1, ELEMENT_SIZE>
+            gA = Vector<double, -1, ELEMENT_SIZE>::Zero(n_dofs()),
+            gB = Vector<double, -1, ELEMENT_SIZE>::Zero(n_dofs());
         {
             gA(core_indices) =
                 closest_direction_grad.transpose() * gA_reduced.head(dim);
@@ -274,9 +283,9 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
 
 template <typename PrimitiveA, typename PrimitiveB>
 auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
-    Eigen::ConstRef<Vector<double, -1, element_size>> positions,
+    Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
     const ParameterType& params) const
-    -> MatrixMax<double, element_size, element_size>
+    -> MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
 {
     const auto core_indices = get_core_indices();
 
@@ -396,16 +405,16 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
 
     // grad of tangent/normal terms
     double orient = 0;
-    Vector<double, -1, element_size> gOrient;
-    MatrixMax<double, element_size, element_size> hOrient;
+    Vector<double, -1, ELEMENT_SIZE> gOrient;
+    MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hOrient;
     {
-        Vector<double, -1, element_size>
-            gA = Vector<double, -1, element_size>::Zero(n_dofs()),
-            gB = Vector<double, -1, element_size>::Zero(n_dofs());
-        MatrixMax<double, element_size, element_size>
-            hA = MatrixMax<double, element_size, element_size>::Zero(
+        Vector<double, -1, ELEMENT_SIZE>
+            gA = Vector<double, -1, ELEMENT_SIZE>::Zero(n_dofs()),
+            gB = Vector<double, -1, ELEMENT_SIZE>::Zero(n_dofs());
+        MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
+            hA = MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>::Zero(
                 n_dofs(), n_dofs()),
-            hB = MatrixMax<double, element_size, element_size>::Zero(
+            hB = MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>::Zero(
                 n_dofs(), n_dofs());
         {
             gA(core_indices) =
@@ -476,7 +485,7 @@ template <typename PrimitiveA, typename PrimitiveB>
 double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
-    Vector<double, -1, element_size> positions = dof(vertices);
+    Vector<double, -1, ELEMENT_SIZE> positions = dof(vertices);
 
     Vector<double, n_core_points * dim> x;
     x << positions.head(PrimitiveA::n_core_points * dim),

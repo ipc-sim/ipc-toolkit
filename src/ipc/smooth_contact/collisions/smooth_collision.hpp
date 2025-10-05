@@ -15,7 +15,7 @@ enum class CollisionType {
 
 class SmoothCollision {
 public:
-    constexpr static int element_size = 3 * MAX_VERT_3D;
+    constexpr static int ELEMENT_SIZE = 3 * MAX_VERT_3D;
 
     SmoothCollision(
         long primitive0_,
@@ -75,15 +75,15 @@ public:
     compute_distance(Eigen::ConstRef<Eigen::MatrixXd> vertices) const = 0;
 
     virtual double operator()(
-        Eigen::ConstRef<Vector<double, -1, element_size>> positions,
+        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
         const ParameterType& params) const = 0;
 
-    virtual Vector<double, -1, element_size> gradient(
-        Eigen::ConstRef<Vector<double, -1, element_size>> positions,
+    virtual Vector<double, -1, ELEMENT_SIZE> gradient(
+        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
         const ParameterType& params) const = 0;
 
-    virtual MatrixMax<double, element_size, element_size> hessian(
-        Eigen::ConstRef<Vector<double, -1, element_size>> positions,
+    virtual MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hessian(
+        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
         const ParameterType& params) const = 0;
 
     bool operator==(const SmoothCollision& other) const
@@ -97,12 +97,15 @@ public:
     }
     const index_t& operator[](int idx) const
     {
-        if (idx == 0)
+        if (idx == 0) {
             return primitive0;
-        else if (idx == 1)
+        }
+        else if (idx == 1) {
             return primitive1;
-        else
+        }
+        else {
             throw std::runtime_error("Invalid index in smooth_collision!");
+        }
     }
 
     std::pair<index_t, index_t> get_hash() const
@@ -130,7 +133,7 @@ public:
     constexpr static int n_core_dofs_A = PrimitiveA::n_core_points * dim;
     constexpr static int n_core_dofs_B = PrimitiveB::n_core_points * dim;
     constexpr static int n_core_dofs = n_core_points * dim;
-    constexpr static int element_size = Super::element_size;
+    constexpr static int ELEMENT_SIZE = Super::ELEMENT_SIZE;
 
     SmoothCollisionTemplate(
         index_t primitive0_,
@@ -164,15 +167,15 @@ public:
     // ---- non distance type potential ----
 
     double operator()(
-        Eigen::ConstRef<Vector<double, -1, element_size>> positions,
+        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
         const ParameterType& params) const override;
 
-    Vector<double, -1, element_size> gradient(
-        Eigen::ConstRef<Vector<double, -1, element_size>> positions,
+    Vector<double, -1, ELEMENT_SIZE> gradient(
+        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
         const ParameterType& params) const override;
 
-    MatrixMax<double, element_size, element_size> hessian(
-        Eigen::ConstRef<Vector<double, -1, element_size>> positions,
+    MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hessian(
+        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
         const ParameterType& params) const override;
 
     // ---- distance ----

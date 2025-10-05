@@ -15,7 +15,7 @@ public:
     Potential() = default;
     virtual ~Potential() = default;
 
-    constexpr static int element_size = 3 * TCollision::element_size;
+    constexpr static int ELEMENT_SIZE = 3 * TCollision::ELEMENT_SIZE;
 
     // -- Cumulative methods ---------------------------------------------------
 
@@ -60,24 +60,24 @@ public:
     /// @return The potential.
     virtual double operator()(
         const TCollision& collision,
-        Eigen::ConstRef<Vector<double, -1, element_size>> x) const = 0;
+        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> x) const = 0;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @return The gradient of the potential.
-    virtual Vector<double, -1, element_size> gradient(
+    virtual Vector<double, -1, ELEMENT_SIZE> gradient(
         const TCollision& collision,
-        Eigen::ConstRef<Vector<double, -1, element_size>> x) const = 0;
+        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> x) const = 0;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @param project_hessian_to_psd Whether to project the hessian to the positive semi-definite cone.
     /// @return The hessian of the potential.
-    virtual MatrixMax<double, element_size, element_size> hessian(
+    virtual MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hessian(
         const TCollision& collision,
-        Eigen::ConstRef<Vector<double, -1, element_size>> x,
+        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> x,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const = 0;
 };

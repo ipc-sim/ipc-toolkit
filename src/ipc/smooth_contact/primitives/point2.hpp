@@ -9,7 +9,7 @@ class Point2 : public Primitive {
 public:
     constexpr static int n_core_points = 1;
     constexpr static int dim = 2;
-    constexpr static int max_size = n_vert_neighbors_2d * dim;
+    constexpr static int max_size = N_VERT_NEIGHBORS_2D * dim;
     // d is a vector from this point to the other primitive
     Point2(
         const long& id,
