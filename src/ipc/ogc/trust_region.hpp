@@ -29,6 +29,9 @@ struct TrustRegion {
     /// This is computed each time step based on the predicted motion.
     double trust_region_inflation_radius = -1;
 
+    /// @brief If true, the trust region will be updated on the next call to `update_if_needed`.
+    bool should_update_trust_region = true;
+
     /// @brief Warm start the time step by moving towards the predicted positions.
     /// This also initializes the trust region.
     /// @param mesh The collision mesh.
@@ -62,12 +65,26 @@ struct TrustRegion {
         const std::shared_ptr<BroadPhase>& broad_phase =
             make_default_broad_phase());
 
+    void update_if_needed(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> x,
+        NormalCollisions& collisions,
+        const double min_distance = 0.0,
+        const std::shared_ptr<BroadPhase>& broad_phase =
+            make_default_broad_phase())
+    {
+        if (should_update_trust_region) {
+            update(mesh, x, collisions, min_distance, broad_phase);
+            should_update_trust_region = false;
+        }
+    }
+
     /// @brief Filter the optimization step dx to stay within the trust region.
     /// @param mesh The collision mesh.
     /// @param x Current vertex positions.
     /// @param dx Proposed vertex displacements.
-    /// @return True if the trust region should be updated on the next iteration.
-    bool filter_step(
+    /// @note Sets should_update_trust_region to true if the trust region should be updated on the next iteration.
+    void filter_step(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> x,
         Eigen::Ref<Eigen::MatrixXd> dx);

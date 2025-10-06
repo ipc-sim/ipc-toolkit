@@ -25,6 +25,7 @@ void TrustRegion::warm_start_time_step(
 
     // Initialize the trust region around x
     update(mesh, x, collisions, min_distance, broad_phase);
+    should_update_trust_region = false;
 
     int num_updates = 0;
     for (int i = 0; i < N; i++) {
@@ -107,7 +108,7 @@ namespace {
     }
 } // namespace
 
-bool TrustRegion::filter_step(
+void TrustRegion::filter_step(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> x,
     Eigen::Ref<Eigen::MatrixXd> dx)
@@ -170,10 +171,8 @@ bool TrustRegion::filter_step(
         logger().trace(
             "{:.1f}% of vertices restricted by trust region. Updating trust region.",
             100.0 * num_updates / mesh.num_vertices());
-        // init_trust_region(x);
-        return true;
+        should_update_trust_region = true;
     }
-    return false;
 }
 
 } // namespace ipc::ogc
