@@ -1,10 +1,10 @@
 #include <common.hpp>
 
-#include <ipc/collisions/normal/ogc.hpp>
+#include <ipc/ogc/feasible_region.hpp>
 
 using namespace ipc;
 
-void define_ogc(py::module_& m)
+void define_feasible_region(py::module_& m)
 {
     py::module_ ogc =
         m.def_submodule("ogc", "Offset Geometric Contact (OGC) helpers");

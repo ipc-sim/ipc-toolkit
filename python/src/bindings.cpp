@@ -60,7 +60,6 @@ PYBIND11_MODULE(ipctk, m)
     define_face_vertex_normal_collision(m);
     define_plane_vertex_normal_collision(m);
     define_vertex_vertex_normal_collision(m);
-    define_ogc(m);
 
     // tangent
     define_closest_point(m);
@@ -91,6 +90,9 @@ PYBIND11_MODULE(ipctk, m)
 
     // implicits
     define_plane_implicit(m);
+
+    // ogc
+    define_feasible_region(m);
 
     // potentials
     define_normal_potential(m); // define early because it is used next

@@ -155,7 +155,19 @@ void define_candidates(py::module_& m)
             "min_distance"_a = 0.0)
         .def(
             "edge_vertex_to_vertex_vertex",
-            &Candidates::edge_vertex_to_vertex_vertex,
+            [](const Candidates& C, const CollisionMesh& mesh,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices,
+               py::object is_active) -> std::vector<VertexVertexCandidate> {
+                std::function<bool(double)> is_active_fn = [](double) {
+                    return true;
+                };
+                if (!is_active.is_none()) {
+                    is_active_fn =
+                        is_active.cast<std::function<bool(double)>>();
+                }
+                return C.edge_vertex_to_vertex_vertex(
+                    mesh, vertices, is_active_fn);
+            },
             R"ipc_Qu8mg5v7(
             Converts edge-vertex candidates to vertex-vertex candidates.
 
@@ -163,14 +175,27 @@ void define_candidates(py::module_& m)
                 mesh: The collision mesh.
                 vertices: Collision mesh vertex positions (rowwise).
                 is_active: A function to determine if a candidate is active.
+                           If None, uses the default (always true).
 
             Returns:
                 A list of vertex-vertex candidates.
             )ipc_Qu8mg5v7",
-            "mesh"_a, "vertices"_a, "is_active"_a = [](double) { return true; })
+            "mesh"_a, "vertices"_a, "is_active"_a = py::none())
         .def(
             "face_vertex_to_vertex_vertex",
-            &Candidates::face_vertex_to_vertex_vertex,
+            [](const Candidates& C, const CollisionMesh& mesh,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices,
+               py::object is_active) -> std::vector<VertexVertexCandidate> {
+                std::function<bool(double)> is_active_fn = [](double) {
+                    return true;
+                };
+                if (!is_active.is_none()) {
+                    is_active_fn =
+                        is_active.cast<std::function<bool(double)>>();
+                }
+                return C.face_vertex_to_vertex_vertex(
+                    mesh, vertices, is_active_fn);
+            },
             R"ipc_Qu8mg5v7(
             Converts face-vertex candidates to vertex-vertex candidates.
 
@@ -178,14 +203,27 @@ void define_candidates(py::module_& m)
                 mesh: The collision mesh.
                 vertices: Collision mesh vertex positions (rowwise).
                 is_active: A function to determine if a candidate is active.
+                           If None, uses the default (always true).
 
             Returns:
                 A list of vertex-vertex candidates.
             )ipc_Qu8mg5v7",
-            "mesh"_a, "vertices"_a, "is_active"_a = [](double) { return true; })
+            "mesh"_a, "vertices"_a, "is_active"_a = py::none())
         .def(
             "face_vertex_to_edge_vertex",
-            &Candidates::face_vertex_to_edge_vertex,
+            [](const Candidates& C, const CollisionMesh& mesh,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices,
+               py::object is_active) -> std::vector<EdgeVertexCandidate> {
+                std::function<bool(double)> is_active_fn = [](double) {
+                    return true;
+                };
+                if (!is_active.is_none()) {
+                    is_active_fn =
+                        is_active.cast<std::function<bool(double)>>();
+                }
+                return C.face_vertex_to_edge_vertex(
+                    mesh, vertices, is_active_fn);
+            },
             R"ipc_Qu8mg5v7(
             Converts face-vertex candidates to edge-vertex candidates.
 
@@ -193,25 +231,39 @@ void define_candidates(py::module_& m)
                 mesh: The collision mesh.
                 vertices: Collision mesh vertex positions (rowwise).
                 is_active: A function to determine if a candidate is active.
+                           If None, uses the default (always true).
 
             Returns:
                 A list of edge-vertex candidates.
             )ipc_Qu8mg5v7",
-            "mesh"_a, "vertices"_a, "is_active"_a = [](double) { return true; })
+            "mesh"_a, "vertices"_a, "is_active"_a = py::none())
         .def(
-            "edge_edge_to_edge_vertex", &Candidates::edge_edge_to_edge_vertex,
-            R"ipc_Qu8mg5v7( Converts
-            edge-edge candidates to edge-vertex candidates.
+            "edge_edge_to_edge_vertex",
+            [](const Candidates& C, const CollisionMesh& mesh,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices,
+               py::object is_active) -> std::vector<EdgeVertexCandidate> {
+                std::function<bool(double)> is_active_fn = [](double) {
+                    return true;
+                };
+                if (!is_active.is_none()) {
+                    is_active_fn =
+                        is_active.cast<std::function<bool(double)>>();
+                }
+                return C.edge_edge_to_edge_vertex(mesh, vertices, is_active_fn);
+            },
+            R"ipc_Qu8mg5v7(
+            Converts edge-edge candidates to edge-vertex candidates.
 
             Parameters:
                 mesh: The collision mesh.
                 vertices: Collision mesh vertex positions (rowwise).
                 is_active: A function to determine if a candidate is active.
+                           If None, uses the default (always true).
 
             Returns:
                 A list of edge-vertex candidates.
             )ipc_Qu8mg5v7",
-            "mesh"_a, "vertices"_a, "is_active"_a = [](double) { return true; })
+            "mesh"_a, "vertices"_a, "is_active"_a = py::none())
         .def(
             "save_obj", &Candidates::save_obj, "filename"_a, "vertices"_a,
             "edges"_a, "faces"_a)

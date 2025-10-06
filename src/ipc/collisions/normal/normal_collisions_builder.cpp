@@ -1,12 +1,12 @@
 #include "normal_collisions_builder.hpp"
 
-#include <ipc/collisions/normal/ogc.hpp>
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
+#include <ipc/ogc/feasible_region.hpp>
 #include <ipc/tangent/closest_point.hpp>
 
 namespace ipc {

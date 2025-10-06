@@ -359,7 +359,7 @@ public:
     ///         \frac{\hat{d}}{4d^2} & d < \frac{\hat{d}}{2}\\
     ///         1 & d < \hat{d}\\
     ///         0 & d \ge \hat{d}
-    /// \end{cases}
+    ///     \end{cases}
     /// \f\]
     ///
     /// @param d The distance.

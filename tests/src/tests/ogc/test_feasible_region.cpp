@@ -2,7 +2,7 @@
 
 #include <tests/utils.hpp>
 
-#include <ipc/collisions/normal/ogc.hpp>
+#include <ipc/ogc/feasible_region.hpp>
 #include <ipc/collision_mesh.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/edge_edge.hpp>

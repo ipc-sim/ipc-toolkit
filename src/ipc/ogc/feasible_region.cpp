@@ -1,4 +1,4 @@
-#include "ogc.hpp"
+#include "feasible_region.hpp"
 
 #include <ipc/tangent/closest_point.hpp>
 

@@ -9,8 +9,6 @@ set(SOURCES
   normal_collisions_builder.hpp
   normal_collisions.cpp
   normal_collisions.hpp
-  ogc.cpp
-  ogc.hpp
   plane_vertex.cpp
   plane_vertex.hpp
   vertex_vertex.hpp

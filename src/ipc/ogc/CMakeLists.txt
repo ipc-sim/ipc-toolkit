@@ -1,13 +1,11 @@
 set(SOURCES
-  # Tests
-  test_normal_collisions.cpp
-
-  # Benchmarks
-
-  # Utilities
+  feasible_region.cpp
+  feasible_region.hpp
+  trust_region.cpp
+  trust_region.hpp
 )
 
-target_sources(ipc_toolkit_tests PRIVATE ${SOURCES})
+target_sources(ipc_toolkit PRIVATE ${SOURCES})
 
 ################################################################################
 # Subfolders

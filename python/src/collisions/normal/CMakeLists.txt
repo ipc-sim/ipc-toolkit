@@ -4,7 +4,6 @@ set(SOURCES
   face_vertex.cpp
   normal_collision.cpp
   normal_collisions.cpp
-  ogc.cpp
   plane_vertex.cpp
   vertex_vertex.cpp
 )

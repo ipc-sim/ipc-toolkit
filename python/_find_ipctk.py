@@ -11,6 +11,7 @@ if spec is not None:
 else:
     repo_root = pathlib.Path(__file__).parents[1]
     possible_paths = [
+        pathlib.Path(".").resolve(),
         pathlib.Path("python").resolve(),
         repo_root / "build" / "python",
         repo_root / "build" / "release" / "python",
