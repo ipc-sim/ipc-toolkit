@@ -1,6 +1,7 @@
 set(SOURCES
   # Tests
   test_feasible_region.cpp
+  test_trust_region.cpp
 
   # Benchmarks
 

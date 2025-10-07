@@ -2,6 +2,11 @@
 
 namespace ipc::ogc {
 
+TrustRegion::TrustRegion(double dhat) : trust_region_inflation_radius(2 * dhat)
+{
+    assert(dhat > 0);
+}
+
 void TrustRegion::warm_start_time_step(
     const CollisionMesh& mesh,
     Eigen::Ref<Eigen::MatrixXd> x,
@@ -13,7 +18,6 @@ void TrustRegion::warm_start_time_step(
 {
     const int N = x.rows();
     assert(x.rows() == pred_x.rows() && x.cols() == pred_x.cols());
-    assert(trust_region_radii.size() == N);
 
     // Compute the norm of the translation for each vertex.
     Eigen::VectorXd dx_norm = (pred_x - x).rowwise().norm();
@@ -123,7 +127,7 @@ void TrustRegion::filter_step(
         const VectorMax3d dxi = dx.row(i);
 
         // Check that the current position is within the trust region.
-        assert(approx((xi - ci).norm(), trust_region_radii(i)));
+        assert((xi - ci).norm() <= trust_region_radii(i) + 1e-9);
 
         const double alpha = (xi + dxi - ci).norm();
         if (alpha > trust_region_radii(i)) {
@@ -159,7 +163,9 @@ void TrustRegion::filter_step(
             assert(beta > 0);
 
             dx.row(i).array() *= beta;
-            assert(approx((xi + dx.row(i) - ci).norm(), trust_region_radii(i)));
+            assert(approx(
+                (xi + dx.row(i).transpose() - ci).norm(),
+                trust_region_radii(i)));
 
             num_updates++;
         }

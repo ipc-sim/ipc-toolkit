@@ -27,10 +27,14 @@ struct TrustRegion {
 
     /// @brief Inflation radius for the trust region.
     /// This is computed each time step based on the predicted motion.
-    double trust_region_inflation_radius = -1;
+    double trust_region_inflation_radius;
 
     /// @brief If true, the trust region will be updated on the next call to `update_if_needed`.
     bool should_update_trust_region = true;
+
+    TrustRegion() = delete;
+
+    explicit TrustRegion(double dhat);
 
     /// @brief Warm start the time step by moving towards the predicted positions.
     /// This also initializes the trust region.

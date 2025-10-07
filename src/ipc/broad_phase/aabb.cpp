@@ -50,6 +50,10 @@ void AABB::conservative_inflation(
     const double inflation_radius)
 {
 #pragma STDC FENV_ACCESS ON
+    assert(min.size() == max.size());
+    assert((min <= max).all());
+    assert(inflation_radius >= 0);
+
     const int current_round = std::fegetround();
 
     std::fesetround(FE_DOWNWARD);
