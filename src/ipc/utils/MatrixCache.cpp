@@ -173,21 +173,21 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
                     // pick out column/sparse matrix index pairs for the given
                     // column
                     const auto& map = mapping()[i];
-                    int index = -1;
+                    int local_index = -1;
 
                     // loop over column/sparse matrix index pairs
-                    for (const auto& p : map) {
+                    for (const auto& q : map) {
                         // match columns
-                        if (p.first == j) {
-                            assert(p.second < values_.size());
-                            index = p.second;
+                        if (q.first == j) {
+                            assert(q.second < values_.size());
+                            local_index = q.second;
                             break;
                         }
                     }
-                    assert(index >= 0);
+                    assert(local_index >= 0);
 
                     // save the sparse matrix index used by this element
-                    second_cache_[e].emplace_back(index);
+                    second_cache_[e].emplace_back(local_index);
                 }
             }
 
@@ -391,6 +391,9 @@ void DenseMatrixCache::operator+=(const MatrixCache& o)
     *this += dynamic_cast<const DenseMatrixCache&>(o);
 }
 
-void DenseMatrixCache::operator+=(const DenseMatrixCache& o) { m_mat += o.m_mat; }
+void DenseMatrixCache::operator+=(const DenseMatrixCache& o)
+{
+    m_mat += o.m_mat;
+}
 
 } // namespace ipc

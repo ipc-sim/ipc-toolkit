@@ -20,8 +20,6 @@ set(SOURCES
   world_bbox_diagonal_length.hpp
   quadrature.cpp
   quadrature.hpp
-  tangents.cpp
-  tangents.hpp
   math.cpp
   math.hpp
   math.tpp

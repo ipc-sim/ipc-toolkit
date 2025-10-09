@@ -18,7 +18,5 @@ static const std::filesystem::path
 #endif
 
 static const std::filesystem::path DATA_DIR("@IPC_TOOLKIT_TESTS_DATA_DIR@");
-static const std::filesystem::path
-    GCP_DATA_DIR("@IPC_TOOLKIT_TESTS_GCP_DATA_DIR@");
 
 } // namespace ipc::tests

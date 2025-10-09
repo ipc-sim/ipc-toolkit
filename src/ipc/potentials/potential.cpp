@@ -8,6 +8,8 @@
 #include <tbb/blocked_range.h>
 #include <tbb/combinable.h>
 #include <tbb/enumerable_thread_specific.h>
+#include <tbb/parallel_for.h>
+#include <tbb/parallel_reduce.h>
 
 namespace ipc {
 
@@ -19,25 +21,18 @@ double Potential<TCollisions>::operator()(
 {
     assert(X.rows() == mesh.num_vertices());
 
-    if (collisions.empty()) {
-        return 0;
-    }
-
-    tbb::enumerable_thread_specific<double> storage(0);
-
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_potential = storage.local();
+    return tbb::parallel_reduce(
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()), 0.0,
+        [&](const tbb::blocked_range<size_t>& r, double partial_sum) {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 // Quadrature weight is premultiplied by local potential
-                local_potential += (*this)(
+                partial_sum += (*this)(
                     collisions[i],
                     collisions[i].dof(X, mesh.edges(), mesh.faces()));
             }
-        });
-
-    return storage.combine([](double a, double b) { return a + b; });
+            return partial_sum;
+        },
+        [](double a, double b) { return a + b; });
 }
 
 template <class TCollisions>
@@ -54,34 +49,27 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
 
     const int dim = X.cols();
 
-    auto storage = ipc::utils::create_thread_storage<Eigen::VectorXd>(
-        Eigen::VectorXd::Zero(X.size()));
+    tbb::combinable<Eigen::VectorXd> grad(Eigen::VectorXd::Zero(X.size()));
+
     ipc::utils::maybe_parallel_for(
         collisions.size(), [&](int start, int end, int thread_id) {
-            auto& global_grad =
-                ipc::utils::get_local_thread_storage(storage, thread_id);
-
             for (size_t i = start; i < end; i++) {
                 const TCollision& collision = collisions[i];
 
-                const Vector<double, -1, Potential<TCollisions>::ELEMENT_SIZE>
-                    local_grad = this->gradient(
-                        collision,
-                        collision.dof(X, mesh.edges(), mesh.faces()));
+                const VectorMaxNd local_grad = this->gradient(
+                    collision, collision.dof(X, mesh.edges(), mesh.faces()));
 
                 const std::array<index_t, TCollision::ELEMENT_SIZE> vids =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_gradient_to_global_gradient(
-                    local_grad, vids, dim, global_grad);
+                    local_grad, vids, dim, grad.local());
             }
         });
 
-    Eigen::VectorXd grad;
-    grad.setZero(X.size());
-    for (const auto& local_storage : storage)
-        grad += local_storage;
-    return grad;
+    return grad.combine([](const Eigen::VectorXd& a, const Eigen::VectorXd& b) {
+        return a + b;
+    });
 }
 
 template <class TCollisions>
@@ -115,12 +103,9 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
             for (size_t i = start; i < end; i++) {
                 const TCollision& collision = collisions[i];
 
-                const MatrixMax<
-                    double, Potential<TCollisions>::ELEMENT_SIZE,
-                    Potential<TCollisions>::ELEMENT_SIZE>
-                    local_hess = this->hessian(
-                        collisions[i], collisions[i].dof(X, edges, faces),
-                        project_hessian_to_psd);
+                const MatrixMaxNd local_hess = this->hessian(
+                    collisions[i], collisions[i].dof(X, edges, faces),
+                    project_hessian_to_psd);
 
                 const std::array<index_t, TCollision::ELEMENT_SIZE> vids =
                     collision.vertex_ids(edges, faces);

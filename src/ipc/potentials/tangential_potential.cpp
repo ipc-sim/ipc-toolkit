@@ -521,11 +521,10 @@ Eigen::VectorXd TangentialPotential::smooth_contact_force(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const auto& collision = collisions[i];
 
-                const Vector<double, -1, TangentialPotential::ELEMENT_SIZE>
-                    local_force = smooth_contact_force(
-                        collision, collision.dof(rest_positions, edges, faces),
-                        collision.dof(lagged_displacements, edges, faces),
-                        collision.dof(velocities, edges, faces), no_mu);
+                const VectorMaxNd local_force = smooth_contact_force(
+                    collision, collision.dof(rest_positions, edges, faces),
+                    collision.dof(lagged_displacements, edges, faces),
+                    collision.dof(velocities, edges, faces), no_mu);
 
                 const auto vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
@@ -575,14 +574,12 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
 
                 // This jacobian doesn't include the derivatives of normal
                 // contact force
-                const MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
-                    local_force_jacobian =
-                        collision.normal_force_magnitude
+                const MatrixMaxNd local_force_jacobian =
+                    collision.normal_force_magnitude
                     * force_jacobian_unit(
-                            collision,
-                            collision.dof(lagged_positions, edges, faces),
-                            collision.dof(velocities, edges, faces), wrt,
-                            false);
+                        collision,
+                        collision.dof(lagged_positions, edges, faces),
+                        collision.dof(velocities, edges, faces), wrt, false);
                 // smooth_contact_force_jacobian(
                 //     collision, collision.dof(rest_positions, edges, faces),
                 //     collision.dof(lagged_displacements, edges, faces),
@@ -599,11 +596,10 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
                     continue;
 
                 // The term that includes derivatives of normal contact force
-                const Vector<double, -1, TangentialPotential::ELEMENT_SIZE>
-                    local_force = smooth_contact_force(
-                        collision, collision.dof(rest_positions, edges, faces),
-                        collision.dof(lagged_displacements, edges, faces),
-                        collision.dof(velocities, edges, faces), false, true);
+                const VectorMaxNd local_force = smooth_contact_force(
+                    collision, collision.dof(rest_positions, edges, faces),
+                    collision.dof(lagged_displacements, edges, faces),
+                    collision.dof(velocities, edges, faces), false, true);
 
                 // normal_force_grad is the gradient of contact force norm
                 Eigen::VectorXd normal_force_grad;
@@ -646,7 +642,7 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
     //                 collision!");
     //         }
 
-    //         Vector<double, -1, TangentialPotential::ELEMENT_SIZE> local_force
+    //         VectorMaxNd local_force
     //         =
     //             smooth_contact_force(
     //                 collision, collision.dof(rest_positions, edges, faces),
@@ -668,15 +664,11 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
     return jacobian;
 }
 
-Vector<double, -1, TangentialPotential::ELEMENT_SIZE>
-TangentialPotential::smooth_contact_force(
+TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
     const TangentialCollision& collision,
-    const Vector<double, -1, TangentialPotential::ELEMENT_SIZE>&
-        rest_positions, // = x
-    const Vector<double, -1, TangentialPotential::ELEMENT_SIZE>&
-        lagged_displacements, // = u
-    const Vector<double, -1, TangentialPotential::ELEMENT_SIZE>&
-        velocities, // = v
+    Eigen::ConstRef<VectorMaxNd> rest_positions,       // = x
+    Eigen::ConstRef<VectorMaxNd> lagged_displacements, // = u
+    Eigen::ConstRef<VectorMaxNd> velocities,           // = v
     const bool no_mu,
     const bool no_contact_force_multiplier) const
 {
@@ -689,13 +681,13 @@ TangentialPotential::smooth_contact_force(
     assert(rest_positions.size() == lagged_displacements.size());
     assert(rest_positions.size() == velocities.size());
 
-    // const Vector<double, -1, TangentialPotential::ELEMENT_SIZE> x =
+    // const VectorMaxNd x =
     // dof(rest_positions, edges, faces); const Vector<double, -1,
     // TangentialPotential::ELEMENT_SIZE> u = dof(lagged_displacements, edges,
-    // faces); const Vector<double, -1, TangentialPotential::ELEMENT_SIZE> v =
+    // faces); const VectorMaxNd v =
     // dof(velocities, edges, faces);
-    const Vector<double, -1, TangentialPotential::ELEMENT_SIZE>
-        lagged_positions = rest_positions + lagged_displacements; // = x
+    const VectorMaxNd lagged_positions =
+        rest_positions + lagged_displacements; // = x
 
     // Compute N(x + u)
     // const double N = collision.compute_normal_force_magnitude(
@@ -733,12 +725,9 @@ TangentialPotential::smooth_contact_force(
 
 Eigen::MatrixXd TangentialPotential::smooth_contact_force_jacobian(
     const TangentialCollision& collision,
-    const Vector<double, -1, TangentialPotential::ELEMENT_SIZE>&
-        rest_positions, // = x
-    const Vector<double, -1, TangentialPotential::ELEMENT_SIZE>&
-        lagged_displacements, // = u
-    const Vector<double, -1, TangentialPotential::ELEMENT_SIZE>&
-        velocities, // = v
+    Eigen::ConstRef<VectorMaxNd> rest_positions,       // = x
+    Eigen::ConstRef<VectorMaxNd> lagged_displacements, // = u
+    Eigen::ConstRef<VectorMaxNd> velocities,           // = v
     const DiffWRT wrt,
     const bool no_mu) const
 {
@@ -756,12 +745,12 @@ Eigen::MatrixXd TangentialPotential::smooth_contact_force_jacobian(
     const int dim = n / collision.num_vertices();
     assert(n % collision.num_vertices() == 0);
 
-    const Vector<double, -1, ELEMENT_SIZE> lagged_positions =
+    const VectorMaxNd lagged_positions =
         rest_positions + lagged_displacements; // = x + u
     const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
 
     // Compute ∇N -- commented, compute it outside
-    // Vector<double, -1, ELEMENT_SIZE> grad_N;
+    // VectorMaxNd grad_N;
     // if (need_jac_N_or_T) {
     // // ∇ₓN = ∇ᵤN
     // grad_N = normal_potential.force_magnitude_gradient(
@@ -839,7 +828,7 @@ Eigen::MatrixXd TangentialPotential::smooth_contact_force_jacobian(
     const double mu_f1_over_norm_tau = mu_f1_over_x(tau_norm, mu_s, mu_k);
 
     // Compute ∇(f₁(‖τ‖)/‖τ‖)
-    Vector<double, -1, ELEMENT_SIZE> grad_mu_f1_over_norm_tau;
+    VectorMaxNd grad_mu_f1_over_norm_tau;
     if (tau_norm == 0) {
         // lim_{x→0} f₂(x)x² = 0
         grad_mu_f1_over_norm_tau.setZero(n);
@@ -852,12 +841,11 @@ Eigen::MatrixXd TangentialPotential::smooth_contact_force_jacobian(
     }
 
     // Premultiplied values
-    const Vector<double, -1, ELEMENT_SIZE> T_times_tau = T * tau;
+    const VectorMaxNd T_times_tau = T * tau;
 
     // ------------------------------------------------------------------------
     // Compute J = ∇F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
-    MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> J =
-        MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>::Zero(n, n);
+    MatrixMaxNd J = MatrixMaxNd::Zero(n, n);
 
     // = -μ f₁(‖τ‖)/‖τ‖ (T τ) [∇N]ᵀ
     // if (need_jac_N_or_T) {
@@ -889,16 +877,10 @@ Eigen::MatrixXd TangentialPotential::smooth_contact_force_jacobian(
     return J;
 }
 
-MatrixMax<
-    double,
-    TangentialPotential::ELEMENT_SIZE,
-    TangentialPotential::ELEMENT_SIZE>
-TangentialPotential::force_jacobian_unit(
+TangentialPotential::MatrixMaxNd TangentialPotential::force_jacobian_unit(
     const TangentialCollision& collision,
-    const Vector<double, -1, TangentialPotential::ELEMENT_SIZE>&
-        lagged_positions, // = x + u^t
-    const Vector<double, -1, TangentialPotential::ELEMENT_SIZE>&
-        velocities, // = v
+    Eigen::ConstRef<VectorMaxNd> lagged_positions, // = x + u^t
+    Eigen::ConstRef<VectorMaxNd> velocities,       // = v
     const DiffWRT wrt,
     const bool no_mu) const
 {
@@ -985,7 +967,7 @@ TangentialPotential::force_jacobian_unit(
     const double f1_over_norm_tau = mu_f1_over_x(tau_norm, mu_s, mu_k);
 
     // Compute ∇(f₁(‖τ‖)/‖τ‖)
-    Vector<double, -1, ELEMENT_SIZE> grad_f1_over_norm_tau;
+    VectorMaxNd grad_f1_over_norm_tau;
     if (tau_norm == 0) {
         // lim_{x→0} f₂(x)x² = 0
         grad_f1_over_norm_tau.setZero(n);
@@ -997,12 +979,11 @@ TangentialPotential::force_jacobian_unit(
     }
 
     // Premultiplied values
-    const Vector<double, -1, ELEMENT_SIZE> T_times_tau = T * tau;
+    const VectorMaxNd T_times_tau = T * tau;
 
     // ------------------------------------------------------------------------
     // Compute J = ∇F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
-    MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> J =
-        MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>::Zero(n, n);
+    MatrixMaxNd J = MatrixMaxNd::Zero(n, n);
 
     // + -μ N T τ [∇(f₁(‖τ‖)/‖τ‖)]
     J += T_times_tau * grad_f1_over_norm_tau.transpose();

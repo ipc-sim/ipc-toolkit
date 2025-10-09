@@ -242,7 +242,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^2", "[smooth_potential]")
     SECTION("debug1")
     {
         mesh_name =
-            (tests::GCP_DATA_DIR / "nonlinear_solve_iter020.obj").string();
+            (tests::DATA_DIR / "gcp" / "nonlinear_solve_iter020.obj").string();
         dhat = 3e-2;
     }
 
@@ -330,7 +330,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
     std::string mesh_name = "";
     SECTION("debug2")
     {
-        mesh_name = (tests::GCP_DATA_DIR / "simple_2d.obj").string();
+        mesh_name = (tests::DATA_DIR / "gcp" / "simple_2d.obj").string();
         dhat = 0.1;
     }
 

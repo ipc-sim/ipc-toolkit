@@ -90,7 +90,8 @@ public:
 public:
     /// @brief Normal force magnitude
     double normal_force_magnitude = 0;
-    std::shared_ptr<SmoothCollision> smooth_collision;
+
+    std::shared_ptr<SmoothCollision> smooth_collision = nullptr;
 
     /// @brief Ratio between normal and static tangential forces (e.g., friction coefficient)
     double mu_s = 0;
