@@ -1,25 +1,32 @@
 /**
-        Automatic differentiation data type for C++, depends on the Eigen
+    Automatic differentiation data type for C++, depends on the Eigen
         linear algebra library.
 
-        Copyright (c) 2012 by Wenzel Jakob. Based on code by Jon Kaldor
-        and Eitan Grinspun.
+    Copyright (c) 2012 by Wenzel Jakob. Based on code by Jon Kaldor
+    and Eitan Grinspun.
 
-        This library is free software; you can redistribute it and/or
-        modify it under the terms of the GNU Lesser General Public
-        License as published by the Free Software Foundation; either
-        version 2.1 of the License, or (at your option) any later version.
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
-        This library is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-        Lesser General Public License for more details.
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
 
-        You should have received a copy of the GNU Lesser General Public
-        License along with this library; if not, write to the Free Software
-        Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
-   USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
+
+// Original file: https://www.mitsuba-renderer.org/files/eigen/autodiff.h
+// Modications:
+//  - applied formatting
+//  - replaced old c-style casts
+//  - replace __thread with C++11 thread_local
+//  - add _prefix to constructor arguments to avoid shadowing member variables
+//  - Remove Eigen_NO_DEBUG definition
 
 #ifndef __AUTODIFF_H
 #define __AUTODIFF_H
@@ -63,21 +70,8 @@ struct DiffScalarBase {
     /// @}
     // ======================================================================
 
-    // #ifdef WIN32
-    // static __declspec(thread) size_t m_variableCount;
-    // #else
-    // static __thread size_t m_variableCount;
-    // #endif
     static thread_local size_t m_variableCount;
 };
-
-// #ifdef WIN32
-// #define DECLARE_DIFFSCALAR_BASE()
-// 	__declspec(thread) size_t DiffScalarBase::m_variableCount = 0
-// #else
-// #define DECLARE_DIFFSCALAR_BASE()
-// 	__thread size_t DiffScalarBase::m_variableCount = 0
-// #endif
 
 #define DECLARE_DIFFSCALAR_BASE()                                              \
     thread_local size_t DiffScalarBase::m_variableCount = 0
@@ -120,7 +114,7 @@ public:
     // ======================================================================
 
     /// Create a new constant automatic differentiation scalar
-    explicit DScalar1(Scalar value_ = Scalar(0)) : value(value_)
+    explicit DScalar1(Scalar _value = Scalar(0)) : value(_value)
     {
         size_t variableCount = getVariableCount();
         grad.resize(variableCount);
@@ -129,7 +123,7 @@ public:
 
     /// Construct a new scalar with the specified value and one first derivative
     /// set to 1
-    DScalar1(size_t index, const Scalar& value_) : value(value_)
+    DScalar1(size_t index, const Scalar& _value) : value(_value)
     {
         size_t variableCount = getVariableCount();
         grad.resize(variableCount);
@@ -138,7 +132,7 @@ public:
     }
 
     /// Construct a scalar associated with the given gradient
-    DScalar1(Scalar value_, const Gradient& grad_) : value(value_), grad(grad_)
+    DScalar1(Scalar _value, const Gradient& _grad) : value(_value), grad(_grad)
     {
     }
 
@@ -503,7 +497,7 @@ public:
     // ======================================================================
 
     /// Create a new constant automatic differentiation scalar
-    explicit DScalar2(Scalar value_ = Scalar(0)) : value(value_)
+    explicit DScalar2(Scalar _value = Scalar(0)) : value(_value)
     {
         size_t variableCount = getVariableCount();
 
@@ -515,7 +509,7 @@ public:
 
     /// Construct a new scalar with the specified value and one first derivative
     /// set to 1
-    DScalar2(size_t index, const Scalar& value_) : value(value_)
+    DScalar2(size_t index, const Scalar& _value) : value(_value)
     {
         size_t variableCount = getVariableCount();
 
@@ -527,10 +521,10 @@ public:
     }
 
     /// Construct a scalar associated with the given gradient and Hessian
-    DScalar2(Scalar value_, const Gradient& grad_, const Hessian& hess_)
-        : value(value_)
-        , grad(grad_)
-        , hess(hess_)
+    DScalar2(Scalar _value, const Gradient& _grad, const Hessian& _hess)
+        : value(_value)
+        , grad(_grad)
+        , hess(_hess)
     {
     }
 
