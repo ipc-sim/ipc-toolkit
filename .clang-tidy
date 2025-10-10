@@ -27,7 +27,8 @@ Checks: >
   -readability-isolate-declaration,
   -readability-magic-numbers,
   -readability-math-missing-parentheses,
-  -readability-redundant-access-specifiers
+  -readability-redundant-access-specifiers,
+  -readability-uppercase-literal-suffix
 
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*(ipc/).*'
