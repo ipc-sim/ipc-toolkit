@@ -7,9 +7,9 @@
 namespace ipc {
 class Point3 : public Primitive {
 public:
-    constexpr static int n_core_points = 1;
-    constexpr static int dim = 3;
-    constexpr static int max_size = N_VERT_NEIGHBORS_3D * dim;
+    constexpr static int N_CORE_POINTS = 1;
+    constexpr static int DIM = 3;
+    constexpr static int MAX_SIZE = N_VERT_NEIGHBORS_3D * DIM;
     // d is a vector from this point to the other primitive
     Point3(
         const long& id,
@@ -25,19 +25,19 @@ public:
     virtual ~Point3() = default;
 
     int n_vertices() const override;
-    int n_dofs() const override { return n_vertices() * dim; }
+    int n_dofs() const override { return n_vertices() * DIM; }
 
     // assume the following functions are only called if active
     double potential(
-        const Vector<double, dim>& d,
-        const Vector<double, -1, max_size>& x) const;
+        const Vector<double, DIM>& d,
+        const Vector<double, -1, MAX_SIZE>& x) const;
     // derivatives including wrt. d (the closest direction) in front
-    Vector<double, -1, max_size + dim> grad(
-        const Vector<double, dim>& d,
-        const Vector<double, -1, max_size>& x) const;
-    MatrixMax<double, max_size + dim, max_size + dim> hessian(
-        const Vector<double, dim>& d,
-        const Vector<double, -1, max_size>& x) const;
+    Vector<double, -1, MAX_SIZE + DIM> grad(
+        const Vector<double, DIM>& d,
+        const Vector<double, -1, MAX_SIZE>& x) const;
+    MatrixMax<double, MAX_SIZE + DIM, MAX_SIZE + DIM> hessian(
+        const Vector<double, DIM>& d,
+        const Vector<double, -1, MAX_SIZE>& x) const;
 
     /// @brief
     /// @tparam scalar

@@ -50,19 +50,19 @@ void SmoothCollisions::compute_adaptive_dhat(
         const double dist = param.get_adaptive_dhat_ratio()
             * sqrt(cc->compute_distance(vertices));
         switch (cc->type()) {
-        case CollisionType::EdgeEdge:
+        case CollisionType::EDGE_EDGE:
             assign_min(edge_adaptive_dhat((*cc)[0]), dist);
             assign_min(edge_adaptive_dhat((*cc)[1]), dist);
             break;
-        case CollisionType::EdgeVertex:
+        case CollisionType::EDGE_VERTEX:
             assign_min(edge_adaptive_dhat((*cc)[0]), dist);
             assign_min(vert_adaptive_dhat((*cc)[1]), dist);
             break;
-        case CollisionType::FaceVertex:
+        case CollisionType::FACE_VERTEX:
             assign_min(face_adaptive_dhat((*cc)[0]), dist);
             assign_min(vert_adaptive_dhat((*cc)[1]), dist);
             break;
-        case CollisionType::VertexVertex:
+        case CollisionType::VERTEX_VERTEX:
             assign_min(vert_adaptive_dhat((*cc)[0]), dist);
             assign_min(vert_adaptive_dhat((*cc)[1]), dist);
             break;

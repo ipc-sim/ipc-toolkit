@@ -43,7 +43,7 @@ scalar PointEdgeDistance<scalar, dim>::point_edge_sqr_distance(
         const Vector<scalar, dim> t = e1 - e0;
         const Vector<scalar, dim> pos = p - e0;
         const scalar s = pos.dot(t) / t.squaredNorm();
-        return (pos - Math<scalar>::L_ns(s) * t).squaredNorm();
+        return (pos - Math<scalar>::l_ns(s) * t).squaredNorm();
     }
 }
 
@@ -79,7 +79,7 @@ PointEdgeDistance<scalar, dim>::point_edge_closest_point_direction(
         Vector<scalar, dim> t = e1 - e0;
         const Vector<scalar, dim> pos = p - e0;
         const scalar s = pos.dot(t) / t.squaredNorm();
-        return pos - Math<scalar>::L_ns(s) * t;
+        return pos - Math<scalar>::l_ns(s) * t;
     }
 }
 

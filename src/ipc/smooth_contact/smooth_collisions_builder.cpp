@@ -216,10 +216,10 @@ void SmoothCollisionsBuilder<3>::merge(
 
     for (const auto& builder : local_storage) {
         for (const auto& cc : builder.collisions) {
-            if (cc->type() == CollisionType::FaceVertex) {
+            if (cc->type() == CollisionType::FACE_VERTEX) {
                 face_vert_count++;
                 merged_collisions.collisions.push_back(cc);
-            } else if (cc->type() == CollisionType::EdgeEdge) {
+            } else if (cc->type() == CollisionType::EDGE_EDGE) {
                 edge_edge_count++;
                 merged_collisions.collisions.push_back(cc);
             }

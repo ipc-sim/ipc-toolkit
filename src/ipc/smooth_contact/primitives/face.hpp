@@ -7,8 +7,8 @@
 namespace ipc {
 class Face : public Primitive {
 public:
-    constexpr static int n_core_points = 3;
-    constexpr static int dim = 3;
+    constexpr static int N_CORE_POINTS = 3;
+    constexpr static int DIM = 3;
     // d is a vector from closest point on the face to the point outside of the
     // face
     Face(
@@ -19,7 +19,7 @@ public:
         const ParameterType& param);
 
     int n_vertices() const override;
-    int n_dofs() const override { return n_vertices() * dim; }
+    int n_dofs() const override { return n_vertices() * DIM; }
 
     double potential(const Vector3d& d, const Vector9d& x) const;
     Vector12d grad(const Vector3d& d, const Vector9d& x) const;

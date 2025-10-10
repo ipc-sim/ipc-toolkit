@@ -66,7 +66,7 @@ template <typename scalar> struct Math {
     static double inv_barrier_grad(const double& x, const int& r);
     static double inv_barrier_hess(const double& x, const int& r);
 
-    static scalar L_ns(const scalar& x);
+    static scalar l_ns(const scalar& x);
 
     static scalar cross2(
         const Eigen::Ref<const Vector2<scalar>>& a,

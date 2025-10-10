@@ -71,27 +71,27 @@ Point3::Point3(
 int Point3::n_vertices() const { return local_to_global_vids.size(); }
 
 double Point3::potential(
-    const Vector<double, dim>& d, const Vector<double, -1, max_size>& x) const
+    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
-    const Eigen::Matrix<double, -1, dim> X =
-        slice_positions<double, -1, dim>(x);
+    const Eigen::Matrix<double, -1, DIM> X =
+        slice_positions<double, -1, DIM>(x);
     return smooth_point3_term<double, -1>(X, d);
 }
 
-Vector<double, -1, Point3::max_size + Point3::dim> Point3::grad(
-    const Vector<double, dim>& d, const Vector<double, -1, max_size>& x) const
+Vector<double, -1, Point3::MAX_SIZE + Point3::DIM> Point3::grad(
+    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
 #ifdef DERIVATIVES_WITH_AUTODIFF
     using T = ADGrad<-1>;
     Eigen::VectorXd tmp(x.size() + d.size());
     tmp << d, x;
     DiffScalarBase::setVariableCount(tmp.size());
-    const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
+    const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
     return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1), X.row(0))
         .getGradient();
 #else
-    const Eigen::Matrix<double, -1, dim> X =
-        slice_positions<double, -1, dim>(x);
+    const Eigen::Matrix<double, -1, DIM> X =
+        slice_positions<double, -1, DIM>(x);
     const auto [val, grad] = smooth_point3_term_gradient(d, X, _param);
     return grad;
 #endif
@@ -99,21 +99,21 @@ Vector<double, -1, Point3::max_size + Point3::dim> Point3::grad(
 
 MatrixMax<
     double,
-    Point3::max_size + Point3::dim,
-    Point3::max_size + Point3::dim>
+    Point3::MAX_SIZE + Point3::DIM,
+    Point3::MAX_SIZE + Point3::DIM>
 Point3::hessian(
-    const Vector<double, dim>& d, const Vector<double, -1, max_size>& x) const
+    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
 #ifdef DERIVATIVES_WITH_AUTODIFF
     using T = ADHessian<-1>;
     Eigen::VectorXd tmp(x.size() + d.size());
     tmp << d, x;
     DiffScalarBase::setVariableCount(tmp.size());
-    const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
+    const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
     return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1), X.row(0))
         .getHessian();
 #else
-    const auto X = slice_positions<double, -1, dim>(x);
+    const auto X = slice_positions<double, -1, DIM>(x);
     const auto [val, grad, hess] = smooth_point3_term_hessian(d, X, _param);
     return hess;
 #endif
@@ -267,7 +267,7 @@ GradType<-1> Point3::smooth_point3_term_normal_gradient(
     //         tmp.segment<3>(3 * i + 3) = tangents.row(i);
 
     //     DiffScalarBase::setVariableCount(tmp.size());
-    //     const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
+    //     const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
 
     //     T normal_term_ad(0.);
     //     for (int a = 0; a < faces.rows(); a++) {
@@ -347,7 +347,7 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
             tmp.segment<3>(3 * i + 3) = tangents.row(i);
 
         DiffScalarBase::setVariableCount(tmp.size());
-        const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
+        const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
 
         T normal_term_ad(0.);
         for (int a = 0; a < faces.rows(); a++) {

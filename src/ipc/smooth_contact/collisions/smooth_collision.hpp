@@ -7,10 +7,10 @@
 namespace ipc {
 
 enum class CollisionType {
-    EdgeVertex,
-    VertexVertex,
-    FaceVertex,
-    EdgeEdge,
+    EDGE_VERTEX,
+    VERTEX_VERTEX,
+    FACE_VERTEX,
+    EDGE_EDGE,
 };
 
 class SmoothCollision {
@@ -53,8 +53,8 @@ public:
     /// @return The vertex positions of the collision stencil. Size is always 4, but elements i > num_vertices() are NaN.
     Eigen::MatrixXd vertices(Eigen::ConstRef<Eigen::MatrixXd> vertices) const
     {
-        const int dim = vertices.cols();
-        Eigen::MatrixXd stencil_vertices(vertex_ids_.size(), dim);
+        const int DIM = vertices.cols();
+        Eigen::MatrixXd stencil_vertices(vertex_ids_.size(), DIM);
         for (int i = 0; i < vertex_ids_.size(); i++) {
             stencil_vertices.row(i) = vertices.row(vertex_ids_[i]);
         }
@@ -127,12 +127,12 @@ class SmoothCollisionTemplate : public SmoothCollision {
 public:
     using Super = SmoothCollision;
     using DTYPE = typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type;
-    constexpr static int n_core_points =
-        PrimitiveA::n_core_points + PrimitiveB::n_core_points;
-    constexpr static int dim = PrimitiveA::dim;
-    constexpr static int n_core_dofs_A = PrimitiveA::n_core_points * dim;
-    constexpr static int n_core_dofs_B = PrimitiveB::n_core_points * dim;
-    constexpr static int n_core_dofs = n_core_points * dim;
+    constexpr static int N_CORE_POINTS =
+        PrimitiveA::N_CORE_POINTS + PrimitiveB::N_CORE_POINTS;
+    constexpr static int DIM = PrimitiveA::DIM;
+    constexpr static int n_core_dofs_A = PrimitiveA::N_CORE_POINTS * DIM;
+    constexpr static int n_core_dofs_B = PrimitiveB::N_CORE_POINTS * DIM;
+    constexpr static int N_CORE_DOFS = N_CORE_POINTS * DIM;
     constexpr static int ELEMENT_SIZE = Super::ELEMENT_SIZE;
 
     SmoothCollisionTemplate(
@@ -150,8 +150,8 @@ public:
     inline int n_dofs() const override { return pA->n_dofs() + pB->n_dofs(); }
     CollisionType type() const override;
 
-    Vector<int, n_core_dofs> get_core_indices() const;
-    std::array<index_t, n_core_dofs> core_vertex_ids() const;
+    Vector<int, N_CORE_DOFS> get_core_indices() const;
+    std::array<index_t, N_CORE_DOFS> core_vertex_ids() const;
 
     inline int num_vertices() const override
     {
@@ -159,7 +159,7 @@ public:
     }
 
     template <typename T>
-    Vector<T, n_core_dofs> core_dof(const MatrixX<T>& X) const
+    Vector<T, N_CORE_DOFS> core_dof(const MatrixX<T>& X) const
     {
         return this->dof(X)(get_core_indices());
     }

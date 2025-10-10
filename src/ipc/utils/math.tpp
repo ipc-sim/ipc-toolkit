@@ -258,7 +258,7 @@ double Math<scalar>::inv_barrier_hess(const double& x, const int& r)
         / pow(x, r);
 }
 
-template <typename scalar> scalar Math<scalar>::L_ns(const scalar& x)
+template <typename scalar> scalar Math<scalar>::l_ns(const scalar& x)
 {
     if (x <= 0.) {
         return scalar(0.);

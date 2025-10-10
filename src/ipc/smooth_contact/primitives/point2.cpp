@@ -117,70 +117,70 @@ Point2::Point2(
 int Point2::n_vertices() const { return _vert_ids.size(); }
 
 double Point2::potential(
-    const Vector<double, dim>& d, const Vector<double, -1, max_size>& x) const
+    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
     if (has_neighbor_1 && has_neighbor_2)
         return smooth_point2_term<double>(
-            x.segment<dim>(0), d, x.segment<dim>(dim), x.segment<dim>(2 * dim),
+            x.segment<DIM>(0), d, x.segment<DIM>(DIM), x.segment<DIM>(2 * DIM),
             _param, orientable);
     else if (has_neighbor_1 || has_neighbor_2)
         return smooth_point2_term_one_side<double>(
-            x.segment<dim>(0), d, x.segment<dim>(dim), _param);
+            x.segment<DIM>(0), d, x.segment<DIM>(DIM), _param);
     else
         return 1.;
 }
-Vector<double, -1, Point2::max_size + Point2::dim> Point2::grad(
-    const Vector<double, dim>& d, const Vector<double, -1, max_size>& x) const
+Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
+    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
     if (has_neighbor_1 && has_neighbor_2) {
-        DiffScalarBase::setVariableCount(4 * dim);
-        using T = ADGrad<4 * dim>;
-        Vector<double, 4 * dim> tmp;
+        DiffScalarBase::setVariableCount(4 * DIM);
+        using T = ADGrad<4 * DIM>;
+        Vector<double, 4 * DIM> tmp;
         tmp << d, x;
-        Eigen::Matrix<T, 4, dim> X = slice_positions<T, 4, dim>(tmp);
+        Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         return smooth_point2_term<T>(
                    X.row(1), X.row(0), X.row(2), X.row(3), _param, orientable)
             .getGradient();
     } else if (has_neighbor_1 || has_neighbor_2) {
-        DiffScalarBase::setVariableCount(3 * dim);
-        using T = ADGrad<3 * dim>;
-        Vector<double, 3 * dim> tmp;
+        DiffScalarBase::setVariableCount(3 * DIM);
+        using T = ADGrad<3 * DIM>;
+        Vector<double, 3 * DIM> tmp;
         tmp << d, x;
-        Eigen::Matrix<T, 3, dim> X = slice_positions<T, 3, dim>(tmp);
+        Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         return smooth_point2_term_one_side<T>(
                    X.row(1), X.row(0), X.row(2), _param)
             .getGradient();
     } else
-        return Vector<double, -1, Point2::max_size + Point2::dim>::Zero(
+        return Vector<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
             x.size() + d.size());
 }
 MatrixMax<
     double,
-    Point2::max_size + Point2::dim,
-    Point2::max_size + Point2::dim>
+    Point2::MAX_SIZE + Point2::DIM,
+    Point2::MAX_SIZE + Point2::DIM>
 Point2::hessian(
-    const Vector<double, dim>& d, const Vector<double, -1, max_size>& x) const
+    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
     if (has_neighbor_1 && has_neighbor_2) {
-        DiffScalarBase::setVariableCount(4 * dim);
-        using T = ADHessian<4 * dim>;
-        Vector<double, 4 * dim> tmp;
+        DiffScalarBase::setVariableCount(4 * DIM);
+        using T = ADHessian<4 * DIM>;
+        Vector<double, 4 * DIM> tmp;
         tmp << d, x;
-        Eigen::Matrix<T, 4, dim> X = slice_positions<T, 4, dim>(tmp);
+        Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         return smooth_point2_term<T>(
                    X.row(1), X.row(0), X.row(2), X.row(3), _param, orientable)
             .getHessian();
     } else if (has_neighbor_1 || has_neighbor_2) {
-        DiffScalarBase::setVariableCount(3 * dim);
-        using T = ADHessian<3 * dim>;
-        Vector<double, 3 * dim> tmp;
+        DiffScalarBase::setVariableCount(3 * DIM);
+        using T = ADHessian<3 * DIM>;
+        Vector<double, 3 * DIM> tmp;
         tmp << d, x;
-        Eigen::Matrix<T, 3, dim> X = slice_positions<T, 3, dim>(tmp);
+        Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         return smooth_point2_term_one_side<T>(
                    X.row(1), X.row(0), X.row(2), _param)
             .getHessian();
     } else
-        return MatrixMax<double, -1, Point2::max_size + Point2::dim>::Zero(
+        return MatrixMax<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
             x.size() + d.size(), x.size() + d.size());
 }
 } // namespace ipc

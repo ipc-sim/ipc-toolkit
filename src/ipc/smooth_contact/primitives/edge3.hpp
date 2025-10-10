@@ -7,8 +7,8 @@
 namespace ipc {
 class Edge3 : public Primitive {
 public:
-    constexpr static int n_core_points = 2;
-    constexpr static int dim = 3;
+    constexpr static int N_CORE_POINTS = 2;
+    constexpr static int DIM = 3;
     // d is a vector from closest point on the edge to the point outside of the
     // edge
     Edge3(
@@ -19,7 +19,7 @@ public:
         const ParameterType& param);
 
     int n_vertices() const override;
-    int n_dofs() const override { return n_vertices() * dim; }
+    int n_dofs() const override { return n_vertices() * DIM; }
 
     double potential(
         const Eigen::Ref<const Eigen::Vector3d>& d,

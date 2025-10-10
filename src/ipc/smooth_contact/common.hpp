@@ -14,14 +14,14 @@ constexpr static int N_EDGE_NEIGHBORS_3D = 4;
 constexpr static int N_FACE_NEIGHBORS_3D = 3;
 constexpr static int MAX_VERT_3D = N_VERT_NEIGHBORS_3D * 2;
 
-template <int dim> class MaxVertices;
+template <int DIM> class MaxVertices;
 template <> class MaxVertices<2> {
 public:
-    static constexpr int value = MAX_VERT_2D;
+    static constexpr int VALUE = MAX_VERT_2D;
 };
 template <> class MaxVertices<3> {
 public:
-    static constexpr int value = MAX_VERT_3D;
+    static constexpr int VALUE = MAX_VERT_3D;
 };
 
 struct ParameterType {

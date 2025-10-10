@@ -38,18 +38,19 @@ namespace {
 
         {
             otypes.tangent_type(0) =
-                otypes.compute_type(-dn.dot(t0), param.alpha_t, param.beta_t);
+                OrientationTypes::compute_type(-dn.dot(t0), param.alpha_t, param.beta_t);
             otypes.tangent_type(1) =
-                otypes.compute_type(-dn.dot(t1), param.alpha_t, param.beta_t);
+                OrientationTypes::compute_type(-dn.dot(t1), param.alpha_t, param.beta_t);
             if (otypes.tangent_type(0) == HeavisideType::ZERO
-                || otypes.tangent_type(1) == HeavisideType::ZERO)
+                || otypes.tangent_type(1) == HeavisideType::ZERO) {
                 return false;
+            }
         }
 
         if (orientable) {
             const Vector3d edge = (e0 - e1).normalized();
             const Vector3d d = project<double>(dn, edge).normalized();
-            otypes.normal_type(0) = otypes.compute_type(
+            otypes.normal_type(0) = OrientationTypes::compute_type(
                 (d - t0).cross(d - t1).dot(edge), param.alpha_n, param.beta_n);
             otypes.normal_type(1) = otypes.normal_type(0);
         }
@@ -95,8 +96,9 @@ namespace {
         Vector2d vals;
         vals << 1., 1.;
         std::array<Vector<double, 15>, 2> grads;
-        for (auto& g : grads)
+        for (auto& g : grads) {
             g.setZero();
+        }
 
         for (int d : { 0, 1 }) {
             const Eigen::Ref<const Vector3d> f = d == 0 ? f0 : f1;
@@ -139,10 +141,12 @@ namespace {
         vals << 1., 1.;
         std::array<Vector<double, 15>, 2> grads;
         std::array<Eigen::Matrix<double, 15, 15>, 2> hesses;
-        for (auto& g : grads)
+        for (auto& g : grads) {
             g.setZero();
-        for (auto& h : hesses)
+        }
+        for (auto& h : hesses) {
             h.setZero();
+        }
 
         for (int d : { 0, 1 }) {
             const Eigen::Ref<const Vector3d> f = d == 0 ? f0 : f1;
@@ -339,20 +343,22 @@ namespace {
             PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
                 f0, e0, e1)
                 .normalized();
-        if (otypes.tangent_type(0) != HeavisideType::ONE)
+        if (otypes.tangent_type(0) != HeavisideType::ONE) {
             tangent_term = tangent_term
                 * Math<scalar>::smooth_heaviside(
                                -dn.dot(t0), param.alpha_t, param.beta_t);
+        }
 
         const Vector3<scalar> t1 =
             PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
                 f1, e0, e1)
                 .normalized();
 
-        if (otypes.tangent_type(1) != HeavisideType::ONE)
+        if (otypes.tangent_type(1) != HeavisideType::ONE) {
             tangent_term = tangent_term
                 * Math<scalar>::smooth_heaviside(
                                -dn.dot(t1), param.alpha_t, param.beta_t);
+        }
 
         scalar normal_term = scalar(1.);
         if (orientable && otypes.normal_type(0) != HeavisideType::ONE) {
@@ -515,8 +521,9 @@ double smooth_edge3_normal_term(
     const OrientationTypes& otypes)
 {
     if (otypes.normal_type(0) == HeavisideType::ONE
-        || otypes.normal_type(1) == HeavisideType::ONE)
+        || otypes.normal_type(1) == HeavisideType::ONE) {
         return 1.;
+    }
 
     const Vector3d t0 =
         PointEdgeDistance<double, 3>::point_line_closest_point_direction(
@@ -546,8 +553,9 @@ GradType<15> smooth_edge3_normal_term_gradient(
     Vector15d gradient = Vector15d::Zero();
 
     if (otypes.normal_type(0) == HeavisideType::ONE
-        || otypes.normal_type(1) == HeavisideType::ONE)
+        || otypes.normal_type(1) == HeavisideType::ONE) {
         return std::make_tuple(val, gradient);
+    }
 
     {
         const auto t0n =
@@ -589,8 +597,9 @@ HessianType<15> smooth_edge3_normal_term_hessian(
     Matrix15d hessian = Matrix15d::Zero();
 
     if (otypes.normal_type(0) == HeavisideType::ONE
-        || otypes.normal_type(1) == HeavisideType::ONE)
+        || otypes.normal_type(1) == HeavisideType::ONE) {
         return std::make_tuple(val, gradient, hessian);
+    }
 
     {
         const auto t0n =

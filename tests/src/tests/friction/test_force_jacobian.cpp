@@ -426,24 +426,24 @@ void check_smooth_friction_force_jacobian(
         auto cc = friction_collisions[0].smooth_collision;
         std::shared_ptr<SmoothCollision> fd_cc;
         if (dim == 3) {
-            if (cc->type() == CollisionType::EdgeEdge)
+            if (cc->type() == CollisionType::EDGE_EDGE)
                 fd_cc = std::make_shared<SmoothCollisionTemplate<Edge3, Edge3>>(
                     (*cc)[0], (*cc)[1],
                     PrimitiveDistType<Edge3, Edge3>::type::AUTO, fd_mesh,
                     params, dhat, fd_lagged_positions);
-            else if (cc->type() == CollisionType::EdgeVertex)
+            else if (cc->type() == CollisionType::EDGE_VERTEX)
                 fd_cc =
                     std::make_shared<SmoothCollisionTemplate<Edge3, Point3>>(
                         (*cc)[0], (*cc)[1],
                         PrimitiveDistType<Edge3, Point3>::type::AUTO, fd_mesh,
                         params, dhat, fd_lagged_positions);
-            else if (cc->type() == CollisionType::VertexVertex)
+            else if (cc->type() == CollisionType::VERTEX_VERTEX)
                 fd_cc =
                     std::make_shared<SmoothCollisionTemplate<Point3, Point3>>(
                         (*cc)[0], (*cc)[1],
                         PrimitiveDistType<Point3, Point3>::type::AUTO, fd_mesh,
                         params, dhat, fd_lagged_positions);
-            else if (cc->type() == CollisionType::FaceVertex)
+            else if (cc->type() == CollisionType::FACE_VERTEX)
                 fd_cc = std::make_shared<SmoothCollisionTemplate<Face, Point3>>(
                     (*cc)[0], (*cc)[1],
                     PrimitiveDistType<Face, Point3>::type::AUTO, fd_mesh,
@@ -451,13 +451,13 @@ void check_smooth_friction_force_jacobian(
 
             fd_collisions.collisions.push_back(fd_cc);
         } else {
-            if (cc->type() == CollisionType::EdgeVertex)
+            if (cc->type() == CollisionType::EDGE_VERTEX)
                 fd_cc =
                     std::make_shared<SmoothCollisionTemplate<Edge2, Point2>>(
                         (*cc)[0], (*cc)[1],
                         PrimitiveDistType<Edge2, Point2>::type::AUTO, fd_mesh,
                         params, dhat, fd_lagged_positions);
-            else if (cc->type() == CollisionType::VertexVertex)
+            else if (cc->type() == CollisionType::VERTEX_VERTEX)
                 fd_cc =
                     std::make_shared<SmoothCollisionTemplate<Point2, Point2>>(
                         (*cc)[0], (*cc)[1],
