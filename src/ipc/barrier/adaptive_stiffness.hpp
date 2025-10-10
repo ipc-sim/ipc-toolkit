@@ -32,12 +32,6 @@ double initial_barrier_stiffness(
     const double min_barrier_stiffness_scale = 1e11,
     const double dmin = 0);
 
-double initial_barrier_stiffness(
-    const Eigen::VectorXd& grad_energy,
-    const Eigen::VectorXd& grad_barrier,
-    double min_barrier_stiffness,
-    double max_barrier_stiffness);
-
 /// @brief Update the barrier stiffness if the distance is decreasing and less than dhat_epsilon_scale * diag.
 /// @param[in] prev_min_distance Previous minimum distance between elements.
 /// @param[in] min_distance Current minimum distance between elements.
