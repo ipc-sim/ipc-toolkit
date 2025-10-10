@@ -27,30 +27,38 @@ scalar point_triangle_sqr_distance(
             dtype = point_triangle_distance_type(p, t0, t1, t2);
 
     switch (dtype) {
-    case PointTriangleDistanceType::P_T0:
+    case PointTriangleDistanceType::P_T0: {
         return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(p, t0);
+    }
 
-    case PointTriangleDistanceType::P_T1:
+    case PointTriangleDistanceType::P_T1: {
         return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(p, t1);
+    }
 
-    case PointTriangleDistanceType::P_T2:
+    case PointTriangleDistanceType::P_T2: {
         return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(p, t2);
+    }
 
-    case PointTriangleDistanceType::P_E0:
+    case PointTriangleDistanceType::P_E0: {
         return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, t0, t1);
+    }
 
-    case PointTriangleDistanceType::P_E1:
+    case PointTriangleDistanceType::P_E1: {
         return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, t1, t2);
+    }
 
-    case PointTriangleDistanceType::P_E2:
+    case PointTriangleDistanceType::P_E2: {
         return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, t2, t0);
+    }
 
-    case PointTriangleDistanceType::P_T:
+    case PointTriangleDistanceType::P_T: {
         return point_plane_sqr_distance<scalar>(p, t0, t1, t2);
+    }
 
-    default:
+    default: {
         throw std::invalid_argument(
             "Invalid distance type for point-triangle distance!");
+    }
     }
 }
 
@@ -81,30 +89,37 @@ Vector3<scalar> point_triangle_closest_point_direction(
     case PointTriangleDistanceType::P_T0:
         return p - t0;
 
-    case PointTriangleDistanceType::P_T1:
+    case PointTriangleDistanceType::P_T1: {
         return p - t1;
+    }
 
-    case PointTriangleDistanceType::P_T2:
+    case PointTriangleDistanceType::P_T2: {
         return p - t2;
+    }
 
-    case PointTriangleDistanceType::P_E0:
+    case PointTriangleDistanceType::P_E0: {
         return PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
             p, t0, t1);
+    }
 
-    case PointTriangleDistanceType::P_E1:
+    case PointTriangleDistanceType::P_E1: {
         return PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
             p, t1, t2);
+    }
 
-    case PointTriangleDistanceType::P_E2:
+    case PointTriangleDistanceType::P_E2: {
         return PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
             p, t2, t0);
+    }
 
-    case PointTriangleDistanceType::P_T:
+    case PointTriangleDistanceType::P_T: {
         return point_plane_closest_point_direction<scalar>(p, t0, t1, t2);
+    }
 
-    default:
+    default: {
         throw std::invalid_argument(
             "Invalid distance type for point-triangle distance!");
+    }
     }
 }
 } // namespace ipc

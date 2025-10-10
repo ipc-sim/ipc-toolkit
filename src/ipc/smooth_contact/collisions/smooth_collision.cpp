@@ -131,7 +131,7 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::SmoothCollisionTemplate(
         logger().warn(
             "pair distance {}, id {} and {}, dtype {}, active {}", d.norm(),
             primitive0_, primitive1_,
-            PrimitiveDistType<PrimitiveA, PrimitiveB>::name, Super::is_active_);
+            PrimitiveDistType<PrimitiveA, PrimitiveB>::NAME, Super::is_active_);
 
         logger().warn("value {}", (*this)(this->dof(V), param));
     }
