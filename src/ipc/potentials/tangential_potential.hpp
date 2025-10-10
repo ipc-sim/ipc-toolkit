@@ -7,10 +7,12 @@ namespace ipc {
 
 /// @brief A tangential dissipative potential.
 class TangentialPotential : public Potential<TangentialCollisions> {
-    using Super = Potential;
+    using Super = Potential<TangentialCollisions>;
+    using Super::ELEMENT_SIZE;
+    using VectorMaxNd = Super::VectorMaxNd;
+    using MatrixMaxNd = Super::MatrixMaxNd;
 
 public:
-    using Potential<TangentialCollisions>::ELEMENT_SIZE;
     virtual ~TangentialPotential() { }
 
     // -- Cumulative methods ---------------------------------------------------
@@ -92,39 +94,6 @@ public:
         const double dmin = 0,
         const bool no_mu = false) const;
 
-    Vector<double, -1, ELEMENT_SIZE> smooth_contact_force(
-        const TangentialCollision& collision,
-        const Vector<double, -1, ELEMENT_SIZE>& rest_positions,       // = x
-        const Vector<double, -1, ELEMENT_SIZE>& lagged_displacements, // = u
-        const Vector<double, -1, ELEMENT_SIZE>& velocities,           // = v
-        const bool no_mu = false,
-        const bool no_contact_force_multiplier = false) const;
-
-    Eigen::MatrixXd smooth_contact_force_jacobian(
-        const TangentialCollision& collision,
-        const Vector<double, -1, ELEMENT_SIZE>& rest_positions,       // = x
-        const Vector<double, -1, ELEMENT_SIZE>& lagged_displacements, // = u
-        const Vector<double, -1, ELEMENT_SIZE>& velocities,           // = v
-        const DiffWRT wrt,
-        const bool no_mu) const;
-
-    /// @brief Compute the friction force Jacobian assuming the contact force magnitude being 1.
-    /// @param collision The collision
-    /// @param rest_positions Rest positions of the vertices (rowwise).
-    /// @param lagged_displacements Previous displacements of the vertices (rowwise).
-    /// @param velocities Current displacements of the vertices (rowwise).
-    /// @param barrier_potential Barrier potential (used for normal force magnitude).
-    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
-    /// @param wrt Variable to differentiate the friction force with respect to.
-    /// @param dmin Minimum distance (used for normal force magnitude).
-    /// @return Friction force Jacobian
-    MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> force_jacobian_unit(
-        const TangentialCollision& collision,
-        const Vector<double, -1, ELEMENT_SIZE>& lagged_positions,
-        const Vector<double, -1, ELEMENT_SIZE>& velocities,
-        const DiffWRT wrt,
-        const bool no_mu = false) const;
-
     // -- Single collision methods ---------------------------------------------
 
     /// @brief Compute the potential for a single collision.
@@ -193,6 +162,39 @@ public:
         const double normal_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
+
+    VectorMaxNd smooth_contact_force(
+        const TangentialCollision& collision,
+        Eigen::ConstRef<VectorMaxNd> rest_positions,       // = x
+        Eigen::ConstRef<VectorMaxNd> lagged_displacements, // = u
+        Eigen::ConstRef<VectorMaxNd> velocities,           // = v
+        const bool no_mu = false,
+        const bool no_contact_force_multiplier = false) const;
+
+    Eigen::MatrixXd smooth_contact_force_jacobian(
+        const TangentialCollision& collision,
+        Eigen::ConstRef<VectorMaxNd> rest_positions,       // = x
+        Eigen::ConstRef<VectorMaxNd> lagged_displacements, // = u
+        Eigen::ConstRef<VectorMaxNd> velocities,           // = v
+        const DiffWRT wrt,
+        const bool no_mu) const;
+
+    /// @brief Compute the friction force Jacobian assuming the contact force magnitude being 1.
+    /// @param collision The collision
+    /// @param rest_positions Rest positions of the vertices (rowwise).
+    /// @param lagged_displacements Previous displacements of the vertices (rowwise).
+    /// @param velocities Current displacements of the vertices (rowwise).
+    /// @param barrier_potential Barrier potential (used for normal force magnitude).
+    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param wrt Variable to differentiate the friction force with respect to.
+    /// @param dmin Minimum distance (used for normal force magnitude).
+    /// @return Friction force Jacobian
+    MatrixMaxNd force_jacobian_unit(
+        const TangentialCollision& collision,
+        Eigen::ConstRef<VectorMaxNd> lagged_positions,
+        Eigen::ConstRef<VectorMaxNd> velocities,
+        const DiffWRT wrt,
+        const bool no_mu = false) const;
 
 protected:
     /// @brief Compute the value of the ∫ μ(y) f₁(y) dy, where f₁ is the first derivative of the smooth mollifier.

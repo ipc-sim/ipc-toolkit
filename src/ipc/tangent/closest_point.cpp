@@ -4,6 +4,7 @@
 
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
+
 namespace ipc {
 
 // ============================================================================
@@ -49,8 +50,10 @@ MatrixMax9d point_edge_closest_point_hessian(
 
     Matrix9d H;
     autogen::point_edge_closest_point_3D_hessian(
-        p(0), p(1), dim == 2 ? 0 : p(2), e0(0), e0(1), dim == 2 ? 0 : e0(2),
-        e1(0), e1(1), dim == 2 ? 0 : e1(2), H.data());
+        p(0), p(1), dim == 2 ? 0 : p(2),    //
+        e0(0), e0(1), dim == 2 ? 0 : e0(2), //
+        e1(0), e1(1), dim == 2 ? 0 : e1(2), //
+        H.data());
 
     return H;
 }

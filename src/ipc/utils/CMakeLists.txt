@@ -18,8 +18,6 @@ set(SOURCES
   vertex_to_min_edge.cpp
   vertex_to_min_edge.hpp
   world_bbox_diagonal_length.hpp
-  tangents.cpp
-  tangents.hpp
   math.cpp
   math.hpp
   math.tpp

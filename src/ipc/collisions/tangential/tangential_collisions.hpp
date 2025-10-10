@@ -92,8 +92,8 @@ public:
         const SmoothCollisions& collisions,
         const ParameterType& params,
         const double barrier_stiffness,
-        Eigen::ConstRef<Eigen::VectorXd> mu_k,
         Eigen::ConstRef<Eigen::VectorXd> mu_s,
+        Eigen::ConstRef<Eigen::VectorXd> mu_k,
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
 

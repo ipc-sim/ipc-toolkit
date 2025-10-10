@@ -77,8 +77,6 @@ else()
   set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings" FORCE)
 endif()
 
-set(IPC_TOOLKIT_TESTS_GCP_DATA_DIR "${PROJECT_SOURCE_DIR}/tests/gcp-data/" CACHE PATH "")
-
 if(CMAKE_CUDA_COMPILER)
   option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" ON)
 else()

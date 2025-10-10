@@ -177,7 +177,7 @@ public:
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance of the stencil.
     virtual double
-    compute_distance(Eigen::ConstRef<VectorMax12d>& positions) const = 0;
+    compute_distance(Eigen::ConstRef<VectorMax12d> positions) const = 0;
 
     /// @brief Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
     /// @param positions Stencil's vertex positions.
