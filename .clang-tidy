@@ -36,6 +36,7 @@ UseColor: true
 FormatStyle: file
 ExtraArgs:
   - '-isysroot/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk'
+ExcludeHeaderFilterRegex: 'ipc/utils/autodiff.h'
 CheckOptions:
   readability-identifier-naming.ClassCase: CamelCase
   readability-identifier-naming.ConstantParameterCase: lower_case
