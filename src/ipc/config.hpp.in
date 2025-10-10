@@ -16,6 +16,8 @@
 #cmakedefine IPC_TOOLKIT_WITH_ROBIN_MAP
 #cmakedefine IPC_TOOLKIT_WITH_ABSEIL
 #cmakedefine IPC_TOOLKIT_WITH_FILIB
+#cmakedefine IPC_TOOLKIT_WITH_AUTODIFF
+#cmakedefine IPC_TOOLKIT_WITH_TBB
 
 namespace ipc {
 

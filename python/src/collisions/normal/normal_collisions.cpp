@@ -6,7 +6,7 @@
 using namespace ipc;
 
 template <typename collision_type, typename parent_type>
-void define_SmoothCollisionTemplate(py::module_& m, std::string name)
+void define_smooth_collision_template(py::module_& m, std::string name)
 {
     py::class_<collision_type, parent_type>(m, name.c_str())
         .def("name", &collision_type::name, "Get the type name of collision")
@@ -15,7 +15,7 @@ void define_SmoothCollisionTemplate(py::module_& m, std::string name)
             "Get the number of vertices");
 }
 
-void define_SmoothCollisions(py::module_& m, std::string name)
+void define_smooth_collisions(py::module_& m, std::string name)
 {
     py::class_<SmoothCollisions>(m, name.c_str())
         .def(py::init())
@@ -266,12 +266,12 @@ void define_normal_collisions(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("i"));
 
-    define_SmoothCollisionTemplate<
+    define_smooth_collision_template<
         SmoothCollisionTemplate<Edge2, Point2>, SmoothCollision>(
         m, "Edge2Point2Collision");
-    define_SmoothCollisionTemplate<
+    define_smooth_collision_template<
         SmoothCollisionTemplate<Point2, Point2>, SmoothCollision>(
         m, "Point2Point2Collision");
 
-    define_SmoothCollisions(m, "SmoothCollisions");
+    define_smooth_collisions(m, "SmoothCollisions");
 }
