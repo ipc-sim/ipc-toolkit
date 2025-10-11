@@ -7,9 +7,9 @@
 namespace ipc {
 class Point2 : public Primitive {
 public:
-    constexpr static int N_CORE_POINTS = 1;
-    constexpr static int DIM = 2;
-    constexpr static int MAX_SIZE = N_VERT_NEIGHBORS_2D * DIM;
+    static constexpr int N_CORE_POINTS = 1;
+    static constexpr int DIM = 2;
+    static constexpr int MAX_SIZE = N_VERT_NEIGHBORS_2D * DIM;
     // d is a vector from this point to the other primitive
     Point2(
         const long& id,

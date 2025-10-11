@@ -1,7 +1,7 @@
-#include "MatrixCache.hpp"
+#include "matrix_cache.hpp"
 
-#include "logger.hpp"
-#include "MaybeParallelFor.hpp"
+#include <ipc/utils/logger.hpp>
+#include <ipc/utils/maybe_parallel_for.hpp>
 
 namespace ipc {
 SparseMatrixCache::SparseMatrixCache(const size_t size) { init(size); }
@@ -21,11 +21,11 @@ SparseMatrixCache::SparseMatrixCache(
 
 void SparseMatrixCache::init(const size_t size)
 {
-    assert(mapping().empty() || size_ == size);
+    assert(mapping().empty() || m_size == size);
 
-    size_ = size;
-    tmp_.resize(size_, size_);
-    m_mat.resize(size_, size_);
+    m_size = size;
+    m_tmp.resize(m_size, m_size);
+    m_mat.resize(m_size, m_size);
     m_mat.setZero();
 }
 
@@ -33,8 +33,8 @@ void SparseMatrixCache::init(const size_t rows, const size_t cols)
 {
     assert(mapping().empty());
 
-    size_ = rows == cols ? rows : 0;
-    tmp_.resize(rows, cols);
+    m_size = rows == cols ? rows : 0;
+    m_tmp.resize(rows, cols);
     m_mat.resize(rows, cols);
     m_mat.setZero();
 }
@@ -51,30 +51,30 @@ void SparseMatrixCache::init(
 {
     assert(this != &other);
     if (copy_main_cache_ptr) {
-        main_cache_ = other.main_cache_;
-    } else if (main_cache_ == nullptr) {
-        main_cache_ = other.main_cache();
+        m_main_cache = other.m_main_cache;
+    } else if (m_main_cache == nullptr) {
+        m_main_cache = other.main_cache();
         // Only one level of cache
         assert(
-            main_cache_ != this && main_cache_ != nullptr
-            && main_cache_->main_cache_ == nullptr);
+            m_main_cache != this && m_main_cache != nullptr
+            && m_main_cache->m_main_cache == nullptr);
     }
-    size_ = other.size_;
+    m_size = other.m_size;
 
-    values_.resize(other.values_.size());
+    m_values.resize(other.m_values.size());
 
-    tmp_.resize(other.m_mat.rows(), other.m_mat.cols());
+    m_tmp.resize(other.m_mat.rows(), other.m_mat.cols());
     m_mat.resize(other.m_mat.rows(), other.m_mat.cols());
     m_mat.setZero();
-    std::fill(values_.begin(), values_.end(), 0);
+    std::fill(m_values.begin(), m_values.end(), 0);
 }
 
 void SparseMatrixCache::set_zero()
 {
-    tmp_.setZero();
+    m_tmp.setZero();
     m_mat.setZero();
 
-    std::fill(values_.begin(), values_.end(), 0);
+    std::fill(m_values.begin(), m_values.end(), 0);
 }
 
 void SparseMatrixCache::add_value(
@@ -84,21 +84,22 @@ void SparseMatrixCache::add_value(
     // be fully assembled)
     if (mapping().empty()) {
         // save entry so it can be added to the matrix later
-        entries_.emplace_back(i, j, value);
+        m_entries.emplace_back(i, j, value);
 
         // save the index information so the cache can be built later
-        if (second_cache_entries_.size() <= e)
-            second_cache_entries_.resize(e + 1);
-        second_cache_entries_[e].emplace_back(i, j);
+        if (m_second_cache_entries.size() <= e) {
+            m_second_cache_entries.resize(e + 1);
+        }
+        m_second_cache_entries[e].emplace_back(i, j);
     } else {
-        if (e != current_e_) {
-            current_e_ = e;
-            current_e_index_ = 0;
+        if (e != m_current_e) {
+            m_current_e = e;
+            m_current_e_index = 0;
         }
 
         // save entry directly to value buffer at the proper index
-        values_[second_cache()[e][current_e_index_]] += value;
-        current_e_index_++;
+        m_values[second_cache()[e][m_current_e_index]] += value;
+        m_current_e_index++;
     }
 }
 
@@ -107,15 +108,15 @@ void SparseMatrixCache::prune()
     // caches have yet to be constructed (likely because the matrix has yet to
     // be fully assembled)
     if (mapping().empty()) {
-        tmp_.setFromTriplets(entries_.begin(), entries_.end());
-        tmp_.makeCompressed();
-        m_mat += tmp_;
+        m_tmp.setFromTriplets(m_entries.begin(), m_entries.end());
+        m_tmp.makeCompressed();
+        m_mat += m_tmp;
 
-        tmp_.setZero();
-        tmp_.data().squeeze();
+        m_tmp.setZero();
+        m_tmp.data().squeeze();
         m_mat.makeCompressed();
 
-        entries_.clear();
+        m_entries.clear();
 
         m_mat.makeCompressed();
     }
@@ -129,31 +130,31 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
     // caches have yet to be constructed (likely because the matrix has yet to
     // be fully assembled)
     if (mapping().empty()) {
-        if (compute_mapping && size_ > 0) {
-            assert(main_cache_ == nullptr);
+        if (compute_mapping && m_size > 0) {
+            assert(m_main_cache == nullptr);
 
-            values_.resize(m_mat.nonZeros());
-            inner_index_.resize(m_mat.nonZeros());
-            outer_index_.resize(m_mat.rows() + 1);
-            mapping_.resize(m_mat.rows());
+            m_values.resize(m_mat.nonZeros());
+            m_inner_index.resize(m_mat.nonZeros());
+            m_outer_index.resize(m_mat.rows() + 1);
+            m_mapping.resize(m_mat.rows());
 
             // note: m_mat is column major
             const auto inn_ptr = m_mat.innerIndexPtr();
             const auto out_ptr = m_mat.outerIndexPtr();
-            inner_index_.assign(inn_ptr, inn_ptr + inner_index_.size());
-            outer_index_.assign(out_ptr, out_ptr + outer_index_.size());
+            m_inner_index.assign(inn_ptr, inn_ptr + m_inner_index.size());
+            m_outer_index.assign(out_ptr, out_ptr + m_outer_index.size());
 
             size_t index = 0;
             // loop over columns of the matrix
             for (size_t i = 0; i < m_mat.cols(); ++i) {
-                const auto start = outer_index_[i];
-                const auto end = outer_index_[i + 1];
+                const auto start = m_outer_index[i];
+                const auto end = m_outer_index[i + 1];
 
                 // loop over the nonzero elements of the given column
                 for (size_t ii = start; ii < end; ++ii) {
                     // pick out current row
-                    const auto j = inner_index_[ii];
-                    auto& map = mapping_[j];
+                    const auto j = m_inner_index[ii];
+                    auto& map = m_mapping[j];
                     map.emplace_back(i, index);
                     ++index;
                 }
@@ -161,12 +162,12 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
 
             logger().trace("Cache computed");
 
-            second_cache_.clear();
-            second_cache_.resize(second_cache_entries_.size());
+            m_second_cache.clear();
+            m_second_cache.resize(m_second_cache_entries.size());
             // loop over each element
-            for (int e = 0; e < second_cache_entries_.size(); ++e) {
+            for (int e = 0; e < m_second_cache_entries.size(); ++e) {
                 // loop over each global index affected by the given element
-                for (const auto& p : second_cache_entries_[e]) {
+                for (const auto& p : m_second_cache_entries[e]) {
                     const int i = p.first;
                     const int j = p.second;
 
@@ -179,7 +180,7 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
                     for (const auto& q : map) {
                         // match columns
                         if (q.first == j) {
-                            assert(q.second < values_.size());
+                            assert(q.second < m_values.size());
                             local_index = q.second;
                             break;
                         }
@@ -187,27 +188,27 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
                     assert(local_index >= 0);
 
                     // save the sparse matrix index used by this element
-                    second_cache_[e].emplace_back(local_index);
+                    m_second_cache[e].emplace_back(local_index);
                 }
             }
 
-            second_cache_entries_.resize(0);
+            m_second_cache_entries.resize(0);
 
             logger().trace("Second cache computed");
         }
     } else {
-        assert(size_ > 0);
-        const auto& outer_index = main_cache()->outer_index_;
-        const auto& inner_index = main_cache()->inner_index_;
+        assert(m_size > 0);
+        const auto& outer_index = main_cache()->m_outer_index;
+        const auto& inner_index = main_cache()->m_inner_index;
         // directly write the values to the matrix
         m_mat = Eigen::Map<const Eigen::SparseMatrix<double, Eigen::ColMajor>>(
-            size_, size_, values_.size(), &outer_index[0], &inner_index[0],
-            &values_[0]);
+            m_size, m_size, m_values.size(), &outer_index[0], &inner_index[0],
+            &m_values[0]);
 
-        current_e_ = -1;
-        current_e_index_ = -1;
+        m_current_e = -1;
+        m_current_e_index = -1;
     }
-    std::fill(values_.begin(), values_.end(), 0);
+    std::fill(m_values.begin(), m_values.end(), 0);
     return m_mat;
 }
 
@@ -226,50 +227,50 @@ SparseMatrixCache::operator+(const SparseMatrixCache& a) const
 
     if (a.mapping().empty() || mapping().empty()) {
         out->m_mat = a.m_mat + m_mat;
-        const size_t this_e_size = second_cache_entries_.size();
-        const size_t a_e_size = a.second_cache_entries_.size();
+        const size_t this_e_size = m_second_cache_entries.size();
+        const size_t a_e_size = a.m_second_cache_entries.size();
 
-        out->second_cache_entries_.resize(std::max(this_e_size, a_e_size));
+        out->m_second_cache_entries.resize(std::max(this_e_size, a_e_size));
         for (int e = 0; e < std::min(this_e_size, a_e_size); ++e) {
             assert(
-                second_cache_entries_[e].size() == 0
-                || a.second_cache_entries_[e].size() == 0);
-            out->second_cache_entries_[e].insert(
-                out->second_cache_entries_[e].end(),
-                second_cache_entries_[e].begin(),
-                second_cache_entries_[e].end());
-            out->second_cache_entries_[e].insert(
-                out->second_cache_entries_[e].end(),
-                a.second_cache_entries_[e].begin(),
-                a.second_cache_entries_[e].end());
+                m_second_cache_entries[e].size() == 0
+                || a.m_second_cache_entries[e].size() == 0);
+            out->m_second_cache_entries[e].insert(
+                out->m_second_cache_entries[e].end(),
+                m_second_cache_entries[e].begin(),
+                m_second_cache_entries[e].end());
+            out->m_second_cache_entries[e].insert(
+                out->m_second_cache_entries[e].end(),
+                a.m_second_cache_entries[e].begin(),
+                a.m_second_cache_entries[e].end());
         }
 
         for (int e = std::min(this_e_size, a_e_size);
              e < std::max(this_e_size, a_e_size); ++e) {
-            if (second_cache_entries_.size() < e)
-                out->second_cache_entries_[e].insert(
-                    out->second_cache_entries_[e].end(),
-                    second_cache_entries_[e].begin(),
-                    second_cache_entries_[e].end());
+            if (m_second_cache_entries.size() < e)
+                out->m_second_cache_entries[e].insert(
+                    out->m_second_cache_entries[e].end(),
+                    m_second_cache_entries[e].begin(),
+                    m_second_cache_entries[e].end());
             else
-                out->second_cache_entries_[e].insert(
-                    out->second_cache_entries_[e].end(),
-                    a.second_cache_entries_[e].begin(),
-                    a.second_cache_entries_[e].end());
+                out->m_second_cache_entries[e].insert(
+                    out->m_second_cache_entries[e].end(),
+                    a.m_second_cache_entries[e].begin(),
+                    a.m_second_cache_entries[e].end());
         }
     } else {
-        const auto& outer_index = main_cache()->outer_index_;
-        const auto& inner_index = main_cache()->inner_index_;
-        const auto& aouter_index = a.main_cache()->outer_index_;
-        const auto& ainner_index = a.main_cache()->inner_index_;
+        const auto& outer_index = main_cache()->m_outer_index;
+        const auto& inner_index = main_cache()->m_inner_index;
+        const auto& aouter_index = a.main_cache()->m_outer_index;
+        const auto& ainner_index = a.main_cache()->m_inner_index;
         assert(ainner_index.size() == inner_index.size());
         assert(aouter_index.size() == outer_index.size());
-        assert(a.values_.size() == values_.size());
+        assert(a.m_values.size() == m_values.size());
 
         ipc::utils::maybe_parallel_for(
-            a.values_.size(), [&](int start, int end, int thread_id) {
+            a.m_values.size(), [&](int start, int end, int thread_id) {
                 for (int i = start; i < end; ++i) {
-                    out->values_[i] = a.values_[i] + values_[i];
+                    out->m_values[i] = a.m_values[i] + m_values[i];
                 }
             });
     }
@@ -288,32 +289,32 @@ void SparseMatrixCache::operator+=(const SparseMatrixCache& o)
     if (mapping().empty() || o.mapping().empty()) {
         m_mat += o.m_mat;
 
-        const size_t this_e_size = second_cache_entries_.size();
-        const size_t o_e_size = o.second_cache_entries_.size();
+        const size_t this_e_size = m_second_cache_entries.size();
+        const size_t o_e_size = o.m_second_cache_entries.size();
 
-        second_cache_entries_.resize(std::max(this_e_size, o_e_size));
+        m_second_cache_entries.resize(std::max(this_e_size, o_e_size));
         for (int e = 0; e < o_e_size; ++e) {
             assert(
-                second_cache_entries_[e].size() == 0
-                || o.second_cache_entries_[e].size() == 0);
-            second_cache_entries_[e].insert(
-                second_cache_entries_[e].end(),
-                o.second_cache_entries_[e].begin(),
-                o.second_cache_entries_[e].end());
+                m_second_cache_entries[e].size() == 0
+                || o.m_second_cache_entries[e].size() == 0);
+            m_second_cache_entries[e].insert(
+                m_second_cache_entries[e].end(),
+                o.m_second_cache_entries[e].begin(),
+                o.m_second_cache_entries[e].end());
         }
     } else {
-        const auto& outer_index = main_cache()->outer_index_;
-        const auto& inner_index = main_cache()->inner_index_;
-        const auto& oouter_index = o.main_cache()->outer_index_;
-        const auto& oinner_index = o.main_cache()->inner_index_;
+        const auto& outer_index = main_cache()->m_outer_index;
+        const auto& inner_index = main_cache()->m_inner_index;
+        const auto& oouter_index = o.main_cache()->m_outer_index;
+        const auto& oinner_index = o.main_cache()->m_inner_index;
         assert(inner_index.size() == oinner_index.size());
         assert(outer_index.size() == oouter_index.size());
-        assert(values_.size() == o.values_.size());
+        assert(m_values.size() == o.m_values.size());
 
         ipc::utils::maybe_parallel_for(
-            o.values_.size(), [&](int start, int end, int thread_id) {
+            o.m_values.size(), [&](int start, int end, int thread_id) {
                 for (int i = start; i < end; ++i) {
-                    values_[i] += o.values_[i];
+                    m_values[i] += o.m_values[i];
                 }
             });
     }

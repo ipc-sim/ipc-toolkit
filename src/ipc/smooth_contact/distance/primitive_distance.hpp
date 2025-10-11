@@ -6,7 +6,7 @@
 #include <ipc/smooth_contact/primitives/face.hpp>
 #include <ipc/smooth_contact/primitives/point2.hpp>
 #include <ipc/smooth_contact/primitives/point3.hpp>
-#include <ipc/utils/AutodiffTypes.hpp>
+#include <ipc/utils/autodiff_types.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
@@ -15,32 +15,32 @@ struct PrimitiveDistType { };
 
 template <> struct PrimitiveDistType<Point2, Point2> {
     using type = PointPointDistanceType;
-    constexpr static std::string_view NAME = "PointPoint";
+    static constexpr std::string_view NAME = "PointPoint";
 };
 
 template <> struct PrimitiveDistType<Point3, Point3> {
     using type = PointPointDistanceType;
-    constexpr static std::string_view NAME = "PointPoint";
+    static constexpr std::string_view NAME = "PointPoint";
 };
 
 template <> struct PrimitiveDistType<Edge2, Point2> {
     using type = PointEdgeDistanceType;
-    constexpr static std::string_view NAME = "EdgePoint";
+    static constexpr std::string_view NAME = "EdgePoint";
 };
 
 template <> struct PrimitiveDistType<Edge3, Point3> {
     using type = PointEdgeDistanceType;
-    constexpr static std::string_view NAME = "EdgePoint";
+    static constexpr std::string_view NAME = "EdgePoint";
 };
 
 template <> struct PrimitiveDistType<Face, Point3> {
     using type = PointTriangleDistanceType;
-    constexpr static std::string_view NAME = "FacePoint";
+    static constexpr std::string_view NAME = "FacePoint";
 };
 
 template <> struct PrimitiveDistType<Edge3, Edge3> {
     using type = EdgeEdgeDistanceType;
-    constexpr static std::string_view NAME = "EDGE_EDGE";
+    static constexpr std::string_view NAME = "EDGE_EDGE";
 };
 
 template <typename PrimitiveA, typename PrimitiveB, typename T>
@@ -48,8 +48,8 @@ class PrimitiveDistanceTemplate {
     static_assert(
         PrimitiveA::DIM == PrimitiveB::DIM,
         "Primitives must have the same dimension");
-    constexpr static int DIM = PrimitiveA::DIM;
-    constexpr static int N_CORE_DOFS =
+    static constexpr int DIM = PrimitiveA::DIM;
+    static constexpr int N_CORE_DOFS =
         PrimitiveA::N_CORE_POINTS * PrimitiveA::DIM
         + PrimitiveB::N_CORE_POINTS * PrimitiveB::DIM;
 
@@ -72,8 +72,8 @@ template <typename PrimitiveA, typename PrimitiveB> class PrimitiveDistance {
         "Primitives must have the same dimension");
 
 public:
-    constexpr static int DIM = PrimitiveA::DIM;
-    constexpr static int N_CORE_DOFS =
+    static constexpr int DIM = PrimitiveA::DIM;
+    static constexpr int N_CORE_DOFS =
         PrimitiveA::N_CORE_POINTS * PrimitiveA::DIM
         + PrimitiveB::N_CORE_POINTS * PrimitiveB::DIM;
 

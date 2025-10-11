@@ -1,8 +1,7 @@
 #include "math.hpp"
 
-#include "AutodiffTypes.hpp"
-
 #include <ipc/smooth_contact/common.hpp>
+#include <ipc/utils/autodiff_types.hpp>
 
 DECLARE_DIFFSCALAR_BASE();
 

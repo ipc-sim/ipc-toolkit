@@ -136,7 +136,7 @@ public:
     /// @brief Face-vertex tangential collisions.
     std::vector<FaceVertexTangentialCollision> fv_collisions;
 
-    double barrier_stiffness_;
+    double barrier_stiffness;
 };
 
 } // namespace ipc

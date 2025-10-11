@@ -3,7 +3,7 @@
 #include "smooth_collisions.hpp"
 
 #include <ipc/collision_mesh.hpp>
-#include <ipc/utils/MaybeParallelFor.hpp>
+#include <ipc/utils/maybe_parallel_for.hpp>
 
 #include <Eigen/Core>
 

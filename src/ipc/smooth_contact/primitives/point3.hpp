@@ -7,9 +7,9 @@
 namespace ipc {
 class Point3 : public Primitive {
 public:
-    constexpr static int N_CORE_POINTS = 1;
-    constexpr static int DIM = 3;
-    constexpr static int MAX_SIZE = N_VERT_NEIGHBORS_3D * DIM;
+    static constexpr int N_CORE_POINTS = 1;
+    static constexpr int DIM = 3;
+    static constexpr int MAX_SIZE = N_VERT_NEIGHBORS_3D * DIM;
     // d is a vector from this point to the other primitive
     Point3(
         const long& id,
@@ -88,7 +88,7 @@ public:
 
 private:
     int n_neighbors;
-    OrientationTypes _otypes;
+    OrientationTypes otypes;
 
     std::vector<long> local_to_global_vids;
     std::map<long, int> global_to_local_vids;

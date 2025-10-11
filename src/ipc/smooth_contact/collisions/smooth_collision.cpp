@@ -36,11 +36,11 @@ Eigen::VectorXd SmoothCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
     Eigen::VectorXd x(num_vertices() * DIM);
     if (DIM == 2) {
         for (int i = 0; i < num_vertices(); i++) {
-            x.segment<2>(i * 2) = X.row(vertex_ids_[i]);
+            x.segment<2>(i * 2) = X.row(m_vertex_ids[i]);
         }
     } else if (DIM == 3) {
         for (int i = 0; i < num_vertices(); i++) {
-            x.segment<3>(i * 3) = X.row(vertex_ids_[i]);
+            x.segment<3>(i * 3) = X.row(m_vertex_ids[i]);
         }
     } else
         throw std::runtime_error("Invalid dimension!");
@@ -51,7 +51,8 @@ template <typename PrimitiveA, typename PrimitiveB>
 std::string SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::name() const
 {
     if constexpr (
-        std::is_same_v<PrimitiveA, Edge2> && std::is_same_v<PrimitiveB, Point2>) {
+        std::is_same_v<PrimitiveA, Edge2>
+        && std::is_same_v<PrimitiveB, Point2>) {
         return "edge-vert";
     }
     if constexpr (
@@ -60,15 +61,18 @@ std::string SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::name() const
         return "vert-vert";
     }
     if constexpr (
-        std::is_same_v<PrimitiveA, Face> && std::is_same_v<PrimitiveB, Point3>) {
+        std::is_same_v<PrimitiveA, Face>
+        && std::is_same_v<PrimitiveB, Point3>) {
         return "face-vert";
     }
     if constexpr (
-        std::is_same_v<PrimitiveA, Edge3> && std::is_same_v<PrimitiveB, Point3>) {
+        std::is_same_v<PrimitiveA, Edge3>
+        && std::is_same_v<PrimitiveB, Point3>) {
         return "edge-vert";
     }
     if constexpr (
-        std::is_same_v<PrimitiveA, Edge3> && std::is_same_v<PrimitiveB, Edge3>) {
+        std::is_same_v<PrimitiveA, Edge3>
+        && std::is_same_v<PrimitiveB, Edge3>) {
         return "edge-edge";
     }
     if constexpr (
@@ -87,28 +91,28 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::get_core_indices() const
 {
     Vector<int, N_CORE_DOFS> core_indices;
     core_indices << Eigen::VectorXi::LinSpaced(
-        n_core_dofs_A, 0, n_core_dofs_A - 1),
+        N_CORE_DOFS_A, 0, N_CORE_DOFS_A - 1),
         Eigen::VectorXi::LinSpaced(
-            n_core_dofs_B, pA->n_dofs(), pA->n_dofs() + n_core_dofs_B - 1);
+            N_CORE_DOFS_B, pA->n_dofs(), pA->n_dofs() + N_CORE_DOFS_B - 1);
     return core_indices;
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
 SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::SmoothCollisionTemplate(
-    index_t primitive0_,
-    index_t primitive1_,
+    index_t _primitive0,
+    index_t _primitive1,
     SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::DTYPE dtype,
     const CollisionMesh& mesh,
     const ParameterType& param,
-    const double& dhat,
+    const double _dhat,
     const Eigen::MatrixXd& V)
-    : SmoothCollision(primitive0_, primitive1_, dhat, mesh)
+    : SmoothCollision(_primitive0, _primitive1, _dhat, mesh)
 {
     VectorMax3d d =
         PrimitiveDistance<PrimitiveA, PrimitiveB>::compute_closest_direction(
-            mesh, V, primitive0_, primitive1_, dtype);
-    pA = std::make_unique<PrimitiveA>(primitive0_, mesh, V, d, param);
-    pB = std::make_unique<PrimitiveB>(primitive1_, mesh, V, -d, param);
+            mesh, V, _primitive0, _primitive1, dtype);
+    pA = std::make_unique<PrimitiveA>(_primitive0, mesh, V, d, param);
+    pB = std::make_unique<PrimitiveB>(_primitive1, mesh, V, -d, param);
 
     if ((pA->n_vertices() + pB->n_vertices()) * DIM > ELEMENT_SIZE) {
         logger().error(
@@ -117,21 +121,21 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::SmoothCollisionTemplate(
     }
 
     int i = 0;
-    Super::vertex_ids_.assign(
-        pA->vertex_ids().size() + pB->vertex_ids().size(), -1);
-    for (auto& v : pA->vertex_ids())
-        Super::vertex_ids_[i++] = v;
-    for (auto& v : pB->vertex_ids())
-        Super::vertex_ids_[i++] = v;
+    m_vertex_ids.assign(pA->vertex_ids().size() + pB->vertex_ids().size(), -1);
+    for (auto& v : pA->vertex_ids()) {
+        m_vertex_ids[i++] = v;
+    }
+    for (auto& v : pB->vertex_ids()) {
+        m_vertex_ids[i++] = v;
+    }
     assert(i == pA->n_vertices() + pB->n_vertices());
-    Super::is_active_ =
-        (d.norm() < Super::dhat()) && pA->is_active() && pB->is_active();
+    m_is_active = (d.norm() < m_dhat) && pA->is_active() && pB->is_active();
 
     if (d.norm() < 1e-12) {
         logger().warn(
             "pair distance {}, id {} and {}, dtype {}, active {}", d.norm(),
-            primitive0_, primitive1_,
-            PrimitiveDistType<PrimitiveA, PrimitiveB>::NAME, Super::is_active_);
+            _primitive0, _primitive1,
+            PrimitiveDistType<PrimitiveA, PrimitiveB>::NAME, m_is_active);
 
         logger().warn("value {}", (*this)(this->dof(V), param));
     }
@@ -155,7 +159,7 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
     assert(positions.size() == pA->n_dofs() + pB->n_dofs());
     double a1 = pA->potential(closest_direction, positions.head(pA->n_dofs()));
     double a2 = pB->potential(-closest_direction, positions.tail(pB->n_dofs()));
-    double a3 = Math<double>::inv_barrier(dist / Super::dhat(), params.r);
+    double a3 = Math<double>::inv_barrier(dist / dhat(), params.r);
     double a4 =
         PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, double>::mollifier(
             x, dist * dist);
@@ -167,7 +171,7 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
     if (dist < 1e-12) {
         logger().warn(
             "pair distance {:.3e}, dhat {:.3e}, r {}, barrier {:.3e}, mollifier {:.3e}, orient {:.3e} {:.3e}",
-            dist, Super::dhat(), params.r, a3, a4, a1, a2);
+            dist, dhat(), params.r, a3, a4, a1, a2);
     }
 
     return a1 * a2 * a3 * a4;
@@ -203,13 +207,12 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
     double barrier = 0;
     Vector<double, N_CORE_DOFS> gBarrier = Vector<double, N_CORE_DOFS>::Zero();
     {
-        barrier = Math<double>::inv_barrier(dist / Super::dhat(), params.r);
+        barrier = Math<double>::inv_barrier(dist / dhat(), params.r);
 
         const Vector<double, DIM> closest_direction_normalized =
             closest_direction / dist;
         const double barrier_1st_deriv =
-            Math<double>::inv_barrier_grad(dist / Super::dhat(), params.r)
-            / Super::dhat();
+            Math<double>::inv_barrier_grad(dist / dhat(), params.r) / dhat();
         const Vector<double, DIM> gBarrier_wrt_d =
             barrier_1st_deriv * closest_direction_normalized;
         gBarrier = closest_direction_grad.transpose() * gBarrier_wrt_d;
@@ -321,20 +324,19 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
     Eigen::Matrix<double, N_CORE_DOFS, N_CORE_DOFS> hBarrier =
         Eigen::Matrix<double, N_CORE_DOFS, N_CORE_DOFS>::Zero();
     {
-        barrier = Math<double>::inv_barrier(dist / Super::dhat(), params.r);
+        barrier = Math<double>::inv_barrier(dist / dhat(), params.r);
 
         const Vector<double, DIM> closest_direction_normalized =
             closest_direction / dist;
         const double barrier_1st_deriv =
-            Math<double>::inv_barrier_grad(dist / Super::dhat(), params.r)
-            / Super::dhat();
+            Math<double>::inv_barrier_grad(dist / dhat(), params.r) / dhat();
         const Vector<double, DIM> gBarrier_wrt_d =
             barrier_1st_deriv * closest_direction_normalized;
         gBarrier = closest_direction_grad.transpose() * gBarrier_wrt_d;
 
         const double barrier_2nd_deriv =
-            Math<double>::inv_barrier_hess(dist / Super::dhat(), params.r)
-            / Super::dhat() / Super::dhat();
+            Math<double>::inv_barrier_hess(dist / dhat(), params.r) / dhat()
+            / dhat();
         const Eigen::Matrix<double, DIM, DIM> hBarrier_wrt_d =
             (barrier_1st_deriv / dist)
                 * Eigen::Matrix<double, DIM, DIM>::Identity()
@@ -505,8 +507,9 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::core_vertex_ids() const
 {
     std::array<index_t, N_CORE_DOFS> vids;
     auto ids = get_core_indices();
-    for (int i = 0; i < N_CORE_DOFS; i++)
-        vids[i] = Super::vertex_ids_[ids[i]];
+    for (int i = 0; i < N_CORE_DOFS; i++) {
+        vids[i] = m_vertex_ids[ids[i]];
+    }
     return vids;
 }
 

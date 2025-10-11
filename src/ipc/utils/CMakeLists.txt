@@ -22,13 +22,11 @@ set(SOURCES
   math.hpp
   math.tpp
   autodiff.h
-  AutodiffTypes.hpp
-  MaybeParallelFor.hpp
-  MaybeParallelFor.tpp
-  par_for.hpp
-  par_for.cpp
-  MatrixCache.hpp
-  MatrixCache.cpp
+  autodiff_types.hpp
+  maybe_parallel_for.hpp
+  maybe_parallel_for.tpp
+  matrix_cache.hpp
+  matrix_cache.cpp
 )
 
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

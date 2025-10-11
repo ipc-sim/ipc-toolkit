@@ -7,7 +7,7 @@
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/local_to_global.hpp>
-#include <ipc/utils/MaybeParallelFor.hpp>
+#include <ipc/utils/maybe_parallel_for.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
@@ -47,8 +47,8 @@ void SmoothCollisions::compute_adaptive_dhat(
     };
 
     for (const auto& cc : collisions) {
-        const double dist = param.get_adaptive_dhat_ratio()
-            * sqrt(cc->compute_distance(vertices));
+        const double dist =
+            param.adaptive_dhat_ratio() * sqrt(cc->compute_distance(vertices));
         switch (cc->type()) {
         case CollisionType::EDGE_EDGE:
             assign_min(edge_adaptive_dhat((*cc)[0]), dist);

@@ -19,30 +19,33 @@ template <
     int options,
     int maxdim1,
     int maxdim2>
-Eigen::Matrix<double, nrows, ncols, options, maxdim1, maxdim2> AutoDiffToDouble(
+Eigen::Matrix<double, nrows, ncols, options, maxdim1, maxdim2>
+autodiff_to_double(
     const Eigen::Matrix<T, nrows, ncols, options, maxdim1, maxdim2>& A)
 {
     Eigen::Matrix<double, nrows, ncols, options, maxdim1, maxdim2> out;
     out.resize(A.rows(), A.cols());
-    for (int i = 0; i < nrows; i++)
-        for (int j = 0; j < ncols; j++)
+    for (int i = 0; i < nrows; i++) {
+        for (int j = 0; j < ncols; j++) {
             out(i, j) = A(i, j).value;
+        }
+    }
 
     return out;
 }
 
-template <typename T> struct isADGrad {
-    static const bool value = false;
+template <typename T> struct IsADGrad {
+    static constexpr bool value = false; // NOLINT
 };
-template <int dim, int max_dim> struct isADGrad<ADGrad<dim, max_dim>> {
-    static const bool value = true;
+template <int dim, int max_dim> struct IsADGrad<ADGrad<dim, max_dim>> {
+    static constexpr bool value = true; // NOLINT
 };
 
-template <typename T> struct isADHessian {
-    static const bool value = false;
+template <typename T> struct IsADHessian {
+    static constexpr bool value = false; // NOLINT
 };
-template <int dim, int max_dim> struct isADHessian<ADHessian<dim, max_dim>> {
-    static const bool value = true;
+template <int dim, int max_dim> struct IsADHessian<ADHessian<dim, max_dim>> {
+    static constexpr bool value = true; // NOLINT
 };
 
 template <class T> class AutoDiffAllocator {
@@ -54,4 +57,5 @@ template <> class AutoDiffAllocator<double> {
 public:
     double operator()(const int i, const double& v) const { return v; }
 };
+
 } // namespace ipc

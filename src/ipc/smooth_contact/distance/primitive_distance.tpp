@@ -7,8 +7,8 @@ namespace ipc {
 template <typename T> class PrimitiveDistanceTemplate<Face, Point3, T> {
     static_assert(
         Face::DIM == Point3::DIM, "Primitives must have the same dimension");
-    constexpr static int DIM = Face::DIM;
-    constexpr static int N_CORE_DOFS =
+    static constexpr int DIM = Face::DIM;
+    static constexpr int N_CORE_DOFS =
         Face::N_CORE_POINTS * Face::DIM + Point3::N_CORE_POINTS * Point3::DIM;
 
 public:
@@ -44,8 +44,8 @@ public:
 template <typename T> class PrimitiveDistanceTemplate<Edge3, Edge3, T> {
     static_assert(
         Edge3::DIM == Edge3::DIM, "Primitives must have the same dimension");
-    constexpr static int DIM = Edge3::DIM;
-    constexpr static int N_CORE_DOFS =
+    static constexpr int DIM = Edge3::DIM;
+    static constexpr int N_CORE_DOFS =
         Edge3::N_CORE_POINTS * Edge3::DIM + Edge3::N_CORE_POINTS * Edge3::DIM;
 
 public:
@@ -86,8 +86,8 @@ public:
 template <typename T> class PrimitiveDistanceTemplate<Edge2, Point2, T> {
     static_assert(
         Edge2::DIM == Point2::DIM, "Primitives must have the same dimension");
-    constexpr static int DIM = Point2::DIM;
-    constexpr static int N_CORE_DOFS =
+    static constexpr int DIM = Point2::DIM;
+    static constexpr int N_CORE_DOFS =
         Edge2::N_CORE_POINTS * Edge2::DIM + Point2::N_CORE_POINTS * Point2::DIM;
 
 public:
@@ -121,8 +121,8 @@ public:
 template <typename T> class PrimitiveDistanceTemplate<Edge3, Point3, T> {
     static_assert(
         Edge3::DIM == Point3::DIM, "Primitives must have the same dimension");
-    constexpr static int DIM = Edge3::DIM;
-    constexpr static int N_CORE_DOFS =
+    static constexpr int DIM = Edge3::DIM;
+    static constexpr int N_CORE_DOFS =
         Edge3::N_CORE_POINTS * Edge3::DIM + Point3::N_CORE_POINTS * Point3::DIM;
 
 public:
@@ -156,8 +156,8 @@ public:
 template <typename T> class PrimitiveDistanceTemplate<Point2, Point2, T> {
     static_assert(
         Point2::DIM == Point2::DIM, "Primitives must have the same dimension");
-    constexpr static int DIM = Point2::DIM;
-    constexpr static int N_CORE_DOFS = Point2::N_CORE_POINTS * Point2::DIM
+    static constexpr int DIM = Point2::DIM;
+    static constexpr int N_CORE_DOFS = Point2::N_CORE_POINTS * Point2::DIM
         + Point2::N_CORE_POINTS * Point2::DIM;
 
 public:
@@ -184,8 +184,8 @@ public:
 template <typename T> class PrimitiveDistanceTemplate<Point3, Point3, T> {
     static_assert(
         Point3::DIM == Point3::DIM, "Primitives must have the same dimension");
-    constexpr static int DIM = Point3::DIM;
-    constexpr static int N_CORE_DOFS = Point3::N_CORE_POINTS * Point3::DIM
+    static constexpr int DIM = Point3::DIM;
+    static constexpr int N_CORE_DOFS = Point3::N_CORE_POINTS * Point3::DIM
         + Point3::N_CORE_POINTS * Point3::DIM;
 
 public:

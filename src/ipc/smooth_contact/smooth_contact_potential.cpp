@@ -1,7 +1,7 @@
 #include "smooth_contact_potential.hpp"
 
 #include <ipc/utils/local_to_global.hpp>
-#include <ipc/utils/MaybeParallelFor.hpp>
+#include <ipc/utils/maybe_parallel_for.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/combinable.h>

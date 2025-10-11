@@ -7,8 +7,8 @@
 namespace ipc {
 class Face : public Primitive {
 public:
-    constexpr static int N_CORE_POINTS = 3;
-    constexpr static int DIM = 3;
+    static constexpr int N_CORE_POINTS = 3;
+    static constexpr int DIM = 3;
     // d is a vector from closest point on the face to the point outside of the
     // face
     Face(

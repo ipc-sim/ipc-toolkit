@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MatrixCache.hpp"
+#include <ipc/utils/matrix_cache.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>
@@ -132,8 +132,9 @@ public:
 
     void init(const int buffer_size, const MatrixCache& c)
     {
-        if (cache == nullptr)
+        if (cache == nullptr) {
             cache = c.copy();
+        }
         cache->reserve(buffer_size);
         cache->init(c);
     }
@@ -155,9 +156,10 @@ void local_hessian_to_global_triplets(
             for (int k = 0; k < dim; k++) {
                 for (int l = 0; l < dim; l++) {
                     const auto& val = local_hessian(dim * i + k, dim * j + l);
-                    if (val != 0)
+                    if (val != 0) {
                         triplets.add_value(
                             0, dim * ids[i] + k, dim * ids[j] + l, val);
+                    }
                 }
             }
         }

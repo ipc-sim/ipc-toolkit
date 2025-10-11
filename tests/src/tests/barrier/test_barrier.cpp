@@ -10,7 +10,7 @@
 #include <finitediff.hpp>
 
 #include <ipc/utils/math.hpp>
-#include <ipc/utils/AutodiffTypes.hpp>
+#include <ipc/utils/autodiff_types.hpp>
 #include <ipc/smooth_contact/primitives/point3.hpp>
 #include <iostream>
 #include <memory>

@@ -41,14 +41,14 @@ public:
 class SparseMatrixCache : public MatrixCache {
 public:
     // constructors (call init functions below)
-    SparseMatrixCache() { }
+    SparseMatrixCache() = default;
     SparseMatrixCache(const size_t size);
     SparseMatrixCache(const size_t rows, const size_t cols);
     SparseMatrixCache(const MatrixCache& other);
     SparseMatrixCache(
         const SparseMatrixCache& other, const bool copy_main_cache_ptr = false);
 
-    inline std::unique_ptr<MatrixCache> copy() const override
+    std::unique_ptr<MatrixCache> copy() const override
     {
         // just copy main cache pointer
         return std::make_unique<SparseMatrixCache>(*this, true);
@@ -69,19 +69,25 @@ public:
     /// modifies tmp_, m_mat, and values (setting all to zero)
     void set_zero() override;
 
-    inline void reserve(const size_t size) override { entries_.reserve(size); }
-    inline size_t entries_size() const override { return entries_.size(); }
-    inline size_t capacity() const override { return entries_.capacity(); }
-    inline size_t non_zeros() const override
+    void reserve(const size_t size) override { m_entries.reserve(size); }
+
+    size_t entries_size() const override { return m_entries.size(); }
+
+    size_t capacity() const override { return m_entries.capacity(); }
+
+    size_t non_zeros() const override
     {
-        return mapping_.empty() ? m_mat.nonZeros() : values_.size();
+        return m_mapping.empty() ? m_mat.nonZeros() : m_values.size();
     }
-    inline size_t triplet_count() const override
+
+    size_t triplet_count() const override
     {
-        return entries_.size() + m_mat.nonZeros();
+        return m_entries.size() + m_mat.nonZeros();
     }
-    inline bool is_sparse() const override { return true; }
-    inline size_t mapping_size() const { return mapping_.size(); }
+
+    bool is_sparse() const override { return true; }
+
+    size_t mapping_size() const { return m_mapping.size(); }
 
     /// e = element_index, i = global row_index, j = global column_index, value
     /// = value to add to matrix if the cache is yet to be constructed, save the
@@ -91,6 +97,7 @@ public:
     ///     in this case, modfies values_
     void add_value(
         const int e, const int i, const int j, const double value) override;
+
     /// if the cache is yet to be constructed, save the
     /// cached (ordered) indices in inner_index_ and outer_index_
     /// then fill in map and second_cache_
@@ -101,9 +108,10 @@ public:
     ///     in this case, modifies m_mat and sets values_ to zero
     Eigen::SparseMatrix<double, Eigen::ColMajor>
     get_matrix(const bool compute_mapping = true) override;
+
     /// if caches have yet to be constructed, add the saved triplets to m_mat
-    /// modifies tmp_ and m_mat, also sets entries_ to be empty after writing its
-    /// values to m_mat
+    /// modifies tmp_ and m_mat, also sets entries_ to be empty after writing
+    /// its values to m_mat
     void prune() override; ///< add saved entries to stored matrix
 
     std::shared_ptr<MatrixCache> operator+(const MatrixCache& a) const override;
@@ -117,46 +125,57 @@ public:
     }
     const std::vector<Eigen::Triplet<double>>& entries() const
     {
-        return entries_;
+        return m_entries;
     }
 
 private:
-    size_t size_;
-    Eigen::SparseMatrix<double, Eigen::ColMajor> tmp_, m_mat;
-    std::vector<Eigen::Triplet<double>>
-        entries_; ///< contains global matrix indices and corresponding value
-    std::vector<std::vector<std::pair<int, size_t>>>
-        mapping_; ///< maps row indices to column index/local index pairs
-    std::vector<int> inner_index_,
-        outer_index_; ///< saves inner/outer indices for sparse matrix
-    std::vector<double>
-        values_; ///< buffer for values (corresponds to inner/outer_index_
-                 ///< structure for sparse matrix)
-    const SparseMatrixCache* main_cache_ = nullptr;
-
-    std::vector<std::vector<int>>
-        second_cache_; ///< maps element index to local index
-    std::vector<std::vector<std::pair<int, int>>>
-        second_cache_entries_; ///< maps element indices to global matrix
-                               ///< indices
-    int current_e_ = -1;
-    int current_e_index_ = -1;
-
-    inline const SparseMatrixCache* main_cache() const
+    const SparseMatrixCache* main_cache() const
     {
-        return main_cache_ == nullptr ? this : main_cache_;
+        return m_main_cache == nullptr ? this : m_main_cache;
     }
 
-    inline const std::vector<std::vector<std::pair<int, size_t>>>&
-    mapping() const
+    const std::vector<std::vector<std::pair<int, size_t>>>& mapping() const
     {
-        return main_cache()->mapping_;
+        return main_cache()->m_mapping;
     }
 
-    inline const std::vector<std::vector<int>>& second_cache() const
+    const std::vector<std::vector<int>>& second_cache() const
     {
-        return main_cache()->second_cache_;
+        return main_cache()->m_second_cache;
     }
+
+    size_t m_size;
+
+    Eigen::SparseMatrix<double, Eigen::ColMajor> m_tmp;
+
+    Eigen::SparseMatrix<double, Eigen::ColMajor> m_mat;
+
+    /// contains global matrix indices and corresponding value
+    std::vector<Eigen::Triplet<double>> m_entries;
+
+    /// maps row indices to column index/local index pairs
+    std::vector<std::vector<std::pair<int, size_t>>> m_mapping;
+
+    /// saves inner indices for sparse matrix
+    std::vector<int> m_inner_index;
+
+    /// saves inner indices for sparse matrix
+    std::vector<int> m_outer_index;
+
+    /// buffer for values (corresponds to inner/outer_index_  structure for
+    /// sparse matrix)
+    std::vector<double> m_values;
+
+    const SparseMatrixCache* m_main_cache = nullptr;
+
+    /// maps element index to local index
+    std::vector<std::vector<int>> m_second_cache;
+
+    /// maps element indices to global matrix indices
+    std::vector<std::vector<std::pair<int, int>>> m_second_cache_entries;
+
+    int m_current_e = -1;
+    int m_current_e_index = -1;
 };
 
 class DenseMatrixCache : public MatrixCache {
@@ -167,7 +186,7 @@ public:
     DenseMatrixCache(const MatrixCache& other);
     DenseMatrixCache(const DenseMatrixCache& other);
 
-    inline std::unique_ptr<MatrixCache> copy() const override
+    std::unique_ptr<MatrixCache> copy() const override
     {
         return std::make_unique<DenseMatrixCache>(*this);
     }
@@ -179,12 +198,12 @@ public:
 
     void set_zero() override;
 
-    inline void reserve(const size_t size) override { }
-    inline size_t entries_size() const override { return 0; }
-    inline size_t capacity() const override { return m_mat.size(); }
-    inline size_t non_zeros() const override { return m_mat.size(); }
-    inline size_t triplet_count() const override { return non_zeros(); }
-    inline bool is_sparse() const override { return false; }
+    void reserve(const size_t size) override { }
+    size_t entries_size() const override { return 0; }
+    size_t capacity() const override { return m_mat.size(); }
+    size_t non_zeros() const override { return m_mat.size(); }
+    size_t triplet_count() const override { return non_zeros(); }
+    bool is_sparse() const override { return false; }
 
     void add_value(
         const int e, const int i, const int j, const double value) override;

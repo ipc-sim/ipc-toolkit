@@ -7,8 +7,8 @@
 namespace ipc {
 class Edge3 : public Primitive {
 public:
-    constexpr static int N_CORE_POINTS = 2;
-    constexpr static int DIM = 3;
+    static constexpr int N_CORE_POINTS = 2;
+    static constexpr int DIM = 3;
     // d is a vector from closest point on the edge to the point outside of the
     // edge
     Edge3(

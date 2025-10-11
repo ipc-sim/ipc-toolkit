@@ -1,26 +1,19 @@
 #pragma once
 
-#if defined(IPC_TOOLKIT_WITH_TBB)
+#ifdef IPC_TOOLKIT_WITH_TBB
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
-#elif defined(IPC_TOOLKIT_WITH_CPP_THREADS)
-#include "par_for.hpp"
-
-#include <vector>
-#else
+#else // Not using parallel for
 #include <array>
-// Not using parallel for
 #endif
 
 namespace ipc {
 namespace utils {
 
     template <typename T>
-#if defined(IPC_TOOLKIT_WITH_TBB)
+#ifdef IPC_TOOLKIT_WITH_TBB
     using ParallelCacheType = tbb::enumerable_thread_specific<T>;
-#elif defined(IPC_TOOLKIT_WITH_CPP_THREADS)
-    using ParallelCacheType = std::vector<T>;
 #else
     using ParallelCacheType = std::array<T, 1>;
 #endif
@@ -48,4 +41,4 @@ namespace utils {
 } // namespace utils
 } // namespace ipc
 
-#include "MaybeParallelFor.tpp"
+#include "maybe_parallel_for.tpp"

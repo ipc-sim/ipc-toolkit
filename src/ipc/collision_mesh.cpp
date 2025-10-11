@@ -131,19 +131,21 @@ CollisionMesh::CollisionMesh(
 
 void CollisionMesh::construct_edges_to_faces()
 {
-    if (dim() == 2)
+    if (dim() == 2) {
         return;
+    }
 
     m_edges_to_faces.setOnes(num_edges(), 2);
     m_edges_to_faces *= -1;
     for (int f = 0; f < m_faces_to_edges.rows(); f++) {
         for (int le = 0; le < 3; le++) {
-            if (m_edges_to_faces(m_faces_to_edges(f, le), 0) < 0)
+            if (m_edges_to_faces(m_faces_to_edges(f, le), 0) < 0) {
                 m_edges_to_faces(m_faces_to_edges(f, le), 0) = f;
-            else if (m_edges_to_faces(m_faces_to_edges(f, le), 1) < 0)
+            } else if (m_edges_to_faces(m_faces_to_edges(f, le), 1) < 0) {
                 m_edges_to_faces(m_faces_to_edges(f, le), 1) = f;
-            else
+            } else {
                 assert(false);
+            }
         }
     }
 }
@@ -517,8 +519,9 @@ double CollisionMesh::edge_length(const int& edge_id) const
 double CollisionMesh::max_edge_length() const
 {
     double val = 0;
-    for (int i = 0; i < m_edges.rows(); i++)
+    for (int i = 0; i < m_edges.rows(); i++) {
         val = std::max(edge_length(i), val);
+    }
     return val;
 }
 
@@ -529,15 +532,16 @@ CollisionMesh::find_vertex_adjacent_vertices(const long& v) const
     if (dim() == 2) {
         neighbors.assign(2, -1);
         for (long i : vertex_edge_adjacencies()[v]) {
-            if (edges()(i, 0) == v)
+            if (edges()(i, 0) == v) {
                 neighbors[0] = edges()(i, 1);
-            else if (edges()(i, 1) == v)
+            } else if (edges()(i, 1) == v) {
                 neighbors[1] = edges()(i, 0);
-            else
+            } else {
                 throw std::runtime_error("Invalid edge-vertex adjacency!");
+            }
         }
     } else {
-        if (vertices_to_faces()[v].size() > 0) {
+        if (!vertices_to_faces()[v].empty()) {
             // construct a map of neighboring vertices, it maps every neighbor
             // to the next counter-clockwise neighbor
             std::unordered_map<long, long> map;
@@ -550,9 +554,10 @@ CollisionMesh::find_vertex_adjacent_vertices(const long& v) const
                     }
                 }
             }
-            if (vertices_to_faces()[v].size() != map.size())
+            if (vertices_to_faces()[v].size() != map.size()) {
                 throw std::runtime_error(
                     "Non-manifold vertex! Map size smaller than neighbor!");
+            }
 
             // verify that the neighboring vertices form a loop
             auto iter = map.find(map.begin()->first);
@@ -567,12 +572,14 @@ CollisionMesh::find_vertex_adjacent_vertices(const long& v) const
                         "Non-manifold vertex! Cannot find next neighbor!");
                 }
             }
-            if (neighbors.size() != map.size())
+            if (neighbors.size() != map.size()) {
                 throw std::runtime_error("Non-manifold vertex!");
+            }
         } else {
-            for (int eid : vertices_to_edges()[v])
+            for (int eid : vertices_to_edges()[v]) {
                 neighbors.push_back(
                     edges()(eid, 0) == v ? edges()(eid, 1) : edges()(eid, 0));
+            }
         }
     }
     return neighbors;

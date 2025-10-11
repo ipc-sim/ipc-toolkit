@@ -11,7 +11,7 @@ template <class TCollisions> class Potential {
 protected:
     using TCollision = typename TCollisions::value_type;
     /// @brief Maximum degrees of freedom per collision
-    constexpr static int ELEMENT_SIZE = 3 * TCollision::ELEMENT_SIZE;
+    static constexpr int ELEMENT_SIZE = 3 * TCollision::ELEMENT_SIZE;
     using VectorMaxNd = Vector<double, Eigen::Dynamic, ELEMENT_SIZE>;
     using MatrixMaxNd = MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>;
 

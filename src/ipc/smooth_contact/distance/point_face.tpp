@@ -22,9 +22,11 @@ scalar point_triangle_sqr_distance(
     const Eigen::Ref<const Vector3<scalar>>& t2,
     PointTriangleDistanceType dtype)
 {
-    if constexpr (std::is_same<double, scalar>::value)
-        if (dtype == PointTriangleDistanceType::AUTO)
+    if constexpr (std::is_same<double, scalar>::value) {
+        if (dtype == PointTriangleDistanceType::AUTO) {
             dtype = point_triangle_distance_type(p, t0, t1, t2);
+        }
+    }
 
     switch (dtype) {
     case PointTriangleDistanceType::P_T0: {
@@ -81,9 +83,11 @@ Vector3<scalar> point_triangle_closest_point_direction(
     const Eigen::Ref<const Vector3<scalar>>& t2,
     PointTriangleDistanceType dtype)
 {
-    if constexpr (std::is_same<double, scalar>::value)
-        if (dtype == PointTriangleDistanceType::AUTO)
+    if constexpr (std::is_same<double, scalar>::value) {
+        if (dtype == PointTriangleDistanceType::AUTO) {
             dtype = point_triangle_distance_type(p, t0, t1, t2);
+        }
+    }
 
     switch (dtype) {
     case PointTriangleDistanceType::P_T0:

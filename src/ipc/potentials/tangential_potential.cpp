@@ -592,8 +592,9 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
                 local_hessian_to_global_triplets(
                     local_force_jacobian, vis, dim, jac_triplets);
 
-                if (wrt == DiffWRT::VELOCITIES)
+                if (wrt == DiffWRT::VELOCITIES) {
                     continue;
+                }
 
                 // The term that includes derivatives of normal contact force
                 const VectorMaxNd local_force = smooth_contact_force(

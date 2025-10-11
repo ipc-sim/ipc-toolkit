@@ -9,12 +9,12 @@ Edge2::Edge2(
     const ParameterType& param)
     : Primitive(id, param)
 {
-    _vert_ids = { { mesh.edges()(id, 0), mesh.edges()(id, 1) } };
+    m_vertex_ids = { { mesh.edges()(id, 0), mesh.edges()(id, 1) } };
 
-    is_active_ = (mesh.is_orient_vertex(_vert_ids[0])
-                  && mesh.is_orient_vertex(_vert_ids[1]))
+    m_is_active = (mesh.is_orient_vertex(m_vertex_ids[0])
+                   && mesh.is_orient_vertex(m_vertex_ids[1]))
         || Math<double>::cross2(
-               d, vertices.row(_vert_ids[1]) - vertices.row(_vert_ids[0]))
+               d, vertices.row(m_vertex_ids[1]) - vertices.row(m_vertex_ids[0]))
             > 0;
 }
 

@@ -92,29 +92,29 @@ Point2::Point2(
     has_neighbor_2 = neighbor_verts[1] >= 0;
 
     if (has_neighbor_1 && has_neighbor_2) {
-        _vert_ids = { { id, neighbor_verts[0], neighbor_verts[1] } };
-        is_active_ = smooth_point2_term_type(
-            vertices.row(id), d, vertices.row(_vert_ids[1]),
-            vertices.row(_vert_ids[2]), _param, orientable);
+        m_vertex_ids = { { id, neighbor_verts[0], neighbor_verts[1] } };
+        m_is_active = smooth_point2_term_type(
+            vertices.row(id), d, vertices.row(m_vertex_ids[1]),
+            vertices.row(m_vertex_ids[2]), param, orientable);
     } else if (has_neighbor_1 || has_neighbor_2) {
-        _vert_ids = {
+        m_vertex_ids = {
             { id, has_neighbor_1 ? neighbor_verts[0] : neighbor_verts[1] }
         };
 
         const Vector2d dn = -d.normalized();
         const Vector2d t0 =
-            (vertices.row(_vert_ids[1]) - vertices.row(_vert_ids[0]))
+            (vertices.row(m_vertex_ids[1]) - vertices.row(m_vertex_ids[0]))
                 .normalized();
 
-        is_active_ = dn.dot(t0) > -param.alpha_t;
+        m_is_active = dn.dot(t0) > -param.alpha_t;
     } else {
-        _vert_ids.resize(1);
-        _vert_ids[0] = id;
-        is_active_ = true;
+        m_vertex_ids.resize(1);
+        m_vertex_ids[0] = id;
+        m_is_active = true;
     }
 }
 
-int Point2::n_vertices() const { return _vert_ids.size(); }
+int Point2::n_vertices() const { return m_vertex_ids.size(); }
 
 double Point2::potential(
     const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
@@ -122,10 +122,10 @@ double Point2::potential(
     if (has_neighbor_1 && has_neighbor_2)
         return smooth_point2_term<double>(
             x.segment<DIM>(0), d, x.segment<DIM>(DIM), x.segment<DIM>(2 * DIM),
-            _param, orientable);
+            param, orientable);
     else if (has_neighbor_1 || has_neighbor_2)
         return smooth_point2_term_one_side<double>(
-            x.segment<DIM>(0), d, x.segment<DIM>(DIM), _param);
+            x.segment<DIM>(0), d, x.segment<DIM>(DIM), param);
     else
         return 1.;
 }
@@ -139,7 +139,7 @@ Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         return smooth_point2_term<T>(
-                   X.row(1), X.row(0), X.row(2), X.row(3), _param, orientable)
+                   X.row(1), X.row(0), X.row(2), X.row(3), param, orientable)
             .getGradient();
     } else if (has_neighbor_1 || has_neighbor_2) {
         DiffScalarBase::setVariableCount(3 * DIM);
@@ -148,7 +148,7 @@ Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         return smooth_point2_term_one_side<T>(
-                   X.row(1), X.row(0), X.row(2), _param)
+                   X.row(1), X.row(0), X.row(2), param)
             .getGradient();
     } else
         return Vector<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
@@ -168,7 +168,7 @@ Point2::hessian(
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         return smooth_point2_term<T>(
-                   X.row(1), X.row(0), X.row(2), X.row(3), _param, orientable)
+                   X.row(1), X.row(0), X.row(2), X.row(3), param, orientable)
             .getHessian();
     } else if (has_neighbor_1 || has_neighbor_2) {
         DiffScalarBase::setVariableCount(3 * DIM);
@@ -177,7 +177,7 @@ Point2::hessian(
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         return smooth_point2_term_one_side<T>(
-                   X.row(1), X.row(0), X.row(2), _param)
+                   X.row(1), X.row(0), X.row(2), param)
             .getHessian();
     } else
         return MatrixMax<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(

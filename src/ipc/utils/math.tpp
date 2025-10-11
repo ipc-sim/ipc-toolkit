@@ -1,6 +1,7 @@
 #pragma once
-#include "AutodiffTypes.hpp"
 #include "math.hpp"
+
+#include <ipc/utils/autodiff_types.hpp>
 
 namespace ipc {
 
@@ -187,7 +188,7 @@ double Math<scalar>::smooth_heaviside_hess(
 
 template <typename scalar> scalar Math<scalar>::mollifier(const scalar& x)
 {
-    if constexpr (isADHessian<scalar>::value) {
+    if constexpr (IsADHessian<scalar>::value) {
         if (x <= 0) {
             return scalar(0.);
         } else if (x < 1) {

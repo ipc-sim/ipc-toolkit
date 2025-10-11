@@ -2,7 +2,7 @@
 
 #include "autogen.hpp"
 
-#include <ipc/utils/AutodiffTypes.hpp>
+#include <ipc/utils/autodiff_types.hpp>
 
 namespace ipc {
 namespace {
@@ -37,10 +37,10 @@ namespace {
                 .normalized();
 
         {
-            otypes.tangent_type(0) =
-                OrientationTypes::compute_type(-dn.dot(t0), param.alpha_t, param.beta_t);
-            otypes.tangent_type(1) =
-                OrientationTypes::compute_type(-dn.dot(t1), param.alpha_t, param.beta_t);
+            otypes.tangent_type(0) = OrientationTypes::compute_type(
+                -dn.dot(t0), param.alpha_t, param.beta_t);
+            otypes.tangent_type(1) = OrientationTypes::compute_type(
+                -dn.dot(t1), param.alpha_t, param.beta_t);
             if (otypes.tangent_type(0) == HeavisideType::ZERO
                 || otypes.tangent_type(1) == HeavisideType::ZERO) {
                 return false;
@@ -437,19 +437,19 @@ Edge3::Edge3(
     }
 
     if (has_neighbor_1 && has_neighbor_2) {
-        _vert_ids = std::vector<long>(
+        m_vertex_ids = std::vector<long>(
             neighbors.begin(), neighbors.begin() + neighbors.size());
-        is_active_ = smooth_edge3_term_type(
-            d.normalized(), vertices.row(_vert_ids[0]),
-            vertices.row(_vert_ids[1]), vertices.row(_vert_ids[2]),
-            vertices.row(_vert_ids[3]), _param, otypes, orientable);
+        m_is_active = smooth_edge3_term_type(
+            d.normalized(), vertices.row(m_vertex_ids[0]),
+            vertices.row(m_vertex_ids[1]), vertices.row(m_vertex_ids[2]),
+            vertices.row(m_vertex_ids[3]), param, otypes, orientable);
     } else if (has_neighbor_1 || has_neighbor_2) {
-        _vert_ids = { { neighbors[0], neighbors[1],
-                        has_neighbor_1 ? neighbors[2] : neighbors[3] } };
+        m_vertex_ids = { { neighbors[0], neighbors[1],
+                           has_neighbor_1 ? neighbors[2] : neighbors[3] } };
 
     } else {
-        _vert_ids = { { neighbors[0], neighbors[1] } };
-        is_active_ = true;
+        m_vertex_ids = { { neighbors[0], neighbors[1] } };
+        m_is_active = true;
     }
 }
 
@@ -462,13 +462,14 @@ double Edge3::potential(
 #ifdef DERIVATIVES_WITH_AUTODIFF
     return smooth_edge3_term_template<double>(
         d.normalized(), x.head<3>(), x.segment<3>(3), x.segment<3>(6),
-        x.tail<3>(), _param, otypes, orientable);
+        x.tail<3>(), param, otypes, orientable);
 #else
     return smooth_edge3_term(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), _param,
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), param,
         otypes, orientable);
 #endif
 }
+
 Vector15d Edge3::grad(
     const Eigen::Ref<const Vector3d>& d,
     const Eigen::Ref<const Vector12d>& x) const
@@ -481,14 +482,15 @@ Vector15d Edge3::grad(
     auto X = slice_positions<T, 5, 3>(tmp);
     return smooth_edge3_term_template<T>(
                X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
-               X.row(4), _param, otypes, orientable)
+               X.row(4), param, otypes, orientable)
         .getGradient();
 #else
     return std::get<1>(smooth_edge3_term_gradient(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), _param,
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), param,
         otypes, orientable));
 #endif
 }
+
 Matrix15d Edge3::hessian(
     const Eigen::Ref<const Vector3d>& d,
     const Eigen::Ref<const Vector12d>& x) const
@@ -501,11 +503,11 @@ Matrix15d Edge3::hessian(
     auto X = slice_positions<T, 5, 3>(tmp);
     return smooth_edge3_term_template<T>(
                X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
-               X.row(4), _param, otypes, orientable)
+               X.row(4), param, otypes, orientable)
         .getHessian();
 #else
     return std::get<2>(smooth_edge3_term_hessian(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), _param,
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), param,
         otypes, orientable));
 #endif
 }

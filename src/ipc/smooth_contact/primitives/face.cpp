@@ -1,6 +1,6 @@
 #include "face.hpp"
 
-#include <ipc/utils/AutodiffTypes.hpp>
+#include <ipc/utils/autodiff_types.hpp>
 
 namespace ipc {
 // namespace {
@@ -28,15 +28,15 @@ Face::Face(
     const ParameterType& param)
     : Primitive(id, param)
 {
-    _vert_ids = { { mesh.faces()(id, 0), mesh.faces()(id, 1),
-                    mesh.faces()(id, 2) } };
-    Vector3d a = vertices.row(_vert_ids[1]) - vertices.row(_vert_ids[0]);
-    Vector3d b = vertices.row(_vert_ids[2]) - vertices.row(_vert_ids[0]);
+    m_vertex_ids = { { mesh.faces()(id, 0), mesh.faces()(id, 1),
+                       mesh.faces()(id, 2) } };
+    Vector3d a = vertices.row(m_vertex_ids[1]) - vertices.row(m_vertex_ids[0]);
+    Vector3d b = vertices.row(m_vertex_ids[2]) - vertices.row(m_vertex_ids[0]);
 
-    bool orientable = mesh.is_orient_vertex(_vert_ids[0])
-        && mesh.is_orient_vertex(_vert_ids[1])
-        && mesh.is_orient_vertex(_vert_ids[2]);
-    is_active_ = !orientable || a.cross(b).dot(d) > 0;
+    bool orientable = mesh.is_orient_vertex(m_vertex_ids[0])
+        && mesh.is_orient_vertex(m_vertex_ids[1])
+        && mesh.is_orient_vertex(m_vertex_ids[2]);
+    m_is_active = !orientable || a.cross(b).dot(d) > 0;
 }
 int Face::n_vertices() const { return N_FACE_NEIGHBORS_3D; }
 double Face::potential(const Vector3d& d, const Vector9d& x) const

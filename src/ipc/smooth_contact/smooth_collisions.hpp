@@ -90,35 +90,39 @@ public:
 
     double get_vert_dhat(int vert_id) const
     {
-        if (vert_adaptive_dhat.size() > 1)
+        if (vert_adaptive_dhat.size() > 1) {
             return vert_adaptive_dhat(vert_id);
-        else
+        } else {
             return vert_adaptive_dhat(0);
+        }
     }
     double get_edge_dhat(int edge_id) const
     {
-        if (edge_adaptive_dhat.size() > 1)
+        if (edge_adaptive_dhat.size() > 1) {
             return edge_adaptive_dhat(edge_id);
-        else
+        } else {
             return edge_adaptive_dhat(0);
+        }
     }
     double get_face_dhat(int face_id) const
     {
-        if (face_adaptive_dhat.size() > 1)
+        if (face_adaptive_dhat.size() > 1) {
             return face_adaptive_dhat(face_id);
-        else
+        } else {
             return face_adaptive_dhat(0);
+        }
     }
     double get_max_dhat() const
     {
         double out = std::max(
             vert_adaptive_dhat.maxCoeff(), edge_adaptive_dhat.maxCoeff());
-        if (face_adaptive_dhat.size() > 0)
+        if (face_adaptive_dhat.size() > 0) {
             return std::max(out, face_adaptive_dhat.maxCoeff());
+        }
         return out;
     }
 
-    inline int n_candidates() const { return candidates.size(); }
+    int n_candidates() const { return candidates.size(); }
 
 public:
     std::vector<std::shared_ptr<value_type>> collisions;

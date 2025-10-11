@@ -110,9 +110,11 @@ Vector3<scalar> edge_edge_closest_point_direction(
     const Eigen::Ref<const Vector3<scalar>>& eb1,
     EdgeEdgeDistanceType dtype)
 {
-    if constexpr (std::is_same<double, scalar>::value)
-        if (dtype == EdgeEdgeDistanceType::AUTO)
+    if constexpr (std::is_same<double, scalar>::value) {
+        if (dtype == EdgeEdgeDistanceType::AUTO) {
             dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+        }
+    }
 
     switch (dtype) {
     case EdgeEdgeDistanceType::EA0_EB0:
@@ -160,9 +162,11 @@ Eigen::Matrix<scalar, 3, 2> edge_edge_closest_point_pairs(
     const Eigen::Ref<const Vector3<scalar>>& eb1,
     EdgeEdgeDistanceType dtype)
 {
-    if constexpr (std::is_same<double, scalar>::value)
-        if (dtype == EdgeEdgeDistanceType::AUTO)
+    if constexpr (std::is_same<double, scalar>::value) {
+        if (dtype == EdgeEdgeDistanceType::AUTO) {
             dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+        }
+    }
 
     Eigen::Matrix<scalar, 3, 2> out;
     switch (dtype) {

@@ -13,7 +13,7 @@ namespace ipc {
 /// @brief A stencil representing a collision between at most four vertices.
 class CollisionStencil {
 public:
-    constexpr static int ELEMENT_SIZE = 4;
+    static constexpr int ELEMENT_SIZE = 4;
     CollisionStencil() = default;
     virtual ~CollisionStencil() = default;
 
