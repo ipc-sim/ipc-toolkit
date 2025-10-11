@@ -21,6 +21,10 @@ protected:
         const NormalPotential& normal_potential,
         const double normal_stiffness);
 
+    /// @brief Initialize the collision.
+    /// @param collision NormalCollision stencil.
+    /// @param positions Collision stencil's vertex positions.
+    /// @param normal_force Magnitude of the normal force.
     void init(
         const NormalCollision& collision,
         Eigen::ConstRef<VectorMax12d> positions,

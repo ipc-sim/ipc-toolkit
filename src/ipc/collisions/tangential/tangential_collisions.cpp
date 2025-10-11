@@ -16,12 +16,12 @@ void TangentialCollisions::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const NormalCollisions& collisions,
     const NormalPotential& normal_potential,
-    const double normal_stiffness,
+    const double _normal_stiffness,
     Eigen::ConstRef<Eigen::VectorXd> mu_s,
     Eigen::ConstRef<Eigen::VectorXd> mu_k,
     const std::function<double(double, double)>& blend_mu)
 {
-    barrier_stiffness = normal_stiffness;
+    normal_stiffness = _normal_stiffness;
     assert(mu_s.size() == vertices.rows());
     assert(mu_k.size() == vertices.rows());
 
@@ -115,17 +115,17 @@ void TangentialCollisions::build(
     }
 }
 
-void TangentialCollisions::build_for_smooth_contact(
+void TangentialCollisions::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const SmoothCollisions& collisions,
     const ParameterType& params,
-    const double _barrier_stiffness,
+    const double _normal_stiffness,
     Eigen::ConstRef<Eigen::VectorXd> mu_s,
     Eigen::ConstRef<Eigen::VectorXd> mu_k,
     const std::function<double(double, double)>& blend_mu)
 {
-    barrier_stiffness = _barrier_stiffness;
+    normal_stiffness = _normal_stiffness;
     assert(mu_k.size() == vertices.rows());
     assert(mu_s.size() == vertices.rows());
 
@@ -142,7 +142,7 @@ void TangentialCollisions::build_for_smooth_contact(
         Eigen::VectorXd contact_potential_grad =
             cc.gradient(cc.dof(vertices), params);
         const double contact_force =
-            barrier_stiffness * contact_potential_grad.norm();
+            normal_stiffness * contact_potential_grad.norm();
 
         if (mesh.dim() == 3) {
             TangentialCollision* ptr = nullptr;

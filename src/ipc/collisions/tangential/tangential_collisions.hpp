@@ -28,18 +28,18 @@ public:
     /// @param vertices The vertices of the mesh.
     /// @param collisions The set of normal collisions.
     /// @param normal_potential The normal potential.
-    /// @param normal_stiffness Stiffness of the normal potential.
+    /// @param _normal_stiffness Stiffness of the normal potential.
     /// @param mu The coefficient of friction.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const NormalCollisions& collisions,
         const NormalPotential& normal_potential,
-        double normal_stiffness,
+        double _normal_stiffness,
         double mu)
     {
         this->build(
-            mesh, vertices, collisions, normal_potential, normal_stiffness, mu,
+            mesh, vertices, collisions, normal_potential, _normal_stiffness, mu,
             mu);
     }
 
@@ -48,7 +48,7 @@ public:
     /// @param vertices The vertices of the mesh.
     /// @param collisions The set of normal collisions.
     /// @param normal_potential The normal potential.
-    /// @param normal_stiffness Stiffness of the normal potential.
+    /// @param _normal_stiffness Stiffness of the normal potential.
     /// @param mu_s The static friction coefficient.
     /// @param mu_k The kinetic friction coefficient.
     void build(
@@ -56,12 +56,12 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const NormalCollisions& collisions,
         const NormalPotential& normal_potential,
-        double normal_stiffness,
+        double _normal_stiffness,
         double mu_s,
         double mu_k)
     {
         this->build(
-            mesh, vertices, collisions, normal_potential, normal_stiffness,
+            mesh, vertices, collisions, normal_potential, _normal_stiffness,
             Eigen::VectorXd::Constant(vertices.rows(), mu_s),
             Eigen::VectorXd::Constant(vertices.rows(), mu_k));
     }
@@ -86,12 +86,21 @@ public:
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
 
-    void build_for_smooth_contact(
+    /// @brief Build the tangential collisions for smooth contact.
+    /// @param mesh The collision mesh.
+    /// @param vertices The vertices of the mesh.
+    /// @param collisions The set of normal collisions.
+    /// @param params ???
+    /// @param normal_stiffness Stiffness of the normal potential.
+    /// @param mu_s The static friction coefficient per vertex.
+    /// @param mu_k The kinetic friction coefficient per vertex.
+    /// @param blend_mu Function to blend vertex-based coefficients of friction. Defaults to average.
+    void build(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const SmoothCollisions& collisions,
         const ParameterType& params,
-        const double barrier_stiffness,
+        const double normal_stiffness,
         Eigen::ConstRef<Eigen::VectorXd> mu_s,
         Eigen::ConstRef<Eigen::VectorXd> mu_k,
         const std::function<double(double, double)>& blend_mu =
@@ -136,7 +145,8 @@ public:
     /// @brief Face-vertex tangential collisions.
     std::vector<FaceVertexTangentialCollision> fv_collisions;
 
-    double barrier_stiffness = 1.0;
+    /// @brief Stiffness of associated normal potential
+    double normal_stiffness = 1.0;
 };
 
 } // namespace ipc

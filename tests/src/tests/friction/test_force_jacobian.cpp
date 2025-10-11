@@ -371,7 +371,7 @@ void check_smooth_friction_force_jacobian(
     CAPTURE(mu, epsv_times_h, dhat, barrier_stiffness, collisions.size());
 
     TangentialCollisions friction_collisions;
-    friction_collisions.build_for_smooth_contact(
+    friction_collisions.build(
         mesh, X + Ut, collisions, params, barrier_stiffness,
         Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
         Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
@@ -522,7 +522,7 @@ void check_smooth_friction_force_jacobian(
             create_smooth_collision(fd_mesh, fd_lagged_positions);
 
         TangentialCollisions fd_friction_collisions;
-        fd_friction_collisions.build_for_smooth_contact(
+        fd_friction_collisions.build(
             fd_mesh, fd_lagged_positions, fd_collisions, params,
             barrier_stiffness, Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
             Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
@@ -555,7 +555,7 @@ void check_smooth_friction_force_jacobian(
         auto fd_collisions = create_smooth_collision(mesh, fd_lagged_positions);
 
         TangentialCollisions fd_friction_collisions;
-        fd_friction_collisions.build_for_smooth_contact(
+        fd_friction_collisions.build(
             mesh, fd_lagged_positions, fd_collisions, params, barrier_stiffness,
             Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
             Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);

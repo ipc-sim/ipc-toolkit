@@ -13,8 +13,9 @@ namespace ipc {
 /// @brief A stencil representing a collision between at most four vertices.
 class CollisionStencil {
 public:
+    /// @brief The maximum number of vertices in a collision stencil.
     static constexpr int ELEMENT_SIZE = 4;
-    CollisionStencil() = default;
+
     virtual ~CollisionStencil() = default;
 
     /// @brief Get the number of vertices in the collision stencil.
@@ -32,8 +33,8 @@ public:
     /// @brief Get the vertex IDs of the collision stencil.
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
-    /// @return The vertex IDs of the collision stencil. Size is always 4, but elements i > num_vertices() are -1.
-    virtual std::array<index_t, 4> vertex_ids(
+    /// @return The vertex IDs of the collision stencil. Elements i > num_vertices() are -1.
+    virtual std::array<index_t, ELEMENT_SIZE> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const = 0;
 
@@ -41,8 +42,8 @@ public:
     /// @param vertices Vertex attributes
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
-    /// @return The vertex positions of the collision stencil. Size is always 4, but elements i > num_vertices() are NaN.
-    std::array<VectorMax3d, 4> vertices(
+    /// @return The vertex positions of the collision stencil. Elements i > num_vertices() are NaN.
+    std::array<VectorMax3d, ELEMENT_SIZE> vertices(
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const
@@ -51,8 +52,8 @@ public:
 
         const auto vertex_ids = this->vertex_ids(edges, faces);
 
-        std::array<VectorMax3d, 4> stencil_vertices;
-        for (int i = 0; i < 4; i++) {
+        std::array<VectorMax3d, ELEMENT_SIZE> stencil_vertices;
+        for (int i = 0; i < ELEMENT_SIZE; i++) {
             if (vertex_ids[i] >= 0) {
                 stencil_vertices[i] = vertices.row(vertex_ids[i]);
             } else {
