@@ -13,14 +13,6 @@
 
 namespace ipc {
 
-enum class BroadPhaseMethod : uint8_t {
-    HASH_GRID,
-    BRUTE_FORCE,
-    SPATIAL_HASH,
-    BVH,
-    SWEEP_AND_TINIEST_QUEUE
-};
-
 class Candidates; // Forward declaration
 
 /// @brief Base class for broad phase collision detection methods.
@@ -132,8 +124,5 @@ protected:
     std::vector<AABB> edge_boxes;
     std::vector<AABB> face_boxes;
 };
-
-std::shared_ptr<BroadPhase>
-build_broad_phase(const BroadPhaseMethod& broad_phase_method);
 
 } // namespace ipc
