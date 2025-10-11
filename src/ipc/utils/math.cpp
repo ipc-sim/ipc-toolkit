@@ -62,7 +62,7 @@ bool OrientationTypes::exists_normal_type_one() const
 }
 
 std::tuple<Eigen::Vector3d, Eigen::Matrix3d>
-normalize_vector_grad(const Eigen::Ref<const Eigen::Vector3d>& t)
+normalize_vector_grad(Eigen::ConstRef<Eigen::Vector3d> t)
 {
     double norm = t.norm();
     Eigen::Vector3d y = t / norm;
@@ -75,7 +75,7 @@ std::tuple<
     Eigen::Vector3d,
     Eigen::Matrix3d,
     std::array<Eigen::Matrix<double, 3, 3>, 3>>
-normalize_vector_hess(const Eigen::Ref<const Eigen::Vector3d>& t)
+normalize_vector_hess(Eigen::ConstRef<Eigen::Vector3d> t)
 {
     double norm = t.norm();
     Eigen::Vector3d y = t / norm;
@@ -91,8 +91,8 @@ normalize_vector_hess(const Eigen::Ref<const Eigen::Vector3d>& t)
 }
 
 double opposite_direction_penalty(
-    const Eigen::Ref<const Eigen::Vector3d>& t,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta)
 {
@@ -100,8 +100,8 @@ double opposite_direction_penalty(
 }
 
 GradType<6> opposite_direction_penalty_grad(
-    const Eigen::Ref<const Eigen::Vector3d>& t,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta)
 {
@@ -116,8 +116,8 @@ GradType<6> opposite_direction_penalty_grad(
 }
 
 HessianType<6> opposite_direction_penalty_hess(
-    const Eigen::Ref<const Eigen::Vector3d>& t,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta)
 {
@@ -149,9 +149,9 @@ HessianType<6> opposite_direction_penalty_hess(
 
 // assume unit vector d
 double negative_orientation_penalty(
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta)
 {
@@ -160,9 +160,9 @@ double negative_orientation_penalty(
 }
 
 GradType<9> negative_orientation_penalty_grad(
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta)
 {
@@ -187,9 +187,9 @@ GradType<9> negative_orientation_penalty_grad(
 }
 
 HessianType<9> negative_orientation_penalty_hess(
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta)
 {
@@ -216,8 +216,7 @@ HessianType<9> negative_orientation_penalty_hess(
 }
 
 Eigen::Matrix<double, 3, 6> cross_product_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+    Eigen::ConstRef<Eigen::Vector3d> t1, Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     Eigen::Matrix<double, 3, 6> grad;
     grad << 0, t2(2), -t2(1), 0, -t1(2), t1(1), -t2(2), 0, t2(0), t1(2), 0,
@@ -227,8 +226,7 @@ Eigen::Matrix<double, 3, 6> cross_product_gradient(
 }
 
 std::array<Matrix6d, 3> cross_product_hessian(
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+    Eigen::ConstRef<Eigen::Vector3d> t1, Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     std::array<Matrix6d, 3> hess;
     hess.fill(Matrix6d::Zero());

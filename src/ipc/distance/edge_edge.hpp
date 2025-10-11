@@ -20,10 +20,10 @@ double edge_edge_distance(
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
 double edge_edge_distance_2d(
-    const Eigen::Ref<const Eigen::Vector2d>& ea0,
-    const Eigen::Ref<const Eigen::Vector2d>& ea1,
-    const Eigen::Ref<const Eigen::Vector2d>& eb0,
-    const Eigen::Ref<const Eigen::Vector2d>& eb1,
+    Eigen::ConstRef<Eigen::Vector2d> ea0,
+    Eigen::ConstRef<Eigen::Vector2d> ea1,
+    Eigen::ConstRef<Eigen::Vector2d> eb0,
+    Eigen::ConstRef<Eigen::Vector2d> eb1,
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
 /// @brief Compute the gradient of the distance between a two lines segments.

@@ -5,9 +5,9 @@
 namespace ipc {
 template <typename scalar, int dim>
 scalar point_edge_mollifier(
-    const Eigen::Ref<const Vector<scalar, dim>>& p,
-    const Eigen::Ref<const Vector<scalar, dim>>& e0,
-    const Eigen::Ref<const Vector<scalar, dim>>& e1,
+    Eigen::ConstRef<Vector<scalar, dim>> p,
+    Eigen::ConstRef<Vector<scalar, dim>> e0,
+    Eigen::ConstRef<Vector<scalar, dim>> e1,
     const scalar& dist_sqr)
 {
     const scalar denominator = dist_sqr * MOLLIFIER_THRESHOLD_EPS;
@@ -19,10 +19,10 @@ scalar point_edge_mollifier(
 
 template <typename scalar>
 scalar edge_edge_mollifier(
-    const Eigen::Ref<const Vector3<scalar>>& ea0,
-    const Eigen::Ref<const Vector3<scalar>>& ea1,
-    const Eigen::Ref<const Vector3<scalar>>& eb0,
-    const Eigen::Ref<const Vector3<scalar>>& eb1,
+    Eigen::ConstRef<Vector3<scalar>> ea0,
+    Eigen::ConstRef<Vector3<scalar>> ea1,
+    Eigen::ConstRef<Vector3<scalar>> eb0,
+    Eigen::ConstRef<Vector3<scalar>> eb1,
     const std::array<HeavisideType, 4>& mtypes,
     const scalar& dist_sqr)
 {
@@ -62,10 +62,10 @@ scalar edge_edge_mollifier(
 
 template <typename scalar>
 scalar point_face_mollifier(
-    const Eigen::Ref<const Vector3<scalar>>& p,
-    const Eigen::Ref<const Vector3<scalar>>& e0,
-    const Eigen::Ref<const Vector3<scalar>>& e1,
-    const Eigen::Ref<const Vector3<scalar>>& e2,
+    Eigen::ConstRef<Vector3<scalar>> p,
+    Eigen::ConstRef<Vector3<scalar>> e0,
+    Eigen::ConstRef<Vector3<scalar>> e1,
+    Eigen::ConstRef<Vector3<scalar>> e2,
     const scalar& dist_sqr)
 {
     // use point-line distance instead of point-edge distance because

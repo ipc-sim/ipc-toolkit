@@ -9,18 +9,17 @@ namespace {
 
     template <typename scalar>
     Vector3<scalar> project(
-        const Eigen::Ref<const Vector3<scalar>>& a,
-        const Eigen::Ref<const Vector3<scalar>>& b)
+        Eigen::ConstRef<Vector3<scalar>> a, Eigen::ConstRef<Vector3<scalar>> b)
     {
         return a - a.dot(b) * b;
     }
 
     bool smooth_edge3_term_type(
-        const Eigen::Ref<const Vector3d>& dn,
-        const Eigen::Ref<const Vector3d>& e0,
-        const Eigen::Ref<const Vector3d>& e1,
-        const Eigen::Ref<const Vector3d>& f0,
-        const Eigen::Ref<const Vector3d>& f1,
+        Eigen::ConstRef<Vector3d> dn,
+        Eigen::ConstRef<Vector3d> e0,
+        Eigen::ConstRef<Vector3d> e1,
+        Eigen::ConstRef<Vector3d> f0,
+        Eigen::ConstRef<Vector3d> f1,
         const ParameterType& param,
         OrientationTypes& otypes,
         const bool orientable)
@@ -59,11 +58,11 @@ namespace {
     }
 
     double smooth_edge3_tangent_term(
-        const Eigen::Ref<const Vector3d>& dn,
-        const Eigen::Ref<const Vector3d>& e0,
-        const Eigen::Ref<const Vector3d>& e1,
-        const Eigen::Ref<const Vector3d>& f0,
-        const Eigen::Ref<const Vector3d>& f1,
+        Eigen::ConstRef<Vector3d> dn,
+        Eigen::ConstRef<Vector3d> e0,
+        Eigen::ConstRef<Vector3d> e1,
+        Eigen::ConstRef<Vector3d> f0,
+        Eigen::ConstRef<Vector3d> f1,
         const double alpha,
         const double beta,
         const OrientationTypes& otypes)
@@ -84,11 +83,11 @@ namespace {
     }
 
     GradType<15> smooth_edge3_tangent_term_gradient(
-        const Eigen::Ref<const Vector3d>& dn,
-        const Eigen::Ref<const Vector3d>& e0,
-        const Eigen::Ref<const Vector3d>& e1,
-        const Eigen::Ref<const Vector3d>& f0,
-        const Eigen::Ref<const Vector3d>& f1,
+        Eigen::ConstRef<Vector3d> dn,
+        Eigen::ConstRef<Vector3d> e0,
+        Eigen::ConstRef<Vector3d> e1,
+        Eigen::ConstRef<Vector3d> f0,
+        Eigen::ConstRef<Vector3d> f1,
         const double alpha,
         const double beta,
         const OrientationTypes& otypes)
@@ -128,11 +127,11 @@ namespace {
     }
 
     HessianType<15> smooth_edge3_tangent_term_hessian(
-        const Eigen::Ref<const Vector3d>& dn,
-        const Eigen::Ref<const Vector3d>& e0,
-        const Eigen::Ref<const Vector3d>& e1,
-        const Eigen::Ref<const Vector3d>& f0,
-        const Eigen::Ref<const Vector3d>& f1,
+        Eigen::ConstRef<Vector3d> dn,
+        Eigen::ConstRef<Vector3d> e0,
+        Eigen::ConstRef<Vector3d> e1,
+        Eigen::ConstRef<Vector3d> f0,
+        Eigen::ConstRef<Vector3d> f1,
         const double alpha,
         const double beta,
         const OrientationTypes& otypes)
@@ -197,11 +196,11 @@ namespace {
     }
 
     double smooth_edge3_term(
-        const Eigen::Ref<const Vector3d>& direc,
-        const Eigen::Ref<const Vector3d>& e0,
-        const Eigen::Ref<const Vector3d>& e1,
-        const Eigen::Ref<const Vector3d>& f0,
-        const Eigen::Ref<const Vector3d>& f1,
+        Eigen::ConstRef<Vector3d> direc,
+        Eigen::ConstRef<Vector3d> e0,
+        Eigen::ConstRef<Vector3d> e1,
+        Eigen::ConstRef<Vector3d> f0,
+        Eigen::ConstRef<Vector3d> f1,
         const ParameterType& param,
         const OrientationTypes& otypes,
         const bool orientable)
@@ -218,11 +217,11 @@ namespace {
     }
 
     GradType<15> smooth_edge3_term_gradient(
-        const Eigen::Ref<const Vector3d>& direc,
-        const Eigen::Ref<const Vector3d>& e0,
-        const Eigen::Ref<const Vector3d>& e1,
-        const Eigen::Ref<const Vector3d>& f0,
-        const Eigen::Ref<const Vector3d>& f1,
+        Eigen::ConstRef<Vector3d> direc,
+        Eigen::ConstRef<Vector3d> e0,
+        Eigen::ConstRef<Vector3d> e1,
+        Eigen::ConstRef<Vector3d> f0,
+        Eigen::ConstRef<Vector3d> f1,
         const ParameterType& param,
         const OrientationTypes& otypes,
         const bool orientable)
@@ -256,11 +255,11 @@ namespace {
     }
 
     HessianType<15> smooth_edge3_term_hessian(
-        const Eigen::Ref<const Vector3d>& direc,
-        const Eigen::Ref<const Vector3d>& e0,
-        const Eigen::Ref<const Vector3d>& e1,
-        const Eigen::Ref<const Vector3d>& f0,
-        const Eigen::Ref<const Vector3d>& f1,
+        Eigen::ConstRef<Vector3d> direc,
+        Eigen::ConstRef<Vector3d> e0,
+        Eigen::ConstRef<Vector3d> e1,
+        Eigen::ConstRef<Vector3d> f0,
+        Eigen::ConstRef<Vector3d> f1,
         const ParameterType& param,
         const OrientationTypes& otypes,
         const bool orientable)
@@ -329,11 +328,11 @@ namespace {
     /// @return
     template <typename scalar>
     scalar smooth_edge3_term_template(
-        const Eigen::Ref<const Vector3<scalar>>& dn,
-        const Eigen::Ref<const Vector3<scalar>>& e0,
-        const Eigen::Ref<const Vector3<scalar>>& e1,
-        const Eigen::Ref<const Vector3<scalar>>& f0,
-        const Eigen::Ref<const Vector3<scalar>>& f1,
+        Eigen::ConstRef<Vector3<scalar>> dn,
+        Eigen::ConstRef<Vector3<scalar>> e0,
+        Eigen::ConstRef<Vector3<scalar>> e1,
+        Eigen::ConstRef<Vector3<scalar>> f0,
+        Eigen::ConstRef<Vector3<scalar>> f1,
         const ParameterType& param,
         const OrientationTypes& otypes,
         const bool orientable)
@@ -456,8 +455,7 @@ Edge3::Edge3(
 int Edge3::n_vertices() const { return N_EDGE_NEIGHBORS_3D; }
 
 double Edge3::potential(
-    const Eigen::Ref<const Vector3d>& d,
-    const Eigen::Ref<const Vector12d>& x) const
+    Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 {
 #ifdef DERIVATIVES_WITH_AUTODIFF
     return smooth_edge3_term_template<double>(
@@ -470,9 +468,8 @@ double Edge3::potential(
 #endif
 }
 
-Vector15d Edge3::grad(
-    const Eigen::Ref<const Vector3d>& d,
-    const Eigen::Ref<const Vector12d>& x) const
+Vector15d
+Edge3::grad(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 {
 #ifdef DERIVATIVES_WITH_AUTODIFF
     Vector15d tmp;
@@ -491,9 +488,8 @@ Vector15d Edge3::grad(
 #endif
 }
 
-Matrix15d Edge3::hessian(
-    const Eigen::Ref<const Vector3d>& d,
-    const Eigen::Ref<const Vector12d>& x) const
+Matrix15d
+Edge3::hessian(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 {
 #ifdef DERIVATIVES_WITH_AUTODIFF
     Vector15d tmp;
@@ -513,11 +509,11 @@ Matrix15d Edge3::hessian(
 }
 
 double smooth_edge3_normal_term(
-    const Eigen::Ref<const Vector3d>& dn,
-    const Eigen::Ref<const Vector3d>& e0,
-    const Eigen::Ref<const Vector3d>& e1,
-    const Eigen::Ref<const Vector3d>& f0,
-    const Eigen::Ref<const Vector3d>& f1,
+    Eigen::ConstRef<Vector3d> dn,
+    Eigen::ConstRef<Vector3d> e0,
+    Eigen::ConstRef<Vector3d> e1,
+    Eigen::ConstRef<Vector3d> f0,
+    Eigen::ConstRef<Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes)
@@ -542,11 +538,11 @@ double smooth_edge3_normal_term(
 }
 
 GradType<15> smooth_edge3_normal_term_gradient(
-    const Eigen::Ref<const Vector3d>& dn,
-    const Eigen::Ref<const Vector3d>& e0,
-    const Eigen::Ref<const Vector3d>& e1,
-    const Eigen::Ref<const Vector3d>& f0,
-    const Eigen::Ref<const Vector3d>& f1,
+    Eigen::ConstRef<Vector3d> dn,
+    Eigen::ConstRef<Vector3d> e0,
+    Eigen::ConstRef<Vector3d> e1,
+    Eigen::ConstRef<Vector3d> f0,
+    Eigen::ConstRef<Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes)
@@ -585,11 +581,11 @@ GradType<15> smooth_edge3_normal_term_gradient(
 }
 
 HessianType<15> smooth_edge3_normal_term_hessian(
-    const Eigen::Ref<const Vector3d>& dn,
-    const Eigen::Ref<const Vector3d>& e0,
-    const Eigen::Ref<const Vector3d>& e1,
-    const Eigen::Ref<const Vector3d>& f0,
-    const Eigen::Ref<const Vector3d>& f1,
+    Eigen::ConstRef<Vector3d> dn,
+    Eigen::ConstRef<Vector3d> e0,
+    Eigen::ConstRef<Vector3d> e1,
+    Eigen::ConstRef<Vector3d> f0,
+    Eigen::ConstRef<Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes)

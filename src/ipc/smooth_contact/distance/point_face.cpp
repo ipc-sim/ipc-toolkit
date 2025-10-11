@@ -9,10 +9,10 @@ namespace ipc {
 
 std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>>
 point_plane_closest_point_direction_grad(
-    const Eigen::Ref<const Vector3d>& p,
-    const Eigen::Ref<const Vector3d>& t0,
-    const Eigen::Ref<const Vector3d>& t1,
-    const Eigen::Ref<const Vector3d>& t2)
+    Eigen::ConstRef<Vector3d> p,
+    Eigen::ConstRef<Vector3d> t0,
+    Eigen::ConstRef<Vector3d> t1,
+    Eigen::ConstRef<Vector3d> t2)
 {
     const Eigen::Vector2d uv = point_triangle_closest_point(p, t0, t1, t2);
     const Eigen::Matrix<double, 2, 12> jac =
@@ -31,10 +31,10 @@ point_plane_closest_point_direction_grad(
 
 std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>, std::array<Matrix12d, 3>>
 point_plane_closest_point_direction_hessian(
-    const Eigen::Ref<const Vector3d>& p,
-    const Eigen::Ref<const Vector3d>& t0,
-    const Eigen::Ref<const Vector3d>& t1,
-    const Eigen::Ref<const Vector3d>& t2)
+    Eigen::ConstRef<Vector3d> p,
+    Eigen::ConstRef<Vector3d> t0,
+    Eigen::ConstRef<Vector3d> t1,
+    Eigen::ConstRef<Vector3d> t2)
 {
     // compute derivatives of uv
     const Eigen::Vector2d uv = point_triangle_closest_point(p, t0, t1, t2);
@@ -84,10 +84,10 @@ point_plane_closest_point_direction_hessian(
 
 std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>>
 point_triangle_closest_point_direction_grad(
-    const Eigen::Ref<const Vector3d>& p,
-    const Eigen::Ref<const Vector3d>& t0,
-    const Eigen::Ref<const Vector3d>& t1,
-    const Eigen::Ref<const Vector3d>& t2,
+    Eigen::ConstRef<Vector3d> p,
+    Eigen::ConstRef<Vector3d> t0,
+    Eigen::ConstRef<Vector3d> t1,
+    Eigen::ConstRef<Vector3d> t2,
     const PointTriangleDistanceType dtype)
 {
     Vector3d pts = Vector3d::Zero();
@@ -150,10 +150,10 @@ point_triangle_closest_point_direction_grad(
 
 std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>, std::array<Matrix12d, 3>>
 point_triangle_closest_point_direction_hessian(
-    const Eigen::Ref<const Vector3d>& p,
-    const Eigen::Ref<const Vector3d>& t0,
-    const Eigen::Ref<const Vector3d>& t1,
-    const Eigen::Ref<const Vector3d>& t2,
+    Eigen::ConstRef<Vector3d> p,
+    Eigen::ConstRef<Vector3d> t0,
+    Eigen::ConstRef<Vector3d> t1,
+    Eigen::ConstRef<Vector3d> t2,
     const PointTriangleDistanceType dtype)
 {
     Vector3d pts = Vector3d::Zero();

@@ -272,8 +272,7 @@ template <typename scalar> scalar Math<scalar>::l_ns(const scalar& x)
 
 template <typename scalar>
 scalar Math<scalar>::cross2(
-    const Eigen::Ref<const Vector2<scalar>>& a,
-    const Eigen::Ref<const Vector2<scalar>>& b)
+    Eigen::ConstRef<Vector2<scalar>> a, Eigen::ConstRef<Vector2<scalar>> b)
 {
     return a[0] * b[1] - a[1] * b[0];
 }

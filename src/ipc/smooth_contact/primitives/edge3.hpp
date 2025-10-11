@@ -22,14 +22,11 @@ public:
     int n_dofs() const override { return n_vertices() * DIM; }
 
     double potential(
-        const Eigen::Ref<const Eigen::Vector3d>& d,
-        const Eigen::Ref<const Vector12d>& x) const;
+        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const;
     Vector15d grad(
-        const Eigen::Ref<const Eigen::Vector3d>& d,
-        const Eigen::Ref<const Vector12d>& x) const;
+        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const;
     Matrix15d hessian(
-        const Eigen::Ref<const Eigen::Vector3d>& d,
-        const Eigen::Ref<const Vector12d>& x) const;
+        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const;
 
 private:
     OrientationTypes otypes;
@@ -39,31 +36,31 @@ private:
 };
 
 double smooth_edge3_normal_term(
-    const Eigen::Ref<const Vector3d>& dn,
-    const Eigen::Ref<const Vector3d>& e0,
-    const Eigen::Ref<const Vector3d>& e1,
-    const Eigen::Ref<const Vector3d>& f0,
-    const Eigen::Ref<const Vector3d>& f1,
+    Eigen::ConstRef<Vector3d> dn,
+    Eigen::ConstRef<Vector3d> e0,
+    Eigen::ConstRef<Vector3d> e1,
+    Eigen::ConstRef<Vector3d> f0,
+    Eigen::ConstRef<Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes);
 
 GradType<15> smooth_edge3_normal_term_gradient(
-    const Eigen::Ref<const Vector3d>& dn,
-    const Eigen::Ref<const Vector3d>& e0,
-    const Eigen::Ref<const Vector3d>& e1,
-    const Eigen::Ref<const Vector3d>& f0,
-    const Eigen::Ref<const Vector3d>& f1,
+    Eigen::ConstRef<Vector3d> dn,
+    Eigen::ConstRef<Vector3d> e0,
+    Eigen::ConstRef<Vector3d> e1,
+    Eigen::ConstRef<Vector3d> f0,
+    Eigen::ConstRef<Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes);
 
 HessianType<15> smooth_edge3_normal_term_hessian(
-    const Eigen::Ref<const Vector3d>& dn,
-    const Eigen::Ref<const Vector3d>& e0,
-    const Eigen::Ref<const Vector3d>& e1,
-    const Eigen::Ref<const Vector3d>& f0,
-    const Eigen::Ref<const Vector3d>& f1,
+    Eigen::ConstRef<Vector3d> dn,
+    Eigen::ConstRef<Vector3d> e0,
+    Eigen::ConstRef<Vector3d> e1,
+    Eigen::ConstRef<Vector3d> f0,
+    Eigen::ConstRef<Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes);

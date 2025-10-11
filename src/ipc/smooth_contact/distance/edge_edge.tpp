@@ -6,10 +6,10 @@ namespace ipc {
 
 template <typename scalar>
 scalar line_line_sqr_distance(
-    const Eigen::Ref<const Vector3<scalar>>& ea0,
-    const Eigen::Ref<const Vector3<scalar>>& ea1,
-    const Eigen::Ref<const Vector3<scalar>>& eb0,
-    const Eigen::Ref<const Vector3<scalar>>& eb1)
+    Eigen::ConstRef<Vector3<scalar>> ea0,
+    Eigen::ConstRef<Vector3<scalar>> ea1,
+    Eigen::ConstRef<Vector3<scalar>> eb0,
+    Eigen::ConstRef<Vector3<scalar>> eb1)
 {
     const Vector3<scalar> normal = (ea1 - ea0).cross(eb1 - eb0);
     const scalar line_to_line = (eb0 - ea0).dot(normal);
@@ -18,10 +18,10 @@ scalar line_line_sqr_distance(
 
 template <typename scalar>
 scalar edge_edge_sqr_distance(
-    const Eigen::Ref<const Vector3<scalar>>& ea0,
-    const Eigen::Ref<const Vector3<scalar>>& ea1,
-    const Eigen::Ref<const Vector3<scalar>>& eb0,
-    const Eigen::Ref<const Vector3<scalar>>& eb1,
+    Eigen::ConstRef<Vector3<scalar>> ea0,
+    Eigen::ConstRef<Vector3<scalar>> ea1,
+    Eigen::ConstRef<Vector3<scalar>> eb0,
+    Eigen::ConstRef<Vector3<scalar>> eb1,
     EdgeEdgeDistanceType dtype)
 {
     switch (dtype) {
@@ -64,10 +64,10 @@ scalar edge_edge_sqr_distance(
 
 template <typename scalar>
 Vector3<scalar> line_line_closest_point_direction(
-    const Eigen::Ref<const Vector3<scalar>>& ea0,
-    const Eigen::Ref<const Vector3<scalar>>& ea1,
-    const Eigen::Ref<const Vector3<scalar>>& eb0,
-    const Eigen::Ref<const Vector3<scalar>>& eb1)
+    Eigen::ConstRef<Vector3<scalar>> ea0,
+    Eigen::ConstRef<Vector3<scalar>> ea1,
+    Eigen::ConstRef<Vector3<scalar>> eb0,
+    Eigen::ConstRef<Vector3<scalar>> eb1)
 {
     const Vector3<scalar> normal = (ea1 - ea0).cross(eb1 - eb0);
     return ((eb0 - ea0).dot(normal) / normal.squaredNorm()) * normal;
@@ -75,10 +75,10 @@ Vector3<scalar> line_line_closest_point_direction(
 
 template <typename scalar>
 Eigen::Matrix<scalar, 3, 2> line_line_closest_point_pairs(
-    const Eigen::Ref<const Vector3<scalar>>& ea0,
-    const Eigen::Ref<const Vector3<scalar>>& ea1,
-    const Eigen::Ref<const Vector3<scalar>>& eb0,
-    const Eigen::Ref<const Vector3<scalar>>& eb1)
+    Eigen::ConstRef<Vector3<scalar>> ea0,
+    Eigen::ConstRef<Vector3<scalar>> ea1,
+    Eigen::ConstRef<Vector3<scalar>> eb0,
+    Eigen::ConstRef<Vector3<scalar>> eb1)
 {
     const Vector3<scalar> ta = ea1 - ea0;
     const Vector3<scalar> tb = eb1 - eb0;
@@ -104,10 +104,10 @@ Eigen::Matrix<scalar, 3, 2> line_line_closest_point_pairs(
 /// @return Difference of the pair of closest point, pointing from edge 0 to edge 1
 template <typename scalar>
 Vector3<scalar> edge_edge_closest_point_direction(
-    const Eigen::Ref<const Vector3<scalar>>& ea0,
-    const Eigen::Ref<const Vector3<scalar>>& ea1,
-    const Eigen::Ref<const Vector3<scalar>>& eb0,
-    const Eigen::Ref<const Vector3<scalar>>& eb1,
+    Eigen::ConstRef<Vector3<scalar>> ea0,
+    Eigen::ConstRef<Vector3<scalar>> ea1,
+    Eigen::ConstRef<Vector3<scalar>> eb0,
+    Eigen::ConstRef<Vector3<scalar>> eb1,
     EdgeEdgeDistanceType dtype)
 {
     if constexpr (std::is_same<double, scalar>::value) {
@@ -156,10 +156,10 @@ Vector3<scalar> edge_edge_closest_point_direction(
 
 template <typename scalar>
 Eigen::Matrix<scalar, 3, 2> edge_edge_closest_point_pairs(
-    const Eigen::Ref<const Vector3<scalar>>& ea0,
-    const Eigen::Ref<const Vector3<scalar>>& ea1,
-    const Eigen::Ref<const Vector3<scalar>>& eb0,
-    const Eigen::Ref<const Vector3<scalar>>& eb1,
+    Eigen::ConstRef<Vector3<scalar>> ea0,
+    Eigen::ConstRef<Vector3<scalar>> ea1,
+    Eigen::ConstRef<Vector3<scalar>> eb0,
+    Eigen::ConstRef<Vector3<scalar>> eb1,
     EdgeEdgeDistanceType dtype)
 {
     if constexpr (std::is_same<double, scalar>::value) {

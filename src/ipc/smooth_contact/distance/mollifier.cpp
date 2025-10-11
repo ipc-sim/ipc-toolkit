@@ -55,10 +55,10 @@ namespace {
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
 GradType<13> edge_edge_mollifier_gradient(
-    const Eigen::Ref<const Vector3<double>>& ea0,
-    const Eigen::Ref<const Vector3<double>>& ea1,
-    const Eigen::Ref<const Vector3<double>>& eb0,
-    const Eigen::Ref<const Vector3<double>>& eb1,
+    Eigen::ConstRef<Vector3<double>> ea0,
+    Eigen::ConstRef<Vector3<double>> ea1,
+    Eigen::ConstRef<Vector3<double>> eb0,
+    Eigen::ConstRef<Vector3<double>> eb1,
     const std::array<HeavisideType, 4>& mtypes,
     const double& dist_sqr)
 {
@@ -144,10 +144,10 @@ GradType<13> edge_edge_mollifier_gradient(
 
 /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
 HessianType<13> edge_edge_mollifier_hessian(
-    const Eigen::Ref<const Vector3<double>>& ea0,
-    const Eigen::Ref<const Vector3<double>>& ea1,
-    const Eigen::Ref<const Vector3<double>>& eb0,
-    const Eigen::Ref<const Vector3<double>>& eb1,
+    Eigen::ConstRef<Vector3<double>> ea0,
+    Eigen::ConstRef<Vector3<double>> ea1,
+    Eigen::ConstRef<Vector3<double>> eb0,
+    Eigen::ConstRef<Vector3<double>> eb1,
     const std::array<HeavisideType, 4>& mtypes,
     const double& dist_sqr)
 {
@@ -279,10 +279,10 @@ HessianType<13> edge_edge_mollifier_hessian(
 }
 
 std::array<HeavisideType, 4> edge_edge_mollifier_type(
-    const Eigen::Ref<const Vector3<double>>& ea0,
-    const Eigen::Ref<const Vector3<double>>& ea1,
-    const Eigen::Ref<const Vector3<double>>& eb0,
-    const Eigen::Ref<const Vector3<double>>& eb1,
+    Eigen::ConstRef<Vector3<double>> ea0,
+    Eigen::ConstRef<Vector3<double>> ea1,
+    Eigen::ConstRef<Vector3<double>> eb0,
+    Eigen::ConstRef<Vector3<double>> eb1,
     const double& dist_sqr)
 {
     std::array<HeavisideType, 4> mtypes;
@@ -307,10 +307,10 @@ std::array<HeavisideType, 4> edge_edge_mollifier_type(
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
 GradType<13> point_face_mollifier_gradient(
-    const Eigen::Ref<const Vector3d>& p,
-    const Eigen::Ref<const Vector3d>& e0,
-    const Eigen::Ref<const Vector3d>& e1,
-    const Eigen::Ref<const Vector3d>& e2,
+    Eigen::ConstRef<Vector3d> p,
+    Eigen::ConstRef<Vector3d> e0,
+    Eigen::ConstRef<Vector3d> e1,
+    Eigen::ConstRef<Vector3d> e2,
     const double& dist_sqr)
 {
     Vector12d x;
@@ -357,10 +357,10 @@ GradType<13> point_face_mollifier_gradient(
 
 /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
 HessianType<13> point_face_mollifier_hessian(
-    const Eigen::Ref<const Vector3d>& p,
-    const Eigen::Ref<const Vector3d>& e0,
-    const Eigen::Ref<const Vector3d>& e1,
-    const Eigen::Ref<const Vector3d>& e2,
+    Eigen::ConstRef<Vector3d> p,
+    Eigen::ConstRef<Vector3d> e0,
+    Eigen::ConstRef<Vector3d> e1,
+    Eigen::ConstRef<Vector3d> e2,
     const double& dist_sqr)
 {
     Vector12d x;

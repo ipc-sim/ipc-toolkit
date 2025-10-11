@@ -70,19 +70,18 @@ template <typename scalar> struct Math {
     static scalar l_ns(const scalar& x);
 
     static scalar cross2(
-        const Eigen::Ref<const Vector2<scalar>>& a,
-        const Eigen::Ref<const Vector2<scalar>>& b);
+        Eigen::ConstRef<Vector2<scalar>> a, Eigen::ConstRef<Vector2<scalar>> b);
 };
 
 // gradient is symmetric
 std::tuple<Eigen::Vector3d, Eigen::Matrix3d>
-normalize_vector_grad(const Eigen::Ref<const Eigen::Vector3d>& t);
+normalize_vector_grad(Eigen::ConstRef<Eigen::Vector3d> t);
 // hessian is symmetric wrt. the three dimensions
 std::tuple<
     Eigen::Vector3d,
     Eigen::Matrix3d,
     std::array<Eigen::Matrix<double, 3, 3>, 3>>
-normalize_vector_hess(const Eigen::Ref<const Eigen::Vector3d>& t);
+normalize_vector_hess(Eigen::ConstRef<Eigen::Vector3d> t);
 
 template <class T, int rows, int cols, int max_rows = rows>
 inline Eigen::Matrix<
@@ -116,51 +115,49 @@ slice_positions(const Eigen::VectorXd& positions, const int offset = 0)
 }
 
 Eigen::Matrix<double, 3, 6> cross_product_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2);
+    Eigen::ConstRef<Eigen::Vector3d> t1, Eigen::ConstRef<Eigen::Vector3d> t2);
 
 std::array<Matrix6d, 3> cross_product_hessian(
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2);
+    Eigen::ConstRef<Eigen::Vector3d> t1, Eigen::ConstRef<Eigen::Vector3d> t2);
 
 // assume unit vector d
 double opposite_direction_penalty(
-    const Eigen::Ref<const Eigen::Vector3d>& t,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta);
 
 GradType<6> opposite_direction_penalty_grad(
-    const Eigen::Ref<const Eigen::Vector3d>& t,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta);
 
 HessianType<6> opposite_direction_penalty_hess(
-    const Eigen::Ref<const Eigen::Vector3d>& t,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta);
 
 // assume unit vector d
 double negative_orientation_penalty(
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta);
 
 GradType<9> negative_orientation_penalty_grad(
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta);
 
 HessianType<9> negative_orientation_penalty_hess(
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2,
-    const Eigen::Ref<const Eigen::Vector3d>& d,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
+    Eigen::ConstRef<Eigen::Vector3d> d,
     const double& alpha,
     const double& beta);
 

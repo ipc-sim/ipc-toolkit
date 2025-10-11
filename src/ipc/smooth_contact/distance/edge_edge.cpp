@@ -10,10 +10,10 @@ namespace ipc {
 
 std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>>
 line_line_closest_point_direction_gradient(
-    const Eigen::Ref<const Vector3d>& ea0,
-    const Eigen::Ref<const Vector3d>& ea1,
-    const Eigen::Ref<const Vector3d>& eb0,
-    const Eigen::Ref<const Vector3d>& eb1)
+    Eigen::ConstRef<Vector3d> ea0,
+    Eigen::ConstRef<Vector3d> ea1,
+    Eigen::ConstRef<Vector3d> eb0,
+    Eigen::ConstRef<Vector3d> eb1)
 {
     const Vector3d ea = ea1 - ea0;
     const Vector3d eb = eb1 - eb0;
@@ -46,10 +46,10 @@ line_line_closest_point_direction_gradient(
 
 std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>, std::array<Matrix12d, 3>>
 line_line_closest_point_direction_hessian(
-    const Eigen::Ref<const Vector3d>& ea0,
-    const Eigen::Ref<const Vector3d>& ea1,
-    const Eigen::Ref<const Vector3d>& eb0,
-    const Eigen::Ref<const Vector3d>& eb1)
+    Eigen::ConstRef<Vector3d> ea0,
+    Eigen::ConstRef<Vector3d> ea1,
+    Eigen::ConstRef<Vector3d> eb0,
+    Eigen::ConstRef<Vector3d> eb1)
 {
     const Vector3d ea = ea1 - ea0;
     const Vector3d eb = eb1 - eb0;
@@ -135,10 +135,10 @@ line_line_closest_point_direction_hessian(
 
 std::tuple<Vector6d, Eigen::Matrix<double, 6, 12>>
 line_line_closest_point_pairs_gradient(
-    const Eigen::Ref<const Vector3d>& ea0,
-    const Eigen::Ref<const Vector3d>& ea1,
-    const Eigen::Ref<const Vector3d>& eb0,
-    const Eigen::Ref<const Vector3d>& eb1)
+    Eigen::ConstRef<Vector3d> ea0,
+    Eigen::ConstRef<Vector3d> ea1,
+    Eigen::ConstRef<Vector3d> eb0,
+    Eigen::ConstRef<Vector3d> eb1)
 {
     const auto uv = edge_edge_closest_point(ea0, ea1, eb0, eb1);
     const auto J = edge_edge_closest_point_jacobian(ea0, ea1, eb0, eb1);
@@ -158,10 +158,10 @@ line_line_closest_point_pairs_gradient(
 
 std::tuple<Vector6d, Eigen::Matrix<double, 6, 12>, std::array<Matrix12d, 6>>
 line_line_closest_point_pairs_hessian(
-    const Eigen::Ref<const Vector3d>& ea0,
-    const Eigen::Ref<const Vector3d>& ea1,
-    const Eigen::Ref<const Vector3d>& eb0,
-    const Eigen::Ref<const Vector3d>& eb1)
+    Eigen::ConstRef<Vector3d> ea0,
+    Eigen::ConstRef<Vector3d> ea1,
+    Eigen::ConstRef<Vector3d> eb0,
+    Eigen::ConstRef<Vector3d> eb1)
 {
     const auto uv = edge_edge_closest_point(ea0, ea1, eb0, eb1);
     const auto J = edge_edge_closest_point_jacobian(ea0, ea1, eb0, eb1);

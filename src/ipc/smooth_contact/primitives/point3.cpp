@@ -120,8 +120,8 @@ Point3::hessian(
 }
 
 GradType<-1> Point3::smooth_point3_term_tangent_gradient(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
     const double& alpha,
     const double& beta) const
 {
@@ -152,8 +152,8 @@ GradType<-1> Point3::smooth_point3_term_tangent_gradient(
 }
 
 HessianType<-1> Point3::smooth_point3_term_tangent_hessian(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
     const double& alpha,
     const double& beta) const
 {
@@ -225,8 +225,8 @@ HessianType<-1> Point3::smooth_point3_term_tangent_hessian(
 }
 
 GradType<-1> Point3::smooth_point3_term_normal_gradient(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
     const double& alpha,
     const double& beta) const
 {
@@ -293,8 +293,8 @@ GradType<-1> Point3::smooth_point3_term_normal_gradient(
 }
 
 HessianType<-1> Point3::smooth_point3_term_normal_hessian(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
     const double& alpha,
     const double& beta) const
 {
@@ -379,7 +379,7 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
 
 bool Point3::smooth_point3_term_type(
     const Eigen::Matrix<double, -1, 3>& X,
-    const Eigen::Ref<const RowVector3<double>>& direc)
+    Eigen::ConstRef<RowVector3<double>> direc)
 {
     otypes.set_size(edges.rows());
 
@@ -416,8 +416,8 @@ bool Point3::smooth_point3_term_type(
 }
 
 GradType<-1> Point3::smooth_point3_term_gradient(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& X,
+    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
     const ParameterType& param) const
 {
     const int n_dofs = (X.rows() + 1) * 3;
@@ -462,8 +462,8 @@ GradType<-1> Point3::smooth_point3_term_gradient(
 }
 
 HessianType<-1> Point3::smooth_point3_term_hessian(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& X,
+    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
     const ParameterType& param) const
 {
     const int n_dofs = (X.rows() + 1) * 3;
@@ -553,7 +553,7 @@ HessianType<-1> Point3::smooth_point3_term_hessian(
 template <typename scalar, int n_verts>
 scalar Point3::smooth_point3_term(
     const Eigen::Matrix<scalar, n_verts, 3>& X,
-    const Eigen::Ref<const RowVector3<scalar>>& direc) const
+    Eigen::ConstRef<RowVector3<scalar>> direc) const
 {
     const RowVector3<scalar> dn = direc.normalized();
     scalar tangent_term(1.);

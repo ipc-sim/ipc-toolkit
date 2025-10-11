@@ -6,9 +6,9 @@ namespace ipc {
 // namespace {
 //     template <typename T>
 //     std::array<Vector3<T>, 3> double_to_autodiff(
-//         const Eigen::Ref<const Eigen::Vector3d>& v0,
-//         const Eigen::Ref<const Eigen::Vector3d>& v1,
-//         const Eigen::Ref<const Eigen::Vector3d>& v2)
+//         Eigen::ConstRef<Eigen::Vector3d> v0,
+//         Eigen::ConstRef<Eigen::Vector3d> v1,
+//         Eigen::ConstRef<Eigen::Vector3d> v2)
 //     {
 //         Vector3<T> v0_, v1_, v2_;
 //         for (int d = 0; d < 3; d++)

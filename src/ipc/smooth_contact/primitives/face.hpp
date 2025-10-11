@@ -29,9 +29,9 @@ public:
 /// @brief d points from triangle to the point
 template <typename scalar>
 scalar smooth_face_term(
-    const Eigen::Ref<const Vector3<scalar>>& v0,
-    const Eigen::Ref<const Vector3<scalar>>& v1,
-    const Eigen::Ref<const Vector3<scalar>>& v2)
+    Eigen::ConstRef<Vector3<scalar>> v0,
+    Eigen::ConstRef<Vector3<scalar>> v1,
+    Eigen::ConstRef<Vector3<scalar>> v2)
 {
     return 0.5 * (v1 - v0).cross(v2 - v0).norm(); // area of triangle
 }

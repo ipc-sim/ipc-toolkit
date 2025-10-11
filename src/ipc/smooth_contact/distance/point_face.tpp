@@ -5,10 +5,10 @@
 namespace ipc {
 template <typename scalar>
 scalar point_plane_sqr_distance(
-    const Eigen::Ref<const Vector3<scalar>>& p,
-    const Eigen::Ref<const Vector3<scalar>>& f0,
-    const Eigen::Ref<const Vector3<scalar>>& f1,
-    const Eigen::Ref<const Vector3<scalar>>& f2)
+    Eigen::ConstRef<Vector3<scalar>> p,
+    Eigen::ConstRef<Vector3<scalar>> f0,
+    Eigen::ConstRef<Vector3<scalar>> f1,
+    Eigen::ConstRef<Vector3<scalar>> f2)
 {
     const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
     return Math<scalar>::sqr(normal.dot(p - f0)) / normal.squaredNorm();
@@ -16,10 +16,10 @@ scalar point_plane_sqr_distance(
 
 template <typename scalar>
 scalar point_triangle_sqr_distance(
-    const Eigen::Ref<const Vector3<scalar>>& p,
-    const Eigen::Ref<const Vector3<scalar>>& t0,
-    const Eigen::Ref<const Vector3<scalar>>& t1,
-    const Eigen::Ref<const Vector3<scalar>>& t2,
+    Eigen::ConstRef<Vector3<scalar>> p,
+    Eigen::ConstRef<Vector3<scalar>> t0,
+    Eigen::ConstRef<Vector3<scalar>> t1,
+    Eigen::ConstRef<Vector3<scalar>> t2,
     PointTriangleDistanceType dtype)
 {
     if constexpr (std::is_same<double, scalar>::value) {
@@ -66,10 +66,10 @@ scalar point_triangle_sqr_distance(
 
 template <typename scalar>
 Vector3<scalar> point_plane_closest_point_direction(
-    const Eigen::Ref<const Vector3<scalar>>& p,
-    const Eigen::Ref<const Vector3<scalar>>& f0,
-    const Eigen::Ref<const Vector3<scalar>>& f1,
-    const Eigen::Ref<const Vector3<scalar>>& f2)
+    Eigen::ConstRef<Vector3<scalar>> p,
+    Eigen::ConstRef<Vector3<scalar>> f0,
+    Eigen::ConstRef<Vector3<scalar>> f1,
+    Eigen::ConstRef<Vector3<scalar>> f2)
 {
     const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
     return (normal.dot(p - f0) / normal.squaredNorm()) * normal;
@@ -77,10 +77,10 @@ Vector3<scalar> point_plane_closest_point_direction(
 
 template <typename scalar>
 Vector3<scalar> point_triangle_closest_point_direction(
-    const Eigen::Ref<const Vector3<scalar>>& p,
-    const Eigen::Ref<const Vector3<scalar>>& t0,
-    const Eigen::Ref<const Vector3<scalar>>& t1,
-    const Eigen::Ref<const Vector3<scalar>>& t2,
+    Eigen::ConstRef<Vector3<scalar>> p,
+    Eigen::ConstRef<Vector3<scalar>> t0,
+    Eigen::ConstRef<Vector3<scalar>> t1,
+    Eigen::ConstRef<Vector3<scalar>> t2,
     PointTriangleDistanceType dtype)
 {
     if constexpr (std::is_same<double, scalar>::value) {

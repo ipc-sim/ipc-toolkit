@@ -4,10 +4,10 @@ namespace ipc {
 
 namespace {
     bool smooth_point2_term_type(
-        const Eigen::Ref<const Vector2d>& v,
-        const Eigen::Ref<const Vector2d>& direc,
-        const Eigen::Ref<const Vector2d>& e0,
-        const Eigen::Ref<const Vector2d>& e1,
+        Eigen::ConstRef<Vector2d> v,
+        Eigen::ConstRef<Vector2d> direc,
+        Eigen::ConstRef<Vector2d> e0,
+        Eigen::ConstRef<Vector2d> e1,
         const ParameterType& param,
         const bool orientable)
     {
@@ -32,10 +32,10 @@ namespace {
 
     template <class scalar>
     scalar smooth_point2_term(
-        const Eigen::Ref<const Vector2<scalar>>& v,
-        const Eigen::Ref<const Vector2<scalar>>& direc,
-        const Eigen::Ref<const Vector2<scalar>>& e0,
-        const Eigen::Ref<const Vector2<scalar>>& e1,
+        Eigen::ConstRef<Vector2<scalar>> v,
+        Eigen::ConstRef<Vector2<scalar>> direc,
+        Eigen::ConstRef<Vector2<scalar>> e0,
+        Eigen::ConstRef<Vector2<scalar>> e1,
         const ParameterType& param,
         const bool orientable)
     {
@@ -63,9 +63,9 @@ namespace {
 
     template <class scalar>
     scalar smooth_point2_term_one_side(
-        const Eigen::Ref<const Vector2<scalar>>& v,
-        const Eigen::Ref<const Vector2<scalar>>& direc,
-        const Eigen::Ref<const Vector2<scalar>>& e0,
+        Eigen::ConstRef<Vector2<scalar>> v,
+        Eigen::ConstRef<Vector2<scalar>> direc,
+        Eigen::ConstRef<Vector2<scalar>> e0,
         const ParameterType& param)
     {
         const Vector2<scalar> dn = -direc.normalized();

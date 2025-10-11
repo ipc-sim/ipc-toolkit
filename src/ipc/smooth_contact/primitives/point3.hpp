@@ -50,39 +50,39 @@ public:
     template <typename scalar, int n_verts = -1>
     scalar smooth_point3_term(
         const Eigen::Matrix<scalar, n_verts, 3>& X,
-        const Eigen::Ref<const RowVector3<scalar>>& direc) const;
+        Eigen::ConstRef<RowVector3<scalar>> direc) const;
 
     GradType<-1> smooth_point3_term_gradient(
-        const Eigen::Ref<const RowVector3<double>>& direc,
-        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& X,
+        Eigen::ConstRef<RowVector3<double>> direc,
+        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
         const ParameterType& param) const;
 
     HessianType<-1> smooth_point3_term_hessian(
-        const Eigen::Ref<const RowVector3<double>>& direc,
-        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& X,
+        Eigen::ConstRef<RowVector3<double>> direc,
+        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
         const ParameterType& param) const;
 
     GradType<-1> smooth_point3_term_tangent_gradient(
-        const Eigen::Ref<const RowVector3<double>>& direc,
-        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+        Eigen::ConstRef<RowVector3<double>> direc,
+        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
         const double& alpha,
         const double& beta) const;
 
     HessianType<-1> smooth_point3_term_tangent_hessian(
-        const Eigen::Ref<const RowVector3<double>>& direc,
-        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+        Eigen::ConstRef<RowVector3<double>> direc,
+        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
         const double& alpha,
         const double& beta) const;
 
     GradType<-1> smooth_point3_term_normal_gradient(
-        const Eigen::Ref<const RowVector3<double>>& direc,
-        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+        Eigen::ConstRef<RowVector3<double>> direc,
+        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
         const double& alpha,
         const double& beta) const;
 
     HessianType<-1> smooth_point3_term_normal_hessian(
-        const Eigen::Ref<const RowVector3<double>>& direc,
-        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+        Eigen::ConstRef<RowVector3<double>> direc,
+        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
         const double& alpha,
         const double& beta) const;
 
@@ -99,7 +99,7 @@ private:
 
     bool smooth_point3_term_type(
         const Eigen::Matrix<double, -1, 3>& X,
-        const Eigen::Ref<const RowVector3<double>>& direc);
+        Eigen::ConstRef<RowVector3<double>> direc);
 };
 
 } // namespace ipc
