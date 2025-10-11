@@ -5,7 +5,8 @@
 #include <ipc/config.hpp>
 
 namespace ipc {
-enum class HeavisideType { ZERO = 0, ONE = 1, VARIANT = 2 };
+
+enum class HeavisideType : uint8_t { ZERO = 0, ONE = 1, VARIANT = 2 };
 
 struct OrientationTypes {
 

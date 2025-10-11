@@ -6,7 +6,7 @@
 
 namespace ipc {
 
-enum class CollisionType {
+enum class CollisionType : uint8_t {
     EDGE_VERTEX,
     VERTEX_VERTEX,
     FACE_VERTEX,
@@ -148,7 +148,10 @@ public:
 
     std::string name() const override;
 
-    int n_dofs() const override { return pA->n_dofs() + pB->n_dofs(); }
+    int n_dofs() const override
+    {
+        return primitive_a->n_dofs() + primitive_b->n_dofs();
+    }
     CollisionType type() const override;
 
     Vector<int, N_CORE_DOFS> get_core_indices() const;
@@ -156,7 +159,7 @@ public:
 
     int num_vertices() const override
     {
-        return pA->n_vertices() + pB->n_vertices();
+        return primitive_a->n_vertices() + primitive_b->n_vertices();
     }
 
     template <typename T>
@@ -185,8 +188,8 @@ public:
     compute_distance(Eigen::ConstRef<Eigen::MatrixXd> vertices) const override;
 
 private:
-    std::unique_ptr<PrimitiveA> pA;
-    std::unique_ptr<PrimitiveB> pB;
+    std::unique_ptr<PrimitiveA> primitive_a;
+    std::unique_ptr<PrimitiveB> primitive_b;
 };
 
 } // namespace ipc

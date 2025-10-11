@@ -93,7 +93,8 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::get_core_indices() const
     core_indices << Eigen::VectorXi::LinSpaced(
         N_CORE_DOFS_A, 0, N_CORE_DOFS_A - 1),
         Eigen::VectorXi::LinSpaced(
-            N_CORE_DOFS_B, pA->n_dofs(), pA->n_dofs() + N_CORE_DOFS_B - 1);
+            N_CORE_DOFS_B, primitive_a->n_dofs(),
+            primitive_a->n_dofs() + N_CORE_DOFS_B - 1);
     return core_indices;
 }
 
@@ -111,25 +112,29 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::SmoothCollisionTemplate(
     VectorMax3d d =
         PrimitiveDistance<PrimitiveA, PrimitiveB>::compute_closest_direction(
             mesh, V, _primitive0, _primitive1, dtype);
-    pA = std::make_unique<PrimitiveA>(_primitive0, mesh, V, d, param);
-    pB = std::make_unique<PrimitiveB>(_primitive1, mesh, V, -d, param);
+    primitive_a = std::make_unique<PrimitiveA>(_primitive0, mesh, V, d, param);
+    primitive_b = std::make_unique<PrimitiveB>(_primitive1, mesh, V, -d, param);
 
-    if ((pA->n_vertices() + pB->n_vertices()) * DIM > ELEMENT_SIZE) {
+    if ((primitive_a->n_vertices() + primitive_b->n_vertices()) * DIM
+        > ELEMENT_SIZE) {
         logger().error(
             "Too many neighbors for collision pair! {} > {}! Increase MAX_VERT_3D in common.hpp",
-            pA->n_vertices() + pB->n_vertices(), MAX_VERT_3D);
+            primitive_a->n_vertices() + primitive_b->n_vertices(), MAX_VERT_3D);
     }
 
     int i = 0;
-    m_vertex_ids.assign(pA->vertex_ids().size() + pB->vertex_ids().size(), -1);
-    for (auto& v : pA->vertex_ids()) {
+    m_vertex_ids.assign(
+        primitive_a->vertex_ids().size() + primitive_b->vertex_ids().size(),
+        -1);
+    for (auto& v : primitive_a->vertex_ids()) {
         m_vertex_ids[i++] = v;
     }
-    for (auto& v : pB->vertex_ids()) {
+    for (auto& v : primitive_b->vertex_ids()) {
         m_vertex_ids[i++] = v;
     }
-    assert(i == pA->n_vertices() + pB->n_vertices());
-    m_is_active = (d.norm() < m_dhat) && pA->is_active() && pB->is_active();
+    assert(i == primitive_a->n_vertices() + primitive_b->n_vertices());
+    m_is_active = (d.norm() < m_dhat) && primitive_a->is_active()
+        && primitive_b->is_active();
 
     if (d.norm() < 1e-12) {
         logger().warn(
@@ -148,7 +153,8 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
 {
     Vector<double, N_CORE_POINTS * DIM> x;
     x << positions.head(PrimitiveA::N_CORE_POINTS * DIM),
-        positions.segment(pA->n_dofs(), PrimitiveB::N_CORE_POINTS * DIM);
+        positions.segment(
+            primitive_a->n_dofs(), PrimitiveB::N_CORE_POINTS * DIM);
 
     // grad of "d" wrt. points
     const Vector<double, DIM> closest_direction =
@@ -156,9 +162,11 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
             compute_closest_direction(x, DTYPE::AUTO);
     const double dist = closest_direction.norm();
 
-    assert(positions.size() == pA->n_dofs() + pB->n_dofs());
-    double a1 = pA->potential(closest_direction, positions.head(pA->n_dofs()));
-    double a2 = pB->potential(-closest_direction, positions.tail(pB->n_dofs()));
+    assert(positions.size() == primitive_a->n_dofs() + primitive_b->n_dofs());
+    double a1 = primitive_a->potential(
+        closest_direction, positions.head(primitive_a->n_dofs()));
+    double a2 = primitive_b->potential(
+        -closest_direction, positions.tail(primitive_b->n_dofs()));
     double a3 = Math<double>::inv_barrier(dist / dhat(), params.r);
     double a4 =
         PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, double>::mollifier(
@@ -199,9 +207,10 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
     assert(dist > 0);
 
     // these two use autodiff with different variable count
-    auto gA_reduced = pA->grad(closest_direction, positions.head(pA->n_dofs()));
-    auto gB_reduced =
-        pB->grad(-closest_direction, positions.tail(pB->n_dofs()));
+    auto gA_reduced = primitive_a->grad(
+        closest_direction, positions.head(primitive_a->n_dofs()));
+    auto gB_reduced = primitive_b->grad(
+        -closest_direction, positions.tail(primitive_b->n_dofs()));
 
     // gradient of barrier potential
     double barrier = 0;
@@ -261,16 +270,18 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
         {
             gA(core_indices) =
                 closest_direction_grad.transpose() * gA_reduced.head(DIM);
-            gA.head(pA->n_dofs()) += gA_reduced.tail(pA->n_dofs());
+            gA.head(primitive_a->n_dofs()) +=
+                gA_reduced.tail(primitive_a->n_dofs());
 
             gB(core_indices) =
                 closest_direction_grad.transpose() * -gB_reduced.head(DIM);
-            gB.tail(pB->n_dofs()) += gB_reduced.tail(pB->n_dofs());
+            gB.tail(primitive_b->n_dofs()) +=
+                gB_reduced.tail(primitive_b->n_dofs());
         }
-        const double potential_a =
-            pA->potential(closest_direction, positions.head(pA->n_dofs()));
-        const double potential_b =
-            pB->potential(-closest_direction, positions.tail(pB->n_dofs()));
+        const double potential_a = primitive_a->potential(
+            closest_direction, positions.head(primitive_a->n_dofs()));
+        const double potential_b = primitive_b->potential(
+            -closest_direction, positions.tail(primitive_b->n_dofs()));
 
         orient = potential_a * potential_b;
         gOrient = gA * potential_b + gB * potential_a;
@@ -310,13 +321,14 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
     const double dist = closest_direction.norm();
 
     // these two use autodiff with different variable count
-    auto gA_reduced = pA->grad(closest_direction, positions.head(pA->n_dofs()));
-    auto hA_reduced =
-        pA->hessian(closest_direction, positions.head(pA->n_dofs()));
-    auto gB_reduced =
-        pB->grad(-closest_direction, positions.tail(pB->n_dofs()));
-    auto hB_reduced =
-        pB->hessian(-closest_direction, positions.tail(pB->n_dofs()));
+    auto gA_reduced = primitive_a->grad(
+        closest_direction, positions.head(primitive_a->n_dofs()));
+    auto hA_reduced = primitive_a->hessian(
+        closest_direction, positions.head(primitive_a->n_dofs()));
+    auto gB_reduced = primitive_b->grad(
+        -closest_direction, positions.tail(primitive_b->n_dofs()));
+    auto hB_reduced = primitive_b->hessian(
+        -closest_direction, positions.tail(primitive_b->n_dofs()));
 
     // hessian of barrier potential
     double barrier = 0;
@@ -421,7 +433,8 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
         {
             gA(core_indices) =
                 closest_direction_grad.transpose() * gA_reduced.head(DIM);
-            gA.head(pA->n_dofs()) += gA_reduced.tail(pA->n_dofs());
+            gA.head(primitive_a->n_dofs()) +=
+                gA_reduced.tail(primitive_a->n_dofs());
 
             hA(core_indices, core_indices) = closest_direction_grad.transpose()
                 * hA_reduced.topLeftCorner(DIM, DIM) * closest_direction_grad;
@@ -429,18 +442,20 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
                 hA(core_indices, core_indices) +=
                     gA_reduced(d) * closest_direction_hess[d];
 
-            hA.topLeftCorner(pA->n_dofs(), pA->n_dofs()) +=
-                hA_reduced.bottomRightCorner(pA->n_dofs(), pA->n_dofs());
-            hA(core_indices, Eigen::seqN(0, pA->n_dofs())) +=
+            hA.topLeftCorner(primitive_a->n_dofs(), primitive_a->n_dofs()) +=
+                hA_reduced.bottomRightCorner(
+                    primitive_a->n_dofs(), primitive_a->n_dofs());
+            hA(core_indices, Eigen::seqN(0, primitive_a->n_dofs())) +=
                 closest_direction_grad.transpose()
-                * hA_reduced.topRightCorner(DIM, pA->n_dofs());
-            hA(Eigen::seqN(0, pA->n_dofs()), core_indices) +=
-                hA_reduced.bottomLeftCorner(pA->n_dofs(), DIM)
+                * hA_reduced.topRightCorner(DIM, primitive_a->n_dofs());
+            hA(Eigen::seqN(0, primitive_a->n_dofs()), core_indices) +=
+                hA_reduced.bottomLeftCorner(primitive_a->n_dofs(), DIM)
                 * closest_direction_grad;
 
             gB(core_indices) =
                 closest_direction_grad.transpose() * -gB_reduced.head(DIM);
-            gB.tail(pB->n_dofs()) += gB_reduced.tail(pB->n_dofs());
+            gB.tail(primitive_b->n_dofs()) +=
+                gB_reduced.tail(primitive_b->n_dofs());
 
             hB(core_indices, core_indices) = closest_direction_grad.transpose()
                 * hB_reduced.topLeftCorner(DIM, DIM) * closest_direction_grad;
@@ -448,19 +463,23 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
                 hB(core_indices, core_indices) -=
                     gB_reduced(d) * closest_direction_hess[d];
 
-            hB.bottomRightCorner(pB->n_dofs(), pB->n_dofs()) +=
-                hB_reduced.bottomRightCorner(pB->n_dofs(), pB->n_dofs());
-            hB(core_indices, Eigen::seqN(pA->n_dofs(), pB->n_dofs())) -=
+            hB.bottomRightCorner(
+                primitive_b->n_dofs(), primitive_b->n_dofs()) +=
+                hB_reduced.bottomRightCorner(
+                    primitive_b->n_dofs(), primitive_b->n_dofs());
+            hB(core_indices,
+               Eigen::seqN(primitive_a->n_dofs(), primitive_b->n_dofs())) -=
                 closest_direction_grad.transpose()
-                * hB_reduced.topRightCorner(DIM, pB->n_dofs());
-            hB(Eigen::seqN(pA->n_dofs(), pB->n_dofs()), core_indices) -=
-                hB_reduced.bottomLeftCorner(pB->n_dofs(), DIM)
+                * hB_reduced.topRightCorner(DIM, primitive_b->n_dofs());
+            hB(Eigen::seqN(primitive_a->n_dofs(), primitive_b->n_dofs()),
+               core_indices) -=
+                hB_reduced.bottomLeftCorner(primitive_b->n_dofs(), DIM)
                 * closest_direction_grad;
         }
-        const double potential_a =
-            pA->potential(closest_direction, positions.head(pA->n_dofs()));
-        const double potential_b =
-            pB->potential(-closest_direction, positions.tail(pB->n_dofs()));
+        const double potential_a = primitive_a->potential(
+            closest_direction, positions.head(primitive_a->n_dofs()));
+        const double potential_b = primitive_b->potential(
+            -closest_direction, positions.tail(primitive_b->n_dofs()));
 
         orient = potential_a * potential_b;
         gOrient = gA * potential_b + gB * potential_a;
@@ -491,7 +510,8 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
 
     Vector<double, N_CORE_POINTS * DIM> x;
     x << positions.head(PrimitiveA::N_CORE_POINTS * DIM),
-        positions.segment(pA->n_dofs(), PrimitiveB::N_CORE_POINTS * DIM);
+        positions.segment(
+            primitive_a->n_dofs(), PrimitiveB::N_CORE_POINTS * DIM);
 
     // grad of "d" wrt. points
     Vector<double, DIM> closest_direction =

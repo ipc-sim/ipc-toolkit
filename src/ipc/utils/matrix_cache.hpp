@@ -144,7 +144,7 @@ private:
         return main_cache()->m_second_cache;
     }
 
-    size_t m_size;
+    size_t m_size = 0;
 
     Eigen::SparseMatrix<double, Eigen::ColMajor> m_tmp;
 

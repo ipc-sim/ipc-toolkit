@@ -13,7 +13,7 @@
 
 namespace ipc {
 
-enum class BroadPhaseMethod {
+enum class BroadPhaseMethod : uint8_t {
     HASH_GRID,
     BRUTE_FORCE,
     SPATIAL_HASH,

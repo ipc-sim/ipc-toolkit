@@ -73,7 +73,7 @@ public:
 
     static T mollifier(const Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
     {
-        std::array<HeavisideType, 4> types;
+        std::array<HeavisideType, 4> types {};
         types.fill(HeavisideType::VARIANT);
         return edge_edge_mollifier<T>(
             x.template head<3>() /* edge 0 */,
