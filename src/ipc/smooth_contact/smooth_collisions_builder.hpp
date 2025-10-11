@@ -28,8 +28,7 @@ public:
     // -------------------------------------------------------------------------
 
     static void merge(
-        const utils::ParallelCacheType<SmoothCollisionsBuilder<2>>&
-            local_storage,
+        const ParallelCacheType<SmoothCollisionsBuilder<2>>& local_storage,
         SmoothCollisions& merged_collisions);
 
     // Constructed collisions
@@ -77,8 +76,7 @@ public:
     // -------------------------------------------------------------------------
 
     static void merge(
-        const utils::ParallelCacheType<SmoothCollisionsBuilder<3>>&
-            local_storage,
+        const ParallelCacheType<SmoothCollisionsBuilder<3>>& local_storage,
         SmoothCollisions& merged_collisions);
 
     // Constructed collisions

@@ -49,12 +49,11 @@ Eigen::VectorXd SmoothContactPotential::gradient(
 
     const int dim = X.cols();
 
-    auto storage = ipc::utils::create_thread_storage<Eigen::VectorXd>(
-        Eigen::VectorXd::Zero(X.size()));
-    ipc::utils::maybe_parallel_for(
+    auto storage =
+        create_thread_storage<Eigen::VectorXd>(Eigen::VectorXd::Zero(X.size()));
+    maybe_parallel_for(
         collisions.size(), [&](int start, int end, int thread_id) {
-            auto& global_grad =
-                ipc::utils::get_local_thread_storage(storage, thread_id);
+            auto& global_grad = get_local_thread_storage(storage, thread_id);
 
             for (size_t i = start; i < end; i++) {
                 const SmoothCollision& collision = collisions[i];
@@ -93,12 +92,11 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
 
     const int max_triplets_size = int(1e7);
     const int buffer_size = std::min(max_triplets_size, ndof);
-    auto storage = ipc::utils::create_thread_storage(
-        LocalThreadMatStorage(buffer_size, ndof, ndof));
-    ipc::utils::maybe_parallel_for(
+    auto storage =
+        create_thread_storage(LocalThreadMatStorage(buffer_size, ndof, ndof));
+    maybe_parallel_for(
         collisions.size(), [&](int start, int end, int thread_id) {
-            auto& hess_triplets =
-                ipc::utils::get_local_thread_storage(storage, thread_id);
+            auto& hess_triplets = get_local_thread_storage(storage, thread_id);
 
             for (size_t i = start; i < end; i++) {
                 const SmoothCollision& collision = collisions[i];
@@ -125,7 +123,7 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
         storages[index++] = &local_storage;
     }
 
-    utils::maybe_parallel_for(
+    maybe_parallel_for(
         storages.size(), [&](int i) { storages[i]->cache->prune(); });
 
     if (storage.size() == 0) {
@@ -168,7 +166,7 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
         triplets.resize(triplet_count);
 
         // Parallel copy into triplets
-        utils::maybe_parallel_for(storages.size(), [&](int i) {
+        maybe_parallel_for(storages.size(), [&](int i) {
             const SparseMatrixCache& cache =
                 dynamic_cast<const SparseMatrixCache&>(*storages[i]->cache);
             int offset = offsets[i];

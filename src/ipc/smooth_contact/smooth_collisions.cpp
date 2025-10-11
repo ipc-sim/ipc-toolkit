@@ -158,38 +158,36 @@ void SmoothCollisions::build(
     };
 
     if (mesh.dim() == 2) {
-        auto storage =
-            ipc::utils::create_thread_storage<SmoothCollisionsBuilder<2>>(
-                SmoothCollisionsBuilder<2>());
-        ipc::utils::maybe_parallel_for(
+        auto storage = create_thread_storage<SmoothCollisionsBuilder<2>>(
+            SmoothCollisionsBuilder<2>());
+        maybe_parallel_for(
             candidates_.ev_candidates.size(),
             [&](int start, int end, int thread_id) {
                 SmoothCollisionsBuilder<2>& local_storage =
-                    ipc::utils::get_local_thread_storage(storage, thread_id);
+                    get_local_thread_storage(storage, thread_id);
                 local_storage.add_edge_vertex_collisions(
                     mesh, vertices, candidates_.ev_candidates, param, vert_dhat,
                     edge_dhat, start, end);
             });
         SmoothCollisionsBuilder<2>::merge(storage, *this);
     } else {
-        auto storage =
-            ipc::utils::create_thread_storage<SmoothCollisionsBuilder<3>>(
-                SmoothCollisionsBuilder<3>());
-        ipc::utils::maybe_parallel_for(
+        auto storage = create_thread_storage<SmoothCollisionsBuilder<3>>(
+            SmoothCollisionsBuilder<3>());
+        maybe_parallel_for(
             candidates_.ee_candidates.size(),
             [&](int start, int end, int thread_id) {
                 SmoothCollisionsBuilder<3>& local_storage =
-                    ipc::utils::get_local_thread_storage(storage, thread_id);
+                    get_local_thread_storage(storage, thread_id);
                 local_storage.add_edge_edge_collisions(
                     mesh, vertices, candidates_.ee_candidates, param, vert_dhat,
                     edge_dhat, start, end);
             });
 
-        ipc::utils::maybe_parallel_for(
+        maybe_parallel_for(
             candidates_.fv_candidates.size(),
             [&](int start, int end, int thread_id) {
                 SmoothCollisionsBuilder<3>& local_storage =
-                    ipc::utils::get_local_thread_storage(storage, thread_id);
+                    get_local_thread_storage(storage, thread_id);
                 local_storage.add_face_vertex_collisions(
                     mesh, vertices, candidates_.fv_candidates, param, vert_dhat,
                     edge_dhat, face_dhat, start, end);

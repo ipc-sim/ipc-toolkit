@@ -51,7 +51,7 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
 
     tbb::combinable<Eigen::VectorXd> grad(Eigen::VectorXd::Zero(X.size()));
 
-    ipc::utils::maybe_parallel_for(
+    maybe_parallel_for(
         collisions.size(), [&](int start, int end, int thread_id) {
             for (size_t i = start; i < end; i++) {
                 const TCollision& collision = collisions[i];
@@ -93,12 +93,11 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
     const int max_triplets_size = int(1e7);
     const int buffer_size = std::min(max_triplets_size, ndof);
-    auto storage = ipc::utils::create_thread_storage(
-        LocalThreadMatStorage(buffer_size, ndof, ndof));
-    ipc::utils::maybe_parallel_for(
+    auto storage =
+        create_thread_storage(LocalThreadMatStorage(buffer_size, ndof, ndof));
+    maybe_parallel_for(
         collisions.size(), [&](int start, int end, int thread_id) {
-            auto& hess_triplets =
-                ipc::utils::get_local_thread_storage(storage, thread_id);
+            auto& hess_triplets = get_local_thread_storage(storage, thread_id);
 
             for (size_t i = start; i < end; i++) {
                 const TCollision& collision = collisions[i];
@@ -127,7 +126,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
         storages[index++] = &local_storage;
     }
 
-    utils::maybe_parallel_for(
+    maybe_parallel_for(
         storages.size(), [&](int i) { storages[i]->cache->prune(); });
 
     if (storage.empty()) {
@@ -172,7 +171,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
         triplets.resize(triplet_count);
 
         // Parallel copy into triplets
-        utils::maybe_parallel_for(storages.size(), [&](int i) {
+        maybe_parallel_for(storages.size(), [&](int i) {
             const SparseMatrixCache& cache =
                 dynamic_cast<const SparseMatrixCache&>(*storages[i]->cache);
             int offset = offsets[i];

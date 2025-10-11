@@ -267,7 +267,7 @@ SparseMatrixCache::operator+(const SparseMatrixCache& a) const
         assert(aouter_index.size() == outer_index.size());
         assert(a.m_values.size() == m_values.size());
 
-        ipc::utils::maybe_parallel_for(
+        maybe_parallel_for(
             a.m_values.size(), [&](int start, int end, int thread_id) {
                 for (int i = start; i < end; ++i) {
                     out->m_values[i] = a.m_values[i] + m_values[i];
@@ -311,7 +311,7 @@ void SparseMatrixCache::operator+=(const SparseMatrixCache& o)
         assert(outer_index.size() == oouter_index.size());
         assert(m_values.size() == o.m_values.size());
 
-        ipc::utils::maybe_parallel_for(
+        maybe_parallel_for(
             o.m_values.size(), [&](int start, int end, int thread_id) {
                 for (int i = start; i < end; ++i) {
                     m_values[i] += o.m_values[i];
