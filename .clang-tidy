@@ -8,6 +8,7 @@ Checks: >
 
   # Bug Detection and Safety
   bugprone-*,
+  # misc-const-correctness,
 
   # Specific high-value checks (even if not in a group above)
   google-runtime-int,

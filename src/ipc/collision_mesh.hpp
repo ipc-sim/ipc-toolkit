@@ -17,7 +17,7 @@ public:
     /// @param edges The edges of the collision mesh (|E| × 2).
     /// @param faces The faces of the collision mesh (|F| × 3).
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
-    CollisionMesh(
+    explicit CollisionMesh(
         Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
         Eigen::ConstRef<Eigen::MatrixXi> edges = Eigen::MatrixXi(),
         Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi(),

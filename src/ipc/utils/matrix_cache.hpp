@@ -42,7 +42,7 @@ class SparseMatrixCache : public MatrixCache {
 public:
     // constructors (call init functions below)
     SparseMatrixCache() = default;
-    SparseMatrixCache(const size_t size);
+    explicit SparseMatrixCache(const size_t size);
     SparseMatrixCache(const size_t rows, const size_t cols);
     SparseMatrixCache(const MatrixCache& other);
     SparseMatrixCache(
@@ -181,7 +181,7 @@ private:
 class DenseMatrixCache : public MatrixCache {
 public:
     DenseMatrixCache() { }
-    DenseMatrixCache(const size_t size);
+    explicit DenseMatrixCache(const size_t size);
     DenseMatrixCache(const size_t rows, const size_t cols);
     DenseMatrixCache(const MatrixCache& other);
     DenseMatrixCache(const DenseMatrixCache& other);
