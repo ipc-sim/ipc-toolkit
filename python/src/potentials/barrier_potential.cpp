@@ -41,7 +41,7 @@ void define_barrier_potential(py::module_& m)
 
 void define_smooth_potential(py::module_& m)
 {
-    py::class_<ParameterType>(m, "ParameterType")
+    py::class_<SmoothContactParameters>(m, "SmoothContactParameters")
         .def(
             py::init<
                 const double&, const double&, const double&, const double&,
@@ -64,16 +64,16 @@ void define_smooth_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("dhat"), py::arg("alpha_t"), py::arg("beta_t"),
             py::arg("r"))
-        .def_readonly("dhat", &ParameterType::dhat)
-        .def_readonly("alpha_t", &ParameterType::alpha_t)
-        .def_readonly("beta_t", &ParameterType::beta_t)
-        .def_readonly("alpha_n", &ParameterType::alpha_n)
-        .def_readonly("beta_n", &ParameterType::beta_n)
-        .def_readonly("r", &ParameterType::r);
+        .def_readonly("dhat", &SmoothContactParameters::dhat)
+        .def_readonly("alpha_t", &SmoothContactParameters::alpha_t)
+        .def_readonly("beta_t", &SmoothContactParameters::beta_t)
+        .def_readonly("alpha_n", &SmoothContactParameters::alpha_n)
+        .def_readonly("beta_n", &SmoothContactParameters::beta_n)
+        .def_readonly("r", &SmoothContactParameters::r);
 
     py::class_<SmoothContactPotential>(m, "SmoothPotential")
         .def(
-            py::init<const ParameterType&>(),
+            py::init<const SmoothContactParameters&>(),
             R"ipc_Qu8mg5v7(
             Construct a smooth barrier potential.
 

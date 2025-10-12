@@ -19,9 +19,9 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeVertexCandidate>& candidates,
-        const ParameterType& param,
-        const std::function<double(const long&)>& vert_dhat,
-        const std::function<double(const long&)>& edge_dhat,
+        const SmoothContactParameters& params,
+        const std::function<double(const index_t)>& vert_dhat,
+        const std::function<double(const index_t)>& edge_dhat,
         const size_t start_i,
         const size_t end_i);
 
@@ -38,11 +38,11 @@ public:
 
     // Store the indices to pairs to avoid duplicates.
     unordered_map<
-        std::pair<long, long>,
+        std::pair<index_t, index_t>,
         std::shared_ptr<SmoothCollisionTemplate<Point2, Point2>>>
         vert_vert_2_to_id;
     unordered_map<
-        std::pair<long, long>,
+        std::pair<index_t, index_t>,
         std::shared_ptr<SmoothCollisionTemplate<Edge2, Point2>>>
         vert_edge_2_to_id;
 };
@@ -55,9 +55,9 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeEdgeCandidate>& candidates,
-        const ParameterType& param,
-        const std::function<double(const long&)>& vert_dhat,
-        const std::function<double(const long&)>& edge_dhat,
+        const SmoothContactParameters& params,
+        const std::function<double(const index_t)>& vert_dhat,
+        const std::function<double(const index_t)>& edge_dhat,
         const size_t start_i,
         const size_t end_i);
 
@@ -65,10 +65,10 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<FaceVertexCandidate>& candidates,
-        const ParameterType& param,
-        const std::function<double(const long&)>& vert_dhat,
-        const std::function<double(const long&)>& edge_dhat,
-        const std::function<double(const long&)>& face_dhat,
+        const SmoothContactParameters& params,
+        const std::function<double(const index_t)>& vert_dhat,
+        const std::function<double(const index_t)>& edge_dhat,
+        const std::function<double(const index_t)>& face_dhat,
         const size_t start_i,
         const size_t end_i);
 
@@ -86,11 +86,11 @@ public:
     // Store the indices to pairs to avoid duplicates, no need for Face-Vertex
     // and Edge-Edge
     unordered_map<
-        std::pair<long, long>,
+        std::pair<index_t, index_t>,
         std::shared_ptr<SmoothCollisionTemplate<Point3, Point3>>>
         vert_vert_3_to_id;
     unordered_map<
-        std::pair<long, long>,
+        std::pair<index_t, index_t>,
         std::shared_ptr<SmoothCollisionTemplate<Edge3, Point3>>>
         edge_vert_3_to_id;
 };

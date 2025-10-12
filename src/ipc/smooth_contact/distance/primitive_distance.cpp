@@ -68,8 +68,8 @@ template <>
 double PrimitiveDistance<Face, Point3>::compute_distance(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Face, Point3>::type dtype)
 {
     return point_triangle_distance(
@@ -114,8 +114,8 @@ template <>
 double PrimitiveDistance<Edge3, Edge3>::compute_distance(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Edge3, Edge3>::type dtype)
 {
     return edge_edge_distance(
@@ -157,8 +157,8 @@ template <>
 double PrimitiveDistance<Edge3, Point3>::compute_distance(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Edge3, Point3>::type dtype)
 {
     return point_edge_distance(
@@ -215,8 +215,8 @@ template <>
 double PrimitiveDistance<Edge2, Point2>::compute_distance(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Edge2, Point2>::type dtype)
 {
     return point_edge_distance(
@@ -227,8 +227,8 @@ template <>
 double PrimitiveDistance<Point2, Point2>::compute_distance(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Point2, Point2>::type dtype)
 {
     return point_point_distance(V.row(a), V.row(b));
@@ -238,8 +238,8 @@ template <>
 double PrimitiveDistance<Point3, Point3>::compute_distance(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Point3, Point3>::type dtype)
 {
     return point_point_distance(V.row(a), V.row(b));
@@ -250,8 +250,8 @@ Vector<double, PrimitiveDistance<Face, Point3>::DIM>
 PrimitiveDistance<Face, Point3>::compute_closest_direction(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Face, Point3>::type dtype)
 {
     return point_triangle_closest_point_direction<double>(
@@ -264,8 +264,8 @@ Vector<double, PrimitiveDistance<Edge3, Edge3>::DIM>
 PrimitiveDistance<Edge3, Edge3>::compute_closest_direction(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Edge3, Edge3>::type dtype)
 {
     return edge_edge_closest_point_direction<double>(
@@ -278,8 +278,8 @@ Vector<double, PrimitiveDistance<Edge3, Point3>::DIM>
 PrimitiveDistance<Edge3, Point3>::compute_closest_direction(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Edge3, Point3>::type dtype)
 {
     return PointEdgeDistance<double, 3>::point_edge_closest_point_direction(
@@ -291,8 +291,8 @@ Vector<double, PrimitiveDistance<Edge2, Point2>::DIM>
 PrimitiveDistance<Edge2, Point2>::compute_closest_direction(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Edge2, Point2>::type dtype)
 {
     return PointEdgeDistance<double, 2>::point_edge_closest_point_direction(
@@ -304,8 +304,8 @@ Vector<double, PrimitiveDistance<Point2, Point2>::DIM>
 PrimitiveDistance<Point2, Point2>::compute_closest_direction(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Point2, Point2>::type dtype)
 {
     return V.row(b) - V.row(a);
@@ -316,8 +316,8 @@ Vector<double, PrimitiveDistance<Point3, Point3>::DIM>
 PrimitiveDistance<Point3, Point3>::compute_closest_direction(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const long& a,
-    const long& b,
+    const index_t a,
+    const index_t b,
     typename PrimitiveDistType<Point3, Point3>::type dtype)
 {
     return V.row(b) - V.row(a);

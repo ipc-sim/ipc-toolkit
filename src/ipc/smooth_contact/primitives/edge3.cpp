@@ -20,7 +20,7 @@ namespace {
         Eigen::ConstRef<Vector3d> e1,
         Eigen::ConstRef<Vector3d> f0,
         Eigen::ConstRef<Vector3d> f1,
-        const ParameterType& param,
+        const SmoothContactParameters& params,
         OrientationTypes& otypes,
         const bool orientable)
     {
@@ -37,9 +37,9 @@ namespace {
 
         {
             otypes.tangent_type(0) = OrientationTypes::compute_type(
-                -dn.dot(t0), param.alpha_t, param.beta_t);
+                -dn.dot(t0), params.alpha_t, params.beta_t);
             otypes.tangent_type(1) = OrientationTypes::compute_type(
-                -dn.dot(t1), param.alpha_t, param.beta_t);
+                -dn.dot(t1), params.alpha_t, params.beta_t);
             if (otypes.tangent_type(0) == HeavisideType::ZERO
                 || otypes.tangent_type(1) == HeavisideType::ZERO) {
                 return false;
@@ -50,7 +50,8 @@ namespace {
             const Vector3d edge = (e0 - e1).normalized();
             const Vector3d d = project<double>(dn, edge).normalized();
             otypes.normal_type(0) = OrientationTypes::compute_type(
-                (d - t0).cross(d - t1).dot(edge), param.alpha_n, param.beta_n);
+                (d - t0).cross(d - t1).dot(edge), params.alpha_n,
+                params.beta_n);
             otypes.normal_type(1) = otypes.normal_type(0);
         }
 
@@ -201,17 +202,17 @@ namespace {
         Eigen::ConstRef<Vector3d> e1,
         Eigen::ConstRef<Vector3d> f0,
         Eigen::ConstRef<Vector3d> f1,
-        const ParameterType& param,
+        const SmoothContactParameters& params,
         const OrientationTypes& otypes,
         const bool orientable)
     {
         const Vector3d dn = direc.normalized();
         double tangent_term = smooth_edge3_tangent_term(
-            dn, e0, e1, f0, f1, param.alpha_t, param.beta_t, otypes);
+            dn, e0, e1, f0, f1, params.alpha_t, params.beta_t, otypes);
         double normal_term = !orientable
             ? 1
             : smooth_edge3_normal_term(
-                  dn, e0, e1, f0, f1, param.alpha_n, param.beta_n, otypes);
+                  dn, e0, e1, f0, f1, params.alpha_n, params.beta_n, otypes);
 
         return (e1 - e0).squaredNorm() * tangent_term * normal_term;
     }
@@ -222,7 +223,7 @@ namespace {
         Eigen::ConstRef<Vector3d> e1,
         Eigen::ConstRef<Vector3d> f0,
         Eigen::ConstRef<Vector3d> f1,
-        const ParameterType& param,
+        const SmoothContactParameters& params,
         const OrientationTypes& otypes,
         const bool orientable)
     {
@@ -231,13 +232,13 @@ namespace {
         const auto [dn, dn_grad] = normalize_vector_grad(direc);
 
         auto [t_term, t_grad] = smooth_edge3_tangent_term_gradient(
-            dn, e0, e1, f0, f1, param.alpha_t, param.beta_t, otypes);
+            dn, e0, e1, f0, f1, params.alpha_t, params.beta_t, otypes);
 
         double n_term = 1.;
         Vector15d n_grad = Vector15d::Zero();
         if (orientable) {
             std::tie(n_term, n_grad) = smooth_edge3_normal_term_gradient(
-                dn, e0, e1, f0, f1, param.alpha_n, param.beta_n, otypes);
+                dn, e0, e1, f0, f1, params.alpha_n, params.beta_n, otypes);
         }
 
         t_grad.head<3>() = dn_grad * t_grad.head<3>();
@@ -260,7 +261,7 @@ namespace {
         Eigen::ConstRef<Vector3d> e1,
         Eigen::ConstRef<Vector3d> f0,
         Eigen::ConstRef<Vector3d> f1,
-        const ParameterType& param,
+        const SmoothContactParameters& params,
         const OrientationTypes& otypes,
         const bool orientable)
     {
@@ -269,14 +270,14 @@ namespace {
         const auto [dn, dn_grad, dn_hess] = normalize_vector_hess(direc);
 
         auto [t_term, t_grad, t_hess] = smooth_edge3_tangent_term_hessian(
-            dn, e0, e1, f0, f1, param.alpha_t, param.beta_t, otypes);
+            dn, e0, e1, f0, f1, params.alpha_t, params.beta_t, otypes);
 
         double n_term = 1.;
         Vector15d n_grad = Vector15d::Zero();
         Matrix15d n_hess = Matrix15d::Zero();
         if (orientable) {
             std::tie(n_term, n_grad, n_hess) = smooth_edge3_normal_term_hessian(
-                dn, e0, e1, f0, f1, param.alpha_n, param.beta_n, otypes);
+                dn, e0, e1, f0, f1, params.alpha_n, params.beta_n, otypes);
         }
 
         t_hess.topRows<3>() = dn_grad * t_hess.topRows<3>();
@@ -333,7 +334,7 @@ namespace {
         Eigen::ConstRef<Vector3<scalar>> e1,
         Eigen::ConstRef<Vector3<scalar>> f0,
         Eigen::ConstRef<Vector3<scalar>> f1,
-        const ParameterType& param,
+        const SmoothContactParameters& params,
         const OrientationTypes& otypes,
         const bool orientable)
     {
@@ -345,7 +346,7 @@ namespace {
         if (otypes.tangent_type(0) != HeavisideType::ONE) {
             tangent_term = tangent_term
                 * Math<scalar>::smooth_heaviside(
-                               -dn.dot(t0), param.alpha_t, param.beta_t);
+                               -dn.dot(t0), params.alpha_t, params.beta_t);
         }
 
         const Vector3<scalar> t1 =
@@ -356,7 +357,7 @@ namespace {
         if (otypes.tangent_type(1) != HeavisideType::ONE) {
             tangent_term = tangent_term
                 * Math<scalar>::smooth_heaviside(
-                               -dn.dot(t1), param.alpha_t, param.beta_t);
+                               -dn.dot(t1), params.alpha_t, params.beta_t);
         }
 
         scalar normal_term = scalar(1.);
@@ -364,7 +365,8 @@ namespace {
             const Vector3<scalar> edge = (e0 - e1).normalized();
             const Vector3<scalar> d = project<scalar>(dn, edge).normalized();
             normal_term = Math<scalar>::smooth_heaviside(
-                (d - t0).cross(d - t1).dot(edge), param.alpha_n, param.beta_n);
+                (d - t0).cross(d - t1).dot(edge), params.alpha_n,
+                params.beta_n);
         }
 
         return (e1 - e0).squaredNorm() * tangent_term * normal_term;
@@ -373,21 +375,21 @@ namespace {
 } // namespace
 // d is a vector from any point on the edge to the point outside of the edge
 Edge3::Edge3(
-    const long& id,
+    const index_t id,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const VectorMax3d& d,
-    const ParameterType& param)
-    : Primitive(id, param)
+    const SmoothContactParameters& params)
+    : Primitive(id, params)
 {
     orientable =
         (mesh.is_orient_vertex(mesh.edges()(id, 0))
          && mesh.is_orient_vertex(mesh.edges()(id, 0)));
 
-    std::array<long, 4> neighbors { { -1, -1, -1, -1 } };
+    std::array<index_t, 4> neighbors { { -1, -1, -1, -1 } };
     {
-        std::array<long, 2> lf = { { mesh.edges_to_faces()(id, 0),
-                                     mesh.edges_to_faces()(id, 1) } };
+        std::array<index_t, 2> lf = { { mesh.edges_to_faces()(id, 0),
+                                        mesh.edges_to_faces()(id, 1) } };
         has_neighbor_1 = lf[0] >= 0;
         has_neighbor_2 = lf[1] >= 0;
 
@@ -436,12 +438,12 @@ Edge3::Edge3(
     }
 
     if (has_neighbor_1 && has_neighbor_2) {
-        m_vertex_ids = std::vector<long>(
+        m_vertex_ids = std::vector<index_t>(
             neighbors.begin(), neighbors.begin() + neighbors.size());
         m_is_active = smooth_edge3_term_type(
             d.normalized(), vertices.row(m_vertex_ids[0]),
             vertices.row(m_vertex_ids[1]), vertices.row(m_vertex_ids[2]),
-            vertices.row(m_vertex_ids[3]), param, otypes, orientable);
+            vertices.row(m_vertex_ids[3]), params, otypes, orientable);
     } else if (has_neighbor_1 || has_neighbor_2) {
         m_vertex_ids = { { neighbors[0], neighbors[1],
                            has_neighbor_1 ? neighbors[2] : neighbors[3] } };
@@ -460,10 +462,10 @@ double Edge3::potential(
 #ifdef DERIVATIVES_WITH_AUTODIFF
     return smooth_edge3_term_template<double>(
         d.normalized(), x.head<3>(), x.segment<3>(3), x.segment<3>(6),
-        x.tail<3>(), param, otypes, orientable);
+        x.tail<3>(), params, otypes, orientable);
 #else
     return smooth_edge3_term(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), param,
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), params,
         otypes, orientable);
 #endif
 }
@@ -479,11 +481,11 @@ Edge3::grad(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
     auto X = slice_positions<T, 5, 3>(tmp);
     return smooth_edge3_term_template<T>(
                X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
-               X.row(4), param, otypes, orientable)
+               X.row(4), params, otypes, orientable)
         .getGradient();
 #else
     return std::get<1>(smooth_edge3_term_gradient(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), param,
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), params,
         otypes, orientable));
 #endif
 }
@@ -499,11 +501,11 @@ Edge3::hessian(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
     auto X = slice_positions<T, 5, 3>(tmp);
     return smooth_edge3_term_template<T>(
                X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
-               X.row(4), param, otypes, orientable)
+               X.row(4), params, otypes, orientable)
         .getHessian();
 #else
     return std::get<2>(smooth_edge3_term_hessian(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), param,
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), params,
         otypes, orientable));
 #endif
 }

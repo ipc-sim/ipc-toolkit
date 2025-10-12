@@ -12,14 +12,14 @@ public:
     static constexpr int MAX_SIZE = N_VERT_NEIGHBORS_2D * DIM;
     // d is a vector from this point to the other primitive
     Point2(
-        const long& id,
+        const index_t id,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const VectorMax3d& d,
-        const ParameterType& param);
+        const SmoothContactParameters& params);
 
     Point2(
-        const long& id,
+        const index_t id,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices);
 

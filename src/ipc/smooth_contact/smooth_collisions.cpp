@@ -21,18 +21,18 @@ namespace ipc {
 void SmoothCollisions::compute_adaptive_dhat(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices, // set to zero for rest pose
-    const ParameterType param,
+    const SmoothContactParameters params,
     const std::shared_ptr<BroadPhase> broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
-    const double dhat = param.dhat;
+    const double dhat = params.dhat;
     double inflation_radius = dhat / 2;
 
     // Candidates candidates;
     candidates.build(mesh, vertices, inflation_radius, broad_phase);
     this->build(
-        candidates, mesh, vertices, param,
+        candidates, mesh, vertices, params,
         false /*disable adaptive dhat to compute true pairs*/);
 
     vert_adaptive_dhat.setConstant(mesh.num_vertices(), dhat);
@@ -48,7 +48,7 @@ void SmoothCollisions::compute_adaptive_dhat(
 
     for (const auto& cc : collisions) {
         const double dist =
-            param.adaptive_dhat_ratio() * sqrt(cc->compute_distance(vertices));
+            params.adaptive_dhat_ratio() * sqrt(cc->compute_distance(vertices));
         switch (cc->type()) {
         case CollisionType::EDGE_EDGE:
             assign_min(edge_adaptive_dhat((*cc)[0]), dist);
@@ -108,33 +108,33 @@ void SmoothCollisions::compute_adaptive_dhat(
 void SmoothCollisions::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const ParameterType param,
+    const SmoothContactParameters params,
     const bool use_adaptive_dhat,
     const std::shared_ptr<BroadPhase> broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
-    double inflation_radius = param.dhat / 2;
+    double inflation_radius = params.dhat / 2;
 
     // Candidates candidates;
     candidates.build(mesh, vertices, inflation_radius, broad_phase);
     // std::cout << "Candidate Memory " << getCurrentRSS() / (1024.*1024) <<
     // "MB\n";
-    this->build(candidates, mesh, vertices, param, use_adaptive_dhat);
+    this->build(candidates, mesh, vertices, params, use_adaptive_dhat);
 }
 
 void SmoothCollisions::build(
     const Candidates& candidates_,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const ParameterType param,
+    const SmoothContactParameters params,
     const bool use_adaptive_dhat)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
     clear();
 
-    const double dhat = param.dhat;
+    const double dhat = params.dhat;
     if (!use_adaptive_dhat) {
         vert_adaptive_dhat.resize(1);
         vert_adaptive_dhat(0) = dhat;
@@ -147,13 +147,13 @@ void SmoothCollisions::build(
             face_adaptive_dhat.resize(0);
     }
 
-    auto vert_dhat = [&](const long& v_id) {
+    auto vert_dhat = [&](const index_t v_id) {
         return this->get_vert_dhat(v_id);
     };
-    auto edge_dhat = [&](const long& e_id) {
+    auto edge_dhat = [&](const index_t e_id) {
         return this->get_edge_dhat(e_id);
     };
-    auto face_dhat = [&](const long& f_id) {
+    auto face_dhat = [&](const index_t f_id) {
         return this->get_face_dhat(f_id);
     };
 
@@ -166,8 +166,8 @@ void SmoothCollisions::build(
                 SmoothCollisionsBuilder<2>& local_storage =
                     get_local_thread_storage(storage, thread_id);
                 local_storage.add_edge_vertex_collisions(
-                    mesh, vertices, candidates_.ev_candidates, param, vert_dhat,
-                    edge_dhat, start, end);
+                    mesh, vertices, candidates_.ev_candidates, params,
+                    vert_dhat, edge_dhat, start, end);
             });
         SmoothCollisionsBuilder<2>::merge(storage, *this);
     } else {
@@ -179,8 +179,8 @@ void SmoothCollisions::build(
                 SmoothCollisionsBuilder<3>& local_storage =
                     get_local_thread_storage(storage, thread_id);
                 local_storage.add_edge_edge_collisions(
-                    mesh, vertices, candidates_.ee_candidates, param, vert_dhat,
-                    edge_dhat, start, end);
+                    mesh, vertices, candidates_.ee_candidates, params,
+                    vert_dhat, edge_dhat, start, end);
             });
 
         maybe_parallel_for(
@@ -189,8 +189,8 @@ void SmoothCollisions::build(
                 SmoothCollisionsBuilder<3>& local_storage =
                     get_local_thread_storage(storage, thread_id);
                 local_storage.add_face_vertex_collisions(
-                    mesh, vertices, candidates_.fv_candidates, param, vert_dhat,
-                    edge_dhat, face_dhat, start, end);
+                    mesh, vertices, candidates_.fv_candidates, params,
+                    vert_dhat, edge_dhat, face_dhat, start, end);
             });
         SmoothCollisionsBuilder<3>::merge(storage, *this);
     }
@@ -221,7 +221,7 @@ const SmoothCollision& SmoothCollisions::operator[](size_t i) const
 std::string SmoothCollisions::to_string(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const ParameterType& params) const
+    const SmoothContactParameters& params) const
 {
     std::stringstream ss;
     for (const auto& cc : collisions) {

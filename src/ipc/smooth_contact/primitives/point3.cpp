@@ -5,12 +5,12 @@
 namespace ipc {
 
 Point3::Point3(
-    const long& id,
+    const index_t id,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const VectorMax3d& d,
-    const ParameterType& param)
-    : Primitive(id, param)
+    const SmoothContactParameters& params)
+    : Primitive(id, params)
 {
     orientable =
         mesh.is_orient_vertex(id) && mesh.vertices_to_faces()[id].size() > 0;
@@ -24,7 +24,7 @@ Point3::Point3(
         edges.setZero(mesh.vertices_to_edges()[id].size(), 2);
         for (int eid : mesh.vertices_to_edges()[id]) {
             i++;
-            long neighbor_id = mesh.edges()(eid, 0) == id
+            index_t neighbor_id = mesh.edges()(eid, 0) == id
                 ? mesh.edges()(eid, 1)
                 : mesh.edges()(eid, 0);
             assert(
@@ -92,7 +92,7 @@ Vector<double, -1, Point3::MAX_SIZE + Point3::DIM> Point3::grad(
 #else
     const Eigen::Matrix<double, -1, DIM> X =
         slice_positions<double, -1, DIM>(x);
-    const auto [val, grad] = smooth_point3_term_gradient(d, X, param);
+    const auto [val, grad] = smooth_point3_term_gradient(d, X, params);
     return grad;
 #endif
 }
@@ -114,7 +114,7 @@ Point3::hessian(
         .getHessian();
 #else
     const auto X = slice_positions<double, -1, DIM>(x);
-    const auto [val, grad, hess] = smooth_point3_term_hessian(d, X, param);
+    const auto [val, grad, hess] = smooth_point3_term_hessian(d, X, params);
     return hess;
 #endif
 }
@@ -278,7 +278,7 @@ GradType<-1> Point3::smooth_point3_term_normal_gradient(
     //                     -X.row(0).dot(X.row(faces(a, 1))
     //                                       .cross(X.row(faces(a, 2)))
     //                                       .normalized()),
-    //                     param.alpha_n, param.beta_n);
+    //                     params.alpha_n, params.beta_n);
     //     }
 
     //     normal_term = normal_term_ad.getValue();
@@ -358,7 +358,7 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
                         -X.row(0).dot(X.row(faces(a, 1))
                                           .cross(X.row(faces(a, 2)))
                                           .normalized()),
-                        param.alpha_n, param.beta_n);
+                        params.alpha_n, params.beta_n);
         }
 
         normal_term = normal_term_ad.getValue();
@@ -387,7 +387,7 @@ bool Point3::smooth_point3_term_type(
     for (int a = 0; a < edges.rows(); a++) {
         const RowVector3<double> t = X.row(edges(a, 1)) - X.row(edges(a, 0));
         otypes.tangent_type(a) = otypes.compute_type(
-            -dn.dot(t) / t.norm(), param.alpha_t, param.beta_t);
+            -dn.dot(t) / t.norm(), params.alpha_t, params.beta_t);
         if (otypes.tangent_type(a) == HeavisideType::ZERO)
             return false;
     }
@@ -402,9 +402,9 @@ bool Point3::smooth_point3_term_type(
         const RowVector3<double> t2 = X.row(faces(a, 2)) - X.row(faces(a, 0));
         const double tmp = dn.dot(t1.cross(t2).normalized());
         otypes.normal_type(a) =
-            otypes.compute_type(tmp, param.alpha_n, param.beta_n);
+            otypes.compute_type(tmp, params.alpha_n, params.beta_n);
         normal_term +=
-            Math<double>::smooth_heaviside(tmp, param.alpha_n, param.beta_n);
+            Math<double>::smooth_heaviside(tmp, params.alpha_n, params.beta_n);
     }
 
     if (normal_term >= 1) {
@@ -418,7 +418,7 @@ bool Point3::smooth_point3_term_type(
 GradType<-1> Point3::smooth_point3_term_gradient(
     Eigen::ConstRef<RowVector3<double>> direc,
     Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
-    const ParameterType& param) const
+    const SmoothContactParameters& params) const
 {
     const int n_dofs = (X.rows() + 1) * 3;
     const int n_neighbor_dofs = n_neighbors * 3;
@@ -434,10 +434,10 @@ GradType<-1> Point3::smooth_point3_term_gradient(
 
     const auto [tangent_term, tangent_grad] =
         smooth_point3_term_tangent_gradient(
-            dn, tangents, param.alpha_t, param.beta_t);
+            dn, tangents, params.alpha_t, params.beta_t);
 
     auto [normal_term, normal_grad] = smooth_point3_term_normal_gradient(
-        dn, tangents, param.alpha_n, param.beta_n);
+        dn, tangents, params.alpha_n, params.beta_n);
 
     double val = tangent_term * normal_term;
 
@@ -464,7 +464,7 @@ GradType<-1> Point3::smooth_point3_term_gradient(
 HessianType<-1> Point3::smooth_point3_term_hessian(
     Eigen::ConstRef<RowVector3<double>> direc,
     Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
-    const ParameterType& param) const
+    const SmoothContactParameters& params) const
 {
     const int n_dofs = (X.rows() + 1) * 3;
     const int n_neighbor_dofs = n_neighbors * 3;
@@ -482,11 +482,11 @@ HessianType<-1> Point3::smooth_point3_term_hessian(
 
     const auto [tangent_term, tangent_grad, tangent_hess] =
         smooth_point3_term_tangent_hessian(
-            dn, tangents, param.alpha_t, param.beta_t);
+            dn, tangents, params.alpha_t, params.beta_t);
 
     auto [normal_term, normal_grad, normal_hess] =
         smooth_point3_term_normal_hessian(
-            dn, tangents, param.alpha_n, param.beta_n);
+            dn, tangents, params.alpha_n, params.beta_n);
 
     double val = tangent_term * normal_term;
 
@@ -565,7 +565,7 @@ scalar Point3::smooth_point3_term(
             tangent_term =
                 tangent_term
                 * Math<scalar>::smooth_heaviside(
-                    -dn.dot(t) / t.norm(), param.alpha_t, param.beta_t);
+                    -dn.dot(t) / t.norm(), params.alpha_t, params.beta_t);
 
         weight = weight + t.squaredNorm();
     }
@@ -581,8 +581,8 @@ scalar Point3::smooth_point3_term(
                 X.row(faces(a, 2)) - X.row(faces(a, 0));
             normal_term = normal_term
                 + Math<scalar>::smooth_heaviside(
-                              dn.dot(t1.cross(t2).normalized()), param.alpha_n,
-                              param.beta_n);
+                              dn.dot(t1.cross(t2).normalized()), params.alpha_n,
+                              params.beta_n);
         }
         normal_term = Math<scalar>::smooth_heaviside(normal_term - 1, 1., 0);
     }

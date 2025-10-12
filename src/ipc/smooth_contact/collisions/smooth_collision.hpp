@@ -18,8 +18,8 @@ public:
     static constexpr int ELEMENT_SIZE = 3 * MAX_VERT_3D;
 
     SmoothCollision(
-        long _primitive0,
-        long _primitive1,
+        const index_t _primitive0,
+        const index_t _primitive1,
         const double _dhat,
         const CollisionMesh& mesh)
         : primitive0(_primitive0)
@@ -76,15 +76,15 @@ public:
 
     virtual double operator()(
         Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
-        const ParameterType& params) const = 0;
+        const SmoothContactParameters& params) const = 0;
 
     virtual Vector<double, -1, ELEMENT_SIZE> gradient(
         Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
-        const ParameterType& params) const = 0;
+        const SmoothContactParameters& params) const = 0;
 
     virtual MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hessian(
         Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
-        const ParameterType& params) const = 0;
+        const SmoothContactParameters& params) const = 0;
 
     bool operator==(const SmoothCollision& other) const
     {
@@ -140,7 +140,7 @@ public:
         index_t primitive1,
         DTYPE dtype,
         const CollisionMesh& mesh,
-        const ParameterType& param,
+        const SmoothContactParameters& params,
         const double dhat,
         const Eigen::MatrixXd& V);
 
@@ -172,15 +172,15 @@ public:
 
     double operator()(
         Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
-        const ParameterType& params) const override;
+        const SmoothContactParameters& params) const override;
 
     Vector<double, -1, ELEMENT_SIZE> gradient(
         Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
-        const ParameterType& params) const override;
+        const SmoothContactParameters& params) const override;
 
     MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hessian(
         Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
-        const ParameterType& params) const override;
+        const SmoothContactParameters& params) const override;
 
     // ---- distance ----
 

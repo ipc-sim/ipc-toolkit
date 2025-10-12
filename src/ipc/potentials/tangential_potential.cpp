@@ -544,7 +544,7 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
     Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
     Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
     Eigen::ConstRef<Eigen::MatrixXd> velocities,
-    const ParameterType& params,
+    const SmoothContactParameters& params,
     const DiffWRT wrt,
     const double dmin,
     const bool no_mu) const

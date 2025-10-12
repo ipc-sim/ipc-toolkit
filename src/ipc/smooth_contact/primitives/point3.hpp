@@ -12,14 +12,14 @@ public:
     static constexpr int MAX_SIZE = N_VERT_NEIGHBORS_3D * DIM;
     // d is a vector from this point to the other primitive
     Point3(
-        const long& id,
+        const index_t id,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const VectorMax3d& d,
-        const ParameterType& param);
+        const SmoothContactParameters& params);
 
     Point3(
-        const long& id,
+        const index_t id,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices);
     virtual ~Point3() = default;
@@ -55,12 +55,12 @@ public:
     GradType<-1> smooth_point3_term_gradient(
         Eigen::ConstRef<RowVector3<double>> direc,
         Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
-        const ParameterType& param) const;
+        const SmoothContactParameters& params) const;
 
     HessianType<-1> smooth_point3_term_hessian(
         Eigen::ConstRef<RowVector3<double>> direc,
         Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
-        const ParameterType& param) const;
+        const SmoothContactParameters& params) const;
 
     GradType<-1> smooth_point3_term_tangent_gradient(
         Eigen::ConstRef<RowVector3<double>> direc,
@@ -90,8 +90,8 @@ private:
     int n_neighbors;
     OrientationTypes otypes;
 
-    std::vector<long> local_to_global_vids;
-    std::map<long, int> global_to_local_vids;
+    std::vector<index_t> local_to_global_vids;
+    std::map<index_t, int> global_to_local_vids;
 
     Eigen::Matrix<int, -1, 3> faces;
     Eigen::Matrix<int, -1, 2> edges;

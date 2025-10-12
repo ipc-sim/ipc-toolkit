@@ -23,15 +23,15 @@ void define_smooth_collisions(py::module_& m, std::string name)
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
-                const ParameterType, const bool, std::shared_ptr<BroadPhase>>(
-                &SmoothCollisions::build),
+                const SmoothContactParameters, const bool,
+                std::shared_ptr<BroadPhase>>(&SmoothCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the barrier potential.
 
             Parameters:
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                param: ParameterType.
+                param: SmoothContactParameters.
                 use_adaptive_dhat: If the adaptive dhat should be used.
                 broad_phase: Broad phase method.
             )ipc_Qu8mg5v7",
@@ -243,11 +243,11 @@ void define_normal_collisions(py::module_& m)
             "__call__", &SmoothCollision::operator(),
             R"ipc_Qu8mg5v7(
             Compute the potential.
-    
+
             Parameters:
                 positions: The vertex positions.
                 params: The parameters.
-    
+
             Returns:
                 The potential (not scaled by the barrier stiffness) of this collision pair.
             )ipc_Qu8mg5v7",

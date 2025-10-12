@@ -83,8 +83,8 @@ public:
     static double compute_distance(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& V,
-        const long& a,
-        const long& b,
+        const index_t a,
+        const index_t b,
         typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype);
 
     static GradType<N_CORE_DOFS> compute_distance_gradient(
@@ -117,8 +117,8 @@ public:
     static Vector<double, DIM> compute_closest_direction(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& V,
-        const long& a,
-        const long& b,
+        const index_t a,
+        const index_t b,
         typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype);
 
     static std::

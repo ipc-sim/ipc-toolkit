@@ -352,7 +352,7 @@ void check_smooth_friction_force_jacobian(
     const SmoothCollisions& collisions,
     const double mu,
     const double epsv_times_h,
-    const ParameterType& params,
+    const SmoothContactParameters& params,
     const double barrier_stiffness,
     const bool recompute_collisions)
 {
@@ -599,7 +599,7 @@ TEST_CASE(
     "Smooth friction force jacobian 2D", "[friction-smooth][force-jacobian]")
 {
     SmoothFrictionData data = smooth_friction_data_generator_2d();
-    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, param, barrier_stiffness] =
+    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
         data;
 
     Eigen::MatrixXd X, Ut, U;
@@ -610,7 +610,7 @@ TEST_CASE(
     CollisionMesh mesh(X, E, F);
 
     check_smooth_friction_force_jacobian(
-        mesh, Ut, U, collisions, mu, epsv_times_h, param, barrier_stiffness,
+        mesh, Ut, U, collisions, mu, epsv_times_h, params, barrier_stiffness,
         false);
 }
 
@@ -622,7 +622,7 @@ TEST_CASE(
 #endif
 
     SmoothFrictionData data = smooth_friction_data_generator_3d();
-    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, param, barrier_stiffness] =
+    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
         data;
 
     Eigen::MatrixXd X, Ut, U;
@@ -633,6 +633,6 @@ TEST_CASE(
     CollisionMesh mesh(X, E, F);
 
     check_smooth_friction_force_jacobian(
-        mesh, Ut, U, collisions, mu, epsv_times_h, param, barrier_stiffness,
+        mesh, Ut, U, collisions, mu, epsv_times_h, params, barrier_stiffness,
         false);
 }

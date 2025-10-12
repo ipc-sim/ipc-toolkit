@@ -2,33 +2,23 @@
 
 namespace ipc {
 
-template <typename PrimitiveA, typename PrimitiveB>
-CollisionType SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::type() const
-{
-    if constexpr (
-        std::is_same_v<PrimitiveA, Edge2> && std::is_same_v<PrimitiveB, Point2>)
-        return CollisionType::EDGE_VERTEX;
-    if constexpr (
-        std::is_same_v<PrimitiveA, Point2>
-        && std::is_same_v<PrimitiveB, Point2>)
-        return CollisionType::VERTEX_VERTEX;
-    if constexpr (
-        std::is_same_v<PrimitiveA, Face> && std::is_same_v<PrimitiveB, Point3>)
-        return CollisionType::FACE_VERTEX;
-    if constexpr (
-        std::is_same_v<PrimitiveA, Edge3> && std::is_same_v<PrimitiveB, Point3>)
-        return CollisionType::EDGE_VERTEX;
-    if constexpr (
-        std::is_same_v<PrimitiveA, Edge3> && std::is_same_v<PrimitiveB, Edge3>)
-        return CollisionType::EDGE_EDGE;
-    if constexpr (
-        std::is_same_v<PrimitiveA, Point3>
-        && std::is_same_v<PrimitiveB, Point3>)
-        return CollisionType::VERTEX_VERTEX;
+// clang-format off
+template <> CollisionType SmoothCollisionTemplate<Point2, Point2>::type() const { return CollisionType::VERTEX_VERTEX; }
+template <> CollisionType SmoothCollisionTemplate<Point3, Point3>::type() const { return CollisionType::VERTEX_VERTEX; }
+template <> CollisionType SmoothCollisionTemplate<Edge2, Point2>::type() const { return CollisionType::EDGE_VERTEX; }
+template <> CollisionType SmoothCollisionTemplate<Edge3, Point3>::type() const { return CollisionType::EDGE_VERTEX; }
+template <> CollisionType SmoothCollisionTemplate<Face, Point3>::type() const { return CollisionType::FACE_VERTEX; }
+template <> CollisionType SmoothCollisionTemplate<Edge3, Edge3>::type() const { return CollisionType::EDGE_EDGE; }
+// clang-format on
 
-    throw std::runtime_error("Invalid collision pair type!");
-    return CollisionType::VERTEX_VERTEX;
-}
+// clang-format off
+template <> std::string SmoothCollisionTemplate<Point2, Point2>::name() const { return "vert-vert"; }
+template <> std::string SmoothCollisionTemplate<Point3, Point3>::name() const { return "vert-vert"; }
+template <> std::string SmoothCollisionTemplate<Edge2, Point2>::name() const { return "edge-vert"; }
+template <> std::string SmoothCollisionTemplate<Edge3, Point3>::name() const { return "edge-vert"; }
+template <> std::string SmoothCollisionTemplate<Face, Point3>::name() const { return "face-vert"; }
+template <> std::string SmoothCollisionTemplate<Edge3, Edge3>::name() const { return "edge-edge"; }
+// clang-format on
 
 Eigen::VectorXd SmoothCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
@@ -42,47 +32,10 @@ Eigen::VectorXd SmoothCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
         for (int i = 0; i < num_vertices(); i++) {
             x.segment<3>(i * 3) = X.row(m_vertex_ids[i]);
         }
-    } else
+    } else {
         throw std::runtime_error("Invalid dimension!");
+    }
     return x;
-}
-
-template <typename PrimitiveA, typename PrimitiveB>
-std::string SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::name() const
-{
-    if constexpr (
-        std::is_same_v<PrimitiveA, Edge2>
-        && std::is_same_v<PrimitiveB, Point2>) {
-        return "edge-vert";
-    }
-    if constexpr (
-        std::is_same_v<PrimitiveA, Point2>
-        && std::is_same_v<PrimitiveB, Point2>) {
-        return "vert-vert";
-    }
-    if constexpr (
-        std::is_same_v<PrimitiveA, Face>
-        && std::is_same_v<PrimitiveB, Point3>) {
-        return "face-vert";
-    }
-    if constexpr (
-        std::is_same_v<PrimitiveA, Edge3>
-        && std::is_same_v<PrimitiveB, Point3>) {
-        return "edge-vert";
-    }
-    if constexpr (
-        std::is_same_v<PrimitiveA, Edge3>
-        && std::is_same_v<PrimitiveB, Edge3>) {
-        return "edge-edge";
-    }
-    if constexpr (
-        std::is_same_v<PrimitiveA, Point3>
-        && std::is_same_v<PrimitiveB, Point3>) {
-        return "vert-vert";
-    }
-
-    throw std::runtime_error("Invalid collision pair type!");
-    return "vert-vert";
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
@@ -104,7 +57,7 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::SmoothCollisionTemplate(
     index_t _primitive1,
     SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::DTYPE dtype,
     const CollisionMesh& mesh,
-    const ParameterType& param,
+    const SmoothContactParameters& params,
     const double _dhat,
     const Eigen::MatrixXd& V)
     : SmoothCollision(_primitive0, _primitive1, _dhat, mesh)
@@ -112,8 +65,9 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::SmoothCollisionTemplate(
     VectorMax3d d =
         PrimitiveDistance<PrimitiveA, PrimitiveB>::compute_closest_direction(
             mesh, V, _primitive0, _primitive1, dtype);
-    primitive_a = std::make_unique<PrimitiveA>(_primitive0, mesh, V, d, param);
-    primitive_b = std::make_unique<PrimitiveB>(_primitive1, mesh, V, -d, param);
+    primitive_a = std::make_unique<PrimitiveA>(_primitive0, mesh, V, d, params);
+    primitive_b =
+        std::make_unique<PrimitiveB>(_primitive1, mesh, V, -d, params);
 
     if ((primitive_a->n_vertices() + primitive_b->n_vertices()) * DIM
         > ELEMENT_SIZE) {
@@ -142,14 +96,14 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::SmoothCollisionTemplate(
             _primitive0, _primitive1,
             PrimitiveDistType<PrimitiveA, PrimitiveB>::NAME, m_is_active);
 
-        logger().warn("value {}", (*this)(this->dof(V), param));
+        logger().warn("value {}", (*this)(this->dof(V), params));
     }
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
 double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
     Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
-    const ParameterType& params) const
+    const SmoothContactParameters& params) const
 {
     Vector<double, N_CORE_POINTS * DIM> x;
     x << positions.head(PrimitiveA::N_CORE_POINTS * DIM),
@@ -173,7 +127,7 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
             x, dist * dist);
 
     if (params.r == 0) {
-        logger().error("Invalid param!");
+        logger().error("Invalid params!");
     }
 
     if (dist < 1e-12) {
@@ -188,7 +142,8 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
 template <typename PrimitiveA, typename PrimitiveB>
 auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
     Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
-    const ParameterType& params) const -> Vector<double, -1, ELEMENT_SIZE>
+    const SmoothContactParameters& params) const
+    -> Vector<double, -1, ELEMENT_SIZE>
 {
     const auto core_indices = get_core_indices();
 
@@ -298,7 +253,7 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
 template <typename PrimitiveA, typename PrimitiveB>
 auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
     Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
-    const ParameterType& params) const
+    const SmoothContactParameters& params) const
     -> MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
 {
     const auto core_indices = get_core_indices();

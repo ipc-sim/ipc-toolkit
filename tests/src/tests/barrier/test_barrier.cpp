@@ -245,7 +245,7 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
 
 TEST_CASE("point term derivatives", "[deriv]")
 {
-    ipc::ParameterType param(1, 1, 1, 0.01, 0, 2);
+    ipc::SmoothContactParameters params(1, 1, 1, 0.01, 0, 2);
 
     Eigen::Matrix<double, -1, 3> vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
@@ -263,12 +263,12 @@ TEST_CASE("point term derivatives", "[deriv]")
     ipc::CollisionMesh mesh(V, E, F);
 
     auto point_term =
-        std::make_unique<ipc::Point3>(0, mesh, V, -vectors.row(0), param);
+        std::make_unique<ipc::Point3>(0, mesh, V, -vectors.row(0), params);
 
     {
         auto [y, y_grad, y_hess] =
             point_term->smooth_point3_term_tangent_hessian(
-                vectors.row(0), V.bottomRows(8), param.alpha_t, param.beta_t);
+                vectors.row(0), V.bottomRows(8), params.alpha_t, params.beta_t);
 
         Eigen::VectorXd fgrad;
         fd::finite_gradient(
@@ -277,11 +277,11 @@ TEST_CASE("point term derivatives", "[deriv]")
                 Eigen::MatrixXd V_fd = fd::unflatten(x, 3);
                 V_fd.row(0).setZero();
                 auto point_term_fd = std::make_unique<ipc::Point3>(
-                    0, mesh, V_fd, -x.head<3>(), param);
+                    0, mesh, V_fd, -x.head<3>(), params);
                 return std::get<0>(
                     point_term_fd->smooth_point3_term_tangent_gradient(
                         x.head(3), fd::unflatten(x.tail(x.size() - 3), 3),
-                        param.alpha_t, param.beta_t));
+                        params.alpha_t, params.beta_t));
             },
             fgrad);
 
@@ -296,11 +296,11 @@ TEST_CASE("point term derivatives", "[deriv]")
                 Eigen::MatrixXd V_fd = fd::unflatten(x, 3);
                 V_fd.row(0).setZero();
                 auto point_term_fd = std::make_unique<ipc::Point3>(
-                    0, mesh, V_fd, -x.head<3>(), param);
+                    0, mesh, V_fd, -x.head<3>(), params);
                 return std::get<1>(
                     point_term_fd->smooth_point3_term_tangent_gradient(
                         x.head(3), fd::unflatten(x.tail(x.size() - 3), 3),
-                        param.alpha_t, param.beta_t));
+                        params.alpha_t, params.beta_t));
             },
             fhess);
 
@@ -344,7 +344,7 @@ TEST_CASE("point term derivatives", "[deriv]")
 
 TEST_CASE("point term normal derivatives", "[deriv]")
 {
-    ipc::ParameterType param(1, 1, 1, 1, 0, 2);
+    ipc::SmoothContactParameters params(1, 1, 1, 1, 0, 2);
 
     Eigen::Matrix<double, -1, 3> vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
@@ -362,12 +362,12 @@ TEST_CASE("point term normal derivatives", "[deriv]")
     ipc::CollisionMesh mesh(V, E, F);
 
     auto point_term =
-        std::make_unique<ipc::Point3>(0, mesh, V, -vectors.row(0), param);
+        std::make_unique<ipc::Point3>(0, mesh, V, -vectors.row(0), params);
 
     {
         auto [y, y_grad, y_hess] =
             point_term->smooth_point3_term_normal_hessian(
-                vectors.row(0), V.bottomRows(8), param.alpha_n, param.beta_n);
+                vectors.row(0), V.bottomRows(8), params.alpha_n, params.beta_n);
         std::cout << y << " " << y_grad.norm() << " " << y_hess.norm()
                   << std::endl;
 
@@ -378,11 +378,11 @@ TEST_CASE("point term normal derivatives", "[deriv]")
                 Eigen::MatrixXd V_fd = fd::unflatten(x, 3);
                 V_fd.row(0).setZero();
                 auto point_term_fd = std::make_unique<ipc::Point3>(
-                    0, mesh, V_fd, -x.head<3>(), param);
+                    0, mesh, V_fd, -x.head<3>(), params);
                 return std::get<0>(
                     point_term_fd->smooth_point3_term_normal_hessian(
                         x.head(3), fd::unflatten(x.tail(x.size() - 3), 3),
-                        param.alpha_n, param.beta_n));
+                        params.alpha_n, params.beta_n));
             },
             fgrad);
 
@@ -397,11 +397,11 @@ TEST_CASE("point term normal derivatives", "[deriv]")
                 Eigen::MatrixXd V_fd = fd::unflatten(x, 3);
                 V_fd.row(0).setZero();
                 auto point_term_fd = std::make_unique<ipc::Point3>(
-                    0, mesh, V_fd, -x.head<3>(), param);
+                    0, mesh, V_fd, -x.head<3>(), params);
                 return std::get<1>(
                     point_term_fd->smooth_point3_term_normal_hessian(
                         x.head(3), fd::unflatten(x.tail(x.size() - 3), 3),
-                        param.alpha_n, param.beta_n));
+                        params.alpha_n, params.beta_n));
             },
             fhess, fd::AccuracyOrder::FOURTH, 1e-6);
 

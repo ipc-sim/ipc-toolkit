@@ -89,7 +89,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
         Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
         Eigen::ConstRef<Eigen::MatrixXd> velocities,
-        const ParameterType& params,
+        const SmoothContactParameters& params,
         const DiffWRT wrt,
         const double dmin = 0,
         const bool no_mu = false) const;

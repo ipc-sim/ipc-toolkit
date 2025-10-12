@@ -119,7 +119,7 @@ void TangentialCollisions::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const SmoothCollisions& collisions,
-    const ParameterType& params,
+    const SmoothContactParameters& params,
     const double _normal_stiffness,
     Eigen::ConstRef<Eigen::VectorXd> mu_s,
     Eigen::ConstRef<Eigen::VectorXd> mu_k,

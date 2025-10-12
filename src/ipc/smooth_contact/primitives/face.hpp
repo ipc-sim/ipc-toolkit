@@ -12,11 +12,11 @@ public:
     // d is a vector from closest point on the face to the point outside of the
     // face
     Face(
-        const long& id,
+        const index_t id,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const VectorMax3d& d,
-        const ParameterType& param);
+        const SmoothContactParameters& params);
 
     int n_vertices() const override;
     int n_dofs() const override { return n_vertices() * DIM; }

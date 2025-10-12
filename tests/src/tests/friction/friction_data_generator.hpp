@@ -30,7 +30,7 @@ struct SmoothFrictionData {
     ipc::SmoothCollisions collisions;
     double mu;
     double epsv_times_h;
-    ipc::ParameterType p;
+    ipc::SmoothContactParameters p;
     double barrier_stiffness;
 };
 

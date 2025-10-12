@@ -8,7 +8,11 @@ namespace ipc {
 
 class SmoothContactPotential {
 public:
-    SmoothContactPotential(const ParameterType& _params) : params(_params) { }
+    SmoothContactPotential(const SmoothContactParameters& _params)
+        : params(_params)
+    {
+    }
+
     virtual ~SmoothContactPotential() = default;
 
     // -- Cumulative methods ---------------------------------------------------
@@ -75,7 +79,7 @@ public:
             PSDProjectionMethod::NONE) const;
 
 protected:
-    ParameterType params;
+    SmoothContactParameters params;
 };
 
 } // namespace ipc

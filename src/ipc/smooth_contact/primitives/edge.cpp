@@ -1,7 +1,9 @@
-#include "edge2.hpp"
+#include "edge.hpp"
 
 namespace ipc {
-Edge2::Edge2(
+
+template <int DIM>
+Edge<DIM>::Edge(
     const index_t id,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
@@ -18,14 +20,19 @@ Edge2::Edge2(
             > 0;
 }
 
-int Edge2::n_vertices() const { return N_EDGE_NEIGHBORS_2D; }
+template <> int Edge<2>::n_vertices() const { return N_EDGE_NEIGHBORS_2D; }
+template <> int Edge<3>::n_vertices() const { return N_EDGE_NEIGHBORS_3D; }
 
-double Edge2::potential(const Vector2d& d, const Vector4d& x) const
+template <>
+double
+Edge<2>::potential(Eigen::ConstRef<DVector> d, Eigen::ConstRef<XVector> x) const
 {
     return (x.tail<2>() - x.head<2>()).norm();
 }
 
-Vector6d Edge2::grad(const Vector2d& d, const Vector4d& x) const
+template <>
+Vector6d
+Edge<2>::grad(Eigen::ConstRef<DVector> d, Eigen::ConstRef<XVector> x) const
 {
     const Vector2d t = x.tail<2>() - x.head<2>();
     const double len = t.norm();
@@ -36,7 +43,9 @@ Vector6d Edge2::grad(const Vector2d& d, const Vector4d& x) const
     return g;
 }
 
-Matrix6d Edge2::hessian(const Vector2d& d, const Vector4d& x) const
+template <>
+Matrix6d
+Edge<2>::hessian(Eigen::ConstRef<DVector> d, Eigen::ConstRef<XVector> x) const
 {
     Matrix6d h;
     h.setZero();

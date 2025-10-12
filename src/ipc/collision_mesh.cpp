@@ -525,13 +525,13 @@ double CollisionMesh::max_edge_length() const
     return val;
 }
 
-std::vector<long>
-CollisionMesh::find_vertex_adjacent_vertices(const long& v) const
+std::vector<index_t>
+CollisionMesh::find_vertex_adjacent_vertices(const index_t v) const
 {
-    std::vector<long> neighbors;
+    std::vector<index_t> neighbors;
     if (dim() == 2) {
         neighbors.assign(2, -1);
-        for (long i : vertex_edge_adjacencies()[v]) {
+        for (index_t i : vertex_edge_adjacencies()[v]) {
             if (edges()(i, 0) == v) {
                 neighbors[0] = edges()(i, 1);
             } else if (edges()(i, 1) == v) {
@@ -544,7 +544,7 @@ CollisionMesh::find_vertex_adjacent_vertices(const long& v) const
         if (!vertices_to_faces()[v].empty()) {
             // construct a map of neighboring vertices, it maps every neighbor
             // to the next counter-clockwise neighbor
-            std::unordered_map<long, long> map;
+            std::unordered_map<index_t, index_t> map;
             for (auto f : vertices_to_faces()[v]) {
                 for (int lv = 0; lv < 3; lv++) {
                     if (faces()(f, lv) == v) {

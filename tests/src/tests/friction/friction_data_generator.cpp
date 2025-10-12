@@ -152,10 +152,10 @@ SmoothFrictionData smooth_friction_data_generator_3d()
 {
     SmoothFrictionData data;
 
-    auto& [V0, V1, E, F, collisions, mu, epsv_times_h, param, barrier_stiffness] =
+    auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
         data;
 
-    double& dhat = param.dhat;
+    double& dhat = params.dhat;
 
     mu = 1.; // GENERATE(range(0.0, 1.0, 0.2));
 #ifdef NDEBUG
@@ -168,7 +168,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
     barrier_stiffness = 1.; // 100;
 #endif
 
-    param = ParameterType(dhat, 0.8, 0, 1, 0, 2);
+    params = SmoothContactParameters(dhat, 0.8, 0, 1, 0, 2);
     const double max_d = dhat * 0.9;
     const double min_d = dhat * 0.1;
     const double d = GENERATE_COPY(range(min_d, max_d, max_d / 10));
@@ -197,7 +197,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
             std::make_shared<SmoothCollisionTemplate<Face, Point3>>(
-                0, 0, PointTriangleDistanceType::P_T, mesh, param, dhat, V0));
+                0, 0, PointTriangleDistanceType::P_T, mesh, params, dhat, V0));
     }
     SECTION("edge-edge")
     {
@@ -244,7 +244,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
             std::make_shared<SmoothCollisionTemplate<Edge3, Edge3>>(
-                e0, e1, EdgeEdgeDistanceType::EA_EB, mesh, param, dhat, V0));
+                e0, e1, EdgeEdgeDistanceType::EA_EB, mesh, params, dhat, V0));
     }
     SECTION("point-edge")
     {
@@ -280,7 +280,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
             std::make_shared<SmoothCollisionTemplate<Edge3, Point3>>(
-                e, 0, PointEdgeDistanceType::AUTO, mesh, param, dhat, V0));
+                e, 0, PointEdgeDistanceType::AUTO, mesh, params, dhat, V0));
     }
     SECTION("point-point")
     {
@@ -305,7 +305,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
             std::make_shared<SmoothCollisionTemplate<Point3, Point3>>(
-                0, 1, PointPointDistanceType::AUTO, mesh, param, dhat, V0));
+                0, 1, PointPointDistanceType::AUTO, mesh, params, dhat, V0));
     }
 
     return data;
@@ -315,10 +315,10 @@ SmoothFrictionData smooth_friction_data_generator_2d()
 {
     SmoothFrictionData data;
 
-    auto& [V0, V1, E, F, collisions, mu, epsv_times_h, param, barrier_stiffness] =
+    auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
         data;
 
-    double& dhat = param.dhat;
+    double& dhat = params.dhat;
 
     mu = 1.; // GENERATE(range(0.0, 1.0, 0.2));
 #ifdef NDEBUG
@@ -331,7 +331,7 @@ SmoothFrictionData smooth_friction_data_generator_2d()
     barrier_stiffness = 1.; // 100;
 #endif
 
-    param = ParameterType(dhat, 0.8, 0, 1, 0, 2);
+    params = SmoothContactParameters(dhat, 0.8, 0, 1, 0, 2);
     const double max_d = dhat * 0.9;
     const double min_d = dhat * 0.1;
     const double d = GENERATE_COPY(range(min_d, max_d, max_d / 10));
@@ -362,7 +362,7 @@ SmoothFrictionData smooth_friction_data_generator_2d()
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
             std::make_shared<SmoothCollisionTemplate<Edge2, Point2>>(
-                e, 0, PointEdgeDistanceType::AUTO, mesh, param, dhat, V0));
+                e, 0, PointEdgeDistanceType::AUTO, mesh, params, dhat, V0));
     }
     SECTION("point-point 2D")
     {
@@ -385,7 +385,7 @@ SmoothFrictionData smooth_friction_data_generator_2d()
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
             std::make_shared<SmoothCollisionTemplate<Point2, Point2>>(
-                0, 1, PointPointDistanceType::AUTO, mesh, param, dhat, V0));
+                0, 1, PointPointDistanceType::AUTO, mesh, params, dhat, V0));
     }
 
     return data;

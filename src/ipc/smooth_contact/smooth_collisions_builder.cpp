@@ -16,7 +16,7 @@ namespace {
     template <int dim, typename TCollision>
     void add_collision(
         const std::shared_ptr<TCollision>& pair,
-        unordered_map<std::pair<long, long>, std::shared_ptr<TCollision>>&
+        unordered_map<std::pair<index_t, index_t>, std::shared_ptr<TCollision>>&
             cc_to_id_,
         std::vector<std::shared_ptr<SmoothCollision>>& collisions_)
     {
@@ -42,9 +42,9 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
-    const ParameterType& param,
-    const std::function<double(const long&)>& vert_dhat,
-    const std::function<double(const long&)>& edge_dhat,
+    const SmoothContactParameters& params,
+    const std::function<double(const index_t)>& vert_dhat,
+    const std::function<double(const index_t)>& edge_dhat,
     const size_t start_i,
     const size_t end_i)
 {
@@ -53,7 +53,7 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
 
         add_collision<2, SmoothCollisionTemplate<Edge2, Point2>>(
             std::make_shared<SmoothCollisionTemplate<Edge2, Point2>>(
-                ei, vi, PointEdgeDistanceType::AUTO, mesh, param,
+                ei, vi, PointEdgeDistanceType::AUTO, mesh, params,
                 std::min(edge_dhat(ei), vert_dhat(vi)), vertices),
             vert_edge_2_to_id, collisions);
 
@@ -64,8 +64,8 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
                 continue;
             add_collision<2, SmoothCollisionTemplate<Point2, Point2>>(
                 std::make_shared<SmoothCollisionTemplate<Point2, Point2>>(
-                    std::min<long>(vi, vj), std::max<long>(vi, vj),
-                    PointPointDistanceType::AUTO, mesh, param, dhat, vertices),
+                    std::min<index_t>(vi, vj), std::max<index_t>(vi, vj),
+                    PointPointDistanceType::AUTO, mesh, params, dhat, vertices),
                 vert_vert_2_to_id, collisions);
         }
     }
@@ -77,9 +77,9 @@ void SmoothCollisionsBuilder<3>::add_edge_edge_collisions(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const std::vector<EdgeEdgeCandidate>& candidates,
-    const ParameterType& param,
-    const std::function<double(const long&)>& vert_dhat,
-    const std::function<double(const long&)>& edge_dhat,
+    const SmoothContactParameters& params,
+    const std::function<double(const index_t)>& vert_dhat,
+    const std::function<double(const index_t)>& edge_dhat,
     const size_t start_i,
     const size_t end_i)
 {
@@ -96,13 +96,13 @@ void SmoothCollisionsBuilder<3>::add_edge_edge_collisions(
             sqrt(edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype));
 
         if (actual_dtype != EdgeEdgeDistanceType::EA_EB
-            || distance >= param.dhat)
+            || distance >= params.dhat)
             continue;
 
         add_collision<3, SmoothCollisionTemplate<Edge3, Edge3>>(
             std::make_shared<SmoothCollisionTemplate<Edge3, Edge3>>(
                 std::min(eai, ebi), std::max(eai, ebi), actual_dtype, mesh,
-                param, std::min(edge_dhat(eai), edge_dhat(ebi)), vertices),
+                params, std::min(edge_dhat(eai), edge_dhat(ebi)), vertices),
             collisions);
     }
 }
@@ -111,10 +111,10 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const std::vector<FaceVertexCandidate>& candidates,
-    const ParameterType& param,
-    const std::function<double(const long&)>& vert_dhat,
-    const std::function<double(const long&)>& edge_dhat,
-    const std::function<double(const long&)>& face_dhat,
+    const SmoothContactParameters& params,
+    const std::function<double(const index_t)>& vert_dhat,
+    const std::function<double(const index_t)>& edge_dhat,
+    const std::function<double(const index_t)>& face_dhat,
     const size_t start_i,
     const size_t end_i)
 {
@@ -136,7 +136,7 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
         if (pt_dtype == PointTriangleDistanceType::P_T)
             add_collision<3, SmoothCollisionTemplate<Face, Point3>>(
                 std::make_shared<SmoothCollisionTemplate<Face, Point3>>(
-                    fi, vi, pt_dtype, mesh, param,
+                    fi, vi, pt_dtype, mesh, params,
                     std::min(face_dhat(fi), vert_dhat(vi)), vertices),
                 collisions);
 
@@ -147,8 +147,8 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
                 continue;
             add_collision<3, SmoothCollisionTemplate<Point3, Point3>>(
                 std::make_shared<SmoothCollisionTemplate<Point3, Point3>>(
-                    std::min<long>(vi, vj), std::max<long>(vi, vj),
-                    PointPointDistanceType::AUTO, mesh, param, dhat, vertices),
+                    std::min<index_t>(vi, vj), std::max<index_t>(vi, vj),
+                    PointPointDistanceType::AUTO, mesh, params, dhat, vertices),
                 vert_vert_3_to_id, collisions);
         }
 
@@ -169,7 +169,7 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
 
             add_collision<3, SmoothCollisionTemplate<Edge3, Point3>>(
                 std::make_shared<SmoothCollisionTemplate<Edge3, Point3>>(
-                    eid, vi, pe_dtype, mesh, param, dhat, vertices),
+                    eid, vi, pe_dtype, mesh, params, dhat, vertices),
                 edge_vert_3_to_id, collisions);
         }
     }
@@ -180,11 +180,11 @@ void SmoothCollisionsBuilder<3>::merge(
     SmoothCollisions& merged_collisions)
 {
     unordered_map<
-        std::pair<long, long>,
+        std::pair<index_t, index_t>,
         std::shared_ptr<SmoothCollisionTemplate<Point3, Point3>>>
         vert_vert_3_to_id;
     unordered_map<
-        std::pair<long, long>,
+        std::pair<index_t, index_t>,
         std::shared_ptr<SmoothCollisionTemplate<Edge3, Point3>>>
         edge_vert_3_to_id;
 
@@ -237,11 +237,11 @@ void SmoothCollisionsBuilder<2>::merge(
     SmoothCollisions& merged_collisions)
 {
     unordered_map<
-        std::pair<long, long>,
+        std::pair<index_t, index_t>,
         std::shared_ptr<SmoothCollisionTemplate<Point2, Point2>>>
         vert_vert_2_to_id;
     unordered_map<
-        std::pair<long, long>,
+        std::pair<index_t, index_t>,
         std::shared_ptr<SmoothCollisionTemplate<Edge2, Point2>>>
         vert_edge_2_to_id;
 

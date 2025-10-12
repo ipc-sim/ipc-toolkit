@@ -21,12 +21,12 @@ namespace ipc {
 //     }
 // }
 Face::Face(
-    const long& id,
+    const index_t id,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const VectorMax3d& d,
-    const ParameterType& param)
-    : Primitive(id, param)
+    const SmoothContactParameters& params)
+    : Primitive(id, params)
 {
     m_vertex_ids = { { mesh.faces()(id, 0), mesh.faces()(id, 1),
                        mesh.faces()(id, 2) } };

@@ -24,19 +24,19 @@ public:
     static constexpr int value = MAX_VERT_3D; // NOLINT
 };
 
-struct ParameterType {
-    ParameterType() = default;
+struct SmoothContactParameters {
+    SmoothContactParameters() = default;
 
-    ParameterType(
+    SmoothContactParameters(
         const double _dhat,
         const double _alpha_t,
         const double _beta_t,
         const int _r)
-        : ParameterType(_dhat, _alpha_t, _beta_t, 0, 0.1, _r)
+        : SmoothContactParameters(_dhat, _alpha_t, _beta_t, 0, 0.1, _r)
     {
     }
 
-    ParameterType(
+    SmoothContactParameters(
         const double _dhat,
         const double _alpha_t,
         const double _beta_t,

@@ -100,14 +100,17 @@ public:
     /// @brief Get the indices of codimensional vertices of the collision mesh (|CV| x 1).
     const Eigen::VectorXi& codim_vertices() const { return m_codim_vertices; }
 
-    bool is_codim_vertex(const long& v) const { return m_is_codim_vertex[v]; }
+    bool is_codim_vertex(const index_t v) const { return m_is_codim_vertex[v]; }
 
-    bool is_orient_vertex(const long& v) const { return m_is_orient_vertex[v]; }
+    bool is_orient_vertex(const index_t v) const
+    {
+        return m_is_orient_vertex[v];
+    }
 
     /// @brief Get the indices of codimensional edges of the collision mesh (#CE x 1).
     const Eigen::VectorXi& codim_edges() const { return m_codim_edges; }
 
-    bool is_codim_edge(const long& e) const { return m_is_codim_edge[e]; }
+    bool is_codim_edge(const index_t e) const { return m_is_codim_edge[e]; }
 
     /// @brief Get the edges of the collision mesh (#E × 2).
     const Eigen::MatrixXi& edges() const { return m_edges; }
@@ -133,7 +136,7 @@ public:
 
     const Eigen::MatrixXi& edges_to_faces() const { return m_edges_to_faces; }
 
-    std::vector<long> find_vertex_adjacent_vertices(const long& v) const;
+    std::vector<index_t> find_vertex_adjacent_vertices(const index_t v) const;
 
     // -----------------------------------------------------------------------
 
