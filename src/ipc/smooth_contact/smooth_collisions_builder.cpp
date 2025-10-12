@@ -18,8 +18,7 @@ namespace {
         const std::shared_ptr<TCollision>& pair,
         unordered_map<std::pair<long, long>, std::shared_ptr<TCollision>>&
             cc_to_id_,
-        std::vector<std::shared_ptr<typename SmoothCollisions::value_type>>&
-            collisions_)
+        std::vector<std::shared_ptr<SmoothCollision>>& collisions_)
     {
         if (pair->is_active()
             && cc_to_id_.find(pair->get_hash()) == cc_to_id_.end()) {
@@ -32,8 +31,7 @@ namespace {
     template <int dim, typename TCollision>
     void add_collision(
         const std::shared_ptr<TCollision>& pair,
-        std::vector<std::shared_ptr<typename SmoothCollisions::value_type>>&
-            collisions_)
+        std::vector<std::shared_ptr<SmoothCollision>>& collisions_)
     {
         if (pair->is_active())
             collisions_.push_back(pair);

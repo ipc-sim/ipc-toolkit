@@ -17,14 +17,16 @@ static constexpr int MAX_VERT_3D = N_VERT_NEIGHBORS_3D * 2;
 template <int DIM> class MaxVertices;
 template <> class MaxVertices<2> {
 public:
-    static constexpr int VALUE = MAX_VERT_2D;
+    static constexpr int value = MAX_VERT_2D; // NOLINT
 };
 template <> class MaxVertices<3> {
 public:
-    static constexpr int VALUE = MAX_VERT_3D;
+    static constexpr int value = MAX_VERT_3D; // NOLINT
 };
 
 struct ParameterType {
+    ParameterType() = default;
+
     ParameterType(
         const double _dhat,
         const double _alpha_t,
@@ -33,6 +35,7 @@ struct ParameterType {
         : ParameterType(_dhat, _alpha_t, _beta_t, 0, 0.1, _r)
     {
     }
+
     ParameterType(
         const double _dhat,
         const double _alpha_t,
@@ -47,16 +50,40 @@ struct ParameterType {
         , beta_n(_beta_n)
         , r(_r)
     {
-        if (!(r > 0) || !(dhat > 0) || !(abs(alpha_t) <= 1)
-            || !(abs(alpha_n) <= 1) || !(abs(beta_t) <= 1)
-            || !(abs(beta_n) <= 1) || !(beta_t + alpha_t > 1e-6)
-            || !(beta_n + alpha_n > 1e-6)) {
+        if (r <= 0) {
+            logger().error("Parameter 'r' must be greater than 0! r: {}", r);
+        }
+        if (dhat <= 0) {
             logger().error(
-                "Wrong parameters for smooth contact! dhat {} alpha_t {} beta_t {} alpha_n {} beta_n {} r {}",
-                dhat, alpha_t, beta_t, alpha_n, beta_n, r);
+                "Parameter 'dhat' must be greater than 0! dhat: {}", dhat);
+        }
+        if (abs(alpha_t) > 1) {
+            logger().error(
+                "Parameter 'alpha_t' must be in [-1, 1]! alpha_t: {}", alpha_t);
+        }
+        if (abs(alpha_n) > 1) {
+            logger().error(
+                "Parameter 'alpha_n' must be in [-1, 1]! alpha_n: {}", alpha_n);
+        }
+        if (abs(beta_t) > 1) {
+            logger().error(
+                "Parameter 'beta_t' must be in [-1, 1]! beta_t: {}", beta_t);
+        }
+        if (abs(beta_n) > 1) {
+            logger().error(
+                "Parameter 'beta_n' must be in [-1, 1]! beta_n: {}", beta_n);
+        }
+        if (beta_t + alpha_t <= 1e-6) {
+            logger().error(
+                "Sum of 'beta_t' and 'alpha_t' must be greater than 1e-6! beta_t: {}, alpha_t: {}",
+                beta_t, alpha_t);
+        }
+        if (beta_n + alpha_n <= 1e-6) {
+            logger().error(
+                "Sum of 'beta_n' and 'alpha_n' must be greater than 1e-6! beta_n: {}, alpha_n: {}",
+                beta_n, alpha_n);
         }
     }
-    ParameterType() { }
 
     double adaptive_dhat_ratio() const { return m_adaptive_dhat_ratio; }
 
@@ -66,8 +93,10 @@ struct ParameterType {
     }
 
     double dhat = 1;
-    double alpha_t = 1, beta_t = 0;
-    double alpha_n = 0.1, beta_n = 0;
+    double alpha_t = 1;
+    double beta_t = 0;
+    double alpha_n = 0.1;
+    double beta_n = 0;
     int r = 2;
 
 private:

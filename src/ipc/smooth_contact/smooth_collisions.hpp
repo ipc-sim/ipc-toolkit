@@ -68,12 +68,12 @@ public:
     /// @brief Get a reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A reference to the collision.
-    value_type& operator[](size_t i);
+    SmoothCollision& operator[](size_t i);
 
     /// @brief Get a const reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A const reference to the collision.
-    const value_type& operator[](size_t i) const;
+    const SmoothCollision& operator[](size_t i) const;
 
     double compute_minimum_distance(
         const CollisionMesh& mesh,
@@ -125,7 +125,7 @@ public:
     int n_candidates() const { return candidates.size(); }
 
 public:
-    std::vector<std::shared_ptr<value_type>> collisions;
+    std::vector<std::shared_ptr<SmoothCollision>> collisions;
 
     Eigen::VectorXd vert_adaptive_dhat;
     Eigen::VectorXd edge_adaptive_dhat;

@@ -10,7 +10,7 @@
 
 namespace ipc {
 
-double edge_edge_distance_2d(
+double edge_edge_distance_2D(
     Eigen::ConstRef<Eigen::Vector2d> ea0,
     Eigen::ConstRef<Eigen::Vector2d> ea1,
     Eigen::ConstRef<Eigen::Vector2d> eb0,

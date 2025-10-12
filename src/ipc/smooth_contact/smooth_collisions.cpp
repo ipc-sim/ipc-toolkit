@@ -202,7 +202,7 @@ size_t SmoothCollisions::size() const { return collisions.size(); }
 bool SmoothCollisions::empty() const { return collisions.empty(); }
 void SmoothCollisions::clear() { collisions.clear(); }
 
-typename SmoothCollisions::value_type& SmoothCollisions::operator[](size_t i)
+SmoothCollision& SmoothCollisions::operator[](size_t i)
 {
     if (i < collisions.size()) {
         return *collisions[i];
@@ -210,8 +210,7 @@ typename SmoothCollisions::value_type& SmoothCollisions::operator[](size_t i)
     throw std::out_of_range("Collision index is out of range!");
 }
 
-const typename SmoothCollisions::value_type&
-SmoothCollisions::operator[](size_t i) const
+const SmoothCollision& SmoothCollisions::operator[](size_t i) const
 {
     if (i < collisions.size()) {
         return *collisions[i];

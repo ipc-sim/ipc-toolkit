@@ -32,8 +32,7 @@ public:
         SmoothCollisions& merged_collisions);
 
     // Constructed collisions
-    std::vector<std::shared_ptr<typename SmoothCollisions::value_type>>
-        collisions;
+    std::vector<std::shared_ptr<SmoothCollision>> collisions;
 
     // -------------------------------------------------------------------------
 
@@ -80,8 +79,7 @@ public:
         SmoothCollisions& merged_collisions);
 
     // Constructed collisions
-    std::vector<std::shared_ptr<typename SmoothCollisions::value_type>>
-        collisions;
+    std::vector<std::shared_ptr<SmoothCollision>> collisions;
 
     // -------------------------------------------------------------------------
 

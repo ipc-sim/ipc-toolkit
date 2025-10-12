@@ -19,7 +19,7 @@ double edge_edge_distance(
     Eigen::ConstRef<Eigen::Vector3d> eb1,
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
-double edge_edge_distance_2d(
+double edge_edge_distance_2D(
     Eigen::ConstRef<Eigen::Vector2d> ea0,
     Eigen::ConstRef<Eigen::Vector2d> ea1,
     Eigen::ConstRef<Eigen::Vector2d> eb0,
