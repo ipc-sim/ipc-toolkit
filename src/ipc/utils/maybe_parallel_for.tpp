@@ -1,9 +1,7 @@
 #include "maybe_parallel_for.hpp"
 
 #ifdef IPC_TOOLKIT_WITH_TBB
-#include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
-#include <tbb/parallel_reduce.h>
 #endif
 
 namespace ipc {

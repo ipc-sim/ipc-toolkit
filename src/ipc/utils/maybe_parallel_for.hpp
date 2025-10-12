@@ -4,8 +4,6 @@
 
 #ifdef IPC_TOOLKIT_WITH_TBB
 #include <tbb/enumerable_thread_specific.h>
-#include <tbb/parallel_for.h>
-#include <tbb/parallel_reduce.h>
 #else // Not using parallel for
 #include <array>
 #endif

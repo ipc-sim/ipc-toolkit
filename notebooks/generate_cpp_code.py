@@ -74,6 +74,7 @@ class CXXJacobianGenerator(CXXFunctionGenerator):
 class CXXHessianGenerator(CXXJacobianGenerator):
     def __init__(self, expr, params, name, out_param_name="hess"):
         super().__init__(expr.diff(Matrix(params)), params, name, out_param_name)
+        self.comment = f"// {out_param_name} is ({params.size}×{params.size}) flattened in column-major order"
 
 
 def generate_hpp_file(code_generators, file_name, transformer=None):

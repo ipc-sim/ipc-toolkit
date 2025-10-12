@@ -27,6 +27,12 @@ VectorMax9d point_edge_closest_point_jacobian(
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
 
+/// @brief Compute the hessian of the closest point on the edge
+/// @param p Point
+/// @param e0 First edge point
+/// @param e1 Second edge point
+/// @return Hessian of the closest point
+/// @todo Implement this for 2D vectors
 MatrixMax9d point_edge_closest_point_hessian(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
@@ -88,6 +94,29 @@ Eigen::Matrix<double, 2, 12> point_triangle_closest_point_jacobian(
 // ============================================================================
 
 namespace autogen {
+    // hess is (6×6) flattened in column-major order
+    void point_edge_closest_point_2D_hessian(
+        double p_x,
+        double p_y,
+        double e0_x,
+        double e0_y,
+        double e1_x,
+        double e1_y,
+        double hess[36]);
+
+    // hess is (9×9) flattened in column-major order
+    void point_edge_closest_point_3D_hessian(
+        double p_x,
+        double p_y,
+        double p_z,
+        double e0_x,
+        double e0_y,
+        double e0_z,
+        double e1_x,
+        double e1_y,
+        double e1_z,
+        double hess[81]);
+
     // J is (2×12) flattened in column-major order
     void edge_edge_closest_point_jacobian(
         double ea0_x,
