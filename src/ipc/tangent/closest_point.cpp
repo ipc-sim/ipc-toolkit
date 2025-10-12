@@ -48,7 +48,7 @@ MatrixMax9d point_edge_closest_point_hessian(
     assert(dim == 2 || dim == 3);
     assert(e0.size() == dim && e1.size() == dim);
 
-    MatrixMax9d H(dim, dim);
+    MatrixMax9d H(3 * dim, 3 * dim);
     if (dim == 2) {
         autogen::point_edge_closest_point_2D_hessian(
             p(0), p(1), e0(0), e0(1), e1(0), e1(1), H.data());
