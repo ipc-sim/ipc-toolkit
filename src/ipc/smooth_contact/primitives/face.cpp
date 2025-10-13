@@ -60,8 +60,7 @@ Matrix12d Face::hessian(const Vector3d& d, const Vector9d& x) const
     ScalarBase::setVariableCount(9);
     auto X = slice_positions<ADHessian<9>, 3, 3>(x);
     h.bottomRightCorner<9, 9>() =
-        smooth_face_term<ADHessian<9>>(X.row(0), X.row(1), X.row(2))
-            .Hess;
+        smooth_face_term<ADHessian<9>>(X.row(0), X.row(1), X.row(2)).Hess;
     return h;
 }
 } // namespace ipc
