@@ -117,8 +117,8 @@ CollisionMesh::CollisionMesh(
     } // else no need to change the edges and faces
 
     m_faces_to_edges = construct_faces_to_edges(m_faces, m_edges);
-    construct_edges_to_faces();
 
+    init_edges_to_faces();
     init_codim_vertices();
     init_codim_edges();
     init_areas();
@@ -129,7 +129,7 @@ CollisionMesh::CollisionMesh(
 
 // ============================================================================
 
-void CollisionMesh::construct_edges_to_faces()
+void CollisionMesh::init_edges_to_faces()
 {
     if (dim() == 2) {
         return;
@@ -509,7 +509,7 @@ Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
     return faces_to_edges;
 }
 
-double CollisionMesh::edge_length(const int& edge_id) const
+double CollisionMesh::edge_length(const index_t edge_id) const
 {
     return (m_rest_positions.row(m_edges(edge_id, 0))
             - m_rest_positions.row(m_edges(edge_id, 1)))
