@@ -87,8 +87,7 @@ Vector<double, -1, Point3::MAX_SIZE + Point3::DIM> Point3::grad(
     tmp << d, x;
     ScalarBase::setVariableCount(tmp.size());
     const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
-    return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1), X.row(0))
-        .grad;
+    return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1), X.row(0)).grad;
 #else
     const Eigen::Matrix<double, -1, DIM> X =
         slice_positions<double, -1, DIM>(x);
@@ -110,8 +109,7 @@ Point3::hessian(
     tmp << d, x;
     ScalarBase::setVariableCount(tmp.size());
     const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
-    return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1), X.row(0))
-        .Hess;
+    return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1), X.row(0)).Hess;
 #else
     const auto X = slice_positions<double, -1, DIM>(x);
     const auto [val, grad, hess] = smooth_point3_term_hessian(d, X, params);

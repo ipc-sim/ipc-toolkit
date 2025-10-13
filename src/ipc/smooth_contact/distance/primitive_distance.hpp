@@ -196,8 +196,7 @@ public:
             PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(
                 X.head(N_CORE_DOFS), X(N_CORE_DOFS));
 
-        return std::make_tuple(
-            out.val, out.grad, out.Hess);
+        return std::make_tuple(out.val, out.grad, out.Hess);
     }
 };
 

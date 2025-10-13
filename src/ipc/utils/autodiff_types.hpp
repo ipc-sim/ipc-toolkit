@@ -1,13 +1,14 @@
 #pragma once
 
+#include <ipc/config.hpp> // define DERIVATIVES_WITH_AUTODIFF
+#include <ipc/utils/eigen_ext.hpp>
+
 #include <TinyAD/ScalarFunction.hh>
-#include "eigen_ext.hpp"
 
 namespace ipc {
-template <int dim>
-using ADGrad = TinyAD::Scalar<dim, double, false>;
-template <int dim>
-using ADHessian = TinyAD::Scalar<dim, double, true>;
+
+template <int dim> using ADGrad = TinyAD::Scalar<dim, double, false>;
+template <int dim> using ADHessian = TinyAD::Scalar<dim, double, true>;
 
 using ScalarBase = TinyAD::ScalarBase;
 

@@ -35,7 +35,7 @@ index 7d0d8d8..63e0625 100644
          : val(_val)
      {
 -        static_assert(!dynamic_mode_, "Implicit constructor is only available in static mode. Either choose k at runtime or use make_passive(val, k_dynamic).");
-+        if (dynamic_mode_) {
++        if constexpr (dynamic_mode_) {
 +            grad = GradType::Zero(m_variableCount);
 +
 +            if constexpr (with_hessian)
@@ -53,14 +53,15 @@ index 7d0d8d8..63e0625 100644
          TINYAD_ASSERT_GEQ(_idx, 0);
 -        TINYAD_ASSERT_L(_idx, k);
 +
-+        if (dynamic_mode_) {
++        if constexpr (dynamic_mode_) {
 +            grad = GradType::Zero(m_variableCount);
 +
 +            if constexpr (with_hessian)
 +                Hess = HessType::Zero(m_variableCount, m_variableCount);
 +        }
-+        else
++        else {
 +            TINYAD_ASSERT_L(_idx, k);
++        }
 +
          grad(_idx) = 1.0;
      }
