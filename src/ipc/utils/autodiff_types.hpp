@@ -1,16 +1,13 @@
 #pragma once
 
-#include "autodiff.h"
 #include "eigen_ext.hpp"
+#include <TinyAD/ScalarFunction.hh>
 
 namespace ipc {
-template <int dim, int max_dim = dim>
-using ADGrad = DScalar1<double, Eigen::Matrix<double, dim, 1, 0, max_dim, 1>>;
-template <int dim, int max_dim = dim>
-using ADHessian = DScalar2<
-    double,
-    Eigen::Matrix<double, dim, 1, 0, max_dim, 1>,
-    Eigen::Matrix<double, dim, dim, 0, max_dim, max_dim>>;
+template <int dim>
+using TinyADGrad = TinyAD::Scalar<dim, double, false>;
+template <int dim>
+using TinyADHessian = TinyAD::Scalar<dim, double, true>;
 
 template <
     typename T,
@@ -37,14 +34,14 @@ autodiff_to_double(
 template <typename T> struct IsADGrad {
     static constexpr bool value = false; // NOLINT
 };
-template <int dim, int max_dim> struct IsADGrad<ADGrad<dim, max_dim>> {
+template <int dim> struct IsADGrad<TinyADGrad<dim>> {
     static constexpr bool value = true; // NOLINT
 };
 
 template <typename T> struct IsADHessian {
     static constexpr bool value = false; // NOLINT
 };
-template <int dim, int max_dim> struct IsADHessian<ADHessian<dim, max_dim>> {
+template <int dim> struct IsADHessian<TinyADHessian<dim>> {
     static constexpr bool value = true; // NOLINT
 };
 

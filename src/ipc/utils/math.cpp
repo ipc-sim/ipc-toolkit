@@ -3,7 +3,7 @@
 #include <ipc/smooth_contact/common.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
-DECLARE_DIFFSCALAR_BASE();
+// DECLARE_DIFFSCALAR_BASE();
 
 namespace ipc {
 namespace {

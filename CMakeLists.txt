@@ -148,6 +148,8 @@ source_group(TREE "${PROJECT_SOURCE_DIR}" FILES ${IPC_TOOLKIT_SOURCES})
 # Dependencies
 ################################################################################
 
+target_compile_definitions(ipc_toolkit PUBLIC -DEIGEN_STACK_ALLOCATION_LIMIT=0)
+
 # Eigen
 include(eigen)
 target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
@@ -206,6 +208,9 @@ if(IPC_TOOLKIT_WITH_FILIB)
   include(filib)
   target_link_libraries(ipc_toolkit PUBLIC filib::filib)
 endif()
+
+include(tinyad)
+target_link_libraries(ipc_toolkit PUBLIC TinyAD)
 
 # Extra warnings (link last for highest priority)
 include(ipc_toolkit_warnings)

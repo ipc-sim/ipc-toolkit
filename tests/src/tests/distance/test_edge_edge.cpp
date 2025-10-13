@@ -305,7 +305,7 @@ TEST_CASE(
     CAPTURE(angle, (grad - fgrad).squaredNorm());
     CHECK(distance == Catch::Approx(1.0));
     CHECK(fd::compare_gradient(grad, fgrad));
-    // CHECK(distance.getHessian().squaredNorm() != Catch::Approx(0.0));
+    // CHECK(distance.Hess.squaredNorm() != Catch::Approx(0.0));
 }
 
 TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")

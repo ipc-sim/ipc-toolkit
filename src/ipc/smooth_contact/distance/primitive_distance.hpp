@@ -91,26 +91,24 @@ public:
         const Vector<double, N_CORE_DOFS>& x,
         typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
     {
-        DiffScalarBase::setVariableCount(N_CORE_DOFS);
-        using T = ADGrad<N_CORE_DOFS>;
-        const Vector<T, N_CORE_DOFS> X = slice_positions<T, N_CORE_DOFS, 1>(x);
+        using T = TinyADGrad<N_CORE_DOFS>;
+        const Vector<T, N_CORE_DOFS> X = T::make_active(x);
         const T d = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_distance(X, dtype);
 
-        return { d.getValue(), d.getGradient() };
+        return { d.val, d.grad };
     }
 
     static HessianType<N_CORE_DOFS> compute_distance_hessian(
         const Vector<double, N_CORE_DOFS>& x,
         typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
     {
-        DiffScalarBase::setVariableCount(N_CORE_DOFS);
-        using T = ADHessian<N_CORE_DOFS>;
-        const Vector<T, N_CORE_DOFS> X = slice_positions<T, N_CORE_DOFS, 1>(x);
+        using T = TinyADHessian<N_CORE_DOFS>;
+        const Vector<T, N_CORE_DOFS> X = T::make_active(x);
         const T d = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_distance(X, dtype);
 
-        return { d.getValue(), d.getGradient(), d.getHessian() };
+        return { d.val, d.grad, d.Hess };
     }
 
     // points from primitiveA to primitiveB
@@ -127,9 +125,8 @@ public:
             const Vector<double, N_CORE_DOFS>& x,
             typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
     {
-        DiffScalarBase::setVariableCount(N_CORE_DOFS);
-        using T = ADGrad<N_CORE_DOFS>;
-        const Vector<T, N_CORE_DOFS> X = slice_positions<T, N_CORE_DOFS, 1>(x);
+        using T = TinyADGrad<N_CORE_DOFS>;
+        const Vector<T, N_CORE_DOFS> X = T::make_active(x);
         const Vector<T, DIM> d = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_closest_direction(X, dtype);
 
@@ -137,8 +134,8 @@ public:
         Eigen::Matrix<double, DIM, N_CORE_DOFS> J =
             Eigen::Matrix<double, DIM, N_CORE_DOFS>::Zero();
         for (int i = 0; i < DIM; i++) {
-            out(i) = d(i).getValue();
-            J.row(i) = d(i).getGradient();
+            out(i) = d(i).val;
+            J.row(i) = d(i).grad;
         }
         return std::make_tuple(out, J);
     }
@@ -151,9 +148,8 @@ public:
         const Vector<double, N_CORE_DOFS>& x,
         typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
     {
-        DiffScalarBase::setVariableCount(N_CORE_DOFS);
-        using T = ADHessian<N_CORE_DOFS>;
-        const Vector<T, N_CORE_DOFS> X = slice_positions<T, N_CORE_DOFS, 1>(x);
+        using T = TinyADHessian<N_CORE_DOFS>;
+        const Vector<T, N_CORE_DOFS> X = T::make_active(x);
         const Vector<T, DIM> d = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_closest_direction(X, dtype);
 
@@ -162,9 +158,9 @@ public:
             Eigen::Matrix<double, DIM, N_CORE_DOFS>::Zero();
         std::array<Eigen::Matrix<double, N_CORE_DOFS, N_CORE_DOFS>, DIM> H;
         for (int i = 0; i < DIM; i++) {
-            out(i) = d(i).getValue();
-            J.row(i) = d(i).getGradient();
-            H[i] = d(i).getHessian();
+            out(i) = d(i).val;
+            J.row(i) = d(i).grad;
+            H[i] = d(i).Hess;
         }
         return std::make_tuple(out, J, H);
     }
@@ -172,32 +168,30 @@ public:
     static GradType<N_CORE_DOFS + 1> compute_mollifier_gradient(
         const Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
     {
-        DiffScalarBase::setVariableCount(N_CORE_DOFS + 1);
-        using T = ADGrad<N_CORE_DOFS + 1>;
+        using T = TinyADGrad<N_CORE_DOFS + 1>;
         const Vector<T, N_CORE_DOFS + 1> X =
-            slice_positions<T, N_CORE_DOFS + 1, 1>(
+            T::make_active(
                 (Vector<double, N_CORE_DOFS + 1>() << x, dist_sqr).finished());
         const T out =
             PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(
                 X.head(N_CORE_DOFS), X(N_CORE_DOFS));
 
-        return std::make_tuple(out.getValue(), out.getGradient());
+        return std::make_tuple(out.val, out.grad);
     }
 
     static HessianType<N_CORE_DOFS + 1> compute_mollifier_hessian(
         const Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
     {
-        DiffScalarBase::setVariableCount(N_CORE_DOFS + 1);
-        using T = ADHessian<N_CORE_DOFS + 1>;
+        using T = TinyADHessian<N_CORE_DOFS + 1>;
         const Vector<T, N_CORE_DOFS + 1> X =
-            slice_positions<T, N_CORE_DOFS + 1, 1>(
+            T::make_active(
                 (Vector<double, N_CORE_DOFS + 1>() << x, dist_sqr).finished());
         const T out =
             PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(
                 X.head(N_CORE_DOFS), X(N_CORE_DOFS));
 
         return std::make_tuple(
-            out.getValue(), out.getGradient(), out.getHessian());
+            out.val, out.grad, out.Hess);
     }
 };
 

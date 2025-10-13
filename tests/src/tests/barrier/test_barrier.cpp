@@ -54,16 +54,15 @@ namespace {
 TEST_CASE("Spline derivatives", "[deriv]")
 {
     const int n_samples = 100;
-    DiffScalarBase::setVariableCount(1);
-    using T = ipc::ADHessian<1>;
+    using T = ipc::TinyADHessian<1>;
     for (int i = 0; i < n_samples; i++) {
         const double x = 2. * i / static_cast<double>(n_samples) - 1;
         double deriv = ipc::Math<double>::cubic_spline_grad(x);
         double hess = ipc::Math<double>::cubic_spline_hess(x);
-        T x_ad = T(0, x);
+        T x_ad = T(x, 0);
         T y_ad = ipc::Math<T>::cubic_spline(x_ad);
-        double deriv_ad = y_ad.getGradient()(0);
-        double hess_ad = y_ad.getHessian()(0);
+        double deriv_ad = y_ad.grad(0);
+        double hess_ad = y_ad.Hess(0);
 
         CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
         CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
@@ -73,16 +72,15 @@ TEST_CASE("Spline derivatives", "[deriv]")
 TEST_CASE("Heaviside derivatives", "[deriv]")
 {
     const int n_samples = 100;
-    DiffScalarBase::setVariableCount(1);
-    using T = ipc::ADHessian<1>;
+    using T = ipc::TinyADHessian<1>;
     for (int i = 0; i < n_samples; i++) {
         const double x = i / static_cast<double>(n_samples) - 1;
         double deriv = ipc::Math<double>::smooth_heaviside_grad(x, 1., 0.);
         double hess = ipc::Math<double>::smooth_heaviside_hess(x, 1., 0.);
-        T x_ad = T(0, x);
+        T x_ad = T(x, 0);
         T y_ad = ipc::Math<T>::smooth_heaviside(x_ad, 1., 0.);
-        double deriv_ad = y_ad.getGradient()(0);
-        double hess_ad = y_ad.getHessian()(0);
+        double deriv_ad = y_ad.grad(0);
+        double hess_ad = y_ad.Hess(0);
 
         CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
         CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
@@ -92,8 +90,7 @@ TEST_CASE("Heaviside derivatives", "[deriv]")
 TEST_CASE("Inv barrier derivatives", "[deriv]")
 {
     const int n_samples = 100;
-    DiffScalarBase::setVariableCount(1);
-    using T = ipc::ADHessian<1>;
+    using T = ipc::TinyADHessian<1>;
     const int r = 1;
     const double dhat = 0.13;
     for (int i = 1; i <= n_samples; i++) {
@@ -101,17 +98,16 @@ TEST_CASE("Inv barrier derivatives", "[deriv]")
         double deriv = ipc::Math<double>::inv_barrier_grad(x / dhat, r) / dhat;
         double hess =
             ipc::Math<double>::inv_barrier_hess(x / dhat, r) / dhat / dhat;
-        T x_ad = T(0, x);
+        T x_ad = T(x, 0);
         T y_ad = ipc::Math<T>::inv_barrier(x_ad / dhat, r);
-        double deriv_ad = y_ad.getGradient()(0);
-        double hess_ad = y_ad.getHessian()(0);
+        double deriv_ad = y_ad.grad(0);
+        double hess_ad = y_ad.Hess(0);
 
         CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
         CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
     }
 
-    DiffScalarBase::setVariableCount(3);
-    using T3 = ipc::ADHessian<3>;
+    using T3 = ipc::TinyADHessian<3>;
 
     for (int i = 1; i <= n_samples; i++) {
         Eigen::Vector3d x = Eigen::Vector3d::Random() * dhat / 3.;
@@ -121,8 +117,8 @@ TEST_CASE("Inv barrier derivatives", "[deriv]")
             / dhat / dhat;
         auto x_ad = ipc::slice_positions<T3, 3, 1>(x);
         T3 y_ad = ipc::Math<T3>::inv_barrier(x_ad.norm() / dhat, r);
-        Eigen::Vector3d deriv_ad = y_ad.getGradient();
-        Eigen::Matrix3d hess_ad = y_ad.getHessian();
+        Eigen::Vector3d deriv_ad = y_ad.grad;
+        Eigen::Matrix3d hess_ad = y_ad.Hess;
 
         Eigen::Vector3d xn = x / x.norm();
         Eigen::Vector3d deriv_analytic = deriv * xn;
@@ -142,8 +138,7 @@ TEST_CASE("Inv barrier derivatives", "[deriv]")
 TEST_CASE("Normalize vector derivatives", "[deriv]")
 {
     const int n_samples = 1000;
-    DiffScalarBase::setVariableCount(3);
-    using T = ipc::ADHessian<3>;
+    using T = ipc::TinyADHessian<3>;
     for (int i = 1; i <= n_samples; i++) {
         Eigen::Vector3d x = Eigen::Vector3d::Random();
         ipc::Vector<T, 3> x_ad = ipc::slice_positions<T, 3, 1>(x);
@@ -153,8 +148,8 @@ TEST_CASE("Normalize vector derivatives", "[deriv]")
 
         double err_grad = 0, err_hess = 0;
         for (int j = 0; j < 3; j++) {
-            err_grad += (grad.col(j) - y_ad(j).getGradient()).norm();
-            err_hess += (hess[j] - y_ad(j).getHessian()).norm();
+            err_grad += (grad.col(j) - y_ad(j).grad).norm();
+            err_hess += (hess[j] - y_ad(j).Hess).norm();
         }
 
         CHECK((grad - grad.transpose()).norm() <= 1e-12);
@@ -167,8 +162,7 @@ TEST_CASE("Normalize vector derivatives", "[deriv]")
 TEST_CASE("line-line closest direction derivatives", "[deriv]")
 {
     const int n_samples = 100;
-    DiffScalarBase::setVariableCount(12);
-    using T = ipc::ADHessian<12>;
+    using T = ipc::TinyADHessian<12>;
     for (int i = 1; i <= n_samples; i++) {
         ipc::Vector6d ea = ipc::Vector6d::Random();
         ipc::Vector<T, 6> eaT = ipc::slice_positions<T, 6, 1>(ea);
@@ -185,8 +179,8 @@ TEST_CASE("line-line closest direction derivatives", "[deriv]")
         double err_grad = 0;
         double err_hess = 0;
         for (int j = 0; j < 3; j++) {
-            err_grad += (grad.row(j).transpose() - dT(j).getGradient()).norm();
-            err_hess += (hess[j] - dT(j).getHessian()).norm();
+            err_grad += (grad.row(j).transpose() - dT(j).grad).norm();
+            err_hess += (hess[j] - dT(j).Hess).norm();
         }
 
         CHECK(err_grad <= 1e-12);
@@ -197,8 +191,7 @@ TEST_CASE("line-line closest direction derivatives", "[deriv]")
 TEST_CASE("opposite_direction_penalty derivatives", "[deriv]")
 {
     const int n_samples = 1000;
-    DiffScalarBase::setVariableCount(6);
-    using T = ipc::ADHessian<6>;
+    using T = ipc::TinyADHessian<6>;
     const double alpha = 1;
     const double beta = 1;
     for (int i = 1; i <= n_samples; i++) {
@@ -210,8 +203,8 @@ TEST_CASE("opposite_direction_penalty derivatives", "[deriv]")
         const auto [y, grad, hess] = ipc::opposite_direction_penalty_hess(
             x.head(3), x.tail(3), alpha, beta);
 
-        CHECK((grad - y_ad.getGradient()).norm() <= 1e-12);
-        CHECK((hess - y_ad.getHessian()).norm() <= 1e-12);
+        CHECK((grad - y_ad.grad).norm() <= 1e-12);
+        CHECK((hess - y_ad.Hess).norm() <= 1e-12);
     }
 }
 
@@ -221,8 +214,7 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
     const double alpha = 1;
     const double beta = 1;
     for (int i = 1; i <= n_samples; i++) {
-        DiffScalarBase::setVariableCount(9);
-        using T = ipc::ADHessian<9>;
+        using T = ipc::TinyADHessian<9>;
         ipc::Vector9d x = ipc::Vector9d::Random();
         ipc::Vector<T, 9> x_ad = ipc::slice_positions<T, 9, 1>(x);
         ipc::Vector<T, 3> t = x_ad.head<3>().cross(x_ad.segment<3>(3));
@@ -233,13 +225,13 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
             x.head(3), x.segment(3, 3), x.tail(3), alpha, beta);
 
         // hess.topLeftCorner(6, 6).setZero();
-        // auto hess_ad = y_ad.getHessian();
+        // auto hess_ad = y_ad.Hess;
         // hess_ad.topLeftCorner(6, 6).setZero();
-        // y_ad = T(y_ad.getValue(), y_ad.getGradient(), hess_ad);
+        // y_ad = T(y_ad.val, y_ad.grad, hess_ad);
 
-        CHECK(abs(y - y_ad.getValue()) <= 1e-12);
-        CHECK((grad - y_ad.getGradient()).norm() <= 1e-12);
-        CHECK((hess - y_ad.getHessian()).norm() <= 1e-10);
+        CHECK(abs(y - y_ad.val) <= 1e-12);
+        CHECK((grad - y_ad.grad).norm() <= 1e-12);
+        CHECK((hess - y_ad.Hess).norm() <= 1e-10);
     }
 }
 
@@ -285,8 +277,6 @@ TEST_CASE("point term derivatives", "[deriv]")
             },
             fgrad);
 
-        std::cout << "err " << (y_grad - fgrad).norm() / fgrad.norm()
-                  << ", norm " << fgrad.norm() << " " << y_grad.norm() << "\n";
         CHECK((y_grad - fgrad).norm() <= 1e-7 * fgrad.norm());
 
         Eigen::MatrixXd fhess;
@@ -304,8 +294,6 @@ TEST_CASE("point term derivatives", "[deriv]")
             },
             fhess);
 
-        std::cout << "err " << (y_hess - fhess).norm() / fhess.norm()
-                  << ", norm " << fhess.norm() << " " << y_hess.norm() << "\n";
         CHECK((y_hess - fhess).norm() <= 1e-7 * fhess.norm());
     }
 
@@ -324,8 +312,6 @@ TEST_CASE("point term derivatives", "[deriv]")
             },
             fgrad);
 
-        std::cout << "err " << (y_grad - fgrad).norm() / fgrad.norm()
-                  << ", norm " << fgrad.norm() << " " << y_grad.norm() << "\n";
         CHECK((y_grad - fgrad).norm() <= 1e-7 * fgrad.norm());
 
         Eigen::MatrixXd fhess;
@@ -336,8 +322,6 @@ TEST_CASE("point term derivatives", "[deriv]")
             },
             fhess);
 
-        std::cout << "err " << (y_hess - fhess).norm() / fhess.norm()
-                  << ", norm " << fhess.norm() << " " << y_hess.norm() << "\n";
         CHECK((y_hess - fhess).norm() <= 1e-7 * fhess.norm());
     }
 }
@@ -368,8 +352,6 @@ TEST_CASE("point term normal derivatives", "[deriv]")
         auto [y, y_grad, y_hess] =
             point_term->smooth_point3_term_normal_hessian(
                 vectors.row(0), V.bottomRows(8), params.alpha_n, params.beta_n);
-        std::cout << y << " " << y_grad.norm() << " " << y_hess.norm()
-                  << std::endl;
 
         Eigen::VectorXd fgrad;
         fd::finite_gradient(
@@ -386,8 +368,6 @@ TEST_CASE("point term normal derivatives", "[deriv]")
             },
             fgrad);
 
-        std::cout << "err " << (y_grad - fgrad).norm() / fgrad.norm()
-                  << ", norm " << fgrad.norm() << " " << y_grad.norm() << "\n";
         CHECK((y_grad - fgrad).norm() <= 1e-7 * fgrad.norm());
 
         Eigen::MatrixXd fhess;
@@ -405,8 +385,6 @@ TEST_CASE("point term normal derivatives", "[deriv]")
             },
             fhess, fd::AccuracyOrder::FOURTH, 1e-6);
 
-        std::cout << "err " << (y_hess - fhess).norm() / fhess.norm()
-                  << ", norm " << fhess.norm() << " " << y_hess.norm() << "\n";
         CHECK((y_hess - fhess).norm() <= 1e-7 * fhess.norm());
     }
 }

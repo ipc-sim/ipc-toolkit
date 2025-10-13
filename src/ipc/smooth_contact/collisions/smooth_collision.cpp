@@ -188,8 +188,7 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
         Vector<double, N_CORE_DOFS> gMollifier =
             Vector<double, N_CORE_DOFS>::Zero();
 #ifdef DERIVATIVES_WITH_AUTODIFF
-        DiffScalarBase::setVariableCount(N_CORE_DOFS);
-        using T = ADGrad<N_CORE_DOFS>;
+        using T = TinyADGrad<N_CORE_DOFS>;
         Vector<T, N_CORE_DOFS> xAD = slice_positions<T, N_CORE_DOFS, 1>(x);
         Vector<T, DIM> closest_direction_autodiff = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_closest_direction(xAD, dtype);
@@ -197,8 +196,8 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
         auto mollifier_autodiff =
             PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(
                 xAD, dist_sqr_AD);
-        mollifier = mollifier_autodiff.getValue();
-        gMollifier = mollifier_autodiff.getGradient();
+        mollifier = mollifier_autodiff.val;
+        gMollifier = mollifier_autodiff.grad;
 #else
         Vector<double, N_CORE_DOFS + 1> mollifier_grad;
         std::tie(mollifier, mollifier_grad) = PrimitiveDistance<
@@ -324,8 +323,7 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
         Eigen::Matrix<double, N_CORE_DOFS, N_CORE_DOFS> hMollifier =
             Eigen::Matrix<double, N_CORE_DOFS, N_CORE_DOFS>::Zero();
 #ifdef DERIVATIVES_WITH_AUTODIFF
-        DiffScalarBase::setVariableCount(N_CORE_DOFS);
-        using T = ADHessian<N_CORE_DOFS>;
+        using T = TinyADHessian<N_CORE_DOFS>;
         Vector<T, N_CORE_DOFS> xAD = slice_positions<T, N_CORE_DOFS, 1>(x);
         Vector<T, DIM> closest_direction_autodiff = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_closest_direction(xAD, dtype);
@@ -333,10 +331,10 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
         auto mollifier_autodiff =
             PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(
                 xAD, dist_sqr_AD);
-        mollifier = mollifier_autodiff.getValue();
+        mollifier = mollifier_autodiff.val;
 
-        gMollifier = mollifier_autodiff.getGradient();
-        hMollifier = mollifier_autodiff.getHessian();
+        gMollifier = mollifier_autodiff.grad;
+        hMollifier = mollifier_autodiff.Hess;
 #else
         Vector<double, N_CORE_DOFS + 1> mollifier_grad;
         Eigen::Matrix<double, N_CORE_DOFS + 1, N_CORE_DOFS + 1> mollifier_hess;

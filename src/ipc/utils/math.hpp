@@ -1,6 +1,6 @@
 #pragma once
 
-#include "eigen_ext.hpp"
+#include "autodiff_types.hpp"
 
 #include <ipc/config.hpp>
 
@@ -93,20 +93,25 @@ inline Eigen::Matrix<
     cols>
 slice_positions(const Eigen::VectorXd& positions, const int offset = 0)
 {
-    assert(cols > 0);
+    static_assert(cols > 0);
     const int nrows = rows > 0 ? rows : positions.size() / cols;
     Eigen::Matrix<
         T, rows, cols, (max_rows > 1 ? Eigen::ColMajor : Eigen::RowMajor),
         max_rows, cols>
         points;
-    points.setZero(nrows, cols);
+    points.resize(nrows, cols);
 
     for (int i = 0, id = 0; i < nrows; i++) {
         for (int d = 0; d < cols; d++, id++) {
             if constexpr (std::is_same<T, double>::value) {
                 points(i, d) = positions(id);
-            } else {
-                points(i, d) = T(id + offset, positions(id));
+            } else if constexpr (IsADGrad<T>::value || IsADHessian<T>::value) {
+                if constexpr (!T::dynamic_mode_) {
+                    points(i, d) = T(positions(id), id + offset);
+                }
+                else {
+                    points(i, d) = T::make_active(positions(id), id + offset, positions.size());
+                }
             }
         }
     }

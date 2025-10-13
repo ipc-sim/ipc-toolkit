@@ -135,23 +135,21 @@ Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
     const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
     if (has_neighbor_1 && has_neighbor_2) {
-        DiffScalarBase::setVariableCount(4 * DIM);
-        using T = ADGrad<4 * DIM>;
+        using T = TinyADGrad<4 * DIM>;
         Vector<double, 4 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         return smooth_point2_term<T>(
                    X.row(1), X.row(0), X.row(2), X.row(3), params, orientable)
-            .getGradient();
+            .grad;
     } else if (has_neighbor_1 || has_neighbor_2) {
-        DiffScalarBase::setVariableCount(3 * DIM);
-        using T = ADGrad<3 * DIM>;
+        using T = TinyADGrad<3 * DIM>;
         Vector<double, 3 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         return smooth_point2_term_one_side<T>(
                    X.row(1), X.row(0), X.row(2), params)
-            .getGradient();
+            .grad;
     } else
         return Vector<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
             x.size() + d.size());
@@ -164,23 +162,21 @@ Point2::hessian(
     const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
     if (has_neighbor_1 && has_neighbor_2) {
-        DiffScalarBase::setVariableCount(4 * DIM);
-        using T = ADHessian<4 * DIM>;
+        using T = TinyADHessian<4 * DIM>;
         Vector<double, 4 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         return smooth_point2_term<T>(
                    X.row(1), X.row(0), X.row(2), X.row(3), params, orientable)
-            .getHessian();
+            .Hess;
     } else if (has_neighbor_1 || has_neighbor_2) {
-        DiffScalarBase::setVariableCount(3 * DIM);
-        using T = ADHessian<3 * DIM>;
+        using T = TinyADHessian<3 * DIM>;
         Vector<double, 3 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         return smooth_point2_term_one_side<T>(
                    X.row(1), X.row(0), X.row(2), params)
-            .getHessian();
+            .Hess;
     } else
         return MatrixMax<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
             x.size() + d.size(), x.size() + d.size());

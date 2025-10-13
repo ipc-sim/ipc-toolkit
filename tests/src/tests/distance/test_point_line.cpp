@@ -166,8 +166,7 @@ TEST_CASE(
     double yb = GENERATE(take(2, random(-10.0, 10.0)));
     Eigen::Vector3d eb0(0, yb, -1), eb1(0, yb, 1.02);
 
-    using T = ADHessian<9>;
-    DiffScalarBase::setVariableCount(9);
+    using T = TinyADHessian<9>;
     const auto x =
         slice_positions<T, 3, 3>((Vector9d() << p, eb0, eb1).finished());
     auto yAD = PointEdgeDistance<T, 3>::point_line_closest_point_direction(
@@ -175,11 +174,11 @@ TEST_CASE(
     auto [y, grad, hess] = PointEdgeDistanceDerivatives<
         3>::point_line_closest_point_direction_hessian(p, eb0, eb1);
     for (int i = 0; i < yAD.size(); i++) {
-        REQUIRE((yAD(i).getValue() - y(i)) < 1e-8);
+        REQUIRE((yAD(i).val - y(i)) < 1e-8);
         REQUIRE(
-            (yAD(i).getGradient() - grad.row(i).transpose()).norm()
+            (yAD(i).grad - grad.row(i).transpose()).norm()
             < 1e-8 * grad.row(i).norm());
-        REQUIRE((yAD(i).getHessian() - hess[i]).norm() < 1e-8 * hess[i].norm());
+        REQUIRE((yAD(i).Hess - hess[i]).norm() < 1e-8 * hess[i].norm());
     }
 
     BENCHMARK("AutoDiff Hessian")

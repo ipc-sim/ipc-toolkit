@@ -104,8 +104,7 @@ TEST_CASE(
     double yb = GENERATE(take(2, random(-10.0, 10.0)));
     Eigen::Vector3d eb0(0, yb, -1), eb1(0, yb, 1);
 
-    using T = ADHessian<12>;
-    DiffScalarBase::setVariableCount(12);
+    using T = TinyADHessian<12>;
     const auto x = slice_positions<T, 4, 3>(
         (Vector12d() << ea0, ea1, eb0, eb1).finished());
     BENCHMARK("AutoDiff Hessian")
@@ -128,17 +127,16 @@ TEST_CASE(
     double yb = GENERATE(take(10, random(-10.0, 10.0)));
     Eigen::Vector3d eb0(0, yb, -1), eb1(0, yb, 1);
 
-    using T = ADGrad<12>;
-    DiffScalarBase::setVariableCount(12);
+    using T = TinyADGrad<12>;
     const auto x = slice_positions<T, 4, 3>(
         (Vector12d() << ea0, ea1, eb0, eb1).finished());
     auto yAD = line_line_closest_point_pairs<T>(
         x.row(0), x.row(1), x.row(2), x.row(3));
     auto [y, grad] = line_line_closest_point_pairs_gradient(ea0, ea1, eb0, eb1);
     for (int i = 0; i < yAD.size(); i++) {
-        REQUIRE((yAD(i).getValue() - y(i)) < 1e-8);
+        REQUIRE((yAD(i).val - y(i)) < 1e-8);
         REQUIRE(
-            (yAD(i).getGradient() - grad.row(i).transpose()).norm()
+            (yAD(i).grad - grad.row(i).transpose()).norm()
             < 1e-6 * grad.row(i).norm());
     }
 
@@ -160,8 +158,7 @@ TEST_CASE(
     double yb = GENERATE(take(10, random(-10.0, 10.0)));
     Eigen::Vector3d eb0(0, yb, -1), eb1(0, yb, 1.02);
 
-    using T = ADHessian<12>;
-    DiffScalarBase::setVariableCount(12);
+    using T = TinyADHessian<12>;
     const auto x = slice_positions<T, 4, 3>(
         (Vector12d() << ea0, ea1, eb0, eb1).finished());
     auto yAD = line_line_closest_point_pairs<T>(
@@ -169,11 +166,11 @@ TEST_CASE(
     auto [y, grad, hess] =
         line_line_closest_point_pairs_hessian(ea0, ea1, eb0, eb1);
     for (int i = 0; i < yAD.size(); i++) {
-        REQUIRE((yAD(i).getValue() - y(i)) < 1e-8);
+        REQUIRE((yAD(i).val - y(i)) < 1e-8);
         REQUIRE(
-            (yAD(i).getGradient() - grad.row(i).transpose()).norm()
+            (yAD(i).grad - grad.row(i).transpose()).norm()
             < 1e-8 * grad.row(i).norm());
-        REQUIRE((yAD(i).getHessian() - hess[i]).norm() < 1e-8 * hess[i].norm());
+        REQUIRE((yAD(i).Hess - hess[i]).norm() < 1e-8 * hess[i].norm());
     }
 
     // BENCHMARK("AutoDiff Hessian") {

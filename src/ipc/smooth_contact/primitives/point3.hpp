@@ -47,7 +47,7 @@ public:
     /// @param neighbors follow counter-clockwise order
     /// @param params
     /// @return
-    template <typename scalar, int n_verts = -1>
+    template <typename scalar, int n_verts>
     scalar smooth_point3_term(
         const Eigen::Matrix<scalar, n_verts, 3>& X,
         Eigen::ConstRef<RowVector3<scalar>> direc) const;
@@ -100,6 +100,14 @@ private:
     bool smooth_point3_term_type(
         const Eigen::Matrix<double, -1, 3>& X,
         Eigen::ConstRef<RowVector3<double>> direc);
+
+    template <typename T, int N_VERTS>
+    void smooth_point3_term_iter(
+        const Vector<double, DIM>& d,
+        const Vector<double, (N_VERTS + 1) * Point3::DIM>& x,
+        double& val,
+        Eigen::Ref<Eigen::VectorXd> grad,
+        Eigen::Ref<Eigen::MatrixXd> Hess) const;
 };
 
 } // namespace ipc

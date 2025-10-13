@@ -192,11 +192,11 @@ template <typename scalar> scalar Math<scalar>::mollifier(const scalar& x)
         if (x <= 0) {
             return scalar(0.);
         } else if (x < 1) {
-            const double deriv = 2. * (1. - x.getValue()), hess = -2.;
-            return scalar(
-                x.getValue() * (2. - x.getValue()), deriv * x.getGradient(),
-                x.getGradient() * hess * x.getGradient().transpose()
-                    + deriv * x.getHessian());
+            const double deriv = 2. * (1. - x.val), hess = -2.;
+            return scalar::known_derivatives(
+                x.val * (2. - x.val), deriv * x.grad,
+                x.grad * hess * x.grad.transpose()
+                    + deriv * x.Hess);
         } else {
             return scalar(1.);
         }

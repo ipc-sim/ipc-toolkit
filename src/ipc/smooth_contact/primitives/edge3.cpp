@@ -476,13 +476,11 @@ Edge3::grad(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 #ifdef DERIVATIVES_WITH_AUTODIFF
     Vector15d tmp;
     tmp << d, x;
-    DiffScalarBase::setVariableCount(15);
-    using T = ADGrad<15>;
-    auto X = slice_positions<T, 5, 3>(tmp);
+    using T = TinyADGrad<15>;
+    auto X = T::make_active(tmp);
     return smooth_edge3_term_template<T>(
-               X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
-               X.row(4), params, otypes, orientable)
-        .getGradient();
+               X.segment<DIM>(0) / X.segment<DIM>(0).norm(), X.segment<DIM>(DIM), X.segment<DIM>(2 * DIM), X.segment<DIM>(3 * DIM),
+               X.segment<DIM>(4 * DIM), params, otypes, orientable).grad;
 #else
     return std::get<1>(smooth_edge3_term_gradient(
         d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), params,
@@ -496,13 +494,12 @@ Edge3::hessian(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 #ifdef DERIVATIVES_WITH_AUTODIFF
     Vector15d tmp;
     tmp << d, x;
-    DiffScalarBase::setVariableCount(15);
-    using T = ADHessian<15>;
+    using T = TinyADHessian<15>;
     auto X = slice_positions<T, 5, 3>(tmp);
     return smooth_edge3_term_template<T>(
                X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
                X.row(4), params, otypes, orientable)
-        .getHessian();
+        .Hess;
 #else
     return std::get<2>(smooth_edge3_term_hessian(
         d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), params,
@@ -634,8 +631,7 @@ HessianType<15> smooth_edge3_normal_term_hessian(
 
     // verify with autodiff
     // {
-    //     DiffScalarBase::setVariableCount(15);
-    //     using T = ADHessian<15>;
+    //     using T = TinyADHessian<15>;
     //     Vector15d tmp;
     //     tmp << dn, e0, e1, f0, f1;
     //     auto X = slice_positions<T, 15, 1>(tmp);
@@ -650,12 +646,12 @@ HessianType<15> smooth_edge3_normal_term_hessian(
     //         alpha, beta)
     //         - 1), 1., 0);
 
-    //     if ((normal_term.getHessian() - hessian).norm() > 1e-6 *
+    //     if ((normal_term.Hess - hessian).norm() > 1e-6 *
     //     hessian.norm()) {
     //         std::cout << "gradient: \n" <<
-    //         normal_term.getGradient().transpose() << "\n vs \n" <<
+    //         normal_term.grad.transpose() << "\n vs \n" <<
     //         gradient.transpose() << std::endl; std::cout << "hessian
-    //         mismatch: \n" << normal_term.getHessian() << "\n vs \n" <<
+    //         mismatch: \n" << normal_term.Hess << "\n vs \n" <<
     //         hessian << std::endl;
     //     }
     // }
