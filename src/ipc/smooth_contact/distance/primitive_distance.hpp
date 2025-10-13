@@ -169,9 +169,8 @@ public:
         const Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
     {
         using T = TinyADGrad<N_CORE_DOFS + 1>;
-        const Vector<T, N_CORE_DOFS + 1> X =
-            T::make_active(
-                (Vector<double, N_CORE_DOFS + 1>() << x, dist_sqr).finished());
+        const Vector<T, N_CORE_DOFS + 1> X = T::make_active(
+            (Vector<double, N_CORE_DOFS + 1>() << x, dist_sqr).finished());
         const T out =
             PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(
                 X.head(N_CORE_DOFS), X(N_CORE_DOFS));
@@ -183,15 +182,13 @@ public:
         const Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
     {
         using T = TinyADHessian<N_CORE_DOFS + 1>;
-        const Vector<T, N_CORE_DOFS + 1> X =
-            T::make_active(
-                (Vector<double, N_CORE_DOFS + 1>() << x, dist_sqr).finished());
+        const Vector<T, N_CORE_DOFS + 1> X = T::make_active(
+            (Vector<double, N_CORE_DOFS + 1>() << x, dist_sqr).finished());
         const T out =
             PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(
                 X.head(N_CORE_DOFS), X(N_CORE_DOFS));
 
-        return std::make_tuple(
-            out.val, out.grad, out.Hess);
+        return std::make_tuple(out.val, out.grad, out.Hess);
     }
 };
 

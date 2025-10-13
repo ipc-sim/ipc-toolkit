@@ -210,7 +210,7 @@ if(IPC_TOOLKIT_WITH_FILIB)
 endif()
 
 include(tinyad)
-target_link_libraries(ipc_toolkit PUBLIC TinyAD)
+target_link_libraries(ipc_toolkit PUBLIC TinyAD::TinyAD)
 
 # Extra warnings (link last for highest priority)
 include(ipc_toolkit_warnings)

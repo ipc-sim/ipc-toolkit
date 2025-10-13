@@ -1,13 +1,12 @@
 #pragma once
 
 #include "eigen_ext.hpp"
+
 #include <TinyAD/ScalarFunction.hh>
 
 namespace ipc {
-template <int dim>
-using TinyADGrad = TinyAD::Scalar<dim, double, false>;
-template <int dim>
-using TinyADHessian = TinyAD::Scalar<dim, double, true>;
+template <int dim> using TinyADGrad = TinyAD::Scalar<dim, double, false>;
+template <int dim> using TinyADHessian = TinyAD::Scalar<dim, double, true>;
 
 template <
     typename T,

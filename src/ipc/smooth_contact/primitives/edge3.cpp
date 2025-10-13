@@ -479,8 +479,11 @@ Edge3::grad(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
     using T = TinyADGrad<15>;
     auto X = T::make_active(tmp);
     return smooth_edge3_term_template<T>(
-               X.segment<DIM>(0) / X.segment<DIM>(0).norm(), X.segment<DIM>(DIM), X.segment<DIM>(2 * DIM), X.segment<DIM>(3 * DIM),
-               X.segment<DIM>(4 * DIM), params, otypes, orientable).grad;
+               X.segment<DIM>(0) / X.segment<DIM>(0).norm(),
+               X.segment<DIM>(DIM), X.segment<DIM>(2 * DIM),
+               X.segment<DIM>(3 * DIM), X.segment<DIM>(4 * DIM), params, otypes,
+               orientable)
+        .grad;
 #else
     return std::get<1>(smooth_edge3_term_gradient(
         d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), params,

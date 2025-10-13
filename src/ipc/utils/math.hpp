@@ -108,9 +108,9 @@ slice_positions(const Eigen::VectorXd& positions, const int offset = 0)
             } else if constexpr (IsADGrad<T>::value || IsADHessian<T>::value) {
                 if constexpr (!T::dynamic_mode_) {
                     points(i, d) = T(positions(id), id + offset);
-                }
-                else {
-                    points(i, d) = T::make_active(positions(id), id + offset, positions.size());
+                } else {
+                    points(i, d) = T::make_active(
+                        positions(id), id + offset, positions.size());
                 }
             }
         }
