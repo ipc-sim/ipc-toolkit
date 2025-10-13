@@ -476,13 +476,12 @@ Edge3::grad(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 #ifdef DERIVATIVES_WITH_AUTODIFF
     Vector15d tmp;
     tmp << d, x;
-    using T = TinyADGrad<15>;
-    auto X = T::make_active(tmp);
+    ScalarBase::setVariableCount(15);
+    using T = ADGrad<15>;
+    auto X = slice_positions<T, 5, 3>(tmp);
     return smooth_edge3_term_template<T>(
-               X.segment<DIM>(0) / X.segment<DIM>(0).norm(),
-               X.segment<DIM>(DIM), X.segment<DIM>(2 * DIM),
-               X.segment<DIM>(3 * DIM), X.segment<DIM>(4 * DIM), params, otypes,
-               orientable)
+               X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
+               X.row(4), params, otypes, orientable)
         .grad;
 #else
     return std::get<1>(smooth_edge3_term_gradient(
@@ -497,7 +496,8 @@ Edge3::hessian(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 #ifdef DERIVATIVES_WITH_AUTODIFF
     Vector15d tmp;
     tmp << d, x;
-    using T = TinyADHessian<15>;
+    ScalarBase::setVariableCount(15);
+    using T = ADHessian<15>;
     auto X = slice_positions<T, 5, 3>(tmp);
     return smooth_edge3_term_template<T>(
                X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
@@ -634,7 +634,8 @@ HessianType<15> smooth_edge3_normal_term_hessian(
 
     // verify with autodiff
     // {
-    //     using T = TinyADHessian<15>;
+    //     ScalarBase::setVariableCount(15);
+    //     using T = ADHessian<15>;
     //     Vector15d tmp;
     //     tmp << dn, e0, e1, f0, f1;
     //     auto X = slice_positions<T, 15, 1>(tmp);

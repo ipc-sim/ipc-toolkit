@@ -3,7 +3,7 @@
 #include <ipc/smooth_contact/common.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
-// DECLARE_DIFFSCALAR_BASE();
+thread_local size_t TinyAD::ScalarBase::m_variableCount = 0;
 
 namespace ipc {
 namespace {

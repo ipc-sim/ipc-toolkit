@@ -47,18 +47,21 @@ Vector12d Face::grad(const Vector3d& d, const Vector9d& x) const
 {
     Vector12d g;
     g.setZero();
-    auto X = slice_positions<TinyADGrad<9>, 3, 3>(x);
+    ScalarBase::setVariableCount(9);
+    auto X = slice_positions<ADGrad<9>, 3, 3>(x);
     g.tail<9>() =
-        smooth_face_term<TinyADGrad<9>>(X.row(0), X.row(1), X.row(2)).grad;
+        smooth_face_term<ADGrad<9>>(X.row(0), X.row(1), X.row(2)).grad;
     return g;
 }
 Matrix12d Face::hessian(const Vector3d& d, const Vector9d& x) const
 {
     Matrix12d h;
     h.setZero();
-    auto X = slice_positions<TinyADHessian<9>, 3, 3>(x);
+    ScalarBase::setVariableCount(9);
+    auto X = slice_positions<ADHessian<9>, 3, 3>(x);
     h.bottomRightCorner<9, 9>() =
-        smooth_face_term<TinyADHessian<9>>(X.row(0), X.row(1), X.row(2)).Hess;
+        smooth_face_term<ADHessian<9>>(X.row(0), X.row(1), X.row(2))
+            .Hess;
     return h;
 }
 } // namespace ipc

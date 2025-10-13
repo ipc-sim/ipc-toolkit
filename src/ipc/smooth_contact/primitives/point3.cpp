@@ -4,48 +4,6 @@
 
 namespace ipc {
 
-namespace {
-    template <typename T>
-    void smooth_point3_normal_term_template_iter(
-        Eigen::ConstRef<Eigen::Vector3d> direc,
-        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
-        const OrientationTypes& otypes,
-        Eigen::ConstRef<Eigen::Matrix<int, -1, 3>> faces,
-        const SmoothContactParameters& params,
-        double& val,
-        Eigen::Ref<Eigen::VectorXd> grad,
-        Eigen::Ref<Eigen::MatrixXd> hess)
-    {
-        Eigen::VectorXd tmp(direc.size() + tangents.size());
-        if constexpr (IsADGrad<T>::value || IsADHessian<T>::value) {
-            assert(tmp.size() == T::k_);
-        }
-        tmp.head<3>() = direc;
-        for (int i = 0; i < tangents.rows(); i++)
-            tmp.segment<3>(3 * i + 3) = tangents.row(i);
-
-        const Eigen::Matrix<T, -1, 3> X = slice_positions<T, -1, 3>(tmp);
-
-        T term(0.);
-        for (int a = 0; a < faces.rows(); a++) {
-            if (otypes.normal_type(a) == HeavisideType::VARIANT) {
-                term = term
-                    + Math<T>::smooth_heaviside(
-                           -X.row(0).dot(X.row(faces(a, 1))
-                                             .cross(X.row(faces(a, 2)))
-                                             .normalized()),
-                           params.alpha_n, params.beta_n);
-            }
-        }
-
-        val = term.val;
-        grad = term.grad;
-
-        if (IsADHessian<T>::value)
-            hess = term.Hess;
-    }
-} // namespace
-
 Point3::Point3(
     const index_t id,
     const CollisionMesh& mesh,
@@ -101,13 +59,10 @@ Point3::Point3(
     n_neighbors = local_to_global_vids.size() - 1;
     m_vertex_ids = local_to_global_vids;
 
-    if (m_vertex_ids.size() > N_VERT_NEIGHBORS_3D) {
+    if (m_vertex_ids.size() > N_VERT_NEIGHBORS_3D)
         logger().error(
             "Too many neighbors for point3 primitive! {} > {}! Increase N_VERT_NEIGHBORS_3D in common.hpp",
             m_vertex_ids.size(), N_VERT_NEIGHBORS_3D);
-        m_is_active = false;
-        return;
-    }
 
     m_is_active =
         smooth_point3_term_type(vertices(local_to_global_vids, Eigen::all), d);
@@ -127,37 +82,13 @@ Vector<double, -1, Point3::MAX_SIZE + Point3::DIM> Point3::grad(
     const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
 #ifdef DERIVATIVES_WITH_AUTODIFF
-    auto func = TinyAD::scalar_function<DIM>(TinyAD::range(n_vertices() + 1));
-
-    Eigen::VectorXd tmp = func.x_from_data([&](int i) -> Vector<double, DIM> {
-        if (i == 0) {
-            return d;
-        } else {
-            return x.segment<DIM>(DIM * (i - 1));
-        }
-    });
-
-    func.template add_elements_dynamic<N_VERT_NEIGHBORS_3D>(
-        TinyAD::range(1), [this](auto& element) {
-            using T = TINYAD_SCALAR_TYPE(element);
-
-            Eigen::Matrix<T, -1, DIM> vecs(n_vertices(), DIM);
-            for (int v = 1; v <= n_vertices(); ++v) {
-                vecs.row(v - 1) = element.variables(v);
-            }
-
-            return smooth_point3_term<T, -1>(vecs, element.variables(0));
-        });
-
-    const auto [_, g] = func.eval_with_gradient(tmp);
-    return g;
-
-    // using T = TinyADGrad<-1>;
-    // Eigen::VectorXd tmp(x.size() + d.size());
-    // tmp << d, x;
-    // const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
-    // return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1),
-    // X.row(0)).grad;
+    using T = ADGrad<-1>;
+    Eigen::VectorXd tmp(x.size() + d.size());
+    tmp << d, x;
+    ScalarBase::setVariableCount(tmp.size());
+    const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
+    return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1), X.row(0))
+        .grad;
 #else
     const Eigen::Matrix<double, -1, DIM> X =
         slice_positions<double, -1, DIM>(x);
@@ -174,150 +105,13 @@ Point3::hessian(
     const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
 #ifdef DERIVATIVES_WITH_AUTODIFF
-    double val;
-    Eigen::VectorXd grad;
-    Eigen::MatrixXd Hess;
-    switch (n_vertices()) {
-    case 2: {
-        constexpr int N_VERTS = 2;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 3: {
-        constexpr int N_VERTS = 3;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 4: {
-        constexpr int N_VERTS = 4;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 5: {
-        constexpr int N_VERTS = 5;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 6: {
-        constexpr int N_VERTS = 6;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 7: {
-        constexpr int N_VERTS = 7;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 8: {
-        constexpr int N_VERTS = 8;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 9: {
-        constexpr int N_VERTS = 9;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 10: {
-        constexpr int N_VERTS = 10;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 11: {
-        constexpr int N_VERTS = 11;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 12: {
-        constexpr int N_VERTS = 12;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 13: {
-        constexpr int N_VERTS = 13;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 14: {
-        constexpr int N_VERTS = 14;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    case 15: {
-        constexpr int N_VERTS = 15;
-        constexpr int N = (N_VERTS + 1) * DIM;
-        smooth_point3_term_iter<TinyADHessian<N>, N_VERTS>(
-            d, x, val, grad, Hess);
-        return Hess;
-    }
-    default: {
-        log_and_throw_error(
-            "Number of neighbors around a 3D point is out of bound!");
-    }
-    }
-
-    // using T = TinyADHessian<-1>;
-    // Eigen::VectorXd tmp(x.size() + d.size());
-    // tmp << d, x;
-    // const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
-    // return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1),
-    // X.row(0)).Hess;
-
-    // auto func = TinyAD::scalar_function<DIM>(TinyAD::range(n_vertices() +
-    // 1));
-    //
-    // Eigen::VectorXd tmp = func.x_from_data([&] (int i) -> Vector<double, DIM>
-    // {
-    //     if (i == 0) {
-    //         return d;
-    //     }
-    //     else {
-    //         return x.segment<DIM>(DIM * (i - 1));
-    //     }
-    // });
-    //
-    // func.template add_elements_dynamic<N_VERT_NEIGHBORS_3D>(TinyAD::range(1),
-    // [this](auto& element) {
-    //     using T = TINYAD_SCALAR_TYPE(element);
-    //
-    //     Eigen::Matrix<T, -1, DIM> vecs(n_vertices(), DIM);
-    //     for (int v = 1; v <= n_vertices(); ++v) {
-    //         vecs.row(v - 1) = element.variables(v);
-    //     }
-    //
-    //     return smooth_point3_term<T, -1>(
-    //             vecs,
-    //             element.variables(0));
-    // });
-    //
-    // MatrixMax<double, Point3::MAX_SIZE + Point3::DIM, Point3::MAX_SIZE +
-    // Point3::DIM> h = func.eval_hessian(tmp); return h;
+    using T = ADHessian<-1>;
+    Eigen::VectorXd tmp(x.size() + d.size());
+    tmp << d, x;
+    ScalarBase::setVariableCount(tmp.size());
+    const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
+    return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1), X.row(0))
+        .Hess;
 #else
     const auto X = slice_positions<double, -1, DIM>(x);
     const auto [val, grad, hess] = smooth_point3_term_hessian(d, X, params);
@@ -339,12 +133,9 @@ GradType<-1> Point3::smooth_point3_term_tangent_gradient(
         if (otypes.tangent_type(a) == HeavisideType::VARIANT) {
             std::tie(values(a), tmp_grad[a]) = opposite_direction_penalty_grad(
                 tangents.row(a), direc, alpha, beta);
-            for (int b = 0; b < nn; b++) {
-                if (otypes.tangent_type(b) == HeavisideType::VARIANT
-                    && b != a) {
+            for (int b = 0; b < nn; b++)
+                if (otypes.tangent_type(b) == HeavisideType::VARIANT && b != a)
                     acc_val_1(b) *= values(a);
-                }
-            }
         }
     }
 
@@ -469,12 +260,13 @@ GradType<-1> Point3::smooth_point3_term_normal_gradient(
     // TODO: replace with efficient code
     // double normal_term = 0;
     // {
-    //     using T = TinyADGrad<-1>;
+    //     using T = ADGrad<-1>;
     //     Eigen::VectorXd tmp(direc.size() + tangents.size());
     //     tmp.head<3>() = direc;
     //     for (int i = 0; i < tangents.rows(); i++)
     //         tmp.segment<3>(3 * i + 3) = tangents.row(i);
 
+    //     ScalarBase::setVariableCount(tmp.size());
     //     const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
 
     //     T normal_term_ad(0.);
@@ -547,118 +339,31 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
     // autodiff
     // TODO: replace with efficient code
     double normal_term = 0;
-    // {
-    //     auto func = TinyAD::scalar_function<DIM>(TinyAD::range(n_vertices() +
-    //     1));
-    //
-    //     Eigen::VectorXd tmp = func.x_from_data([&] (int i) -> Vector<double,
-    //     3> {
-    //         if (i == 0) {
-    //             return direc;
-    //         }
-    //         else {
-    //             return tangents.row(i - 1);
-    //         }
-    //     });
-    //
-    //     func.template
-    //     add_elements_dynamic<N_VERT_NEIGHBORS_3D>(TinyAD::range(1),
-    //     [this](auto& element) {
-    //         using T = TINYAD_SCALAR_TYPE(element);
-    //
-    //         T normal_term_ad(0.);
-    //         for (int a = 0; a < faces.rows(); a++) {
-    //             if (otypes.normal_type(a) == HeavisideType::VARIANT)
-    //                 normal_term_ad =
-    //                     normal_term_ad
-    //                     + Math<T>::smooth_heaviside(
-    //                         -element.variables(0).dot(element.variables(faces(a,
-    //                         1))
-    //                                           .cross(element.variables(faces(a,
-    //                                           2))) .normalized()),
-    //                         params.alpha_n, params.beta_n);
-    //         }
-    //
-    //         return normal_term_ad;
-    //     });
-    //
-    //     std::tie(normal_term, grad, hess) = func.eval_with_derivatives(tmp);
-    // }
-    switch (tangents.rows()) {
-    case 2: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<9>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 3: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<12>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 4: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<15>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 5: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<18>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 6: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<21>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 7: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<24>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 8: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<27>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 9: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<30>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 10: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<33>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 11: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<36>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 12: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<39>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 13: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<42>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 14: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<45>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    case 15: {
-        smooth_point3_normal_term_template_iter<TinyADHessian<48>>(
-            direc, tangents, otypes, faces, params, normal_term, grad, hess);
-        break;
-    }
-    default: {
-        log_and_throw_error(
-            "Number of neighbors around a 3D point is out of bound!");
-    }
+    {
+        using T = ADHessian<-1>;
+        Eigen::VectorXd tmp(direc.size() + tangents.size());
+        tmp.head<3>() = direc;
+        for (int i = 0; i < tangents.rows(); i++)
+            tmp.segment<3>(3 * i + 3) = tangents.row(i);
+
+        ScalarBase::setVariableCount(tmp.size());
+        const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
+
+        T normal_term_ad(0.);
+        for (int a = 0; a < faces.rows(); a++) {
+            if (otypes.normal_type(a) == HeavisideType::VARIANT)
+                normal_term_ad =
+                    normal_term_ad
+                    + Math<T>::smooth_heaviside(
+                        -X.row(0).dot(X.row(faces(a, 1))
+                                          .cross(X.row(faces(a, 2)))
+                                          .normalized()),
+                        params.alpha_n, params.beta_n);
+        }
+
+        normal_term = normal_term_ad.val;
+        hess = normal_term_ad.Hess;
+        grad = normal_term_ad.grad;
     }
 
     const double val = Math<double>::smooth_heaviside(normal_term - 1, 1., 0);
@@ -850,27 +555,10 @@ scalar Point3::smooth_point3_term(
     const Eigen::Matrix<scalar, n_verts, 3>& X,
     Eigen::ConstRef<RowVector3<scalar>> direc) const
 {
-    constexpr bool IsTinyADType =
-        IsADGrad<scalar>::value || IsADHessian<scalar>::value;
-    if constexpr (IsTinyADType) {
-        assert(X.size() + direc.size() == scalar::k_);
-    }
-
     const RowVector3<scalar> dn = direc.normalized();
-    scalar tangent_term;
-    scalar weight;
-    scalar normal_term;
-    if constexpr (IsTinyADType) {
-        const int n_vars = X(0).grad.size();
-        tangent_term = scalar::make_passive(1., n_vars);
-        weight = scalar::make_passive(0., n_vars);
-        normal_term = scalar::make_passive(0., n_vars);
-    } else {
-        tangent_term = 1.;
-        weight = 0.;
-        normal_term = 0.;
-    }
-
+    scalar tangent_term(1.);
+    scalar weight(0.);
+    scalar normal_term(0.);
     for (int a = 0; a < edges.rows(); a++) {
         const RowVector3<scalar> t = X.row(edges(a, 1)) - X.row(edges(a, 0));
         if (otypes.tangent_type(a) == HeavisideType::VARIANT)
@@ -883,14 +571,9 @@ scalar Point3::smooth_point3_term(
     }
     weight /= 3.;
 
-    if (!orientable || otypes.normal_type(0) == HeavisideType::ONE) {
-        if constexpr (IsTinyADType) {
-            const int n_vars = X(0).grad.size();
-            normal_term = scalar::make_passive(1., n_vars);
-        } else {
-            normal_term = scalar(1.);
-        }
-    } else {
+    if (!orientable || otypes.normal_type(0) == HeavisideType::ONE)
+        normal_term = scalar(1.);
+    else {
         for (int a = 0; a < faces.rows(); a++) {
             const RowVector3<scalar> t1 =
                 X.row(faces(a, 1)) - X.row(faces(a, 0));
@@ -905,32 +588,5 @@ scalar Point3::smooth_point3_term(
     }
 
     return weight * normal_term * tangent_term;
-}
-
-template <typename T, int N_VERTS>
-void Point3::smooth_point3_term_iter(
-    const Vector<double, Point3::DIM>& d,
-    const Vector<double, (N_VERTS + 1) * Point3::DIM>& x,
-    double& val,
-    Eigen::Ref<Eigen::VectorXd> grad,
-    Eigen::Ref<Eigen::MatrixXd> Hess) const
-{
-    constexpr int N = (N_VERTS + 1) * DIM;
-    if constexpr (IsADGrad<T>::value || IsADHessian<T>::value) {
-        static_assert(N == T::k_);
-    }
-    Vector<double, N> tmp;
-    tmp << d, x;
-    Eigen::Matrix<T, N_VERTS + 1, DIM> X =
-        slice_positions<T, N_VERTS + 1, DIM>(tmp);
-    T term = smooth_point3_term<T, N_VERTS>(
-        X.template bottomRows<N_VERTS>(), X.row(0));
-
-    val = term.val;
-    grad = term.grad;
-
-    if (IsADHessian<T>::value) {
-        Hess = term.Hess;
-    }
 }
 } // namespace ipc

@@ -21,7 +21,6 @@ set(SOURCES
   math.cpp
   math.hpp
   math.tpp
-  autodiff.h
   autodiff_types.hpp
   maybe_parallel_for.hpp
   maybe_parallel_for.tpp

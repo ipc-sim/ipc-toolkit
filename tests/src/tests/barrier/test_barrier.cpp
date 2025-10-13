@@ -54,7 +54,8 @@ namespace {
 TEST_CASE("Spline derivatives", "[deriv]")
 {
     const int n_samples = 100;
-    using T = ipc::TinyADHessian<1>;
+    ScalarBase::setVariableCount(1);
+    using T = ipc::ADHessian<1>;
     for (int i = 0; i < n_samples; i++) {
         const double x = 2. * i / static_cast<double>(n_samples) - 1;
         double deriv = ipc::Math<double>::cubic_spline_grad(x);
@@ -72,7 +73,8 @@ TEST_CASE("Spline derivatives", "[deriv]")
 TEST_CASE("Heaviside derivatives", "[deriv]")
 {
     const int n_samples = 100;
-    using T = ipc::TinyADHessian<1>;
+    ScalarBase::setVariableCount(1);
+    using T = ipc::ADHessian<1>;
     for (int i = 0; i < n_samples; i++) {
         const double x = i / static_cast<double>(n_samples) - 1;
         double deriv = ipc::Math<double>::smooth_heaviside_grad(x, 1., 0.);
@@ -90,7 +92,8 @@ TEST_CASE("Heaviside derivatives", "[deriv]")
 TEST_CASE("Inv barrier derivatives", "[deriv]")
 {
     const int n_samples = 100;
-    using T = ipc::TinyADHessian<1>;
+    ScalarBase::setVariableCount(1);
+    using T = ipc::ADHessian<1>;
     const int r = 1;
     const double dhat = 0.13;
     for (int i = 1; i <= n_samples; i++) {
@@ -107,7 +110,8 @@ TEST_CASE("Inv barrier derivatives", "[deriv]")
         CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
     }
 
-    using T3 = ipc::TinyADHessian<3>;
+    ScalarBase::setVariableCount(3);
+    using T3 = ipc::ADHessian<3>;
 
     for (int i = 1; i <= n_samples; i++) {
         Eigen::Vector3d x = Eigen::Vector3d::Random() * dhat / 3.;
@@ -138,7 +142,8 @@ TEST_CASE("Inv barrier derivatives", "[deriv]")
 TEST_CASE("Normalize vector derivatives", "[deriv]")
 {
     const int n_samples = 1000;
-    using T = ipc::TinyADHessian<3>;
+    ScalarBase::setVariableCount(3);
+    using T = ipc::ADHessian<3>;
     for (int i = 1; i <= n_samples; i++) {
         Eigen::Vector3d x = Eigen::Vector3d::Random();
         ipc::Vector<T, 3> x_ad = ipc::slice_positions<T, 3, 1>(x);
@@ -162,7 +167,8 @@ TEST_CASE("Normalize vector derivatives", "[deriv]")
 TEST_CASE("line-line closest direction derivatives", "[deriv]")
 {
     const int n_samples = 100;
-    using T = ipc::TinyADHessian<12>;
+    ScalarBase::setVariableCount(12);
+    using T = ipc::ADHessian<12>;
     for (int i = 1; i <= n_samples; i++) {
         ipc::Vector6d ea = ipc::Vector6d::Random();
         ipc::Vector<T, 6> eaT = ipc::slice_positions<T, 6, 1>(ea);
@@ -191,7 +197,8 @@ TEST_CASE("line-line closest direction derivatives", "[deriv]")
 TEST_CASE("opposite_direction_penalty derivatives", "[deriv]")
 {
     const int n_samples = 1000;
-    using T = ipc::TinyADHessian<6>;
+    ScalarBase::setVariableCount(6);
+    using T = ipc::ADHessian<6>;
     const double alpha = 1;
     const double beta = 1;
     for (int i = 1; i <= n_samples; i++) {
@@ -214,7 +221,8 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
     const double alpha = 1;
     const double beta = 1;
     for (int i = 1; i <= n_samples; i++) {
-        using T = ipc::TinyADHessian<9>;
+        ScalarBase::setVariableCount(9);
+        using T = ipc::ADHessian<9>;
         ipc::Vector9d x = ipc::Vector9d::Random();
         ipc::Vector<T, 9> x_ad = ipc::slice_positions<T, 9, 1>(x);
         ipc::Vector<T, 3> t = x_ad.head<3>().cross(x_ad.segment<3>(3));

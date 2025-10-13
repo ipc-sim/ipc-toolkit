@@ -1,0 +1,91 @@
+diff --git a/include/TinyAD/Scalar.hh b/include/TinyAD/Scalar.hh
+index 7d0d8d8..63e0625 100644
+--- a/include/TinyAD/Scalar.hh
++++ b/include/TinyAD/Scalar.hh
+@@ -13,6 +13,18 @@
+ namespace TinyAD
+ {
+ 
++struct ScalarBase {
++    // ///////////////////////////////////////////////////////////////////////////
++    // Utility to obtain k from global variable for dynamically-sized Scalar
++    // ///////////////////////////////////////////////////////////////////////////
++
++    static void setVariableCount(size_t value) { m_variableCount = value; }
++
++    static size_t getVariableCount() { return m_variableCount; }
++
++    static thread_local size_t m_variableCount;
++};
++
+ /**
+   * Forward-differentiable scalar type with constructors for passive and active variables.
+   * Each scalar carries its gradient and Hessian w.r.t. a variable vector.
+@@ -22,7 +34,7 @@ namespace TinyAD
+   *     hess_row_start, hess_col_start, hess_rows, hess_cols: Restrict Hessian computation to a sub-block
+   */
+ template <int k, typename PassiveT, bool with_hessian = true, int hess_row_start = 0, int hess_col_start = 0, int hess_rows = k, int hess_cols = k>
+-struct Scalar
++struct Scalar : public ScalarBase
+ {
+     // Make template arguments available as members
+     static constexpr int k_ = k;
+@@ -62,7 +74,12 @@ struct Scalar
+     Scalar(PassiveT _val)
+         : val(_val)
+     {
+-        static_assert(!dynamic_mode_, "Implicit constructor is only available in static mode. Either choose k at runtime or use make_passive(val, k_dynamic).");
++        if (dynamic_mode_) {
++            grad = GradType::Zero(m_variableCount);
++
++            if constexpr (with_hessian)
++                Hess = HessType::Zero(m_variableCount, m_variableCount);
++        }
+     }
+ 
+     /// Active variable.
+@@ -70,10 +87,17 @@ struct Scalar
+     Scalar(PassiveT _val, Eigen::Index _idx)
+         : val(_val)
+     {
+-        static_assert(!dynamic_mode_, "This constructor is only available in static mode. Either choose k at compile time or use make_active(val, idx, k_dynamic).");
+-
+         TINYAD_ASSERT_GEQ(_idx, 0);
+-        TINYAD_ASSERT_L(_idx, k);
++
++        if (dynamic_mode_) {
++            grad = GradType::Zero(m_variableCount);
++
++            if constexpr (with_hessian)
++                Hess = HessType::Zero(m_variableCount, m_variableCount);
++        }
++        else
++            TINYAD_ASSERT_L(_idx, k);
++
+         grad(_idx) = 1.0;
+     }
+ 
+@@ -114,6 +138,7 @@ struct Scalar
+             return Scalar(_val);
+         else
+         {
++            TINYAD_ASSERT(_k_dynamic == m_variableCount);
+             Scalar res;
+             res.val = _val;
+             res.grad = GradType::Zero(_k_dynamic);
+@@ -134,6 +159,7 @@ struct Scalar
+             return Scalar(_val, _idx);
+         else
+         {
++            TINYAD_ASSERT(_k_dynamic == m_variableCount);
+             TINYAD_ASSERT_L(_idx, _k_dynamic);
+ 
+             Scalar res;
+@@ -155,6 +181,7 @@ struct Scalar
+         if constexpr (dynamic_mode_)
+         {
+             const Eigen::Index k_dynamic = _passive.size();
++            TINYAD_ASSERT(k_dynamic == m_variableCount);
+             Eigen::Matrix<Scalar, Eigen::Dynamic, 1> active(k_dynamic);
+             for (Eigen::Index i = 0; i < k_dynamic; ++i)
+                 active[i] = Scalar::make_active(_passive[i], i, k_dynamic);

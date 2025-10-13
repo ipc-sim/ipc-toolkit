@@ -135,7 +135,8 @@ Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
     const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
     if (has_neighbor_1 && has_neighbor_2) {
-        using T = TinyADGrad<4 * DIM>;
+        ScalarBase::setVariableCount(4 * DIM);
+        using T = ADGrad<4 * DIM>;
         Vector<double, 4 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
@@ -143,7 +144,8 @@ Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
                    X.row(1), X.row(0), X.row(2), X.row(3), params, orientable)
             .grad;
     } else if (has_neighbor_1 || has_neighbor_2) {
-        using T = TinyADGrad<3 * DIM>;
+        ScalarBase::setVariableCount(3 * DIM);
+        using T = ADGrad<3 * DIM>;
         Vector<double, 3 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
@@ -162,7 +164,8 @@ Point2::hessian(
     const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
     if (has_neighbor_1 && has_neighbor_2) {
-        using T = TinyADHessian<4 * DIM>;
+        ScalarBase::setVariableCount(4 * DIM);
+        using T = ADHessian<4 * DIM>;
         Vector<double, 4 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
@@ -170,7 +173,8 @@ Point2::hessian(
                    X.row(1), X.row(0), X.row(2), X.row(3), params, orientable)
             .Hess;
     } else if (has_neighbor_1 || has_neighbor_2) {
-        using T = TinyADHessian<3 * DIM>;
+        ScalarBase::setVariableCount(3 * DIM);
+        using T = ADHessian<3 * DIM>;
         Vector<double, 3 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);

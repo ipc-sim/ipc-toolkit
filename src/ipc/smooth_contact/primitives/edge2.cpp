@@ -41,7 +41,8 @@ Matrix6d Edge2::hessian(const Vector2d& d, const Vector4d& x) const
     Matrix6d h;
     h.setZero();
 #ifdef DERIVATIVES_WITH_AUTODIFF
-    using T = TinyADHessian<4>;
+    ScalarBase::setVariableCount(4);
+    using T = ADHessian<4>;
     auto xAD = slice_positions<T, 2, 2>(x);
     h.block<4, 4>(2, 2) = (xAD.row(0) - xAD.row(1)).norm().Hess;
 #else

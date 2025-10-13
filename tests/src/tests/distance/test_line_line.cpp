@@ -104,7 +104,8 @@ TEST_CASE(
     double yb = GENERATE(take(2, random(-10.0, 10.0)));
     Eigen::Vector3d eb0(0, yb, -1), eb1(0, yb, 1);
 
-    using T = TinyADHessian<12>;
+    using T = ADHessian<12>;
+    ScalarBase::setVariableCount(12);
     const auto x = slice_positions<T, 4, 3>(
         (Vector12d() << ea0, ea1, eb0, eb1).finished());
     BENCHMARK("AutoDiff Hessian")
@@ -127,7 +128,8 @@ TEST_CASE(
     double yb = GENERATE(take(10, random(-10.0, 10.0)));
     Eigen::Vector3d eb0(0, yb, -1), eb1(0, yb, 1);
 
-    using T = TinyADGrad<12>;
+    using T = ADGrad<12>;
+    ScalarBase::setVariableCount(12);
     const auto x = slice_positions<T, 4, 3>(
         (Vector12d() << ea0, ea1, eb0, eb1).finished());
     auto yAD = line_line_closest_point_pairs<T>(
@@ -158,7 +160,8 @@ TEST_CASE(
     double yb = GENERATE(take(10, random(-10.0, 10.0)));
     Eigen::Vector3d eb0(0, yb, -1), eb1(0, yb, 1.02);
 
-    using T = TinyADHessian<12>;
+    using T = ADHessian<12>;
+    ScalarBase::setVariableCount(12);
     const auto x = slice_positions<T, 4, 3>(
         (Vector12d() << ea0, ea1, eb0, eb1).finished());
     auto yAD = line_line_closest_point_pairs<T>(

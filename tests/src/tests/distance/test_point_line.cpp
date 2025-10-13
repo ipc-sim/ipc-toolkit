@@ -166,7 +166,8 @@ TEST_CASE(
     double yb = GENERATE(take(2, random(-10.0, 10.0)));
     Eigen::Vector3d eb0(0, yb, -1), eb1(0, yb, 1.02);
 
-    using T = TinyADHessian<9>;
+    using T = ADHessian<9>;
+    ScalarBase::setVariableCount(9);
     const auto x =
         slice_positions<T, 3, 3>((Vector9d() << p, eb0, eb1).finished());
     auto yAD = PointEdgeDistance<T, 3>::point_line_closest_point_direction(

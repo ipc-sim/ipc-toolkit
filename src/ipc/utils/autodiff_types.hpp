@@ -1,12 +1,15 @@
 #pragma once
 
+#include <TinyAD/ScalarFunction.hh>
 #include "eigen_ext.hpp"
 
-#include <TinyAD/ScalarFunction.hh>
-
 namespace ipc {
-template <int dim> using TinyADGrad = TinyAD::Scalar<dim, double, false>;
-template <int dim> using TinyADHessian = TinyAD::Scalar<dim, double, true>;
+template <int dim>
+using ADGrad = TinyAD::Scalar<dim, double, false>;
+template <int dim>
+using ADHessian = TinyAD::Scalar<dim, double, true>;
+
+using ScalarBase = TinyAD::ScalarBase;
 
 template <
     typename T,
@@ -33,14 +36,14 @@ autodiff_to_double(
 template <typename T> struct IsADGrad {
     static constexpr bool value = false; // NOLINT
 };
-template <int dim> struct IsADGrad<TinyADGrad<dim>> {
+template <int dim> struct IsADGrad<ADGrad<dim>> {
     static constexpr bool value = true; // NOLINT
 };
 
 template <typename T> struct IsADHessian {
     static constexpr bool value = false; // NOLINT
 };
-template <int dim> struct IsADHessian<TinyADHessian<dim>> {
+template <int dim> struct IsADHessian<ADHessian<dim>> {
     static constexpr bool value = true; // NOLINT
 };
 

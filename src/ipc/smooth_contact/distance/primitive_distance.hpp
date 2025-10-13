@@ -91,8 +91,9 @@ public:
         const Vector<double, N_CORE_DOFS>& x,
         typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
     {
-        using T = TinyADGrad<N_CORE_DOFS>;
-        const Vector<T, N_CORE_DOFS> X = T::make_active(x);
+        ScalarBase::setVariableCount(N_CORE_DOFS);
+        using T = ADGrad<N_CORE_DOFS>;
+        const Vector<T, N_CORE_DOFS> X = slice_positions<T, N_CORE_DOFS, 1>(x);
         const T d = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_distance(X, dtype);
 
@@ -103,8 +104,9 @@ public:
         const Vector<double, N_CORE_DOFS>& x,
         typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
     {
-        using T = TinyADHessian<N_CORE_DOFS>;
-        const Vector<T, N_CORE_DOFS> X = T::make_active(x);
+        ScalarBase::setVariableCount(N_CORE_DOFS);
+        using T = ADHessian<N_CORE_DOFS>;
+        const Vector<T, N_CORE_DOFS> X = slice_positions<T, N_CORE_DOFS, 1>(x);
         const T d = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_distance(X, dtype);
 
@@ -125,8 +127,9 @@ public:
             const Vector<double, N_CORE_DOFS>& x,
             typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
     {
-        using T = TinyADGrad<N_CORE_DOFS>;
-        const Vector<T, N_CORE_DOFS> X = T::make_active(x);
+        ScalarBase::setVariableCount(N_CORE_DOFS);
+        using T = ADGrad<N_CORE_DOFS>;
+        const Vector<T, N_CORE_DOFS> X = slice_positions<T, N_CORE_DOFS, 1>(x);
         const Vector<T, DIM> d = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_closest_direction(X, dtype);
 
@@ -148,8 +151,9 @@ public:
         const Vector<double, N_CORE_DOFS>& x,
         typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
     {
-        using T = TinyADHessian<N_CORE_DOFS>;
-        const Vector<T, N_CORE_DOFS> X = T::make_active(x);
+        ScalarBase::setVariableCount(N_CORE_DOFS);
+        using T = ADHessian<N_CORE_DOFS>;
+        const Vector<T, N_CORE_DOFS> X = slice_positions<T, N_CORE_DOFS, 1>(x);
         const Vector<T, DIM> d = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_closest_direction(X, dtype);
 
@@ -168,9 +172,11 @@ public:
     static GradType<N_CORE_DOFS + 1> compute_mollifier_gradient(
         const Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
     {
-        using T = TinyADGrad<N_CORE_DOFS + 1>;
-        const Vector<T, N_CORE_DOFS + 1> X = T::make_active(
-            (Vector<double, N_CORE_DOFS + 1>() << x, dist_sqr).finished());
+        ScalarBase::setVariableCount(N_CORE_DOFS + 1);
+        using T = ADGrad<N_CORE_DOFS + 1>;
+        const Vector<T, N_CORE_DOFS + 1> X =
+            slice_positions<T, N_CORE_DOFS + 1, 1>(
+                (Vector<double, N_CORE_DOFS + 1>() << x, dist_sqr).finished());
         const T out =
             PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(
                 X.head(N_CORE_DOFS), X(N_CORE_DOFS));
@@ -181,14 +187,17 @@ public:
     static HessianType<N_CORE_DOFS + 1> compute_mollifier_hessian(
         const Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
     {
-        using T = TinyADHessian<N_CORE_DOFS + 1>;
-        const Vector<T, N_CORE_DOFS + 1> X = T::make_active(
-            (Vector<double, N_CORE_DOFS + 1>() << x, dist_sqr).finished());
+        ScalarBase::setVariableCount(N_CORE_DOFS + 1);
+        using T = ADHessian<N_CORE_DOFS + 1>;
+        const Vector<T, N_CORE_DOFS + 1> X =
+            slice_positions<T, N_CORE_DOFS + 1, 1>(
+                (Vector<double, N_CORE_DOFS + 1>() << x, dist_sqr).finished());
         const T out =
             PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(
                 X.head(N_CORE_DOFS), X(N_CORE_DOFS));
 
-        return std::make_tuple(out.val, out.grad, out.Hess);
+        return std::make_tuple(
+            out.val, out.grad, out.Hess);
     }
 };
 

@@ -188,7 +188,8 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
         Vector<double, N_CORE_DOFS> gMollifier =
             Vector<double, N_CORE_DOFS>::Zero();
 #ifdef DERIVATIVES_WITH_AUTODIFF
-        using T = TinyADGrad<N_CORE_DOFS>;
+        ScalarBase::setVariableCount(N_CORE_DOFS);
+        using T = ADGrad<N_CORE_DOFS>;
         Vector<T, N_CORE_DOFS> xAD = slice_positions<T, N_CORE_DOFS, 1>(x);
         Vector<T, DIM> closest_direction_autodiff = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_closest_direction(xAD, dtype);
@@ -323,7 +324,8 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
         Eigen::Matrix<double, N_CORE_DOFS, N_CORE_DOFS> hMollifier =
             Eigen::Matrix<double, N_CORE_DOFS, N_CORE_DOFS>::Zero();
 #ifdef DERIVATIVES_WITH_AUTODIFF
-        using T = TinyADHessian<N_CORE_DOFS>;
+        ScalarBase::setVariableCount(N_CORE_DOFS);
+        using T = ADHessian<N_CORE_DOFS>;
         Vector<T, N_CORE_DOFS> xAD = slice_positions<T, N_CORE_DOFS, 1>(x);
         Vector<T, DIM> closest_direction_autodiff = PrimitiveDistanceTemplate<
             PrimitiveA, PrimitiveB, T>::compute_closest_direction(xAD, dtype);

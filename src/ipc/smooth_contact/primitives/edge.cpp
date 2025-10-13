@@ -50,10 +50,10 @@ Edge<2>::hessian(Eigen::ConstRef<DVector> d, Eigen::ConstRef<XVector> x) const
     Matrix6d h;
     h.setZero();
 #ifdef DERIVATIVES_WITH_AUTODIFF
-    DiffScalarBase::setVariableCount(4);
+    ScalarBase::setVariableCount(4);
     using T = ADHessian<4>;
     auto xAD = slice_positions<T, 2, 2>(x);
-    h.block<4, 4>(2, 2) = (xAD.row(0) - xAD.row(1)).norm().getHessian();
+    h.block<4, 4>(2, 2) = (xAD.row(0) - xAD.row(1)).norm().Hess;
 #else
     const Vector2d t = x.tail<2>() - x.head<2>();
     const double norm = t.norm();
