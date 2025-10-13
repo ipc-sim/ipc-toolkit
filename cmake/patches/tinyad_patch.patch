@@ -5,7 +5,7 @@ index 7d0d8d8..63e0625 100644
 @@ -13,6 +13,18 @@
  namespace TinyAD
  {
- 
+
 +struct ScalarBase {
 +    // ///////////////////////////////////////////////////////////////////////////
 +    // Utility to obtain k from global variable for dynamically-sized Scalar
@@ -42,9 +42,9 @@ index 7d0d8d8..63e0625 100644
 +                Hess = HessType::Zero(m_variableCount, m_variableCount);
 +        }
      }
- 
+
      /// Active variable.
-@@ -70,10 +87,17 @@ struct Scalar
+@@ -70,10 +87,18 @@ struct Scalar
      Scalar(PassiveT _val, Eigen::Index _idx)
          : val(_val)
      {
@@ -65,7 +65,7 @@ index 7d0d8d8..63e0625 100644
 +
          grad(_idx) = 1.0;
      }
- 
+
 @@ -114,6 +138,7 @@ struct Scalar
              return Scalar(_val);
          else
@@ -80,7 +80,7 @@ index 7d0d8d8..63e0625 100644
          {
 +            TINYAD_ASSERT(_k_dynamic == m_variableCount);
              TINYAD_ASSERT_L(_idx, _k_dynamic);
- 
+
              Scalar res;
 @@ -155,6 +181,7 @@ struct Scalar
          if constexpr (dynamic_mode_)
