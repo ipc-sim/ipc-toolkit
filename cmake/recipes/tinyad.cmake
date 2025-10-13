@@ -6,8 +6,6 @@ endif()
 
 message(STATUS "Third-party: creating target 'TinyAD::TinyAD'")
 
-include(Eigen) # TinyAD will find Eigen if Eigen::Eigen3 is not defined
-
 find_package(Patch REQUIRED)
 set(PATCH_COMMAND_ARGS "-rnN")
 
