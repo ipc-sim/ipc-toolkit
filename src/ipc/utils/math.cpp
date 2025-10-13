@@ -3,8 +3,6 @@
 #include <ipc/smooth_contact/common.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
-thread_local size_t TinyAD::ScalarBase::m_variableCount = 0;
-
 namespace ipc {
 namespace {
 
