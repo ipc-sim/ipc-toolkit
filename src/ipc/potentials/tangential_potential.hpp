@@ -189,7 +189,7 @@ public:
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return Friction force Jacobian
-    MatrixMaxNd force_jacobian_unit(
+    MatrixMaxNd smooth_contact_force_jacobian_unit(
         const TangentialCollision& collision,
         Eigen::ConstRef<VectorMaxNd> lagged_positions,
         Eigen::ConstRef<VectorMaxNd> velocities,
