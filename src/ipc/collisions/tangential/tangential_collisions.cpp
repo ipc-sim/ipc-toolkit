@@ -16,12 +16,11 @@ void TangentialCollisions::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const NormalCollisions& collisions,
     const NormalPotential& normal_potential,
-    const double _normal_stiffness,
+    const double normal_stiffness,
     Eigen::ConstRef<Eigen::VectorXd> mu_s,
     Eigen::ConstRef<Eigen::VectorXd> mu_k,
     const std::function<double(double, double)>& blend_mu)
 {
-    normal_stiffness = _normal_stiffness;
     assert(mu_s.size() == vertices.rows());
     assert(mu_k.size() == vertices.rows());
 
@@ -34,7 +33,7 @@ void TangentialCollisions::build(
     const auto& C_ev = collisions.ev_collisions;
     const auto& C_ee = collisions.ee_collisions;
     const auto& C_fv = collisions.fv_collisions;
-    auto& [FC_vv, FC_ev, FC_ee, FC_fv, kappa] = *this;
+    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
 
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
@@ -120,12 +119,11 @@ void TangentialCollisions::build(
     const Eigen::MatrixXd& vertices,
     const SmoothCollisions& collisions,
     const SmoothContactParameters& params,
-    const double _normal_stiffness,
+    const double normal_stiffness,
     Eigen::ConstRef<Eigen::VectorXd> mu_s,
     Eigen::ConstRef<Eigen::VectorXd> mu_k,
     const std::function<double(double, double)>& blend_mu)
 {
-    normal_stiffness = _normal_stiffness;
     assert(mu_k.size() == vertices.rows());
     assert(mu_s.size() == vertices.rows());
 
@@ -134,7 +132,7 @@ void TangentialCollisions::build(
 
     clear();
 
-    auto& [FC_vv, FC_ev, FC_ee, FC_fv, kappa] = *this;
+    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
 
     // FC_vv.reserve(C_vv.size());
     for (size_t i = 0; i < collisions.size(); i++) {

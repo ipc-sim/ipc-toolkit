@@ -28,18 +28,18 @@ public:
     /// @param vertices The vertices of the mesh.
     /// @param collisions The set of normal collisions.
     /// @param normal_potential The normal potential.
-    /// @param _normal_stiffness Stiffness of the normal potential.
+    /// @param normal_stiffness Stiffness of the normal potential.
     /// @param mu The coefficient of friction.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const NormalCollisions& collisions,
         const NormalPotential& normal_potential,
-        double _normal_stiffness,
+        double normal_stiffness,
         double mu)
     {
         this->build(
-            mesh, vertices, collisions, normal_potential, _normal_stiffness, mu,
+            mesh, vertices, collisions, normal_potential, normal_stiffness, mu,
             mu);
     }
 
@@ -48,7 +48,7 @@ public:
     /// @param vertices The vertices of the mesh.
     /// @param collisions The set of normal collisions.
     /// @param normal_potential The normal potential.
-    /// @param _normal_stiffness Stiffness of the normal potential.
+    /// @param normal_stiffness Stiffness of the normal potential.
     /// @param mu_s The static friction coefficient.
     /// @param mu_k The kinetic friction coefficient.
     void build(
@@ -56,12 +56,12 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const NormalCollisions& collisions,
         const NormalPotential& normal_potential,
-        double _normal_stiffness,
+        double normal_stiffness,
         double mu_s,
         double mu_k)
     {
         this->build(
-            mesh, vertices, collisions, normal_potential, _normal_stiffness,
+            mesh, vertices, collisions, normal_potential, normal_stiffness,
             Eigen::VectorXd::Constant(vertices.rows(), mu_s),
             Eigen::VectorXd::Constant(vertices.rows(), mu_k));
     }
@@ -90,7 +90,7 @@ public:
     /// @param mesh The collision mesh.
     /// @param vertices The vertices of the mesh.
     /// @param collisions The set of normal collisions.
-    /// @param params ???
+    /// @param params Parameters of Geometric Contact Potential
     /// @param normal_stiffness Stiffness of the normal potential.
     /// @param mu_s The static friction coefficient per vertex.
     /// @param mu_k The kinetic friction coefficient per vertex.
@@ -144,9 +144,6 @@ public:
     std::vector<EdgeEdgeTangentialCollision> ee_collisions;
     /// @brief Face-vertex tangential collisions.
     std::vector<FaceVertexTangentialCollision> fv_collisions;
-
-    /// @brief Stiffness of associated normal potential
-    double normal_stiffness = 1.0;
 };
 
 } // namespace ipc
