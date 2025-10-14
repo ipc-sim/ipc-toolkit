@@ -26,23 +26,23 @@ public:
     int n_vertices() const override;
     int n_dofs() const override { return n_vertices() * DIM; }
 
-    /// @brief ???
+    /// @brief Compute the product of local minimum and exteior direction terms of this edge
     /// @param d Vector from closest point on the edge to the point outside of the edge
-    /// @param x ???
-    /// @return ???
+    /// @param x Positions of the two vertices of this edge
+    /// @return Value of the product
     double
     potential(Eigen::ConstRef<DVector> d, Eigen::ConstRef<XVector> x) const;
 
-    /// @brief ???
+    /// @brief Compute the gradient of potential wrt. d and x
     /// @param d Vector from closest point on the edge to the point outside of the edge
-    /// @param x ???
-    /// @return ???
+    /// @param x Positions of the two vertices of this edge
+    /// @return Gradient of the potential wrt. d and x
     GradType grad(Eigen::ConstRef<DVector> d, Eigen::ConstRef<XVector> x) const;
 
-    /// @brief ???
+    /// @brief Compute the Hessian of potential wrt. d and x
     /// @param d Vector from closest point on the edge to the point outside of the edge
-    /// @param x ???
-    /// @return ???
+    /// @param x Positions of the two vertices of this edge
+    /// @return Hessian of the potential wrt. d and x
     HessianType
     hessian(Eigen::ConstRef<DVector> d, Eigen::ConstRef<XVector> x) const;
 };
