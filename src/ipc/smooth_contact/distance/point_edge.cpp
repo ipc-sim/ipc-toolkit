@@ -17,11 +17,13 @@ scalar PointEdgeDistance<scalar, dim>::point_line_sqr_distance(
     Eigen::ConstRef<Vector<scalar, dim>> e0,
     Eigen::ConstRef<Vector<scalar, dim>> e1)
 {
-    if constexpr (dim == 2)
+    if constexpr (dim == 2) {
         return Math<scalar>::sqr(Math<scalar>::cross2(e0 - p, e1 - p))
             / (e1 - e0).squaredNorm();
-    else
+    }
+    else {
         return (e0 - p).cross(e1 - p).squaredNorm() / (e1 - e0).squaredNorm();
+    }
 }
 
 template <typename scalar, int dim>
@@ -167,8 +169,9 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_hessian(
     grad.block(0, dim, dim, dim).diagonal().array() += -1. + uv;
     grad.block(0, 2 * dim, dim, dim).diagonal().array() -= uv;
 
-    for (auto& hi : hess)
+    for (auto& hi : hess) {
         hi.setZero();
+    }
     for (int d = 0; d < dim; d++) {
         // wrt. uv
         hess[d] -= (e1(d) - e0(d)) * h;
@@ -250,8 +253,9 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(
     Eigen::Matrix<double, dim, 3 * dim> grad =
         Eigen::Matrix<double, dim, 3 * dim>::Zero();
     std::array<Eigen::Matrix<double, 3 * dim, 3 * dim>, dim> hess;
-    for (auto& hi : hess)
+    for (auto& hi : hess) {
         hi.setZero();
+    }
 #ifdef DERIVATIVES_WITH_AUTODIFF
     using T = ADHessian<3 * dim>;
     ScalarBase::setVariableCount(3 * dim);

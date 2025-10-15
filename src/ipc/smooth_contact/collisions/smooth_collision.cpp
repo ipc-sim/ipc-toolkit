@@ -245,7 +245,7 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
     // merge barrier into orient
     gOrient *= barrier;
     gOrient(core_indices) += gBarrier * orient;
-    orient *= barrier;
+    // orient *= barrier;
 
     return gOrient;
 }
@@ -312,8 +312,9 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
                 * closest_direction_normalized.transpose();
         hBarrier = closest_direction_grad.transpose() * hBarrier_wrt_d
             * closest_direction_grad;
-        for (int d = 0; d < DIM; d++)
+        for (int d = 0; d < DIM; d++) {
             hBarrier += closest_direction_hess[d] * gBarrier_wrt_d(d);
+        }
     }
 
     // hessian of mollifier
@@ -349,9 +350,10 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
             mollifier_grad(N_CORE_DOFS) * dist_sqr_grad;
         Eigen::Matrix<double, N_CORE_DOFS, N_CORE_DOFS> dist_sqr_hess =
             2 * closest_direction_grad.transpose() * closest_direction_grad;
-        for (int d = 0; d < DIM; d++)
+        for (int d = 0; d < DIM; d++) {
             dist_sqr_hess +=
                 2 * closest_direction(d) * closest_direction_hess[d];
+        }
         mollifier_hess.topLeftCorner(N_CORE_DOFS, N_CORE_DOFS) +=
             dist_sqr_hess * mollifier_grad(N_CORE_DOFS)
             + dist_sqr_grad * mollifier_hess(N_CORE_DOFS, N_CORE_DOFS)
@@ -393,9 +395,10 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
 
             hA(core_indices, core_indices) = closest_direction_grad.transpose()
                 * hA_reduced.topLeftCorner(DIM, DIM) * closest_direction_grad;
-            for (int d = 0; d < DIM; d++)
+            for (int d = 0; d < DIM; d++) {
                 hA(core_indices, core_indices) +=
                     gA_reduced(d) * closest_direction_hess[d];
+            }
 
             hA.topLeftCorner(primitive_a->n_dofs(), primitive_a->n_dofs()) +=
                 hA_reduced.bottomRightCorner(
@@ -414,9 +417,10 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
 
             hB(core_indices, core_indices) = closest_direction_grad.transpose()
                 * hB_reduced.topLeftCorner(DIM, DIM) * closest_direction_grad;
-            for (int d = 0; d < DIM; d++)
+            for (int d = 0; d < DIM; d++) {
                 hB(core_indices, core_indices) -=
                     gB_reduced(d) * closest_direction_hess[d];
+            }
 
             hB.bottomRightCorner(
                 primitive_b->n_dofs(), primitive_b->n_dofs()) +=
@@ -449,7 +453,7 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
     hOrient(core_indices, Eigen::all) += gBarrier * gOrient.transpose();
     gOrient *= barrier;
     gOrient(core_indices) += gBarrier * orient;
-    orient *= barrier;
+    // orient *= barrier;
 
     // return hOrient
     return (hOrient + hOrient.transpose()) / 2.;
@@ -480,7 +484,7 @@ template <typename PrimitiveA, typename PrimitiveB>
 auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::core_vertex_ids() const
     -> std::array<index_t, N_CORE_DOFS>
 {
-    std::array<index_t, N_CORE_DOFS> vids;
+    std::array<index_t, N_CORE_DOFS> vids{};
     auto ids = get_core_indices();
     for (int i = 0; i < N_CORE_DOFS; i++) {
         vids[i] = m_vertex_ids[ids[i]];

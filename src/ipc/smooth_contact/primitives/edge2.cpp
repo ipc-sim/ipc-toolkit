@@ -22,11 +22,13 @@ int Edge2::n_vertices() const { return N_EDGE_NEIGHBORS_2D; }
 
 double Edge2::potential(const Vector2d& d, const Vector4d& x) const
 {
+    assert(m_is_active);
     return (x.tail<2>() - x.head<2>()).norm();
 }
 
 Vector6d Edge2::grad(const Vector2d& d, const Vector4d& x) const
 {
+    assert(m_is_active);
     const Vector2d t = x.tail<2>() - x.head<2>();
     const double len = t.norm();
     Vector6d g;
@@ -38,6 +40,7 @@ Vector6d Edge2::grad(const Vector2d& d, const Vector4d& x) const
 
 Matrix6d Edge2::hessian(const Vector2d& d, const Vector4d& x) const
 {
+    assert(m_is_active);
     Matrix6d h;
     h.setZero();
 #ifdef DERIVATIVES_WITH_AUTODIFF

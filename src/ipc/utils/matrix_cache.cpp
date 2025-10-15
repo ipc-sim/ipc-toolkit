@@ -233,8 +233,8 @@ SparseMatrixCache::operator+(const SparseMatrixCache& a) const
         out->m_second_cache_entries.resize(std::max(this_e_size, a_e_size));
         for (int e = 0; e < std::min(this_e_size, a_e_size); ++e) {
             assert(
-                m_second_cache_entries[e].size() == 0
-                || a.m_second_cache_entries[e].size() == 0);
+                m_second_cache_entries[e].empty()
+                || a.m_second_cache_entries[e].empty());
             out->m_second_cache_entries[e].insert(
                 out->m_second_cache_entries[e].end(),
                 m_second_cache_entries[e].begin(),
@@ -247,16 +247,18 @@ SparseMatrixCache::operator+(const SparseMatrixCache& a) const
 
         for (int e = std::min(this_e_size, a_e_size);
              e < std::max(this_e_size, a_e_size); ++e) {
-            if (m_second_cache_entries.size() < e)
+            if (m_second_cache_entries.size() < e) {
                 out->m_second_cache_entries[e].insert(
                     out->m_second_cache_entries[e].end(),
                     m_second_cache_entries[e].begin(),
                     m_second_cache_entries[e].end());
-            else
+            }
+            else {
                 out->m_second_cache_entries[e].insert(
                     out->m_second_cache_entries[e].end(),
                     a.m_second_cache_entries[e].begin(),
                     a.m_second_cache_entries[e].end());
+            }
         }
     } else {
         const auto& outer_index = main_cache()->m_outer_index;
@@ -295,8 +297,8 @@ void SparseMatrixCache::operator+=(const SparseMatrixCache& o)
         m_second_cache_entries.resize(std::max(this_e_size, o_e_size));
         for (int e = 0; e < o_e_size; ++e) {
             assert(
-                m_second_cache_entries[e].size() == 0
-                || o.m_second_cache_entries[e].size() == 0);
+                m_second_cache_entries[e].empty()
+                || o.m_second_cache_entries[e].empty());
             m_second_cache_entries[e].insert(
                 m_second_cache_entries[e].end(),
                 o.m_second_cache_entries[e].begin(),

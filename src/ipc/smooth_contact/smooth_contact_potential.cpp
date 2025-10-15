@@ -70,8 +70,9 @@ Eigen::VectorXd SmoothContactPotential::gradient(
 
     Eigen::VectorXd grad;
     grad.setZero(X.size());
-    for (const auto& local_storage : storage)
+    for (const auto& local_storage : storage) {
         grad += local_storage;
+    }
     return grad;
 }
 

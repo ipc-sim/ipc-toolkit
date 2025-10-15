@@ -25,8 +25,9 @@ namespace {
                 + Math<double>::smooth_heaviside(
                                    Math<double>::cross2(dn, t1), params.alpha_n,
                                    params.beta_n);
-            if (tmp <= 1. - params.alpha_n)
+            if (tmp <= 1. - params.alpha_n) {
                 return false;
+            }
         }
 
         return true;
@@ -156,9 +157,10 @@ Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
         return smooth_point2_term_one_side<T>(
                    X.row(1), X.row(0), X.row(2), params)
             .grad;
-    } else
+    } else {
         return Vector<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
             x.size() + d.size());
+    }
 }
 MatrixMax<
     double,
