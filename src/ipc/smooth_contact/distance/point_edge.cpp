@@ -84,17 +84,17 @@ PointEdgeDistance<scalar, dim>::point_edge_closest_point_direction(
 }
 
 template <int dim>
-std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, dim * dim>>
+std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, 3 * dim>>
 PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_grad(
     Eigen::ConstRef<Vector<double, dim>> p,
     Eigen::ConstRef<Vector<double, dim>> e0,
     Eigen::ConstRef<Vector<double, dim>> e1)
 {
     Vector<double, dim> val;
-    Eigen::Matrix<double, dim, dim * dim> grad;
+    Eigen::Matrix<double, dim, 3 * dim> grad;
 #ifdef DERIVATIVES_WITH_AUTODIFF
-    using T = ADGrad<dim * dim>;
-    ScalarBase::setVariableCount(dim * dim);
+    using T = ADGrad<3 * dim>;
+    ScalarBase::setVariableCount(3 * dim);
     const Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
     const Vector<T, dim> e0T = slice_positions<T, 1, dim>(e0, dim);
     const Vector<T, dim> e1T = slice_positions<T, 1, dim>(e1, 2 * dim);
@@ -108,7 +108,7 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_grad(
     }
 #else
     const double uv = point_edge_closest_point(p, e0, e1);
-    const Vector<double, dim * dim> g =
+    const Vector<double, 3 * dim> g =
         point_edge_closest_point_jacobian(p, e0, e1);
 
     val = (p - e0) - uv * (e1 - e0);
@@ -126,20 +126,20 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_grad(
 template <int dim>
 std::tuple<
     Vector<double, dim>,
-    Eigen::Matrix<double, dim, dim * dim>,
-    std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim>>
+    Eigen::Matrix<double, dim, 3 * dim>,
+    std::array<Eigen::Matrix<double, 3 * dim, 3 * dim>, dim>>
 PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_hessian(
     Eigen::ConstRef<Vector<double, dim>> p,
     Eigen::ConstRef<Vector<double, dim>> e0,
     Eigen::ConstRef<Vector<double, dim>> e1)
 {
     Vector<double, dim> val;
-    Eigen::Matrix<double, dim, dim * dim> grad;
-    std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim> hess;
+    Eigen::Matrix<double, dim, 3 * dim> grad;
+    std::array<Eigen::Matrix<double, 3 * dim, 3 * dim>, dim> hess;
 
 #ifdef DERIVATIVES_WITH_AUTODIFF
-    using T = ADHessian<dim * dim>;
-    ScalarBase::setVariableCount(dim * dim);
+    using T = ADHessian<3 * dim>;
+    ScalarBase::setVariableCount(3 * dim);
     Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
     Vector<T, dim> e0T = slice_positions<T, 1, dim>(e0, dim);
     Vector<T, dim> e1T = slice_positions<T, 1, dim>(e1, 2 * dim);
@@ -154,9 +154,9 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_hessian(
     }
 #else
     const double uv = point_edge_closest_point(p, e0, e1);
-    const Vector<double, dim * dim> g =
+    const Vector<double, 3 * dim> g =
         point_edge_closest_point_jacobian(p, e0, e1);
-    const Eigen::Matrix<double, dim * dim, dim * dim> h =
+    const Eigen::Matrix<double, 3 * dim, 3 * dim> h =
         point_edge_closest_point_hessian(p, e0, e1);
 
     val = (p - e0) - uv * (e1 - e0);
@@ -187,7 +187,7 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_hessian(
 }
 
 template <int dim>
-std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, dim * dim>>
+std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, 3 * dim>>
 PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(
     Eigen::ConstRef<Vector<double, dim>> p,
     Eigen::ConstRef<Vector<double, dim>> e0,
@@ -195,11 +195,11 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(
     const PointEdgeDistanceType dtype)
 {
     Vector<double, dim> vec;
-    Eigen::Matrix<double, dim, dim * dim> grad =
-        Eigen::Matrix<double, dim, dim * dim>::Zero();
+    Eigen::Matrix<double, dim, 3 * dim> grad =
+        Eigen::Matrix<double, dim, 3 * dim>::Zero();
 #ifdef DERIVATIVES_WITH_AUTODIFF
-    using T = ADGrad<dim * dim>;
-    ScalarBase::setVariableCount(dim * dim);
+    using T = ADGrad<3 * dim>;
+    ScalarBase::setVariableCount(3 * dim);
     Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
     Vector<T, dim> e0T = slice_positions<T, 1, dim>(e0, dim);
     Vector<T, dim> e1T = slice_positions<T, 1, dim>(e1, 2 * dim);
@@ -220,12 +220,12 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(
     case PointEdgeDistanceType::P_E0:
         vec = p - e0;
         grad.leftCols(dim).diagonal().array() = 1.;
-        grad.middleCols(3, dim).diagonal().array() = -1.;
+        grad.middleCols(dim, dim).diagonal().array() = -1.;
         break;
     case PointEdgeDistanceType::P_E1:
         vec = p - e1;
         grad.leftCols(dim).diagonal().array() = 1.;
-        grad.middleCols(6, dim).diagonal().array() = -1.;
+        grad.middleCols(2*dim, dim).diagonal().array() = -1.;
         break;
     default:
         throw std::runtime_error("PointEdgeDistanceType not specified!");
@@ -238,8 +238,8 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(
 template <int dim>
 std::tuple<
     Vector<double, dim>,
-    Eigen::Matrix<double, dim, dim * dim>,
-    std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim>>
+    Eigen::Matrix<double, dim, 3 * dim>,
+    std::array<Eigen::Matrix<double, 3 * dim, 3 * dim>, dim>>
 PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(
     Eigen::ConstRef<Vector<double, dim>> p,
     Eigen::ConstRef<Vector<double, dim>> e0,
@@ -247,14 +247,14 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(
     const PointEdgeDistanceType dtype)
 {
     Vector<double, dim> vec;
-    Eigen::Matrix<double, dim, dim * dim> grad =
-        Eigen::Matrix<double, dim, dim * dim>::Zero();
-    std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim> hess;
+    Eigen::Matrix<double, dim, 3 * dim> grad =
+        Eigen::Matrix<double, dim, 3 * dim>::Zero();
+    std::array<Eigen::Matrix<double, 3 * dim, 3 * dim>, dim> hess;
     for (auto& hi : hess)
         hi.setZero();
 #ifdef DERIVATIVES_WITH_AUTODIFF
-    using T = ADHessian<dim * dim>;
-    ScalarBase::setVariableCount(dim * dim);
+    using T = ADHessian<3 * dim>;
+    ScalarBase::setVariableCount(3 * dim);
     Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
     Vector<T, dim> e0T = slice_positions<T, 1, dim>(e0, dim);
     Vector<T, dim> e1T = slice_positions<T, 1, dim>(e1, 2 * dim);

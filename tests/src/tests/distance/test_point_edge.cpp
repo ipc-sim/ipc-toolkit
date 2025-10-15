@@ -5,6 +5,7 @@
 #include <tests/utils.hpp>
 
 #include <ipc/distance/point_edge.hpp>
+#include <ipc/smooth_contact/distance/point_edge.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <finitediff.hpp>
@@ -191,5 +192,84 @@ TEMPLATE_TEST_CASE_SIG(
         Eigen::MatrixXd fhess;
         fd::finite_hessian(x, point_edge_distance_stacked<dim>, fhess);
         CHECK(fd::compare_hessian(hess, fhess, 1e-2));
+    }
+}
+
+TEMPLATE_TEST_CASE_SIG(
+    "Point-edge closest direction all types",
+    "[distance][point-edge][gradient][hessian]",
+    ((int dim), dim),
+    2,
+    3)
+{
+    // Note: Closest direction is not differentiable at alpha=0, 1
+
+    const double alpha = GENERATE(range(-1.0, 2.0, 0.1));
+    const double d = GENERATE(range(-10.0, 10.0, 1.0));
+
+    VectorMax3d e0 = VectorMax3d::Zero(dim);
+    e0.x() = -10;
+    VectorMax3d e1 = VectorMax3d::Zero(dim);
+    e1.x() = 10;
+
+    const VectorMax3d p =
+        ((e1 - e0) * alpha + e0) + d * Eigen::Vector3d::UnitY().head(dim);
+
+    CAPTURE(alpha, d, dim);
+
+    const auto dtype = point_edge_distance_type(p, e0, e1);
+    { // Distance type
+        if (alpha < -1e-8) {
+            CHECK(dtype == PointEdgeDistanceType::P_E0);
+        } else if (alpha > 1 + 1e-8) {
+            CHECK(dtype == PointEdgeDistanceType::P_E1);
+        } else if (alpha > 1e-8 && alpha < 1 - 1e-8) {
+            CHECK(dtype == PointEdgeDistanceType::P_E);
+        }
+        // ignore alpha ≈ 0 and alpha ≈ 1
+    }
+
+    { // Distance
+        const double expected_distance = alpha < 0
+            ? (e0 - p).squaredNorm()
+            : (alpha > 1 ? (e1 - p).squaredNorm() : (d * d));
+        const double distance = PointEdgeDistance<double, dim>::point_edge_closest_point_direction(p, e0, e1, dtype).squaredNorm();
+        CHECK(distance == Catch::Approx(expected_distance).margin(1e-15));
+    }
+
+    // Gradient (skip C1 transition points)
+    if (abs(alpha) > 1e-5 && abs(alpha - 1.0) > 1e-5) {
+        const auto [vec, grad] = PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(p, e0, e1, dtype);
+
+        // Compute the gradient using finite differences
+        VectorMax9d x(3 * dim);
+        x << p, e0, e1;
+        Eigen::MatrixXd fgrad;
+        fd::finite_jacobian(x, [](const Eigen::VectorXd& x) {
+            Vector<double, dim> p = x.segment<dim>(0);
+            Vector<double, dim> e0 = x.segment<dim>(dim);
+            Vector<double, dim> e1 = x.segment<dim>(2*dim);
+            return PointEdgeDistance<double, dim>::point_edge_closest_point_direction(p, e0, e1);
+        }, fgrad);
+
+        CHECK(fd::compare_jacobian(grad, fgrad, 1e-6));
+    }
+
+    // Hessian (skip C1 transition points)
+    if (abs(alpha) < 1e-5 && abs(alpha - 1.0) < 1e-5) {
+        const auto [vec, grad, hess] = PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(p, e0, e1, dtype);
+        // Compute the gradient using finite differences
+        VectorMax9d x(3 * dim);
+        x << p, e0, e1;
+        for (int i = 0; i < dim; ++i) {
+            Eigen::MatrixXd fhess;
+            fd::finite_jacobian(x, [i](const Eigen::VectorXd& x) {
+                Vector<double, dim> p = x.segment<dim>(0);
+                Vector<double, dim> e0 = x.segment<dim>(dim);
+                Vector<double, dim> e1 = x.segment<dim>(2*dim);
+                return std::get<1>(PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(p, e0, e1)).row(i).transpose();
+            }, fhess);
+            CHECK(fd::compare_hessian(hess[i], fhess, 1e-2));
+        }
     }
 }

@@ -268,7 +268,7 @@ TEST_CASE("Point-triangle distance hessian", "[distance][point-triangle][hess]")
 }
 
 TEST_CASE(
-    "Point-triangle closest direction gradient",
+    "Point-triangle closest direction derivatives",
     "[distance][point-triangle][grad]")
 {
     double py = GENERATE(-10, -1, -1e-5, 0, 1e-5, 1, 10);
@@ -338,6 +338,24 @@ TEST_CASE(
 
     Vector12d x;
     x << p, t0, t1, t2;
+
+    {
+        const auto [vec, grad] =
+            point_triangle_closest_point_direction_grad(p, t0, t1, t2, dtype);
+
+        // Compute the gradient using finite differences
+        Eigen::MatrixXd fjac;
+        fd::finite_jacobian(
+            x,
+            [dtype](const Eigen::VectorXd& _x) {
+                return point_triangle_closest_point_direction<double>(
+                    _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
+                    _x.segment<3>(9), dtype);
+            },
+            fjac);
+
+        CHECK(fd::compare_jacobian(fjac, grad, 1e-5));
+    }
 
     const auto [vec, grad, hess] =
         point_triangle_closest_point_direction_hessian(p, t0, t1, t2, dtype);
