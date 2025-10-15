@@ -22,7 +22,7 @@ void SmoothCollisions::compute_adaptive_dhat(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices, // set to zero for rest pose
     const SmoothContactParameters params,
-    const std::shared_ptr<BroadPhase> broad_phase)
+    const std::shared_ptr<BroadPhase>& broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
@@ -37,10 +37,12 @@ void SmoothCollisions::compute_adaptive_dhat(
 
     vert_adaptive_dhat.setConstant(mesh.num_vertices(), dhat);
     edge_adaptive_dhat.setConstant(mesh.num_edges(), dhat);
-    if (mesh.dim() == 3)
+    if (mesh.dim() == 3) {
         face_adaptive_dhat.setConstant(mesh.num_faces(), dhat);
-    else
+    }
+    else {
         face_adaptive_dhat.resize(0);
+    }
 
     auto assign_min = [](double& a, const double& b) -> void {
         a = std::min(a, b);
@@ -50,30 +52,35 @@ void SmoothCollisions::compute_adaptive_dhat(
         const double dist =
             params.adaptive_dhat_ratio() * sqrt(cc->compute_distance(vertices));
         switch (cc->type()) {
-        case CollisionType::EDGE_EDGE:
-            assign_min(edge_adaptive_dhat((*cc)[0]), dist);
-            assign_min(edge_adaptive_dhat((*cc)[1]), dist);
-            break;
-        case CollisionType::EDGE_VERTEX:
-            assign_min(edge_adaptive_dhat((*cc)[0]), dist);
-            assign_min(vert_adaptive_dhat((*cc)[1]), dist);
-            break;
-        case CollisionType::FACE_VERTEX:
-            assign_min(face_adaptive_dhat((*cc)[0]), dist);
-            assign_min(vert_adaptive_dhat((*cc)[1]), dist);
-            break;
-        case CollisionType::VERTEX_VERTEX:
-            assign_min(vert_adaptive_dhat((*cc)[0]), dist);
-            assign_min(vert_adaptive_dhat((*cc)[1]), dist);
-            break;
-        default:
-            throw std::runtime_error("Invalid collision type!");
+            case CollisionType::EDGE_EDGE: {
+                assign_min(edge_adaptive_dhat((*cc)[0]), dist);
+                assign_min(edge_adaptive_dhat((*cc)[1]), dist);
+                break;
+            }
+            case CollisionType::EDGE_VERTEX: {
+                assign_min(edge_adaptive_dhat((*cc)[0]), dist);
+                assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+                break;
+            }
+            case CollisionType::FACE_VERTEX: {
+                assign_min(face_adaptive_dhat((*cc)[0]), dist);
+                assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+                break;
+            }
+            case CollisionType::VERTEX_VERTEX: {
+                assign_min(vert_adaptive_dhat((*cc)[0]), dist);
+                assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+                break;
+            }
+            default: {
+                throw std::runtime_error("Invalid collision type!");
+            }
         }
     }
 
     // face adaptive dhat should be minimum of all its adjacent vertices and
     // edges
-    if (mesh.dim() == 3)
+    if (mesh.dim() == 3) {
         for (int f = 0; f < mesh.num_faces(); f++) {
             for (int lv = 0; lv < 3; lv++) {
                 face_adaptive_dhat(f) = std::min(
@@ -84,6 +91,7 @@ void SmoothCollisions::compute_adaptive_dhat(
                     edge_adaptive_dhat(mesh.faces_to_edges()(f, lv)));
             }
         }
+    }
 
     // edge adaptive dhat should be minimum of all its adjacent vertices
     for (int e = 0; e < mesh.num_edges(); e++) {
@@ -99,10 +107,11 @@ void SmoothCollisions::compute_adaptive_dhat(
     logger().debug(
         "Adaptive dhat: edge dhat min {:.2e}, max {:.2e}",
         edge_adaptive_dhat.minCoeff(), edge_adaptive_dhat.maxCoeff());
-    if (mesh.dim() == 3)
+    if (mesh.dim() == 3) {
         logger().debug(
             "Adaptive dhat: face dhat min {:.2e}, max {:.2e}",
             face_adaptive_dhat.minCoeff(), face_adaptive_dhat.maxCoeff());
+    }
 }
 
 void SmoothCollisions::build(
@@ -110,7 +119,7 @@ void SmoothCollisions::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const SmoothContactParameters params,
     const bool use_adaptive_dhat,
-    const std::shared_ptr<BroadPhase> broad_phase)
+    const std::shared_ptr<BroadPhase>& broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
@@ -118,8 +127,6 @@ void SmoothCollisions::build(
 
     // Candidates candidates;
     candidates.build(mesh, vertices, inflation_radius, broad_phase);
-    // std::cout << "Candidate Memory " << getCurrentRSS() / (1024.*1024) <<
-    // "MB\n";
     this->build(candidates, mesh, vertices, params, use_adaptive_dhat);
 }
 

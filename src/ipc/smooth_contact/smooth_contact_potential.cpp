@@ -126,7 +126,7 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
     maybe_parallel_for(
         storages.size(), [&](int i) { storages[i]->cache->prune(); });
 
-    if (storage.size() == 0) {
+    if (storage.empty()) {
         return Eigen::SparseMatrix<double>();
     }
 
@@ -142,13 +142,14 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
 
     std::vector<Eigen::Triplet<double>> triplets;
 
-    assert(storages.size() >= 1);
+    assert(!storages.empty());
     if (storages[0]->cache->is_dense()) {
         // Serially merge local storages
         Eigen::MatrixXd tmp(hess);
-        for (const auto& local_storage : storage)
+        for (const auto& local_storage : storage) {
             tmp += dynamic_cast<const DenseMatrixCache&>(*local_storage.cache)
                        .mat();
+        }
         hess = tmp.sparseView();
         hess.makeCompressed();
     } else if (triplet_count >= triplets.max_size()) {
@@ -159,8 +160,9 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
             "Cannot allocate space for triplets, switching to serial assembly.");
 
         // Serially merge local storages
-        for (LocalThreadMatStorage& local_storage : storage)
+        for (LocalThreadMatStorage& local_storage : storage) {
             hess += local_storage.cache->get_matrix(false); // will also prune
+        }
         hess.makeCompressed();
     } else {
         triplets.resize(triplet_count);

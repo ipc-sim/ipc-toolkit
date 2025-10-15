@@ -14,8 +14,9 @@ namespace {
         const Vector2d dn = -direc.normalized();
         const Vector2d t0 = (e0 - v).normalized(), t1 = (e1 - v).normalized();
 
-        if (dn.dot(t0) <= -params.alpha_t || dn.dot(t1) <= -params.alpha_t)
+        if (dn.dot(t0) <= -params.alpha_t || dn.dot(t1) <= -params.alpha_t) {
             return false;
+        }
 
         if (orientable) {
             const double tmp = Math<double>::smooth_heaviside(
@@ -121,15 +122,18 @@ int Point2::n_vertices() const { return m_vertex_ids.size(); }
 double Point2::potential(
     const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
-    if (has_neighbor_1 && has_neighbor_2)
+    if (has_neighbor_1 && has_neighbor_2) {
         return smooth_point2_term<double>(
             x.segment<DIM>(0), d, x.segment<DIM>(DIM), x.segment<DIM>(2 * DIM),
             params, orientable);
-    else if (has_neighbor_1 || has_neighbor_2)
+    }
+    else if (has_neighbor_1 || has_neighbor_2) {
         return smooth_point2_term_one_side<double>(
             x.segment<DIM>(0), d, x.segment<DIM>(DIM), params);
-    else
+    }
+    else {
         return 1.;
+    }
 }
 Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
     const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
@@ -181,8 +185,9 @@ Point2::hessian(
         return smooth_point2_term_one_side<T>(
                    X.row(1), X.row(0), X.row(2), params)
             .Hess;
-    } else
+    } else {
         return MatrixMax<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
             x.size() + d.size(), x.size() + d.size());
+    }
 }
 } // namespace ipc

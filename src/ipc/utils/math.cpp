@@ -41,22 +41,12 @@ void OrientationTypes::set_size(const int size)
 
 bool OrientationTypes::are_tangent_types_all_one() const
 {
-    for (const auto& b : tangent_types) {
-        if (b != HeavisideType::ONE) {
-            return false;
-        }
-    }
-    return true;
+    return std::all_of(tangent_types.begin(), tangent_types.end(), [](const HeavisideType t) { return t == HeavisideType::ONE; });
 }
 
 bool OrientationTypes::exists_normal_type_one() const
 {
-    for (const auto& b : normal_types) {
-        if (b == HeavisideType::ONE) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(normal_types.begin(), normal_types.end(), [](const HeavisideType t) { return t == HeavisideType::ONE; });
 }
 
 std::tuple<Eigen::Vector3d, Eigen::Matrix3d>

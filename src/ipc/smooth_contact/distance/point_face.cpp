@@ -60,8 +60,9 @@ point_plane_closest_point_direction_hessian(
     grad.leftCols<3>().diagonal().array() += 1.;
 
     std::array<Matrix12d, 3> hess;
-    for (auto& h : hess)
+    for (auto& h : hess) {
         h.setZero();
+    }
     for (int d = 0; d < 3; d++) {
         // wrt. uv
         hess[d] -= (t1(d) - t0(d)) * H[0] + (t2(d) - t0(d)) * H[1];
@@ -159,8 +160,9 @@ point_triangle_closest_point_direction_hessian(
     Vector3d pts = Vector3d::Zero();
     Eigen::Matrix<double, 3, 12> grad = Eigen::Matrix<double, 3, 12>::Zero();
     std::array<Matrix12d, 3> hess;
-    for (auto& h : hess)
+    for (auto& h : hess) {
         h.setZero();
+    }
     switch (dtype) {
     case PointTriangleDistanceType::P_T0:
         pts = p - t0;
@@ -186,8 +188,9 @@ point_triangle_closest_point_direction_hessian(
         pts = d;
         std::vector<int> ind { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
         grad(Eigen::all, ind) = d_grad;
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3; i++) {
             hess[i](ind, ind) = d_hess[i];
+        }
 
         break;
     }
@@ -198,8 +201,9 @@ point_triangle_closest_point_direction_hessian(
         pts = d;
         std::vector<int> ind { 0, 1, 2, 6, 7, 8, 9, 10, 11 };
         grad(Eigen::all, ind) = d_grad;
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3; i++) {
             hess[i](ind, ind) = d_hess[i];
+        }
 
         break;
     }
@@ -210,8 +214,9 @@ point_triangle_closest_point_direction_hessian(
         pts = d;
         std::vector<int> ind { 0, 1, 2, 9, 10, 11, 3, 4, 5 };
         grad(Eigen::all, ind) = d_grad;
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3; i++) {
             hess[i](ind, ind) = d_hess[i];
+        }
 
         break;
     }

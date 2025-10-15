@@ -105,7 +105,7 @@ line_line_closest_point_direction_hessian(
     {
         Eigen::Matrix2d tmp;
         tmp << 1, -1, -1, 1;
-        for (int d = 0; d < 3; d++)
+        for (int d = 0; d < 3; d++) {
             inner_hess[d]
                 << Eigen::KroneckerProduct<Eigen::Matrix2d, Eigen::Matrix3d>(
                        tmp, cross_hess[d].block<3, 3>(0, 0)),
@@ -115,6 +115,7 @@ line_line_closest_point_direction_hessian(
                     tmp, cross_hess[d].block<3, 3>(3, 0)),
                 Eigen::KroneckerProduct<Eigen::Matrix2d, Eigen::Matrix3d>(
                     tmp, cross_hess[d].block<3, 3>(3, 3));
+        }
     }
 
     std::array<Matrix12d, 3> hess;
@@ -126,8 +127,9 @@ line_line_closest_point_direction_hessian(
         hess[d].middleCols<3>(0) -= tmp;
         hess[d].middleRows<3>(6) += tmp.transpose();
         hess[d].middleRows<3>(0) -= tmp.transpose();
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 3; i++) {
             hess[d] += inner_hess[i] * grad_normal(d, i);
+        }
     }
 
     return std::make_tuple(vec, grad, hess);
@@ -178,8 +180,10 @@ line_line_closest_point_pairs_hessian(
     grad.block<3, 3>(3, 6).diagonal().array() += (1 - uv(1));
 
     std::array<Matrix12d, 6> hess;
-    for (auto& h : hess)
+    for (auto& h : hess) {
         h.setZero();
+    }
+
     {
         Eigen::Matrix<double, 12, 12> Ha, Hb;
         autogen::edge_edge_closest_point_hessian_a(

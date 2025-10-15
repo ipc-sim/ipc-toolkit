@@ -3,12 +3,9 @@
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_edge.hpp>
-#include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
 #include <tbb/enumerable_thread_specific.h>
-
-#include <iostream>
 
 namespace ipc {
 
@@ -17,24 +14,25 @@ namespace {
     void add_collision(
         const std::shared_ptr<TCollision>& pair,
         unordered_map<std::pair<index_t, index_t>, std::shared_ptr<TCollision>>&
-            cc_to_id_,
-        std::vector<std::shared_ptr<SmoothCollision>>& collisions_)
+            cc_to_id,
+        std::vector<std::shared_ptr<SmoothCollision>>& collisions)
     {
         if (pair->is_active()
-            && cc_to_id_.find(pair->get_hash()) == cc_to_id_.end()) {
+            && cc_to_id.find(pair->get_hash()) == cc_to_id.end()) {
             // New collision, so add it to the end of collisions
-            cc_to_id_.emplace(pair->get_hash(), pair);
-            collisions_.push_back(pair);
+            cc_to_id.emplace(pair->get_hash(), pair);
+            collisions.push_back(pair);
         }
     }
 
     template <int dim, typename TCollision>
     void add_collision(
         const std::shared_ptr<TCollision>& pair,
-        std::vector<std::shared_ptr<SmoothCollision>>& collisions_)
+        std::vector<std::shared_ptr<SmoothCollision>>& collisions)
     {
-        if (pair->is_active())
-            collisions_.push_back(pair);
+        if (pair->is_active()) {
+            collisions.push_back(pair);
+        }
     }
 } // namespace
 
@@ -60,8 +58,9 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
         for (int j : { 0, 1 }) {
             const auto& vj = mesh.edges()(ei, j);
             const double dhat = std::min(vert_dhat(vi), vert_dhat(vj));
-            if ((vertices.row(vi) - vertices.row(vj)).norm() >= dhat)
+            if ((vertices.row(vi) - vertices.row(vj)).norm() >= dhat) {
                 continue;
+            }
             add_collision<2, SmoothCollisionTemplate<Point2, Point2>>(
                 std::make_shared<SmoothCollisionTemplate<Point2, Point2>>(
                     std::min<index_t>(vi, vj), std::max<index_t>(vi, vj),
@@ -96,8 +95,9 @@ void SmoothCollisionsBuilder<3>::add_edge_edge_collisions(
             sqrt(edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype));
 
         if (actual_dtype != EdgeEdgeDistanceType::EA_EB
-            || distance >= params.dhat)
+            || distance >= params.dhat) {
             continue;
+        }
 
         add_collision<3, SmoothCollisionTemplate<Edge3, Edge3>>(
             std::make_shared<SmoothCollisionTemplate<Edge3, Edge3>>(
@@ -130,21 +130,24 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
         const double distance =
             sqrt(point_triangle_distance(v, f0, f1, f2, pt_dtype));
 
-        if (distance >= vert_dhat(vi))
+        if (distance >= vert_dhat(vi)) {
             continue;
+        }
 
-        if (pt_dtype == PointTriangleDistanceType::P_T)
+        if (pt_dtype == PointTriangleDistanceType::P_T) {
             add_collision<3, SmoothCollisionTemplate<Face, Point3>>(
                 std::make_shared<SmoothCollisionTemplate<Face, Point3>>(
                     fi, vi, pt_dtype, mesh, params,
                     std::min(face_dhat(fi), vert_dhat(vi)), vertices),
                 collisions);
+        }
 
         for (int lv = 0; lv < 3; lv++) {
             const auto& vj = mesh.faces()(fi, lv);
             const double dhat = std::min(vert_dhat(vi), vert_dhat(vj));
-            if ((vertices.row(vi) - vertices.row(vj)).norm() >= dhat)
+            if ((vertices.row(vi) - vertices.row(vj)).norm() >= dhat) {
                 continue;
+            }
             add_collision<3, SmoothCollisionTemplate<Point3, Point3>>(
                 std::make_shared<SmoothCollisionTemplate<Point3, Point3>>(
                     std::min<index_t>(vi, vj), std::max<index_t>(vi, vj),
@@ -164,8 +167,9 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
                 vertices.row(mesh.edges()(eid, 1)), pe_dtype);
 
             if (pe_dtype != PointEdgeDistanceType::P_E
-                || sqrt(distance_sqr) >= dhat)
+                || sqrt(distance_sqr) >= dhat) {
                 continue;
+            }
 
             add_collision<3, SmoothCollisionTemplate<Edge3, Point3>>(
                 std::make_shared<SmoothCollisionTemplate<Edge3, Point3>>(
@@ -190,8 +194,9 @@ void SmoothCollisionsBuilder<3>::merge(
 
     // size up the hash items
     size_t total = 0;
-    for (const auto& storage : local_storage)
+    for (const auto& storage : local_storage) {
         total += storage.collisions.size();
+    }
 
     merged_collisions.collisions.reserve(total);
 
@@ -207,10 +212,12 @@ void SmoothCollisionsBuilder<3>::merge(
     int face_vert_count = 0;
     int edge_edge_count = 0;
 
-    for (const auto& [key, val] : vert_vert_3_to_id)
+    for (const auto& [key, val] : vert_vert_3_to_id) {
         merged_collisions.collisions.push_back(val);
-    for (const auto& [key, val] : edge_vert_3_to_id)
+    }
+    for (const auto& [key, val] : edge_vert_3_to_id) {
         merged_collisions.collisions.push_back(val);
+    }
 
     for (const auto& builder : local_storage) {
         for (const auto& cc : builder.collisions) {
@@ -247,13 +254,14 @@ void SmoothCollisionsBuilder<2>::merge(
 
     // size up the hash items
     size_t total = 0;
-    for (const auto& storage : local_storage)
+    for (const auto& storage : local_storage) {
         total += storage.collisions.size();
+    }
 
     merged_collisions.collisions.reserve(total);
 
     // merge
-    for (auto& builder : local_storage) {
+    for (const auto& builder : local_storage) {
         vert_vert_2_to_id.insert(
             builder.vert_vert_2_to_id.begin(), builder.vert_vert_2_to_id.end());
         vert_edge_2_to_id.insert(
@@ -262,10 +270,12 @@ void SmoothCollisionsBuilder<2>::merge(
     int edge_vert_count = vert_edge_2_to_id.size();
     int vert_vert_count = vert_vert_2_to_id.size();
 
-    for (const auto& [key, val] : vert_vert_2_to_id)
+    for (const auto& [key, val] : vert_vert_2_to_id) {
         merged_collisions.collisions.push_back(val);
-    for (const auto& [key, val] : vert_edge_2_to_id)
+    }
+    for (const auto& [key, val] : vert_edge_2_to_id) {
         merged_collisions.collisions.push_back(val);
+    }
 
     logger().trace(
         "edge-vert pairs {}, vert-vert pairs {}", edge_vert_count,

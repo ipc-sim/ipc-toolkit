@@ -145,7 +145,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
     std::vector<Eigen::Triplet<double>> triplets;
 
-    assert(storages.size() >= 1);
+    assert(!storages.empty());
     if (storages[0]->cache->is_dense()) {
         // Serially merge local storages
         Eigen::MatrixXd tmp(hess);

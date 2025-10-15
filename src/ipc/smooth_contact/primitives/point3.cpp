@@ -170,9 +170,11 @@ HessianType<-1> Point3::smooth_point3_term_tangent_hessian(
                 if (b != a) {
                     acc_val_1(b) *= values(a);
 
-                    for (int c = 0; c < nn; c++)
-                        if (a != c)
+                    for (int c = 0; c < nn; c++) {
+                        if (a != c) {
                             acc_val_2(b, c) *= values(a);
+                        }
+                    }
                 }
             }
         }
@@ -230,8 +232,9 @@ GradType<-1> Point3::smooth_point3_term_normal_gradient(
 {
     Eigen::VectorXd grad =
         Eigen::VectorXd::Zero(tangents.size() + direc.size());
-    if (!orientable || otypes.normal_type(0) == HeavisideType::ONE)
+    if (!orientable || otypes.normal_type(0) == HeavisideType::ONE) {
         return std::make_tuple(1., grad);
+    }
 
     double normal_term = 0.;
     for (int a = 0; a < faces.rows(); a++) {
@@ -269,8 +272,9 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
 {
     Eigen::VectorXd grad = Eigen::VectorXd::Zero((tangents.rows() + 1) * 3);
     Eigen::MatrixXd hess = Eigen::MatrixXd::Zero(grad.size(), grad.size());
-    if (!orientable || otypes.normal_type(0) == HeavisideType::ONE)
+    if (!orientable || otypes.normal_type(0) == HeavisideType::ONE) {
         return std::make_tuple(1., grad, hess);
+    }
 
     // Buggy
     // double normal_term = 0.;
@@ -313,15 +317,16 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
         using T = ADHessian<-1>;
         Eigen::VectorXd tmp(direc.size() + tangents.size());
         tmp.head<3>() = direc;
-        for (int i = 0; i < tangents.rows(); i++)
+        for (int i = 0; i < tangents.rows(); i++) {
             tmp.segment<3>(3 * i + 3) = tangents.row(i);
+        }
 
         ScalarBase::setVariableCount(tmp.size());
         const Eigen::Matrix<T, -1, DIM> X = slice_positions<T, -1, DIM>(tmp);
 
         T normal_term_ad(0.);
         for (int a = 0; a < faces.rows(); a++) {
-            if (otypes.normal_type(a) == HeavisideType::VARIANT)
+            if (otypes.normal_type(a) == HeavisideType::VARIANT) {
                 normal_term_ad =
                     normal_term_ad
                     + Math<T>::smooth_heaviside(
@@ -329,6 +334,7 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
                                           .cross(X.row(faces(a, 2)))
                                           .normalized()),
                         params.alpha_n, params.beta_n);
+            }
         }
 
         normal_term = normal_term_ad.val;
@@ -358,8 +364,9 @@ bool Point3::smooth_point3_term_type(
         const RowVector3<double> t = X.row(edges(a, 1)) - X.row(edges(a, 0));
         otypes.tangent_type(a) = otypes.compute_type(
             -dn.dot(t) / t.norm(), params.alpha_t, params.beta_t);
-        if (otypes.tangent_type(a) == HeavisideType::ZERO)
+        if (otypes.tangent_type(a) == HeavisideType::ZERO) {
             return false;
+        }
     }
 
     if (!orientable) {
@@ -378,8 +385,9 @@ bool Point3::smooth_point3_term_type(
     }
 
     if (normal_term >= 1) {
-        for (int a = 0; a < faces.rows(); a++)
+        for (int a = 0; a < faces.rows(); a++) {
             otypes.normal_type(a) = HeavisideType::ONE;
+        }
     }
 
     return normal_term > 0;
@@ -424,8 +432,9 @@ GradType<-1> Point3::smooth_point3_term_gradient(
     // gradient wrt. [direc, v, neighbors]
     Eigen::VectorXd grad(n_dofs);
     grad.head<3>() = dn_grad * grad_tmp.head<3>();
-    for (int d = 0; d < 3; d++)
+    for (int d = 0; d < 3; d++) {
         grad(d + 3) = -grad_tmp(Eigen::seqN(d + 3, n_neighbors, 3)).sum();
+    }
     grad.tail(n_neighbor_dofs) = grad_tmp.tail(n_neighbor_dofs);
 
     return std::tuple(val, grad);
@@ -447,8 +456,9 @@ HessianType<-1> Point3::smooth_point3_term_hessian(
     auto [dn, dn_grad, dn_hess] = normalize_vector_hess(direc);
     dn *= -1;
     dn_grad *= -1;
-    for (auto& mat : dn_hess)
+    for (auto& mat : dn_hess) {
         mat *= -1;
+    }
 
     const auto [tangent_term, tangent_grad, tangent_hess] =
         smooth_point3_term_tangent_hessian(
@@ -487,8 +497,9 @@ HessianType<-1> Point3::smooth_point3_term_hessian(
     // gradient wrt. [direc, v, neighbors]
     Eigen::VectorXd grad(n_dofs);
     grad.head<3>() = dn_grad * grad_tmp.head<3>();
-    for (int d = 0; d < 3; d++)
+    for (int d = 0; d < 3; d++) {
         grad(d + 3) = -grad_tmp(Eigen::seqN(d + 3, n_neighbors, 3)).sum();
+    }
     grad.tail(n_neighbor_dofs) = grad_tmp.tail(n_neighbor_dofs);
 
     // hessian wrt. [direc, v, neighbors]
@@ -531,11 +542,12 @@ scalar Point3::smooth_point3_term(
     scalar normal_term(0.);
     for (int a = 0; a < edges.rows(); a++) {
         const RowVector3<scalar> t = X.row(edges(a, 1)) - X.row(edges(a, 0));
-        if (otypes.tangent_type(a) == HeavisideType::VARIANT)
+        if (otypes.tangent_type(a) == HeavisideType::VARIANT) {
             tangent_term =
                 tangent_term
                 * Math<scalar>::smooth_heaviside(
                     -dn.dot(t) / t.norm(), params.alpha_t, params.beta_t);
+        }
 
         weight = weight + t.squaredNorm();
     }
