@@ -24,7 +24,7 @@ void define_smooth_collisions(py::module_& m, std::string name)
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
                 const SmoothContactParameters, const bool,
-                std::shared_ptr<BroadPhase>>(&SmoothCollisions::build),
+                const std::shared_ptr<BroadPhase>&>(&SmoothCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the barrier potential.
 
