@@ -252,8 +252,7 @@ SparseMatrixCache::operator+(const SparseMatrixCache& a) const
                     out->m_second_cache_entries[e].end(),
                     m_second_cache_entries[e].begin(),
                     m_second_cache_entries[e].end());
-            }
-            else {
+            } else {
                 out->m_second_cache_entries[e].insert(
                     out->m_second_cache_entries[e].end(),
                     a.m_second_cache_entries[e].begin(),

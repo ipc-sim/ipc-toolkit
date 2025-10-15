@@ -127,12 +127,10 @@ double Point2::potential(
         return smooth_point2_term<double>(
             x.segment<DIM>(0), d, x.segment<DIM>(DIM), x.segment<DIM>(2 * DIM),
             params, orientable);
-    }
-    else if (has_neighbor_1 || has_neighbor_2) {
+    } else if (has_neighbor_1 || has_neighbor_2) {
         return smooth_point2_term_one_side<double>(
             x.segment<DIM>(0), d, x.segment<DIM>(DIM), params);
-    }
-    else {
+    } else {
         return 1.;
     }
 }

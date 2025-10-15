@@ -233,42 +233,59 @@ TEMPLATE_TEST_CASE_SIG(
         const double expected_distance = alpha < 0
             ? (e0 - p).squaredNorm()
             : (alpha > 1 ? (e1 - p).squaredNorm() : (d * d));
-        const double distance = PointEdgeDistance<double, dim>::point_edge_closest_point_direction(p, e0, e1, dtype).squaredNorm();
+        const double distance =
+            PointEdgeDistance<double, dim>::point_edge_closest_point_direction(
+                p, e0, e1, dtype)
+                .squaredNorm();
         CHECK(distance == Catch::Approx(expected_distance).margin(1e-15));
     }
 
     // Gradient (skip C1 transition points)
     if (abs(alpha) > 1e-5 && abs(alpha - 1.0) > 1e-5) {
-        const auto [vec, grad] = PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(p, e0, e1, dtype);
+        const auto [vec, grad] = PointEdgeDistanceDerivatives<
+            dim>::point_edge_closest_point_direction_grad(p, e0, e1, dtype);
 
         // Compute the gradient using finite differences
         VectorMax9d x(3 * dim);
         x << p, e0, e1;
         Eigen::MatrixXd fgrad;
-        fd::finite_jacobian(x, [](const Eigen::VectorXd& x) {
-            Vector<double, dim> p = x.segment<dim>(0);
-            Vector<double, dim> e0 = x.segment<dim>(dim);
-            Vector<double, dim> e1 = x.segment<dim>(2*dim);
-            return PointEdgeDistance<double, dim>::point_edge_closest_point_direction(p, e0, e1);
-        }, fgrad);
+        fd::finite_jacobian(
+            x,
+            [](const Eigen::VectorXd& x) {
+                Vector<double, dim> p = x.segment<dim>(0);
+                Vector<double, dim> e0 = x.segment<dim>(dim);
+                Vector<double, dim> e1 = x.segment<dim>(2 * dim);
+                return PointEdgeDistance<
+                    double, dim>::point_edge_closest_point_direction(p, e0, e1);
+            },
+            fgrad);
 
         CHECK(fd::compare_jacobian(grad, fgrad, 1e-6));
     }
 
     // Hessian (skip C1 transition points)
     if (abs(alpha) < 1e-5 && abs(alpha - 1.0) < 1e-5) {
-        const auto [vec, grad, hess] = PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(p, e0, e1, dtype);
+        const auto [vec, grad, hess] = PointEdgeDistanceDerivatives<
+            dim>::point_edge_closest_point_direction_hessian(p, e0, e1, dtype);
         // Compute the gradient using finite differences
         VectorMax9d x(3 * dim);
         x << p, e0, e1;
         for (int i = 0; i < dim; ++i) {
             Eigen::MatrixXd fhess;
-            fd::finite_jacobian(x, [i](const Eigen::VectorXd& x) {
-                Vector<double, dim> p = x.segment<dim>(0);
-                Vector<double, dim> e0 = x.segment<dim>(dim);
-                Vector<double, dim> e1 = x.segment<dim>(2*dim);
-                return std::get<1>(PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(p, e0, e1)).row(i).transpose();
-            }, fhess);
+            fd::finite_jacobian(
+                x,
+                [i](const Eigen::VectorXd& x) {
+                    Vector<double, dim> p = x.segment<dim>(0);
+                    Vector<double, dim> e0 = x.segment<dim>(dim);
+                    Vector<double, dim> e1 = x.segment<dim>(2 * dim);
+                    return std::get<1>(
+                               PointEdgeDistanceDerivatives<dim>::
+                                   point_edge_closest_point_direction_grad(
+                                       p, e0, e1))
+                        .row(i)
+                        .transpose();
+                },
+                fhess);
             CHECK(fd::compare_hessian(hess[i], fhess, 1e-2));
         }
     }

@@ -39,8 +39,7 @@ void SmoothCollisions::compute_adaptive_dhat(
     edge_adaptive_dhat.setConstant(mesh.num_edges(), dhat);
     if (mesh.dim() == 3) {
         face_adaptive_dhat.setConstant(mesh.num_faces(), dhat);
-    }
-    else {
+    } else {
         face_adaptive_dhat.resize(0);
     }
 
@@ -52,29 +51,29 @@ void SmoothCollisions::compute_adaptive_dhat(
         const double dist =
             params.adaptive_dhat_ratio() * sqrt(cc->compute_distance(vertices));
         switch (cc->type()) {
-            case CollisionType::EDGE_EDGE: {
-                assign_min(edge_adaptive_dhat((*cc)[0]), dist);
-                assign_min(edge_adaptive_dhat((*cc)[1]), dist);
-                break;
-            }
-            case CollisionType::EDGE_VERTEX: {
-                assign_min(edge_adaptive_dhat((*cc)[0]), dist);
-                assign_min(vert_adaptive_dhat((*cc)[1]), dist);
-                break;
-            }
-            case CollisionType::FACE_VERTEX: {
-                assign_min(face_adaptive_dhat((*cc)[0]), dist);
-                assign_min(vert_adaptive_dhat((*cc)[1]), dist);
-                break;
-            }
-            case CollisionType::VERTEX_VERTEX: {
-                assign_min(vert_adaptive_dhat((*cc)[0]), dist);
-                assign_min(vert_adaptive_dhat((*cc)[1]), dist);
-                break;
-            }
-            default: {
-                throw std::runtime_error("Invalid collision type!");
-            }
+        case CollisionType::EDGE_EDGE: {
+            assign_min(edge_adaptive_dhat((*cc)[0]), dist);
+            assign_min(edge_adaptive_dhat((*cc)[1]), dist);
+            break;
+        }
+        case CollisionType::EDGE_VERTEX: {
+            assign_min(edge_adaptive_dhat((*cc)[0]), dist);
+            assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+            break;
+        }
+        case CollisionType::FACE_VERTEX: {
+            assign_min(face_adaptive_dhat((*cc)[0]), dist);
+            assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+            break;
+        }
+        case CollisionType::VERTEX_VERTEX: {
+            assign_min(vert_adaptive_dhat((*cc)[0]), dist);
+            assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+            break;
+        }
+        default: {
+            throw std::runtime_error("Invalid collision type!");
+        }
         }
     }
 

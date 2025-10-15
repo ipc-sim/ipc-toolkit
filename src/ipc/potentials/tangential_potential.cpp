@@ -724,7 +724,8 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
         * mu_f1_over_norm_tau * T * tau;
 }
 
-TangentialPotential::MatrixMaxNd TangentialPotential::smooth_contact_force_jacobian_unit(
+TangentialPotential::MatrixMaxNd
+TangentialPotential::smooth_contact_force_jacobian_unit(
     const TangentialCollision& collision,
     Eigen::ConstRef<VectorMaxNd> lagged_positions, // = x + u^t
     Eigen::ConstRef<VectorMaxNd> velocities,       // = v

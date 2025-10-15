@@ -20,8 +20,7 @@ scalar PointEdgeDistance<scalar, dim>::point_line_sqr_distance(
     if constexpr (dim == 2) {
         return Math<scalar>::sqr(Math<scalar>::cross2(e0 - p, e1 - p))
             / (e1 - e0).squaredNorm();
-    }
-    else {
+    } else {
         return (e0 - p).cross(e1 - p).squaredNorm() / (e1 - e0).squaredNorm();
     }
 }
@@ -228,7 +227,7 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(
     case PointEdgeDistanceType::P_E1:
         vec = p - e1;
         grad.leftCols(dim).diagonal().array() = 1.;
-        grad.middleCols(2*dim, dim).diagonal().array() = -1.;
+        grad.middleCols(2 * dim, dim).diagonal().array() = -1.;
         break;
     default:
         throw std::runtime_error("PointEdgeDistanceType not specified!");

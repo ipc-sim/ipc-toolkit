@@ -40,12 +40,11 @@ public:
 
 template <int dim> class PointEdgeDistanceDerivatives {
 public:
-    static std::
-        tuple<Vector<double, dim>, Eigen::Matrix<double, dim, 3 * dim>>
-        point_line_closest_point_direction_grad(
-            Eigen::ConstRef<Vector<double, dim>> p,
-            Eigen::ConstRef<Vector<double, dim>> e0,
-            Eigen::ConstRef<Vector<double, dim>> e1);
+    static std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, 3 * dim>>
+    point_line_closest_point_direction_grad(
+        Eigen::ConstRef<Vector<double, dim>> p,
+        Eigen::ConstRef<Vector<double, dim>> e0,
+        Eigen::ConstRef<Vector<double, dim>> e1);
 
     static std::tuple<
         Vector<double, dim>,
@@ -56,13 +55,12 @@ public:
         Eigen::ConstRef<Vector<double, dim>> e0,
         Eigen::ConstRef<Vector<double, dim>> e1);
 
-    static std::
-        tuple<Vector<double, dim>, Eigen::Matrix<double, dim, 3 * dim>>
-        point_edge_closest_point_direction_grad(
-            Eigen::ConstRef<Vector<double, dim>> p,
-            Eigen::ConstRef<Vector<double, dim>> e0,
-            Eigen::ConstRef<Vector<double, dim>> e1,
-            const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO);
+    static std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, 3 * dim>>
+    point_edge_closest_point_direction_grad(
+        Eigen::ConstRef<Vector<double, dim>> p,
+        Eigen::ConstRef<Vector<double, dim>> e0,
+        Eigen::ConstRef<Vector<double, dim>> e1,
+        const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO);
 
     static std::tuple<
         Vector<double, dim>,

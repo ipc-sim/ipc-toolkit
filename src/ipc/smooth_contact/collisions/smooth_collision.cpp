@@ -484,7 +484,7 @@ template <typename PrimitiveA, typename PrimitiveB>
 auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::core_vertex_ids() const
     -> std::array<index_t, N_CORE_DOFS>
 {
-    std::array<index_t, N_CORE_DOFS> vids{};
+    std::array<index_t, N_CORE_DOFS> vids {};
     auto ids = get_core_indices();
     for (int i = 0; i < N_CORE_DOFS; i++) {
         vids[i] = m_vertex_ids[ids[i]];
