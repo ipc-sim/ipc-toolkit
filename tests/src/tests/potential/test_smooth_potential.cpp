@@ -167,7 +167,9 @@ TEST_CASE("Smooth barrier potential real sim 2D C^2", "[smooth_potential]")
     SmoothContactParameters params(dhat, 0.9, -0.05, 0.95, 0.05, 1);
     params.set_adaptive_dhat_ratio(min_dist_ratio);
     SmoothCollisions collisions;
-    mesh = CollisionMesh(std::vector<bool>(vertices.rows(), true), std::vector<bool>(vertices.rows(), orientable), vertices, edges, faces);
+    mesh = CollisionMesh(
+        std::vector<bool>(vertices.rows(), true),
+        std::vector<bool>(vertices.rows(), orientable), vertices, edges, faces);
     collisions.compute_adaptive_dhat(mesh, vertices, params, method);
     collisions.build(mesh, vertices, params, adaptive_dhat, method);
     CAPTURE(dhat, method, adaptive_dhat);
