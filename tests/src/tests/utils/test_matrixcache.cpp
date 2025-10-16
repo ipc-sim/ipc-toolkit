@@ -19,8 +19,7 @@ TEST_CASE("SparseMatrixCache", "[utils][matrix_cache]")
 
     cache->set_zero();
 
-    for (size_t i = 0; i < N - 1; i++)
-    {
+    for (size_t i = 0; i < N - 1; i++) {
         cache->add_value(0, i, i + 1, 1.);
     }
 
@@ -28,8 +27,7 @@ TEST_CASE("SparseMatrixCache", "[utils][matrix_cache]")
 
     SparseMatrixCache cache1(N, N);
     SparseMatrixCache cache2(N, N);
-    for (size_t i = 0; i < N - 1; i++)
-    {
+    for (size_t i = 0; i < N - 1; i++) {
         cache1.add_value(0, i, i + 1, 1.);
         cache2.add_value(0, i + 1, i, 1.);
     }
