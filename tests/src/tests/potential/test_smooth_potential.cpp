@@ -59,11 +59,13 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(
             std::vector<bool>(vertices.rows(), true),
-            std::vector<bool>(vertices.rows(), orientable), vertices, edges, faces);
+            std::vector<bool>(vertices.rows(), orientable), vertices, edges,
+            faces);
     } else {
         mesh = CollisionMesh(
             ipc::CollisionMesh::construct_is_on_surface(vertices.rows(), edges),
-            std::vector<bool>(vertices.rows(), orientable), vertices, edges, faces);
+            std::vector<bool>(vertices.rows(), orientable), vertices, edges,
+            faces);
 
         vertices = mesh.vertices(vertices);
     }
@@ -85,7 +87,8 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
 
     CHECK(
         collisions.compute_minimum_distance(mesh, vertices)
-        <= collisions.compute_active_minimum_distance(mesh, vertices) * (1. + 1e-15));
+        <= collisions.compute_active_minimum_distance(mesh, vertices)
+            * (1. + 1e-15));
 
     // -------------------------------------------------------------------------
     // Gradient
