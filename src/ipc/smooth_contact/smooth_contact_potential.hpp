@@ -79,6 +79,7 @@ public:
             PSDProjectionMethod::NONE) const;
 
 protected:
+    /// @brief GCP parameters for collision potential
     SmoothContactParameters params;
 };
 

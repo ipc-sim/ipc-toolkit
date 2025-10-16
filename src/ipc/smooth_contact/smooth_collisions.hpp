@@ -75,19 +75,29 @@ public:
     /// @return A const reference to the collision.
     const SmoothCollision& operator[](size_t i) const;
 
+    /// @brief Compute minimum distance between all contact candidates
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
+    /// @return Squared minimum distance
     double compute_minimum_distance(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
+    /// @brief Compute minimum distance between contact pairs with non-zero potential
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
+    /// @return Squared minimum distance
     double compute_active_minimum_distance(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
+    /// @brief Convert contact pairs to string
     std::string to_string(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const SmoothContactParameters& params) const;
 
+    /// @brief Get per-vertex dhat value when dhat is adaptive
     double get_vert_dhat(int vert_id) const
     {
         if (vert_adaptive_dhat.size() > 1) {
@@ -96,6 +106,7 @@ public:
             return vert_adaptive_dhat(0);
         }
     }
+    /// @brief Get per-edge dhat value when dhat is adaptive
     double get_edge_dhat(int edge_id) const
     {
         if (edge_adaptive_dhat.size() > 1) {
@@ -104,6 +115,7 @@ public:
             return edge_adaptive_dhat(0);
         }
     }
+    /// @brief Get per-face dhat value when dhat is adaptive
     double get_face_dhat(int face_id) const
     {
         if (face_adaptive_dhat.size() > 1) {
@@ -112,6 +124,7 @@ public:
             return face_adaptive_dhat(0);
         }
     }
+    /// @brief Get maximum dhat value when dhat is adaptive
     double get_max_dhat() const
     {
         double out = std::max(
@@ -122,15 +135,21 @@ public:
         return out;
     }
 
+    /// @brief Number of contact candidates
     int n_candidates() const { return candidates.size(); }
 
 public:
+    /// @brief (active) collision pairs
     std::vector<std::shared_ptr<SmoothCollision>> collisions;
 
+    /// @brief per-vertex adaptive dhat
     Eigen::VectorXd vert_adaptive_dhat;
+    /// @brief per-edge adaptive dhat
     Eigen::VectorXd edge_adaptive_dhat;
+    /// @brief per-face adaptive dhat
     Eigen::VectorXd face_adaptive_dhat;
 
+    /// @brief Collision candidates
     Candidates candidates;
 };
 
