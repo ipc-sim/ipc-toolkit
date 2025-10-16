@@ -8,6 +8,7 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/smooth_contact/distance/point_face.hpp>
+#include <ipc/smooth_contact/distance/primitive_distance.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <finitediff.hpp>
@@ -95,6 +96,14 @@ TEST_CASE("Point-triangle distance", "[distance][point-triangle]")
 
     double distance = point_triangle_distance(p, t0, t1, t2);
     CAPTURE(py, closest_point.x(), closest_point.y(), closest_point.z());
+    CHECK(
+        distance
+        == Catch::Approx(point_point_distance(p, closest_point)).margin(1e-12));
+
+    distance =
+        PrimitiveDistanceTemplate<Face, Point3, double>::compute_distance(
+            (Vector12d() << t0, t1, t2, p).finished(),
+            point_triangle_distance_type(p, t0, t1, t2));
     CHECK(
         distance
         == Catch::Approx(point_point_distance(p, closest_point)).margin(1e-12));
