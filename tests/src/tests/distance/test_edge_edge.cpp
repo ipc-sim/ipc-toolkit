@@ -9,6 +9,7 @@
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <ipc/smooth_contact/primitives/edge3.hpp>
+#include <ipc/smooth_contact/distance/primitive_distance.hpp>
 
 #include <finitediff.hpp>
 #include <igl/PI.h>
@@ -51,6 +52,12 @@ TEST_CASE("Edge-edge distance", "[distance][edge-edge]")
 
     CAPTURE(e0x, e0y, e0z, edge_edge_distance_type(e00, e01, e10, e11));
     CHECK(distance == Catch::Approx(expected_distance).margin(1e-12));
+
+    distance =
+        PrimitiveDistanceTemplate<Edge3, Edge3, double>::compute_distance(
+            (Vector12d() << e00, e01, e10, e11).finished(),
+            edge_edge_distance_type(e00, e01, e10, e11));
+    CHECK(distance == Catch::Approx(expected_distance));
 }
 
 TEST_CASE("Edge-edge distance !EA_EB", "[distance][edge-edge]")
@@ -100,10 +107,16 @@ TEST_CASE("Edge-edge distance !EA_EB", "[distance][edge-edge]")
             std::swap(ea1, eb1);
         }
 
-        const double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
+        double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
 
         CAPTURE(alpha, s, swap_ea, swap_eb, swap_edges);
 
+        CHECK(distance == Catch::Approx(s * s).margin(1e-15));
+
+        distance =
+            PrimitiveDistanceTemplate<Edge3, Edge3, double>::compute_distance(
+                (Vector12d() << ea0, ea1, eb0, eb1).finished(),
+                edge_edge_distance_type(ea0, ea1, eb0, eb1));
         CHECK(distance == Catch::Approx(s * s).margin(1e-15));
     }
 }
@@ -145,7 +158,13 @@ TEST_CASE("Edge-edge distance EA_EB", "[distance][edge-edge]")
             std::swap(ea1, eb1);
         }
 
-        const double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
+        double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
+        CHECK(distance == Catch::Approx(s * s).margin(1e-15));
+
+        distance =
+            PrimitiveDistanceTemplate<Edge3, Edge3, double>::compute_distance(
+                (Vector12d() << ea0, ea1, eb0, eb1).finished(),
+                edge_edge_distance_type(ea0, ea1, eb0, eb1));
         CHECK(distance == Catch::Approx(s * s).margin(1e-15));
     }
 }
