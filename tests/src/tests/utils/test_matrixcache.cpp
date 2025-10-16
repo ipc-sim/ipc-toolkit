@@ -2,8 +2,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
-#include <iostream>
-
 using namespace ipc;
 
 TEST_CASE("SparseMatrixCache", "[utils][matrix_cache]")
