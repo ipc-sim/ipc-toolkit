@@ -178,15 +178,19 @@ TEST_CASE("line-line closest direction derivatives", "[deriv]")
         ipc::Vector<T, 3> dT = ipc::line_line_closest_point_direction<T>(
             eaT.head<3>(), eaT.tail<3>(), ebT.head<3>(), ebT.tail<3>());
 
-        const auto [d, grad, hess] =
+        const auto [d1, grad1] =
+            ipc::line_line_closest_point_direction_gradient(
+                ea.head<3>(), ea.tail<3>(), eb.head<3>(), eb.tail<3>());
+
+        const auto [d2, grad2, hess2] =
             ipc::line_line_closest_point_direction_hessian(
                 ea.head<3>(), ea.tail<3>(), eb.head<3>(), eb.tail<3>());
 
-        double err_grad = 0;
+        double err_grad = (grad1 - grad2).norm();
         double err_hess = 0;
         for (int j = 0; j < 3; j++) {
-            err_grad += (grad.row(j).transpose() - dT(j).grad).norm();
-            err_hess += (hess[j] - dT(j).Hess).norm();
+            err_grad += (grad2.row(j).transpose() - dT(j).grad).norm();
+            err_hess += (hess2[j] - dT(j).Hess).norm();
         }
 
         CHECK(err_grad <= 1e-12);
