@@ -233,8 +233,8 @@ SparseMatrixCache::operator+(const SparseMatrixCache& a) const
         out->m_second_cache_entries.resize(std::max(this_e_size, a_e_size));
         for (int e = 0; e < std::min(this_e_size, a_e_size); ++e) {
             assert(
-                m_second_cache_entries[e].empty()
-                || a.m_second_cache_entries[e].empty());
+                !m_second_cache_entries[e].empty()
+                || !a.m_second_cache_entries[e].empty());
             out->m_second_cache_entries[e].insert(
                 out->m_second_cache_entries[e].end(),
                 m_second_cache_entries[e].begin(),
@@ -296,8 +296,8 @@ void SparseMatrixCache::operator+=(const SparseMatrixCache& o)
         m_second_cache_entries.resize(std::max(this_e_size, o_e_size));
         for (int e = 0; e < o_e_size; ++e) {
             assert(
-                m_second_cache_entries[e].empty()
-                || o.m_second_cache_entries[e].empty());
+                !m_second_cache_entries[e].empty()
+                || !o.m_second_cache_entries[e].empty());
             m_second_cache_entries[e].insert(
                 m_second_cache_entries[e].end(),
                 o.m_second_cache_entries[e].begin(),
