@@ -212,73 +212,6 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
     return m_mat;
 }
 
-std::shared_ptr<MatrixCache>
-SparseMatrixCache::operator+(const MatrixCache& a) const
-{
-    assert(&a == &dynamic_cast<const SparseMatrixCache&>(a));
-    return *this + dynamic_cast<const SparseMatrixCache&>(a);
-}
-
-std::shared_ptr<MatrixCache>
-SparseMatrixCache::operator+(const SparseMatrixCache& a) const
-{
-    std::shared_ptr<SparseMatrixCache> out =
-        std::make_shared<SparseMatrixCache>(a);
-
-    if (a.mapping().empty() || mapping().empty()) {
-        out->m_mat = a.m_mat + m_mat;
-        const size_t this_e_size = m_second_cache_entries.size();
-        const size_t a_e_size = a.m_second_cache_entries.size();
-
-        out->m_second_cache_entries.resize(std::max(this_e_size, a_e_size));
-        for (int e = 0; e < std::min(this_e_size, a_e_size); ++e) {
-            assert(
-                !m_second_cache_entries[e].empty()
-                || !a.m_second_cache_entries[e].empty());
-            out->m_second_cache_entries[e].insert(
-                out->m_second_cache_entries[e].end(),
-                m_second_cache_entries[e].begin(),
-                m_second_cache_entries[e].end());
-            out->m_second_cache_entries[e].insert(
-                out->m_second_cache_entries[e].end(),
-                a.m_second_cache_entries[e].begin(),
-                a.m_second_cache_entries[e].end());
-        }
-
-        for (int e = std::min(this_e_size, a_e_size);
-             e < std::max(this_e_size, a_e_size); ++e) {
-            if (m_second_cache_entries.size() < e) {
-                out->m_second_cache_entries[e].insert(
-                    out->m_second_cache_entries[e].end(),
-                    m_second_cache_entries[e].begin(),
-                    m_second_cache_entries[e].end());
-            } else {
-                out->m_second_cache_entries[e].insert(
-                    out->m_second_cache_entries[e].end(),
-                    a.m_second_cache_entries[e].begin(),
-                    a.m_second_cache_entries[e].end());
-            }
-        }
-    } else {
-        const auto& outer_index = main_cache()->m_outer_index;
-        const auto& inner_index = main_cache()->m_inner_index;
-        const auto& aouter_index = a.main_cache()->m_outer_index;
-        const auto& ainner_index = a.main_cache()->m_inner_index;
-        assert(ainner_index.size() == inner_index.size());
-        assert(aouter_index.size() == outer_index.size());
-        assert(a.m_values.size() == m_values.size());
-
-        maybe_parallel_for(
-            a.m_values.size(), [&](int start, int end, int thread_id) {
-                for (int i = start; i < end; ++i) {
-                    out->m_values[i] = a.m_values[i] + m_values[i];
-                }
-            });
-    }
-
-    return out;
-}
-
 void SparseMatrixCache::operator+=(const MatrixCache& o)
 {
     assert(&o == &dynamic_cast<const SparseMatrixCache&>(o));
@@ -371,21 +304,6 @@ Eigen::SparseMatrix<double, Eigen::ColMajor>
 DenseMatrixCache::get_matrix(const bool compute_mapping)
 {
     return m_mat.sparseView();
-}
-
-std::shared_ptr<MatrixCache>
-DenseMatrixCache::operator+(const MatrixCache& a) const
-{
-    return *this + dynamic_cast<const DenseMatrixCache&>(a);
-}
-
-std::shared_ptr<MatrixCache>
-DenseMatrixCache::operator+(const DenseMatrixCache& a) const
-{
-    std::shared_ptr<DenseMatrixCache> out =
-        std::make_shared<DenseMatrixCache>(a);
-    out->m_mat += m_mat;
-    return out;
 }
 
 void DenseMatrixCache::operator+=(const MatrixCache& o)

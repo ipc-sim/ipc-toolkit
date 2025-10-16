@@ -33,8 +33,6 @@ public:
     get_matrix(const bool compute_mapping = true) = 0;
     virtual void prune() = 0;
 
-    virtual std::shared_ptr<MatrixCache>
-    operator+(const MatrixCache& a) const = 0;
     virtual void operator+=(const MatrixCache& o) = 0;
 };
 
@@ -114,8 +112,6 @@ public:
     /// its values to m_mat
     void prune() override; ///< add saved entries to stored matrix
 
-    std::shared_ptr<MatrixCache> operator+(const MatrixCache& a) const override;
-    std::shared_ptr<MatrixCache> operator+(const SparseMatrixCache& a) const;
     void operator+=(const MatrixCache& o) override;
     void operator+=(const SparseMatrixCache& o);
 
@@ -211,8 +207,6 @@ public:
     get_matrix(const bool compute_mapping = true) override;
     void prune() override;
 
-    std::shared_ptr<MatrixCache> operator+(const MatrixCache& a) const override;
-    std::shared_ptr<MatrixCache> operator+(const DenseMatrixCache& a) const;
     void operator+=(const MatrixCache& o) override;
     void operator+=(const DenseMatrixCache& o);
 
