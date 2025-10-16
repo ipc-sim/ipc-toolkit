@@ -15,15 +15,13 @@
 
 using namespace ipc;
 
-namespace
+namespace {
+template <int dim> double point_line_distance_stacked(const Eigen::VectorXd& x)
 {
-    template <int dim>
-    double point_line_distance_stacked(const Eigen::VectorXd& x)
-    {
-        assert(x.size() == 3 * dim);
-        return point_line_distance(
-            x.head<dim>(), x.segment<dim>(dim), x.tail<dim>());
-    }
+    assert(x.size() == 3 * dim);
+    return point_line_distance(
+        x.head<dim>(), x.segment<dim>(dim), x.tail<dim>());
+}
 } // namespace
 
 TEST_CASE("Point-line distance", "[distance][point-line]")
@@ -54,17 +52,13 @@ TEST_CASE("Point-line distance 2", "[distance][point-line]")
     const int dim = GENERATE(2, 3);
     const int n_random_edges = 20;
 
-    for (int i = 0; i < n_random_edges; i++)
-    {
+    for (int i = 0; i < n_random_edges; i++) {
         VectorMax3d e0, e1, n;
-        if (dim == 2)
-        {
+        if (dim == 2) {
             e0 = Eigen::Vector2d::Random();
             e1 = Eigen::Vector2d::Random();
             n = tests::edge_normal(e0, e1);
-        }
-        else
-        {
+        } else {
             e0 = Eigen::Vector3d::Random();
             e1 = Eigen::Vector3d::Random();
             n = Eigen::Vector3d(e1 - e0).cross(Eigen::Vector3d::UnitX());
@@ -79,7 +73,7 @@ TEST_CASE("Point-line distance 2", "[distance][point-line]")
         CHECK(
             distance
             == Catch::Approx(expected_distance * expected_distance)
-            .margin(1e-15));
+                   .margin(1e-15));
     }
 }
 
@@ -164,7 +158,8 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Point-line closest point 3D pairs hessian", "[distance][point-line][hessian]")
+    "Point-line closest point 3D pairs hessian",
+    "[distance][point-line][hessian]")
 {
     double ya = GENERATE(take(2, random(-10.0, 10.0)));
     Eigen::Vector3d p(1, ya, 0);
@@ -180,8 +175,7 @@ TEST_CASE(
         x.row(0), x.row(1), x.row(2));
     auto [y, grad, hess] = PointEdgeDistanceDerivatives<
         3>::point_line_closest_point_direction_hessian(p, eb0, eb1);
-    for (int i = 0; i < yAD.size(); i++)
-    {
+    for (int i = 0; i < yAD.size(); i++) {
         REQUIRE((yAD(i).val - y(i)) < 1e-8);
         REQUIRE(
             (yAD(i).grad - grad.row(i).transpose()).norm()
@@ -202,7 +196,8 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Point-line closest point 2D pairs hessian", "[distance][point-line][hessian]")
+    "Point-line closest point 2D pairs hessian",
+    "[distance][point-line][hessian]")
 {
     double ya = GENERATE(take(2, random(-10.0, 10.0)));
     Eigen::Vector2d p(ya, 0);
@@ -218,8 +213,7 @@ TEST_CASE(
         x.row(0), x.row(1), x.row(2));
     auto [y, grad, hess] = PointEdgeDistanceDerivatives<
         2>::point_line_closest_point_direction_hessian(p, eb0, eb1);
-    for (int i = 0; i < yAD.size(); i++)
-    {
+    for (int i = 0; i < yAD.size(); i++) {
         REQUIRE((yAD(i).val - y(i)) < 1e-8);
         REQUIRE(
             (yAD(i).grad - grad.row(i).transpose()).norm()
