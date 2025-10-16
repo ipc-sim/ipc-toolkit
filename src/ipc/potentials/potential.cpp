@@ -146,16 +146,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     std::vector<Eigen::Triplet<double>> triplets;
 
     assert(!storages.empty());
-    if (storages[0]->cache->is_dense()) {
-        // Serially merge local storages
-        Eigen::MatrixXd tmp(hess);
-        for (const auto& local_storage : storage) {
-            tmp += dynamic_cast<const DenseMatrixCache&>(*local_storage.cache)
-                       .mat();
-        }
-        hess = tmp.sparseView();
-        hess.makeCompressed();
-    } else if (triplet_count >= triplets.max_size()) {
+    if (triplet_count >= triplets.max_size()) {
         // Serial fallback version in case the vector of triplets cannot be
         // allocated
 

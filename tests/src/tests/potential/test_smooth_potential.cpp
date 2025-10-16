@@ -26,6 +26,7 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
 {
     const auto method = make_default_broad_phase();
     const bool adaptive_dhat = GENERATE(true, false);
+    const bool orientable = GENERATE(true, false);
     double dhat = -1;
     std::string mesh_name = "";
     bool all_vertices_on_surface = true;
@@ -56,9 +57,14 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
 
     SmoothCollisions collisions;
     if (all_vertices_on_surface) {
-        mesh = CollisionMesh(vertices, edges, faces);
+        mesh = CollisionMesh(
+            std::vector<bool>(vertices.rows(), true),
+            std::vector<bool>(vertices.rows(), orientable), vertices, edges, faces);
     } else {
-        mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
+        mesh = CollisionMesh(
+            ipc::CollisionMesh::construct_is_on_surface(vertices.rows(), edges),
+            std::vector<bool>(vertices.rows(), orientable), vertices, edges, faces);
+
         vertices = mesh.vertices(vertices);
     }
 
@@ -72,6 +78,14 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
 
     SmoothContactPotential potential(params);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
+
+    // -------------------------------------------------------------------------
+    // Minimum distance
+    // -------------------------------------------------------------------------
+
+    CHECK(
+        collisions.compute_minimum_distance(mesh, vertices)
+        <= collisions.compute_active_minimum_distance(mesh, vertices) * (1. + 1e-15));
 
     // -------------------------------------------------------------------------
     // Gradient
@@ -274,96 +288,6 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
     CHECK((grad_b - fgrad_b).norm() < 1e-7 * grad_b.norm());
     // CHECK(fd::compare_gradient(grad_b, fgrad_b));
 }
-
-// TEST_CASE(
-//     "Benchmark on OIPC",
-//     tagsopt)
-// {
-//     const BroadPhaseMethod method{0};
-
-//     double dhat = -1;
-//     std::string mesh_name = "";
-//     bool all_vertices_on_surface = true;
-
-//     SECTION("mat-twist")
-//     {
-//         dhat = 1e-3;
-//         mesh_name = (tests::DATA_DIR /
-//         "step_1000_surf_contact.obj").string(); all_vertices_on_surface =
-//         true;
-//     }
-
-//     Eigen::MatrixXd vertices;
-//     Eigen::MatrixXi edges, faces;
-//     bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
-//     CAPTURE(mesh_name);
-//     REQUIRE(success);
-
-//     CollisionMesh mesh;
-//     if (all_vertices_on_surface) {
-//         mesh = CollisionMesh(vertices, edges, faces);
-//     } else {
-//         mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
-//         vertices = mesh.vertices(vertices);
-//     }
-
-//     {
-//         igl::Timer timer;
-//         timer.start();
-//         NormalCollisions collisions;
-
-//         collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
-//         CHECK(collisions.size() > 0);
-//         // std::cout << "IPC number of pairs " << collisions.size() << "\n";
-
-//         timer.stop();
-//         std::cout << "IPC build time " << timer.getElapsedTime() << " s\n";
-//         timer.start();
-
-//         BarrierPotential barrier_potential(dhat);
-//         const Eigen::VectorXd grad_b =
-//             barrier_potential.gradient(collisions, mesh, vertices);
-
-//         timer.stop();
-//         std::cout << "IPC grad time " << timer.getElapsedTime() << " s\n";
-//         timer.start();
-
-//         barrier_potential.hessian(collisions, mesh, vertices);
-
-//         timer.stop();
-//         std::cout << "IPC hess time " << timer.getElapsedTime() << " s\n";
-//         timer.start();
-//     }
-
-//     {
-//         igl::Timer timer;
-//         timer.start();
-//         SmoothCollisions collisions;
-
-//         SmoothContactParameters params(dhat, 0.8, 0, 0, 0.1, 2);
-//         collisions.build(mesh, vertices, params, false, method);
-//         CHECK(collisions.size() > 0);
-//         // std::cout << "OIPC number of pairs (both) " << collisions.size()
-//         << "\n";
-
-//         timer.stop();
-//         std::cout << "OIPC build time " << timer.getElapsedTime() << " s\n";
-//         timer.start();
-
-//         SmoothContactPotential<SmoothCollisions> potential(params);
-//         const Eigen::VectorXd grad_b =
-//             potential.gradient(collisions, mesh, vertices);
-
-//         timer.stop();
-//         std::cout << "OIPC grad time " << timer.getElapsedTime() << " s\n";
-
-//         potential.hessian(collisions, mesh, vertices);
-
-//         timer.stop();
-//         std::cout << "OIPC hess time " << timer.getElapsedTime() << " s\n";
-//         timer.start();
-//     }
-// }
 
 TEST_CASE("Benchmark autogen code", "[!benchmark]")
 {

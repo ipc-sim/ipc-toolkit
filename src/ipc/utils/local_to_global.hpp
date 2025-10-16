@@ -123,8 +123,6 @@ public:
 
     void init(const int buffer_size, const int rows, const int cols)
     {
-        // assert(rows == cols);
-        // cache = std::make_unique<DenseMatrixCache>();
         cache = std::make_unique<SparseMatrixCache>();
         cache->reserve(buffer_size);
         cache->init(rows, cols);
