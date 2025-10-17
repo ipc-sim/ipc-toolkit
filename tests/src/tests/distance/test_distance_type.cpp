@@ -227,8 +227,9 @@ TEST_CASE("Edge-edge distance type", "[distance][distance-type][edge-edge]")
 {
     double alpha = GENERATE(range(-1.0, 2.0, 0.1));
     double s = GENERATE(range(-10.0, 10.0, 1.0));
-    if (s == 0)
+    if (s == 0) {
         return;
+    }
     const bool swap_ea = GENERATE(false, true);
     const bool swap_eb = GENERATE(false, true);
     const bool swap_edges = GENERATE(false, true);

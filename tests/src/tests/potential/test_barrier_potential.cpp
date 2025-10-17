@@ -32,7 +32,7 @@ TEST_CASE(
     const bool use_physical_barrier = GENERATE(true, false);
 
     double dhat = -1;
-    std::string mesh_name = "";
+    std::string mesh_name;
     bool all_vertices_on_surface = true;
     SECTION("cube")
     {

@@ -231,12 +231,13 @@ SmoothFrictionData smooth_friction_data_generator_3d()
         int e0 = E.rows(), e1 = E.rows();
         for (int e = 0; e < E.rows(); e++) {
             if (std::min(E(e, 0), E(e, 1)) == 0
-                && std::max(E(e, 0), E(e, 1)) == 1)
+                && std::max(E(e, 0), E(e, 1)) == 1) {
                 e0 = e;
-            else if (
+            } else if (
                 std::min(E(e, 0), E(e, 1)) == 2
-                && std::max(E(e, 0), E(e, 1)) == 3)
+                && std::max(E(e, 0), E(e, 1)) == 3) {
                 e1 = e;
+            }
         }
         assert(e0 < E.rows());
         assert(e1 < E.rows());
@@ -272,8 +273,9 @@ SmoothFrictionData smooth_friction_data_generator_3d()
         int e = 0;
         for (; e < E.rows(); e++) {
             if (std::min(E(e, 0), E(e, 1)) == 1
-                && std::max(E(e, 0), E(e, 1)) == 2)
+                && std::max(E(e, 0), E(e, 1)) == 2) {
                 break;
+            }
         }
         assert(e < E.rows());
 

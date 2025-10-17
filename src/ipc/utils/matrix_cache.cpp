@@ -202,8 +202,8 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
         const auto& inner_index = main_cache()->m_inner_index;
         // directly write the values to the matrix
         m_mat = Eigen::Map<const Eigen::SparseMatrix<double, Eigen::ColMajor>>(
-            m_size, m_size, m_values.size(), &outer_index[0], &inner_index[0],
-            &m_values[0]);
+            m_size, m_size, m_values.size(), outer_index.data(),
+            inner_index.data(), m_values.data());
 
         m_current_e = -1;
         m_current_e_index = -1;

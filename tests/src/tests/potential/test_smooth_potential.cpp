@@ -28,7 +28,7 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
     const bool adaptive_dhat = GENERATE(true, false);
     const bool orientable = GENERATE(true, false);
     double dhat = -1;
-    std::string mesh_name = "";
+    std::string mesh_name;
     bool all_vertices_on_surface = true;
 
     SECTION("two cubes far")
@@ -75,7 +75,7 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
     collisions.compute_adaptive_dhat(mesh, vertices, params, method);
     collisions.build(mesh, vertices, params, adaptive_dhat, method);
     CAPTURE(dhat, method, adaptive_dhat, all_vertices_on_surface);
-    CHECK(collisions.size() > 0);
+    CHECK(!collisions.empty());
     CHECK(!has_intersections(mesh, vertices));
 
     SmoothContactPotential potential(params);
@@ -145,7 +145,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^2", "[smooth_potential]")
     const bool orientable = GENERATE(true, false);
 
     double dhat = -1;
-    std::string mesh_name = "";
+    std::string mesh_name;
     SECTION("debug1")
     {
         mesh_name =
@@ -173,7 +173,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^2", "[smooth_potential]")
     collisions.compute_adaptive_dhat(mesh, vertices, params, method);
     collisions.build(mesh, vertices, params, adaptive_dhat, method);
     CAPTURE(dhat, method, adaptive_dhat);
-    CHECK(collisions.size() > 0);
+    CHECK(!collisions.empty());
     std::cout << "smooth collision candidate size " << collisions.size()
               << "\n";
 
@@ -236,7 +236,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
     const bool adaptive_dhat = GENERATE(true, false);
 
     double dhat = -1;
-    std::string mesh_name = "";
+    std::string mesh_name;
     SECTION("debug2")
     {
         mesh_name = (tests::DATA_DIR / "gcp" / "simple_2d.obj").string();
@@ -261,7 +261,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
     collisions.compute_adaptive_dhat(mesh, vertices, params, method);
     collisions.build(mesh, vertices, params, adaptive_dhat, method);
     CAPTURE(dhat, method, adaptive_dhat);
-    CHECK(collisions.size() > 0);
+    CHECK(!collisions.empty());
     std::cout << "smooth collision candidate size " << collisions.size()
               << "\n";
 

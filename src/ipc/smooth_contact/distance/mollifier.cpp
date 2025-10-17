@@ -294,7 +294,7 @@ std::array<HeavisideType, 4> edge_edge_mollifier_type(
     Eigen::ConstRef<Vector3<double>> eb1,
     const double& dist_sqr)
 {
-    std::array<HeavisideType, 4> mtypes;
+    std::array<HeavisideType, 4> mtypes {};
     mtypes[0] = (point_edge_distance(ea0, eb0, eb1) - dist_sqr)
             >= dist_sqr * MOLLIFIER_THRESHOLD_EPS
         ? HeavisideType::ONE
