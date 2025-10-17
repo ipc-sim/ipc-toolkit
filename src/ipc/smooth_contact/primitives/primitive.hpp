@@ -16,8 +16,8 @@ namespace ipc {
  */
 class Primitive {
 public:
-    Primitive(const index_t id, const SmoothContactParameters& _params)
-        : params(_params)
+    Primitive(const index_t id, const SmoothContactParameters& params)
+        : m_params(params)
         , m_id(id)
     {
     }
@@ -39,7 +39,7 @@ public:
 
 protected:
     /// @brief GCP parameters
-    const SmoothContactParameters params;
+    const SmoothContactParameters m_params;
     /// @brief Vertex IDs on this primitive
     std::vector<index_t> m_vertex_ids;
     /// @brief Vertex/Edge/Face ID of this primitive

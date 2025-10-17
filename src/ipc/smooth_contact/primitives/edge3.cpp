@@ -464,10 +464,10 @@ double Edge3::potential(
 #ifdef DERIVATIVES_WITH_AUTODIFF
     return smooth_edge3_term_template<double>(
         d.normalized(), x.head<3>(), x.segment<3>(3), x.segment<3>(6),
-        x.tail<3>(), params, otypes, orientable);
+        x.tail<3>(), m_params, otypes, orientable);
 #else
     return smooth_edge3_term(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), params,
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), m_params,
         otypes, orientable);
 #endif
 }
@@ -483,11 +483,11 @@ Edge3::grad(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
     auto X = slice_positions<T, 5, 3>(tmp);
     return smooth_edge3_term_template<T>(
                X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
-               X.row(4), params, otypes, orientable)
+               X.row(4), m_params, otypes, orientable)
         .grad;
 #else
     return std::get<1>(smooth_edge3_term_gradient(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), params,
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), m_params,
         otypes, orientable));
 #endif
 }
@@ -503,11 +503,11 @@ Edge3::hessian(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
     auto X = slice_positions<T, 5, 3>(tmp);
     return smooth_edge3_term_template<T>(
                X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
-               X.row(4), params, otypes, orientable)
+               X.row(4), m_params, otypes, orientable)
         .Hess;
 #else
     return std::get<2>(smooth_edge3_term_hessian(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), params,
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), m_params,
         otypes, orientable));
 #endif
 }

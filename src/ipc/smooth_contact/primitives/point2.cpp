@@ -146,10 +146,10 @@ double Point2::potential(
     if (has_neighbor_1 && has_neighbor_2) {
         return smooth_point2_term<double>(
             x.segment<DIM>(0), d, x.segment<DIM>(DIM), x.segment<DIM>(2 * DIM),
-            params, orientable);
+            m_params, orientable);
     } else if (has_neighbor_1 || has_neighbor_2) {
         return smooth_point2_term_one_side<double>(
-            x.segment<DIM>(0), d, x.segment<DIM>(DIM), params);
+            x.segment<DIM>(0), d, x.segment<DIM>(DIM), m_params);
     } else {
         return 1.;
     }
@@ -164,7 +164,7 @@ Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         return smooth_point2_term<T>(
-                   X.row(1), X.row(0), X.row(2), X.row(3), params, orientable)
+                   X.row(1), X.row(0), X.row(2), X.row(3), m_params, orientable)
             .grad;
     } else if (has_neighbor_1 || has_neighbor_2) {
         ScalarBase::setVariableCount(3 * DIM);
@@ -173,7 +173,7 @@ Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         return smooth_point2_term_one_side<T>(
-                   X.row(1), X.row(0), X.row(2), params)
+                   X.row(1), X.row(0), X.row(2), m_params)
             .grad;
     } else {
         return Vector<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
@@ -194,7 +194,7 @@ Point2::hessian(
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         return smooth_point2_term<T>(
-                   X.row(1), X.row(0), X.row(2), X.row(3), params, orientable)
+                   X.row(1), X.row(0), X.row(2), X.row(3), m_params, orientable)
             .Hess;
     } else if (has_neighbor_1 || has_neighbor_2) {
         ScalarBase::setVariableCount(3 * DIM);
@@ -203,7 +203,7 @@ Point2::hessian(
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         return smooth_point2_term_one_side<T>(
-                   X.row(1), X.row(0), X.row(2), params)
+                   X.row(1), X.row(0), X.row(2), m_params)
             .Hess;
     } else {
         return MatrixMax<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
