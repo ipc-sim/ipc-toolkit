@@ -69,11 +69,12 @@ GradType<13> edge_edge_mollifier_gradient(
     vert_indices << 0, 2, 3, 1, 2, 3, 2, 0, 1, 3, 0, 1;
 
     Eigen::Matrix<int, 4, 9> dof_indices;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++) {
         dof_indices.row(i) =
             get_indices(
                 vert_indices(i, 0), vert_indices(i, 1), vert_indices(i, 2))
                 .transpose();
+    }
 
     // derivatives of point edge distances
     Eigen::Vector4d point_edge_dists;
@@ -123,8 +124,9 @@ GradType<13> edge_edge_mollifier_gradient(
     partial_products_1.setOnes();
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            if (i != j)
+            if (i != j) {
                 partial_products_1(j) *= mollifier(i);
+            }
         }
     }
 
@@ -158,19 +160,21 @@ HessianType<13> edge_edge_mollifier_hessian(
     vert_indices << 0, 2, 3, 1, 2, 3, 2, 0, 1, 3, 0, 1;
 
     Eigen::Matrix<int, 4, 9> dof_indices;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++) {
         dof_indices.row(i) =
             get_indices(
                 vert_indices(i, 0), vert_indices(i, 1), vert_indices(i, 2))
                 .transpose();
+    }
 
     // derivatives of point edge distances
     Eigen::Vector4d point_edge_dists;
     Eigen::Matrix<double, 4, 12> point_edge_dists_grad;
     point_edge_dists_grad.setZero();
     std::array<Eigen::Matrix<double, 12, 12>, 4> point_edge_dists_hess;
-    for (auto& mat : point_edge_dists_hess)
+    for (auto& mat : point_edge_dists_hess) {
         mat.setZero();
+    }
     for (int i = 0; i < 4; i++) {
         point_edge_dists(i) = point_edge_distance(
             input.segment<3>(3 * vert_indices(i, 0)),
@@ -206,8 +210,9 @@ HessianType<13> edge_edge_mollifier_hessian(
     Eigen::Matrix<double, 4, 7> mollifier_grad;
     mollifier_grad.setZero();
     std::array<Eigen::Matrix<double, 7, 7>, 4> mollifier_hess;
-    for (auto& mat : mollifier_hess)
+    for (auto& mat : mollifier_hess) {
         mat.setZero();
+    }
     for (int i = 0; i < 4; i++) {
         const double len = edge_lengths(1 - i / 2);
         const auto [val, g, h] = func_aux_hess(
@@ -230,9 +235,11 @@ HessianType<13> edge_edge_mollifier_hessian(
             if (i != j) {
                 partial_products_1(j) *= mollifier(i);
 
-                for (int k = 0; k < 4; k++)
-                    if (i != k)
+                for (int k = 0; k < 4; k++) {
+                    if (i != k) {
                         partial_products_2(j, k) *= mollifier(i);
+                    }
+                }
             }
         }
     }
@@ -244,8 +251,9 @@ HessianType<13> edge_edge_mollifier_hessian(
         mollifier_grad.transpose() * partial_products_1;
     Eigen::Matrix<double, 7, 7> product_hess =
         mollifier_grad.transpose() * partial_products_2 * mollifier_grad;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++) {
         product_hess += mollifier_hess[i] * partial_products_1(i);
+    }
 
     // derivatives wrt. input : [ea0, ea1, eb0, eb1, dist_sqr]
     Vector<double, 13> grad = Vector<double, 13>::Zero();
@@ -268,9 +276,10 @@ HessianType<13> edge_edge_mollifier_hessian(
             hess.block<3, 3>(j * 6, j * 6 + 3).diagonal().array() -= val;
             hess.block<3, 3>(j * 6 + 3, j * 6).diagonal().array() -= val;
         }
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++) {
             hess.topLeftCorner<12, 12>() +=
                 product_grad(3 + i) * point_edge_dists_hess[i];
+        }
 
         hess.topLeftCorner<12, 12>() +=
             grads.transpose() * product_hess.block<6, 6>(1, 1) * grads;

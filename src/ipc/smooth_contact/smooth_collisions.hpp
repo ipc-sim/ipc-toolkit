@@ -136,7 +136,7 @@ public:
     }
 
     /// @brief Number of contact candidates
-    int n_candidates() const { return candidates.size(); }
+    int n_candidates() const { return m_candidates.size(); }
 
 public:
     /// @brief (active) collision pairs
@@ -150,7 +150,7 @@ public:
     Eigen::VectorXd face_adaptive_dhat;
 
     /// @brief Collision candidates
-    Candidates candidates;
+    Candidates m_candidates;
 };
 
 } // namespace ipc

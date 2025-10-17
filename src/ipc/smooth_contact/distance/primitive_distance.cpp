@@ -189,8 +189,9 @@ PrimitiveDistance<Point2, Point2>::compute_closest_direction_hessian(
     J.leftCols<2>().diagonal().array() = -1;
     J.rightCols<2>().diagonal().array() = 1;
     std::array<Eigen::Matrix<double, 4, 4>, 2> H;
-    for (auto& h : H)
+    for (auto& h : H) {
         h.setZero();
+    }
     return std::make_tuple(out, J, H);
 }
 
@@ -216,8 +217,9 @@ PrimitiveDistance<Point3, Point3>::compute_closest_direction_hessian(
     J.leftCols<3>().diagonal().array() = -1;
     J.rightCols<3>().diagonal().array() = 1;
     std::array<Eigen::Matrix<double, 6, 6>, 3> H;
-    for (auto& h : H)
+    for (auto& h : H) {
         h.setZero();
+    }
     return std::make_tuple(out, J, H);
 }
 

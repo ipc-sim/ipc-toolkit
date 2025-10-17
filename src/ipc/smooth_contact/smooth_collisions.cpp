@@ -29,10 +29,10 @@ void SmoothCollisions::compute_adaptive_dhat(
     const double dhat = params.dhat;
     double inflation_radius = dhat / 2;
 
-    // Candidates candidates;
-    candidates.build(mesh, vertices, inflation_radius, broad_phase);
+    // Candidates m_candidates;
+    m_candidates.build(mesh, vertices, inflation_radius, broad_phase);
     this->build(
-        candidates, mesh, vertices, params,
+        m_candidates, mesh, vertices, params,
         false /*disable adaptive dhat to compute true pairs*/);
 
     vert_adaptive_dhat.setConstant(mesh.num_vertices(), dhat);
@@ -124,13 +124,13 @@ void SmoothCollisions::build(
 
     double inflation_radius = params.dhat / 2;
 
-    // Candidates candidates;
-    candidates.build(mesh, vertices, inflation_radius, broad_phase);
-    this->build(candidates, mesh, vertices, params, use_adaptive_dhat);
+    // Candidates m_candidates;
+    m_candidates.build(mesh, vertices, inflation_radius, broad_phase);
+    this->build(m_candidates, mesh, vertices, params, use_adaptive_dhat);
 }
 
 void SmoothCollisions::build(
-    const Candidates& candidates_,
+    const Candidates& candidates,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const SmoothContactParameters params,
@@ -149,8 +149,9 @@ void SmoothCollisions::build(
         if (mesh.dim() == 3) {
             face_adaptive_dhat.resize(1);
             face_adaptive_dhat(0) = dhat;
-        } else
+        } else {
             face_adaptive_dhat.resize(0);
+        }
     }
 
     auto vert_dhat = [&](const index_t v_id) {
@@ -167,40 +168,40 @@ void SmoothCollisions::build(
         auto storage = create_thread_storage<SmoothCollisionsBuilder<2>>(
             SmoothCollisionsBuilder<2>());
         maybe_parallel_for(
-            candidates_.ev_candidates.size(),
+            candidates.ev_candidates.size(),
             [&](int start, int end, int thread_id) {
                 SmoothCollisionsBuilder<2>& local_storage =
                     get_local_thread_storage(storage, thread_id);
                 local_storage.add_edge_vertex_collisions(
-                    mesh, vertices, candidates_.ev_candidates, params,
-                    vert_dhat, edge_dhat, start, end);
+                    mesh, vertices, candidates.ev_candidates, params, vert_dhat,
+                    edge_dhat, start, end);
             });
         SmoothCollisionsBuilder<2>::merge(storage, *this);
     } else {
         auto storage = create_thread_storage<SmoothCollisionsBuilder<3>>(
             SmoothCollisionsBuilder<3>());
         maybe_parallel_for(
-            candidates_.ee_candidates.size(),
+            candidates.ee_candidates.size(),
             [&](int start, int end, int thread_id) {
                 SmoothCollisionsBuilder<3>& local_storage =
                     get_local_thread_storage(storage, thread_id);
                 local_storage.add_edge_edge_collisions(
-                    mesh, vertices, candidates_.ee_candidates, params,
-                    vert_dhat, edge_dhat, start, end);
+                    mesh, vertices, candidates.ee_candidates, params, vert_dhat,
+                    edge_dhat, start, end);
             });
 
         maybe_parallel_for(
-            candidates_.fv_candidates.size(),
+            candidates.fv_candidates.size(),
             [&](int start, int end, int thread_id) {
                 SmoothCollisionsBuilder<3>& local_storage =
                     get_local_thread_storage(storage, thread_id);
                 local_storage.add_face_vertex_collisions(
-                    mesh, vertices, candidates_.fv_candidates, params,
-                    vert_dhat, edge_dhat, face_dhat, start, end);
+                    mesh, vertices, candidates.fv_candidates, params, vert_dhat,
+                    edge_dhat, face_dhat, start, end);
             });
         SmoothCollisionsBuilder<3>::merge(storage, *this);
     }
-    candidates = candidates_;
+    m_candidates = candidates;
 }
 
 // ============================================================================
@@ -249,7 +250,7 @@ double SmoothCollisions::compute_minimum_distance(
 {
     assert(vertices.rows() == mesh.num_vertices());
 
-    if (candidates.empty()) {
+    if (m_candidates.empty()) {
         return std::numeric_limits<double>::infinity();
     }
 
@@ -260,17 +261,15 @@ double SmoothCollisions::compute_minimum_distance(
         std::numeric_limits<double>::infinity());
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, candidates.size()),
+        tbb::blocked_range<size_t>(0, m_candidates.size()),
         [&](tbb::blocked_range<size_t> r) {
             double& local_min_dist = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                const double dist = candidates[i].compute_distance(
-                    candidates[i].dof(vertices, edges, faces));
+                const double dist = m_candidates[i].compute_distance(
+                    m_candidates[i].dof(vertices, edges, faces));
 
-                if (dist < local_min_dist) {
-                    local_min_dist = dist;
-                }
+                local_min_dist = std::min(dist, local_min_dist);
             }
         });
 

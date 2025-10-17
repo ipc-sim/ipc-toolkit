@@ -116,8 +116,9 @@ namespace {
 
                 Vector<int, 12> indices;
                 indices << 0, 1, 2, 9, 10, 11, 3, 4, 5, 6, 7, 8;
-                if (d == 1)
+                if (d == 1) {
                     indices.segment<3>(3).array() += 3;
+                }
 
                 grads[d](indices) = gradient_tmp;
             }
@@ -181,8 +182,9 @@ namespace {
 
                 Vector<int, 12> indices;
                 indices << 0, 1, 2, 9, 10, 11, 3, 4, 5, 6, 7, 8;
-                if (d == 1)
+                if (d == 1) {
                     indices.segment<3>(3).array() += 3;
+                }
 
                 hesses[d](indices, indices) = hessian_tmp;
                 grads[d](indices) = gradient_tmp;

@@ -13,7 +13,7 @@ Point3::Point3(
     : Primitive(id, params)
 {
     orientable =
-        mesh.is_orient_vertex(id) && mesh.vertices_to_faces()[id].size() > 0;
+        mesh.is_orient_vertex(id) && !mesh.vertices_to_faces()[id].empty();
 
     // Build index mapping from all vertices to one-ring neighbors
     {
@@ -38,7 +38,7 @@ Point3::Point3(
 
     // If the vertex is on some faces, record the local indices of the face
     // vertices
-    if (mesh.vertices_to_faces()[id].size() > 0) {
+    if (!mesh.vertices_to_faces()[id].empty()) {
         int i = 0;
         faces.setZero(mesh.vertices_to_faces()[id].size(), 3);
         for (auto f : mesh.vertices_to_faces()[id]) {
@@ -59,10 +59,11 @@ Point3::Point3(
     n_neighbors = local_to_global_vids.size() - 1;
     m_vertex_ids = local_to_global_vids;
 
-    if (m_vertex_ids.size() > N_VERT_NEIGHBORS_3D)
+    if (m_vertex_ids.size() > N_VERT_NEIGHBORS_3D) {
         logger().error(
             "Too many neighbors for point3 primitive! {} > {}! Increase N_VERT_NEIGHBORS_3D in common.hpp",
             m_vertex_ids.size(), N_VERT_NEIGHBORS_3D);
+    }
 
     m_is_active =
         smooth_point3_term_type(vertices(local_to_global_vids, Eigen::all), d);
@@ -131,9 +132,12 @@ GradType<-1> Point3::smooth_point3_term_tangent_gradient(
         if (otypes.tangent_type(a) == HeavisideType::VARIANT) {
             std::tie(values(a), tmp_grad[a]) = opposite_direction_penalty_grad(
                 tangents.row(a), direc, alpha, beta);
-            for (int b = 0; b < nn; b++)
-                if (otypes.tangent_type(b) == HeavisideType::VARIANT && b != a)
+            for (int b = 0; b < nn; b++) {
+                if (otypes.tangent_type(b) == HeavisideType::VARIANT
+                    && b != a) {
                     acc_val_1(b) *= values(a);
+                }
+            }
         }
     }
 
@@ -191,7 +195,7 @@ HessianType<-1> Point3::smooth_point3_term_tangent_hessian(
             tangent_grad.segment<3>(0) += tmp_grad[a].tail<3>() * acc_val_1(a);
 
             tmp.setZero();
-            for (int b = 0; b < nn; b++)
+            for (int b = 0; b < nn; b++) {
                 if (otypes.tangent_type(b) == HeavisideType::VARIANT
                     && b != a) {
                     tmp += tmp_grad[b].tail<3>() * acc_val_2(a, b);
@@ -202,6 +206,7 @@ HessianType<-1> Point3::smooth_point3_term_tangent_hessian(
                         tmp_grad[b].head<3>()
                         * tmp_grad[a].head<3>().transpose() * acc_val_2(a, b);
                 }
+            }
 
             tangent_hess.block<3, 3>(id, id) =
                 tmp_hess[a].block<3, 3>(0, 0) * acc_val_1(a);
@@ -553,9 +558,9 @@ scalar Point3::smooth_point3_term(
     }
     weight /= 3.;
 
-    if (!orientable || otypes.normal_type(0) == HeavisideType::ONE)
+    if (!orientable || otypes.normal_type(0) == HeavisideType::ONE) {
         normal_term = scalar(1.);
-    else {
+    } else {
         for (int a = 0; a < faces.rows(); a++) {
             const RowVector3<scalar> t1 =
                 X.row(faces(a, 1)) - X.row(faces(a, 0));

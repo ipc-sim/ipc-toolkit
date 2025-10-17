@@ -212,7 +212,6 @@ public:
     compute_distance(Eigen::ConstRef<Eigen::MatrixXd> vertices) const override;
 
 private:
-
     /// @brief The first primitive in the contact pair
     std::unique_ptr<PrimitiveA> primitive_a;
     /// @brief The second primitive in the contact pair
