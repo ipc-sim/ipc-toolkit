@@ -4,21 +4,23 @@ namespace ipc {
 
 namespace {
     std::vector<index_t> find_vertex_adjacent_vertices(
-        const CollisionMesh& mesh, const index_t v) const
+        const CollisionMesh& mesh, const index_t v)
     {
+        assert(mesh.dim() == 2);
         std::vector<index_t> neighbors;
-        if (mesh.dim() == 2) {
-            neighbors.assign(2, -1);
-            for (index_t i : mesh.vertex_edge_adjacencies()[v]) {
-                if (mesh.edges()(i, 0) == v) {
-                    neighbors[0] = mesh.edges()(i, 1);
-                } else if (mesh.edges()(i, 1) == v) {
-                    neighbors[1] = mesh.edges()(i, 0);
-                } else {
-                    throw std::runtime_error("Invalid edge-vertex adjacency!");
-                }
+        neighbors.assign(2, -1);
+
+        for (index_t i : mesh.vertex_edge_adjacencies()[v]) {
+            if (mesh.edges()(i, 0) == v) {
+                neighbors[0] = mesh.edges()(i, 1);
+            } else if (mesh.edges()(i, 1) == v) {
+                neighbors[1] = mesh.edges()(i, 0);
+            } else {
+                throw std::runtime_error("Invalid edge-vertex adjacency!");
             }
         }
+
+        return neighbors;
     }
 
     bool smooth_point2_term_type(
