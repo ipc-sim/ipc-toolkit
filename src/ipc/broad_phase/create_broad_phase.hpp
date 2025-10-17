@@ -1,3 +1,5 @@
+#pragma once
+
 #include <ipc/config.hpp>
 #include <ipc/broad_phase/broad_phase.hpp>
 
