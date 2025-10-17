@@ -367,9 +367,9 @@ bool Point3::smooth_point3_term_type(
     const RowVector3<double> dn = direc.normalized();
     for (int a = 0; a < edges.rows(); a++) {
         const RowVector3<double> t = X.row(edges(a, 1)) - X.row(edges(a, 0));
-        otypes.tangent_type(a) = ipc::OrientationTypes::compute_type(
+        otypes.tangent_type(a) = otypes.compute_type(
             -dn.dot(t) / t.norm(), m_params.alpha_t, m_params.beta_t);
-        if (ipc::OrientationTypes::tangent_type(a) == HeavisideType::ZERO) {
+        if (otypes.tangent_type(a) == HeavisideType::ZERO) {
             return false;
         }
     }
@@ -385,8 +385,8 @@ bool Point3::smooth_point3_term_type(
         const double tmp = dn.dot(t1.cross(t2).normalized());
         otypes.normal_type(a) =
             otypes.compute_type(tmp, m_params.alpha_n, m_params.beta_n);
-        normal_term +=
-            Math<double>::smooth_heaviside(tmp, m_params.alpha_n, m_params.beta_n);
+        normal_term += Math<double>::smooth_heaviside(
+            tmp, m_params.alpha_n, m_params.beta_n);
     }
 
     if (normal_term >= 1) {
@@ -568,8 +568,8 @@ scalar Point3::smooth_point3_term(
                 X.row(faces(a, 2)) - X.row(faces(a, 0));
             normal_term = normal_term
                 + Math<scalar>::smooth_heaviside(
-                              dn.dot(t1.cross(t2).normalized()), m_params.alpha_n,
-                              m_params.beta_n);
+                              dn.dot(t1.cross(t2).normalized()),
+                              m_params.alpha_n, m_params.beta_n);
         }
         normal_term = Math<scalar>::smooth_heaviside(normal_term - 1, 1., 0);
     }
