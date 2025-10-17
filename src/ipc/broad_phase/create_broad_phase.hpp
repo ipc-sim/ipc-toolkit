@@ -9,9 +9,7 @@ enum class BroadPhaseMethod : uint8_t {
     SPATIAL_HASH,
     BVH,
     SWEEP_AND_PRUNE,
-#ifdef IPC_TOOLKIT_WITH_CUDA
     SWEEP_AND_TINIEST_QUEUE
-#endif
 };
 
 std::shared_ptr<BroadPhase>
