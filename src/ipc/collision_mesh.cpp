@@ -6,9 +6,6 @@
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
 
-#include <tbb/blocked_range.h>
-#include <tbb/parallel_for.h>
-
 #include <algorithm>
 
 namespace ipc {
@@ -524,65 +521,4 @@ double CollisionMesh::max_edge_length() const
     }
     return val;
 }
-
-std::vector<index_t>
-CollisionMesh::find_vertex_adjacent_vertices(const index_t v) const
-{
-    std::vector<index_t> neighbors;
-    if (dim() == 2) {
-        neighbors.assign(2, -1);
-        for (index_t i : vertex_edge_adjacencies()[v]) {
-            if (edges()(i, 0) == v) {
-                neighbors[0] = edges()(i, 1);
-            } else if (edges()(i, 1) == v) {
-                neighbors[1] = edges()(i, 0);
-            } else {
-                throw std::runtime_error("Invalid edge-vertex adjacency!");
-            }
-        }
-    } else {
-        if (!vertices_to_faces()[v].empty()) {
-            // construct a map of neighboring vertices, it maps every neighbor
-            // to the next counter-clockwise neighbor
-            std::unordered_map<index_t, index_t> map;
-            for (auto f : vertices_to_faces()[v]) {
-                for (int lv = 0; lv < 3; lv++) {
-                    if (faces()(f, lv) == v) {
-                        map[faces()(f, (lv + 1) % 3)] =
-                            faces()(f, (lv + 2) % 3);
-                        break;
-                    }
-                }
-            }
-            if (vertices_to_faces()[v].size() != map.size()) {
-                throw std::runtime_error(
-                    "Non-manifold vertex! Map size smaller than neighbor!");
-            }
-
-            // verify that the neighboring vertices form a loop
-            auto iter = map.find(map.begin()->first);
-            while (neighbors.empty() || iter->first != neighbors.front()) {
-                neighbors.push_back(iter->first);
-                iter = map.find(iter->second);
-                if (iter == map.end()) {
-                    logger().error(
-                        "neighbor faces {}, map {}",
-                        vertices_to_faces()[v].size(), map);
-                    throw std::runtime_error(
-                        "Non-manifold vertex! Cannot find next neighbor!");
-                }
-            }
-            if (neighbors.size() != map.size()) {
-                throw std::runtime_error("Non-manifold vertex!");
-            }
-        } else {
-            for (int eid : vertices_to_edges()[v]) {
-                neighbors.push_back(
-                    edges()(eid, 0) == v ? edges()(eid, 1) : edges()(eid, 0));
-            }
-        }
-    }
-    return neighbors;
-}
-
 } // namespace ipc

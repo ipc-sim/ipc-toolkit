@@ -3,6 +3,24 @@
 namespace ipc {
 
 namespace {
+    std::vector<index_t> find_vertex_adjacent_vertices(
+        const CollisionMesh& mesh, const index_t v) const
+    {
+        std::vector<index_t> neighbors;
+        if (mesh.dim() == 2) {
+            neighbors.assign(2, -1);
+            for (index_t i : mesh.vertex_edge_adjacencies()[v]) {
+                if (mesh.edges()(i, 0) == v) {
+                    neighbors[0] = mesh.edges()(i, 1);
+                } else if (mesh.edges()(i, 1) == v) {
+                    neighbors[1] = mesh.edges()(i, 0);
+                } else {
+                    throw std::runtime_error("Invalid edge-vertex adjacency!");
+                }
+            }
+        }
+    }
+
     bool smooth_point2_term_type(
         Eigen::ConstRef<Vector2d> v,
         Eigen::ConstRef<Vector2d> direc,
@@ -91,7 +109,7 @@ Point2::Point2(
     : Primitive(id, params)
 {
     orientable = mesh.is_orient_vertex(id);
-    auto neighbor_verts = mesh.find_vertex_adjacent_vertices(id);
+    auto neighbor_verts = find_vertex_adjacent_vertices(mesh, id);
     has_neighbor_1 = neighbor_verts[0] >= 0;
     has_neighbor_2 = neighbor_verts[1] >= 0;
 

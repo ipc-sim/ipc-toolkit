@@ -145,9 +145,6 @@ public:
     /// @brief Get the mapping from edges to faces of the collision mesh (|E| × 2).
     const Eigen::MatrixXi& edges_to_faces() const { return m_edges_to_faces; }
 
-    /// @brief Find all vertices adjacent to a given vertex.
-    std::vector<index_t> find_vertex_adjacent_vertices(const index_t v) const;
-
     // -----------------------------------------------------------------------
 
     /// @brief Compute the vertex positions from the positions of the full mesh.
