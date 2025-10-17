@@ -3,8 +3,8 @@
 namespace ipc {
 
 namespace {
-    std::vector<index_t> find_vertex_adjacent_vertices(
-        const CollisionMesh& mesh, const index_t v)
+    std::vector<index_t>
+    find_vertex_adjacent_vertices(const CollisionMesh& mesh, const index_t v)
     {
         assert(mesh.dim() == 2);
         std::vector<index_t> neighbors;

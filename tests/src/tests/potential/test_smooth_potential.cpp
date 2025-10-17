@@ -16,6 +16,91 @@
 
 using namespace ipc;
 
+TEST_CASE("Smooth barrier potential codim", "[smooth_potential]")
+{
+    const auto method = make_default_broad_phase();
+    double dhat = 2;
+    std::string mesh_name;
+
+    Eigen::MatrixXd vertices(4, 2);
+    Eigen::MatrixXi edges(2, 2), faces;
+
+    vertices << -1, 0, 0, 0, 1, 0, 1.5, 0.2;
+    edges << 0, 1, 1, 2;
+
+    CollisionMesh mesh;
+
+    SmoothCollisions collisions;
+    mesh = CollisionMesh(
+        std::vector<bool>(vertices.rows(), true),
+        std::vector<bool>(vertices.rows(), false), vertices, edges, faces);
+
+    SmoothContactParameters params(dhat, 0.85, 0.5, 0.95, 0.6, 2);
+    collisions.build(mesh, vertices, params, false, method);
+    CAPTURE(dhat, method);
+    CHECK(!collisions.empty());
+    CHECK(!has_intersections(mesh, vertices));
+
+    SmoothContactPotential potential(params);
+    std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
+
+    // -------------------------------------------------------------------------
+    // Minimum distance
+    // -------------------------------------------------------------------------
+
+    CHECK(
+        collisions.compute_minimum_distance(mesh, vertices)
+        <= collisions.compute_active_minimum_distance(mesh, vertices)
+            * (1. + 1e-15));
+
+    // -------------------------------------------------------------------------
+    // Gradient
+    // -------------------------------------------------------------------------
+
+    const Eigen::VectorXd grad_b =
+        potential.gradient(collisions, mesh, vertices);
+
+    // Compute the gradient using finite differences
+    Eigen::VectorXd fgrad_b;
+    {
+        auto f = [&](const Eigen::VectorXd& x) {
+            return potential(
+                collisions, mesh, fd::unflatten(x, vertices.cols()));
+        };
+        fd::finite_gradient(
+            fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
+    }
+
+    // REQUIRE(grad_b.squaredNorm() > 1e-8);
+    std::cout << "grad relative error "
+              << (grad_b - fgrad_b).norm() / grad_b.norm() << ", norms "
+              << grad_b.norm() << " " << fgrad_b.norm() << "\n";
+    CHECK((grad_b - fgrad_b).norm() / grad_b.norm() < 1e-5);
+
+    // -------------------------------------------------------------------------
+    // Hessian
+    // -------------------------------------------------------------------------
+
+    Eigen::MatrixXd hess_b = potential.hessian(collisions, mesh, vertices);
+
+    // Compute the gradient using finite differences
+    Eigen::MatrixXd fhess_b;
+    {
+        auto f = [&](const Eigen::VectorXd& x) {
+            return potential.gradient(
+                collisions, mesh, fd::unflatten(x, vertices.cols()));
+        };
+        fd::finite_jacobian(
+            fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-8);
+    }
+
+    REQUIRE(hess_b.squaredNorm() > 1e-8);
+    std::cout << "hess relative error "
+              << (hess_b - fhess_b).norm() / hess_b.norm() << ", norms "
+              << hess_b.norm() << " " << fhess_b.norm() << "\n";
+    CHECK((hess_b - fhess_b).norm() / hess_b.norm() < 1e-5);
+}
+
 #if defined(NDEBUG) && !defined(WIN32)
 std::string tagsopt = "[smooth_potential]";
 #else
