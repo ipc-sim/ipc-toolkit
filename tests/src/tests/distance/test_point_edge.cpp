@@ -10,6 +10,8 @@
 
 #include <finitediff.hpp>
 
+#include "ipc/smooth_contact/distance/primitive_distance.tpp"
+
 using namespace ipc;
 
 namespace {
@@ -261,6 +263,38 @@ TEMPLATE_TEST_CASE_SIG(
             fgrad);
 
         CHECK(fd::compare_jacobian(grad, fgrad, 1e-6));
+    }
+
+    // Gradient (skip C1 transition points)
+    if (abs(alpha) > 1e-5 && abs(alpha - 1.0) > 1e-5) {
+        VectorMax9d x(3 * dim);
+        x << e0, e1, p;
+
+        Vector<ADGrad<3 * dim>, 3 * dim> X =
+            slice_positions<ADGrad<3 * dim>, 3 * dim, 1>(x);
+        ADGrad<3 * dim> dist;
+        if constexpr (dim == 2) {
+            dist = PrimitiveDistanceTemplate<
+                Edge2, Point2, ADGrad<3 * dim>>::compute_distance(X, dtype);
+        } else {
+            dist = PrimitiveDistanceTemplate<
+                Edge3, Point3, ADGrad<3 * dim>>::compute_distance(X, dtype);
+        }
+
+        // Compute the gradient using finite differences
+        Eigen::VectorXd fgrad;
+        fd::finite_gradient(
+            x,
+            [](const Eigen::VectorXd& x) {
+                Vector<double, dim> e0 = x.segment<dim>(0);
+                Vector<double, dim> e1 = x.segment<dim>(dim);
+                Vector<double, dim> p = x.segment<dim>(2 * dim);
+                return PointEdgeDistance<double, dim>::point_edge_sqr_distance(
+                    p, e0, e1);
+            },
+            fgrad);
+
+        CHECK(fd::compare_gradient(dist.grad, fgrad, 1e-6));
     }
 
     // Hessian (skip C1 transition points)

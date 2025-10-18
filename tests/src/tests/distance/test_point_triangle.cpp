@@ -189,6 +189,18 @@ TEST_CASE(
         fgrad);
 
     CHECK(fd::compare_gradient(grad, fgrad));
+
+    Vector<ADGrad<12>, 12> X = slice_positions<ADGrad<12>, 12, 1>(
+        (Vector12d() << p, t0, t1, t2).finished());
+    {
+        Vector<ADGrad<12>, 3> tmp = X.head<3>();
+        X.head<9>() = X.tail<9>().eval();
+        X.tail<3>() = tmp;
+    }
+    ADGrad<12> dist =
+        PrimitiveDistanceTemplate<Face, Point3, ADGrad<12>>::compute_distance(
+            X, point_triangle_distance_type(p, t0, t1, t2));
+    CHECK(fd::compare_gradient(dist.grad, fgrad));
 }
 
 TEST_CASE("Point-triangle distance hessian", "[distance][point-triangle][hess]")

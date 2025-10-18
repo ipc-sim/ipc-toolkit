@@ -293,6 +293,13 @@ TEST_CASE("Edge-edge distance gradient", "[distance][edge-edge][gradient]")
 
     CAPTURE(e0x, e0y, e0z, edge_edge_distance_type(e00, e01, e10, e11));
     CHECK(fd::compare_gradient(grad, fgrad));
+
+    Vector<ADGrad<12>, 12> X = slice_positions<ADGrad<12>, 12, 1>(
+        (Vector12d() << e00, e01, e10, e11).finished());
+    ADGrad<12> dist =
+        PrimitiveDistanceTemplate<Edge3, Edge3, ADGrad<12>>::compute_distance(
+            X, edge_edge_distance_type(e00, e01, e10, e11));
+    CHECK(fd::compare_gradient(dist.grad, fgrad));
 }
 
 TEST_CASE(
@@ -325,6 +332,92 @@ TEST_CASE(
     CHECK(distance == Catch::Approx(1.0));
     CHECK(fd::compare_gradient(grad, fgrad));
     // CHECK(distance.Hess.squaredNorm() != Catch::Approx(0.0));
+}
+
+TEST_CASE(
+    "Edge-edge closest direction gradient !EA_EB", "[distance][edge-edge]")
+{
+    double alpha = GENERATE(range(-1.0, 2.0, 0.1));
+    double s = GENERATE(range(-10.0, 10.0, 1.0));
+    if (s == 0)
+        return;
+    const bool swap_ea = GENERATE(false, true);
+    const bool swap_eb = GENERATE(false, true);
+    const bool swap_edges = GENERATE(false, true);
+    const int n_random_edges = 20;
+
+    const auto sign = [](double x) { return x < 0 ? -1 : 1; };
+
+    for (int i = 0; i < n_random_edges; i++) {
+        Eigen::Vector3d ea0 = Eigen::Vector3d::Random();
+        Eigen::Vector3d ea1 = Eigen::Vector3d::Random();
+        Eigen::Vector3d n =
+            (ea1 - ea0).cross(Eigen::Vector3d::UnitX()).normalized();
+
+        Eigen::Vector3d eb0 = ((ea1 - ea0) * alpha + ea0) + s * n;
+        if (alpha < 0) {
+            alpha = 0;
+            n = eb0 - ea0;
+            s = n.norm();
+            n /= s;
+        } else if (alpha > 1) {
+            alpha = 1;
+            n = eb0 - ea1;
+            s = n.norm();
+            n /= s;
+        }
+        REQUIRE(s != 0);
+
+        Eigen::Vector3d eb1 =
+            ((ea1 - ea0) * alpha + ea0) + (s + sign(s) * 1) * n;
+
+        if (swap_ea) {
+            std::swap(ea0, ea1);
+        }
+        if (swap_eb) {
+            std::swap(eb0, eb1);
+        }
+        if (swap_edges) {
+            std::swap(ea0, eb0);
+            std::swap(ea1, eb1);
+        }
+
+        double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
+
+        CAPTURE(alpha, s, swap_ea, swap_eb, swap_edges);
+
+        CHECK(distance == Catch::Approx(s * s).margin(1e-15));
+
+        Vector12d x;
+        x << ea0, ea1, eb0, eb1;
+        const auto dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+
+        distance =
+            PrimitiveDistanceTemplate<Edge3, Edge3, double>::compute_distance(
+                x, dtype);
+        CHECK(distance == Catch::Approx(s * s).margin(1e-15));
+
+        Vector<ADGrad<12>, 12> X = slice_positions<ADGrad<12>, 12, 1>(x);
+        Vector<ADGrad<12>, 3> direc = PrimitiveDistanceTemplate<
+            Edge3, Edge3, ADGrad<12>>::compute_closest_direction(X, dtype);
+        CHECK(direc.squaredNorm().val == Catch::Approx(s * s).margin(1e-15));
+
+        // Compute the gradient using finite differences
+        Eigen::MatrixXd fjac;
+        fd::finite_jacobian(
+            x,
+            [dtype](const Eigen::VectorXd& _x) {
+                return PrimitiveDistanceTemplate<
+                    Edge3, Edge3, double>::compute_closest_direction(_x, dtype);
+            },
+            fjac);
+
+        for (int d = 0; d < 3; d++) {
+            CHECK(
+                fd::compare_jacobian(
+                    fjac.row(d), direc(d).grad.transpose(), 1e-5));
+        }
+    }
 }
 
 TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
