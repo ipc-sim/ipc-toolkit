@@ -234,4 +234,190 @@ point_triangle_closest_point_direction_hessian(
     return { pts, grad, hess };
 }
 
+template <typename scalar>
+scalar point_plane_sqr_distance(
+    Eigen::ConstRef<Vector3<scalar>> p,
+    Eigen::ConstRef<Vector3<scalar>> f0,
+    Eigen::ConstRef<Vector3<scalar>> f1,
+    Eigen::ConstRef<Vector3<scalar>> f2)
+{
+    const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
+    return Math<scalar>::sqr(normal.dot(p - f0)) / normal.squaredNorm();
+}
+
+template <typename scalar>
+scalar point_triangle_sqr_distance(
+    Eigen::ConstRef<Vector3<scalar>> p,
+    Eigen::ConstRef<Vector3<scalar>> t0,
+    Eigen::ConstRef<Vector3<scalar>> t1,
+    Eigen::ConstRef<Vector3<scalar>> t2,
+    PointTriangleDistanceType dtype)
+{
+    if constexpr (std::is_same<double, scalar>::value) {
+        if (dtype == PointTriangleDistanceType::AUTO) {
+            dtype = point_triangle_distance_type(p, t0, t1, t2);
+        }
+    }
+
+    switch (dtype) {
+    case PointTriangleDistanceType::P_T0: {
+        return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(p, t0);
+    }
+
+    case PointTriangleDistanceType::P_T1: {
+        return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(p, t1);
+    }
+
+    case PointTriangleDistanceType::P_T2: {
+        return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(p, t2);
+    }
+
+    case PointTriangleDistanceType::P_E0: {
+        return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, t0, t1);
+    }
+
+    case PointTriangleDistanceType::P_E1: {
+        return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, t1, t2);
+    }
+
+    case PointTriangleDistanceType::P_E2: {
+        return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, t2, t0);
+    }
+
+    case PointTriangleDistanceType::P_T: {
+        return point_plane_sqr_distance<scalar>(p, t0, t1, t2);
+    }
+
+    default: {
+        throw std::invalid_argument(
+            "Invalid distance type for point-triangle distance!");
+    }
+    }
+}
+
+template <typename scalar>
+Vector3<scalar> point_plane_closest_point_direction(
+    Eigen::ConstRef<Vector3<scalar>> p,
+    Eigen::ConstRef<Vector3<scalar>> f0,
+    Eigen::ConstRef<Vector3<scalar>> f1,
+    Eigen::ConstRef<Vector3<scalar>> f2)
+{
+    const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
+    return (normal.dot(p - f0) / normal.squaredNorm()) * normal;
+}
+
+template <typename scalar>
+Vector3<scalar> point_triangle_closest_point_direction(
+    Eigen::ConstRef<Vector3<scalar>> p,
+    Eigen::ConstRef<Vector3<scalar>> t0,
+    Eigen::ConstRef<Vector3<scalar>> t1,
+    Eigen::ConstRef<Vector3<scalar>> t2,
+    PointTriangleDistanceType dtype)
+{
+    if constexpr (std::is_same<double, scalar>::value) {
+        if (dtype == PointTriangleDistanceType::AUTO) {
+            dtype = point_triangle_distance_type(p, t0, t1, t2);
+        }
+    }
+
+    switch (dtype) {
+    case PointTriangleDistanceType::P_T0:
+        return p - t0;
+
+    case PointTriangleDistanceType::P_T1: {
+        return p - t1;
+    }
+
+    case PointTriangleDistanceType::P_T2: {
+        return p - t2;
+    }
+
+    case PointTriangleDistanceType::P_E0: {
+        return PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
+            p, t0, t1);
+    }
+
+    case PointTriangleDistanceType::P_E1: {
+        return PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
+            p, t1, t2);
+    }
+
+    case PointTriangleDistanceType::P_E2: {
+        return PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
+            p, t2, t0);
+    }
+
+    case PointTriangleDistanceType::P_T: {
+        return point_plane_closest_point_direction<scalar>(p, t0, t1, t2);
+    }
+
+    default: {
+        throw std::invalid_argument(
+            "Invalid distance type for point-triangle distance!");
+    }
+    }
+}
+
+template ADGrad<12> point_triangle_sqr_distance(
+    Eigen::ConstRef<Vector3<ADGrad<12>>> p,
+    Eigen::ConstRef<Vector3<ADGrad<12>>> t0,
+    Eigen::ConstRef<Vector3<ADGrad<12>>> t1,
+    Eigen::ConstRef<Vector3<ADGrad<12>>> t2,
+    PointTriangleDistanceType dtype);
+
+template ADHessian<12> point_triangle_sqr_distance(
+    Eigen::ConstRef<Vector3<ADHessian<12>>> p,
+    Eigen::ConstRef<Vector3<ADHessian<12>>> t0,
+    Eigen::ConstRef<Vector3<ADHessian<12>>> t1,
+    Eigen::ConstRef<Vector3<ADHessian<12>>> t2,
+    PointTriangleDistanceType dtype);
+template ADGrad<13> point_triangle_sqr_distance(
+    Eigen::ConstRef<Vector3<ADGrad<13>>> p,
+    Eigen::ConstRef<Vector3<ADGrad<13>>> t0,
+    Eigen::ConstRef<Vector3<ADGrad<13>>> t1,
+    Eigen::ConstRef<Vector3<ADGrad<13>>> t2,
+    PointTriangleDistanceType dtype);
+template ADHessian<13> point_triangle_sqr_distance(
+    Eigen::ConstRef<Vector3<ADHessian<13>>> p,
+    Eigen::ConstRef<Vector3<ADHessian<13>>> t0,
+    Eigen::ConstRef<Vector3<ADHessian<13>>> t1,
+    Eigen::ConstRef<Vector3<ADHessian<13>>> t2,
+    PointTriangleDistanceType dtype);
+template double point_triangle_sqr_distance(
+    Eigen::ConstRef<Vector3<double>> p,
+    Eigen::ConstRef<Vector3<double>> t0,
+    Eigen::ConstRef<Vector3<double>> t1,
+    Eigen::ConstRef<Vector3<double>> t2,
+    PointTriangleDistanceType dtype);
+
+template Vector3<ADGrad<12>> point_triangle_closest_point_direction(
+    Eigen::ConstRef<Vector3<ADGrad<12>>> p,
+    Eigen::ConstRef<Vector3<ADGrad<12>>> t0,
+    Eigen::ConstRef<Vector3<ADGrad<12>>> t1,
+    Eigen::ConstRef<Vector3<ADGrad<12>>> t2,
+    PointTriangleDistanceType dtype);
+template Vector3<ADHessian<12>> point_triangle_closest_point_direction(
+    Eigen::ConstRef<Vector3<ADHessian<12>>> p,
+    Eigen::ConstRef<Vector3<ADHessian<12>>> t0,
+    Eigen::ConstRef<Vector3<ADHessian<12>>> t1,
+    Eigen::ConstRef<Vector3<ADHessian<12>>> t2,
+    PointTriangleDistanceType dtype);
+template Vector3<ADGrad<13>> point_triangle_closest_point_direction(
+    Eigen::ConstRef<Vector3<ADGrad<13>>> p,
+    Eigen::ConstRef<Vector3<ADGrad<13>>> t0,
+    Eigen::ConstRef<Vector3<ADGrad<13>>> t1,
+    Eigen::ConstRef<Vector3<ADGrad<13>>> t2,
+    PointTriangleDistanceType dtype);
+template Vector3<ADHessian<13>> point_triangle_closest_point_direction(
+    Eigen::ConstRef<Vector3<ADHessian<13>>> p,
+    Eigen::ConstRef<Vector3<ADHessian<13>>> t0,
+    Eigen::ConstRef<Vector3<ADHessian<13>>> t1,
+    Eigen::ConstRef<Vector3<ADHessian<13>>> t2,
+    PointTriangleDistanceType dtype);
+template Vector3<double> point_triangle_closest_point_direction(
+    Eigen::ConstRef<Vector3<double>> p,
+    Eigen::ConstRef<Vector3<double>> t0,
+    Eigen::ConstRef<Vector3<double>> t1,
+    Eigen::ConstRef<Vector3<double>> t2,
+    PointTriangleDistanceType dtype);
 } // namespace ipc
