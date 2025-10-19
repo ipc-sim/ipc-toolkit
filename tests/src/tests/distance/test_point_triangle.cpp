@@ -286,6 +286,17 @@ TEST_CASE("Point-triangle distance hessian", "[distance][point-triangle][hess]")
 
     CAPTURE(dtype);
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
+
+    Vector<ADHessian<12>, 12> X = slice_positions<ADHessian<12>, 12, 1>(x);
+    {
+        Vector<ADHessian<12>, 3> tmp = X.head<3>();
+        X.head<9>() = X.tail<9>().eval();
+        X.tail<3>() = tmp;
+    }
+    ADHessian<12> dist =
+        PrimitiveDistanceTemplate<Face, Point3, ADHessian<12>>::
+            compute_distance(X, point_triangle_distance_type(p, t0, t1, t2));
+    CHECK(fd::compare_hessian(dist.Hess, fhess, 1e-2));
 }
 
 TEST_CASE(

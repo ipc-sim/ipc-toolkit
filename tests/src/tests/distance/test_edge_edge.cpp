@@ -294,12 +294,19 @@ TEST_CASE("Edge-edge distance gradient", "[distance][edge-edge][gradient]")
     CAPTURE(e0x, e0y, e0z, edge_edge_distance_type(e00, e01, e10, e11));
     CHECK(fd::compare_gradient(grad, fgrad));
 
-    Vector<ADGrad<12>, 12> X = slice_positions<ADGrad<12>, 12, 1>(
+    Vector<ADGrad<12>, 12> X1 = slice_positions<ADGrad<12>, 12, 1>(
         (Vector12d() << e00, e01, e10, e11).finished());
-    ADGrad<12> dist =
+    ADGrad<12> dist1 =
         PrimitiveDistanceTemplate<Edge3, Edge3, ADGrad<12>>::compute_distance(
-            X, edge_edge_distance_type(e00, e01, e10, e11));
-    CHECK(fd::compare_gradient(dist.grad, fgrad));
+            X1, edge_edge_distance_type(e00, e01, e10, e11));
+    CHECK(fd::compare_gradient(dist1.grad, fgrad));
+
+    Vector<ADHessian<12>, 12> X2 = slice_positions<ADHessian<12>, 12, 1>(
+        (Vector12d() << e00, e01, e10, e11).finished());
+    ADHessian<12> dist2 =
+        PrimitiveDistanceTemplate<Edge3, Edge3, ADHessian<12>>::
+            compute_distance(X2, edge_edge_distance_type(e00, e01, e10, e11));
+    CHECK(fd::compare_gradient(dist2.grad, fgrad));
 }
 
 TEST_CASE(
