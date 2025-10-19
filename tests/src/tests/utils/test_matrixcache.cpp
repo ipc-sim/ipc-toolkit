@@ -23,6 +23,26 @@ TEST_CASE("SparseMatrixCache", "[utils][matrix_cache]")
         CHECK(
             cache->get_matrix().squaredNorm()
             == Catch::Approx(0.).margin(1e-15));
+
+        SparseMatrixCache cache2(*cache);
+    }
+
+    {
+        std::shared_ptr<MatrixCache> cache = std::make_shared<DenseMatrixCache>(N);
+        CHECK(cache);
+
+        cache = std::make_shared<DenseMatrixCache>(N, 2 * N);
+        cache->init(N, 2 * N);
+
+        cache->init(DenseMatrixCache(N, N));
+        cache->init(N);
+
+        cache->set_zero();
+        CHECK(
+            cache->get_matrix().squaredNorm()
+            == Catch::Approx(0.).margin(1e-15));
+
+        DenseMatrixCache cache2(*cache);
     }
 
     {

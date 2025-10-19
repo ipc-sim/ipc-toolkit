@@ -206,7 +206,7 @@ TEMPLATE_TEST_CASE_SIG(
 {
     // Note: Closest direction is not differentiable at alpha=0, 1
 
-    const double alpha = GENERATE(range(-1.0, 2.0, 0.1));
+    const double alpha = GENERATE(range(-1.0, 2.0, 0.12));
     const double d = GENERATE(range(-10.0, 10.0, 1.0));
 
     VectorMax3d e0 = VectorMax3d::Zero(dim);
