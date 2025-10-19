@@ -24,6 +24,12 @@ scalar edge_edge_sqr_distance(
     Eigen::ConstRef<Vector3<scalar>> eb1,
     EdgeEdgeDistanceType dtype)
 {
+    if constexpr (std::is_same<double, scalar>::value) {
+        if (dtype == EdgeEdgeDistanceType::AUTO) {
+            dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+        }
+    }
+
     switch (dtype) {
     case EdgeEdgeDistanceType::EA0_EB0:
         return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(ea0, eb0);

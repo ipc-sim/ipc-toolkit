@@ -114,7 +114,8 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
     const Vector<double, DIM> closest_direction =
         PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, double>::
             compute_closest_direction(x, DTYPE::AUTO);
-    const double dist = closest_direction.norm();
+    const double dist = sqrt(PrimitiveDistanceTemplate<
+        PrimitiveA, PrimitiveB, double>::compute_distance(x, DTYPE::AUTO));
 
     assert(positions.size() == primitive_a->n_dofs() + primitive_b->n_dofs());
     double a1 = primitive_a->potential(
@@ -472,12 +473,8 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
         positions.segment(
             primitive_a->n_dofs(), PrimitiveB::N_CORE_POINTS * DIM);
 
-    // grad of "d" wrt. points
-    Vector<double, DIM> closest_direction =
-        PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, double>::
-            compute_closest_direction(x, DTYPE::AUTO);
-
-    return closest_direction.squaredNorm();
+    return PrimitiveDistanceTemplate<
+        PrimitiveA, PrimitiveB, double>::compute_distance(x, DTYPE::AUTO);
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
