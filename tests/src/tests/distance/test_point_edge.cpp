@@ -298,7 +298,7 @@ TEMPLATE_TEST_CASE_SIG(
     }
 
     // Hessian (skip C1 transition points)
-    if (abs(alpha) < 1e-5 && abs(alpha - 1.0) < 1e-5) {
+    if (abs(alpha) > 1e-5 && abs(alpha - 1.0) > 1e-5) {
         const auto [vec, grad, hess] = PointEdgeDistanceDerivatives<
             dim>::point_edge_closest_point_direction_hessian(p, e0, e1, dtype);
         // Compute the gradient using finite differences
@@ -308,14 +308,14 @@ TEMPLATE_TEST_CASE_SIG(
             Eigen::MatrixXd fhess;
             fd::finite_jacobian(
                 x,
-                [i](const Eigen::VectorXd& x) {
+                [i, dtype](const Eigen::VectorXd& x) {
                     Vector<double, dim> p = x.segment<dim>(0);
                     Vector<double, dim> e0 = x.segment<dim>(dim);
                     Vector<double, dim> e1 = x.segment<dim>(2 * dim);
                     return std::get<1>(
                                PointEdgeDistanceDerivatives<dim>::
                                    point_edge_closest_point_direction_grad(
-                                       p, e0, e1))
+                                       p, e0, e1, dtype))
                         .row(i)
                         .transpose();
                 },
