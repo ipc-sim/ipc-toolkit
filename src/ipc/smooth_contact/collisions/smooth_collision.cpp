@@ -114,8 +114,7 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
     const Vector<double, DIM> closest_direction =
         PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, double>::
             compute_closest_direction(x, DTYPE::AUTO);
-    const double dist = sqrt(PrimitiveDistanceTemplate<
-        PrimitiveA, PrimitiveB, double>::compute_distance(x, DTYPE::AUTO));
+    const double dist = closest_direction.norm();
 
     assert(positions.size() == primitive_a->n_dofs() + primitive_b->n_dofs());
     double a1 = primitive_a->potential(

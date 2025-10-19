@@ -4,6 +4,7 @@ set(SOURCES
   mollifier.cpp
   mollifier.hpp
   mollifier.tpp
+  point_edge.cpp
   point_edge.hpp
   point_edge.tpp
   point_face.cpp
