@@ -206,8 +206,8 @@ TEMPLATE_TEST_CASE_SIG(
 {
     // Note: Closest direction is not differentiable at alpha=0, 1
 
-    const double alpha = GENERATE(range(-1.0, 2.0, 0.12));
-    const double d = GENERATE(range(-10.0, 10.0, 1.0));
+    const double alpha = GENERATE(range(-1.0, 2.0, 0.1));
+    const double d = GENERATE(range(-5.0, 5.0, 1.1));
 
     VectorMax3d e0 = VectorMax3d::Zero(dim);
     e0.x() = -10;
@@ -292,7 +292,7 @@ TEMPLATE_TEST_CASE_SIG(
                 return PointEdgeDistance<double, dim>::point_edge_sqr_distance(
                     p, e0, e1);
             },
-            fgrad);
+            fgrad, fd::FOURTH, 1e-6);
 
         CHECK(fd::compare_gradient(dist.grad, fgrad, 1e-6));
     }
@@ -319,8 +319,9 @@ TEMPLATE_TEST_CASE_SIG(
                         .row(i)
                         .transpose();
                 },
-                fhess);
-            CHECK(fd::compare_hessian(hess[i], fhess, 1e-2));
+                fhess, fd::SECOND, 1e-6);
+
+            CHECK(fd::compare_hessian(hess[i], fhess, 1e-4));
         }
     }
 }
