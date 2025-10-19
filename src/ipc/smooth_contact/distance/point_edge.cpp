@@ -157,6 +157,8 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_hessian(
     const double uv = point_edge_closest_point(p, e0, e1);
     const Vector<double, 3 * dim> g =
         point_edge_closest_point_jacobian(p, e0, e1);
+    const Eigen::Matrix<double, 3 * dim, 3 * dim> h =
+        point_edge_closest_point_hessian(p, e0, e1);
 
     val = (p - e0) - uv * (e1 - e0);
 
@@ -166,9 +168,20 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_hessian(
     grad.block(0, dim, dim, dim).diagonal().array() += -1. + uv;
     grad.block(0, 2 * dim, dim, dim).diagonal().array() -= uv;
 
-    // Hessian is zero
     for (auto& hi : hess) {
         hi.setZero();
+    }
+    for (int d = 0; d < dim; d++) {
+        // wrt. uv
+        hess[d] -= (e1(d) - e0(d)) * h;
+
+        // wrt. uv & e0
+        hess[d].row(dim + d) += g.transpose();
+        hess[d].col(dim + d) += g;
+
+        // wrt. uv & e1
+        hess[d].row(2 * dim + d) -= g.transpose();
+        hess[d].col(2 * dim + d) -= g;
     }
 #endif
 
@@ -267,12 +280,12 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(
     case PointEdgeDistanceType::P_E0:
         vec = p - e0;
         grad.leftCols(dim).diagonal().array() = 1.;
-        grad.middleCols(dim, dim).diagonal().array() = -1.;
+        grad.middleCols(3, dim).diagonal().array() = -1.;
         break;
     case PointEdgeDistanceType::P_E1:
         vec = p - e1;
         grad.leftCols(dim).diagonal().array() = 1.;
-        grad.middleCols(2 * dim, dim).diagonal().array() = -1.;
+        grad.middleCols(6, dim).diagonal().array() = -1.;
         break;
     default:
         throw std::runtime_error("PointEdgeDistanceType not specified!");
