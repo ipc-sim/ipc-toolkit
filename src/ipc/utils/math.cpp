@@ -39,20 +39,6 @@ void OrientationTypes::set_size(const int size)
     normal_types.assign(m_size, HeavisideType::VARIANT);
 }
 
-bool OrientationTypes::are_tangent_types_all_one() const
-{
-    return std::all_of(
-        tangent_types.begin(), tangent_types.end(),
-        [](const HeavisideType t) { return t == HeavisideType::ONE; });
-}
-
-bool OrientationTypes::exists_normal_type_one() const
-{
-    return std::any_of(
-        normal_types.begin(), normal_types.end(),
-        [](const HeavisideType t) { return t == HeavisideType::ONE; });
-}
-
 std::tuple<Eigen::Vector3d, Eigen::Matrix3d>
 normalize_vector_grad(Eigen::ConstRef<Eigen::Vector3d> t)
 {

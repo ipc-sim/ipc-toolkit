@@ -28,7 +28,8 @@ TEST_CASE("SparseMatrixCache", "[utils][matrix_cache]")
     }
 
     {
-        std::shared_ptr<MatrixCache> cache = std::make_shared<DenseMatrixCache>(N);
+        std::shared_ptr<MatrixCache> cache =
+            std::make_shared<DenseMatrixCache>(N);
         CHECK(cache);
 
         cache = std::make_shared<DenseMatrixCache>(N, 2 * N);
