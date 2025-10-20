@@ -30,7 +30,8 @@ Checks: >
   -readability-math-missing-parentheses,
   -readability-redundant-access-specifiers,
   -readability-uppercase-literal-suffix,
-  -readability-function-size
+  -readability-function-size,
+  -readability-convert-member-functions-to-static
 
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*(ipc/).*'
