@@ -23,9 +23,12 @@ create_broad_phase(const BroadPhaseMethod& broad_phase_method)
         return std::make_shared<BVH>();
     case BroadPhaseMethod::SWEEP_AND_PRUNE:
         return std::make_shared<SweepAndPrune>();
-#ifdef IPC_TOOLKIT_WITH_CUDA
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
+#ifdef IPC_TOOLKIT_WITH_CUDA
         return std::make_shared<SweepAndTiniestQueue>();
+#else
+        log_and_throw_error(
+            "Sweep and Tiniest Queue broad phase requires CUDA! Enable it through CMake option IPC_TOOLKIT_WITH_CUDA.");
 #endif
     default:
         log_and_throw_error("Unknown broad phase type!");

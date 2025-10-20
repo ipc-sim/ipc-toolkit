@@ -1,8 +1,8 @@
 #pragma once
 
-#include "autodiff_types.hpp"
-
 #include <ipc/config.hpp>
+#include <ipc/utils/autodiff_types.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 

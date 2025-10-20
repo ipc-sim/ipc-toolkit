@@ -14,7 +14,7 @@ namespace ipc {
 class CollisionStencil {
 public:
     /// @brief The maximum number of vertices in a collision stencil.
-    static constexpr int ELEMENT_SIZE = 4;
+    static constexpr int STENCIL_SIZE = 4;
 
     virtual ~CollisionStencil() = default;
 
@@ -34,7 +34,7 @@ public:
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @return The vertex IDs of the collision stencil. Elements i > num_vertices() are -1.
-    virtual std::array<index_t, ELEMENT_SIZE> vertex_ids(
+    virtual std::array<index_t, STENCIL_SIZE> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const = 0;
 
@@ -43,7 +43,7 @@ public:
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @return The vertex positions of the collision stencil. Elements i > num_vertices() are NaN.
-    std::array<VectorMax3d, ELEMENT_SIZE> vertices(
+    std::array<VectorMax3d, STENCIL_SIZE> vertices(
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const
@@ -52,8 +52,8 @@ public:
 
         const auto vertex_ids = this->vertex_ids(edges, faces);
 
-        std::array<VectorMax3d, ELEMENT_SIZE> stencil_vertices;
-        for (int i = 0; i < ELEMENT_SIZE; i++) {
+        std::array<VectorMax3d, STENCIL_SIZE> stencil_vertices;
+        for (int i = 0; i < STENCIL_SIZE; i++) {
             if (vertex_ids[i] >= 0) {
                 stencil_vertices[i] = vertices.row(vertex_ids[i]);
             } else {

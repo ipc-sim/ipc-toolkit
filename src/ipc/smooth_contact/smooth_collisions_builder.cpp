@@ -64,7 +64,7 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
             add_collision<2, SmoothCollisionTemplate<Point2, Point2>>(
                 std::make_shared<SmoothCollisionTemplate<Point2, Point2>>(
                     std::min<index_t>(vi, vj), std::max<index_t>(vi, vj),
-                    PointPointDistanceType::AUTO, mesh, params, dhat, vertices),
+                    PointPointDistanceType::P_P, mesh, params, dhat, vertices),
                 vert_vert_2_to_id, collisions);
         }
     }
@@ -151,7 +151,7 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
             add_collision<3, SmoothCollisionTemplate<Point3, Point3>>(
                 std::make_shared<SmoothCollisionTemplate<Point3, Point3>>(
                     std::min<index_t>(vi, vj), std::max<index_t>(vi, vj),
-                    PointPointDistanceType::AUTO, mesh, params, dhat, vertices),
+                    PointPointDistanceType::P_P, mesh, params, dhat, vertices),
                 vert_vert_3_to_id, collisions);
         }
 

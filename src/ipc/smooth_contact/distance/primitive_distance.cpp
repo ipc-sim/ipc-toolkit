@@ -53,7 +53,7 @@ typename PrimitiveDistType<Point2, Point2>::type
 PrimitiveDistance<Point2, Point2>::compute_distance_type(
     const Vector<double, N_CORE_DOFS>& x)
 {
-    return PointPointDistanceType::AUTO;
+    return PointPointDistanceType::P_P;
 }
 
 template <>
@@ -61,7 +61,7 @@ typename PrimitiveDistType<Point3, Point3>::type
 PrimitiveDistance<Point3, Point3>::compute_distance_type(
     const Vector<double, N_CORE_DOFS>& x)
 {
-    return PointPointDistanceType::AUTO;
+    return PointPointDistanceType::P_P;
 }
 
 template <>

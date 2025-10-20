@@ -5,8 +5,9 @@
 namespace ipc {
 
 /// @brief Closest pair between a point and point.
-enum class PointPointDistanceType : std::uint8_t {
-    AUTO = std::uint8_t(0) ///< Automatically determine the closest pair.
+enum class PointPointDistanceType : uint8_t {
+    P_P = 0, ///< The points are closest to each other.
+    AUTO = 0 ///< Automatically determine the closest pair. (Same as P_P)
 };
 
 /// @brief Closest pair between a point and edge.

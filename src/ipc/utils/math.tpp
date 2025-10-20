@@ -195,8 +195,7 @@ template <typename scalar> scalar Math<scalar>::mollifier(const scalar& x)
             const double deriv = 2. * (1. - x.val), hess = -2.;
             return scalar::known_derivatives(
                 x.val * (2. - x.val), deriv * x.grad,
-                x.grad * hess * x.grad.transpose()
-                    + deriv * x.Hess);
+                x.grad * hess * x.grad.transpose() + deriv * x.Hess);
         } else {
             return scalar(1.);
         }

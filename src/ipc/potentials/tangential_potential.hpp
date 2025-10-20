@@ -8,7 +8,7 @@ namespace ipc {
 /// @brief A tangential dissipative potential.
 class TangentialPotential : public Potential<TangentialCollisions> {
     using Super = Potential<TangentialCollisions>;
-    using Super::ELEMENT_SIZE;
+    using Super::STENCIL_NDOF;
     using VectorMaxNd = Super::VectorMaxNd;
     using MatrixMaxNd = Super::MatrixMaxNd;
 

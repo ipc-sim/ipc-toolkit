@@ -10,17 +10,6 @@
 
 namespace ipc {
 
-double edge_edge_distance_2D(
-    Eigen::ConstRef<Eigen::Vector2d> ea0,
-    Eigen::ConstRef<Eigen::Vector2d> ea1,
-    Eigen::ConstRef<Eigen::Vector2d> eb0,
-    Eigen::ConstRef<Eigen::Vector2d> eb1,
-    EdgeEdgeDistanceType dtype)
-{
-    return edge_edge_distance(
-        to_3D(ea0), to_3D(ea1), to_3D(eb0), to_3D(eb1), dtype);
-}
-
 double edge_edge_distance(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
