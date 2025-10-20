@@ -1,5 +1,7 @@
 #include "smooth_collision.hpp"
 
+#include <ipc/config.hpp>
+
 namespace ipc {
 
 // clang-format off
@@ -187,7 +189,7 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
         double mollifier = 0;
         Vector<double, N_CORE_DOFS> gMollifier =
             Vector<double, N_CORE_DOFS>::Zero();
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
         ScalarBase::setVariableCount(N_CORE_DOFS);
         using T = ADGrad<N_CORE_DOFS>;
         Vector<T, N_CORE_DOFS> xAD = slice_positions<T, N_CORE_DOFS, 1>(x);
@@ -324,7 +326,7 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
             Vector<double, N_CORE_DOFS>::Zero();
         Eigen::Matrix<double, N_CORE_DOFS, N_CORE_DOFS> hMollifier =
             Eigen::Matrix<double, N_CORE_DOFS, N_CORE_DOFS>::Zero();
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
         ScalarBase::setVariableCount(N_CORE_DOFS);
         using T = ADHessian<N_CORE_DOFS>;
         Vector<T, N_CORE_DOFS> xAD = slice_positions<T, N_CORE_DOFS, 1>(x);

@@ -36,31 +36,31 @@ private:
 };
 
 double smooth_edge3_normal_term(
-    Eigen::ConstRef<Vector3d> dn,
-    Eigen::ConstRef<Vector3d> e0,
-    Eigen::ConstRef<Vector3d> e1,
-    Eigen::ConstRef<Vector3d> f0,
-    Eigen::ConstRef<Vector3d> f1,
+    Eigen::ConstRef<Eigen::Vector3d> dn,
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> f0,
+    Eigen::ConstRef<Eigen::Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes);
 
 GradType<15> smooth_edge3_normal_term_gradient(
-    Eigen::ConstRef<Vector3d> dn,
-    Eigen::ConstRef<Vector3d> e0,
-    Eigen::ConstRef<Vector3d> e1,
-    Eigen::ConstRef<Vector3d> f0,
-    Eigen::ConstRef<Vector3d> f1,
+    Eigen::ConstRef<Eigen::Vector3d> dn,
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> f0,
+    Eigen::ConstRef<Eigen::Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes);
 
 HessianType<15> smooth_edge3_normal_term_hessian(
-    Eigen::ConstRef<Vector3d> dn,
-    Eigen::ConstRef<Vector3d> e0,
-    Eigen::ConstRef<Vector3d> e1,
-    Eigen::ConstRef<Vector3d> f0,
-    Eigen::ConstRef<Vector3d> f1,
+    Eigen::ConstRef<Eigen::Vector3d> dn,
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> f0,
+    Eigen::ConstRef<Eigen::Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes);

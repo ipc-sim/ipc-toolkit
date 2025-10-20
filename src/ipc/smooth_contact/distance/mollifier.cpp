@@ -1,16 +1,16 @@
-#ifndef DERIVATIVES_WITH_AUTODIFF
+#include <ipc/config.hpp>
+#ifndef IPC_TOOLKIT_DEBUG_AUTODIFF
 
 #include "mollifier.hpp"
-
-#include "point_edge.hpp"
 
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
+#include <ipc/smooth_contact/distance/point_edge.hpp>
 
 namespace ipc {
 namespace {
-    // double func_aux(const double& a, const double& b, const double& c, const
+    // double func_aux(const double a, const double b, const double c, const
     // double& eps)
     // {
     //     return Math<double>::mollifier((a - c) / c / eps);
@@ -25,7 +25,7 @@ namespace {
     }
 
     GradType<3> func_aux_grad(
-        const double& a, const double& b, const double& c, const double& eps)
+        const double a, const double b, const double c, const double eps)
     {
         const double val = (a - c) / c / eps;
         return std::make_tuple(
@@ -35,7 +35,7 @@ namespace {
     }
 
     HessianType<3> func_aux_hess(
-        const double& a, const double& b, const double& c, const double& eps)
+        const double a, const double b, const double c, const double eps)
     {
         const double c2 = 1. / c / c;
         Eigen::Matrix3d h1;
@@ -55,12 +55,12 @@ namespace {
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
 GradType<13> edge_edge_mollifier_gradient(
-    Eigen::ConstRef<Vector3<double>> ea0,
-    Eigen::ConstRef<Vector3<double>> ea1,
-    Eigen::ConstRef<Vector3<double>> eb0,
-    Eigen::ConstRef<Vector3<double>> eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     const std::array<HeavisideType, 4>& mtypes,
-    const double& dist_sqr)
+    const double dist_sqr)
 {
     Vector<double, 13> input;
     input << ea0, ea1, eb0, eb1, dist_sqr;
@@ -93,11 +93,12 @@ GradType<13> edge_edge_mollifier_gradient(
     }
 
     // derivatives of edge lengths
-    Vector2d edge_lengths;
+    Eigen::Vector2d edge_lengths;
     Eigen::Matrix<double, 2, 12> edge_lengths_grad;
     edge_lengths_grad.setZero();
     for (int i = 0; i < 2; i++) {
-        Vector3d edge = input.segment<3>(i * 6) - input.segment<3>(i * 6 + 3);
+        Eigen::Vector3d edge =
+            input.segment<3>(i * 6) - input.segment<3>(i * 6 + 3);
         edge_lengths(i) = edge.squaredNorm();
         edge_lengths_grad.block<1, 3>(i, 0 + 6 * i) = 2 * edge;
         edge_lengths_grad.block<1, 3>(i, 3 + 6 * i) = -2 * edge;
@@ -120,7 +121,7 @@ GradType<13> edge_edge_mollifier_gradient(
     }
 
     // partial products of mollifiers
-    Vector4d partial_products_1;
+    Eigen::Vector4d partial_products_1;
     partial_products_1.setOnes();
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
@@ -146,12 +147,12 @@ GradType<13> edge_edge_mollifier_gradient(
 
 /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
 HessianType<13> edge_edge_mollifier_hessian(
-    Eigen::ConstRef<Vector3<double>> ea0,
-    Eigen::ConstRef<Vector3<double>> ea1,
-    Eigen::ConstRef<Vector3<double>> eb0,
-    Eigen::ConstRef<Vector3<double>> eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     const std::array<HeavisideType, 4>& mtypes,
-    const double& dist_sqr)
+    const double dist_sqr)
 {
     Vector<double, 13> input;
     input << ea0, ea1, eb0, eb1, dist_sqr;
@@ -193,11 +194,11 @@ HessianType<13> edge_edge_mollifier_hessian(
     }
 
     // derivatives of edge lengths
-    Vector2d edge_lengths;
+    Eigen::Vector2d edge_lengths;
     Eigen::Matrix<double, 2, 12> edge_lengths_grad;
     edge_lengths_grad.setZero();
     for (int i = 0; i < 2; i++) {
-        const Vector3d edge =
+        const Eigen::Vector3d edge =
             input.segment<3>(i * 6) - input.segment<3>(i * 6 + 3);
         edge_lengths(i) = edge.squaredNorm();
         edge_lengths_grad.block<1, 3>(i, 0 + 6 * i) = 2 * edge;
@@ -226,7 +227,7 @@ HessianType<13> edge_edge_mollifier_hessian(
     }
 
     // partial products of mollifiers
-    Vector4d partial_products_1;
+    Eigen::Vector4d partial_products_1;
     partial_products_1.setOnes();
     Eigen::Matrix<double, 4, 4> partial_products_2;
     partial_products_2.setOnes();
@@ -288,11 +289,11 @@ HessianType<13> edge_edge_mollifier_hessian(
 }
 
 std::array<HeavisideType, 4> edge_edge_mollifier_type(
-    Eigen::ConstRef<Vector3<double>> ea0,
-    Eigen::ConstRef<Vector3<double>> ea1,
-    Eigen::ConstRef<Vector3<double>> eb0,
-    Eigen::ConstRef<Vector3<double>> eb1,
-    const double& dist_sqr)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
+    const double dist_sqr)
 {
     std::array<HeavisideType, 4> mtypes {};
     mtypes[0] = (point_edge_distance(ea0, eb0, eb1) - dist_sqr)
@@ -316,16 +317,16 @@ std::array<HeavisideType, 4> edge_edge_mollifier_type(
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
 GradType<13> point_face_mollifier_gradient(
-    Eigen::ConstRef<Vector3d> p,
-    Eigen::ConstRef<Vector3d> e0,
-    Eigen::ConstRef<Vector3d> e1,
-    Eigen::ConstRef<Vector3d> e2,
-    const double& dist_sqr)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> e2,
+    const double dist_sqr)
 {
     Vector12d x;
     x << p, e0, e1, e2;
 
-    Vector3d vals;
+    Eigen::Vector3d vals;
     Eigen::Matrix<double, 3, 13> grads;
     for (int i = 0; i < 3; i++) {
         const int ei = i * 3 + 3;
@@ -349,7 +350,7 @@ GradType<13> point_face_mollifier_gradient(
         dist_grad(1, ind) = point_line_distance_gradient(
             x.segment<3>(ek), x.segment<3>(ei), x.segment<3>(ej));
 
-        Vector3d tmp_grad;
+        Eigen::Vector3d tmp_grad;
         std::tie(vals(i), tmp_grad) = func_aux_grad(
             point_edge_dist, vert_edge_dist, dist_sqr, MOLLIFIER_THRESHOLD_EPS);
 
@@ -366,16 +367,16 @@ GradType<13> point_face_mollifier_gradient(
 
 /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
 HessianType<13> point_face_mollifier_hessian(
-    Eigen::ConstRef<Vector3d> p,
-    Eigen::ConstRef<Vector3d> e0,
-    Eigen::ConstRef<Vector3d> e1,
-    Eigen::ConstRef<Vector3d> e2,
-    const double& dist_sqr)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> e2,
+    const double dist_sqr)
 {
     Vector12d x;
     x << p, e0, e1, e2;
 
-    Vector3d vals;
+    Eigen::Vector3d vals;
     Eigen::Matrix<double, 3, 13> grads;
     std::array<Eigen::Matrix<double, 13, 13>, 3> hesses;
     for (int i = 0; i < 3; i++) {
@@ -408,8 +409,8 @@ HessianType<13> point_face_mollifier_hessian(
         vert_edge_dist_hess(ind, ind) = point_line_distance_hessian(
             x.segment<3>(ek), x.segment<3>(ei), x.segment<3>(ej));
 
-        Vector3d tmp_grad;
-        Matrix3d tmp_hess;
+        Eigen::Vector3d tmp_grad;
+        Eigen::Matrix3d tmp_hess;
         std::tie(vals(i), tmp_grad, tmp_hess) = func_aux_hess(
             point_edge_dist, vert_edge_dist, dist_sqr, MOLLIFIER_THRESHOLD_EPS);
 

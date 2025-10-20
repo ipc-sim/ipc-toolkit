@@ -7,17 +7,17 @@
 
 namespace ipc {
 
-std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>>
+std::tuple<Eigen::Vector3d, Eigen::Matrix<double, 3, 12>>
 point_plane_closest_point_direction_grad(
-    Eigen::ConstRef<Vector3d> p,
-    Eigen::ConstRef<Vector3d> t0,
-    Eigen::ConstRef<Vector3d> t1,
-    Eigen::ConstRef<Vector3d> t2)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     const Eigen::Vector2d uv = point_triangle_closest_point(p, t0, t1, t2);
     const Eigen::Matrix<double, 2, 12> jac =
         point_triangle_closest_point_jacobian(p, t0, t1, t2);
-    const Vector3d direc =
+    const Eigen::Vector3d direc =
         p - (t0 * (1 - uv(0) - uv(1)) + t1 * uv(0) + t2 * uv(1));
     Eigen::Matrix<double, 3, 12> grad =
         -(t1 - t0) * jac.row(0) - (t2 - t0) * jac.row(1);
@@ -29,12 +29,15 @@ point_plane_closest_point_direction_grad(
     return { direc, grad };
 }
 
-std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>, std::array<Matrix12d, 3>>
+std::tuple<
+    Eigen::Vector3d,
+    Eigen::Matrix<double, 3, 12>,
+    std::array<Matrix12d, 3>>
 point_plane_closest_point_direction_hessian(
-    Eigen::ConstRef<Vector3d> p,
-    Eigen::ConstRef<Vector3d> t0,
-    Eigen::ConstRef<Vector3d> t1,
-    Eigen::ConstRef<Vector3d> t2)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     // compute derivatives of uv
     const Eigen::Vector2d uv = point_triangle_closest_point(p, t0, t1, t2);
@@ -49,7 +52,7 @@ point_plane_closest_point_direction_hessian(
         t2(1), t2(2), H[1].data());
 
     // compute derivatives of the closest point
-    const Vector3d direc =
+    const Eigen::Vector3d direc =
         p - (t0 * (1 - uv(0) - uv(1)) + t1 * uv(0) + t2 * uv(1));
 
     Eigen::Matrix<double, 3, 12> grad =
@@ -83,15 +86,15 @@ point_plane_closest_point_direction_hessian(
     return { direc, grad, hess };
 }
 
-std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>>
+std::tuple<Eigen::Vector3d, Eigen::Matrix<double, 3, 12>>
 point_triangle_closest_point_direction_grad(
-    Eigen::ConstRef<Vector3d> p,
-    Eigen::ConstRef<Vector3d> t0,
-    Eigen::ConstRef<Vector3d> t1,
-    Eigen::ConstRef<Vector3d> t2,
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
     const PointTriangleDistanceType dtype)
 {
-    Vector3d pts = Vector3d::Zero();
+    Eigen::Vector3d pts = Eigen::Vector3d::Zero();
     Eigen::Matrix<double, 3, 12> grad = Eigen::Matrix<double, 3, 12>::Zero();
     switch (dtype) {
     case PointTriangleDistanceType::P_T0:
@@ -149,15 +152,18 @@ point_triangle_closest_point_direction_grad(
     return { pts, grad };
 }
 
-std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>, std::array<Matrix12d, 3>>
+std::tuple<
+    Eigen::Vector3d,
+    Eigen::Matrix<double, 3, 12>,
+    std::array<Matrix12d, 3>>
 point_triangle_closest_point_direction_hessian(
-    Eigen::ConstRef<Vector3d> p,
-    Eigen::ConstRef<Vector3d> t0,
-    Eigen::ConstRef<Vector3d> t1,
-    Eigen::ConstRef<Vector3d> t2,
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
     const PointTriangleDistanceType dtype)
 {
-    Vector3d pts = Vector3d::Zero();
+    Eigen::Vector3d pts = Eigen::Vector3d::Zero();
     Eigen::Matrix<double, 3, 12> grad = Eigen::Matrix<double, 3, 12>::Zero();
     std::array<Matrix12d, 3> hess;
     for (auto& h : hess) {
@@ -236,21 +242,21 @@ point_triangle_closest_point_direction_hessian(
 
 template <typename scalar>
 scalar point_plane_sqr_distance(
-    Eigen::ConstRef<Vector3<scalar>> p,
-    Eigen::ConstRef<Vector3<scalar>> f0,
-    Eigen::ConstRef<Vector3<scalar>> f1,
-    Eigen::ConstRef<Vector3<scalar>> f2)
+    Eigen::ConstRef<Eigen::Vector3<scalar>> p,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> f0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> f1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> f2)
 {
-    const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
+    const Eigen::Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
     return Math<scalar>::sqr(normal.dot(p - f0)) / normal.squaredNorm();
 }
 
 template <typename scalar>
 scalar point_triangle_sqr_distance(
-    Eigen::ConstRef<Vector3<scalar>> p,
-    Eigen::ConstRef<Vector3<scalar>> t0,
-    Eigen::ConstRef<Vector3<scalar>> t1,
-    Eigen::ConstRef<Vector3<scalar>> t2,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> p,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> t0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> t1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> t2,
     PointTriangleDistanceType dtype)
 {
     if constexpr (std::is_same<double, scalar>::value) {
@@ -296,22 +302,22 @@ scalar point_triangle_sqr_distance(
 }
 
 template <typename scalar>
-Vector3<scalar> point_plane_closest_point_direction(
-    Eigen::ConstRef<Vector3<scalar>> p,
-    Eigen::ConstRef<Vector3<scalar>> f0,
-    Eigen::ConstRef<Vector3<scalar>> f1,
-    Eigen::ConstRef<Vector3<scalar>> f2)
+Eigen::Vector3<scalar> point_plane_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<scalar>> p,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> f0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> f1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> f2)
 {
-    const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
+    const Eigen::Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
     return (normal.dot(p - f0) / normal.squaredNorm()) * normal;
 }
 
 template <typename scalar>
-Vector3<scalar> point_triangle_closest_point_direction(
-    Eigen::ConstRef<Vector3<scalar>> p,
-    Eigen::ConstRef<Vector3<scalar>> t0,
-    Eigen::ConstRef<Vector3<scalar>> t1,
-    Eigen::ConstRef<Vector3<scalar>> t2,
+Eigen::Vector3<scalar> point_triangle_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<scalar>> p,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> t0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> t1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> t2,
     PointTriangleDistanceType dtype)
 {
     if constexpr (std::is_same<double, scalar>::value) {
@@ -359,65 +365,65 @@ Vector3<scalar> point_triangle_closest_point_direction(
 }
 
 template ADGrad<12> point_triangle_sqr_distance(
-    Eigen::ConstRef<Vector3<ADGrad<12>>> p,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> t0,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> t1,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> t2,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> p,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> t0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> t1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> t2,
     PointTriangleDistanceType dtype);
 
 template ADHessian<12> point_triangle_sqr_distance(
-    Eigen::ConstRef<Vector3<ADHessian<12>>> p,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> t0,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> t1,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> t2,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> p,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> t0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> t1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> t2,
     PointTriangleDistanceType dtype);
 template ADGrad<13> point_triangle_sqr_distance(
-    Eigen::ConstRef<Vector3<ADGrad<13>>> p,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> t0,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> t1,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> t2,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> p,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> t0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> t1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> t2,
     PointTriangleDistanceType dtype);
 template ADHessian<13> point_triangle_sqr_distance(
-    Eigen::ConstRef<Vector3<ADHessian<13>>> p,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> t0,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> t1,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> t2,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> p,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> t0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> t1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> t2,
     PointTriangleDistanceType dtype);
 template double point_triangle_sqr_distance(
-    Eigen::ConstRef<Vector3<double>> p,
-    Eigen::ConstRef<Vector3<double>> t0,
-    Eigen::ConstRef<Vector3<double>> t1,
-    Eigen::ConstRef<Vector3<double>> t2,
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
     PointTriangleDistanceType dtype);
 
-template Vector3<ADGrad<12>> point_triangle_closest_point_direction(
-    Eigen::ConstRef<Vector3<ADGrad<12>>> p,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> t0,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> t1,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> t2,
+template Eigen::Vector3<ADGrad<12>> point_triangle_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> p,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> t0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> t1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> t2,
     PointTriangleDistanceType dtype);
-template Vector3<ADHessian<12>> point_triangle_closest_point_direction(
-    Eigen::ConstRef<Vector3<ADHessian<12>>> p,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> t0,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> t1,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> t2,
+template Eigen::Vector3<ADHessian<12>> point_triangle_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> p,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> t0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> t1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> t2,
     PointTriangleDistanceType dtype);
-template Vector3<ADGrad<13>> point_triangle_closest_point_direction(
-    Eigen::ConstRef<Vector3<ADGrad<13>>> p,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> t0,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> t1,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> t2,
+template Eigen::Vector3<ADGrad<13>> point_triangle_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> p,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> t0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> t1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> t2,
     PointTriangleDistanceType dtype);
-template Vector3<ADHessian<13>> point_triangle_closest_point_direction(
-    Eigen::ConstRef<Vector3<ADHessian<13>>> p,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> t0,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> t1,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> t2,
+template Eigen::Vector3<ADHessian<13>> point_triangle_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> p,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> t0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> t1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> t2,
     PointTriangleDistanceType dtype);
-template Vector3<double> point_triangle_closest_point_direction(
-    Eigen::ConstRef<Vector3<double>> p,
-    Eigen::ConstRef<Vector3<double>> t0,
-    Eigen::ConstRef<Vector3<double>> t1,
-    Eigen::ConstRef<Vector3<double>> t2,
+template Eigen::Vector3d point_triangle_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
     PointTriangleDistanceType dtype);
 } // namespace ipc

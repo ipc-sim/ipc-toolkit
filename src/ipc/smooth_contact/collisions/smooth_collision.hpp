@@ -174,7 +174,7 @@ public:
     }
 
     template <typename T>
-    Vector<T, N_CORE_DOFS> core_dof(const MatrixX<T>& X) const
+    Vector<T, N_CORE_DOFS> core_dof(const Eigen::MatrixX<T>& X) const
     {
         return this->dof(X)(get_core_indices());
     }

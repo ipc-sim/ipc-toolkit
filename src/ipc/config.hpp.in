@@ -17,7 +17,7 @@
 #cmakedefine IPC_TOOLKIT_WITH_ABSEIL
 #cmakedefine IPC_TOOLKIT_WITH_FILIB
 #define IPC_TOOLKIT_WITH_TBB
-// #define DERIVATIVES_WITH_AUTODIFF
+// #define IPC_TOOLKIT_DEBUG_AUTODIFF
 
 namespace ipc {
 

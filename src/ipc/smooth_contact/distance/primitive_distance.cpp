@@ -1,5 +1,6 @@
 #include "primitive_distance.hpp"
 
+#include <ipc/config.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_point.hpp>
@@ -142,7 +143,7 @@ PrimitiveDistance<Point3, Point3>::compute_closest_direction(
     return V.row(b) - V.row(a);
 }
 
-#ifndef DERIVATIVES_WITH_AUTODIFF
+#ifndef IPC_TOOLKIT_DEBUG_AUTODIFF
 
 template <>
 std::tuple<
@@ -184,7 +185,7 @@ PrimitiveDistance<Point2, Point2>::compute_closest_direction_hessian(
     const Vector<double, N_CORE_DOFS>& x,
     typename PrimitiveDistType<Point2, Point2>::type dtype)
 {
-    Vector2d out = x.tail(2) - x.head(2);
+    Eigen::Vector2d out = x.tail(2) - x.head(2);
     Eigen::Matrix<double, 2, 4> J = Eigen::Matrix<double, 2, 4>::Zero();
     J.leftCols<2>().diagonal().array() = -1;
     J.rightCols<2>().diagonal().array() = 1;
@@ -212,7 +213,7 @@ PrimitiveDistance<Point3, Point3>::compute_closest_direction_hessian(
     const Vector<double, N_CORE_DOFS>& x,
     typename PrimitiveDistType<Point3, Point3>::type dtype)
 {
-    Vector3d out = x.tail(3) - x.head(3);
+    Eigen::Vector3d out = x.tail(3) - x.head(3);
     Eigen::Matrix<double, 3, 6> J = Eigen::Matrix<double, 3, 6>::Zero();
     J.leftCols<3>().diagonal().array() = -1;
     J.rightCols<3>().diagonal().array() = 1;

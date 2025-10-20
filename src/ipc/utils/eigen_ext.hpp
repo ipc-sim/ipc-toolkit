@@ -42,60 +42,25 @@ using Vector = Eigen::Matrix<T, dim, 1, Eigen::ColMajor, max_dim, 1>;
 template <typename T, int dim, int max_dim = dim>
 using RowVector = Eigen::Matrix<T, 1, dim, Eigen::RowMajor, 1, max_dim>;
 
-template <typename T> using Vector1 = Vector<T, 1>;
-template <typename T> using Vector2 = Vector<T, 2>;
-template <typename T> using Vector3 = Vector<T, 3>;
-template <typename T> using VectorX = Vector<T, Eigen::Dynamic>;
-template <typename T> using RowVector2 = RowVector<T, 2>;
-template <typename T> using RowVector3 = RowVector<T, 3>;
-template <typename T> using RowVectorX = RowVector<T, Eigen::Dynamic>;
-template <typename T> using Matrix2 = Eigen::Matrix<T, 2, 2>;
-template <typename T> using Matrix3 = Eigen::Matrix<T, 3, 3>;
-template <typename T>
-using MatrixX = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+/// @brief A static size matrix of size of 1×1
+using Vector1d = Eigen::Vector<double, 1>;
+/// @brief A static size matrix of size of 6×1
+using Vector6d = Eigen::Vector<double, 6>;
+/// @brief A static size matrix of size of 9×1
+using Vector9d = Eigen::Vector<double, 9>;
+/// @brief A static size matrix of size of 12×1
+using Vector12d = Eigen::Vector<double, 12>;
+/// @brief A static size matrix of size of 15×1
+using Vector15d = Eigen::Vector<double, 15>;
 
-/// @brief A static size matrix of size of 1x1
-using Vector1d = Vector<double, 1>;
-/// @brief A static size matrix of size of 2x1
-using Vector2d = Vector<double, 2>;
-/// @brief A static size matrix of size of 3x1
-using Vector3d = Vector<double, 3>;
-/// @brief A static size matrix of size of 4x1
-using Vector4d = Vector<double, 4>;
-/// @brief A static size matrix of size of 6x1
-using Vector6d = Vector<double, 6>;
-/// @brief A static size matrix of size of 8x1
-using Vector8d = Vector<double, 8>;
-/// @brief A static size matrix of size of 9x1
-using Vector9d = Vector<double, 9>;
-/// @brief A static size matrix of size of 10x1
-using Vector10d = Vector<double, 10>;
-/// @brief A static size matrix of size of 12x1
-using Vector12d = Vector<double, 12>;
-/// @brief A static size matrix of size of 15x1
-using Vector15d = Vector<double, 15>;
-/// @brief A static size matrix of size of 18x1
-using Vector18d = Vector<double, 18>;
-/// @brief A static size matrix of size of 2x2
-using Matrix2d = Eigen::Matrix2d;
-/// @brief A static size matrix of size of 3x3
-using Matrix3d = Eigen::Matrix3d;
-/// @brief A static size matrix of size of 4x4
-using Matrix4d = Eigen::Matrix<double, 4, 4>;
-/// @brief A static size matrix of size of 6x6
+/// @brief A static size matrix of size of 6×6
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
-/// @brief A static size matrix of size of 8x8
-using Matrix8d = Eigen::Matrix<double, 8, 8>;
-/// @brief A static size matrix of size of 9x9
+/// @brief A static size matrix of size of 9×9
 using Matrix9d = Eigen::Matrix<double, 9, 9>;
-/// @brief A static size matrix of size of 10x10
-using Matrix10d = Eigen::Matrix<double, 10, 10>;
-/// @brief A static size matrix of size of 12x12
+/// @brief A static size matrix of size of 12×12
 using Matrix12d = Eigen::Matrix<double, 12, 12>;
-/// @brief A static size matrix of size of 15x15
+/// @brief A static size matrix of size of 15×15
 using Matrix15d = Eigen::Matrix<double, 15, 15>;
-/// @brief A static size matrix of size of 18x18
-using Matrix18d = Eigen::Matrix<double, 18, 18>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1
 template <typename T> using VectorMax2 = Vector<T, Eigen::Dynamic, 2>;
@@ -128,9 +93,6 @@ using VectorMax6b = VectorMax6<bool>;
 using VectorMax9d = VectorMax9<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12×1
 using VectorMax12d = VectorMax12<double>;
-
-template <typename T> using VectorMax18 = Vector<T, Eigen::Dynamic, 18>;
-using VectorMax18d = VectorMax18<double>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 1×2
 template <typename T> using RowVectorMax2 = RowVector<T, Eigen::Dynamic, 2>;
@@ -168,7 +130,6 @@ template <typename T> using MatrixMax9 = MatrixMax<T, 9, 9>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12×12
 template <typename T> using MatrixMax12 = MatrixMax<T, 12, 12>;
 
-template <typename T> using MatrixMax18 = MatrixMax<T, 18, 18>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3×3
 using MatrixMax2d = MatrixMax2<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3×3
@@ -180,7 +141,6 @@ using MatrixMax9d = MatrixMax9<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12×12
 using MatrixMax12d = MatrixMax12<double>;
 
-using MatrixMax18d = MatrixMax18<double>;
 /// @brief A dynamic size diagonal matrix
 using DiagonalMatrixXd = Eigen::DiagonalMatrix<double, Eigen::Dynamic>;
 /// @brief A dynamic size diagonal matrix with a fixed maximum size of 6×6

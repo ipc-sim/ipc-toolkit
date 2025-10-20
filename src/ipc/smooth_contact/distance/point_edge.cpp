@@ -1,5 +1,6 @@
 #include "point_edge.hpp"
 
+#include <ipc/config.hpp>
 #include <ipc/tangent/closest_point.hpp>
 
 namespace ipc {
@@ -93,7 +94,7 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_grad(
 {
     Vector<double, dim> val;
     Eigen::Matrix<double, dim, 3 * dim> grad;
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     using T = ADGrad<3 * dim>;
     ScalarBase::setVariableCount(3 * dim);
     const Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
@@ -138,7 +139,7 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_hessian(
     Eigen::Matrix<double, dim, 3 * dim> grad;
     std::array<Eigen::Matrix<double, 3 * dim, 3 * dim>, dim> hess;
 
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     using T = ADHessian<3 * dim>;
     ScalarBase::setVariableCount(3 * dim);
     Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
@@ -199,7 +200,7 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(
     Vector<double, dim> vec;
     Eigen::Matrix<double, dim, 3 * dim> grad =
         Eigen::Matrix<double, dim, 3 * dim>::Zero();
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     using T = ADGrad<3 * dim>;
     ScalarBase::setVariableCount(3 * dim);
     Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
@@ -255,7 +256,7 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(
     for (auto& hi : hess) {
         hi.setZero();
     }
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     using T = ADHessian<3 * dim>;
     ScalarBase::setVariableCount(3 * dim);
     Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
@@ -316,7 +317,7 @@ template class PointEdgeDistance<ADHessian<12>, 3>;
 template class PointEdgeDistance<ADGrad<13>, 3>;
 template class PointEdgeDistance<ADHessian<13>, 3>;
 
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
 template class PointEdgeDistance<ADGrad<15>, 3>;
 template class PointEdgeDistance<ADHessian<15>, 3>;
 

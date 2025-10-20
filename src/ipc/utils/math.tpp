@@ -7,45 +7,45 @@ namespace ipc {
 
 namespace {
     /// @brief support is [0, 3]
-    /// @tparam scalar
+    /// @tparam T
     /// @param x
     /// @return
-    template <typename scalar> scalar quadratic_spline_aux(const scalar& x)
+    template <typename T> T quadratic_spline_aux(const T& x)
     {
         if (x <= 0) {
-            return scalar(0.);
+            return T(0.);
         }
         if (x <= 1) {
-            return Math<scalar>::sqr(x) / 2.;
+            return Math<T>::sqr(x) / 2.;
         }
         if (x <= 2) {
             return (-3 + x * (6 - 2 * x)) / 2.;
         }
         if (x < 3) {
-            return Math<scalar>::sqr(3. - x) / 2.;
+            return Math<T>::sqr(3. - x) / 2.;
         }
-        return scalar(0.);
+        return T(0.);
     }
 
-    template <typename scalar> scalar smooth_heaviside_standard(const scalar& x)
+    template <typename T> T smooth_heaviside_standard(const T& x)
     {
         if (x <= -3) {
-            return scalar(0.);
+            return T(0.);
         }
         if (x <= -2) {
-            return Math<scalar>::cubic(3. + x) / 6.;
+            return Math<T>::cubic(3. + x) / 6.;
         }
         if (x <= -1) {
             return (((-2 * x - 9) * x - 9) * x + 3) / 6;
         }
         if (x < 0) {
-            return Math<scalar>::cubic(x) / 6. + 1.;
+            return Math<T>::cubic(x) / 6. + 1.;
         }
 
-        return scalar(1.);
+        return T(1.);
     }
 
-    [[maybe_unused]] double smooth_heaviside_standard_grad(const double& x)
+    [[maybe_unused]] double smooth_heaviside_standard_grad(const double x)
     {
         if (x <= -3 || x >= 0) {
             return 0.;
@@ -60,7 +60,7 @@ namespace {
         return Math<double>::sqr(x) / 2.;
     }
 
-    [[maybe_unused]] double smooth_heaviside_standard_hess(const double& x)
+    [[maybe_unused]] double smooth_heaviside_standard_hess(const double x)
     {
         if (x <= -3 || x >= 0) {
             return 0.;
@@ -76,7 +76,7 @@ namespace {
     }
 } // namespace
 
-template <typename scalar> double Math<scalar>::sign(const double& x)
+template <typename T> double Math<T>::sign(const double x)
 {
     if (x > 0) {
         return 1.;
@@ -85,7 +85,7 @@ template <typename scalar> double Math<scalar>::sign(const double& x)
     }
 }
 
-template <typename scalar> scalar Math<scalar>::abs(const scalar& x)
+template <typename T> T Math<T>::abs(const T& x)
 {
     if (x >= 0) {
         return x;
@@ -94,20 +94,14 @@ template <typename scalar> scalar Math<scalar>::abs(const scalar& x)
     }
 }
 
-template <typename scalar> scalar Math<scalar>::sqr(const scalar& x)
-{
-    return x * x;
-}
+template <typename T> T Math<T>::sqr(const T& x) { return x * x; }
 
-template <typename scalar> scalar Math<scalar>::cubic(const scalar& x)
-{
-    return x * x * x;
-}
+template <typename T> T Math<T>::cubic(const T& x) { return x * x * x; }
 
-template <typename scalar> scalar Math<scalar>::cubic_spline(const scalar& x)
+template <typename T> T Math<T>::cubic_spline(const T& x)
 {
     if (abs(x) >= 1) {
-        return scalar(0.);
+        return T(0.);
     }
     if (abs(x) >= 0.5) {
         return cubic(1 - abs(x)) * (4. / 3.);
@@ -115,8 +109,7 @@ template <typename scalar> scalar Math<scalar>::cubic_spline(const scalar& x)
 
     return 2. / 3. - 4. * (x * x) * (1 - abs(x));
 }
-template <typename scalar>
-double Math<scalar>::cubic_spline_grad(const double& x)
+template <typename T> double Math<T>::cubic_spline_grad(const double x)
 {
     if (Math<double>::abs(x) >= 1) {
         return 0.;
@@ -127,8 +120,7 @@ double Math<scalar>::cubic_spline_grad(const double& x)
 
     return 4. * x * (3. * Math<double>::abs(x) - 2.);
 }
-template <typename scalar>
-double Math<scalar>::cubic_spline_hess(const double& x)
+template <typename T> double Math<T>::cubic_spline_hess(const double x)
 {
     if (Math<double>::abs(x) >= 1) {
         return 0.;
@@ -141,78 +133,76 @@ double Math<scalar>::cubic_spline_hess(const double& x)
 }
 
 /// @brief support is [-1, 1]
-/// @tparam scalar
+/// @tparam T
 /// @param x
 /// @return
-template <typename scalar>
-scalar Math<scalar>::quadratic_spline(const scalar& x)
+template <typename T> T Math<T>::quadratic_spline(const T& x)
 {
     return quadratic_spline_aux(x * 1.5 + 1.5);
 }
 
-// template <typename scalar>
-// scalar smooth_heaviside_aux(const scalar &x)
+// template <typename T>
+// T smooth_heaviside_aux(const T &x)
 // {
 //     if (x <= -2)
-//         return scalar(0.);
+//         return T(0.);
 //     if (x <= -1)
 //         return intpow(2. + x, 2) / 2.;
 //     if (x <= 0)
 //         return 1 - intpow(x, 2) / 2.;
 
-//     return scalar(1.);
+//     return T(1.);
 // }
 
-template <typename scalar>
-scalar Math<scalar>::smooth_heaviside(
-    const scalar& x, const double alpha, const double beta)
+template <typename T>
+T Math<T>::smooth_heaviside(const T& x, const double alpha, const double beta)
 {
     return smooth_heaviside_standard((x - beta) * (3 / (alpha + beta)));
 }
 
-template <typename scalar>
-double Math<scalar>::smooth_heaviside_grad(
-    const double& x, const double alpha, const double beta)
+template <typename T>
+double Math<T>::smooth_heaviside_grad(
+    const double x, const double alpha, const double beta)
 {
     const double s = 3 / (alpha + beta);
     return smooth_heaviside_standard_grad((x - beta) * s) * s;
 }
 
-template <typename scalar>
-double Math<scalar>::smooth_heaviside_hess(
-    const double& x, const double alpha, const double beta)
+template <typename T>
+double Math<T>::smooth_heaviside_hess(
+    const double x, const double alpha, const double beta)
 {
     const double s = 3 / (alpha + beta);
     return smooth_heaviside_standard_hess((x - beta) * s) * s * s;
 }
 
-template <typename scalar> scalar Math<scalar>::mollifier(const scalar& x)
+template <typename T> T Math<T>::mollifier(const T& x)
 {
-    if constexpr (IsADHessian<scalar>::value) {
+    if constexpr (IsADHessian<T>::value) {
         if (x <= 0) {
-            return scalar(0.);
+            return T(0.);
         } else if (x < 1) {
             const double deriv = 2. * (1. - x.val), hess = -2.;
-            return scalar::known_derivatives(
+            return T::known_derivatives(
                 x.val * (2. - x.val), deriv * x.grad,
                 x.grad * hess * x.grad.transpose() + deriv * x.Hess);
         } else {
-            return scalar(1.);
+            return T(1.);
         }
-        // return smooth_heaviside<scalar>(x - 1.);
+        // return smooth_heaviside<T>(x - 1.);
     } else {
         if (x <= 0) {
-            return scalar(0.);
+            return T(0.);
         } else if (x < 1) {
             return x * (2. - x);
         } else {
-            return scalar(1.);
+            return T(1.);
         }
-        // return smooth_heaviside<scalar>(x - 1.);
+        // return smooth_heaviside<T>(x - 1.);
     }
 }
 
-template <typename scalar> double Math<scalar>::mollifier_grad(const double& x)
+template <typename T> double Math<T>::mollifier_grad(const double x)
 {
     if (x <= 0 || x >= 1) {
         return 0.;
@@ -221,7 +211,7 @@ template <typename scalar> double Math<scalar>::mollifier_grad(const double& x)
     }
 }
 
-template <typename scalar> double Math<scalar>::mollifier_hess(const double& x)
+template <typename T> double Math<T>::mollifier_hess(const double x)
 {
     if (x <= 0 || x >= 1) {
         return 0.;
@@ -231,25 +221,24 @@ template <typename scalar> double Math<scalar>::mollifier_hess(const double& x)
 }
 
 // support is [0, 1]
-template <typename scalar>
-scalar Math<scalar>::inv_barrier(const scalar& x, const int& r)
+template <typename T> T Math<T>::inv_barrier(const T& x, const int r)
 {
     return cubic_spline(x) / pow(x, r);
     // log barrier
     // if (x < 1)
     //     return -(1 - x) * (1 - x) * log(x);
     // else
-    //     return scalar(0.);
+    //     return T(0.);
 }
 
-template <typename scalar>
-double Math<scalar>::inv_barrier_grad(const double& x, const int& r)
+template <typename T>
+double Math<T>::inv_barrier_grad(const double x, const int r)
 {
     return (cubic_spline_grad(x) - Math<double>::cubic_spline(x) * r / x)
         / pow(x, r);
 }
-template <typename scalar>
-double Math<scalar>::inv_barrier_hess(const double& x, const int& r)
+template <typename T>
+double Math<T>::inv_barrier_hess(const double x, const int r)
 {
     return (cubic_spline_hess(x)
             + (-2. * cubic_spline_grad(x)
@@ -258,20 +247,20 @@ double Math<scalar>::inv_barrier_hess(const double& x, const int& r)
         / pow(x, r);
 }
 
-template <typename scalar> scalar Math<scalar>::l_ns(const scalar& x)
+template <typename T> T Math<T>::l_ns(const T& x)
 {
     if (x <= 0.) {
-        return scalar(0.);
+        return T(0.);
     }
     if (x >= 1.) {
-        return scalar(1.);
+        return T(1.);
     }
     return x;
 }
 
-template <typename scalar>
-scalar Math<scalar>::cross2(
-    Eigen::ConstRef<Vector2<scalar>> a, Eigen::ConstRef<Vector2<scalar>> b)
+template <typename T>
+T Math<T>::cross2(
+    Eigen::ConstRef<Eigen::Vector2<T>> a, Eigen::ConstRef<Eigen::Vector2<T>> b)
 {
     return a[0] * b[1] - a[1] * b[0];
 }

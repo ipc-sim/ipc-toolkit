@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/config.hpp> // define DERIVATIVES_WITH_AUTODIFF
+#include <ipc/config.hpp> // define IPC_TOOLKIT_DEBUG_AUTODIFF
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <TinyAD/ScalarFunction.hh>

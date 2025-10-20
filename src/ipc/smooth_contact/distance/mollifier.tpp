@@ -19,10 +19,10 @@ scalar point_edge_mollifier(
 
 template <typename scalar>
 scalar edge_edge_mollifier(
-    Eigen::ConstRef<Vector3<scalar>> ea0,
-    Eigen::ConstRef<Vector3<scalar>> ea1,
-    Eigen::ConstRef<Vector3<scalar>> eb0,
-    Eigen::ConstRef<Vector3<scalar>> eb1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb1,
     const std::array<HeavisideType, 4>& mtypes,
     const scalar& dist_sqr)
 {
@@ -62,10 +62,10 @@ scalar edge_edge_mollifier(
 
 template <typename scalar>
 scalar point_face_mollifier(
-    Eigen::ConstRef<Vector3<scalar>> p,
-    Eigen::ConstRef<Vector3<scalar>> e0,
-    Eigen::ConstRef<Vector3<scalar>> e1,
-    Eigen::ConstRef<Vector3<scalar>> e2,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> p,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> e0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> e1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> e2,
     const scalar& dist_sqr)
 {
     // use point-line distance instead of point-edge distance because

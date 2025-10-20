@@ -21,17 +21,20 @@ public:
     int n_vertices() const override;
     int n_dofs() const override { return n_vertices() * DIM; }
 
-    double potential(const Vector3d& d, const Vector9d& x) const;
-    Vector12d grad(const Vector3d& d, const Vector9d& x) const;
-    Matrix12d hessian(const Vector3d& d, const Vector9d& x) const;
+    double potential(
+        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const;
+    Vector12d
+    grad(Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const;
+    Matrix12d hessian(
+        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const;
 };
 
 /// @brief d points from triangle to the point
 template <typename scalar>
 scalar smooth_face_term(
-    Eigen::ConstRef<Vector3<scalar>> v0,
-    Eigen::ConstRef<Vector3<scalar>> v1,
-    Eigen::ConstRef<Vector3<scalar>> v2)
+    Eigen::ConstRef<Eigen::Vector3<scalar>> v0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> v1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> v2)
 {
     return 0.5 * (v1 - v0).cross(v2 - v0).norm(); // area of triangle
 }

@@ -43,7 +43,7 @@ void SmoothCollisions::compute_adaptive_dhat(
         face_adaptive_dhat.resize(0);
     }
 
-    auto assign_min = [](double& a, const double& b) -> void {
+    auto assign_min = [](double& a, const double b) -> void {
         a = std::min(a, b);
     };
 

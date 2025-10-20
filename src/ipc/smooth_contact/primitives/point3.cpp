@@ -1,5 +1,6 @@
 #include "point3.hpp"
 
+#include <ipc/config.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
 namespace ipc {
@@ -82,7 +83,7 @@ double Point3::potential(
 Vector<double, -1, Point3::MAX_SIZE + Point3::DIM> Point3::grad(
     const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     using T = ADGrad<-1>;
     Eigen::VectorXd tmp(x.size() + d.size());
     tmp << d, x;
@@ -104,7 +105,7 @@ MatrixMax<
 Point3::hessian(
     const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
 {
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     using T = ADHessian<-1>;
     Eigen::VectorXd tmp(x.size() + d.size());
     tmp << d, x;
@@ -119,10 +120,10 @@ Point3::hessian(
 }
 
 GradType<-1> Point3::smooth_point3_term_tangent_gradient(
-    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::RowVector3d> direc,
     Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
-    const double& alpha,
-    const double& beta) const
+    const double alpha,
+    const double beta) const
 {
     const int nn = tangents.rows();
     Eigen::VectorXd values = Eigen::VectorXd::Ones(nn, 1);
@@ -154,10 +155,10 @@ GradType<-1> Point3::smooth_point3_term_tangent_gradient(
 }
 
 HessianType<-1> Point3::smooth_point3_term_tangent_hessian(
-    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::RowVector3d> direc,
     Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
-    const double& alpha,
-    const double& beta) const
+    const double alpha,
+    const double beta) const
 {
     const int nn = tangents.rows();
     Eigen::VectorXd values = Eigen::VectorXd::Ones(nn, 1);
@@ -230,10 +231,10 @@ HessianType<-1> Point3::smooth_point3_term_tangent_hessian(
 }
 
 GradType<-1> Point3::smooth_point3_term_normal_gradient(
-    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::RowVector3d> direc,
     Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
-    const double& alpha,
-    const double& beta) const
+    const double alpha,
+    const double beta) const
 {
     Eigen::VectorXd grad =
         Eigen::VectorXd::Zero(tangents.size() + direc.size());
@@ -243,9 +244,9 @@ GradType<-1> Point3::smooth_point3_term_normal_gradient(
 
     double normal_term = 0.;
     for (int a = 0; a < faces.rows(); a++) {
-        const Eigen::Ref<const RowVector3<double>> t1 =
+        const Eigen::Ref<const Eigen::RowVector3d> t1 =
             tangents.row(faces(a, 1) - 1);
-        const Eigen::Ref<const RowVector3<double>> t2 =
+        const Eigen::Ref<const Eigen::RowVector3d> t2 =
             tangents.row(faces(a, 2) - 1);
 
         if (otypes.normal_type(a) == HeavisideType::VARIANT) {
@@ -270,10 +271,10 @@ GradType<-1> Point3::smooth_point3_term_normal_gradient(
 }
 
 HessianType<-1> Point3::smooth_point3_term_normal_hessian(
-    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::RowVector3d> direc,
     Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
-    const double& alpha,
-    const double& beta) const
+    const double alpha,
+    const double beta) const
 {
     Eigen::VectorXd grad = Eigen::VectorXd::Zero((tangents.rows() + 1) * 3);
     Eigen::MatrixXd hess = Eigen::MatrixXd::Zero(grad.size(), grad.size());
@@ -284,8 +285,8 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
     // Buggy
     // double normal_term = 0.;
     // for (int a = 0; a < faces.rows(); a++) {
-    //     const Eigen::Ref<const RowVector3<double>> t1 = tangents.row(faces(a,
-    //     1) - 1); const Eigen::Ref<const RowVector3<double>> t2 =
+    //     const Eigen::Ref<const Eigen::RowVector3d> t1 = tangents.row(faces(a,
+    //     1) - 1); const Eigen::Ref<const Eigen::RowVector3d> t2 =
     //     tangents.row(faces(a, 2) - 1);
 
     //     if (otypes.normal_type(a) == HeavisideType::VARIANT)
@@ -360,13 +361,13 @@ HessianType<-1> Point3::smooth_point3_term_normal_hessian(
 
 bool Point3::smooth_point3_term_type(
     const Eigen::Matrix<double, -1, 3>& X,
-    Eigen::ConstRef<RowVector3<double>> direc)
+    Eigen::ConstRef<Eigen::RowVector3d> direc)
 {
     otypes.set_size(edges.rows());
 
-    const RowVector3<double> dn = direc.normalized();
+    const Eigen::RowVector3d dn = direc.normalized();
     for (int a = 0; a < edges.rows(); a++) {
-        const RowVector3<double> t = X.row(edges(a, 1)) - X.row(edges(a, 0));
+        const Eigen::RowVector3d t = X.row(edges(a, 1)) - X.row(edges(a, 0));
         otypes.tangent_type(a) = otypes.compute_type(
             -dn.dot(t) / t.norm(), m_params.alpha_t, m_params.beta_t);
         if (otypes.tangent_type(a) == HeavisideType::ZERO) {
@@ -380,8 +381,8 @@ bool Point3::smooth_point3_term_type(
 
     double normal_term = 0;
     for (int a = 0; a < faces.rows(); a++) {
-        const RowVector3<double> t1 = X.row(faces(a, 1)) - X.row(faces(a, 0));
-        const RowVector3<double> t2 = X.row(faces(a, 2)) - X.row(faces(a, 0));
+        const Eigen::RowVector3d t1 = X.row(faces(a, 1)) - X.row(faces(a, 0));
+        const Eigen::RowVector3d t2 = X.row(faces(a, 2)) - X.row(faces(a, 0));
         const double tmp = dn.dot(t1.cross(t2).normalized());
         otypes.normal_type(a) =
             otypes.compute_type(tmp, m_params.alpha_n, m_params.beta_n);
@@ -399,7 +400,7 @@ bool Point3::smooth_point3_term_type(
 }
 
 GradType<-1> Point3::smooth_point3_term_gradient(
-    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::RowVector3d> direc,
     Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
     const SmoothContactParameters& params) const
 {
@@ -446,7 +447,7 @@ GradType<-1> Point3::smooth_point3_term_gradient(
 }
 
 HessianType<-1> Point3::smooth_point3_term_hessian(
-    Eigen::ConstRef<RowVector3<double>> direc,
+    Eigen::ConstRef<Eigen::RowVector3d> direc,
     Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
     const SmoothContactParameters& params) const
 {
@@ -539,14 +540,15 @@ HessianType<-1> Point3::smooth_point3_term_hessian(
 template <typename scalar, int n_verts>
 scalar Point3::smooth_point3_term(
     const Eigen::Matrix<scalar, n_verts, 3>& X,
-    Eigen::ConstRef<RowVector3<scalar>> direc) const
+    Eigen::ConstRef<Eigen::RowVector3<scalar>> direc) const
 {
-    const RowVector3<scalar> dn = direc.normalized();
+    const Eigen::RowVector3<scalar> dn = direc.normalized();
     scalar tangent_term(1.);
     scalar weight(0.);
     scalar normal_term(0.);
     for (int a = 0; a < edges.rows(); a++) {
-        const RowVector3<scalar> t = X.row(edges(a, 1)) - X.row(edges(a, 0));
+        const Eigen::RowVector3<scalar> t =
+            X.row(edges(a, 1)) - X.row(edges(a, 0));
         if (otypes.tangent_type(a) == HeavisideType::VARIANT) {
             tangent_term =
                 tangent_term
@@ -562,9 +564,9 @@ scalar Point3::smooth_point3_term(
         normal_term = scalar(1.);
     } else {
         for (int a = 0; a < faces.rows(); a++) {
-            const RowVector3<scalar> t1 =
+            const Eigen::RowVector3<scalar> t1 =
                 X.row(faces(a, 1)) - X.row(faces(a, 0));
-            const RowVector3<scalar> t2 =
+            const Eigen::RowVector3<scalar> t2 =
                 X.row(faces(a, 2)) - X.row(faces(a, 0));
             normal_term = normal_term
                 + Math<scalar>::smooth_heaviside(

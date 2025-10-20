@@ -428,7 +428,7 @@ TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
     const double beta = 0.2;
     SmoothContactParameters params { 1e-3, 1, 0, alpha, beta, 2 };
 
-    ipc::Vector3d dn, e0, e1, f0, f1;
+    Eigen::Vector3d dn, e0, e1, f0, f1;
     e0 << 0, 0, 0;
     e1 << 1, 0, 0;
     dn << 0, 0, 1;

@@ -1,36 +1,37 @@
 #include "edge3.hpp"
 
-#include "autogen.hpp"
-
+#include <ipc/config.hpp>
+#include <ipc/smooth_contact/primitives/autogen.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
 namespace ipc {
 namespace {
 
     template <typename scalar>
-    Vector3<scalar> project(
-        Eigen::ConstRef<Vector3<scalar>> a, Eigen::ConstRef<Vector3<scalar>> b)
+    Eigen::Vector3<scalar> project(
+        Eigen::ConstRef<Eigen::Vector3<scalar>> a,
+        Eigen::ConstRef<Eigen::Vector3<scalar>> b)
     {
         return a - a.dot(b) * b;
     }
 
     bool smooth_edge3_term_type(
-        Eigen::ConstRef<Vector3d> dn,
-        Eigen::ConstRef<Vector3d> e0,
-        Eigen::ConstRef<Vector3d> e1,
-        Eigen::ConstRef<Vector3d> f0,
-        Eigen::ConstRef<Vector3d> f1,
+        Eigen::ConstRef<Eigen::Vector3d> dn,
+        Eigen::ConstRef<Eigen::Vector3d> e0,
+        Eigen::ConstRef<Eigen::Vector3d> e1,
+        Eigen::ConstRef<Eigen::Vector3d> f0,
+        Eigen::ConstRef<Eigen::Vector3d> f1,
         const SmoothContactParameters& params,
         OrientationTypes& otypes,
         const bool orientable)
     {
         otypes.set_size(2);
 
-        const Vector3d t0 =
+        const Eigen::Vector3d t0 =
             PointEdgeDistance<double, 3>::point_line_closest_point_direction(
                 f0, e0, e1)
                 .normalized();
-        const Vector3d t1 =
+        const Eigen::Vector3d t1 =
             PointEdgeDistance<double, 3>::point_line_closest_point_direction(
                 f1, e0, e1)
                 .normalized();
@@ -47,8 +48,8 @@ namespace {
         }
 
         if (orientable) {
-            const Vector3d edge = (e0 - e1).normalized();
-            const Vector3d d = project<double>(dn, edge).normalized();
+            const Eigen::Vector3d edge = (e0 - e1).normalized();
+            const Eigen::Vector3d d = project<double>(dn, edge).normalized();
             otypes.normal_type(0) = OrientationTypes::compute_type(
                 (d - t0).cross(d - t1).dot(edge), params.alpha_n,
                 params.beta_n);
@@ -59,23 +60,23 @@ namespace {
     }
 
     double smooth_edge3_tangent_term(
-        Eigen::ConstRef<Vector3d> dn,
-        Eigen::ConstRef<Vector3d> e0,
-        Eigen::ConstRef<Vector3d> e1,
-        Eigen::ConstRef<Vector3d> f0,
-        Eigen::ConstRef<Vector3d> f1,
+        Eigen::ConstRef<Eigen::Vector3d> dn,
+        Eigen::ConstRef<Eigen::Vector3d> e0,
+        Eigen::ConstRef<Eigen::Vector3d> e1,
+        Eigen::ConstRef<Eigen::Vector3d> f0,
+        Eigen::ConstRef<Eigen::Vector3d> f1,
         const double alpha,
         const double beta,
         const OrientationTypes& otypes)
     {
         double tangent_term = 1.;
         if (otypes.tangent_type(0) != HeavisideType::ONE) {
-            const Vector3d t0 = PointEdgeDistance<
+            const Eigen::Vector3d t0 = PointEdgeDistance<
                 double, 3>::point_line_closest_point_direction(f0, e0, e1);
             tangent_term *= opposite_direction_penalty(t0, -dn, alpha, beta);
         }
         if (otypes.tangent_type(1) != HeavisideType::ONE) {
-            const Vector3d t1 = PointEdgeDistance<
+            const Eigen::Vector3d t1 = PointEdgeDistance<
                 double, 3>::point_line_closest_point_direction(f1, e0, e1);
             tangent_term *= opposite_direction_penalty(t1, -dn, alpha, beta);
         }
@@ -84,16 +85,16 @@ namespace {
     }
 
     GradType<15> smooth_edge3_tangent_term_gradient(
-        Eigen::ConstRef<Vector3d> dn,
-        Eigen::ConstRef<Vector3d> e0,
-        Eigen::ConstRef<Vector3d> e1,
-        Eigen::ConstRef<Vector3d> f0,
-        Eigen::ConstRef<Vector3d> f1,
+        Eigen::ConstRef<Eigen::Vector3d> dn,
+        Eigen::ConstRef<Eigen::Vector3d> e0,
+        Eigen::ConstRef<Eigen::Vector3d> e1,
+        Eigen::ConstRef<Eigen::Vector3d> f0,
+        Eigen::ConstRef<Eigen::Vector3d> f1,
         const double alpha,
         const double beta,
         const OrientationTypes& otypes)
     {
-        Vector2d vals;
+        Eigen::Vector2d vals;
         vals << 1., 1.;
         std::array<Vector<double, 15>, 2> grads;
         for (auto& g : grads) {
@@ -101,7 +102,7 @@ namespace {
         }
 
         for (int d : { 0, 1 }) {
-            const Eigen::Ref<const Vector3d> f = d == 0 ? f0 : f1;
+            const Eigen::Ref<const Eigen::Vector3d> f = d == 0 ? f0 : f1;
             if (otypes.tangent_type(d) != HeavisideType::ONE) {
                 const auto [t, g] = PointEdgeDistanceDerivatives<
                     3>::point_line_closest_point_direction_grad(f, e0, e1);
@@ -129,16 +130,16 @@ namespace {
     }
 
     HessianType<15> smooth_edge3_tangent_term_hessian(
-        Eigen::ConstRef<Vector3d> dn,
-        Eigen::ConstRef<Vector3d> e0,
-        Eigen::ConstRef<Vector3d> e1,
-        Eigen::ConstRef<Vector3d> f0,
-        Eigen::ConstRef<Vector3d> f1,
+        Eigen::ConstRef<Eigen::Vector3d> dn,
+        Eigen::ConstRef<Eigen::Vector3d> e0,
+        Eigen::ConstRef<Eigen::Vector3d> e1,
+        Eigen::ConstRef<Eigen::Vector3d> f0,
+        Eigen::ConstRef<Eigen::Vector3d> f1,
         const double alpha,
         const double beta,
         const OrientationTypes& otypes)
     {
-        Vector2d vals;
+        Eigen::Vector2d vals;
         vals << 1., 1.;
         std::array<Vector<double, 15>, 2> grads;
         std::array<Eigen::Matrix<double, 15, 15>, 2> hesses;
@@ -150,7 +151,7 @@ namespace {
         }
 
         for (int d : { 0, 1 }) {
-            const Eigen::Ref<const Vector3d> f = d == 0 ? f0 : f1;
+            const Eigen::Ref<const Eigen::Vector3d> f = d == 0 ? f0 : f1;
             if (otypes.tangent_type(d) != HeavisideType::ONE) {
                 const auto [t, g, h] = PointEdgeDistanceDerivatives<
                     3>::point_line_closest_point_direction_hessian(f, e0, e1);
@@ -199,16 +200,16 @@ namespace {
     }
 
     double smooth_edge3_term(
-        Eigen::ConstRef<Vector3d> direc,
-        Eigen::ConstRef<Vector3d> e0,
-        Eigen::ConstRef<Vector3d> e1,
-        Eigen::ConstRef<Vector3d> f0,
-        Eigen::ConstRef<Vector3d> f1,
+        Eigen::ConstRef<Eigen::Vector3d> direc,
+        Eigen::ConstRef<Eigen::Vector3d> e0,
+        Eigen::ConstRef<Eigen::Vector3d> e1,
+        Eigen::ConstRef<Eigen::Vector3d> f0,
+        Eigen::ConstRef<Eigen::Vector3d> f1,
         const SmoothContactParameters& params,
         const OrientationTypes& otypes,
         const bool orientable)
     {
-        const Vector3d dn = direc.normalized();
+        const Eigen::Vector3d dn = direc.normalized();
         double tangent_term = smooth_edge3_tangent_term(
             dn, e0, e1, f0, f1, params.alpha_t, params.beta_t, otypes);
         double normal_term = !orientable
@@ -220,11 +221,11 @@ namespace {
     }
 
     GradType<15> smooth_edge3_term_gradient(
-        Eigen::ConstRef<Vector3d> direc,
-        Eigen::ConstRef<Vector3d> e0,
-        Eigen::ConstRef<Vector3d> e1,
-        Eigen::ConstRef<Vector3d> f0,
-        Eigen::ConstRef<Vector3d> f1,
+        Eigen::ConstRef<Eigen::Vector3d> direc,
+        Eigen::ConstRef<Eigen::Vector3d> e0,
+        Eigen::ConstRef<Eigen::Vector3d> e1,
+        Eigen::ConstRef<Eigen::Vector3d> f0,
+        Eigen::ConstRef<Eigen::Vector3d> f1,
         const SmoothContactParameters& params,
         const OrientationTypes& otypes,
         const bool orientable)
@@ -258,11 +259,11 @@ namespace {
     }
 
     HessianType<15> smooth_edge3_term_hessian(
-        Eigen::ConstRef<Vector3d> direc,
-        Eigen::ConstRef<Vector3d> e0,
-        Eigen::ConstRef<Vector3d> e1,
-        Eigen::ConstRef<Vector3d> f0,
-        Eigen::ConstRef<Vector3d> f1,
+        Eigen::ConstRef<Eigen::Vector3d> direc,
+        Eigen::ConstRef<Eigen::Vector3d> e0,
+        Eigen::ConstRef<Eigen::Vector3d> e1,
+        Eigen::ConstRef<Eigen::Vector3d> f0,
+        Eigen::ConstRef<Eigen::Vector3d> f1,
         const SmoothContactParameters& params,
         const OrientationTypes& otypes,
         const bool orientable)
@@ -331,17 +332,17 @@ namespace {
     /// @return
     template <typename scalar>
     scalar smooth_edge3_term_template(
-        Eigen::ConstRef<Vector3<scalar>> dn,
-        Eigen::ConstRef<Vector3<scalar>> e0,
-        Eigen::ConstRef<Vector3<scalar>> e1,
-        Eigen::ConstRef<Vector3<scalar>> f0,
-        Eigen::ConstRef<Vector3<scalar>> f1,
+        Eigen::ConstRef<Eigen::Vector3<scalar>> dn,
+        Eigen::ConstRef<Eigen::Vector3<scalar>> e0,
+        Eigen::ConstRef<Eigen::Vector3<scalar>> e1,
+        Eigen::ConstRef<Eigen::Vector3<scalar>> f0,
+        Eigen::ConstRef<Eigen::Vector3<scalar>> f1,
         const SmoothContactParameters& params,
         const OrientationTypes& otypes,
         const bool orientable)
     {
         scalar tangent_term = scalar(1.);
-        const Vector3<scalar> t0 =
+        const Eigen::Vector3<scalar> t0 =
             PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
                 f0, e0, e1)
                 .normalized();
@@ -351,7 +352,7 @@ namespace {
                                -dn.dot(t0), params.alpha_t, params.beta_t);
         }
 
-        const Vector3<scalar> t1 =
+        const Eigen::Vector3<scalar> t1 =
             PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
                 f1, e0, e1)
                 .normalized();
@@ -364,8 +365,9 @@ namespace {
 
         scalar normal_term = scalar(1.);
         if (orientable && otypes.normal_type(0) != HeavisideType::ONE) {
-            const Vector3<scalar> edge = (e0 - e1).normalized();
-            const Vector3<scalar> d = project<scalar>(dn, edge).normalized();
+            const Eigen::Vector3<scalar> edge = (e0 - e1).normalized();
+            const Eigen::Vector3<scalar> d =
+                project<scalar>(dn, edge).normalized();
             normal_term = Math<scalar>::smooth_heaviside(
                 (d - t0).cross(d - t1).dot(edge), params.alpha_n,
                 params.beta_n);
@@ -459,9 +461,9 @@ Edge3::Edge3(
 int Edge3::n_vertices() const { return N_EDGE_NEIGHBORS_3D; }
 
 double Edge3::potential(
-    Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
+    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 {
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     return smooth_edge3_term_template<double>(
         d.normalized(), x.head<3>(), x.segment<3>(3), x.segment<3>(6),
         x.tail<3>(), m_params, otypes, orientable);
@@ -472,10 +474,10 @@ double Edge3::potential(
 #endif
 }
 
-Vector15d
-Edge3::grad(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
+Vector15d Edge3::grad(
+    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 {
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     Vector15d tmp;
     tmp << d, x;
     ScalarBase::setVariableCount(15);
@@ -492,10 +494,10 @@ Edge3::grad(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 #endif
 }
 
-Matrix15d
-Edge3::hessian(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
+Matrix15d Edge3::hessian(
+    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 {
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     Vector15d tmp;
     tmp << d, x;
     ScalarBase::setVariableCount(15);
@@ -513,11 +515,11 @@ Edge3::hessian(Eigen::ConstRef<Vector3d> d, Eigen::ConstRef<Vector12d> x) const
 }
 
 double smooth_edge3_normal_term(
-    Eigen::ConstRef<Vector3d> dn,
-    Eigen::ConstRef<Vector3d> e0,
-    Eigen::ConstRef<Vector3d> e1,
-    Eigen::ConstRef<Vector3d> f0,
-    Eigen::ConstRef<Vector3d> f1,
+    Eigen::ConstRef<Eigen::Vector3d> dn,
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> f0,
+    Eigen::ConstRef<Eigen::Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes)
@@ -527,26 +529,26 @@ double smooth_edge3_normal_term(
         return 1.;
     }
 
-    const Vector3d t0 =
+    const Eigen::Vector3d t0 =
         PointEdgeDistance<double, 3>::point_line_closest_point_direction(
             f0, e0, e1)
             .normalized();
-    const Vector3d t1 =
+    const Eigen::Vector3d t1 =
         PointEdgeDistance<double, 3>::point_line_closest_point_direction(
             f1, e0, e1)
             .normalized();
-    const Vector3d edge = (e0 - e1).normalized();
-    const Vector3d d = project<double>(dn, edge).normalized();
+    const Eigen::Vector3d edge = (e0 - e1).normalized();
+    const Eigen::Vector3d d = project<double>(dn, edge).normalized();
     return Math<double>::smooth_heaviside(
         (d - t0).cross(d - t1).dot(edge), alpha, beta);
 }
 
 GradType<15> smooth_edge3_normal_term_gradient(
-    Eigen::ConstRef<Vector3d> dn,
-    Eigen::ConstRef<Vector3d> e0,
-    Eigen::ConstRef<Vector3d> e1,
-    Eigen::ConstRef<Vector3d> f0,
-    Eigen::ConstRef<Vector3d> f1,
+    Eigen::ConstRef<Eigen::Vector3d> dn,
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> f0,
+    Eigen::ConstRef<Eigen::Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes)
@@ -571,7 +573,7 @@ GradType<15> smooth_edge3_normal_term_gradient(
                 .normalized();
         const auto edge = (e0 - e1).normalized();
 
-        const Vector3d d = project<double>(dn, edge).normalized();
+        const Eigen::Vector3d d = project<double>(dn, edge).normalized();
         val = (d - t0n).cross(d - t1n).dot(edge);
     }
 
@@ -585,11 +587,11 @@ GradType<15> smooth_edge3_normal_term_gradient(
 }
 
 HessianType<15> smooth_edge3_normal_term_hessian(
-    Eigen::ConstRef<Vector3d> dn,
-    Eigen::ConstRef<Vector3d> e0,
-    Eigen::ConstRef<Vector3d> e1,
-    Eigen::ConstRef<Vector3d> f0,
-    Eigen::ConstRef<Vector3d> f1,
+    Eigen::ConstRef<Eigen::Vector3d> dn,
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> f0,
+    Eigen::ConstRef<Eigen::Vector3d> f1,
     const double alpha,
     const double beta,
     const OrientationTypes& otypes)
@@ -615,7 +617,7 @@ HessianType<15> smooth_edge3_normal_term_hessian(
                 .normalized();
         const auto edge = (e0 - e1).normalized();
 
-        const Vector3d d = project<double>(dn, edge).normalized();
+        const Eigen::Vector3d d = project<double>(dn, edge).normalized();
         val = (d - t0n).cross(d - t1n).dot(edge);
     }
 
@@ -641,9 +643,9 @@ HessianType<15> smooth_edge3_normal_term_hessian(
     //     Vector15d tmp;
     //     tmp << dn, e0, e1, f0, f1;
     //     auto X = slice_positions<T, 15, 1>(tmp);
-    //     const Vector3<T> n0 = (X.segment<3>(3) -
+    //     const Eigen::Vector3<T> n0 = (X.segment<3>(3) -
     //     X.segment<3>(9)).cross(X.segment<3>(6) - X.segment<3>(9)); const
-    //     Vector3<T> n1 = -(X.segment<3>(3) -
+    //     Eigen::Vector3<T> n1 = -(X.segment<3>(3) -
     //     X.tail<3>()).cross(X.segment<3>(6) - X.tail<3>()); T normal_term =
     //     Math<T>::smooth_heaviside(
     //         (Math<T>::smooth_heaviside(X.head<3>().dot(n0) / n0.norm(),

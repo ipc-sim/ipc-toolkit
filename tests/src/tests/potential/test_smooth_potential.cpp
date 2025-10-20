@@ -382,7 +382,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
 
 TEST_CASE("Benchmark autogen code", "[!benchmark]")
 {
-    ipc::Vector3d ea0, ea1, eb0, eb1;
+    Eigen::Vector3d ea0, ea1, eb0, eb1;
     ea0 << -0.9, 0, 0;
     ea1 << 1.05, 0, 0;
     eb0 << 0, -1.1, 1.02;

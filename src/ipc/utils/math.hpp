@@ -11,20 +11,20 @@ enum class HeavisideType : uint8_t { ZERO = 0, ONE = 1, VARIANT = 2 };
 struct OrientationTypes {
 
     static HeavisideType
-    compute_type(const double& val, const double& alpha, const double& beta);
+    compute_type(const double val, const double alpha, const double beta);
 
     int size() const { return m_size; }
     void set_size(const int size);
-    const HeavisideType& tangent_type(const int& i) const
+    const HeavisideType& tangent_type(const int i) const
     {
         return tangent_types[i];
     }
-    const HeavisideType& normal_type(const int& i) const
+    const HeavisideType& normal_type(const int i) const
     {
         return normal_types[i];
     }
-    HeavisideType& tangent_type(const int& i) { return tangent_types[i]; }
-    HeavisideType& normal_type(const int& i) { return normal_types[i]; }
+    HeavisideType& tangent_type(const int i) { return tangent_types[i]; }
+    HeavisideType& normal_type(const int i) { return normal_types[i]; }
 
     int m_size = 0;
     std::vector<HeavisideType> tangent_types, normal_types;
@@ -32,47 +32,53 @@ struct OrientationTypes {
 
 constexpr double MOLLIFIER_THRESHOLD_EPS = 1e-2;
 
-template <typename scalar> struct Math {
-    static double sign(const double& x);
-    static scalar abs(const scalar& x);
-    static scalar sqr(const scalar& x);
-    static scalar cubic(const scalar& x);
+template <typename T> struct Math {
+    Math() = delete;
+    Math(const Math&) = delete;
+    Math& operator=(const Math&) = delete;
 
-    static scalar cubic_spline(const scalar& x);
-    static double cubic_spline_grad(const double& x);
-    static double cubic_spline_hess(const double& x);
+    static double sign(const double x);
+    static T abs(const T& x);
+    static T sqr(const T& x);
+    static T cubic(const T& x);
+
+    static T cubic_spline(const T& x);
+    static double cubic_spline_grad(const double x);
+    static double cubic_spline_hess(const double x);
 
     /// @brief support is [-1, 1]
-    /// @tparam scalar
+    /// @tparam T
     /// @param x
     /// @return
-    static scalar quadratic_spline(const scalar& x);
+    static T quadratic_spline(const T& x);
 
-    static scalar smooth_heaviside(
-        const scalar& x, const double alpha, const double beta = 0);
+    static T
+    smooth_heaviside(const T& x, const double alpha, const double beta = 0);
     static double smooth_heaviside_grad(
-        const double& x, const double alpha, const double beta = 0);
+        const double x, const double alpha, const double beta = 0);
     static double smooth_heaviside_hess(
-        const double& x, const double alpha, const double beta = 0);
+        const double x, const double alpha, const double beta = 0);
 
-    static scalar mollifier(const scalar& x);
-    static double mollifier_grad(const double& x);
-    static double mollifier_hess(const double& x);
+    static T mollifier(const T& x);
+    static double mollifier_grad(const double x);
+    static double mollifier_hess(const double x);
 
     // support is [0, 1]
-    static scalar inv_barrier(const scalar& x, const int& r);
-    static double inv_barrier_grad(const double& x, const int& r);
-    static double inv_barrier_hess(const double& x, const int& r);
+    static T inv_barrier(const T& x, const int r);
+    static double inv_barrier_grad(const double x, const int r);
+    static double inv_barrier_hess(const double x, const int r);
 
-    static scalar l_ns(const scalar& x);
+    static T l_ns(const T& x);
 
-    static scalar cross2(
-        Eigen::ConstRef<Vector2<scalar>> a, Eigen::ConstRef<Vector2<scalar>> b);
+    static T cross2(
+        Eigen::ConstRef<Eigen::Vector2<T>> a,
+        Eigen::ConstRef<Eigen::Vector2<T>> b);
 };
 
 // gradient is symmetric
 std::tuple<Eigen::Vector3d, Eigen::Matrix3d>
 normalize_vector_grad(Eigen::ConstRef<Eigen::Vector3d> t);
+
 // hessian is symmetric wrt. the three dimensions
 std::tuple<
     Eigen::Vector3d,
@@ -121,42 +127,42 @@ std::array<Matrix6d, 3> cross_product_hessian(
 double opposite_direction_penalty(
     Eigen::ConstRef<Eigen::Vector3d> t,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta);
+    const double alpha,
+    const double beta);
 
 GradType<6> opposite_direction_penalty_grad(
     Eigen::ConstRef<Eigen::Vector3d> t,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta);
+    const double alpha,
+    const double beta);
 
 HessianType<6> opposite_direction_penalty_hess(
     Eigen::ConstRef<Eigen::Vector3d> t,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta);
+    const double alpha,
+    const double beta);
 
 // assume unit vector d
 double negative_orientation_penalty(
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta);
+    const double alpha,
+    const double beta);
 
 GradType<9> negative_orientation_penalty_grad(
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta);
+    const double alpha,
+    const double beta);
 
 HessianType<9> negative_orientation_penalty_hess(
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta);
+    const double alpha,
+    const double beta);
 
 } // namespace ipc
 

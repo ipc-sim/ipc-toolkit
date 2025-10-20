@@ -24,15 +24,16 @@ namespace {
     }
 
     bool smooth_point2_term_type(
-        Eigen::ConstRef<Vector2d> v,
-        Eigen::ConstRef<Vector2d> direc,
-        Eigen::ConstRef<Vector2d> e0,
-        Eigen::ConstRef<Vector2d> e1,
+        Eigen::ConstRef<Eigen::Vector2d> v,
+        Eigen::ConstRef<Eigen::Vector2d> direc,
+        Eigen::ConstRef<Eigen::Vector2d> e0,
+        Eigen::ConstRef<Eigen::Vector2d> e1,
         const SmoothContactParameters& params,
         const bool orientable)
     {
-        const Vector2d dn = -direc.normalized();
-        const Vector2d t0 = (e0 - v).normalized(), t1 = (e1 - v).normalized();
+        const Eigen::Vector2d dn = -direc.normalized();
+        const Eigen::Vector2d t0 = (e0 - v).normalized(),
+                              t1 = (e1 - v).normalized();
 
         if (dn.dot(t0) <= -params.alpha_t || dn.dot(t1) <= -params.alpha_t) {
             return false;
@@ -55,16 +56,16 @@ namespace {
 
     template <class scalar>
     scalar smooth_point2_term(
-        Eigen::ConstRef<Vector2<scalar>> v,
-        Eigen::ConstRef<Vector2<scalar>> direc,
-        Eigen::ConstRef<Vector2<scalar>> e0,
-        Eigen::ConstRef<Vector2<scalar>> e1,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> v,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> direc,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> e0,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> e1,
         const SmoothContactParameters& params,
         const bool orientable)
     {
-        const Vector2<scalar> dn = -direc.normalized();
-        const Vector2<scalar> t0 = (e0 - v).normalized(),
-                              t1 = (v - e1).normalized();
+        const Eigen::Vector2<scalar> dn = -direc.normalized();
+        const Eigen::Vector2<scalar> t0 = (e0 - v).normalized(),
+                                     t1 = (v - e1).normalized();
 
         scalar val = Math<scalar>::smooth_heaviside(
                          dn.dot(t0), params.alpha_t, params.beta_t)
@@ -87,13 +88,13 @@ namespace {
 
     template <class scalar>
     scalar smooth_point2_term_one_side(
-        Eigen::ConstRef<Vector2<scalar>> v,
-        Eigen::ConstRef<Vector2<scalar>> direc,
-        Eigen::ConstRef<Vector2<scalar>> e0,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> v,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> direc,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> e0,
         const SmoothContactParameters& params)
     {
-        const Vector2<scalar> dn = -direc.normalized();
-        const Vector2<scalar> t0 = e0 - v;
+        const Eigen::Vector2<scalar> dn = -direc.normalized();
+        const Eigen::Vector2<scalar> t0 = e0 - v;
 
         const scalar tangent_term = Math<scalar>::smooth_heaviside(
             dn.dot(t0) / t0.norm(), params.alpha_t, params.beta_t);
@@ -125,8 +126,8 @@ Point2::Point2(
             { id, has_neighbor_1 ? neighbor_verts[0] : neighbor_verts[1] }
         };
 
-        const Vector2d dn = -d.normalized();
-        const Vector2d t0 =
+        const Eigen::Vector2d dn = -d.normalized();
+        const Eigen::Vector2d t0 =
             (vertices.row(m_vertex_ids[1]) - vertices.row(m_vertex_ids[0]))
                 .normalized();
 

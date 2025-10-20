@@ -1,5 +1,7 @@
 #include "edge.hpp"
 
+#include <ipc/config.hpp>
+
 namespace ipc {
 
 template <int DIM>
@@ -34,7 +36,7 @@ template <>
 Vector6d
 Edge<2>::grad(Eigen::ConstRef<DVector> d, Eigen::ConstRef<XVector> x) const
 {
-    const Vector2d t = x.tail<2>() - x.head<2>();
+    const Eigen::Vector2d t = x.tail<2>() - x.head<2>();
     const double len = t.norm();
     Vector6d g;
     g.setZero();
@@ -49,13 +51,13 @@ Edge<2>::hessian(Eigen::ConstRef<DVector> d, Eigen::ConstRef<XVector> x) const
 {
     Matrix6d h;
     h.setZero();
-#ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     ScalarBase::setVariableCount(4);
     using T = ADHessian<4>;
     auto xAD = slice_positions<T, 2, 2>(x);
     h.block<4, 4>(2, 2) = (xAD.row(0) - xAD.row(1)).norm().Hess;
 #else
-    const Vector2d t = x.tail<2>() - x.head<2>();
+    const Eigen::Vector2d t = x.tail<2>() - x.head<2>();
     const double norm = t.norm();
     h.block<2, 2>(2, 2) =
         (Matrix2d::Identity() - t * (1. / norm / norm) * t.transpose()) / norm;

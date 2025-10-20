@@ -20,7 +20,7 @@ namespace {
 } // namespace
 
 HeavisideType OrientationTypes::compute_type(
-    const double& val, const double& alpha, const double& beta)
+    const double val, const double alpha, const double beta)
 {
     if (val <= -alpha) {
         return HeavisideType::ZERO;
@@ -71,8 +71,8 @@ normalize_vector_hess(Eigen::ConstRef<Eigen::Vector3d> t)
 double opposite_direction_penalty(
     Eigen::ConstRef<Eigen::Vector3d> t,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta)
+    const double alpha,
+    const double beta)
 {
     return Math<double>::smooth_heaviside(d.dot(t) / t.norm(), alpha, beta);
 }
@@ -80,8 +80,8 @@ double opposite_direction_penalty(
 GradType<6> opposite_direction_penalty_grad(
     Eigen::ConstRef<Eigen::Vector3d> t,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta)
+    const double alpha,
+    const double beta)
 {
     auto [tn, tn_grad] = normalize_vector_grad(t);
     const double a = d.dot(tn);
@@ -96,8 +96,8 @@ GradType<6> opposite_direction_penalty_grad(
 HessianType<6> opposite_direction_penalty_hess(
     Eigen::ConstRef<Eigen::Vector3d> t,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta)
+    const double alpha,
+    const double beta)
 {
     auto [tn, tn_grad, tn_hess] = normalize_vector_hess(t);
     const double a = d.dot(tn);
@@ -130,8 +130,8 @@ double negative_orientation_penalty(
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta)
+    const double alpha,
+    const double beta)
 {
     const Eigen::Vector3d n = t1.cross(t2);
     return opposite_direction_penalty(n, d, alpha, beta);
@@ -141,8 +141,8 @@ GradType<9> negative_orientation_penalty_grad(
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta)
+    const double alpha,
+    const double beta)
 {
     const Eigen::Vector3d n = t1.cross(t2);
     auto [y, dy] = opposite_direction_penalty_grad(n, d, alpha, beta);
@@ -168,10 +168,10 @@ HessianType<9> negative_orientation_penalty_hess(
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2,
     Eigen::ConstRef<Eigen::Vector3d> d,
-    const double& alpha,
-    const double& beta)
+    const double alpha,
+    const double beta)
 {
-    const Vector3d n = t1.cross(t2);
+    const Eigen::Vector3d n = t1.cross(t2);
     const Eigen::Matrix<double, 3, 6> cross_grad =
         cross_product_gradient(t1, t2);
     const std::array<Matrix6d, 3> cross_hess = cross_product_hessian(t1, t2);

@@ -8,22 +8,22 @@
 
 namespace ipc {
 
-std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>>
+std::tuple<Eigen::Vector3d, Eigen::Matrix<double, 3, 12>>
 line_line_closest_point_direction_gradient(
-    Eigen::ConstRef<Vector3d> ea0,
-    Eigen::ConstRef<Vector3d> ea1,
-    Eigen::ConstRef<Vector3d> eb0,
-    Eigen::ConstRef<Vector3d> eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
-    const Vector3d ea = ea1 - ea0;
-    const Vector3d eb = eb1 - eb0;
-    const Vector3d normal = ea.cross(eb);
+    const Eigen::Vector3d ea = ea1 - ea0;
+    const Eigen::Vector3d eb = eb1 - eb0;
+    const Eigen::Vector3d normal = ea.cross(eb);
     const Eigen::Matrix<double, 3, 6> cross_grad =
         cross_product_gradient(ea, eb);
 
     const double normal_sqr_norm = normal.squaredNorm();
-    const Vector3d t = eb0 - ea0;
-    const Vector3d vec = (t.dot(normal) / normal_sqr_norm) * normal;
+    const Eigen::Vector3d t = eb0 - ea0;
+    const Eigen::Vector3d vec = (t.dot(normal) / normal_sqr_norm) * normal;
 
     Eigen::Matrix<double, 3, 12> grad = Eigen::Matrix<double, 3, 12>::Zero();
     // derivative wrt. normal, tempararily store here
@@ -44,23 +44,26 @@ line_line_closest_point_direction_gradient(
     return std::make_tuple(vec, grad);
 }
 
-std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>, std::array<Matrix12d, 3>>
+std::tuple<
+    Eigen::Vector3d,
+    Eigen::Matrix<double, 3, 12>,
+    std::array<Matrix12d, 3>>
 line_line_closest_point_direction_hessian(
-    Eigen::ConstRef<Vector3d> ea0,
-    Eigen::ConstRef<Vector3d> ea1,
-    Eigen::ConstRef<Vector3d> eb0,
-    Eigen::ConstRef<Vector3d> eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
-    const Vector3d ea = ea1 - ea0;
-    const Vector3d eb = eb1 - eb0;
-    const Vector3d normal = ea.cross(eb);
+    const Eigen::Vector3d ea = ea1 - ea0;
+    const Eigen::Vector3d eb = eb1 - eb0;
+    const Eigen::Vector3d normal = ea.cross(eb);
     const Eigen::Matrix<double, 3, 6> cross_grad =
         cross_product_gradient(ea, eb);
     const std::array<Matrix6d, 3> cross_hess = cross_product_hessian(ea, eb);
 
     const double normal_sqr_norm = normal.squaredNorm();
-    const Vector3d t = eb0 - ea0;
-    const Vector3d vec = (t.dot(normal) / normal_sqr_norm) * normal;
+    const Eigen::Vector3d t = eb0 - ea0;
+    const Eigen::Vector3d vec = (t.dot(normal) / normal_sqr_norm) * normal;
 
     Eigen::Matrix<double, 3, 12> grad = Eigen::Matrix<double, 3, 12>::Zero();
     // derivative wrt. normal and t
@@ -137,10 +140,10 @@ line_line_closest_point_direction_hessian(
 
 std::tuple<Vector6d, Eigen::Matrix<double, 6, 12>>
 line_line_closest_point_pairs_gradient(
-    Eigen::ConstRef<Vector3d> ea0,
-    Eigen::ConstRef<Vector3d> ea1,
-    Eigen::ConstRef<Vector3d> eb0,
-    Eigen::ConstRef<Vector3d> eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     const auto uv = edge_edge_closest_point(ea0, ea1, eb0, eb1);
     const auto J = edge_edge_closest_point_jacobian(ea0, ea1, eb0, eb1);
@@ -160,10 +163,10 @@ line_line_closest_point_pairs_gradient(
 
 std::tuple<Vector6d, Eigen::Matrix<double, 6, 12>, std::array<Matrix12d, 6>>
 line_line_closest_point_pairs_hessian(
-    Eigen::ConstRef<Vector3d> ea0,
-    Eigen::ConstRef<Vector3d> ea1,
-    Eigen::ConstRef<Vector3d> eb0,
-    Eigen::ConstRef<Vector3d> eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     const auto uv = edge_edge_closest_point(ea0, ea1, eb0, eb1);
     const auto J = edge_edge_closest_point_jacobian(ea0, ea1, eb0, eb1);
@@ -221,22 +224,22 @@ line_line_closest_point_pairs_hessian(
 
 template <typename scalar>
 scalar line_line_sqr_distance(
-    Eigen::ConstRef<Vector3<scalar>> ea0,
-    Eigen::ConstRef<Vector3<scalar>> ea1,
-    Eigen::ConstRef<Vector3<scalar>> eb0,
-    Eigen::ConstRef<Vector3<scalar>> eb1)
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb1)
 {
-    const Vector3<scalar> normal = (ea1 - ea0).cross(eb1 - eb0);
+    const Eigen::Vector3<scalar> normal = (ea1 - ea0).cross(eb1 - eb0);
     const scalar line_to_line = (eb0 - ea0).dot(normal);
     return line_to_line * line_to_line / normal.squaredNorm();
 }
 
 template <typename scalar>
 scalar edge_edge_sqr_distance(
-    Eigen::ConstRef<Vector3<scalar>> ea0,
-    Eigen::ConstRef<Vector3<scalar>> ea1,
-    Eigen::ConstRef<Vector3<scalar>> eb0,
-    Eigen::ConstRef<Vector3<scalar>> eb1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb1,
     EdgeEdgeDistanceType dtype)
 {
     if constexpr (std::is_same<double, scalar>::value) {
@@ -284,29 +287,29 @@ scalar edge_edge_sqr_distance(
 }
 
 template <typename scalar>
-Vector3<scalar> line_line_closest_point_direction(
-    Eigen::ConstRef<Vector3<scalar>> ea0,
-    Eigen::ConstRef<Vector3<scalar>> ea1,
-    Eigen::ConstRef<Vector3<scalar>> eb0,
-    Eigen::ConstRef<Vector3<scalar>> eb1)
+Eigen::Vector3<scalar> line_line_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb1)
 {
-    const Vector3<scalar> normal = (ea1 - ea0).cross(eb1 - eb0);
+    const Eigen::Vector3<scalar> normal = (ea1 - ea0).cross(eb1 - eb0);
     return ((eb0 - ea0).dot(normal) / normal.squaredNorm()) * normal;
 }
 
 template <typename scalar>
 Eigen::Matrix<scalar, 3, 2> line_line_closest_point_pairs(
-    Eigen::ConstRef<Vector3<scalar>> ea0,
-    Eigen::ConstRef<Vector3<scalar>> ea1,
-    Eigen::ConstRef<Vector3<scalar>> eb0,
-    Eigen::ConstRef<Vector3<scalar>> eb1)
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb1)
 {
-    const Vector3<scalar> ta = ea1 - ea0;
-    const Vector3<scalar> tb = eb1 - eb0;
+    const Eigen::Vector3<scalar> ta = ea1 - ea0;
+    const Eigen::Vector3<scalar> tb = eb1 - eb0;
     const scalar la = ta.squaredNorm();
     const scalar lb = tb.squaredNorm();
     const scalar lab = ta.dot(tb);
-    const Vector3<scalar> d = eb0 - ea0;
+    const Eigen::Vector3<scalar> d = eb0 - ea0;
 
     Eigen::Matrix<scalar, 3, 2> out;
     const scalar fac = la * lb - pow(lab, 2);
@@ -324,11 +327,11 @@ Eigen::Matrix<scalar, 3, 2> line_line_closest_point_pairs(
 /// @param dtype Edge-edge distance type
 /// @return Difference of the pair of closest point, pointing from edge 0 to edge 1
 template <typename scalar>
-Vector3<scalar> edge_edge_closest_point_direction(
-    Eigen::ConstRef<Vector3<scalar>> ea0,
-    Eigen::ConstRef<Vector3<scalar>> ea1,
-    Eigen::ConstRef<Vector3<scalar>> eb0,
-    Eigen::ConstRef<Vector3<scalar>> eb1,
+Eigen::Vector3<scalar> edge_edge_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb1,
     EdgeEdgeDistanceType dtype)
 {
     if constexpr (std::is_same<double, scalar>::value) {
@@ -377,10 +380,10 @@ Vector3<scalar> edge_edge_closest_point_direction(
 
 template <typename scalar>
 Eigen::Matrix<scalar, 3, 2> edge_edge_closest_point_pairs(
-    Eigen::ConstRef<Vector3<scalar>> ea0,
-    Eigen::ConstRef<Vector3<scalar>> ea1,
-    Eigen::ConstRef<Vector3<scalar>> eb0,
-    Eigen::ConstRef<Vector3<scalar>> eb1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<scalar>> eb1,
     EdgeEdgeDistanceType dtype)
 {
     if constexpr (std::is_same<double, scalar>::value) {
@@ -447,105 +450,105 @@ Eigen::Matrix<scalar, 3, 2> edge_edge_closest_point_pairs(
     return out;
 }
 
-template Vector3<double> edge_edge_closest_point_direction(
-    Eigen::ConstRef<Vector3<double>> ea0,
-    Eigen::ConstRef<Vector3<double>> ea1,
-    Eigen::ConstRef<Vector3<double>> eb0,
-    Eigen::ConstRef<Vector3<double>> eb1,
+template Eigen::Vector3d edge_edge_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     EdgeEdgeDistanceType dtype);
-template Vector3<ADGrad<9>> edge_edge_closest_point_direction(
-    Eigen::ConstRef<Vector3<ADGrad<9>>> ea0,
-    Eigen::ConstRef<Vector3<ADGrad<9>>> ea1,
-    Eigen::ConstRef<Vector3<ADGrad<9>>> eb0,
-    Eigen::ConstRef<Vector3<ADGrad<9>>> eb1,
+template Eigen::Vector3<ADGrad<9>> edge_edge_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> eb1,
     EdgeEdgeDistanceType dtype);
-template Vector3<ADHessian<9>> edge_edge_closest_point_direction(
-    Eigen::ConstRef<Vector3<ADHessian<9>>> ea0,
-    Eigen::ConstRef<Vector3<ADHessian<9>>> ea1,
-    Eigen::ConstRef<Vector3<ADHessian<9>>> eb0,
-    Eigen::ConstRef<Vector3<ADHessian<9>>> eb1,
+template Eigen::Vector3<ADHessian<9>> edge_edge_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> eb1,
     EdgeEdgeDistanceType dtype);
-template Vector3<ADGrad<12>> edge_edge_closest_point_direction(
-    Eigen::ConstRef<Vector3<ADGrad<12>>> ea0,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> ea1,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> eb0,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> eb1,
+template Eigen::Vector3<ADGrad<12>> edge_edge_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> eb1,
     EdgeEdgeDistanceType dtype);
-template Vector3<ADHessian<12>> edge_edge_closest_point_direction(
-    Eigen::ConstRef<Vector3<ADHessian<12>>> ea0,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> ea1,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> eb0,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> eb1,
+template Eigen::Vector3<ADHessian<12>> edge_edge_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> eb1,
     EdgeEdgeDistanceType dtype);
-template Vector3<ADGrad<13>> edge_edge_closest_point_direction(
-    Eigen::ConstRef<Vector3<ADGrad<13>>> ea0,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> ea1,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> eb0,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> eb1,
+template Eigen::Vector3<ADGrad<13>> edge_edge_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> eb1,
     EdgeEdgeDistanceType dtype);
-template Vector3<ADHessian<13>> edge_edge_closest_point_direction(
-    Eigen::ConstRef<Vector3<ADHessian<13>>> ea0,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> ea1,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> eb0,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> eb1,
+template Eigen::Vector3<ADHessian<13>> edge_edge_closest_point_direction(
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> eb1,
     EdgeEdgeDistanceType dtype);
 
 template double edge_edge_sqr_distance(
-    Eigen::ConstRef<Vector3<double>> ea0,
-    Eigen::ConstRef<Vector3<double>> ea1,
-    Eigen::ConstRef<Vector3<double>> eb0,
-    Eigen::ConstRef<Vector3<double>> eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     EdgeEdgeDistanceType dtype);
 template ADGrad<9> edge_edge_sqr_distance(
-    Eigen::ConstRef<Vector3<ADGrad<9>>> ea0,
-    Eigen::ConstRef<Vector3<ADGrad<9>>> ea1,
-    Eigen::ConstRef<Vector3<ADGrad<9>>> eb0,
-    Eigen::ConstRef<Vector3<ADGrad<9>>> eb1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> eb1,
     EdgeEdgeDistanceType dtype);
 template ADHessian<9> edge_edge_sqr_distance(
-    Eigen::ConstRef<Vector3<ADHessian<9>>> ea0,
-    Eigen::ConstRef<Vector3<ADHessian<9>>> ea1,
-    Eigen::ConstRef<Vector3<ADHessian<9>>> eb0,
-    Eigen::ConstRef<Vector3<ADHessian<9>>> eb1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> eb1,
     EdgeEdgeDistanceType dtype);
 template ADGrad<12> edge_edge_sqr_distance(
-    Eigen::ConstRef<Vector3<ADGrad<12>>> ea0,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> ea1,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> eb0,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> eb1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> eb1,
     EdgeEdgeDistanceType dtype);
 template ADHessian<12> edge_edge_sqr_distance(
-    Eigen::ConstRef<Vector3<ADHessian<12>>> ea0,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> ea1,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> eb0,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> eb1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> eb1,
     EdgeEdgeDistanceType dtype);
 template ADGrad<13> edge_edge_sqr_distance(
-    Eigen::ConstRef<Vector3<ADGrad<13>>> ea0,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> ea1,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> eb0,
-    Eigen::ConstRef<Vector3<ADGrad<13>>> eb1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> eb1,
     EdgeEdgeDistanceType dtype);
 template ADHessian<13> edge_edge_sqr_distance(
-    Eigen::ConstRef<Vector3<ADHessian<13>>> ea0,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> ea1,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> eb0,
-    Eigen::ConstRef<Vector3<ADHessian<13>>> eb1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> eb1,
     EdgeEdgeDistanceType dtype);
 
 template Eigen::Matrix<double, 3, 2> line_line_closest_point_pairs(
-    Eigen::ConstRef<Vector3<double>> ea0,
-    Eigen::ConstRef<Vector3<double>> ea1,
-    Eigen::ConstRef<Vector3<double>> eb0,
-    Eigen::ConstRef<Vector3<double>> eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 template Eigen::Matrix<ADGrad<12>, 3, 2> line_line_closest_point_pairs(
-    Eigen::ConstRef<Vector3<ADGrad<12>>> ea0,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> ea1,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> eb0,
-    Eigen::ConstRef<Vector3<ADGrad<12>>> eb1);
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> eb1);
 template Eigen::Matrix<ADHessian<12>, 3, 2> line_line_closest_point_pairs(
-    Eigen::ConstRef<Vector3<ADHessian<12>>> ea0,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> ea1,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> eb0,
-    Eigen::ConstRef<Vector3<ADHessian<12>>> eb1);
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> eb1);
 } // namespace ipc
