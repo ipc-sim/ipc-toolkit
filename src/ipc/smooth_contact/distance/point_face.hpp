@@ -70,5 +70,3 @@ point_triangle_closest_point_direction_hessian(
     Eigen::ConstRef<Eigen::Vector3d> t2,
     const PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO);
 } // namespace ipc
-
-#include "point_face.tpp"

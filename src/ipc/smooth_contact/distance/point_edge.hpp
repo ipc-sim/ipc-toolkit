@@ -11,6 +11,10 @@
 namespace ipc {
 template <typename scalar, int dim> class PointEdgeDistance {
 public:
+    PointEdgeDistance() = delete;
+    PointEdgeDistance(const PointEdgeDistance&) = delete;
+    PointEdgeDistance& operator=(const PointEdgeDistance&) = delete;
+
     static scalar point_point_sqr_distance(
         Eigen::ConstRef<Vector<scalar, dim>> a,
         Eigen::ConstRef<Vector<scalar, dim>> b);
@@ -40,6 +44,11 @@ public:
 
 template <int dim> class PointEdgeDistanceDerivatives {
 public:
+    PointEdgeDistanceDerivatives() = delete;
+    PointEdgeDistanceDerivatives(const PointEdgeDistanceDerivatives&) = delete;
+    PointEdgeDistanceDerivatives&
+    operator=(const PointEdgeDistanceDerivatives&) = delete;
+
     static std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, 3 * dim>>
     point_line_closest_point_direction_grad(
         Eigen::ConstRef<Vector<double, dim>> p,
@@ -73,5 +82,3 @@ public:
         const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO);
 };
 } // namespace ipc
-
-#include "point_edge.tpp"

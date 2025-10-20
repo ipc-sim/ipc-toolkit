@@ -93,5 +93,3 @@ Eigen::Matrix<T, 3, 2> edge_edge_closest_point_pairs(
     Eigen::ConstRef<Eigen::Vector3<T>> eb1,
     EdgeEdgeDistanceType dtype);
 } // namespace ipc
-
-#include "edge_edge.tpp"
