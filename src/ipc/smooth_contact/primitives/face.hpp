@@ -21,12 +21,12 @@ public:
     int n_vertices() const override;
     int n_dofs() const override { return n_vertices() * DIM; }
 
-    double potential(
-        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const;
-    Vector12d
-    grad(Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const;
-    Matrix12d hessian(
-        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const;
+    static double
+    potential(Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x);
+    static Vector12d
+    grad(Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x);
+    static Matrix12d
+    hessian(Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x);
 };
 
 /// @brief d points from triangle to the point

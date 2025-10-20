@@ -41,13 +41,13 @@ Face::Face(
     m_is_active = !orientable || a.cross(b).dot(d) > 0;
 }
 int Face::n_vertices() const { return N_FACE_NEIGHBORS_3D; }
-double Face::potential(
-    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const
+double
+Face::potential(Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x)
 {
     return smooth_face_term<double>(x.head<3>(), x.segment<3>(3), x.tail<3>());
 }
-Vector12d Face::grad(
-    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const
+Vector12d
+Face::grad(Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x)
 {
     Vector12d g;
     g.setZero();
@@ -57,8 +57,8 @@ Vector12d Face::grad(
         smooth_face_term<ADGrad<9>>(X.row(0), X.row(1), X.row(2)).grad;
     return g;
 }
-Matrix12d Face::hessian(
-    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const
+Matrix12d
+Face::hessian(Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x)
 {
     Matrix12d h;
     h.setZero();

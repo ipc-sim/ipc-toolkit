@@ -21,14 +21,11 @@ public:
     int n_vertices() const override;
     int n_dofs() const override { return n_vertices() * DIM; }
 
-    double potential(
-        Eigen::ConstRef<Eigen::Vector2d> d,
-        Eigen::ConstRef<Eigen::Vector4d> x) const;
-    Vector6d grad(
-        Eigen::ConstRef<Eigen::Vector2d> d,
-        Eigen::ConstRef<Eigen::Vector4d> x) const;
-    Matrix6d hessian(
-        Eigen::ConstRef<Eigen::Vector2d> d,
-        Eigen::ConstRef<Eigen::Vector4d> x) const;
+    static double potential(
+        Eigen::ConstRef<Eigen::Vector2d> d, Eigen::ConstRef<Eigen::Vector4d> x);
+    static Vector6d grad(
+        Eigen::ConstRef<Eigen::Vector2d> d, Eigen::ConstRef<Eigen::Vector4d> x);
+    static Matrix6d hessian(
+        Eigen::ConstRef<Eigen::Vector2d> d, Eigen::ConstRef<Eigen::Vector4d> x);
 };
 } // namespace ipc

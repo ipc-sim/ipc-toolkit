@@ -368,7 +368,7 @@ bool Point3::smooth_point3_term_type(
     const Eigen::RowVector3d dn = direc.normalized();
     for (int a = 0; a < edges.rows(); a++) {
         const Eigen::RowVector3d t = X.row(edges(a, 1)) - X.row(edges(a, 0));
-        otypes.tangent_type(a) = otypes.compute_type(
+        otypes.tangent_type(a) = ipc::OrientationTypes::compute_type(
             -dn.dot(t) / t.norm(), m_params.alpha_t, m_params.beta_t);
         if (otypes.tangent_type(a) == HeavisideType::ZERO) {
             return false;
@@ -384,8 +384,8 @@ bool Point3::smooth_point3_term_type(
         const Eigen::RowVector3d t1 = X.row(faces(a, 1)) - X.row(faces(a, 0));
         const Eigen::RowVector3d t2 = X.row(faces(a, 2)) - X.row(faces(a, 0));
         const double tmp = dn.dot(t1.cross(t2).normalized());
-        otypes.normal_type(a) =
-            otypes.compute_type(tmp, m_params.alpha_n, m_params.beta_n);
+        otypes.normal_type(a) = ipc::OrientationTypes::compute_type(
+            tmp, m_params.alpha_n, m_params.beta_n);
         normal_term += Math<double>::smooth_heaviside(
             tmp, m_params.alpha_n, m_params.beta_n);
     }
