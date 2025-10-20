@@ -23,14 +23,16 @@ Edge2::Edge2(
 int Edge2::n_vertices() const { return N_EDGE_NEIGHBORS_2D; }
 
 double Edge2::potential(
-    Eigen::ConstRef<Eigen::Vector2d> d, Eigen::ConstRef<Eigen::Vector4d> x)
+    Eigen::ConstRef<Eigen::Vector2d> d,
+    Eigen::ConstRef<Eigen::Vector4d> x) const
 {
     assert(m_is_active);
     return (x.tail<2>() - x.head<2>()).norm();
 }
 
 Vector6d Edge2::grad(
-    Eigen::ConstRef<Eigen::Vector2d> d, Eigen::ConstRef<Eigen::Vector4d> x)
+    Eigen::ConstRef<Eigen::Vector2d> d,
+    Eigen::ConstRef<Eigen::Vector4d> x) const
 {
     assert(m_is_active);
     const Eigen::Vector2d t = x.tail<2>() - x.head<2>();
@@ -43,7 +45,8 @@ Vector6d Edge2::grad(
 }
 
 Matrix6d Edge2::hessian(
-    Eigen::ConstRef<Eigen::Vector2d> d, Eigen::ConstRef<Eigen::Vector4d> x)
+    Eigen::ConstRef<Eigen::Vector2d> d,
+    Eigen::ConstRef<Eigen::Vector4d> x) const
 {
     assert(m_is_active);
     Matrix6d h;
