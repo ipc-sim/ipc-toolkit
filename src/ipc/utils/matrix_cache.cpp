@@ -140,8 +140,8 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
             m_mapping.resize(m_mat.rows());
 
             // note: m_mat is column major
-            auto *const inn_ptr = m_mat.innerIndexPtr();
-            auto *const out_ptr = m_mat.outerIndexPtr();
+            auto* const inn_ptr = m_mat.innerIndexPtr();
+            auto* const out_ptr = m_mat.outerIndexPtr();
             m_inner_index.assign(inn_ptr, inn_ptr + m_inner_index.size());
             m_outer_index.assign(out_ptr, out_ptr + m_outer_index.size());
 
