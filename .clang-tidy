@@ -29,7 +29,8 @@ Checks: >
   -readability-magic-numbers,
   -readability-math-missing-parentheses,
   -readability-redundant-access-specifiers,
-  -readability-uppercase-literal-suffix
+  -readability-uppercase-literal-suffix,
+  -readability-function-size
 
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*(ipc/).*'
