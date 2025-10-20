@@ -5,6 +5,7 @@
 #include <memory>
 
 namespace ipc {
+
 /// abstract class used for caching
 class MatrixCache {
 public:
@@ -32,8 +33,6 @@ public:
     virtual Eigen::SparseMatrix<double, Eigen::ColMajor>
     get_matrix(const bool compute_mapping = true) = 0;
     virtual void prune() = 0;
-
-    virtual void operator+=(const MatrixCache& o) = 0;
 };
 
 class SparseMatrixCache : public MatrixCache {
@@ -87,12 +86,11 @@ public:
 
     size_t mapping_size() const { return m_mapping.size(); }
 
-    /// e = element_index, i = global row_index, j = global column_index, value
-    /// = value to add to matrix if the cache is yet to be constructed, save the
-    /// row, column, and value to be added to the second cache
-    ///     in this case, modifies_ entries_ and second_cache_entries_
-    /// otherwise, save the value directly in the second cache
-    ///     in this case, modfies values_
+    /// @brief Add a value to the matrix cache.
+    /// @param e element index
+    /// @param i global row index
+    /// @param j global column index
+    /// @param value value to add to matrix if the cache is yet to be constructed
     void add_value(
         const int e, const int i, const int j, const double value) override;
 
@@ -111,9 +109,6 @@ public:
     /// modifies tmp_ and m_mat, also sets entries_ to be empty after writing
     /// its values to m_mat
     void prune() override; ///< add saved entries to stored matrix
-
-    void operator+=(const MatrixCache& o) override;
-    void operator+=(const SparseMatrixCache& o);
 
     const Eigen::SparseMatrix<double, Eigen::ColMajor>& mat() const
     {
@@ -173,4 +168,5 @@ private:
     int m_current_e = -1;
     int m_current_e_index = -1;
 };
+
 } // namespace ipc

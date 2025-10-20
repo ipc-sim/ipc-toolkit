@@ -213,46 +213,4 @@ SparseMatrixCache::get_matrix(const bool compute_mapping)
     return m_mat;
 }
 
-void SparseMatrixCache::operator+=(const MatrixCache& o)
-{
-    assert(&o == &dynamic_cast<const SparseMatrixCache&>(o));
-    *this += dynamic_cast<const SparseMatrixCache&>(o);
-}
-
-void SparseMatrixCache::operator+=(const SparseMatrixCache& o)
-{
-    if (mapping().empty() || o.mapping().empty()) {
-        m_mat += o.m_mat;
-
-        const size_t this_e_size = m_second_cache_entries.size();
-        const size_t o_e_size = o.m_second_cache_entries.size();
-
-        m_second_cache_entries.resize(std::max(this_e_size, o_e_size));
-        for (int e = 0; e < o_e_size; ++e) {
-            assert(
-                !m_second_cache_entries[e].empty()
-                || !o.m_second_cache_entries[e].empty());
-            m_second_cache_entries[e].insert(
-                m_second_cache_entries[e].end(),
-                o.m_second_cache_entries[e].begin(),
-                o.m_second_cache_entries[e].end());
-        }
-    } else {
-        const auto& outer_index = main_cache()->m_outer_index;
-        const auto& inner_index = main_cache()->m_inner_index;
-        const auto& oouter_index = o.main_cache()->m_outer_index;
-        const auto& oinner_index = o.main_cache()->m_inner_index;
-        assert(inner_index.size() == oinner_index.size());
-        assert(outer_index.size() == oouter_index.size());
-        assert(m_values.size() == o.m_values.size());
-
-        maybe_parallel_for(
-            o.m_values.size(), [&](int start, int end, int thread_id) {
-                for (int i = start; i < end; ++i) {
-                    m_values[i] += o.m_values[i];
-                }
-            });
-    }
-}
-
 } // namespace ipc
