@@ -349,6 +349,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
     CHECK(!collisions.empty());
     std::cout << "smooth collision candidate size " << collisions.size()
               << "\n";
+    std::cout << collisions.to_string(mesh, vertices, params) << "\n";
 
     CHECK(!has_intersections(mesh, vertices));
 

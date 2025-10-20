@@ -49,11 +49,17 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ei, vi] = candidates[i];
 
-        add_collision<2, SmoothCollisionTemplate<Edge2, Point2>>(
-            std::make_shared<SmoothCollisionTemplate<Edge2, Point2>>(
-                ei, vi, PointEdgeDistanceType::AUTO, mesh, params,
-                std::min(edge_dhat(ei), vert_dhat(vi)), vertices),
-            vert_edge_2_to_id, collisions);
+        const PointEdgeDistanceType pe_dtype = point_edge_distance_type(
+            vertices.row(vi), vertices.row(mesh.edges()(ei, 0)),
+            vertices.row(mesh.edges()(ei, 1)));
+
+        if (pe_dtype == PointEdgeDistanceType::P_E) {
+            add_collision<2, SmoothCollisionTemplate<Edge2, Point2>>(
+                std::make_shared<SmoothCollisionTemplate<Edge2, Point2>>(
+                    ei, vi, pe_dtype, mesh, params,
+                    std::min(edge_dhat(ei), vert_dhat(vi)), vertices),
+                vert_edge_2_to_id, collisions);
+        }
 
         for (int j : { 0, 1 }) {
             const auto& vj = mesh.edges()(ei, j);
