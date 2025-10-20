@@ -173,46 +173,4 @@ private:
     int m_current_e = -1;
     int m_current_e_index = -1;
 };
-
-class DenseMatrixCache : public MatrixCache {
-public:
-    DenseMatrixCache() { }
-    explicit DenseMatrixCache(const size_t size);
-    DenseMatrixCache(const size_t rows, const size_t cols);
-    DenseMatrixCache(const MatrixCache& other);
-    DenseMatrixCache(const DenseMatrixCache& other);
-
-    std::unique_ptr<MatrixCache> copy() const override
-    {
-        return std::make_unique<DenseMatrixCache>(*this);
-    }
-
-    void init(const size_t size) override;
-    void init(const size_t rows, const size_t cols) override;
-    void init(const MatrixCache& other) override;
-    void init(const DenseMatrixCache& other);
-
-    void set_zero() override;
-
-    void reserve(const size_t size) override { }
-    size_t entries_size() const override { return 0; }
-    size_t capacity() const override { return m_mat.size(); }
-    size_t non_zeros() const override { return m_mat.size(); }
-    size_t triplet_count() const override { return non_zeros(); }
-    bool is_sparse() const override { return false; }
-
-    void add_value(
-        const int e, const int i, const int j, const double value) override;
-    Eigen::SparseMatrix<double, Eigen::ColMajor>
-    get_matrix(const bool compute_mapping = true) override;
-    void prune() override;
-
-    void operator+=(const MatrixCache& o) override;
-    void operator+=(const DenseMatrixCache& o);
-
-    const Eigen::MatrixXd& mat() const { return m_mat; }
-
-private:
-    Eigen::MatrixXd m_mat;
-};
 } // namespace ipc

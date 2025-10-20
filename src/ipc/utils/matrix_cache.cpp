@@ -4,6 +4,7 @@
 #include <ipc/utils/maybe_parallel_for.hpp>
 
 namespace ipc {
+
 SparseMatrixCache::SparseMatrixCache(const size_t size) { init(size); }
 
 SparseMatrixCache::SparseMatrixCache(const size_t rows, const size_t cols)
@@ -252,68 +253,6 @@ void SparseMatrixCache::operator+=(const SparseMatrixCache& o)
                 }
             });
     }
-}
-
-// ========================================================================
-
-DenseMatrixCache::DenseMatrixCache(const size_t size)
-{
-    m_mat.setZero(size, size);
-}
-
-DenseMatrixCache::DenseMatrixCache(const size_t rows, const size_t cols)
-{
-    m_mat.setZero(rows, cols);
-}
-
-DenseMatrixCache::DenseMatrixCache(const MatrixCache& other) { init(other); }
-
-DenseMatrixCache::DenseMatrixCache(const DenseMatrixCache& other)
-{
-    init(other);
-}
-
-void DenseMatrixCache::init(const size_t size) { m_mat.setZero(size, size); }
-
-void DenseMatrixCache::init(const size_t rows, const size_t cols)
-{
-    m_mat.setZero(rows, cols);
-}
-
-void DenseMatrixCache::init(const MatrixCache& other)
-{
-    init(dynamic_cast<const DenseMatrixCache&>(other));
-}
-
-void DenseMatrixCache::init(const DenseMatrixCache& other)
-{
-    m_mat.setZero(other.m_mat.rows(), other.m_mat.cols());
-}
-
-void DenseMatrixCache::set_zero() { m_mat.setZero(); }
-
-void DenseMatrixCache::add_value(
-    const int e, const int i, const int j, const double value)
-{
-    m_mat(i, j) += value;
-}
-
-void DenseMatrixCache::prune() { }
-
-Eigen::SparseMatrix<double, Eigen::ColMajor>
-DenseMatrixCache::get_matrix(const bool compute_mapping)
-{
-    return m_mat.sparseView();
-}
-
-void DenseMatrixCache::operator+=(const MatrixCache& o)
-{
-    *this += dynamic_cast<const DenseMatrixCache&>(o);
-}
-
-void DenseMatrixCache::operator+=(const DenseMatrixCache& o)
-{
-    m_mat += o.m_mat;
 }
 
 } // namespace ipc
