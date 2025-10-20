@@ -280,12 +280,12 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(
     case PointEdgeDistanceType::P_E0:
         vec = p - e0;
         grad.leftCols(dim).diagonal().array() = 1.;
-        grad.middleCols(3, dim).diagonal().array() = -1.;
+        grad.middleCols(dim, dim).diagonal().array() = -1.;
         break;
     case PointEdgeDistanceType::P_E1:
         vec = p - e1;
         grad.leftCols(dim).diagonal().array() = 1.;
-        grad.middleCols(6, dim).diagonal().array() = -1.;
+        grad.middleCols(2 * dim, dim).diagonal().array() = -1.;
         break;
     default:
         throw std::runtime_error("PointEdgeDistanceType not specified!");

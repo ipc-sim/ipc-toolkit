@@ -306,21 +306,17 @@ TEMPLATE_TEST_CASE_SIG(
         x << p, e0, e1;
         for (int i = 0; i < dim; ++i) {
             Eigen::MatrixXd fhess;
-            fd::finite_jacobian(
+            fd::finite_hessian(
                 x,
                 [i, dtype](const Eigen::VectorXd& x) {
                     Vector<double, dim> p = x.segment<dim>(0);
                     Vector<double, dim> e0 = x.segment<dim>(dim);
                     Vector<double, dim> e1 = x.segment<dim>(2 * dim);
-                    return std::get<1>(
-                               PointEdgeDistanceDerivatives<dim>::
-                                   point_edge_closest_point_direction_grad(
-                                       p, e0, e1, dtype))
-                        .row(i)
-                        .transpose();
+                    return PointEdgeDistance<double, dim>::
+                        point_edge_closest_point_direction(p, e0, e1, dtype)(i);
                 },
                 fhess);
-            CHECK(fd::compare_hessian(hess[i], fhess, 1e-2));
+            CHECK(fd::compare_hessian(hess[i], fhess, 1e-4));
         }
     }
 }
