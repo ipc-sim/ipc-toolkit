@@ -4,52 +4,44 @@
 #include <catch2/generators/catch_generators_random.hpp>
 #include <catch2/generators/catch_generators_adapters.hpp>
 
-#include <igl/edges.h>
 #include <ipc/barrier/barrier.hpp>
+#include <ipc/smooth_contact/primitives/point3.hpp>
+#include <ipc/utils/autodiff_types.hpp>
+#include <ipc/utils/math.hpp>
 
 #include <finitediff.hpp>
+#include <igl/edges.h>
 
-#include <ipc/utils/math.hpp>
-#include <ipc/utils/autodiff_types.hpp>
-#include <ipc/smooth_contact/primitives/point3.hpp>
-#include <iostream>
 #include <memory>
 
-namespace ipc {
+using namespace ipc;
 
-namespace {
-    /// @warning This implementation will not work with dmin > 0
-    class PhysicalBarrier : public NormalizedClampedLogBarrier {
-    public:
-        PhysicalBarrier(const bool _use_dist_sqr) : use_dist_sqr(_use_dist_sqr)
-        {
-        }
+/// @warning This implementation will not work with dmin > 0
+class PhysicalBarrier : public NormalizedClampedLogBarrier {
+public:
+    PhysicalBarrier(const bool _use_dist_sqr) : use_dist_sqr(_use_dist_sqr) { }
 
-        double operator()(const double d, const double dhat) const override
-        {
-            return (use_dist_sqr ? sqrt(dhat) : dhat)
-                * NormalizedClampedLogBarrier::operator()(d, dhat);
-        }
+    double operator()(const double d, const double dhat) const override
+    {
+        return (use_dist_sqr ? sqrt(dhat) : dhat)
+            * NormalizedClampedLogBarrier::operator()(d, dhat);
+    }
 
-        double
-        first_derivative(const double d, const double dhat) const override
-        {
-            return (use_dist_sqr ? sqrt(dhat) : dhat)
-                * NormalizedClampedLogBarrier::first_derivative(d, dhat);
-        }
+    double first_derivative(const double d, const double dhat) const override
+    {
+        return (use_dist_sqr ? sqrt(dhat) : dhat)
+            * NormalizedClampedLogBarrier::first_derivative(d, dhat);
+    }
 
-        double
-        second_derivative(const double d, const double dhat) const override
-        {
-            return (use_dist_sqr ? sqrt(dhat) : dhat)
-                * NormalizedClampedLogBarrier::second_derivative(d, dhat);
-        }
+    double second_derivative(const double d, const double dhat) const override
+    {
+        return (use_dist_sqr ? sqrt(dhat) : dhat)
+            * NormalizedClampedLogBarrier::second_derivative(d, dhat);
+    }
 
-    private:
-        bool use_dist_sqr;
-    };
-
-} // namespace
+private:
+    bool use_dist_sqr;
+};
 
 TEST_CASE("Spline derivatives", "[deriv]")
 {
@@ -425,7 +417,7 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     }
     SECTION("Physical")
     {
-        barrier = std::make_unique<ipc::PhysicalBarrier>(use_dist_sqr);
+        barrier = std::make_unique<PhysicalBarrier>(use_dist_sqr);
     }
     SECTION("ClampedLogSq")
     {
@@ -471,7 +463,7 @@ TEST_CASE("Physical barrier", "[barrier]")
     const bool use_dist_sqr = GENERATE(false, true);
 
     ipc::ClampedLogBarrier original_barrier;
-    ipc::PhysicalBarrier new_barrier(use_dist_sqr);
+    PhysicalBarrier new_barrier(use_dist_sqr);
 
     const double dhat =
         pow(10, GENERATE_COPY(range(use_dist_sqr ? -5 : -5, 0)));
@@ -504,5 +496,3 @@ TEST_CASE("Physical barrier", "[barrier]")
     CHECK(
         b_original_second_derivative == Catch::Approx(b_new_second_derivative));
 }
-
-} // namespace ipc

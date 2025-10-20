@@ -3,13 +3,12 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <ipc/smooth_contact/distance/primitive_distance.hpp>
 #include <ipc/distance/point_point.hpp>
+#include <ipc/smooth_contact/distance/primitive_distance.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/math.hpp>
 
 #include <finitediff.hpp>
-
-#include "ipc/utils/math.hpp"
 
 using namespace ipc;
 
