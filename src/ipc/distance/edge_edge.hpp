@@ -4,7 +4,7 @@
 
 namespace ipc {
 
-/// @brief Compute the distance between a two lines segments in 3D.
+/// @brief Compute the distance between two lines segments in 3D.
 /// @note The distance is actually squared distance.
 /// @param ea0 The first vertex of the first edge.
 /// @param ea1 The second vertex of the first edge.

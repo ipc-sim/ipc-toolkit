@@ -5,9 +5,11 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/generators/catch_generators_adapters.hpp>
 #include <catch2/generators/catch_generators_random.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <ipc/distance/point_line.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/smooth_contact/distance/point_edge.hpp>
 
 #include <finitediff.hpp>
 
@@ -153,4 +155,80 @@ TEST_CASE(
     fd::finite_hessian(x, point_line_distance_stacked<3>, fhess);
 
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
+}
+
+TEST_CASE(
+    "Point-line closest point 3D pairs hessian",
+    "[distance][point-line][hessian]")
+{
+    double ya = GENERATE(take(2, random(-10.0, 10.0)));
+    Eigen::Vector3d p(1, ya, 0);
+
+    double yb = GENERATE(take(2, random(-10.0, 10.0)));
+    Eigen::Vector3d eb0(0, yb, -1), eb1(0, yb, 1.02);
+
+    using T = ADHessian<9>;
+    ScalarBase::setVariableCount(9);
+    const auto x =
+        slice_positions<T, 3, 3>((Vector9d() << p, eb0, eb1).finished());
+    auto yAD = PointEdgeDistance<T, 3>::point_line_closest_point_direction(
+        x.row(0), x.row(1), x.row(2));
+    auto [y, grad, hess] = PointEdgeDistanceDerivatives<
+        3>::point_line_closest_point_direction_hessian(p, eb0, eb1);
+    for (int i = 0; i < yAD.size(); i++) {
+        REQUIRE((yAD(i).val - y(i)) < 1e-8);
+        REQUIRE(
+            (yAD(i).grad - grad.row(i).transpose()).norm()
+            < 1e-8 * grad.row(i).norm());
+        REQUIRE((yAD(i).Hess - hess[i]).norm() < 1e-8 * hess[i].norm());
+    }
+
+    BENCHMARK("AutoDiff Hessian")
+    {
+        PointEdgeDistance<T, 3>::point_line_closest_point_direction(
+            x.row(0), x.row(1), x.row(2));
+    };
+    BENCHMARK("Hessian")
+    {
+        PointEdgeDistanceDerivatives<
+            3>::point_line_closest_point_direction_hessian(p, eb0, eb1);
+    };
+}
+
+TEST_CASE(
+    "Point-line closest point 2D pairs hessian",
+    "[distance][point-line][hessian]")
+{
+    double ya = GENERATE(take(2, random(-10.0, 10.0)));
+    Eigen::Vector2d p(ya, 0);
+
+    double yb = GENERATE(take(2, random(-10.0, 10.0)));
+    Eigen::Vector2d eb0(yb, -1), eb1(yb, 1.02);
+
+    using T = ADHessian<6>;
+    ScalarBase::setVariableCount(6);
+    const auto x =
+        slice_positions<T, 3, 2>((Vector6d() << p, eb0, eb1).finished());
+    auto yAD = PointEdgeDistance<T, 2>::point_line_closest_point_direction(
+        x.row(0), x.row(1), x.row(2));
+    auto [y, grad, hess] = PointEdgeDistanceDerivatives<
+        2>::point_line_closest_point_direction_hessian(p, eb0, eb1);
+    for (int i = 0; i < yAD.size(); i++) {
+        REQUIRE((yAD(i).val - y(i)) < 1e-8);
+        REQUIRE(
+            (yAD(i).grad - grad.row(i).transpose()).norm()
+            < 1e-8 * grad.row(i).norm());
+        REQUIRE((yAD(i).Hess - hess[i]).norm() < 1e-8 * hess[i].norm());
+    }
+
+    BENCHMARK("AutoDiff Hessian")
+    {
+        PointEdgeDistance<T, 2>::point_line_closest_point_direction(
+            x.row(0), x.row(1), x.row(2));
+    };
+    BENCHMARK("Hessian")
+    {
+        PointEdgeDistanceDerivatives<
+            2>::point_line_closest_point_direction_hessian(p, eb0, eb1);
+    };
 }

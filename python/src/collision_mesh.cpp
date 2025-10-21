@@ -156,7 +156,8 @@ void define_collision_mesh(py::module_& m)
             "displacement_map"_a = Eigen::SparseMatrix<double>())
         .def(
             py::init<
-                const std::vector<bool>&, Eigen::ConstRef<Eigen::MatrixXd>,
+                const std::vector<bool>&, const std::vector<bool>&,
+                Eigen::ConstRef<Eigen::MatrixXd>,
                 Eigen::ConstRef<Eigen::MatrixXi>,
                 Eigen::ConstRef<Eigen::MatrixXi>,
                 const Eigen::SparseMatrix<double>&>(),
@@ -165,12 +166,13 @@ void define_collision_mesh(py::module_& m)
 
             Parameters:
                 include_vertex: Vector of bools indicating whether each vertex should be included in the collision mesh.
+                orient_vertex: Vector of bools indicating whether each vertex is orientable.
                 full_rest_positions: The vertices of the full mesh at rest (#V × dim).
                 edges: The edges of the collision mesh indexed into the full mesh vertices (#E × 2).
                 faces: The faces of the collision mesh indexed into the full mesh vertices (#F × 3).
                 displacement_map: The displacement mapping from displacements on the full mesh to the collision mesh.
             )ipc_Qu8mg5v7",
-            "include_vertex"_a, "full_rest_positions"_a,
+            "include_vertex"_a, "orient_vertex"_a, "full_rest_positions"_a,
             "edges"_a = Eigen::MatrixXi(), "faces"_a = Eigen::MatrixXi(),
             "displacement_map"_a = Eigen::SparseMatrix<double>())
         .def_static(

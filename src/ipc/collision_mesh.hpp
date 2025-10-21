@@ -17,7 +17,7 @@ public:
     /// @param edges The edges of the collision mesh (|E| × 2).
     /// @param faces The faces of the collision mesh (|F| × 3).
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
-    CollisionMesh(
+    explicit CollisionMesh(
         Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
         Eigen::ConstRef<Eigen::MatrixXi> edges = Eigen::MatrixXi(),
         Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi(),
@@ -26,12 +26,14 @@ public:
 
     /// @brief Construct a new Collision Mesh object from a full mesh vertices.
     /// @param include_vertex Vector of bools indicating whether each vertex should be included in the collision mesh.
+    /// @param orient_vertex Vector of bools indicating whether each vertex is orientable.
     /// @param full_rest_positions The vertices of the full mesh at rest (|V| × dim).
     /// @param edges The edges of the collision mesh indexed into the full mesh vertices (|E| × 2).
     /// @param faces The faces of the collision mesh indexed into the full mesh vertices (|F| × 3).
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
     CollisionMesh(
         const std::vector<bool>& include_vertex,
+        const std::vector<bool>& orient_vertex,
         Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
         Eigen::ConstRef<Eigen::MatrixXi> edges = Eigen::MatrixXi(),
         Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi(),
@@ -50,6 +52,7 @@ public:
     {
         return CollisionMesh(
             construct_is_on_surface(full_rest_positions.rows(), edges),
+            std::vector<bool>(full_rest_positions.rows(), false),
             full_rest_positions, edges, faces);
     }
 
@@ -94,11 +97,23 @@ public:
     /// @brief Get the vertices of the collision mesh at rest (|V| × dim).
     const Eigen::MatrixXd& rest_positions() const { return m_rest_positions; }
 
-    /// @brief Get the indices of codimensional vertices of the collision mesh (|CV| x 1).
+    /// @brief Get the indices of codimensional vertices of the collision mesh (|CV| × 1).
     const Eigen::VectorXi& codim_vertices() const { return m_codim_vertices; }
 
-    /// @brief Get the indices of codimensional edges of the collision mesh (|CE| x 1).
+    /// @brief Check if vertex i is codimensional.
+    bool is_codim_vertex(const index_t i) const { return m_is_codim_vertex[i]; }
+
+    /// @brief Check if vertex i is orientable.
+    bool is_orient_vertex(const index_t i) const
+    {
+        return m_is_orient_vertex[i];
+    }
+
+    /// @brief Get the indices of codimensional edges of the collision mesh (|CE| × 1).
     const Eigen::VectorXi& codim_edges() const { return m_codim_edges; }
+
+    /// @brief Check if edge i is codimensional.
+    bool is_codim_edge(const index_t i) const { return m_is_codim_edge[i]; }
 
     /// @brief Get the edges of the collision mesh (|E| × 2).
     const Eigen::MatrixXi& edges() const { return m_edges; }
@@ -109,15 +124,26 @@ public:
     /// @brief Get the mapping from faces to edges of the collision mesh (|F| × 3).
     const Eigen::MatrixXi& faces_to_edges() const { return m_faces_to_edges; }
 
-    // const std::vector<std::vector<index_t>>& vertices_to_edges() const
-    // {
-    //     return m_vertices_to_edges;
-    // }
+    /// @brief Compute the rest length of an edge.
+    double edge_length(const index_t edge_id) const;
 
-    // const std::vector<std::vector<index_t>>& vertices_to_faces() const
-    // {
-    //     return m_vertices_to_faces;
-    // }
+    /// @brief Compute the maximum rest length of all edges.
+    double max_edge_length() const;
+
+    /// @brief Get the mapping from vertices to edges of the collision mesh.
+    const std::vector<std::vector<index_t>>& vertices_to_edges() const
+    {
+        return m_vertices_to_edges;
+    }
+
+    /// @brief Get the mapping from vertices to faces of the collision mesh.
+    const std::vector<std::vector<index_t>>& vertices_to_faces() const
+    {
+        return m_vertices_to_faces;
+    }
+
+    /// @brief Get the mapping from edges to faces of the collision mesh (|E| × 2).
+    const Eigen::MatrixXi& edges_to_faces() const { return m_edges_to_faces; }
 
     // -----------------------------------------------------------------------
 
@@ -281,7 +307,7 @@ public:
     /// @brief Construct a vector of bools indicating whether each vertex is on the surface.
     /// @param num_vertices The number of vertices in the mesh.
     /// @param edges The surface edges of the mesh (|E| × 2).
-    /// @param codim_vertices The indices of codimensional vertices (|CV| x 1).
+    /// @param codim_vertices The indices of codimensional vertices (|CV| × 1).
     /// @return A vector of bools indicating whether each vertex is on the surface.
     static std::vector<bool> construct_is_on_surface(
         const size_t num_vertices,
@@ -305,7 +331,13 @@ protected:
     // -----------------------------------------------------------------------
     // Helper initialization functions
 
+    /// @brief Initialize map from edges to adjacent faces (|E| × 2).
+    void init_edges_to_faces();
+
+    /// @brief Initialize the codimensional vertices.
     void init_codim_vertices();
+
+    /// @brief Initialize the codimensional edges.
     void init_codim_edges();
 
     /// @brief Initialize the selection matrix from full vertices/DOF to collision vertices/DOF.
@@ -324,9 +356,15 @@ protected:
     Eigen::MatrixXd m_full_rest_positions;
     /// @brief The vertex positions at rest (|V| × dim).
     Eigen::MatrixXd m_rest_positions;
-    /// @brief The indices of codimensional vertices (|CV| x 1).
+    /// @brief The mask of codimensional vertices (|V|).
+    std::vector<bool> m_is_codim_vertex;
+    /// @brief The mask of orientable vertices (|V|).
+    std::vector<bool> m_is_orient_vertex;
+    /// @brief The indices of codimensional vertices (|CV| × 1).
     Eigen::VectorXi m_codim_vertices;
-    /// @brief The indices of codimensional edges (|CE| x 1).
+    /// @brief The mask of codimensional edges (|E|).
+    std::vector<bool> m_is_codim_edge;
+    /// @brief The indices of codimensional edges (|CE| × 1).
     Eigen::VectorXi m_codim_edges;
     /// @brief Edges as rows of indicies into vertices (|E| × 2).
     Eigen::MatrixXi m_edges;
@@ -334,6 +372,8 @@ protected:
     Eigen::MatrixXi m_faces;
     /// @brief Map from faces edges to rows of edges (|F| × 3).
     Eigen::MatrixXi m_faces_to_edges;
+    /// @brief Map from edges to adjacent faces (|E| × 2).
+    Eigen::MatrixXi m_edges_to_faces;
 
     /// @brief Map from full vertices to collision vertices.
     /// @note Negative values indicate full vertex is dropped.
@@ -362,8 +402,10 @@ protected:
     /// @brief Vertices adjacent to edges (i.e., vertices are on a triangle that contains the edge but not the edge itself)
     std::vector<std::vector<index_t>> m_edge_vertex_adjacencies;
 
-    // std::vector<std::vector<index_t>> m_vertices_to_faces;
-    // std::vector<std::vector<index_t>> m_vertices_to_edges;
+    /// @brief For each vertex, the faces adjacent to it.
+    std::vector<std::vector<index_t>> m_vertices_to_faces;
+    /// @brief For each vertex, the edges adjacent to it.
+    std::vector<std::vector<index_t>> m_vertices_to_edges;
 
     /// @brief Is vertex on the boundary of the triangle mesh in 3D or polyline in 2D?
     std::vector<bool> m_is_vertex_on_boundary;

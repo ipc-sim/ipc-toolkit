@@ -1,8 +1,85 @@
 #include <common.hpp>
 
 #include <ipc/collisions/normal/normal_collisions.hpp>
+#include <ipc/smooth_contact/smooth_collisions.hpp>
 
 using namespace ipc;
+
+template <typename collision_type, typename parent_type>
+void define_smooth_collision_template(py::module_& m, std::string name)
+{
+    py::class_<collision_type, parent_type>(m, name.c_str())
+        .def("name", &collision_type::name, "Get the type name of collision")
+        .def(
+            "num_vertices", &collision_type::num_vertices,
+            "Get the number of vertices");
+}
+
+void define_smooth_collisions(py::module_& m, std::string name)
+{
+    py::class_<SmoothCollisions>(m, name.c_str())
+        .def(py::init())
+        .def(
+            "build",
+            py::overload_cast<
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+                const SmoothContactParameters, const bool,
+                const std::shared_ptr<BroadPhase>&>(&SmoothCollisions::build),
+            R"ipc_Qu8mg5v7(
+            Initialize the set of collisions used to compute the barrier potential.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Vertices of the collision mesh.
+                param: SmoothContactParameters.
+                use_adaptive_dhat: If the adaptive dhat should be used.
+                broad_phase: Broad phase method.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("vertices"), py::arg("param"),
+            py::arg("use_adaptive_dhat") = false,
+            py::arg("broad_phase") = make_default_broad_phase())
+        .def(
+            "compute_minimum_distance",
+            &SmoothCollisions::compute_minimum_distance,
+            R"ipc_Qu8mg5v7(
+            Computes the minimum distance between any non-adjacent elements.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Vertices of the collision mesh.
+
+            Returns:
+                The minimum distance between any non-adjacent elements.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("vertices"))
+        .def(
+            "__len__", &SmoothCollisions::size, "Get the number of collisions.")
+        .def(
+            "empty", &SmoothCollisions::empty,
+            "Get if the collision set is empty.")
+        .def("clear", &SmoothCollisions::clear, "Clear the collision set.")
+        .def(
+            "__getitem__",
+            [](SmoothCollisions& self, size_t i) ->
+            typename SmoothCollisions::value_type& { return self[i]; },
+            py::return_value_policy::reference,
+            R"ipc_Qu8mg5v7(
+            Get a reference to collision at index i.
+
+            Parameters:
+                i: The index of the collision.
+
+            Returns:
+                A reference to the collision.
+            )ipc_Qu8mg5v7",
+            py::arg("i"))
+        .def(
+            "to_string", &SmoothCollisions::to_string, py::arg("mesh"),
+            py::arg("vertices"), py::arg("param"))
+        .def(
+            "n_candidates", &SmoothCollisions::n_candidates,
+            "Get the number of candidates.");
+}
 
 void define_normal_collisions(py::module_& m)
 {
@@ -180,4 +257,42 @@ void define_normal_collisions(py::module_& m)
         .def_readwrite("ee_collisions", &NormalCollisions::ee_collisions)
         .def_readwrite("fv_collisions", &NormalCollisions::fv_collisions)
         .def_readwrite("pv_collisions", &NormalCollisions::pv_collisions);
+
+    py::class_<SmoothCollision>(m, "SmoothCollision2")
+        .def("n_dofs", &SmoothCollision::n_dofs, "Get the degree of freedom")
+        .def(
+            "__call__", &SmoothCollision::operator(),
+            R"ipc_Qu8mg5v7(
+            Compute the potential.
+
+            Parameters:
+                positions: The vertex positions.
+                params: The parameters.
+
+            Returns:
+                The potential (not scaled by the barrier stiffness) of this collision pair.
+            )ipc_Qu8mg5v7",
+            py::arg("positions"), py::arg("params"))
+        .def(
+            "__getitem__",
+            [](SmoothCollision& self, size_t i) -> long { return self[i]; },
+            R"ipc_Qu8mg5v7(
+            Get primitive id.
+
+            Parameters:
+                i: 0 or 1.
+
+            Returns:
+                The index of the primitive.
+            )ipc_Qu8mg5v7",
+            py::arg("i"));
+
+    define_smooth_collision_template<
+        SmoothCollisionTemplate<Edge2, Point2>, SmoothCollision>(
+        m, "Edge2Point2Collision");
+    define_smooth_collision_template<
+        SmoothCollisionTemplate<Point2, Point2>, SmoothCollision>(
+        m, "Point2Point2Collision");
+
+    define_smooth_collisions(m, "SmoothCollisions");
 }

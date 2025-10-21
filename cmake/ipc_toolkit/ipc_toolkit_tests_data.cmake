@@ -29,8 +29,8 @@ else()
         PREFIX "${FETCHCONTENT_BASE_DIR}/tests/data"
         SOURCE_DIR ${IPC_TOOLKIT_TESTS_DATA_DIR}
 
-        GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit-test-data.git
-        GIT_TAG 6c6319ab1dae122a7f7f0c46a4717950cb61b1ce
+        GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit-tests-data.git
+        GIT_TAG 7ca6db695adcc00d3d6d978767dfc0d81722a515
 
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""

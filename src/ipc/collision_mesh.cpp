@@ -20,6 +20,7 @@ CollisionMesh::CollisionMesh(
     const Eigen::SparseMatrix<double>& displacement_map)
     : CollisionMesh(
           std::vector<bool>(rest_positions.rows(), true),
+          std::vector<bool>(rest_positions.rows(), false),
           rest_positions,
           edges,
           faces,
@@ -29,6 +30,7 @@ CollisionMesh::CollisionMesh(
 
 CollisionMesh::CollisionMesh(
     const std::vector<bool>& include_vertex,
+    const std::vector<bool>& orient_vertex,
     Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces,
@@ -89,6 +91,12 @@ CollisionMesh::CollisionMesh(
     m_rest_positions = m_select_vertices * full_rest_positions;
     // m_rest_positions = vertices(full_rest_positions);
 
+    assert(orient_vertex.size() == full_rest_positions.rows());
+    m_is_orient_vertex.assign(m_rest_positions.rows(), false);
+    for (int i = 0; i < m_is_orient_vertex.size(); i++) {
+        m_is_orient_vertex[i] = orient_vertex[m_vertex_to_full_vertex[i]];
+    }
+
     // Map faces and edges to only included vertices
     if (!include_all_vertices) {
         for (int i = 0; i < m_edges.rows(); i++) {
@@ -110,6 +118,7 @@ CollisionMesh::CollisionMesh(
 
     m_faces_to_edges = construct_faces_to_edges(m_faces, m_edges);
 
+    init_edges_to_faces();
     init_codim_vertices();
     init_codim_edges();
     init_areas();
@@ -120,19 +129,40 @@ CollisionMesh::CollisionMesh(
 
 // ============================================================================
 
+void CollisionMesh::init_edges_to_faces()
+{
+    if (dim() == 2) {
+        return;
+    }
+
+    m_edges_to_faces.setOnes(num_edges(), 2);
+    m_edges_to_faces *= -1;
+    for (int f = 0; f < m_faces_to_edges.rows(); f++) {
+        for (int le = 0; le < 3; le++) {
+            if (m_edges_to_faces(m_faces_to_edges(f, le), 0) < 0) {
+                m_edges_to_faces(m_faces_to_edges(f, le), 0) = f;
+            } else if (m_edges_to_faces(m_faces_to_edges(f, le), 1) < 0) {
+                m_edges_to_faces(m_faces_to_edges(f, le), 1) = f;
+            } else {
+                assert(false);
+            }
+        }
+    }
+}
+
 void CollisionMesh::init_codim_vertices()
 {
-    std::vector<bool> is_codim_vertex(num_vertices(), true);
+    m_is_codim_vertex.assign(num_vertices(), true);
     for (int i : m_edges.reshaped()) {
-        is_codim_vertex[i] = false;
+        m_is_codim_vertex[i] = false;
     }
 
     m_codim_vertices.resize(
-        std::count(is_codim_vertex.begin(), is_codim_vertex.end(), true));
+        std::count(m_is_codim_vertex.begin(), m_is_codim_vertex.end(), true));
 
     int j = 0;
     for (int i = 0; i < num_vertices(); i++) {
-        if (is_codim_vertex[i]) {
+        if (m_is_codim_vertex[i]) {
             assert(j < m_codim_vertices.size());
             m_codim_vertices[j++] = i;
         }
@@ -142,17 +172,17 @@ void CollisionMesh::init_codim_vertices()
 
 void CollisionMesh::init_codim_edges()
 {
-    std::vector<bool> is_codim_edge(num_edges(), true);
+    m_is_codim_edge.assign(num_edges(), true);
     for (int i : m_faces_to_edges.reshaped()) {
-        is_codim_edge[i] = false;
+        m_is_codim_edge[i] = false;
     }
 
     m_codim_edges.resize(
-        std::count(is_codim_edge.begin(), is_codim_edge.end(), true));
+        std::count(m_is_codim_edge.begin(), m_is_codim_edge.end(), true));
 
     int j = 0;
     for (int i = 0; i < num_edges(); i++) {
-        if (is_codim_edge[i]) {
+        if (m_is_codim_edge[i]) {
             assert(j < m_codim_edges.size());
             m_codim_edges[j++] = i;
         }
@@ -281,19 +311,19 @@ void CollisionMesh::init_adjacencies()
 
 void CollisionMesh::init_areas()
 {
-    // m_vertices_to_edges.resize(num_vertices());
-    // for (int i = 0; i < m_edges.rows(); i++) {
-    //     for (int j = 0; j < m_edges.cols(); j++) {
-    //         m_vertices_to_edges[m_edges(i, j)].push_back(i);
-    //     }
-    // }
-    //
-    // m_vertices_to_faces.resize(num_vertices());
-    // for (int i = 0; i < m_faces.rows(); i++) {
-    //     for (int j = 0; j < m_faces.cols(); j++) {
-    //         m_vertices_to_faces[m_faces(i, j)].push_back(i);
-    //     }
-    // }
+    m_vertices_to_edges.resize(num_vertices());
+    for (int i = 0; i < m_edges.rows(); i++) {
+        for (int j = 0; j < m_edges.cols(); j++) {
+            m_vertices_to_edges[m_edges(i, j)].push_back(i);
+        }
+    }
+
+    m_vertices_to_faces.resize(num_vertices());
+    for (int i = 0; i < m_faces.rows(); i++) {
+        for (int j = 0; j < m_faces.cols(); j++) {
+            m_vertices_to_faces[m_faces(i, j)].push_back(i);
+        }
+    }
 
     // Compute vertex areas as the sum of ½ the length of connected edges
     Eigen::VectorXd vertex_edge_areas =
@@ -519,4 +549,19 @@ Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
     return faces_to_edges;
 }
 
+double CollisionMesh::edge_length(const index_t edge_id) const
+{
+    return (m_rest_positions.row(m_edges(edge_id, 0))
+            - m_rest_positions.row(m_edges(edge_id, 1)))
+        .norm();
+}
+
+double CollisionMesh::max_edge_length() const
+{
+    double val = 0;
+    for (int i = 0; i < m_edges.rows(); i++) {
+        val = std::max(edge_length(i), val);
+    }
+    return val;
+}
 } // namespace ipc

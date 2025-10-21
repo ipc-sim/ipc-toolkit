@@ -50,12 +50,17 @@ using Vector6d = Eigen::Vector<double, 6>;
 using Vector9d = Eigen::Vector<double, 9>;
 /// @brief A static size matrix of size of 12×1
 using Vector12d = Eigen::Vector<double, 12>;
+/// @brief A static size matrix of size of 15×1
+using Vector15d = Eigen::Vector<double, 15>;
+
 /// @brief A static size matrix of size of 6×6
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
 /// @brief A static size matrix of size of 9×9
 using Matrix9d = Eigen::Matrix<double, 9, 9>;
 /// @brief A static size matrix of size of 12×12
 using Matrix12d = Eigen::Matrix<double, 12, 12>;
+/// @brief A static size matrix of size of 15×15
+using Matrix15d = Eigen::Matrix<double, 15, 15>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1
 template <typename T> using VectorMax2 = Vector<T, Eigen::Dynamic, 2>;
@@ -161,6 +166,11 @@ using ArrayMax3i = ArrayMax3<int>;
 using ArrayMax4d = ArrayMax4<double>;
 /// @brief A dynamic size array with a fixed maximum size of 4×1
 using ArrayMax4i = ArrayMax4<int>;
+
+template <int dim> using GradType = std::tuple<double, Vector<double, dim>>;
+template <int dim>
+using HessianType =
+    std::tuple<double, Vector<double, dim>, Eigen::Matrix<double, dim, dim>>;
 
 /**@}*/
 

@@ -4,6 +4,12 @@
 
 namespace ipc {
 
+/// @brief Closest pair between a point and point.
+enum class PointPointDistanceType : uint8_t {
+    P_P = 0, ///< The points are closest to each other.
+    AUTO = 0 ///< Automatically determine the closest pair. (Same as P_P)
+};
+
 /// @brief Closest pair between a point and edge.
 enum class PointEdgeDistanceType : uint8_t {
     P_E0, ///< The point is closest to edge vertex zero.
