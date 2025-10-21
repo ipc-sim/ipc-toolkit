@@ -72,7 +72,7 @@ jobs:
           lcov --remove coverage.info --ignore-errors unused '/usr/*' "$HOME/.cache/*" "*tests/*" --output-file coverage.info
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3.1.6
+        uses: codecov/codecov-action@v5.5.1
         with:
           fail_ci_if_error: true
           files: build/coverage.info

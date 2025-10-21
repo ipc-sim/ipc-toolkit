@@ -7,7 +7,10 @@ namespace ipc {
 
 /// @brief A tangential dissipative potential.
 class TangentialPotential : public Potential<TangentialCollisions> {
-    using Super = Potential;
+    using Super = Potential<TangentialCollisions>;
+    using Super::STENCIL_NDOF;
+    using VectorMaxNd = Super::VectorMaxNd;
+    using MatrixMaxNd = Super::MatrixMaxNd;
 
 public:
     virtual ~TangentialPotential() { }
@@ -70,6 +73,26 @@ public:
         const double normal_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
+
+    Eigen::VectorXd smooth_contact_force(
+        const TangentialCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+        Eigen::ConstRef<Eigen::MatrixXd> velocities,
+        const double dmin = 0,
+        const bool no_mu = false) const;
+
+    Eigen::SparseMatrix<double> smooth_contact_force_jacobian(
+        const TangentialCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+        Eigen::ConstRef<Eigen::MatrixXd> velocities,
+        const SmoothContactParameters& params,
+        const DiffWRT wrt,
+        const double dmin = 0,
+        const bool no_mu = false) const;
 
     // -- Single collision methods ---------------------------------------------
 
@@ -139,6 +162,39 @@ public:
         const double normal_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
+
+    VectorMaxNd smooth_contact_force(
+        const TangentialCollision& collision,
+        Eigen::ConstRef<VectorMaxNd> rest_positions,       // = x
+        Eigen::ConstRef<VectorMaxNd> lagged_displacements, // = u
+        Eigen::ConstRef<VectorMaxNd> velocities,           // = v
+        const bool no_mu = false,
+        const bool no_contact_force_multiplier = false) const;
+
+    Eigen::MatrixXd smooth_contact_force_jacobian(
+        const TangentialCollision& collision,
+        Eigen::ConstRef<VectorMaxNd> rest_positions,       // = x
+        Eigen::ConstRef<VectorMaxNd> lagged_displacements, // = u
+        Eigen::ConstRef<VectorMaxNd> velocities,           // = v
+        const DiffWRT wrt,
+        const bool no_mu) const;
+
+    /// @brief Compute the friction force Jacobian assuming the contact force magnitude being 1.
+    /// @param collision The collision
+    /// @param rest_positions Rest positions of the vertices (rowwise).
+    /// @param lagged_displacements Previous displacements of the vertices (rowwise).
+    /// @param velocities Current displacements of the vertices (rowwise).
+    /// @param barrier_potential Barrier potential (used for normal force magnitude).
+    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param wrt Variable to differentiate the friction force with respect to.
+    /// @param dmin Minimum distance (used for normal force magnitude).
+    /// @return Friction force Jacobian
+    MatrixMaxNd smooth_contact_force_jacobian_unit(
+        const TangentialCollision& collision,
+        Eigen::ConstRef<VectorMaxNd> lagged_positions,
+        Eigen::ConstRef<VectorMaxNd> velocities,
+        const DiffWRT wrt,
+        const bool no_mu = false) const;
 
 protected:
     /// @brief Compute the value of the ∫ μ(y) f₁(y) dy, where f₁ is the first derivative of the smooth mollifier.

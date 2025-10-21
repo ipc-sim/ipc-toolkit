@@ -3,9 +3,13 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/catch_template_test_macros.hpp>
 
+#include <ipc/tangent/closest_point.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
+#include <ipc/smooth_contact/distance/point_face.hpp>
+#include <ipc/smooth_contact/distance/primitive_distance.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <finitediff.hpp>
@@ -96,6 +100,14 @@ TEST_CASE("Point-triangle distance", "[distance][point-triangle]")
     CHECK(
         distance
         == Catch::Approx(point_point_distance(p, closest_point)).margin(1e-12));
+
+    distance =
+        PrimitiveDistanceTemplate<Face, Point3, double>::compute_distance(
+            (Vector12d() << t0, t1, t2, p).finished(),
+            point_triangle_distance_type(p, t0, t1, t2));
+    CHECK(
+        distance
+        == Catch::Approx(point_point_distance(p, closest_point)).margin(1e-12));
 }
 
 TEST_CASE(
@@ -178,6 +190,18 @@ TEST_CASE(
         fgrad);
 
     CHECK(fd::compare_gradient(grad, fgrad));
+
+    Vector<ADGrad<12>, 12> X = slice_positions<ADGrad<12>, 12, 1>(
+        (Vector12d() << p, t0, t1, t2).finished());
+    {
+        Vector<ADGrad<12>, 3> tmp = X.head<3>();
+        X.head<9>() = X.tail<9>().eval();
+        X.tail<3>() = tmp;
+    }
+    ADGrad<12> dist =
+        PrimitiveDistanceTemplate<Face, Point3, ADGrad<12>>::compute_distance(
+            X, point_triangle_distance_type(p, t0, t1, t2));
+    CHECK(fd::compare_gradient(dist.grad, fgrad));
 }
 
 TEST_CASE("Point-triangle distance hessian", "[distance][point-triangle][hess]")
@@ -263,4 +287,231 @@ TEST_CASE("Point-triangle distance hessian", "[distance][point-triangle][hess]")
 
     CAPTURE(dtype);
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
+
+    Vector<ADHessian<12>, 12> X = slice_positions<ADHessian<12>, 12, 1>(x);
+    {
+        Vector<ADHessian<12>, 3> tmp = X.head<3>();
+        X.head<9>() = X.tail<9>().eval();
+        X.tail<3>() = tmp;
+    }
+    ADHessian<12> dist =
+        PrimitiveDistanceTemplate<Face, Point3, ADHessian<12>>::
+            compute_distance(X, point_triangle_distance_type(p, t0, t1, t2));
+    CHECK(fd::compare_hessian(dist.Hess, fhess, 1e-2));
+}
+
+TEST_CASE(
+    "Point-triangle closest direction derivatives",
+    "[distance][point-triangle][grad]")
+{
+    double py = GENERATE(-10, -1, -1e-5, 0, 1e-5, 1, 10);
+    Eigen::Vector3d p(0, py, 0);
+    Eigen::Vector3d t0(-1, 0, 1);
+    Eigen::Vector3d t1(1, 0, 1);
+    Eigen::Vector3d t2(0, 0, -1);
+
+    SECTION("closest to triangle")
+    {
+        double pz = GENERATE(0, -1 + 1e-5, -1, 1, 1 - 1e-5);
+        p.z() = pz;
+    }
+    SECTION("closest to t0")
+    {
+        double px = GENERATE(-1, -1 - 1e-5, -11);
+        p.x() = px;
+        p.z() = t0.z();
+    }
+    SECTION("closest to t1")
+    {
+        double px = GENERATE(1, 1 + 1e-5, 11);
+        p.x() = px;
+        p.z() = t1.z();
+    }
+    SECTION("closest to t2")
+    {
+        double pz = GENERATE(-1, -1 - 1e-5, -11);
+        p.z() = pz;
+    }
+    SECTION("closest to t0t1")
+    {
+        double alpha = GENERATE(0.0, 1e-4, 0.5, 1.0 - 1e-4, 1.0);
+        Eigen::Vector3d closest_point = (t1 - t0) * alpha + t0;
+        Eigen::Vector2d perp = tests::edge_normal(
+            Eigen::Vector2d(t0.x(), t0.z()), Eigen::Vector2d(t1.x(), t1.z()));
+        // double scale = GENERATE(0, 1e-5, 1e-4, 1, 2, 11, 1000);
+        double scale = GENERATE(0, 1e-5, 1e-4, 1, 2, 11);
+        p.x() = closest_point.x() + scale * perp.x();
+        p.z() = closest_point.z() + scale * perp.y();
+    }
+    SECTION("closest to t1t2")
+    {
+        double alpha = GENERATE(0.0, 1e-4, 0.5, 1.0 - 1e-4, 1.0);
+        Eigen::Vector3d closest_point = (t2 - t1) * alpha + t1;
+        Eigen::Vector2d perp = tests::edge_normal(
+            Eigen::Vector2d(t1.x(), t1.z()), Eigen::Vector2d(t2.x(), t2.z()));
+        // double scale = GENERATE(0, 1e-5, 1e-4, 1, 2, 11, 1000);
+        double scale = GENERATE(0, 1e-5, 1e-4, 1, 2, 11);
+        p.x() = closest_point.x() + scale * perp.x();
+        p.z() = closest_point.z() + scale * perp.y();
+    }
+    SECTION("closest to t2t0")
+    {
+        double alpha = GENERATE(0.0, 1e-4, 0.5, 1.0 - 1e-4, 1.0);
+        Eigen::Vector3d closest_point = (t0 - t2) * alpha + t2;
+        Eigen::Vector2d perp = tests::edge_normal(
+            Eigen::Vector2d(t2.x(), t2.z()), Eigen::Vector2d(t0.x(), t0.z()));
+        // double scale = GENERATE(0, 1e-5, 1e-4, 1, 2, 11, 1000);
+        double scale = GENERATE(0, 1e-5, 1e-4, 1, 2, 11);
+        p.x() = closest_point.x() + scale * perp.x();
+        p.z() = closest_point.z() + scale * perp.y();
+    }
+
+    PointTriangleDistanceType dtype =
+        point_triangle_distance_type(p, t0, t1, t2);
+
+    Vector12d x;
+    x << p, t0, t1, t2;
+
+    {
+        const auto [vec, grad] =
+            point_triangle_closest_point_direction_grad(p, t0, t1, t2, dtype);
+
+        // Compute the gradient using finite differences
+        Eigen::MatrixXd fjac;
+        fd::finite_jacobian(
+            x,
+            [dtype](const Eigen::VectorXd& _x) {
+                return point_triangle_closest_point_direction<double>(
+                    _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
+                    _x.segment<3>(9), dtype);
+            },
+            fjac);
+
+        CHECK(fd::compare_jacobian(fjac, grad, 1e-5));
+    }
+
+    const auto [vec, grad, hess] =
+        point_triangle_closest_point_direction_hessian(p, t0, t1, t2, dtype);
+
+    // Compute the gradient using finite differences
+    Eigen::MatrixXd fjac;
+    fd::finite_jacobian(
+        x,
+        [dtype](const Eigen::VectorXd& _x) {
+            return point_triangle_closest_point_direction<double>(
+                _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
+                _x.segment<3>(9), dtype);
+        },
+        fjac);
+
+    std::array<Eigen::MatrixXd, 3> grad_fjac;
+    for (int i = 0; i < 3; i++) {
+        fd::finite_hessian(
+            x,
+            [dtype, i](const Eigen::VectorXd& _x) {
+                return point_triangle_closest_point_direction<double>(
+                    _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
+                    _x.segment<3>(9), dtype)(i);
+            },
+            grad_fjac[i]);
+
+        CHECK(fd::compare_jacobian(grad_fjac[i], hess[i], 1e-5));
+    }
+
+    CAPTURE(dtype);
+    CHECK(fd::compare_jacobian(grad, fjac, 1e-6));
+}
+
+TEMPLATE_TEST_CASE_SIG(
+    "Point-triangle distance template",
+    "[distance][point-triangle][hess]",
+    ((int ndofs), ndofs),
+    12,
+    13)
+{
+    double py = GENERATE(-10, -1, -1e-12, 0, 1e-12, 1, 10);
+    Eigen::Vector3d p(0, py, 0);
+    Eigen::Vector3d t0(-1, 0, 1);
+    Eigen::Vector3d t1(1, 0, 1);
+    Eigen::Vector3d t2(0, 0, -1);
+
+    SECTION("closest to triangle")
+    {
+        double pz = GENERATE(0, -1 + 1e-12, -1, 1, 1 - 1e-12);
+        p.z() = pz;
+    }
+    SECTION("closest to t0")
+    {
+        double px = GENERATE(-1, -1 - 1e-12, -11);
+        p.x() = px;
+        p.z() = t0.z();
+    }
+    SECTION("closest to t1")
+    {
+        double px = GENERATE(1, 1 + 1e-12, 11);
+        p.x() = px;
+        p.z() = t1.z();
+    }
+    SECTION("closest to t2")
+    {
+        double pz = GENERATE(-1, -1 - 1e-12, -11);
+        p.z() = pz;
+    }
+    SECTION("closest to t0t1")
+    {
+        double alpha = GENERATE(0.0, 1e-4, 0.5, 1.0 - 1e-4, 1.0);
+        Eigen::Vector3d closest_point = (t1 - t0) * alpha + t0;
+        Eigen::Vector2d perp = tests::edge_normal(
+            Eigen::Vector2d(t0.x(), t0.z()), Eigen::Vector2d(t1.x(), t1.z()));
+        // double scale = GENERATE(0, 1e-12, 1e-4, 1, 2, 11, 1000);
+        double scale = GENERATE(0, 1e-12, 1e-4, 1, 2, 11);
+        p.x() = closest_point.x() + scale * perp.x();
+        p.z() = closest_point.z() + scale * perp.y();
+    }
+    SECTION("closest to t1t2")
+    {
+        double alpha = GENERATE(0.0, 1e-4, 0.5, 1.0 - 1e-4, 1.0);
+        Eigen::Vector3d closest_point = (t2 - t1) * alpha + t1;
+        Eigen::Vector2d perp = tests::edge_normal(
+            Eigen::Vector2d(t1.x(), t1.z()), Eigen::Vector2d(t2.x(), t2.z()));
+        // double scale = GENERATE(0, 1e-12, 1e-4, 1, 2, 11, 1000);
+        double scale = GENERATE(0, 1e-12, 1e-4, 1, 2, 11);
+        p.x() = closest_point.x() + scale * perp.x();
+        p.z() = closest_point.z() + scale * perp.y();
+    }
+    SECTION("closest to t2t0")
+    {
+        double alpha = GENERATE(0.0, 1e-4, 0.5, 1.0 - 1e-4, 1.0);
+        Eigen::Vector3d closest_point = (t0 - t2) * alpha + t2;
+        Eigen::Vector2d perp = tests::edge_normal(
+            Eigen::Vector2d(t2.x(), t2.z()), Eigen::Vector2d(t0.x(), t0.z()));
+        // double scale = GENERATE(0, 1e-12, 1e-4, 1, 2, 11, 1000);
+        double scale = GENERATE(0, 1e-12, 1e-4, 1, 2, 11);
+        p.x() = closest_point.x() + scale * perp.x();
+        p.z() = closest_point.z() + scale * perp.y();
+    }
+
+    PointTriangleDistanceType dtype =
+        point_triangle_distance_type(p, t0, t1, t2);
+
+    Vector12d x;
+    x << t0, t1, t2, p;
+
+    const double dist = point_triangle_distance(p, t0, t1, t2, dtype);
+
+    auto dist1 = PrimitiveDistanceTemplate<
+        Face, Point3, ADGrad<ndofs>>::compute_distance(x, dtype);
+    CHECK(dist1.val == Catch::Approx(dist).margin(1e-12));
+
+    auto dist2 = PrimitiveDistanceTemplate<
+        Face, Point3, ADHessian<ndofs>>::compute_distance(x, dtype);
+    CHECK(dist2.val == Catch::Approx(dist).margin(1e-12));
+
+    auto direc1 = PrimitiveDistanceTemplate<
+        Face, Point3, ADGrad<ndofs>>::compute_closest_direction(x, dtype);
+    CHECK(direc1.squaredNorm().val == Catch::Approx(dist).margin(1e-12));
+
+    auto direc2 = PrimitiveDistanceTemplate<
+        Face, Point3, ADHessian<ndofs>>::compute_closest_direction(x, dtype);
+    CHECK(direc2.squaredNorm().val == Catch::Approx(dist).margin(1e-12));
 }

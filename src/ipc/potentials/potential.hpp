@@ -10,6 +10,10 @@ namespace ipc {
 template <class TCollisions> class Potential {
 protected:
     using TCollision = typename TCollisions::value_type;
+    /// @brief Maximum degrees of freedom per collision
+    static constexpr int STENCIL_NDOF = 3 * TCollision::STENCIL_SIZE;
+    using VectorMaxNd = Vector<double, Eigen::Dynamic, STENCIL_NDOF>;
+    using MatrixMaxNd = MatrixMax<double, STENCIL_NDOF, STENCIL_NDOF>;
 
 public:
     Potential() = default;
@@ -57,23 +61,23 @@ public:
     /// @param x The collision stencil's degrees of freedom.
     /// @return The potential.
     virtual double operator()(
-        const TCollision& collision, Eigen::ConstRef<VectorMax12d> x) const = 0;
+        const TCollision& collision, Eigen::ConstRef<VectorMaxNd> x) const = 0;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @return The gradient of the potential.
-    virtual VectorMax12d gradient(
-        const TCollision& collision, Eigen::ConstRef<VectorMax12d> x) const = 0;
+    virtual VectorMaxNd gradient(
+        const TCollision& collision, Eigen::ConstRef<VectorMaxNd> x) const = 0;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @param project_hessian_to_psd Whether to project the hessian to the positive semi-definite cone.
     /// @return The hessian of the potential.
-    virtual MatrixMax12d hessian(
+    virtual MatrixMaxNd hessian(
         const TCollision& collision,
-        Eigen::ConstRef<VectorMax12d> x,
+        Eigen::ConstRef<VectorMaxNd> x,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const = 0;
 };

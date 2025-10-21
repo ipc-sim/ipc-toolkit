@@ -3,9 +3,12 @@
 #include <catch2/generators/catch_generators_adapters.hpp>
 #include <catch2/generators/catch_generators_random.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
+#include <catch2/catch_template_test_macros.hpp>
 
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/edge_edge.hpp>
+#include <ipc/smooth_contact/primitives/edge3.hpp>
+#include <ipc/smooth_contact/distance/primitive_distance.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <finitediff.hpp>
@@ -49,6 +52,12 @@ TEST_CASE("Edge-edge distance", "[distance][edge-edge]")
 
     CAPTURE(e0x, e0y, e0z, edge_edge_distance_type(e00, e01, e10, e11));
     CHECK(distance == Catch::Approx(expected_distance).margin(1e-12));
+
+    distance =
+        PrimitiveDistanceTemplate<Edge3, Edge3, double>::compute_distance(
+            (Vector12d() << e00, e01, e10, e11).finished(),
+            edge_edge_distance_type(e00, e01, e10, e11));
+    CHECK(distance == Catch::Approx(expected_distance));
 }
 
 TEST_CASE("Edge-edge distance !EA_EB", "[distance][edge-edge]")
@@ -98,10 +107,16 @@ TEST_CASE("Edge-edge distance !EA_EB", "[distance][edge-edge]")
             std::swap(ea1, eb1);
         }
 
-        const double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
+        double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
 
         CAPTURE(alpha, s, swap_ea, swap_eb, swap_edges);
 
+        CHECK(distance == Catch::Approx(s * s).margin(1e-15));
+
+        distance =
+            PrimitiveDistanceTemplate<Edge3, Edge3, double>::compute_distance(
+                (Vector12d() << ea0, ea1, eb0, eb1).finished(),
+                edge_edge_distance_type(ea0, ea1, eb0, eb1));
         CHECK(distance == Catch::Approx(s * s).margin(1e-15));
     }
 }
@@ -143,7 +158,13 @@ TEST_CASE("Edge-edge distance EA_EB", "[distance][edge-edge]")
             std::swap(ea1, eb1);
         }
 
-        const double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
+        double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
+        CHECK(distance == Catch::Approx(s * s).margin(1e-15));
+
+        distance =
+            PrimitiveDistanceTemplate<Edge3, Edge3, double>::compute_distance(
+                (Vector12d() << ea0, ea1, eb0, eb1).finished(),
+                edge_edge_distance_type(ea0, ea1, eb0, eb1));
         CHECK(distance == Catch::Approx(s * s).margin(1e-15));
     }
 }
@@ -272,6 +293,13 @@ TEST_CASE("Edge-edge distance gradient", "[distance][edge-edge][gradient]")
 
     CAPTURE(e0x, e0y, e0z, edge_edge_distance_type(e00, e01, e10, e11));
     CHECK(fd::compare_gradient(grad, fgrad));
+
+    Vector<ADGrad<12>, 12> X1 = slice_positions<ADGrad<12>, 12, 1>(
+        (Vector12d() << e00, e01, e10, e11).finished());
+    ADGrad<12> dist1 =
+        PrimitiveDistanceTemplate<Edge3, Edge3, ADGrad<12>>::compute_distance(
+            X1, edge_edge_distance_type(e00, e01, e10, e11));
+    CHECK(fd::compare_gradient(dist1.grad, fgrad));
 }
 
 TEST_CASE(
@@ -303,5 +331,243 @@ TEST_CASE(
     CAPTURE(angle, (grad - fgrad).squaredNorm());
     CHECK(distance == Catch::Approx(1.0));
     CHECK(fd::compare_gradient(grad, fgrad));
-    // CHECK(distance.getHessian().squaredNorm() != Catch::Approx(0.0));
+    // CHECK(distance.Hess.squaredNorm() != Catch::Approx(0.0));
+}
+
+TEST_CASE(
+    "Edge-edge closest direction gradient !EA_EB", "[distance][edge-edge]")
+{
+    double alpha = GENERATE(range(-1.0, 2.0, 0.1));
+    double s = GENERATE(range(-10.0, 10.0, 1.0));
+    if (s == 0)
+        return;
+    const bool swap_ea = GENERATE(false, true);
+    const bool swap_eb = GENERATE(false, true);
+    const bool swap_edges = GENERATE(false, true);
+    const int n_random_edges = 20;
+
+    const auto sign = [](double x) { return x < 0 ? -1 : 1; };
+
+    for (int i = 0; i < n_random_edges; i++) {
+        Eigen::Vector3d ea0 = Eigen::Vector3d::Random();
+        Eigen::Vector3d ea1 = Eigen::Vector3d::Random();
+        Eigen::Vector3d n =
+            (ea1 - ea0).cross(Eigen::Vector3d::UnitX()).normalized();
+
+        Eigen::Vector3d eb0 = ((ea1 - ea0) * alpha + ea0) + s * n;
+        if (alpha < 0) {
+            alpha = 0;
+            n = eb0 - ea0;
+            s = n.norm();
+            n /= s;
+        } else if (alpha > 1) {
+            alpha = 1;
+            n = eb0 - ea1;
+            s = n.norm();
+            n /= s;
+        }
+        REQUIRE(s != 0);
+
+        Eigen::Vector3d eb1 =
+            ((ea1 - ea0) * alpha + ea0) + (s + sign(s) * 1) * n;
+
+        if (swap_ea) {
+            std::swap(ea0, ea1);
+        }
+        if (swap_eb) {
+            std::swap(eb0, eb1);
+        }
+        if (swap_edges) {
+            std::swap(ea0, eb0);
+            std::swap(ea1, eb1);
+        }
+
+        double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
+
+        CAPTURE(alpha, s, swap_ea, swap_eb, swap_edges);
+
+        CHECK(distance == Catch::Approx(s * s).margin(1e-15));
+
+        Vector12d x;
+        x << ea0, ea1, eb0, eb1;
+        const auto dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+
+        distance =
+            PrimitiveDistanceTemplate<Edge3, Edge3, double>::compute_distance(
+                x, dtype);
+        CHECK(distance == Catch::Approx(s * s).margin(1e-15));
+
+        Vector<ADGrad<12>, 12> X = slice_positions<ADGrad<12>, 12, 1>(x);
+        Vector<ADGrad<12>, 3> direc = PrimitiveDistanceTemplate<
+            Edge3, Edge3, ADGrad<12>>::compute_closest_direction(X, dtype);
+        CHECK(direc.squaredNorm().val == Catch::Approx(s * s).margin(1e-15));
+
+        // Compute the gradient using finite differences
+        Eigen::MatrixXd fjac;
+        fd::finite_jacobian(
+            x,
+            [dtype](const Eigen::VectorXd& _x) {
+                return PrimitiveDistanceTemplate<
+                    Edge3, Edge3, double>::compute_closest_direction(_x, dtype);
+            },
+            fjac);
+
+        for (int d = 0; d < 3; d++) {
+            CHECK(
+                fd::compare_jacobian(
+                    fjac.row(d), direc(d).grad.transpose(), 1e-5));
+        }
+    }
+}
+
+TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
+{
+    OrientationTypes otypes;
+    otypes.set_size(2);
+    const double alpha = 0.85;
+    const double beta = 0.2;
+    SmoothContactParameters params { 1e-3, 1, 0, alpha, beta, 2 };
+
+    Eigen::Vector3d dn, e0, e1, f0, f1;
+    e0 << 0, 0, 0;
+    e1 << 1, 0, 0;
+    dn << 0, 0, 1;
+    f0 << 0.4, 0.3, GENERATE(take(10, random(-0.2, 0.2)));
+    f1 << 0.6, -0.2, GENERATE(take(10, random(-0.2, 0.2)));
+
+    ipc::Vector15d x;
+    x << dn, e0, e1, f0, f1;
+
+    const auto [val, grad, hess] = smooth_edge3_normal_term_hessian(
+        dn, e0, e1, f0, f1, alpha, beta, otypes);
+
+    Eigen::VectorXd fgrad;
+    fd::finite_gradient(
+        x,
+        [&](const Eigen::VectorXd& y) {
+            return smooth_edge3_normal_term(
+                y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3),
+                y.segment(12, 3), alpha, beta, otypes);
+        },
+        fgrad, fd::AccuracyOrder::FOURTH, 1e-5);
+
+    CHECK((fgrad - grad).norm() / 1e-8 <= grad.norm());
+
+    Eigen::MatrixXd fhess;
+    fd::finite_jacobian(
+        x,
+        [&](const Eigen::VectorXd& y) {
+            return std::get<1>(smooth_edge3_normal_term_gradient(
+                y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3),
+                y.segment(12, 3), alpha, beta, otypes));
+        },
+        fhess, fd::AccuracyOrder::SECOND, 1e-7);
+
+    CHECK((fhess - hess).norm() / 1e-6 <= hess.norm());
+}
+
+TEMPLATE_TEST_CASE_SIG(
+    "Edge-edge templated functions !EA_EB",
+    "[distance][edge-edge]",
+    ((int ndofs), ndofs),
+    9,
+    12,
+    13)
+{
+    double alpha = GENERATE(range(-1.0, 2.0, 0.4));
+    double s = GENERATE(range(-10.0, 10.0, 5.0));
+    if (s == 0)
+        return;
+    const bool swap_ea = GENERATE(false, true);
+    const bool swap_eb = GENERATE(false, true);
+    const bool swap_edges = GENERATE(false, true);
+    const int n_random_edges = 5;
+
+    const auto sign = [](double x) { return x < 0 ? -1 : 1; };
+
+    for (int i = 0; i < n_random_edges; i++) {
+        Eigen::Vector3d ea0 = Eigen::Vector3d::Random();
+        Eigen::Vector3d ea1 = Eigen::Vector3d::Random();
+        Eigen::Vector3d n =
+            (ea1 - ea0).cross(Eigen::Vector3d::UnitX()).normalized();
+
+        Eigen::Vector3d eb0 = ((ea1 - ea0) * alpha + ea0) + s * n;
+        if (alpha < 0) {
+            alpha = 0;
+            n = eb0 - ea0;
+            s = n.norm();
+            n /= s;
+        } else if (alpha > 1) {
+            alpha = 1;
+            n = eb0 - ea1;
+            s = n.norm();
+            n /= s;
+        }
+        REQUIRE(s != 0);
+
+        Eigen::Vector3d eb1 =
+            ((ea1 - ea0) * alpha + ea0) + (s + sign(s) * 1) * n;
+
+        if (swap_ea) {
+            std::swap(ea0, ea1);
+        }
+        if (swap_eb) {
+            std::swap(eb0, eb1);
+        }
+        if (swap_edges) {
+            std::swap(ea0, eb0);
+            std::swap(ea1, eb1);
+        }
+
+        Vector12d x;
+        x << ea0, ea1, eb0, eb1;
+        const auto dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+
+        auto distance1 = PrimitiveDistanceTemplate<
+            Edge3, Edge3, ADGrad<ndofs>>::compute_distance(x, dtype);
+        CHECK(distance1.val == Catch::Approx(s * s).margin(1e-15));
+
+        auto distance2 = PrimitiveDistanceTemplate<
+            Edge3, Edge3, ADHessian<ndofs>>::compute_distance(x, dtype);
+        CHECK(distance2.val == Catch::Approx(s * s).margin(1e-15));
+    }
+}
+
+TEMPLATE_TEST_CASE_SIG(
+    "Edge-edge templated functions EA_EB",
+    "[distance][edge-edge]",
+    ((int ndofs), ndofs),
+    9,
+    12,
+    13)
+{
+    Eigen::Vector3d e00(-1, 0, 0);
+    Eigen::Vector3d e01(1, 0, 0);
+    Eigen::Vector3d e10(0, 0, -1);
+    Eigen::Vector3d e11(0, 0, 1);
+
+    Vector12d x;
+    x << e00, e01, e10, e11;
+    const auto dtype = edge_edge_distance_type(e00, e01, e10, e11);
+    double expected_distance = edge_edge_distance(e00, e01, e10, e11, dtype);
+
+    auto distance1 = PrimitiveDistanceTemplate<
+        Edge3, Edge3, ADGrad<ndofs>>::compute_distance(x, dtype);
+    CHECK(distance1.val == Catch::Approx(expected_distance).margin(1e-15));
+
+    auto distance2 = PrimitiveDistanceTemplate<
+        Edge3, Edge3, ADHessian<ndofs>>::compute_distance(x, dtype);
+    CHECK(distance2.val == Catch::Approx(expected_distance).margin(1e-15));
+
+    auto direc1 = PrimitiveDistanceTemplate<
+        Edge3, Edge3, ADGrad<ndofs>>::compute_closest_direction(x, dtype);
+    CHECK(
+        direc1.squaredNorm().val
+        == Catch::Approx(expected_distance).margin(1e-15));
+
+    auto direc2 = PrimitiveDistanceTemplate<
+        Edge3, Edge3, ADHessian<ndofs>>::compute_closest_direction(x, dtype);
+    CHECK(
+        direc2.squaredNorm().val
+        == Catch::Approx(expected_distance).margin(1e-15));
 }

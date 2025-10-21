@@ -2,6 +2,7 @@
 
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/potentials/normal_potential.hpp>
+#include <ipc/smooth_contact/collisions/smooth_collision.hpp>
 #include <ipc/tangent/relative_velocity.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -19,6 +20,15 @@ protected:
         Eigen::ConstRef<VectorMax12d> positions,
         const NormalPotential& normal_potential,
         const double normal_stiffness);
+
+    /// @brief Initialize the collision.
+    /// @param collision NormalCollision stencil.
+    /// @param positions Collision stencil's vertex positions.
+    /// @param normal_force Magnitude of the normal force.
+    void init(
+        const NormalCollision& collision,
+        Eigen::ConstRef<VectorMax12d> positions,
+        const double normal_force);
 
 public:
     virtual ~TangentialCollision() = default;
@@ -84,6 +94,9 @@ public:
 public:
     /// @brief Normal force magnitude
     double normal_force_magnitude = 0;
+
+    /// @brief SmoothCollision instance to compute normal force magnitude and its derivatives
+    std::shared_ptr<SmoothCollision> smooth_collision;
 
     /// @brief Ratio between normal and static tangential forces (e.g., friction coefficient)
     double mu_s = 0;

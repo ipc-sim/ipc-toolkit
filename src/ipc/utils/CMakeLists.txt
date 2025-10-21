@@ -18,6 +18,14 @@ set(SOURCES
   vertex_to_min_edge.cpp
   vertex_to_min_edge.hpp
   world_bbox_diagonal_length.hpp
+  math.cpp
+  math.hpp
+  math.tpp
+  autodiff_types.hpp
+  maybe_parallel_for.hpp
+  maybe_parallel_for.tpp
+  matrix_cache.hpp
+  matrix_cache.cpp
 )
 
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

@@ -8,6 +8,7 @@ Checks: >
 
   # Bug Detection and Safety
   bugprone-*,
+  # misc-const-correctness,
 
   # Specific high-value checks (even if not in a group above)
   google-runtime-int,
@@ -27,7 +28,10 @@ Checks: >
   -readability-isolate-declaration,
   -readability-magic-numbers,
   -readability-math-missing-parentheses,
-  -readability-redundant-access-specifiers
+  -readability-redundant-access-specifiers,
+  -readability-uppercase-literal-suffix,
+  -readability-function-size,
+  -readability-convert-member-functions-to-static
 
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*(ipc/).*'

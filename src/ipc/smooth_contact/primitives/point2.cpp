@@ -1,0 +1,214 @@
+#include "point2.hpp"
+
+namespace ipc {
+
+namespace {
+    std::vector<index_t>
+    find_vertex_adjacent_vertices(const CollisionMesh& mesh, const index_t v)
+    {
+        assert(mesh.dim() == 2);
+        std::vector<index_t> neighbors;
+        neighbors.assign(2, -1);
+
+        for (index_t i : mesh.vertex_edge_adjacencies()[v]) {
+            if (mesh.edges()(i, 0) == v) {
+                neighbors[0] = mesh.edges()(i, 1);
+            } else if (mesh.edges()(i, 1) == v) {
+                neighbors[1] = mesh.edges()(i, 0);
+            } else {
+                throw std::runtime_error("Invalid edge-vertex adjacency!");
+            }
+        }
+
+        return neighbors;
+    }
+
+    bool smooth_point2_term_type(
+        Eigen::ConstRef<Eigen::Vector2d> v,
+        Eigen::ConstRef<Eigen::Vector2d> direc,
+        Eigen::ConstRef<Eigen::Vector2d> e0,
+        Eigen::ConstRef<Eigen::Vector2d> e1,
+        const SmoothContactParameters& params,
+        const bool orientable)
+    {
+        const Eigen::Vector2d dn = -direc.normalized();
+        const Eigen::Vector2d t0 = (e0 - v).normalized(),
+                              t1 = (e1 - v).normalized();
+
+        if (dn.dot(t0) <= -params.alpha_t || dn.dot(t1) <= -params.alpha_t) {
+            return false;
+        }
+
+        if (orientable) {
+            const double tmp = Math<double>::smooth_heaviside(
+                                   -Math<double>::cross2(dn, t0),
+                                   params.alpha_n, params.beta_n)
+                + Math<double>::smooth_heaviside(
+                                   Math<double>::cross2(dn, t1), params.alpha_n,
+                                   params.beta_n);
+            if (tmp <= 1. - params.alpha_n) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    template <class scalar>
+    scalar smooth_point2_term(
+        Eigen::ConstRef<Eigen::Vector2<scalar>> v,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> direc,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> e0,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> e1,
+        const SmoothContactParameters& params,
+        const bool orientable)
+    {
+        const Eigen::Vector2<scalar> dn = -direc.normalized();
+        const Eigen::Vector2<scalar> t0 = (e0 - v).normalized(),
+                                     t1 = (v - e1).normalized();
+
+        scalar val = Math<scalar>::smooth_heaviside(
+                         dn.dot(t0), params.alpha_t, params.beta_t)
+            * Math<scalar>::smooth_heaviside(
+                         -dn.dot(t1), params.alpha_t, params.beta_t);
+
+        if (orientable) {
+            const scalar tmp = Math<scalar>::smooth_heaviside(
+                                   -Math<scalar>::cross2(dn, t0),
+                                   params.alpha_n, params.beta_n)
+                + Math<scalar>::smooth_heaviside(
+                                   -Math<scalar>::cross2(dn, t1),
+                                   params.alpha_n, params.beta_n);
+            val = val
+                * Math<scalar>::smooth_heaviside(tmp - 1., params.alpha_n, 0);
+        }
+
+        return val * ((e0 - v).norm() + (e1 - v).norm()) / 2.;
+    }
+
+    template <class scalar>
+    scalar smooth_point2_term_one_side(
+        Eigen::ConstRef<Eigen::Vector2<scalar>> v,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> direc,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> e0,
+        const SmoothContactParameters& params)
+    {
+        const Eigen::Vector2<scalar> dn = -direc.normalized();
+        const Eigen::Vector2<scalar> t0 = e0 - v;
+
+        const scalar tangent_term = Math<scalar>::smooth_heaviside(
+            dn.dot(t0) / t0.norm(), params.alpha_t, params.beta_t);
+
+        return tangent_term * t0.norm();
+    }
+} // namespace
+
+Point2::Point2(
+    const index_t id,
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const VectorMax3d& d,
+    const SmoothContactParameters& params)
+    : Primitive(id, params)
+{
+    orientable = mesh.is_orient_vertex(id);
+    auto neighbor_verts = find_vertex_adjacent_vertices(mesh, id);
+    has_neighbor_1 = neighbor_verts[0] >= 0;
+    has_neighbor_2 = neighbor_verts[1] >= 0;
+
+    if (has_neighbor_1 && has_neighbor_2) {
+        m_vertex_ids = { { id, neighbor_verts[0], neighbor_verts[1] } };
+        m_is_active = smooth_point2_term_type(
+            vertices.row(id), d, vertices.row(m_vertex_ids[1]),
+            vertices.row(m_vertex_ids[2]), params, orientable);
+    } else if (has_neighbor_1 || has_neighbor_2) {
+        m_vertex_ids = {
+            { id, has_neighbor_1 ? neighbor_verts[0] : neighbor_verts[1] }
+        };
+
+        const Eigen::Vector2d dn = -d.normalized();
+        const Eigen::Vector2d t0 =
+            (vertices.row(m_vertex_ids[1]) - vertices.row(m_vertex_ids[0]))
+                .normalized();
+
+        m_is_active = dn.dot(t0) > -params.alpha_t;
+    } else {
+        m_vertex_ids.resize(1);
+        m_vertex_ids[0] = id;
+        m_is_active = true;
+    }
+}
+
+int Point2::n_vertices() const { return m_vertex_ids.size(); }
+
+double Point2::potential(
+    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
+{
+    if (has_neighbor_1 && has_neighbor_2) {
+        return smooth_point2_term<double>(
+            x.segment<DIM>(0), d, x.segment<DIM>(DIM), x.segment<DIM>(2 * DIM),
+            m_params, orientable);
+    } else if (has_neighbor_1 || has_neighbor_2) {
+        return smooth_point2_term_one_side<double>(
+            x.segment<DIM>(0), d, x.segment<DIM>(DIM), m_params);
+    } else {
+        return 1.;
+    }
+}
+Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
+    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
+{
+    if (has_neighbor_1 && has_neighbor_2) {
+        ScalarBase::setVariableCount(4 * DIM);
+        using T = ADGrad<4 * DIM>;
+        Vector<double, 4 * DIM> tmp;
+        tmp << d, x;
+        Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
+        return smooth_point2_term<T>(
+                   X.row(1), X.row(0), X.row(2), X.row(3), m_params, orientable)
+            .grad;
+    } else if (has_neighbor_1 || has_neighbor_2) {
+        ScalarBase::setVariableCount(3 * DIM);
+        using T = ADGrad<3 * DIM>;
+        Vector<double, 3 * DIM> tmp;
+        tmp << d, x;
+        Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
+        return smooth_point2_term_one_side<T>(
+                   X.row(1), X.row(0), X.row(2), m_params)
+            .grad;
+    } else {
+        return Vector<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
+            x.size() + d.size());
+    }
+}
+MatrixMax<
+    double,
+    Point2::MAX_SIZE + Point2::DIM,
+    Point2::MAX_SIZE + Point2::DIM>
+Point2::hessian(
+    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
+{
+    if (has_neighbor_1 && has_neighbor_2) {
+        ScalarBase::setVariableCount(4 * DIM);
+        using T = ADHessian<4 * DIM>;
+        Vector<double, 4 * DIM> tmp;
+        tmp << d, x;
+        Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
+        return smooth_point2_term<T>(
+                   X.row(1), X.row(0), X.row(2), X.row(3), m_params, orientable)
+            .Hess;
+    } else if (has_neighbor_1 || has_neighbor_2) {
+        ScalarBase::setVariableCount(3 * DIM);
+        using T = ADHessian<3 * DIM>;
+        Vector<double, 3 * DIM> tmp;
+        tmp << d, x;
+        Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
+        return smooth_point2_term_one_side<T>(
+                   X.row(1), X.row(0), X.row(2), m_params)
+            .Hess;
+    } else {
+        return MatrixMax<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
+            x.size() + d.size(), x.size() + d.size());
+    }
+}
+} // namespace ipc

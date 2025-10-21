@@ -494,4 +494,366 @@ MatrixMax12d TangentialPotential::force_jacobian(
     return J;
 }
 
+Eigen::VectorXd TangentialPotential::smooth_contact_force(
+    const TangentialCollisions& collisions,
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+    Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+    Eigen::ConstRef<Eigen::MatrixXd> velocities,
+    const double dmin,
+    const bool no_mu) const
+{
+    if (collisions.empty()) {
+        return Eigen::VectorXd::Zero(velocities.size());
+    }
+
+    const int dim = velocities.cols();
+    const Eigen::MatrixXi& edges = mesh.edges();
+    const Eigen::MatrixXi& faces = mesh.faces();
+
+    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
+        Eigen::VectorXd::Zero(velocities.size()));
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            Eigen::VectorXd& global_force = storage.local();
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                const auto& collision = collisions[i];
+
+                const VectorMaxNd local_force = smooth_contact_force(
+                    collision, collision.dof(rest_positions, edges, faces),
+                    collision.dof(lagged_displacements, edges, faces),
+                    collision.dof(velocities, edges, faces), no_mu);
+
+                const auto vis =
+                    collision.vertex_ids(mesh.edges(), mesh.faces());
+
+                local_gradient_to_global_gradient(
+                    local_force, vis, dim, global_force);
+            }
+        });
+
+    return storage.combine([](const Eigen::VectorXd& a,
+                              const Eigen::VectorXd& b) { return a + b; });
+}
+
+Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
+    const TangentialCollisions& collisions,
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+    Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+    Eigen::ConstRef<Eigen::MatrixXd> velocities,
+    const SmoothContactParameters& params,
+    const DiffWRT wrt,
+    const double dmin,
+    const bool no_mu) const
+{
+    if (collisions.empty()) {
+        return Eigen::SparseMatrix<double>(
+            velocities.size(), velocities.size());
+    }
+
+    const int dim = velocities.cols();
+    const Eigen::MatrixXi& edges = mesh.edges();
+    const Eigen::MatrixXi& faces = mesh.faces();
+
+    tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
+        storage;
+
+    const Eigen::MatrixXd lagged_positions =
+        rest_positions + lagged_displacements;
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            auto& jac_triplets = storage.local();
+
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                const TangentialCollision& collision = collisions[i];
+
+                // This jacobian doesn't include the derivatives of normal
+                // contact force
+                const MatrixMaxNd local_force_jacobian =
+                    collision.normal_force_magnitude
+                    * smooth_contact_force_jacobian_unit(
+                        collision,
+                        collision.dof(lagged_positions, edges, faces),
+                        collision.dof(velocities, edges, faces), wrt, false);
+                // smooth_contact_force_jacobian(
+                //     collision, collision.dof(rest_positions, edges, faces),
+                //     collision.dof(lagged_displacements, edges, faces),
+                //     collision.dof(velocities, edges, faces), //
+                //     wrt);
+
+                const auto vis =
+                    collision.vertex_ids(mesh.edges(), mesh.faces());
+
+                local_hessian_to_global_triplets(
+                    local_force_jacobian, vis, dim, jac_triplets);
+
+                if (wrt == DiffWRT::VELOCITIES) {
+                    continue;
+                }
+
+                // The term that includes derivatives of normal contact force
+                const VectorMaxNd local_force = smooth_contact_force(
+                    collision, collision.dof(rest_positions, edges, faces),
+                    collision.dof(lagged_displacements, edges, faces),
+                    collision.dof(velocities, edges, faces), false, true);
+
+                // normal_force_grad is the gradient of contact force norm
+                Eigen::VectorXd normal_force_grad;
+                std::vector<index_t> cc_vert_ids;
+                Eigen::MatrixXd Xt = rest_positions + lagged_displacements;
+                auto cc = collision.smooth_collision;
+                const Eigen::VectorXd contact_grad =
+                    cc->gradient(cc->dof(Xt), params);
+                const Eigen::MatrixXd contact_hess =
+                    cc->hessian(cc->dof(Xt), params);
+                normal_force_grad =
+                    (1 / contact_grad.norm()) * (contact_hess * contact_grad);
+                cc_vert_ids = cc->vertex_ids();
+
+                local_jacobian_to_global_triplets(
+                    local_force * normal_force_grad.transpose(), vis,
+                    cc_vert_ids, dim, jac_triplets);
+            }
+        });
+
+    Eigen::SparseMatrix<double> jacobian(velocities.size(), velocities.size());
+    for (const auto& local_jac_triplets : storage) {
+        Eigen::SparseMatrix<double> local_jacobian(
+            velocities.size(), velocities.size());
+        local_jacobian.setFromTriplets(
+            local_jac_triplets.begin(), local_jac_triplets.end());
+        jacobian += local_jacobian;
+    }
+
+    // This term is zero!
+    // if wrt == X then compute ∇ₓ w(x)
+    // if (wrt == DiffWRT::REST_POSITIONS) {
+    //     for (int i = 0; i < collisions.size(); i++) {
+    //         const FrictionCollision& collision = collisions[i];
+    //         assert(collision.weight_gradient.size() ==
+    //         rest_positions.size()); if (collision.weight_gradient.size() !=
+    //         rest_positions.size()) {
+    //             throw std::runtime_error(
+    //                 "Shape derivative is not computed for friction
+    //                 collision!");
+    //         }
+
+    //         VectorMaxNd local_force
+    //         =
+    //             smooth_contact_force(
+    //                 collision, collision.dof(rest_positions, edges, faces),
+    //                 collision.dof(lagged_displacements, edges, faces),
+    //                 collision.dof(velocities, edges, faces), //
+    //                 dmin);
+    //         assert(collision.weight != 0);
+    //         local_force /= collision.weight;
+
+    //         Eigen::SparseVector<double> force(rest_positions.size());
+    //         force.reserve(local_force.size());
+    //         local_gradient_to_global_gradient(
+    //             local_force, collision.vertex_ids(edges, faces), dim, force);
+
+    //         jacobian += force * collision.weight_gradient.transpose();
+    //     }
+    // }
+
+    return jacobian;
+}
+
+TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
+    const TangentialCollision& collision,
+    Eigen::ConstRef<VectorMaxNd> rest_positions,       // = x
+    Eigen::ConstRef<VectorMaxNd> lagged_displacements, // = u
+    Eigen::ConstRef<VectorMaxNd> velocities,           // = v
+    const bool no_mu,
+    const bool no_contact_force_multiplier) const
+{
+    // x is the rest position
+    // u is the displacment at the begginging of the lagged solve
+    // v is the current velocity
+    //
+    // τ = T(x + u)ᵀv is the tangential sliding velocity
+    // F(x, u, v) = -μ N(x + u) f₁(‖τ‖)/‖τ‖ T(x + u) τ
+    assert(rest_positions.size() == lagged_displacements.size());
+    assert(rest_positions.size() == velocities.size());
+
+    // const VectorMaxNd x = dof(rest_positions, edges, faces);
+    // const Vector<double, -1, STENCIL_NDOF> u =
+    //     dof(lagged_displacements, edges, faces);
+    // const VectorMaxNd v = dof(velocities, edges, faces);
+    const VectorMaxNd lagged_positions =
+        rest_positions + lagged_displacements; // = x
+
+    // Compute N(x + u)
+    // const double N = collision.compute_normal_force_magnitude(
+    //     lagged_positions, barrier_potential, barrier_stiffness, dmin);
+    const double N = collision.normal_force_magnitude;
+
+    // Compute P
+    const MatrixMax<double, 3, 2> P =
+        collision.compute_tangent_basis(lagged_positions);
+
+    // compute β
+    const VectorMax2d beta = collision.compute_closest_point(lagged_positions);
+
+    // Compute Γ
+    const MatrixMax<double, 3, STENCIL_NDOF> Gamma =
+        collision.relative_velocity_matrix(beta);
+
+    // Compute T = ΓᵀP
+    const MatrixMax<double, STENCIL_NDOF, 2> T = Gamma.transpose() * P;
+
+    // Compute τ = PᵀΓv
+    const VectorMax2d tau = T.transpose() * velocities;
+
+    // Compute f₁(‖τ‖)/‖τ‖
+    const double mu_s = no_mu ? 1.0 : collision.mu_s;
+    const double mu_k = no_mu ? 1.0 : collision.mu_k;
+    const double mu_f1_over_norm_tau = mu_f1_over_x(tau.norm(), mu_s, mu_k);
+
+    // F = -μ N f₁(‖τ‖)/‖τ‖ T τ
+    // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
+    return -collision.weight * (no_contact_force_multiplier ? 1.0 : N)
+        * mu_f1_over_norm_tau * T * tau;
+}
+
+TangentialPotential::MatrixMaxNd
+TangentialPotential::smooth_contact_force_jacobian_unit(
+    const TangentialCollision& collision,
+    Eigen::ConstRef<VectorMaxNd> lagged_positions, // = x + u^t
+    Eigen::ConstRef<VectorMaxNd> velocities,       // = v
+    const DiffWRT wrt,
+    const bool no_mu) const
+{
+    // x is the rest position
+    // u is the displacment at the begginging of the lagged solve
+    // v is the current velocity
+    //
+    // τ = T(x + u)ᵀv is the tangential sliding velocity
+    // F(x, u, v) = -μ f₁(‖τ‖)/‖τ‖ T(x + u) τ
+    //
+    // Compute ∇F
+    assert(lagged_positions.size() == velocities.size());
+    const int n = lagged_positions.size();
+    const int dim = n / collision.num_vertices();
+    assert(n % collision.num_vertices() == 0);
+
+    const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
+
+    // Compute P
+    const MatrixMax<double, 3, 2> P =
+        collision.compute_tangent_basis(lagged_positions);
+
+    // Compute β
+    const VectorMax2d beta = collision.compute_closest_point(lagged_positions);
+
+    // Compute Γ
+    const MatrixMax<double, 3, STENCIL_NDOF> Gamma =
+        collision.relative_velocity_matrix(beta);
+
+    // Compute T = ΓᵀP
+    const MatrixMax<double, STENCIL_NDOF, 2> T = Gamma.transpose() * P;
+
+    // Compute ∇T
+    MatrixMax<double, STENCIL_NDOF * STENCIL_NDOF, 2> jac_T;
+    if (need_jac_N_or_T) {
+        jac_T.resize(n * n, dim - 1);
+        // ∇T = ∇(ΓᵀP) = ∇ΓᵀP + Γᵀ∇P
+        const MatrixMax<double, 36, 2> jac_P =
+            collision.compute_tangent_basis_jacobian(lagged_positions);
+        for (int i = 0; i < n; i++) {
+            // ∂T/∂xᵢ += Γᵀ ∂P/∂xᵢ
+            jac_T.middleRows(i * n, n) =
+                Gamma.transpose() * jac_P.middleRows(i * dim, dim);
+        }
+
+        // Vertex-vertex does not have a closest point
+        if (beta.size()) {
+            // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
+            const MatrixMax<double, 2, STENCIL_NDOF> jac_beta =
+                collision.compute_closest_point_jacobian(lagged_positions);
+            const MatrixMax<double, 6, STENCIL_NDOF> jac_Gamma_wrt_beta =
+                collision.relative_velocity_matrix_jacobian(beta);
+
+            for (int k = 0; k < n; k++) {
+                for (int b = 0; b < beta.size(); b++) {
+                    jac_T.middleRows(k * n, n) +=
+                        jac_Gamma_wrt_beta.transpose().middleCols(b * dim, dim)
+                        * (jac_beta(b, k) * P);
+                }
+            }
+        }
+    }
+
+    // Compute τ = PᵀΓv
+    const VectorMax2d tau = P.transpose() * Gamma * velocities;
+
+    // Compute ∇τ = ∇T(x + u)ᵀv + T(x + u)ᵀ∇v
+    MatrixMax<double, 2, STENCIL_NDOF> jac_tau;
+    if (need_jac_N_or_T) {
+        jac_tau.resize(dim - 1, n);
+        // Compute ∇T(x + u)ᵀv
+        for (int i = 0; i < n; i++) {
+            jac_tau.col(i) =
+                jac_T.middleRows(i * n, n).transpose() * velocities;
+        }
+    } else {
+        jac_tau = T.transpose(); // Tᵀ ∇ᵥv = Tᵀ
+    }
+
+    // Compute f₁(‖τ‖)/‖τ‖
+    const double tau_norm = tau.norm();
+    const double mu_s = no_mu ? 1.0 : collision.mu_s;
+    const double mu_k = no_mu ? 1.0 : collision.mu_k;
+    const double f1_over_norm_tau = mu_f1_over_x(tau_norm, mu_s, mu_k);
+
+    // Compute ∇(f₁(‖τ‖)/‖τ‖)
+    VectorMaxNd grad_f1_over_norm_tau;
+    if (tau_norm == 0) {
+        // lim_{x→0} f₂(x)x² = 0
+        grad_f1_over_norm_tau.setZero(n);
+    } else {
+        // ∇ (f₁(‖τ‖)/‖τ‖) = (f₁'(‖τ‖)‖τ‖ - f₁(‖τ‖)) / ‖τ‖³ τᵀ ∇τ
+        double f2 = mu_f2_x_minus_mu_f1_over_x3(tau_norm, mu_s, mu_k);
+        assert(std::isfinite(f2));
+        grad_f1_over_norm_tau = f2 * tau.transpose() * jac_tau;
+    }
+
+    // Premultiplied values
+    const VectorMaxNd T_times_tau = T * tau;
+
+    // ------------------------------------------------------------------------
+    // Compute J = ∇F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
+    MatrixMaxNd J = MatrixMaxNd::Zero(n, n);
+
+    // + -μ N T τ [∇(f₁(‖τ‖)/‖τ‖)]
+    J += T_times_tau * grad_f1_over_norm_tau.transpose();
+
+    // + -μ N f₁(‖τ‖)/‖τ‖ [∇T] τ
+    if (need_jac_N_or_T) {
+        const VectorMax2d scaled_tau = f1_over_norm_tau * tau;
+        for (int i = 0; i < n; i++) {
+            // ∂J/∂xᵢ = ∂T/∂xᵢ * τ
+            J.col(i) += jac_T.middleRows(i * n, n) * scaled_tau;
+        }
+    }
+
+    // + -μ N f₁(‖τ‖)/‖τ‖ T [∇τ]
+    J += f1_over_norm_tau * T * jac_tau;
+
+    // NOTE: ∇ₓw(x) is not local to the collision pair (i.e., it involves more
+    // than the 4 collisioning vertices), so we do not have enough information
+    // here to compute the gradient. Instead this should be handled outside of
+    // the function. For a simple multiplicitive model (∑ᵢ wᵢ Fᵢ) this can be
+    // done easily.
+    J *= -collision.weight;
+
+    return J;
+}
+
 } // namespace ipc
