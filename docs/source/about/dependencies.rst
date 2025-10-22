@@ -48,6 +48,10 @@ These dependencies are all `permissively licensed <license.html>`_, and we list 
       - Logger
       - MIT
       - `github.com/gabime/spdlog <https://github.com/gabime/spdlog>`_
+    * - TinyAD
+      - Automatic differentiation for testing and in non-performance critical smooth contact functions
+      - MIT
+      - `github.com/microsoft/TinyAD <https://github.com/patr-schm/TinyAD>`_
 
 Optional Dependencies
 ---------------------

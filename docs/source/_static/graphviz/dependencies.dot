@@ -78,4 +78,9 @@ digraph "IPC Toolkit Dependencies" {
     // ipc_toolkit -> tight_inclusion
     "node12" [label = "absl_hash\n(absl::hash)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
     "node5" -> "node12" [color = "#BE6562";];
+    // ipc_toolkit -> TinyAD
+    "node13" [label = "TinyAD\n(TinyAD::TinyAD)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+    "node5" -> "node13" [color = "#8FB976";];
+    "node13" -> "node0" [color = "#BE6562";];
+    "node13" -> "node9" [color = "#BE6562";];
 }
