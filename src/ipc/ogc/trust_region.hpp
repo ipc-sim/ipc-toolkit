@@ -34,6 +34,8 @@ struct TrustRegion {
 
     TrustRegion() = delete;
 
+    /// @brief Construct a new Trust Region object.
+    /// @param dhat The offset distance for contact.
     explicit TrustRegion(double dhat);
 
     /// @brief Warm start the time step by moving towards the predicted positions.

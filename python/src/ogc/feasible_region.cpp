@@ -6,10 +6,7 @@ using namespace ipc;
 
 void define_feasible_region(py::module_& m)
 {
-    py::module_ ogc =
-        m.def_submodule("ogc", "Offset Geometric Contact (OGC) helpers");
-
-    ogc.def(
+    m.def(
         "check_vertex_feasible_region",
         py::overload_cast<
             const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
@@ -29,7 +26,7 @@ void define_feasible_region(py::module_& m)
         )ipc_Qu8mg5v7",
         "mesh"_a, "vertices"_a, "point"_a, "vi"_a);
 
-    ogc.def(
+    m.def(
         "check_vertex_feasible_region",
         py::overload_cast<
             const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
@@ -49,7 +46,7 @@ void define_feasible_region(py::module_& m)
         )ipc_Qu8mg5v7",
         "mesh"_a, "vertices"_a, "xi"_a, "vi"_a);
 
-    ogc.def(
+    m.def(
         "check_edge_feasible_region", &ogc::check_edge_feasible_region,
         R"ipc_Qu8mg5v7(
         Check if vertex `xi` is in the feasible region of edge `ei`.
@@ -65,7 +62,7 @@ void define_feasible_region(py::module_& m)
         )ipc_Qu8mg5v7",
         "mesh"_a, "vertices"_a, "xi"_a, "ei"_a);
 
-    ogc.def(
+    m.def(
         "is_edge_vertex_feasible", &ogc::is_edge_vertex_feasible,
         R"ipc_Qu8mg5v7(
         Check if the edge-vertex candidate is feasible.
@@ -82,7 +79,7 @@ void define_feasible_region(py::module_& m)
         "mesh"_a, "vertices"_a, "candidate"_a,
         "dtype"_a = PointEdgeDistanceType::AUTO);
 
-    ogc.def(
+    m.def(
         "is_edge_edge_feasible", &ogc::is_edge_edge_feasible,
         R"ipc_Qu8mg5v7(
         Check if the edge-edge candidate is feasible.
@@ -99,7 +96,7 @@ void define_feasible_region(py::module_& m)
         "mesh"_a, "vertices"_a, "candidate"_a,
         "dtype"_a = EdgeEdgeDistanceType::AUTO);
 
-    ogc.def(
+    m.def(
         "is_face_vertex_feasible", &ogc::is_face_vertex_feasible,
         R"ipc_Qu8mg5v7(
         Check if the face-vertex candidate is feasible.

@@ -94,7 +94,10 @@ PYBIND11_MODULE(ipctk, m)
     define_plane_implicit(m);
 
     // ogc
-    define_feasible_region(m);
+    py::module_ ogc =
+        m.def_submodule("ogc", "Offset Geometric Contact (OGC) helpers");
+    define_feasible_region(ogc);
+    define_trust_region(ogc);
 
     // potentials
     define_normal_potential(m); // define early because it is used next
