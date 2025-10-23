@@ -22,11 +22,11 @@ public:
     int n_dofs() const override { return n_vertices() * DIM; }
 
     double potential(
-        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const;
+        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<VectorMax12d> x) const;
     Vector15d grad(
-        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const;
+        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<VectorMax12d> x) const;
     Matrix15d hessian(
-        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const;
+        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<VectorMax12d> x) const;
 
 private:
     OrientationTypes otypes;
