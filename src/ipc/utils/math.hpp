@@ -75,17 +75,6 @@ template <typename T> struct Math {
         Eigen::ConstRef<Eigen::Vector2<T>> b);
 };
 
-// gradient is symmetric
-std::tuple<Eigen::Vector3d, Eigen::Matrix3d>
-normalize_vector_grad(Eigen::ConstRef<Eigen::Vector3d> t);
-
-// hessian is symmetric wrt. the three dimensions
-std::tuple<
-    Eigen::Vector3d,
-    Eigen::Matrix3d,
-    std::array<Eigen::Matrix<double, 3, 3>, 3>>
-normalize_vector_hess(Eigen::ConstRef<Eigen::Vector3d> t);
-
 template <class T, int rows, int cols, int max_rows = rows>
 inline Eigen::Matrix<
     T,

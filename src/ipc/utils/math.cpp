@@ -1,5 +1,6 @@
 #include "math.hpp"
 
+#include <ipc/geometry/normal.hpp>
 #include <ipc/smooth_contact/common.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
@@ -39,35 +40,6 @@ void OrientationTypes::set_size(const int size)
     normal_types.assign(m_size, HeavisideType::VARIANT);
 }
 
-std::tuple<Eigen::Vector3d, Eigen::Matrix3d>
-normalize_vector_grad(Eigen::ConstRef<Eigen::Vector3d> t)
-{
-    double norm = t.norm();
-    Eigen::Vector3d y = t / norm;
-    Eigen::Matrix3d grad =
-        (Eigen::Matrix3d::Identity() - y * y.transpose()) / norm;
-    return std::make_tuple(y, grad);
-}
-
-std::tuple<
-    Eigen::Vector3d,
-    Eigen::Matrix3d,
-    std::array<Eigen::Matrix<double, 3, 3>, 3>>
-normalize_vector_hess(Eigen::ConstRef<Eigen::Vector3d> t)
-{
-    double norm = t.norm();
-    Eigen::Vector3d y = t / norm;
-    Eigen::Matrix3d grad =
-        (Eigen::Matrix3d::Identity() - y * y.transpose()) / norm;
-    std::array<Eigen::Matrix<double, 3, 3>, 3> hess;
-    for (int i = 0; i < 3; i++) {
-        hess[i] = -(y(i) * grad + y * grad.row(i) + grad.col(i) * y.transpose())
-            / norm;
-    }
-
-    return std::make_tuple(y, grad, hess);
-}
-
 double opposite_direction_penalty(
     Eigen::ConstRef<Eigen::Vector3d> t,
     Eigen::ConstRef<Eigen::Vector3d> d,
@@ -83,7 +55,7 @@ GradType<6> opposite_direction_penalty_grad(
     const double alpha,
     const double beta)
 {
-    auto [tn, tn_grad] = normalize_vector_grad(t);
+    auto [tn, tn_grad] = normalization_and_jacobian(t);
     const double a = d.dot(tn);
     const double y = Math<double>::smooth_heaviside(a, alpha, beta);
     const double dy = Math<double>::smooth_heaviside_grad(a, alpha, beta);
@@ -99,7 +71,7 @@ HessianType<6> opposite_direction_penalty_hess(
     const double alpha,
     const double beta)
 {
-    auto [tn, tn_grad, tn_hess] = normalize_vector_hess(t);
+    auto [tn, tn_grad, tn_hess] = normalization_and_jacobian_and_hessian(t);
     const double a = d.dot(tn);
     const double y = Math<double>::smooth_heaviside(a, alpha, beta);
     const double dy = Math<double>::smooth_heaviside_grad(a, alpha, beta);

@@ -5,6 +5,7 @@
 #include <catch2/generators/catch_generators_adapters.hpp>
 
 #include <ipc/barrier/barrier.hpp>
+#include <ipc/geometry/normal.hpp>
 #include <ipc/smooth_contact/primitives/point3.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 #include <ipc/utils/math.hpp>
@@ -141,7 +142,8 @@ TEST_CASE("Normalize vector derivatives", "[deriv]")
         ipc::Vector<T, 3> x_ad = ipc::slice_positions<T, 3, 1>(x);
         ipc::Vector<T, 3> y_ad = x_ad / x_ad.norm();
 
-        const auto [y, grad, hess] = ipc::normalize_vector_hess(x);
+        const auto [y, grad, hess] =
+            ipc::normalization_and_jacobian_and_hessian(x);
 
         double err_grad = 0, err_hess = 0;
         for (int j = 0; j < 3; j++) {

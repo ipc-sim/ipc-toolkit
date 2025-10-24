@@ -174,18 +174,6 @@ using HessianType =
 
 /**@}*/
 
-/// @brief Cross product matrix for 3D vectors.
-/// @param v Vector to create the cross product matrix for.
-/// @return The cross product matrix of the vector.
-inline Eigen::Matrix3d cross_product_matrix(Eigen::ConstRef<Eigen::Vector3d> v)
-{
-    Eigen::Matrix3d m;
-    m << 0, -v(2), v(1), //
-        v(2), 0, -v(0),  //
-        -v(1), v(0), 0;
-    return m;
-}
-
 /// @brief Matrix projection onto positive definite cone
 /// @param A Symmetric matrix to project
 /// @param eps Minimum eigenvalue threshold
