@@ -1,6 +1,7 @@
 #include "edge3.hpp"
 
 #include <ipc/config.hpp>
+#include <ipc/geometry/normal.hpp>
 #include <ipc/smooth_contact/primitives/autogen.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
@@ -232,7 +233,7 @@ namespace {
     {
         assert(otypes.size() == 2);
 
-        const auto [dn, dn_grad] = normalize_vector_grad(direc);
+        const auto [dn, dn_grad] = normalization_and_jacobian(direc);
 
         auto [t_term, t_grad] = smooth_edge3_tangent_term_gradient(
             dn, e0, e1, f0, f1, params.alpha_t, params.beta_t, otypes);
@@ -270,7 +271,8 @@ namespace {
     {
         assert(otypes.size() == 2);
 
-        const auto [dn, dn_grad, dn_hess] = normalize_vector_hess(direc);
+        const auto [dn, dn_grad, dn_hess] =
+            normalization_and_jacobian_and_hessian(direc);
 
         auto [t_term, t_grad, t_hess] = smooth_edge3_tangent_term_hessian(
             dn, e0, e1, f0, f1, params.alpha_t, params.beta_t, otypes);
