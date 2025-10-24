@@ -101,34 +101,7 @@ There are two main components to implementing OGC with the IPC Toolkit:
 
 1. Set the ``CollisionSetType`` to ``OGC`` in the ``NormalCollisions`` class to
    enable OGC filtering and construction of the collision set.
-2. Use the ``compute_per_vertex_safe_distances`` helper from the ``Candidates``
-   class to compute the per-vertex conservative step bounds.
-
-Constructing Candidates
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Before computing the per-vertex safe distances and building the
-``NormalCollisions``, you need to construct a ``Candidates`` object that
-contains the broad-phase filtered potential collisions. This involves
-using a spatial acceleration structure (like a BVH or grid) to find pairs of
-elements (vertices, edges, faces) that are close enough to potentially collide,
-given the contact radius and query radius.
-
-.. md-tab-set::
-
-    .. md-tab-item:: C++
-
-        .. code-block:: c++
-
-            Candidates candidates;
-            candidates.build(collision_mesh, vertices, dhat, dmin);
-
-    .. md-tab-item:: Python
-
-        .. code-block:: python
-
-            candidates = ipctk.Candidates()
-            candidates.build(collision_mesh, vertices, dhat, dmin)
+2. Use the ``TrustRegion`` helper class to filter the step and compute the per-vertex safe distances.
 
 Using OGC Collision Set Type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -163,16 +136,12 @@ before calling ``build``.
     ``NormalCollisions`` constructs the final collision sets (vv/ev/ee/fv)
     respecting the OGC filters and any improved-max or convergent options.
 
-Per-Vertex Safe Distances (Large Stepping)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Trust Region Logic
+~~~~~~~~~~~~~~~~~~
 
-The IPC Toolkit exposes a helper to compute how far each vertex may move
-without encountering a new collision: ``Candidates::compute_per_vertex_safe_distances``.
-This computes, for each vertex, a conservative maximum step length (along any
-direction) that will not introduce a new collision given the current candidate
-set and an inflation radius. Using these per-vertex safe distances allows an
-optimizer to take larger position updates without recomputing collision detection
-at every intermediate state.
+From the above pseudocode, the ``TrustRegion`` helper class implements the logic for each piece.
+
+Start by constructing a ``TrustRegion`` instance with the desired parameters:
 
 .. md-tab-set::
 
@@ -180,47 +149,24 @@ at every intermediate state.
 
         .. code-block:: c++
 
-            #include <ipc/candidates/candidates.hpp>
-            #include <Eigen/Core>
+            #include <ipc/ogc/trust_region.hpp>
 
-            // candidates: ipc::Candidates already populated (broad-phase filtered)
-            // collision_mesh: ipc::CollisionMesh
-            // vertices: Eigen::MatrixXd (n x 3) current positions
-            double inflation_radius = dhat; // same dhat used for collisions
-            double min_distance = 0.0;      // numerical tolerance
-
-            std::vector<double> per_vertex_steps = candidates.compute_per_vertex_safe_distances(
-                collision_mesh, vertices, inflation_radius, min_distance);
-
-            // per_vertex_steps[i] is a conservative distance vertex i can move
-            // before a new collision may be introduced.
+            ipc::ogc::TrustRegion trust_region(dhat);
+            // Optionally set parameters like:
+            trust_region.relaxed_radius_scaling = 0.9; // 2γₚ in the paper
+            trust_region.update_threshold = 0.01; // γₑ in the paper
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            # candidates: ipctk.Candidates instance already constructed
-            # collision_mesh: ipctk.CollisionMesh
-            # vertices: (n,3) numpy array
-            inflation_radius = dhat
-            min_distance = 0.0
+            from ipctk import ogc
 
-            per_vertex_steps = candidates.compute_per_vertex_safe_distances(
-                collision_mesh, vertices, inflation_radius, min_distance)
+            trust_region = ogc.TrustRegion(dhat)
+            # Optionally set parameters like:
+            trust_region.relaxed_radius_scaling = 0.9  # 2γₚ in the paper
+            trust_region.update_threshold = 0.01  # γₑ in the paper
 
-            # per_vertex_steps is a numpy array or list of floats; use it to guide
-            # optimizer step sizes per-vertex.
 
-Parameters and tuning
----------------------
-
-- ``inflation_radius`` / ``dhat``: Choose this to match the support of your barrier
-  potential. A smaller value yields ... . A larger value yields ...
-- ``min_distance`` / ``epsilon``: Some OGC helpers allow a minimum distance tolerance to
-  account for numerical error; choose a small positive value consistent with
-  your solver tolerances.
-- distance typing: When available, prefer using the same ``DistanceType`` as the
-  rest of your pipeline (squared vs. euclidean) to avoid extra conversions.
-
-Performance notes
------------------
+Next step 2b in the pseudocode is to compute the conservative step for each vertex.
+This is done via ``TrustRegion::compute_conservative_step``,
