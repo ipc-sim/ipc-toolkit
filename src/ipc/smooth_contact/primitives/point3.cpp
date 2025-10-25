@@ -1,6 +1,7 @@
 #include "point3.hpp"
 
 #include <ipc/config.hpp>
+#include <ipc/geometry/normal.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
 namespace ipc {
@@ -412,7 +413,7 @@ GradType<-1> Point3::smooth_point3_term_gradient(
     const Eigen::VectorXd tangents_vec =
         Eigen::Map<const Eigen::VectorXd>(tangents.data(), tangents.size());
 
-    auto [dn, dn_grad] = normalize_vector_grad(direc);
+    auto [dn, dn_grad] = normalization_and_jacobian(direc);
     dn *= -1;
     dn_grad *= -1;
 
@@ -459,7 +460,7 @@ HessianType<-1> Point3::smooth_point3_term_hessian(
     const Eigen::VectorXd tangents_vec =
         Eigen::Map<const Eigen::VectorXd>(tangents.data(), tangents.size());
 
-    auto [dn, dn_grad, dn_hess] = normalize_vector_hess(direc);
+    auto [dn, dn_grad, dn_hess] = normalization_and_jacobian_and_hessian(direc);
     dn *= -1;
     dn_grad *= -1;
     for (auto& mat : dn_hess) {
