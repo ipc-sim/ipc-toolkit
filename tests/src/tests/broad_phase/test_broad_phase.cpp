@@ -3,6 +3,7 @@
 #include <tests/utils.hpp>
 
 #include <ipc/broad_phase/brute_force.hpp>
+#include <ipc/broad_phase/create_broad_phase.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -47,7 +48,7 @@ void test_face_face_broad_phase(
     std::vector<FaceFaceCandidate> bf_ff_candidates;
     bf.detect_face_face_candidates(bf_ff_candidates);
 
-    CHECK(ff_candidates.size() > 0);
+    CHECK(!ff_candidates.empty());
     CHECK(ff_candidates.size() == bf_ff_candidates.size());
 }
 
@@ -288,4 +289,16 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
 
     CAPTURE(broad_phase->name());
     CHECK(candidates.size() == boxes.size() - 1);
+}
+
+TEST_CASE("Create broad phase", "[broad_phase]")
+{
+#ifdef IPC_TOOLKIT_WITH_CUDA
+    uint8_t n_broad_phase_methods = 6;
+#else
+    uint8_t n_broad_phase_methods = 5;
+#endif
+    for (uint8_t i = 0; i < n_broad_phase_methods; i++) {
+        CHECK(create_broad_phase(static_cast<ipc::BroadPhaseMethod>(i)));
+    }
 }

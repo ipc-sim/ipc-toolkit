@@ -110,29 +110,26 @@ public: // constructor
     }
 
     /// @brief Check if primitive index refers to a vertex.
-    inline bool is_vertex_index(int idx) const { return idx < edge_start_ind; }
+    bool is_vertex_index(int idx) const { return idx < edge_start_ind; }
 
     /// @brief Check if primitive index refers to an edge.
-    inline bool is_edge_index(int idx) const
+    bool is_edge_index(int idx) const
     {
         return idx >= edge_start_ind && idx < tri_start_ind;
     }
 
     /// @brief Check if primitive index refers to a triangle.
-    inline bool is_triangle_index(int idx) const
-    {
-        return idx >= tri_start_ind;
-    }
+    bool is_triangle_index(int idx) const { return idx >= tri_start_ind; }
 
     /// @brief Convert a primitive index to an edge index.
-    inline int to_edge_index(int idx) const
+    int to_edge_index(int idx) const
     {
         assert(is_edge_index(idx));
         return idx - edge_start_ind;
     }
 
     /// @brief Convert a primitive index to a triangle index.
-    inline int to_triangle_index(int idx) const
+    int to_triangle_index(int idx) const
     {
         assert(is_triangle_index(idx));
         return idx - tri_start_ind;
@@ -179,15 +176,15 @@ public: // constructor
     ArrayMax3i voxel_count;
 
     /// @brief 1.0 / voxel_size
-    double one_div_voxelSize;
+    double one_div_voxel_size = -1;
 
     /// @brief The number of voxels in the first two dimensions.
-    int voxel_count_0x1;
+    int voxel_count_0x1 = -1;
 
     // // The index of the first edge in voxel_occupancies
-    int edge_start_ind;
+    int edge_start_ind = -1;
     // // The index of the first triangle in voxel_occupancies
-    int tri_start_ind;
+    int tri_start_ind = -1;
 
     /// @brief Map from voxel index to the primitive indices it contains.
     unordered_map<int, std::vector<int>> voxel_to_primitives;
@@ -207,20 +204,20 @@ protected: // helper functions
         Eigen::ConstRef<Eigen::MatrixXi> faces,
         double voxel_size);
 
-    void query_point_for_points(int vi, unordered_set<int>& vert_inds) const;
+    void query_point_for_points(int vi, unordered_set<int>& vert_ids) const;
 
-    void query_point_for_edges(int vi, unordered_set<int>& edge_inds) const;
+    void query_point_for_edges(int vi, unordered_set<int>& edge_ids) const;
 
-    void query_point_for_triangles(int vi, unordered_set<int>& tri_inds) const;
+    void query_point_for_triangles(int vi, unordered_set<int>& tri_ids) const;
 
-    // will only put edges with larger than ei index into edge_inds
-    void query_edge_for_edges(int eai, unordered_set<int>& edge_inds) const;
+    // will only put edges with larger than ei index into edge_ids
+    void query_edge_for_edges(int eai, unordered_set<int>& edge_ids) const;
 
-    void query_edge_for_triangles(int ei, unordered_set<int>& tri_inds) const;
+    void query_edge_for_triangles(int ei, unordered_set<int>& tri_ids) const;
 
-    // will only put triangles with larger than ti index into tri_inds
+    // will only put triangles with larger than ti index into tri_ids
     void
-    query_triangle_for_triangles(int ti, unordered_set<int>& tri_inds) const;
+    query_triangle_for_triangles(int fai, unordered_set<int>& tri_ids) const;
 
     int locate_voxel_index(Eigen::ConstRef<VectorMax3d> p) const;
 
@@ -238,7 +235,7 @@ protected: // helper functions
 
     int voxel_axis_index_to_voxel_index(int ix, int iy, int iz) const;
 
-    int dim;
+    int dim = -1;
 
 private:
     /// @brief Detect candidate collisions between type A and type B.

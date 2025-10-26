@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-
+#include <catch2/catch_approx.hpp>
 #include <ipc/collision_mesh.hpp>
 
 using namespace ipc;
@@ -22,6 +22,9 @@ TEST_CASE("Collision mesh", "[collision_mesh]")
     W.setFromTriplets(weights.begin(), weights.end());
 
     CollisionMesh mesh(V, E, /*F=*/Eigen::MatrixXi(), W);
+
+    CHECK(mesh.max_edge_length() == Catch::Approx(1.).margin(1e-15));
+    CHECK(mesh.edge_length(0) == Catch::Approx(1.).margin(1e-15));
 
     Eigen::MatrixXd U(3, 2);
     U << 0, 0, 1, 1, 0, 0;

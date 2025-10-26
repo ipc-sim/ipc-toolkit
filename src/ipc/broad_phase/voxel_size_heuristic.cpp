@@ -79,7 +79,7 @@ double suggest_good_voxel_size(
 
 double suggest_good_voxel_size(const std::vector<AABB>& boxes)
 {
-    assert(boxes.size() > 0);
+    assert(!boxes.empty());
 
     Eigen::VectorXd box_sizes(boxes.size());
     for (size_t i = 0; i < boxes.size(); ++i) {

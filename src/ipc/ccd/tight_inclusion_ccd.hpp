@@ -10,7 +10,7 @@ public:
     /// The default tolerance used with Tight-Inclusion CCD.
     static constexpr double DEFAULT_TOLERANCE = 1e-6;
     /// The default maximum number of iterations used with Tight-Inclusion CCD.
-    static constexpr long DEFAULT_MAX_ITERATIONS = 10'000'000l;
+    static constexpr long DEFAULT_MAX_ITERATIONS = 10'000'000L;
     /// The default conservative rescaling value used to avoid taking steps
     /// exactly to impact.
     static constexpr double DEFAULT_CONSERVATIVE_RESCALING = 0.8;
@@ -22,7 +22,7 @@ public:
     /// @param tolerance The tolerance used for the CCD algorithm.
     /// @param max_iterations The maximum number of iterations for the CCD algorithm.
     /// @param conservative_rescaling The conservative rescaling of the time of impact.
-    TightInclusionCCD(
+    explicit TightInclusionCCD(
         const double tolerance = DEFAULT_TOLERANCE,
         const long max_iterations = DEFAULT_MAX_ITERATIONS,
         const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);

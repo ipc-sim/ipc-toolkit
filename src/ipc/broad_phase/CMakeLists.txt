@@ -7,6 +7,8 @@ set(SOURCES
   brute_force.hpp
   bvh.cpp
   bvh.hpp
+  create_broad_phase.cpp
+  create_broad_phase.hpp
   default_broad_phase.hpp
   hash_grid.cpp
   hash_grid.hpp

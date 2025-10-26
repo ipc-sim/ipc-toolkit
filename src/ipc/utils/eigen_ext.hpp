@@ -50,12 +50,17 @@ using Vector6d = Eigen::Vector<double, 6>;
 using Vector9d = Eigen::Vector<double, 9>;
 /// @brief A static size matrix of size of 12×1
 using Vector12d = Eigen::Vector<double, 12>;
+/// @brief A static size matrix of size of 15×1
+using Vector15d = Eigen::Vector<double, 15>;
+
 /// @brief A static size matrix of size of 6×6
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
 /// @brief A static size matrix of size of 9×9
 using Matrix9d = Eigen::Matrix<double, 9, 9>;
 /// @brief A static size matrix of size of 12×12
 using Matrix12d = Eigen::Matrix<double, 12, 12>;
+/// @brief A static size matrix of size of 15×15
+using Matrix15d = Eigen::Matrix<double, 15, 15>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1
 template <typename T> using VectorMax2 = Vector<T, Eigen::Dynamic, 2>;
@@ -162,19 +167,12 @@ using ArrayMax4d = ArrayMax4<double>;
 /// @brief A dynamic size array with a fixed maximum size of 4×1
 using ArrayMax4i = ArrayMax4<int>;
 
-/**@}*/
+template <int dim> using GradType = std::tuple<double, Vector<double, dim>>;
+template <int dim>
+using HessianType =
+    std::tuple<double, Vector<double, dim>, Eigen::Matrix<double, dim, dim>>;
 
-/// @brief Cross product matrix for 3D vectors.
-/// @param v Vector to create the cross product matrix for.
-/// @return The cross product matrix of the vector.
-inline Eigen::Matrix3d cross_product_matrix(Eigen::ConstRef<Eigen::Vector3d> v)
-{
-    Eigen::Matrix3d m;
-    m << 0, -v(2), v(1), //
-        v(2), 0, -v(0),  //
-        -v(1), v(0), 0;
-    return m;
-}
+/**@}*/
 
 /// @brief Matrix projection onto positive definite cone
 /// @param A Symmetric matrix to project
@@ -193,7 +191,7 @@ project_to_pd(
     double eps = 1e-8);
 
 /// @brief Enumeration of implemented PSD projection methods
-enum class PSDProjectionMethod {
+enum class PSDProjectionMethod : uint8_t {
     NONE,  ///< No PSD projection
     CLAMP, ///< Clamp negative eigenvalues to zero
     ABS    ///< Flip negative eigenvalues to positive

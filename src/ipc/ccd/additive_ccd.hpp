@@ -18,7 +18,7 @@ namespace ipc {
 class AdditiveCCD : public NarrowPhaseCCD {
 public:
     /// The default maximum number of iterations used with Tight-Inclusion CCD.
-    static constexpr long DEFAULT_MAX_ITERATIONS = 10'000'000l;
+    static constexpr long DEFAULT_MAX_ITERATIONS = 10'000'000L;
     /// Unlimitted number of iterations.
     static constexpr long UNLIMITTED_ITERATIONS = -1;
     /// The default conservative rescaling value used to avoid taking steps
@@ -28,7 +28,7 @@ public:
     /// @brief Construct a new AdditiveCCD object.
     /// @param max_iterations The maximum number of iterations to use for the CCD algorithm. If set to UNLIMITTED_ITERATIONS, the algorithm will run until it converges.
     /// @param conservative_rescaling The conservative rescaling of the time of impact.
-    AdditiveCCD(
+    explicit AdditiveCCD(
         const long max_iterations = UNLIMITTED_ITERATIONS,
         const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
 
@@ -143,7 +143,7 @@ private:
     bool additive_ccd(
         VectorMax12d x, // mutable copy
         Eigen::ConstRef<VectorMax12d> dx,
-        const std::function<double(Eigen::ConstRef<VectorMax12d>)>
+        const std::function<double(Eigen::ConstRef<VectorMax12d>)>&
             distance_squared,
         const double max_disp_mag,
         double& toi,

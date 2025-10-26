@@ -177,6 +177,11 @@ target_link_libraries(ipc_toolkit PRIVATE simple_bvh::simple_bvh)
 include(spdlog)
 target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
+# TinyAD
+include(tinyad)
+# TODO: Make this a private dependency once we stop exposing TinyAD types in the public API.
+target_link_libraries(ipc_toolkit PUBLIC TinyAD::TinyAD)
+
 # CCD
 if(IPC_TOOLKIT_WITH_INEXACT_CCD)
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
