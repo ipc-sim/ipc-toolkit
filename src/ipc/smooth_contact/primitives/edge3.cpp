@@ -449,7 +449,8 @@ Edge3::Edge3(
             vertices.row(m_vertex_ids[1]), vertices.row(m_vertex_ids[2]),
             vertices.row(m_vertex_ids[3]), params, otypes, orientable);
     } else {
-        log_and_throw_error("Codimensional objects in 3D are not supported yet!");
+        log_and_throw_error(
+            "Codimensional objects in 3D are not supported yet!");
 
         if (has_neighbor_1 || has_neighbor_2) {
             m_vertex_ids = { { neighbors[0], neighbors[1],
