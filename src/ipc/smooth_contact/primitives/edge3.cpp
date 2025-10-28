@@ -390,7 +390,7 @@ Edge3::Edge3(
 {
     orientable =
         (mesh.is_orient_vertex(mesh.edges()(id, 0))
-         && mesh.is_orient_vertex(mesh.edges()(id, 0)));
+         && mesh.is_orient_vertex(mesh.edges()(id, 1)));
 
     std::array<index_t, 4> neighbors { { -1, -1, -1, -1 } };
     {
@@ -450,20 +450,25 @@ Edge3::Edge3(
             d.normalized(), vertices.row(m_vertex_ids[0]),
             vertices.row(m_vertex_ids[1]), vertices.row(m_vertex_ids[2]),
             vertices.row(m_vertex_ids[3]), params, otypes, orientable);
-    } else if (has_neighbor_1 || has_neighbor_2) {
-        m_vertex_ids = { { neighbors[0], neighbors[1],
-                           has_neighbor_1 ? neighbors[2] : neighbors[3] } };
-
     } else {
-        m_vertex_ids = { { neighbors[0], neighbors[1] } };
-        m_is_active = true;
+        log_and_throw_error(
+            "Codimensional objects in 3D are not supported yet!");
+
+        if (has_neighbor_1 || has_neighbor_2) {
+            m_vertex_ids = { { neighbors[0], neighbors[1],
+                               has_neighbor_1 ? neighbors[2] : neighbors[3] } };
+
+        } else {
+            m_vertex_ids = { { neighbors[0], neighbors[1] } };
+            m_is_active = true;
+        }
     }
 }
 
-int Edge3::n_vertices() const { return N_EDGE_NEIGHBORS_3D; }
+int Edge3::n_vertices() const { return m_vertex_ids.size(); }
 
 double Edge3::potential(
-    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const
+    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<VectorMax12d> x) const
 {
 #ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     return smooth_edge3_term_template<double>(
@@ -477,7 +482,7 @@ double Edge3::potential(
 }
 
 Vector15d Edge3::grad(
-    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const
+    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<VectorMax12d> x) const
 {
 #ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     Vector15d tmp;
@@ -497,7 +502,7 @@ Vector15d Edge3::grad(
 }
 
 Matrix15d Edge3::hessian(
-    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const
+    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<VectorMax12d> x) const
 {
 #ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     Vector15d tmp;
