@@ -47,6 +47,10 @@ inline Eigen::Matrix3d cross_product_matrix(Eigen::ConstRef<Eigen::Vector3d> v)
     return m;
 }
 
+/// @brief Computes the Jacobian of the cross product matrix.
+/// @return The Jacobian of the cross product matrix.
+Eigen::Matrix<double, 3, 9> cross_product_matrix_jacobian();
+
 /**
  * \defgroup geometry Edge-vertex normal
  * \brief Functions for computing an edge-vertex normal and resp. Jacobians.
@@ -129,11 +133,21 @@ inline Eigen::Matrix<double, 3, 9> triangle_unnormalized_normal_jacobian(
     Eigen::ConstRef<Eigen::Vector3d> c)
 {
     Eigen::Matrix<double, 3, 9> J;
-    J.middleCols<3>(0) = cross_product_matrix(c - b);
-    J.middleCols<3>(3) = cross_product_matrix(a - c);
-    J.middleCols<3>(6) = cross_product_matrix(b - a);
+    J.middleCols<3>(0) = cross_product_matrix(c - b); // ∂n/∂a
+    J.middleCols<3>(3) = cross_product_matrix(a - c); // ∂n/∂b
+    J.middleCols<3>(6) = cross_product_matrix(b - a); // ∂n/∂c
     return J;
 }
+
+/// @brief Computes the Hessian of the unnormalized normal vector of a triangle.
+/// @param a The first vertex of the triangle.
+/// @param b The second vertex of the triangle.
+/// @param c The third vertex of the triangle.
+/// @return The Hessian of the unnormalized normal vector of the triangle.
+Eigen::Matrix<double, 3, 81> triangle_unnormalized_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> a,
+    Eigen::ConstRef<Eigen::Vector3d> b,
+    Eigen::ConstRef<Eigen::Vector3d> c);
 
 /// @brief Computes the Jacobian of the normal vector of a triangle.
 /// @param a The first vertex of the triangle.

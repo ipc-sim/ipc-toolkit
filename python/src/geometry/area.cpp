@@ -1,11 +1,11 @@
 #include <common.hpp>
 
-#include <ipc/utils/area_gradient.hpp>
+#include <ipc/geometry/area.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 using namespace ipc;
 
-void define_area_gradient(py::module_& m)
+void define_area(py::module_& m)
 {
     m.def(
         "edge_length_gradient", &edge_length_gradient,

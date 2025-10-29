@@ -1,6 +1,6 @@
 #include <common.hpp>
 
-#include <ipc/utils/intersection.hpp>
+#include <ipc/geometry/intersection.hpp>
 
 #include <igl/predicates/segment_segment_intersect.h>
 

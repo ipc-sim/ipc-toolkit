@@ -90,8 +90,17 @@ PYBIND11_MODULE(ipctk, m)
 
     define_smooth_potential(m);
 
+    // geometry
+    define_angle(m);
+    define_area(m);
+    define_intersection(m);
+    define_normal(m);
+
     // implicits
     define_plane_implicit(m);
+
+    // math
+    define_interval(m);
 
     // potentials
     define_normal_potential(m); // define early because it is used next
@@ -102,9 +111,6 @@ PYBIND11_MODULE(ipctk, m)
     define_tangential_adhesion_potential(m);
 
     // utils
-    define_area_gradient(m);
-    define_interval(m);
-    define_intersection(m);
     define_logger(m);
     define_thread_limiter(m);
     define_vertex_to_min_edge(m);

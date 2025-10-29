@@ -8,7 +8,7 @@
 #include <ipc/geometry/normal.hpp>
 #include <ipc/smooth_contact/primitives/point3.hpp>
 #include <ipc/utils/autodiff_types.hpp>
-#include <ipc/utils/math.hpp>
+#include <ipc/math/math.hpp>
 
 #include <finitediff.hpp>
 #include <igl/edges.h>

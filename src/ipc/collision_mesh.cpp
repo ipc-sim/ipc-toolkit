@@ -1,6 +1,6 @@
 #include "collision_mesh.hpp"
 
-#include <ipc/utils/area_gradient.hpp>
+#include <ipc/geometry/area.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/logger.hpp>
@@ -286,9 +286,7 @@ void CollisionMesh::init_areas()
     Eigen::VectorXd vertex_edge_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
     for (int i = 0; i < m_edges.rows(); i++) {
-        const VectorMax3d e0 = m_rest_positions.row(m_edges(i, 0));
-        const VectorMax3d e1 = m_rest_positions.row(m_edges(i, 1));
-        double edge_len = (e1 - e0).norm();
+        double edge_len = edge_length(i);
 
         for (int j = 0; j < m_edges.cols(); j++) {
             vertex_edge_areas[m_edges(i, j)] =
@@ -303,10 +301,10 @@ void CollisionMesh::init_areas()
     m_edge_areas.setConstant(m_edges.rows(), -1);
     if (dim() == 3) {
         for (int i = 0; i < m_faces.rows(); i++) {
-            const Eigen::Vector3d f0 = m_rest_positions.row(m_faces(i, 0));
-            const Eigen::Vector3d f1 = m_rest_positions.row(m_faces(i, 1));
-            const Eigen::Vector3d f2 = m_rest_positions.row(m_faces(i, 2));
-            double face_area = 0.5 * (f1 - f0).cross(f2 - f0).norm();
+            double face_area = triangle_area(
+                m_rest_positions.row(m_faces(i, 0)),
+                m_rest_positions.row(m_faces(i, 1)),
+                m_rest_positions.row(m_faces(i, 2)));
 
             for (int j = 0; j < m_faces.cols(); ++j) {
                 vertex_face_areas[m_faces(i, j)] =
@@ -330,9 +328,7 @@ void CollisionMesh::init_areas()
     for (int i = 0; i < m_edge_areas.size(); i++) {
         if (m_edge_areas[i] < 0) {
             // Use the edge length for codim edges
-            const VectorMax3d e0 = m_rest_positions.row(m_edges(i, 0));
-            const VectorMax3d e1 = m_rest_positions.row(m_edges(i, 1));
-            m_edge_areas[i] = (e1 - e0).norm();
+            m_edge_areas[i] = edge_length(i);
         }
     }
 }
@@ -508,9 +504,9 @@ Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
 
 double CollisionMesh::edge_length(const index_t edge_id) const
 {
-    return (m_rest_positions.row(m_edges(edge_id, 0))
-            - m_rest_positions.row(m_edges(edge_id, 1)))
-        .norm();
+    return ::ipc::edge_length(
+        m_rest_positions.row(m_edges(edge_id, 0)),
+        m_rest_positions.row(m_edges(edge_id, 1)));
 }
 
 double CollisionMesh::max_edge_length() const
