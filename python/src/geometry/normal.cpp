@@ -122,7 +122,6 @@ void define_normal(py::module_& m)
         Returns
         -------
         The normal vector.
-            The normal vector.
         )ipc_qu8mg5v7",
         py::arg("v"), py::arg("e0"), py::arg("e1"));
 
@@ -207,8 +206,8 @@ void define_normal(py::module_& m)
         a: The first vertex of the triangle.
         b: The second vertex of the triangle.
         c: The third vertex of the triangle.
-        Returns
 
+        Returns
         -------
         The Hessian of the unnormalized normal vector of the triangle.
         )ipc_qu8mg5v7",
@@ -224,8 +223,8 @@ void define_normal(py::module_& m)
         a: The first vertex of the triangle.
         b: The second vertex of the triangle.
         c: The third vertex of the triangle.
-        Returns
 
+        Returns
         -------
         The Jacobian of the normal vector of the triangle.
         )ipc_qu8mg5v7",
