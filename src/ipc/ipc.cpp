@@ -3,7 +3,7 @@
 #include <ipc/config.hpp>
 #include <ipc/broad_phase/default_broad_phase.hpp>
 #include <ipc/candidates/candidates.hpp>
-#include <ipc/utils/intersection.hpp>
+#include <ipc/geometry/intersection.hpp>
 #include <ipc/utils/world_bbox_diagonal_length.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_CUDA

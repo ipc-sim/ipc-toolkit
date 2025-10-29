@@ -3,7 +3,7 @@
 #include <ipc/config.hpp>
 #include <ipc/ccd/tight_inclusion_ccd.hpp>
 #ifdef IPC_TOOLKIT_WITH_FILIB
-#include <ipc/utils/interval.hpp>
+#include <ipc/math/interval.hpp>
 #endif
 
 #include <functional>

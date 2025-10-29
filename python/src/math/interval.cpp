@@ -1,7 +1,7 @@
 #include <common.hpp>
 #include <pybind11/numpy.h>
 
-#include <ipc/utils/interval.hpp>
+#include <ipc/math/interval.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_FILIB
 using namespace filib;
