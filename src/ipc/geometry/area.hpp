@@ -4,12 +4,35 @@
 
 namespace ipc {
 
+/// @brief Compute the length of an edge.
+/// @param e0 The first vertex of the edge.
+/// @param e1 The second vertex of the edge.
+/// @return The length of the edge.
+inline double
+edge_length(Eigen::ConstRef<VectorMax3d> e0, Eigen::ConstRef<VectorMax3d> e1)
+{
+    return (e1 - e0).norm();
+}
+
 /// @brief Compute the gradient of an edge's length.
 /// @param e0 The first vertex of the edge.
 /// @param e1 The second vertex of the edge.
 /// @return The gradient of the edge's length wrt e0, and e1.
 VectorMax6d edge_length_gradient(
     Eigen::ConstRef<VectorMax3d> e0, Eigen::ConstRef<VectorMax3d> e1);
+
+/// @brief Compute the area of a triangle.
+/// @param t0 The first vertex of the triangle.
+/// @param t1 The second vertex of the triangle.
+/// @param t2 The third vertex of the triangle.
+/// @return The area of the triangle.
+inline double triangle_area(
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
+{
+    return 0.5 * (t1 - t0).cross(t2 - t0).norm();
+}
 
 /// @brief Compute the gradient of the area of a triangle.
 /// @param t0 The first vertex of the triangle.

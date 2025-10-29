@@ -2,9 +2,9 @@
 
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_edge.hpp>
+#include <ipc/math/math.hpp>
 #include <ipc/smooth_contact/common.hpp>
 #include <ipc/utils/autodiff_types.hpp>
-#include <ipc/utils/math.hpp>
 
 #include <iostream>
 

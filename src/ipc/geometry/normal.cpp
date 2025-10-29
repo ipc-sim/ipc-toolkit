@@ -87,4 +87,44 @@ MatrixMax<double, 3, 9> edge_vertex_unnormalized_normal_jacobian(
     return dn;
 }
 
+// --- triangle normal functions ----------------------------------------------
+
+namespace {
+    void set_cross_product_matrix_jacobian(
+        Eigen::Ref<Eigen::Matrix<double, 9, 3>> Jx, double chain_rule = 1.0)
+    {
+        Jx(2, 1) = Jx(3, 2) = Jx(7, 0) = -chain_rule;
+        Jx(1, 2) = Jx(5, 0) = Jx(6, 1) = chain_rule;
+    }
+} // namespace
+
+Eigen::Matrix<double, 3, 9> cross_product_matrix_jacobian()
+{
+    Eigen::Matrix<double, 9, 3> J = Eigen::Matrix<double, 9, 3>::Zero();
+    set_cross_product_matrix_jacobian(J);
+    return J.reshaped(3, 9);
+}
+
+Eigen::Matrix<double, 3, 81> triangle_unnormalized_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> a,
+    Eigen::ConstRef<Eigen::Vector3d> b,
+    Eigen::ConstRef<Eigen::Vector3d> c)
+{
+    Eigen::Matrix<double, 27, 9> H = Eigen::Matrix<double, 27, 9>::Zero();
+
+    // ∂²n/∂a² = 0
+    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 3), -1.0); // ∂²n/∂a∂b
+    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 6), 1.0);  // ∂²n/∂a∂c
+    /**/
+    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 0), 1.0); // ∂²n/∂b∂a
+    // ∂²n/∂b² = 0
+    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 6), -1.0); // ∂²n/∂b∂c
+    /**/
+    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 0), -1.0); // ∂²n/∂c∂a
+    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 3), 1.0);  // ∂²n/∂c∂b
+    // ∂²n/∂c² = 0
+
+    return H.reshaped(3, 81);
+}
+
 } // namespace ipc

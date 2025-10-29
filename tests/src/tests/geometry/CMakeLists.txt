@@ -1,11 +1,5 @@
 set(SOURCES
-  # Tests
-  test_utils.cpp
-  test_matrixcache.cpp
-
-  # Benchmarks
-
-  # Utilities
+  test_angle.cpp
 )
 
 target_sources(ipc_toolkit_tests PRIVATE ${SOURCES})
