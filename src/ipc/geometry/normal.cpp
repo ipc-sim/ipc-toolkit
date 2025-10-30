@@ -127,4 +127,102 @@ Eigen::Matrix<double, 3, 81> triangle_unnormalized_normal_hessian(
     return H.reshaped(3, 81);
 }
 
+Eigen::Matrix<double, 3, 81> triangle_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> a,
+    Eigen::ConstRef<Eigen::Vector3d> b,
+    Eigen::ConstRef<Eigen::Vector3d> c)
+{
+    const Eigen::Vector3d z = triangle_unnormalized_normal(a, b, c);
+    const double z_norm2 = z.squaredNorm();
+    const double z_norm = std::sqrt(z_norm2);
+    const double z_norm3 = z_norm2 * z_norm;
+
+    const auto dz_dx = triangle_unnormalized_normal_jacobian(a, b, c);
+    const auto d2z_dx2 = triangle_unnormalized_normal_hessian(a, b, c);
+
+    Eigen::Matrix<double, 3, 81> d2n_dx2;
+    for (int k = 0; k < 81; ++k) {
+        const int i = k / 9, j = k % 9;
+
+        const double alpha = z.dot(dz_dx.col(i)) / z_norm3;
+
+        const double dalpha_dxj =
+            (dz_dx.col(j).dot(dz_dx.col(i)) + z.dot(d2z_dx2.col(k))
+             - 3 * z.dot(dz_dx.col(i)) * dz_dx.col(j).dot(z) / z_norm2)
+            / z_norm3;
+
+        d2n_dx2.col(k) = -dz_dx.col(i) * z.transpose() * dz_dx.col(j) / z_norm3
+            + d2z_dx2.col(k) / z_norm - alpha * dz_dx.col(j) - dalpha_dxj * z;
+    }
+
+    return d2n_dx2;
+}
+
+// --- edge-edge normal functions ---------------------------------------------
+
+Eigen::Matrix<double, 3, 144> edge_edge_unnormalized_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
+{
+    Eigen::Matrix<double, 36, 12> H = Eigen::Matrix<double, 36, 12>::Zero();
+
+    // ∂²n/∂a² = 0
+    // ∂²n/∂a∂b = 0
+    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 6), -1.0); // ∂²n/∂a∂c
+    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 9), 1.0);  // ∂²n/∂a∂d
+    /**/
+    // ∂²n/∂b∂a = 0
+    // ∂²n/∂b² = 0
+    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 6), 1.0);  // ∂²n/∂b∂c
+    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 9), -1.0); // ∂²n/∂b∂d
+    /**/
+    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 0), 1.0);  // ∂²n/∂c∂a
+    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 3), -1.0); // ∂²n/∂c∂b
+    // ∂²n/∂c² = 0
+    // ∂²n/∂d² = 0
+    /**/
+    set_cross_product_matrix_jacobian(H.block<9, 3>(27, 0), -1.0); // ∂²n/∂d∂a
+    set_cross_product_matrix_jacobian(H.block<9, 3>(27, 3), 1.0);  // ∂²n/∂d∂b
+    // ∂²n/∂d∂c = 0
+    // ∂²n/∂d² = 0
+
+    return H.reshaped(3, 144);
+}
+
+Eigen::Matrix<double, 3, 144> edge_edge_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
+{
+    const Eigen::Vector3d z = edge_edge_unnormalized_normal(ea0, ea1, eb0, eb1);
+    const double z_norm2 = z.squaredNorm();
+    const double z_norm = std::sqrt(z_norm2);
+    const double z_norm3 = z_norm2 * z_norm;
+
+    const auto dz_dx =
+        edge_edge_unnormalized_normal_jacobian(ea0, ea1, eb0, eb1);
+    const auto d2z_dx2 =
+        edge_edge_unnormalized_normal_hessian(ea0, ea1, eb0, eb1);
+
+    Eigen::Matrix<double, 3, 144> d2n_dx2;
+    for (int k = 0; k < 144; ++k) {
+        const int i = k / 12, j = k % 12;
+
+        const double alpha = z.dot(dz_dx.col(i)) / z_norm3;
+
+        const double dalpha_dxj =
+            (dz_dx.col(j).dot(dz_dx.col(i)) + z.dot(d2z_dx2.col(k))
+             - 3 * z.dot(dz_dx.col(i)) * dz_dx.col(j).dot(z) / z_norm2)
+            / z_norm3;
+
+        d2n_dx2.col(k) = -dz_dx.col(i) * z.transpose() * dz_dx.col(j) / z_norm3
+            + d2z_dx2.col(k) / z_norm - alpha * dz_dx.col(j) - dalpha_dxj * z;
+    }
+
+    return d2n_dx2;
+}
+
 } // namespace ipc

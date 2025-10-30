@@ -231,6 +231,23 @@ void define_normal(py::module_& m)
         py::arg("a"), py::arg("b"), py::arg("c"));
 
     m.def(
+        "triangle_normal_hessian", &triangle_normal_hessian,
+        R"ipc_qu8mg5v7(
+        Computes the Hessian of the normal vector of a triangle.
+
+        Parameters
+        ----------
+        a: The first vertex of the triangle.
+        b: The second vertex of the triangle.
+        c: The third vertex of the triangle.
+
+        Returns
+        -------
+        The Hessian of the normal vector of the triangle.
+        )ipc_qu8mg5v7",
+        py::arg("a"), py::arg("b"), py::arg("c"));
+
+    m.def(
         "edge_edge_unnormalized_normal", &edge_edge_unnormalized_normal,
         R"ipc_qu8mg5v7(
         Computes the unnormalized normal vector of two edges.
@@ -300,6 +317,43 @@ void define_normal(py::module_& m)
         Returns
         -------
         The Jacobian of the normal vector of the two edges.
+        )ipc_qu8mg5v7",
+        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
+
+    m.def(
+        "edge_edge_unnormalized_normal_hessian",
+        &edge_edge_unnormalized_normal_hessian,
+        R"ipc_qu8mg5v7(
+        Computes the Hessian of the unnormalized normal vector of two edges.
+
+        Parameters
+        ----------
+        ea0: The first vertex of the first edge.
+        ea1: The second vertex of the first edge.
+        eb0: The first vertex of the second edge.
+        eb1: The second vertex of the second edge.
+
+        Returns
+        -------
+        The Hessian of the unnormalized normal vector of the two edges.
+        )ipc_qu8mg5v7",
+        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
+
+    m.def(
+        "edge_edge_normal_hessian", &edge_edge_normal_hessian,
+        R"ipc_qu8mg5v7(
+        Computes the Hessian of the normal vector of two edges.
+
+        Parameters
+        ----------
+        ea0: The first vertex of the first edge.
+        ea1: The second vertex of the first edge.
+        eb0: The first vertex of the second edge.
+        eb1: The second vertex of the second edge.
+
+        Returns
+        -------
+        The Hessian of the normal vector of the two edges.
         )ipc_qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 }

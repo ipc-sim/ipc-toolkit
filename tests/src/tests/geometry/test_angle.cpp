@@ -20,20 +20,32 @@ TEST_CASE("Dihedral angle and gradient", "[angle][dihedral]")
     Eigen::Vector3d x2(0.5, 0, 0);
     Eigen::Vector3d x3(-0.5, 0, 0);
 
-    double expected_angle = deg2rad(GENERATE(0, 15, 30, 45, 60, 75, 90));
+    double expected_angle;
+    SECTION("Various angles")
+    {
+        const double rot = deg2rad(
+            GENERATE(1, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 179));
+        CAPTURE(rot);
 
-    Eigen::AngleAxisd rotation(
-        (igl::PI - expected_angle) / 2.0, Eigen::Vector3d::UnitY());
-    x2 = rotation * x2;
-    x3 = rotation.inverse() * x3;
+        Eigen::AngleAxisd rotation(
+            (igl::PI - rot) / 2.0, Eigen::Vector3d::UnitY());
+        x2 = rotation * x2;
+        x3 = rotation.inverse() * x3;
 
-    double angle = dihedral_angle(x0, x1, x2, x3);
-
-    if (expected_angle < igl::PI / 2) {
-        expected_angle = igl::PI - expected_angle;
+        expected_angle = rot - igl::PI;
     }
 
-    CHECK(angle == Catch::Approx(expected_angle));
+    SECTION("Case 1")
+    {
+        x0 << -0.015247385606936873, 1.1187166216183693, -0.09508569727171673;
+        x1 << -0.017971426013627917, 1.1229485012592226, -0.0934495693604115;
+        x2 << -0.021023579437439658, 1.1190719774332136, -0.09490934871219975;
+        x3 << -0.014473605843359506, 1.1216871870663812, -0.09395608203835042;
+        expected_angle = 0;
+    }
+
+    double angle = dihedral_angle(x0, x1, x2, x3);
+    CHECK(angle == Catch::Approx(expected_angle).margin(1e-8));
 
     // --- Check the gradient against finite differences ---
 
@@ -45,12 +57,14 @@ TEST_CASE("Dihedral angle and gradient", "[angle][dihedral]")
     fd::finite_gradient(
         x,
         [](const Eigen::VectorXd& x_fd) -> double {
-            return dihedral_angle(
+            double theta = dihedral_angle(
                 x_fd.segment<3>(0), x_fd.segment<3>(3), x_fd.segment<3>(6),
                 x_fd.segment<3>(9));
+            return theta;
         },
         fd_grad);
 
+    REQUIRE(grad.array().isFinite().all());
     CHECK(fd::compare_gradient(grad, fd_grad));
     if (!fd::compare_gradient(grad, fd_grad)) {
         std::cout << "   Gradient:\n" << grad.transpose() << std::endl;
