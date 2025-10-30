@@ -47,3 +47,8 @@ Cubic Barrier
 ~~~~~~~~~~~~~
 
 .. autoclass:: ipctk.CubicBarrier
+
+Two-Stage Barrier
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: ipctk.TwoStageBarrier

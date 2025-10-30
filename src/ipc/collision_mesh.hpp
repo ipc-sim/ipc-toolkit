@@ -1,7 +1,7 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
-#include <ipc/utils/unordered_map_and_set.hpp>
 
 namespace ipc {
 
@@ -131,13 +131,13 @@ public:
     double max_edge_length() const;
 
     /// @brief Get the mapping from vertices to edges of the collision mesh.
-    const std::vector<std::vector<int>>& vertices_to_edges() const
+    const std::vector<std::vector<index_t>>& vertices_to_edges() const
     {
         return m_vertices_to_edges;
     }
 
     /// @brief Get the mapping from vertices to faces of the collision mesh.
-    const std::vector<std::vector<int>>& vertices_to_faces() const
+    const std::vector<std::vector<index_t>>& vertices_to_faces() const
     {
         return m_vertices_to_faces;
     }
@@ -170,8 +170,15 @@ public:
     /// @return Vertex ID in the full mesh.
     index_t to_full_vertex_id(const index_t id) const
     {
-        assert(id < num_vertices());
+        assert(id < m_vertex_to_full_vertex.size());
         return m_vertex_to_full_vertex[id];
+    }
+
+    /// @brief Get the complete mapping of vertex IDs to their corresponding vertex IDs in the full mesh.
+    /// @return Vector of size num_vertices() where each entry is the full vertex ID corresponding to the collision mesh vertex ID.
+    const Eigen::VectorXi& to_full_vertex_id() const
+    {
+        return m_vertex_to_full_vertex;
     }
 
     /// @brief Map a vector quantity on the collision mesh to the full mesh.
@@ -192,7 +199,7 @@ public:
     // -----------------------------------------------------------------------
 
     /// @brief Get the vertex-vertex adjacency matrix.
-    const std::vector<unordered_set<int>>& vertex_vertex_adjacencies() const
+    const std::vector<std::vector<index_t>>& vertex_vertex_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
             throw std::runtime_error(
@@ -202,7 +209,7 @@ public:
     }
 
     /// @brief Get the vertex-edge adjacency matrix.
-    const std::vector<unordered_set<int>>& vertex_edge_adjacencies() const
+    const std::vector<std::vector<index_t>>& vertex_edge_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
             throw std::runtime_error(
@@ -211,8 +218,18 @@ public:
         return m_vertex_edge_adjacencies;
     }
 
+    /// @brief Get the vertex-face adjacency matrix.
+    const std::vector<std::vector<index_t>>& vertex_face_adjacencies() const
+    {
+        if (!are_adjacencies_initialized()) {
+            throw std::runtime_error(
+                "Vertex-face adjacencies not initialized. Call init_adjacencies() first.");
+        }
+        return m_vertex_face_adjacencies;
+    }
+
     /// @brief Get the edge-vertex adjacency matrix.
-    const std::vector<unordered_set<int>>& edge_vertex_adjacencies() const
+    const std::vector<std::vector<index_t>>& edge_vertex_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
             throw std::runtime_error(
@@ -232,7 +249,7 @@ public:
     /// @brief Is a vertex on the boundary of the collision mesh?
     /// @param vi Vertex ID.
     /// @return True if the vertex is on the boundary of the collision mesh.
-    bool is_vertex_on_boundary(const int vi) const
+    bool is_vertex_on_boundary(const index_t vi) const
     {
         return m_is_vertex_on_boundary[vi];
     }
@@ -377,16 +394,18 @@ protected:
     Eigen::SparseMatrix<double> m_displacement_dof_map;
 
     /// @brief Vertices adjacent to vertices
-    std::vector<unordered_set<int>> m_vertex_vertex_adjacencies;
+    std::vector<std::vector<index_t>> m_vertex_vertex_adjacencies;
     /// @brief Edges adjacent to vertices
-    std::vector<unordered_set<int>> m_vertex_edge_adjacencies;
-    /// @brief Vertices adjacent to edges
-    std::vector<unordered_set<int>> m_edge_vertex_adjacencies;
+    std::vector<std::vector<index_t>> m_vertex_edge_adjacencies;
+    /// @brief Faces adjacent to vertices
+    std::vector<std::vector<index_t>> m_vertex_face_adjacencies;
+    /// @brief Vertices adjacent to edges (i.e., vertices are on a triangle that contains the edge but not the edge itself)
+    std::vector<std::vector<index_t>> m_edge_vertex_adjacencies;
 
     /// @brief For each vertex, the faces adjacent to it.
-    std::vector<std::vector<int>> m_vertices_to_faces;
+    std::vector<std::vector<index_t>> m_vertices_to_faces;
     /// @brief For each vertex, the edges adjacent to it.
-    std::vector<std::vector<int>> m_vertices_to_edges;
+    std::vector<std::vector<index_t>> m_vertices_to_edges;
 
     /// @brief Is vertex on the boundary of the triangle mesh in 3D or polyline in 2D?
     std::vector<bool> m_is_vertex_on_boundary;

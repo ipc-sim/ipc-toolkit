@@ -6,6 +6,9 @@
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
 
+#include <tbb/blocked_range.h>
+#include <tbb/parallel_for.h>
+
 #include <algorithm>
 
 namespace ipc {
@@ -226,25 +229,49 @@ Eigen::SparseMatrix<double> CollisionMesh::vertex_matrix_to_dof_matrix(
 
 // ============================================================================
 
+namespace {
+
+    void remove_duplicates(std::vector<std::vector<index_t>>& v)
+    {
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(0, v.size()),
+            [&](const tbb::blocked_range<size_t>& r) {
+                for (size_t i = r.begin(); i < r.end(); i++) {
+                    std::sort(v[i].begin(), v[i].end());
+                    auto last = std::unique(v[i].begin(), v[i].end());
+                    v[i].erase(last, v[i].end());
+                    v[i].shrink_to_fit();
+                }
+            });
+    }
+
+} // namespace
+
 void CollisionMesh::init_adjacencies()
 {
     m_vertex_vertex_adjacencies.resize(num_vertices());
     m_vertex_edge_adjacencies.resize(num_vertices());
     // Edges includes the edges of the faces
     for (int i = 0; i < m_edges.rows(); i++) {
-        m_vertex_vertex_adjacencies[m_edges(i, 0)].insert(m_edges(i, 1));
-        m_vertex_vertex_adjacencies[m_edges(i, 1)].insert(m_edges(i, 0));
-        m_vertex_edge_adjacencies[m_edges(i, 0)].insert(i);
-        m_vertex_edge_adjacencies[m_edges(i, 1)].insert(i);
+        m_vertex_vertex_adjacencies[m_edges(i, 0)].push_back(m_edges(i, 1));
+        m_vertex_vertex_adjacencies[m_edges(i, 1)].push_back(m_edges(i, 0));
+        m_vertex_edge_adjacencies[m_edges(i, 0)].push_back(i);
+        m_vertex_edge_adjacencies[m_edges(i, 1)].push_back(i);
     }
+    remove_duplicates(m_vertex_vertex_adjacencies);
+    remove_duplicates(m_vertex_edge_adjacencies);
 
-    m_edge_vertex_adjacencies.resize(m_edges.rows());
+    m_vertex_face_adjacencies.resize(num_vertices());
+    m_edge_vertex_adjacencies.resize(num_edges());
     for (int i = 0; i < m_faces.rows(); i++) {
         for (int j = 0; j < 3; ++j) {
-            m_edge_vertex_adjacencies[m_faces_to_edges(i, j)].insert(
+            m_vertex_face_adjacencies[m_faces(i, j)].push_back(i);
+            m_edge_vertex_adjacencies[m_faces_to_edges(i, j)].push_back(
                 m_faces(i, (j + 2) % 3));
         }
     }
+    remove_duplicates(m_vertex_face_adjacencies);
+    remove_duplicates(m_edge_vertex_adjacencies);
 
     // Is the vertex on the boundary of the triangle mesh in 3D or polyline in
     // 2D
@@ -264,6 +291,22 @@ void CollisionMesh::init_adjacencies()
             }
         }
     }
+
+// The adjacencies should be sorted for binary search
+#ifndef NDEBUG
+    for (const auto& adj : m_vertex_vertex_adjacencies) {
+        assert(std::is_sorted(adj.begin(), adj.end()));
+    }
+    for (const auto& adj : m_vertex_edge_adjacencies) {
+        assert(std::is_sorted(adj.begin(), adj.end()));
+    }
+    for (const auto& adj : m_vertex_face_adjacencies) {
+        assert(std::is_sorted(adj.begin(), adj.end()));
+    }
+    for (const auto& adj : m_edge_vertex_adjacencies) {
+        assert(std::is_sorted(adj.begin(), adj.end()));
+    }
+#endif
 }
 
 void CollisionMesh::init_areas()

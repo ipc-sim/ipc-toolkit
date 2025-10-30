@@ -47,7 +47,7 @@ digraph "IPC Toolkit Dependencies" {
     "node5" -> "node3" [color = "#BE6562";];
     // ipc_toolkit -> igl_predicates
     "node6" [label = "robin_map\n(tsl::robin_map)";shape = box;style = "rounded,filled";fillcolor = "#FFE6CC";color = "#DAA52D";];
-    "node5" -> "node6" [color = "#8FB976";];
+    "node5" -> "node6" [color = "#BE6562";];
     // ipc_toolkit -> robin_map
     "node7" [label = "scalable_ccd\n(scalable_ccd::scalable_ccd)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
     "node7" -> "node0" [color = "#8FB976";];
@@ -77,5 +77,10 @@ digraph "IPC Toolkit Dependencies" {
     "node5" -> "node11" [color = "#BE6562";];
     // ipc_toolkit -> tight_inclusion
     "node12" [label = "absl_hash\n(absl::hash)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
-    "node5" -> "node12" [color = "#8FB976";];
+    "node5" -> "node12" [color = "#BE6562";];
+    // ipc_toolkit -> TinyAD
+    "node13" [label = "TinyAD\n(TinyAD::TinyAD)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+    "node5" -> "node13" [color = "#8FB976";];
+    "node13" -> "node0" [color = "#BE6562";];
+    "node13" -> "node9" [color = "#BE6562";];
 }

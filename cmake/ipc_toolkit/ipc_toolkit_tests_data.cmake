@@ -1,4 +1,4 @@
-# ipc-toolkit-tests-data (https://github.com/ipc-sim/ipc-toolkit-tests-data)
+# ipc-toolkit-test-data (https://github.com/ipc-sim/ipc-toolkit-test-data)
 # License: MIT
 
 if(TARGET ipc_toolkit_test_data_download)

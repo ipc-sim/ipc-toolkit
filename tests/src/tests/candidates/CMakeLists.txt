@@ -3,6 +3,7 @@ set(SOURCES
   test_candidates.cpp
   test_coefficients.cpp
   test_normals.cpp
+  test_per_vertex_safe_distances.cpp
 
   # Benchmarks
 

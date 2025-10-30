@@ -1,7 +1,13 @@
+// NOTE: This is an internal header file, not meant to be used outside of the
+// IPC Toolkit library. It includes TBB which is a private dependency of the IPC
+// Toolkit library. To use this outside of the library, one needs to link
+// against TBB::tbb.
+
 #pragma once
 
 #include <ipc/collision_mesh.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <Eigen/Core>
 #include <tbb/enumerable_thread_specific.h>
@@ -11,7 +17,9 @@ namespace ipc {
 class NormalCollisionsBuilder {
 public:
     NormalCollisionsBuilder(
-        const bool use_area_weighting, const bool enable_shape_derivatives);
+        const bool use_area_weighting,
+        const bool enable_shape_derivatives,
+        const bool use_ogc);
 
     void add_vertex_vertex_collisions(
         const CollisionMesh& mesh,
@@ -165,6 +173,7 @@ protected:
 
     const bool use_area_weighting;
     const bool enable_shape_derivatives;
+    const bool use_ogc;
 };
 
 } // namespace ipc
