@@ -41,13 +41,6 @@ Eigen::Vector<double, 12> dihedral_angle_gradient(
     dn1_dx(Eigen::all, idx) = triangle_normal_jacobian(x1, x0, x3);
     dn1_dx.middleCols<3>(6).setZero();
 
-    // --- Edge gradient ---
-
-    Eigen::Matrix<double, 3, 12> de_dx;
-    de_dx.middleCols<3>(3) = normalization_jacobian(x1 - x0);
-    de_dx.leftCols<3>() = -de_dx.middleCols<3>(3);
-    de_dx.rightCols<6>().setZero();
-
     // --- Angle gradient ---
 
     const Eigen::Vector<double, 12> dcos_dx =
