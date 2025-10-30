@@ -164,6 +164,16 @@ inline Eigen::Matrix<double, 3, 9> triangle_normal_jacobian(
         * triangle_unnormalized_normal_jacobian(a, b, c);
 }
 
+/// @brief Computes the Hessian of the normal vector of a triangle.
+/// @param a The first vertex of the triangle.
+/// @param b The second vertex of the triangle.
+/// @param c The third vertex of the triangle.
+/// @return The Hessian of the normal vector of the triangle.
+Eigen::Matrix<double, 3, 81> triangle_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> a,
+    Eigen::ConstRef<Eigen::Vector3d> b,
+    Eigen::ConstRef<Eigen::Vector3d> c);
+
 /** @} */
 
 /**
@@ -239,5 +249,29 @@ inline Eigen::Matrix<double, 3, 12> edge_edge_normal_jacobian(
                edge_edge_unnormalized_normal(ea0, ea1, eb0, eb1))
         * edge_edge_unnormalized_normal_jacobian(ea0, ea1, eb0, eb1);
 }
+
+/// @brief Computes the Hessian of the unnormalized normal vector of two edges.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @return The Hessian of the unnormalized normal vector of the two edges.
+Eigen::Matrix<double, 3, 144> edge_edge_unnormalized_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
+
+/// @brief Computes the Hessian of the normal vector of two edges.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @return The Hessian of the normal vector of the two edges.
+Eigen::Matrix<double, 3, 144> edge_edge_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 } // namespace ipc
