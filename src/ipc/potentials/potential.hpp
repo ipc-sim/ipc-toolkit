@@ -12,7 +12,7 @@ protected:
     using TCollision = typename TCollisions::value_type;
     /// @brief Maximum degrees of freedom per collision
     static constexpr int STENCIL_NDOF = 3 * TCollision::STENCIL_SIZE;
-    using VectorMaxNd = Vector<double, Eigen::Dynamic, STENCIL_NDOF>;
+    using VectorMaxNd = VectorMax<double, STENCIL_NDOF>;
     using MatrixMaxNd = MatrixMax<double, STENCIL_NDOF, STENCIL_NDOF>;
 
 public:

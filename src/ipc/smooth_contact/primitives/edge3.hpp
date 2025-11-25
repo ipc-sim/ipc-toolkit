@@ -14,7 +14,7 @@ public:
     Edge3(
         const index_t id,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const VectorMax3d& d,
         const SmoothContactParameters& params);
 
@@ -48,7 +48,7 @@ double smooth_edge3_normal_term(
     const double beta,
     const OrientationTypes& otypes);
 
-GradType<15> smooth_edge3_normal_term_gradient(
+GradientType<15> smooth_edge3_normal_term_gradient(
     Eigen::ConstRef<Eigen::Vector3d> dn,
     Eigen::ConstRef<Eigen::Vector3d> e0,
     Eigen::ConstRef<Eigen::Vector3d> e1,

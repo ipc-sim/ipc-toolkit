@@ -9,7 +9,7 @@ namespace ipc {
 Point3::Point3(
     const index_t id,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const VectorMax3d& d,
     const SmoothContactParameters& params)
     : Primitive(id, params)
@@ -74,15 +74,17 @@ Point3::Point3(
 int Point3::n_vertices() const { return local_to_global_vids.size(); }
 
 double Point3::potential(
-    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
+    const Eigen::Vector<double, DIM>& d,
+    const VectorMax<double, MAX_SIZE>& x) const
 {
     const Eigen::Matrix<double, -1, DIM> X =
         slice_positions<double, -1, DIM>(x);
     return smooth_point3_term<double, -1>(X, d);
 }
 
-Vector<double, -1, Point3::MAX_SIZE + Point3::DIM> Point3::grad(
-    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
+VectorMax<double, Point3::MAX_SIZE + Point3::DIM> Point3::grad(
+    const Eigen::Vector<double, DIM>& d,
+    const VectorMax<double, MAX_SIZE>& x) const
 {
 #ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     using T = ADGrad<-1>;
@@ -104,7 +106,8 @@ MatrixMax<
     Point3::MAX_SIZE + Point3::DIM,
     Point3::MAX_SIZE + Point3::DIM>
 Point3::hessian(
-    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
+    const Eigen::Vector<double, DIM>& d,
+    const VectorMax<double, MAX_SIZE>& x) const
 {
 #ifdef IPC_TOOLKIT_DEBUG_AUTODIFF
     using T = ADHessian<-1>;
@@ -120,7 +123,7 @@ Point3::hessian(
 #endif
 }
 
-GradType<-1> Point3::smooth_point3_term_tangent_gradient(
+GradientType<-1> Point3::smooth_point3_term_tangent_gradient(
     Eigen::ConstRef<Eigen::RowVector3d> direc,
     Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
     const double alpha,
@@ -231,7 +234,7 @@ HessianType<-1> Point3::smooth_point3_term_tangent_hessian(
     return std::make_tuple(values.prod(), tangent_grad, tangent_hess);
 }
 
-GradType<-1> Point3::smooth_point3_term_normal_gradient(
+GradientType<-1> Point3::smooth_point3_term_normal_gradient(
     Eigen::ConstRef<Eigen::RowVector3d> direc,
     Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
     const double alpha,
@@ -400,7 +403,7 @@ bool Point3::smooth_point3_term_type(
     return normal_term > 0;
 }
 
-GradType<-1> Point3::smooth_point3_term_gradient(
+GradientType<-1> Point3::smooth_point3_term_gradient(
     Eigen::ConstRef<Eigen::RowVector3d> direc,
     Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
     const SmoothContactParameters& params) const

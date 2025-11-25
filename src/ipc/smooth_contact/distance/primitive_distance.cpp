@@ -14,7 +14,7 @@ namespace ipc {
 template <>
 typename PrimitiveDistType<Face, Point3>::type
 PrimitiveDistance<Face, Point3>::compute_distance_type(
-    const Vector<double, N_CORE_DOFS>& x)
+    const Eigen::Vector<double, N_CORE_DOFS>& x)
 {
     return point_triangle_distance_type(
         x.tail(3) /* point */, x.head(3), x.segment(3, 3),
@@ -24,7 +24,7 @@ PrimitiveDistance<Face, Point3>::compute_distance_type(
 template <>
 typename PrimitiveDistType<Edge3, Edge3>::type
 PrimitiveDistance<Edge3, Edge3>::compute_distance_type(
-    const Vector<double, N_CORE_DOFS>& x)
+    const Eigen::Vector<double, N_CORE_DOFS>& x)
 {
     return edge_edge_distance_type(
         x.head(3) /* edge 0 */, x.segment(3, 3) /* edge 0 */,
@@ -34,7 +34,7 @@ PrimitiveDistance<Edge3, Edge3>::compute_distance_type(
 template <>
 typename PrimitiveDistType<Edge3, Point3>::type
 PrimitiveDistance<Edge3, Point3>::compute_distance_type(
-    const Vector<double, N_CORE_DOFS>& x)
+    const Eigen::Vector<double, N_CORE_DOFS>& x)
 {
     return point_edge_distance_type(
         x.tail(3) /* point */, x.head(3) /* edge */,
@@ -44,7 +44,7 @@ PrimitiveDistance<Edge3, Point3>::compute_distance_type(
 template <>
 typename PrimitiveDistType<Edge2, Point2>::type
 PrimitiveDistance<Edge2, Point2>::compute_distance_type(
-    const Vector<double, N_CORE_DOFS>& x)
+    const Eigen::Vector<double, N_CORE_DOFS>& x)
 {
     return PointEdgeDistanceType::AUTO;
 }
@@ -52,7 +52,7 @@ PrimitiveDistance<Edge2, Point2>::compute_distance_type(
 template <>
 typename PrimitiveDistType<Point2, Point2>::type
 PrimitiveDistance<Point2, Point2>::compute_distance_type(
-    const Vector<double, N_CORE_DOFS>& x)
+    const Eigen::Vector<double, N_CORE_DOFS>& x)
 {
     return PointPointDistanceType::P_P;
 }
@@ -60,16 +60,16 @@ PrimitiveDistance<Point2, Point2>::compute_distance_type(
 template <>
 typename PrimitiveDistType<Point3, Point3>::type
 PrimitiveDistance<Point3, Point3>::compute_distance_type(
-    const Vector<double, N_CORE_DOFS>& x)
+    const Eigen::Vector<double, N_CORE_DOFS>& x)
 {
     return PointPointDistanceType::P_P;
 }
 
 template <>
-Vector<double, PrimitiveDistance<Face, Point3>::DIM>
+Eigen::Vector<double, PrimitiveDistance<Face, Point3>::DIM>
 PrimitiveDistance<Face, Point3>::compute_closest_direction(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const index_t a,
     const index_t b,
     typename PrimitiveDistType<Face, Point3>::type dtype)
@@ -80,10 +80,10 @@ PrimitiveDistance<Face, Point3>::compute_closest_direction(
 }
 
 template <>
-Vector<double, PrimitiveDistance<Edge3, Edge3>::DIM>
+Eigen::Vector<double, PrimitiveDistance<Edge3, Edge3>::DIM>
 PrimitiveDistance<Edge3, Edge3>::compute_closest_direction(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const index_t a,
     const index_t b,
     typename PrimitiveDistType<Edge3, Edge3>::type dtype)
@@ -94,10 +94,10 @@ PrimitiveDistance<Edge3, Edge3>::compute_closest_direction(
 }
 
 template <>
-Vector<double, PrimitiveDistance<Edge3, Point3>::DIM>
+Eigen::Vector<double, PrimitiveDistance<Edge3, Point3>::DIM>
 PrimitiveDistance<Edge3, Point3>::compute_closest_direction(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const index_t a,
     const index_t b,
     typename PrimitiveDistType<Edge3, Point3>::type dtype)
@@ -107,10 +107,10 @@ PrimitiveDistance<Edge3, Point3>::compute_closest_direction(
 }
 
 template <>
-Vector<double, PrimitiveDistance<Edge2, Point2>::DIM>
+Eigen::Vector<double, PrimitiveDistance<Edge2, Point2>::DIM>
 PrimitiveDistance<Edge2, Point2>::compute_closest_direction(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const index_t a,
     const index_t b,
     typename PrimitiveDistType<Edge2, Point2>::type dtype)
@@ -120,10 +120,10 @@ PrimitiveDistance<Edge2, Point2>::compute_closest_direction(
 }
 
 template <>
-Vector<double, PrimitiveDistance<Point2, Point2>::DIM>
+Eigen::Vector<double, PrimitiveDistance<Point2, Point2>::DIM>
 PrimitiveDistance<Point2, Point2>::compute_closest_direction(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const index_t a,
     const index_t b,
     typename PrimitiveDistType<Point2, Point2>::type dtype)
@@ -132,10 +132,10 @@ PrimitiveDistance<Point2, Point2>::compute_closest_direction(
 }
 
 template <>
-Vector<double, PrimitiveDistance<Point3, Point3>::DIM>
+Eigen::Vector<double, PrimitiveDistance<Point3, Point3>::DIM>
 PrimitiveDistance<Point3, Point3>::compute_closest_direction(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const index_t a,
     const index_t b,
     typename PrimitiveDistType<Point3, Point3>::type dtype)
@@ -147,7 +147,7 @@ PrimitiveDistance<Point3, Point3>::compute_closest_direction(
 
 template <>
 std::tuple<
-    Vector<double, PrimitiveDistance<Edge3, Edge3>::DIM>,
+    Eigen::Vector<double, PrimitiveDistance<Edge3, Edge3>::DIM>,
     Eigen::Matrix<
         double,
         PrimitiveDistance<Edge3, Edge3>::DIM,
@@ -159,7 +159,7 @@ std::tuple<
             PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS>,
         PrimitiveDistance<Edge3, Edge3>::DIM>>
 PrimitiveDistance<Edge3, Edge3>::compute_closest_direction_hessian(
-    const Vector<double, N_CORE_DOFS>& x,
+    const Eigen::Vector<double, N_CORE_DOFS>& x,
     typename PrimitiveDistType<Edge3, Edge3>::type dtype)
 {
     assert(dtype == EdgeEdgeDistanceType::EA_EB);
@@ -170,7 +170,7 @@ PrimitiveDistance<Edge3, Edge3>::compute_closest_direction_hessian(
 
 template <>
 std::tuple<
-    Vector<double, PrimitiveDistance<Point2, Point2>::DIM>,
+    Eigen::Vector<double, PrimitiveDistance<Point2, Point2>::DIM>,
     Eigen::Matrix<
         double,
         PrimitiveDistance<Point2, Point2>::DIM,
@@ -182,7 +182,7 @@ std::tuple<
             PrimitiveDistance<Point2, Point2>::N_CORE_DOFS>,
         PrimitiveDistance<Point2, Point2>::DIM>>
 PrimitiveDistance<Point2, Point2>::compute_closest_direction_hessian(
-    const Vector<double, N_CORE_DOFS>& x,
+    const Eigen::Vector<double, N_CORE_DOFS>& x,
     typename PrimitiveDistType<Point2, Point2>::type dtype)
 {
     Eigen::Vector2d out = x.tail(2) - x.head(2);
@@ -198,7 +198,7 @@ PrimitiveDistance<Point2, Point2>::compute_closest_direction_hessian(
 
 template <>
 std::tuple<
-    Vector<double, PrimitiveDistance<Point3, Point3>::DIM>,
+    Eigen::Vector<double, PrimitiveDistance<Point3, Point3>::DIM>,
     Eigen::Matrix<
         double,
         PrimitiveDistance<Point3, Point3>::DIM,
@@ -210,7 +210,7 @@ std::tuple<
             PrimitiveDistance<Point3, Point3>::N_CORE_DOFS>,
         PrimitiveDistance<Point3, Point3>::DIM>>
 PrimitiveDistance<Point3, Point3>::compute_closest_direction_hessian(
-    const Vector<double, N_CORE_DOFS>& x,
+    const Eigen::Vector<double, N_CORE_DOFS>& x,
     typename PrimitiveDistType<Point3, Point3>::type dtype)
 {
     Eigen::Vector3d out = x.tail(3) - x.head(3);
@@ -225,9 +225,9 @@ PrimitiveDistance<Point3, Point3>::compute_closest_direction_hessian(
 }
 
 template <>
-GradType<PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS + 1>
+GradientType<PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS + 1>
 PrimitiveDistance<Edge3, Edge3>::compute_mollifier_gradient(
-    const Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
+    const Eigen::Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
 {
     const auto otypes = edge_edge_mollifier_type(
         x.head(3), x.segment(3, 3), x.segment(6, 3), x.tail(3), dist_sqr);
@@ -240,7 +240,7 @@ PrimitiveDistance<Edge3, Edge3>::compute_mollifier_gradient(
 template <>
 HessianType<PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS + 1>
 PrimitiveDistance<Edge3, Edge3>::compute_mollifier_hessian(
-    const Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
+    const Eigen::Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
 {
     const auto otypes = edge_edge_mollifier_type(
         x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), dist_sqr);
@@ -251,13 +251,13 @@ PrimitiveDistance<Edge3, Edge3>::compute_mollifier_hessian(
 }
 
 template <>
-GradType<PrimitiveDistance<Face, Point3>::N_CORE_DOFS + 1>
+GradientType<PrimitiveDistance<Face, Point3>::N_CORE_DOFS + 1>
 PrimitiveDistance<Face, Point3>::compute_mollifier_gradient(
-    const Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
+    const Eigen::Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
 {
     const auto [val, grad] = point_face_mollifier_gradient(
         x.tail<3>(), x.head<3>(), x.segment<3>(3), x.segment<3>(6), dist_sqr);
-    Vector<int, 13> indices;
+    Eigen::Vector<int, 13> indices;
     indices << 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 12;
     return std::make_tuple(val, grad(indices));
 }
@@ -265,11 +265,11 @@ PrimitiveDistance<Face, Point3>::compute_mollifier_gradient(
 template <>
 HessianType<PrimitiveDistance<Face, Point3>::N_CORE_DOFS + 1>
 PrimitiveDistance<Face, Point3>::compute_mollifier_hessian(
-    const Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
+    const Eigen::Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
 {
     const auto [val, grad, hess] = point_face_mollifier_hessian(
         x.tail<3>(), x.head<3>(), x.segment<3>(3), x.segment<3>(6), dist_sqr);
-    Vector<int, 13> indices;
+    Eigen::Vector<int, 13> indices;
     indices << 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 12;
     return std::make_tuple(val, grad(indices), hess(indices, indices));
 }

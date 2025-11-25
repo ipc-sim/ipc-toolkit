@@ -38,7 +38,7 @@ namespace {
 
 void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
     const SmoothContactParameters& params,
     const std::function<double(const index_t)>& vert_dhat,
@@ -80,7 +80,7 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
 
 void SmoothCollisionsBuilder<3>::add_edge_edge_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<EdgeEdgeCandidate>& candidates,
     const SmoothContactParameters& params,
     const std::function<double(const index_t)>& vert_dhat,
@@ -115,7 +115,7 @@ void SmoothCollisionsBuilder<3>::add_edge_edge_collisions(
 
 void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<FaceVertexCandidate>& candidates,
     const SmoothContactParameters& params,
     const std::function<double(const index_t)>& vert_dhat,
