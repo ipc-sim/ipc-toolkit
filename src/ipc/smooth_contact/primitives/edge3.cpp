@@ -85,7 +85,7 @@ namespace {
         return tangent_term;
     }
 
-    GradType<15> smooth_edge3_tangent_term_gradient(
+    GradientType<15> smooth_edge3_tangent_term_gradient(
         Eigen::ConstRef<Eigen::Vector3d> dn,
         Eigen::ConstRef<Eigen::Vector3d> e0,
         Eigen::ConstRef<Eigen::Vector3d> e1,
@@ -97,7 +97,7 @@ namespace {
     {
         Eigen::Vector2d vals;
         vals << 1., 1.;
-        std::array<Vector<double, 15>, 2> grads;
+        std::array<Eigen::Vector<double, 15>, 2> grads;
         for (auto& g : grads) {
             g.setZero();
         }
@@ -112,11 +112,11 @@ namespace {
 
                 vals[d] = tmp_val;
 
-                Vector<double, 12> gradient_tmp;
+                Eigen::Vector<double, 12> gradient_tmp;
                 gradient_tmp << -tmp_grad.tail<3>(),
                     g.transpose() * tmp_grad.head<3>();
 
-                Vector<int, 12> indices;
+                Eigen::Vector<int, 12> indices;
                 indices << 0, 1, 2, 9, 10, 11, 3, 4, 5, 6, 7, 8;
                 if (d == 1) {
                     indices.segment<3>(3).array() += 3;
@@ -142,7 +142,7 @@ namespace {
     {
         Eigen::Vector2d vals;
         vals << 1., 1.;
-        std::array<Vector<double, 15>, 2> grads;
+        std::array<Eigen::Vector<double, 15>, 2> grads;
         std::array<Eigen::Matrix<double, 15, 15>, 2> hesses;
         for (auto& g : grads) {
             g.setZero();
@@ -164,7 +164,7 @@ namespace {
 
                 vals[d] = tmp_val;
 
-                Vector<double, 12> gradient_tmp;
+                Eigen::Vector<double, 12> gradient_tmp;
                 gradient_tmp << tmp_grad.tail<3>(),
                     g.transpose() * tmp_grad.head<3>();
 
@@ -182,7 +182,7 @@ namespace {
                 hessian_tmp.block<9, 3>(3, 0) =
                     g.transpose() * tmp_hess.block<3, 3>(0, 3);
 
-                Vector<int, 12> indices;
+                Eigen::Vector<int, 12> indices;
                 indices << 0, 1, 2, 9, 10, 11, 3, 4, 5, 6, 7, 8;
                 if (d == 1) {
                     indices.segment<3>(3).array() += 3;
@@ -221,7 +221,7 @@ namespace {
         return (e1 - e0).squaredNorm() * tangent_term * normal_term;
     }
 
-    GradType<15> smooth_edge3_term_gradient(
+    GradientType<15> smooth_edge3_term_gradient(
         Eigen::ConstRef<Eigen::Vector3d> direc,
         Eigen::ConstRef<Eigen::Vector3d> e0,
         Eigen::ConstRef<Eigen::Vector3d> e1,
@@ -383,7 +383,7 @@ namespace {
 Edge3::Edge3(
     const index_t id,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const VectorMax3d& d,
     const SmoothContactParameters& params)
     : Primitive(id, params)
@@ -550,7 +550,7 @@ double smooth_edge3_normal_term(
         (d - t0).cross(d - t1).dot(edge), alpha, beta);
 }
 
-GradType<15> smooth_edge3_normal_term_gradient(
+GradientType<15> smooth_edge3_normal_term_gradient(
     Eigen::ConstRef<Eigen::Vector3d> dn,
     Eigen::ConstRef<Eigen::Vector3d> e0,
     Eigen::ConstRef<Eigen::Vector3d> e1,

@@ -14,29 +14,29 @@ public:
     Point2(
         const index_t id,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const VectorMax3d& d,
         const SmoothContactParameters& params);
 
     Point2(
         const index_t id,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices);
+        Eigen::ConstRef<Eigen::MatrixXd> vertices);
 
     int n_vertices() const override;
     int n_dofs() const override { return n_vertices() * DIM; }
 
     // assume the following functions are only called if active
     double potential(
-        const Vector<double, DIM>& d,
-        const Vector<double, -1, MAX_SIZE>& x) const;
+        const Eigen::Vector<double, DIM>& d,
+        const VectorMax<double, MAX_SIZE>& x) const;
     // derivatives including wrt. d (the closest direction) in front
-    Vector<double, -1, MAX_SIZE + DIM> grad(
-        const Vector<double, DIM>& d,
-        const Vector<double, -1, MAX_SIZE>& x) const;
+    VectorMax<double, MAX_SIZE + DIM> grad(
+        const Eigen::Vector<double, DIM>& d,
+        const VectorMax<double, MAX_SIZE>& x) const;
     MatrixMax<double, MAX_SIZE + DIM, MAX_SIZE + DIM> hessian(
-        const Vector<double, DIM>& d,
-        const Vector<double, -1, MAX_SIZE>& x) const;
+        const Eigen::Vector<double, DIM>& d,
+        const VectorMax<double, MAX_SIZE>& x) const;
 
 private:
     bool has_neighbor_1, has_neighbor_2;

@@ -106,7 +106,7 @@ namespace {
 Point2::Point2(
     const index_t id,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const VectorMax3d& d,
     const SmoothContactParameters& params)
     : Primitive(id, params)
@@ -142,7 +142,8 @@ Point2::Point2(
 int Point2::n_vertices() const { return m_vertex_ids.size(); }
 
 double Point2::potential(
-    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
+    const Eigen::Vector<double, DIM>& d,
+    const VectorMax<double, MAX_SIZE>& x) const
 {
     if (has_neighbor_1 && has_neighbor_2) {
         return smooth_point2_term<double>(
@@ -155,13 +156,14 @@ double Point2::potential(
         return 1.;
     }
 }
-Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
-    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
+VectorMax<double, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
+    const Eigen::Vector<double, DIM>& d,
+    const VectorMax<double, MAX_SIZE>& x) const
 {
     if (has_neighbor_1 && has_neighbor_2) {
         ScalarBase::setVariableCount(4 * DIM);
         using T = ADGrad<4 * DIM>;
-        Vector<double, 4 * DIM> tmp;
+        Eigen::Vector<double, 4 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         return smooth_point2_term<T>(
@@ -170,14 +172,14 @@ Vector<double, -1, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
     } else if (has_neighbor_1 || has_neighbor_2) {
         ScalarBase::setVariableCount(3 * DIM);
         using T = ADGrad<3 * DIM>;
-        Vector<double, 3 * DIM> tmp;
+        Eigen::Vector<double, 3 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         return smooth_point2_term_one_side<T>(
                    X.row(1), X.row(0), X.row(2), m_params)
             .grad;
     } else {
-        return Vector<double, -1, Point2::MAX_SIZE + Point2::DIM>::Zero(
+        return VectorMax<double, Point2::MAX_SIZE + Point2::DIM>::Zero(
             x.size() + d.size());
     }
 }
@@ -186,12 +188,13 @@ MatrixMax<
     Point2::MAX_SIZE + Point2::DIM,
     Point2::MAX_SIZE + Point2::DIM>
 Point2::hessian(
-    const Vector<double, DIM>& d, const Vector<double, -1, MAX_SIZE>& x) const
+    const Eigen::Vector<double, DIM>& d,
+    const VectorMax<double, MAX_SIZE>& x) const
 {
     if (has_neighbor_1 && has_neighbor_2) {
         ScalarBase::setVariableCount(4 * DIM);
         using T = ADHessian<4 * DIM>;
-        Vector<double, 4 * DIM> tmp;
+        Eigen::Vector<double, 4 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         return smooth_point2_term<T>(
@@ -200,7 +203,7 @@ Point2::hessian(
     } else if (has_neighbor_1 || has_neighbor_2) {
         ScalarBase::setVariableCount(3 * DIM);
         using T = ADHessian<3 * DIM>;
-        Vector<double, 3 * DIM> tmp;
+        Eigen::Vector<double, 3 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         return smooth_point2_term_one_side<T>(

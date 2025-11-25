@@ -191,10 +191,10 @@ TEST_CASE(
 
     CHECK(fd::compare_gradient(grad, fgrad));
 
-    Vector<ADGrad<12>, 12> X = slice_positions<ADGrad<12>, 12, 1>(
+    Eigen::Vector<ADGrad<12>, 12> X = slice_positions<ADGrad<12>, 12, 1>(
         (Vector12d() << p, t0, t1, t2).finished());
     {
-        Vector<ADGrad<12>, 3> tmp = X.head<3>();
+        Eigen::Vector<ADGrad<12>, 3> tmp = X.head<3>();
         X.head<9>() = X.tail<9>().eval();
         X.tail<3>() = tmp;
     }
@@ -288,9 +288,10 @@ TEST_CASE("Point-triangle distance hessian", "[distance][point-triangle][hess]")
     CAPTURE(dtype);
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
 
-    Vector<ADHessian<12>, 12> X = slice_positions<ADHessian<12>, 12, 1>(x);
+    Eigen::Vector<ADHessian<12>, 12> X =
+        slice_positions<ADHessian<12>, 12, 1>(x);
     {
-        Vector<ADHessian<12>, 3> tmp = X.head<3>();
+        Eigen::Vector<ADHessian<12>, 3> tmp = X.head<3>();
         X.head<9>() = X.tail<9>().eval();
         X.tail<3>() = tmp;
     }
