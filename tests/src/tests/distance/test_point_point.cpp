@@ -66,7 +66,7 @@ TEMPLATE_TEST_CASE_SIG(
     CHECK(fd::compare_gradient(grad, fgrad));
 
     constexpr int n_dofs = 2 * dim;
-    Vector<ADGrad<n_dofs>, n_dofs> X =
+    Eigen::Vector<ADGrad<n_dofs>, n_dofs> X =
         slice_positions<ADGrad<n_dofs>, n_dofs, 1>(x);
     ADGrad<n_dofs> dist;
     if constexpr (dim == 2) {

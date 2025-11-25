@@ -119,7 +119,7 @@ double opposite_direction_penalty(
     const double alpha,
     const double beta);
 
-GradType<6> opposite_direction_penalty_grad(
+GradientType<6> opposite_direction_penalty_grad(
     Eigen::ConstRef<Eigen::Vector3d> t,
     Eigen::ConstRef<Eigen::Vector3d> d,
     const double alpha,
@@ -139,7 +139,7 @@ double negative_orientation_penalty(
     const double alpha,
     const double beta);
 
-GradType<9> negative_orientation_penalty_grad(
+GradientType<9> negative_orientation_penalty_grad(
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2,
     Eigen::ConstRef<Eigen::Vector3d> d,

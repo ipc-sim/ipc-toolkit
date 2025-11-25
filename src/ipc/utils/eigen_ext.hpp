@@ -32,15 +32,17 @@ using MatrixXb = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
 /// @tparam T The type of the vector elements.
 /// @tparam dim The size of the vector.
 /// @tparam max_dim The maximum size of the vector.
-template <typename T, int dim, int max_dim = dim>
-using Vector = Eigen::Matrix<T, dim, 1, Eigen::ColMajor, max_dim, 1>;
+template <typename T, int max_dim>
+using VectorMax =
+    Eigen::Matrix<T, Eigen::Dynamic, 1, Eigen::ColMajor, max_dim, 1>;
 
 /// @brief A dynamic size row vector with a fixed maximum size.
 /// @tparam T The type of the vector elements.
 /// @tparam dim The size of the vector.
 /// @tparam max_dim The maximum size of the vector.
-template <typename T, int dim, int max_dim = dim>
-using RowVector = Eigen::Matrix<T, 1, dim, Eigen::RowMajor, 1, max_dim>;
+template <typename T, int max_dim>
+using RowVectorMax =
+    Eigen::Matrix<T, 1, Eigen::Dynamic, Eigen::RowMajor, 1, max_dim>;
 
 /// @brief A static size matrix of size of 1×1
 using Vector1d = Eigen::Vector<double, 1>;
@@ -63,17 +65,17 @@ using Matrix12d = Eigen::Matrix<double, 12, 12>;
 using Matrix15d = Eigen::Matrix<double, 15, 15>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1
-template <typename T> using VectorMax2 = Vector<T, Eigen::Dynamic, 2>;
+template <typename T> using VectorMax2 = VectorMax<T, 2>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1
-template <typename T> using VectorMax3 = Vector<T, Eigen::Dynamic, 3>;
+template <typename T> using VectorMax3 = VectorMax<T, 3>;
 /// @brief A dynamic size matrix with a fixed maximum size of 4×1
-template <typename T> using VectorMax4 = Vector<T, Eigen::Dynamic, 4>;
+template <typename T> using VectorMax4 = VectorMax<T, 4>;
 /// @brief A dynamic size matrix with a fixed maximum size of 6×1
-template <typename T> using VectorMax6 = Vector<T, Eigen::Dynamic, 6>;
+template <typename T> using VectorMax6 = VectorMax<T, 6>;
 /// @brief A dynamic size matrix with a fixed maximum size of 9×1
-template <typename T> using VectorMax9 = Vector<T, Eigen::Dynamic, 9>;
+template <typename T> using VectorMax9 = VectorMax<T, 9>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12×1
-template <typename T> using VectorMax12 = Vector<T, Eigen::Dynamic, 12>;
+template <typename T> using VectorMax12 = VectorMax<T, 12>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 2×1
 using VectorMax2d = VectorMax2<double>;
@@ -95,20 +97,20 @@ using VectorMax9d = VectorMax9<double>;
 using VectorMax12d = VectorMax12<double>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 1×2
-template <typename T> using RowVectorMax2 = RowVector<T, Eigen::Dynamic, 2>;
+template <typename T> using RowVectorMax2 = RowVectorMax<T, 2>;
 /// @brief A dynamic size matrix with a fixed maximum size of 1×3
-template <typename T> using RowVectorMax3 = RowVector<T, Eigen::Dynamic, 3>;
+template <typename T> using RowVectorMax3 = RowVectorMax<T, 3>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 1×2
 using RowVectorMax2d = RowVectorMax2<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 1×3
 using RowVectorMax3d = RowVectorMax3<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 6×1
-using RowVectorMax6d = RowVector<double, Eigen::Dynamic, 6>;
+using RowVectorMax6d = RowVectorMax<double, 6>;
 /// @brief A dynamic size matrix with a fixed maximum size of 9×1
-using RowVectorMax9d = RowVector<double, Eigen::Dynamic, 9>;
+using RowVectorMax9d = RowVectorMax<double, 9>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12×1
-using RowVectorMax12d = RowVector<double, Eigen::Dynamic, 12>;
+using RowVectorMax12d = RowVectorMax<double, 12>;
 
 template <typename T, int max_rows, int max_cols>
 using MatrixMax = Eigen::Matrix<
@@ -167,10 +169,11 @@ using ArrayMax4d = ArrayMax4<double>;
 /// @brief A dynamic size array with a fixed maximum size of 4×1
 using ArrayMax4i = ArrayMax4<int>;
 
-template <int dim> using GradType = std::tuple<double, Vector<double, dim>>;
 template <int dim>
-using HessianType =
-    std::tuple<double, Vector<double, dim>, Eigen::Matrix<double, dim, dim>>;
+using GradientType = std::tuple<double, Eigen::Vector<double, dim>>;
+template <int dim>
+using HessianType = std::
+    tuple<double, Eigen::Vector<double, dim>, Eigen::Matrix<double, dim, dim>>;
 
 /**@}*/
 

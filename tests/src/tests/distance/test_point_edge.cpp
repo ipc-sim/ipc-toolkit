@@ -253,9 +253,9 @@ TEMPLATE_TEST_CASE_SIG(
         fd::finite_jacobian(
             x,
             [](const Eigen::VectorXd& x) {
-                Vector<double, dim> p = x.segment<dim>(0);
-                Vector<double, dim> e0 = x.segment<dim>(dim);
-                Vector<double, dim> e1 = x.segment<dim>(2 * dim);
+                Eigen::Vector<double, dim> p = x.segment<dim>(0);
+                Eigen::Vector<double, dim> e0 = x.segment<dim>(dim);
+                Eigen::Vector<double, dim> e1 = x.segment<dim>(2 * dim);
                 return PointEdgeDistance<
                     double, dim>::point_edge_closest_point_direction(p, e0, e1);
             },
@@ -269,7 +269,7 @@ TEMPLATE_TEST_CASE_SIG(
         VectorMax9d x(3 * dim);
         x << e0, e1, p;
 
-        Vector<ADGrad<3 * dim>, 3 * dim> X =
+        Eigen::Vector<ADGrad<3 * dim>, 3 * dim> X =
             slice_positions<ADGrad<3 * dim>, 3 * dim, 1>(x);
         ADGrad<3 * dim> dist;
         if constexpr (dim == 2) {
@@ -285,9 +285,9 @@ TEMPLATE_TEST_CASE_SIG(
         fd::finite_gradient(
             x,
             [](const Eigen::VectorXd& x) {
-                Vector<double, dim> e0 = x.segment<dim>(0);
-                Vector<double, dim> e1 = x.segment<dim>(dim);
-                Vector<double, dim> p = x.segment<dim>(2 * dim);
+                Eigen::Vector<double, dim> e0 = x.segment<dim>(0);
+                Eigen::Vector<double, dim> e1 = x.segment<dim>(dim);
+                Eigen::Vector<double, dim> p = x.segment<dim>(2 * dim);
                 return PointEdgeDistance<double, dim>::point_edge_sqr_distance(
                     p, e0, e1);
             },
@@ -308,9 +308,9 @@ TEMPLATE_TEST_CASE_SIG(
             fd::finite_hessian(
                 x,
                 [i, dtype](const Eigen::VectorXd& x) {
-                    Vector<double, dim> p = x.segment<dim>(0);
-                    Vector<double, dim> e0 = x.segment<dim>(dim);
-                    Vector<double, dim> e1 = x.segment<dim>(2 * dim);
+                    Eigen::Vector<double, dim> p = x.segment<dim>(0);
+                    Eigen::Vector<double, dim> e0 = x.segment<dim>(dim);
+                    Eigen::Vector<double, dim> e1 = x.segment<dim>(2 * dim);
                     return PointEdgeDistance<double, dim>::
                         point_edge_closest_point_direction(p, e0, e1, dtype)(i);
                 },

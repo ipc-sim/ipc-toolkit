@@ -97,7 +97,7 @@ public:
     /// @param blend_mu Function to blend vertex-based coefficients of friction. Defaults to average.
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const SmoothCollisions& collisions,
         const SmoothContactParameters& params,
         const double normal_stiffness,

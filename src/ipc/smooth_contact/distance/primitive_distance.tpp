@@ -13,7 +13,7 @@ template <typename T> class PrimitiveDistanceTemplate<Face, Point3, T> {
 
 public:
     static T compute_distance(
-        const Vector<T, N_CORE_DOFS>& x,
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Face, Point3>::type dtype)
     {
         return point_triangle_sqr_distance<T>(
@@ -22,8 +22,8 @@ public:
             dtype);
     }
 
-    static Vector<T, DIM> compute_closest_direction(
-        const Vector<T, N_CORE_DOFS>& x,
+    static Eigen::Vector<T, DIM> compute_closest_direction(
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Face, Point3>::type dtype)
     {
         return point_triangle_closest_point_direction<T>(
@@ -32,7 +32,8 @@ public:
             dtype);
     }
 
-    static T mollifier(const Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
+    static T
+    mollifier(const Eigen::Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
     {
         return point_face_mollifier<T>(
             x.template tail<3>() /* point */, x.template head<3>(),
@@ -48,7 +49,7 @@ template <typename T> class PrimitiveDistanceTemplate<Edge3, Edge3, T> {
 
 public:
     static T compute_distance(
-        const Vector<T, N_CORE_DOFS>& x,
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Edge3, Edge3>::type dtype)
     {
         return edge_edge_sqr_distance<T>(
@@ -58,8 +59,8 @@ public:
             x.template tail<3>() /* edge 1 */, dtype);
     }
 
-    static Vector<T, DIM> compute_closest_direction(
-        const Vector<T, N_CORE_DOFS>& x,
+    static Eigen::Vector<T, DIM> compute_closest_direction(
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Edge3, Edge3>::type dtype)
     {
         return edge_edge_closest_point_direction<T>(
@@ -69,7 +70,8 @@ public:
             x.template tail<3>() /* edge 1 */, dtype);
     }
 
-    static T mollifier(const Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
+    static T
+    mollifier(const Eigen::Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
     {
         std::array<HeavisideType, 4> types {};
         types.fill(HeavisideType::VARIANT);
@@ -90,7 +92,7 @@ template <typename T> class PrimitiveDistanceTemplate<Edge2, Point2, T> {
 
 public:
     static T compute_distance(
-        const Vector<T, N_CORE_DOFS>& x,
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Edge2, Point2>::type dtype)
     {
         return PointEdgeDistance<T, DIM>::point_edge_sqr_distance(
@@ -98,8 +100,8 @@ public:
             x.template segment<2>(2) /* edge */, dtype);
     }
 
-    static Vector<T, DIM> compute_closest_direction(
-        const Vector<T, N_CORE_DOFS>& x,
+    static Eigen::Vector<T, DIM> compute_closest_direction(
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Edge2, Point2>::type dtype)
     {
         return PointEdgeDistance<T, DIM>::point_edge_closest_point_direction(
@@ -107,7 +109,8 @@ public:
             x.template segment<2>(2) /* edge */, dtype);
     }
 
-    static T mollifier(const Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
+    static T
+    mollifier(const Eigen::Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
     {
         return point_edge_mollifier<T, 2>(
             x.template tail<2>() /* point */,
@@ -125,7 +128,7 @@ template <typename T> class PrimitiveDistanceTemplate<Edge3, Point3, T> {
 
 public:
     static T compute_distance(
-        const Vector<T, N_CORE_DOFS>& x,
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Edge3, Point3>::type dtype)
     {
         return PointEdgeDistance<T, DIM>::point_edge_sqr_distance(
@@ -133,8 +136,8 @@ public:
             x.template segment<3>(3) /* edge */, dtype);
     }
 
-    static Vector<T, DIM> compute_closest_direction(
-        const Vector<T, N_CORE_DOFS>& x,
+    static Eigen::Vector<T, DIM> compute_closest_direction(
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Edge3, Point3>::type dtype)
     {
         return PointEdgeDistance<T, DIM>::point_edge_closest_point_direction(
@@ -142,7 +145,8 @@ public:
             x.template segment<3>(3) /* edge */, dtype);
     }
 
-    static T mollifier(const Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
+    static T
+    mollifier(const Eigen::Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
     {
         return point_edge_mollifier<T, 3>(
             x.template tail<3>() /* point */,
@@ -158,20 +162,21 @@ template <typename T> class PrimitiveDistanceTemplate<Point2, Point2, T> {
 
 public:
     static T compute_distance(
-        const Vector<T, N_CORE_DOFS>& x,
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Point2, Point2>::type dtype)
     {
         return (x.template tail<2>() - x.template head<2>()).squaredNorm();
     }
 
-    static Vector<T, DIM> compute_closest_direction(
-        const Vector<T, N_CORE_DOFS>& x,
+    static Eigen::Vector<T, DIM> compute_closest_direction(
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Point2, Point2>::type dtype)
     {
         return x.template tail<2>() - x.template head<2>();
     }
 
-    static T mollifier(const Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
+    static T
+    mollifier(const Eigen::Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
     {
         return T(1.);
     }
@@ -184,20 +189,21 @@ template <typename T> class PrimitiveDistanceTemplate<Point3, Point3, T> {
 
 public:
     static T compute_distance(
-        const Vector<T, N_CORE_DOFS>& x,
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Point3, Point3>::type dtype)
     {
         return (x.template tail<3>() - x.template head<3>()).squaredNorm();
     }
 
-    static Vector<T, DIM> compute_closest_direction(
-        const Vector<T, N_CORE_DOFS>& x,
+    static Eigen::Vector<T, DIM> compute_closest_direction(
+        const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Point3, Point3>::type dtype)
     {
         return x.template tail<3>() - x.template head<3>();
     }
 
-    static T mollifier(const Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
+    static T
+    mollifier(const Eigen::Vector<T, N_CORE_DOFS>& x, const T& dist_sqr)
     {
         return T(1.);
     }

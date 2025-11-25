@@ -81,17 +81,17 @@ public:
 
     /// @brief Compute the value of the GCP potential
     virtual double operator()(
-        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
+        Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
         const SmoothContactParameters& params) const = 0;
 
     /// @brief Compute the gradient of the GCP potential wrt. vertices involved
-    virtual Vector<double, -1, ELEMENT_SIZE> gradient(
-        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
+    virtual VectorMax<double, ELEMENT_SIZE> gradient(
+        Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
         const SmoothContactParameters& params) const = 0;
 
     /// @brief Compute the Hessian of the GCP potential wrt. vertices involved
     virtual MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hessian(
-        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
+        Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
         const SmoothContactParameters& params) const = 0;
 
     bool operator==(const SmoothCollision& other) const
@@ -153,7 +153,7 @@ public:
         const CollisionMesh& mesh,
         const SmoothContactParameters& params,
         const double dhat,
-        const Eigen::MatrixXd& V);
+        Eigen::ConstRef<Eigen::MatrixXd> V);
 
     virtual ~SmoothCollisionTemplate() = default;
 
@@ -165,7 +165,7 @@ public:
     }
     CollisionType type() const override;
 
-    Vector<int, N_CORE_DOFS> get_core_indices() const;
+    Eigen::Vector<int, N_CORE_DOFS> get_core_indices() const;
     std::array<index_t, N_CORE_DOFS> core_vertex_ids() const;
 
     int num_vertices() const override
@@ -173,8 +173,8 @@ public:
         return primitive_a->n_vertices() + primitive_b->n_vertices();
     }
 
-    template <typename T>
-    Vector<T, N_CORE_DOFS> core_dof(const Eigen::MatrixX<T>& X) const
+    Eigen::Vector<double, N_CORE_DOFS>
+    core_dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
     {
         return this->dof(X)(get_core_indices());
     }
@@ -186,15 +186,15 @@ public:
     /// @param params GCP parameters
     /// @return GCP potential value
     double operator()(
-        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
+        Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
         const SmoothContactParameters& params) const override;
 
     /// @brief Compute the potential gradient wrt. positions
     /// @param positions Vertex positions
     /// @param params GCP parameters
     /// @return GCP potential gradient
-    Vector<double, -1, ELEMENT_SIZE> gradient(
-        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
+    VectorMax<double, ELEMENT_SIZE> gradient(
+        Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
         const SmoothContactParameters& params) const override;
 
     /// @brief Compute the potential Hessian wrt. positions
@@ -202,7 +202,7 @@ public:
     /// @param params GCP parameters
     /// @return GCP potential Hessian
     MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hessian(
-        Eigen::ConstRef<Vector<double, -1, ELEMENT_SIZE>> positions,
+        Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
         const SmoothContactParameters& params) const override;
 
     // ---- distance ----
