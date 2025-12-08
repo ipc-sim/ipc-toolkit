@@ -64,9 +64,6 @@ project(IPCToolkit
         LANGUAGES CXX
         VERSION "1.5.0")
 
-include(CheckLanguage)
-check_language(CUDA)
-
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
   option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
@@ -77,11 +74,7 @@ else()
   set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings" FORCE)
 endif()
 
-if(CMAKE_CUDA_COMPILER)
-  option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" ON)
-else()
-  option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" OFF)
-endif()
+option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
@@ -245,10 +238,6 @@ target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 ################################################################################
 
 if(IPC_TOOLKIT_WITH_CUDA)
-  if(NOT CMAKE_CUDA_COMPILER)
-    message(FATAL_ERROR "CUDA support requested but no CUDA compiler found!")
-  endif()
-
   # Enable CUDA support
   enable_language(CUDA)
 
@@ -256,10 +245,6 @@ if(IPC_TOOLKIT_WITH_CUDA)
   # library to be built with -dc as the member functions could be called by
   # other libraries and executables.
   set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-  # Use the same CUDA architectures Scalable CCD
-  get_target_property(CMAKE_CUDA_ARCHITECTURES scalable_ccd CUDA_ARCHITECTURES)
-  set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
 endif()
 
 ################################################################################
