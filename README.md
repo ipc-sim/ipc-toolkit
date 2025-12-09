@@ -16,7 +16,7 @@ IPC Toolkit is a set of reusable functions to integrate Incremental Potential Co
 
 ### Features
 
-* IPC barrier function and its derivatives and adaptive barrier stiffness algorithm
+* IPC barrier function and its derivatives, and adaptive barrier stiffness algorithm
 * Broad- and narrow-phase continuous collision detection (CCD) of linear and nonlinear trajectories
 * Distance computation and derivatives between edges in 2D and triangles in 3D
 * Distance barrier potential and its derivatives
@@ -24,13 +24,11 @@ IPC Toolkit is a set of reusable functions to integrate Incremental Potential Co
 
 ### Limitations
 
-This is not a full simulation library. As such it does not include any physics or solvers. For a full simulation implementation, we recommend [PolyFEM](https://polyfem.github.io/) (a finite element library) or [Rigid IPC](https://github.com/ipc-sim/rigid-ipc) (rigid-body dynamics) both of which utilize the IPC Toolkit.
+This is not a full simulation library. As such, it does not include any physics or solvers. For a full simulation implementation, we recommend [PolyFEM](https://polyfem.github.io/) (a finite element library) or [Rigid IPC](https://github.com/ipc-sim/rigid-ipc) (rigid-body dynamics), both of which utilize the IPC Toolkit.
 
 ## Build
 
-Instruction for building and including the IPC Toolkit in your CMake project can be found on the website [here](https://ipctk.xyz/build.html).
-
-CUDA support is disabled by default and can be enabled with the CMake option `-DIPC_TOOLKIT_WITH_CUDA=ON`.
+Instructions for building and including the IPC Toolkit in your CMake project can be found on the website [here](https://ipctk.xyz/build/c++.html).
 
 ### Dependencies
 
@@ -44,7 +42,7 @@ A full list of dependencies can be found on the [dependencies page](https://ipct
 
 We provide Python bindings for functions in the toolkit using [pybind11](https://github.com/pybind/pybind11).
 
-For more information see the [Python documentation](https://ipctk.xyz/python.html).
+For more information, see the [Python documentation](https://ipctk.xyz/python.html).
 
 ## Usage
 
@@ -63,7 +61,7 @@ Simply fork this repository and make a Pull Request! We would appreciate:
 
 ## Citation
 
-IPC Toolkit is created and maintained by academics: citations let us know our work is having impact! Please cite the IPC Toolkit or otherwise give a shout-out if and when it contributes to published works.
+The IPC Toolkit is created and maintained by academics: citations let us know our work is having an impact! Please cite the IPC Toolkit or otherwise give a shout-out if and when it contributes to published works.
 
 ```bibtex
 @software{ipc_toolkit,
