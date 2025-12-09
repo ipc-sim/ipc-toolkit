@@ -30,6 +30,8 @@ This is not a full simulation library. As such it does not include any physics o
 
 Instruction for building and including the IPC Toolkit in your CMake project can be found on the website [here](https://ipctk.xyz/build.html).
 
+CUDA support is disabled by default and can be enabled with the CMake option `-DIPC_TOOLKIT_WITH_CUDA=ON`.
+
 ### Dependencies
 
 The IPC Toolkit depends on a handful of third-party libraries, which are used to provide various functionality.
