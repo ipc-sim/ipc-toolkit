@@ -53,6 +53,8 @@ You can build the IPC Toolkit using CMake as you would any other CMake project. 
 
 This will build the IPC Toolkit and all of its dependencies. The ``IPC_TOOLKIT_BUILD_TESTS`` option enables building the unit tests, and the ``IPC_TOOLKIT_BUILD_PYTHON`` option enables building the Python bindings.
 
+CUDA support is disabled by default. Enable it by setting CMake option ``IPC_TOOLKIT_WITH_CUDA`` to ON.
+
 .. warning::
    Installing the IPC Toolkit using the ``make install`` has not been tested and is not recommended. The IPC Toolkit is designed to be used as a submodule in your project, and as such does not have a proper install target.
 
