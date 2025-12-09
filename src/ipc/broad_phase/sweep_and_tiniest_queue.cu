@@ -89,9 +89,14 @@ void SweepAndTiniestQueue::build(
         boxes->vertices[i].max.z =
             vertex_boxes[i].max.size() > 2 ? vertex_boxes[i].max.z() : 0;
 
-        boxes->vertices[i].min.x = vertex_boxes[i].vertex_ids[0];
-        boxes->vertices[i].min.y = vertex_boxes[i].vertex_ids[1];
-        boxes->vertices[i].min.z = vertex_boxes[i].vertex_ids[2];
+        // If vertex id == -1 it means this slot is not used.
+        // But Scalable CCD does not have this kind of special value so we map
+        // it to unique negative id.
+        const auto [vi, vj, vk] = vertex_boxes[i].vertex_ids;
+        assert(vi >= 0);
+        boxes->vertices[i].vertex_ids.x = vi;
+        boxes->vertices[i].vertex_ids.y = vj >= 0 ? vj : (-vi - 1);
+        boxes->vertices[i].vertex_ids.z = vk >= 0 ? vk : (-vi - 1);
 
         boxes->vertices[i].element_id = i;
     }
