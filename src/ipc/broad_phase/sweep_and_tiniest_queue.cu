@@ -2,6 +2,7 @@
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 
+#include <limits>
 #include <scalable_ccd/cuda/broad_phase/broad_phase.cuh>
 
 namespace ipc {
@@ -78,6 +79,7 @@ void SweepAndTiniestQueue::build(
 
     // Convert from ipc::AABB to scalable_ccd::cuda::AABB
     boxes->vertices.resize(vertex_boxes.size());
+    int unused_vert_id = std::numeric_limits<int>::min();
     for (int i = 0; i < vertex_boxes.size(); ++i) {
         boxes->vertices[i].min.x = vertex_boxes[i].min.x();
         boxes->vertices[i].min.y = vertex_boxes[i].min.y();
@@ -89,9 +91,27 @@ void SweepAndTiniestQueue::build(
         boxes->vertices[i].max.z =
             vertex_boxes[i].max.size() > 2 ? vertex_boxes[i].max.z() : 0;
 
-        boxes->vertices[i].min.x = vertex_boxes[i].vertex_ids[0];
-        boxes->vertices[i].min.y = vertex_boxes[i].vertex_ids[1];
-        boxes->vertices[i].min.z = vertex_boxes[i].vertex_ids[2];
+        // If vertex id == -1 it means this slot is not used.
+        // But Scalable CCD does not have this kind of special value so we map
+        // it to unique negative id.
+        if (vertex_boxes[i].vertex_ids[0] == -1) {
+            boxes->vertices[i].vertex_ids.x = unused_vert_id;
+            ++unused_vert_id;
+        } else {
+            boxes->vertices[i].vertex_ids.x = vertex_boxes[i].vertex_ids[0];
+        }
+        if (vertex_boxes[i].vertex_ids[1] == -1) {
+            boxes->vertices[i].vertex_ids.y = unused_vert_id;
+            ++unused_vert_id;
+        } else {
+            boxes->vertices[i].vertex_ids.y = vertex_boxes[i].vertex_ids[1];
+        }
+        if (vertex_boxes[i].vertex_ids[2] == -1) {
+            boxes->vertices[i].vertex_ids.z = unused_vert_id;
+            ++unused_vert_id;
+        } else {
+            boxes->vertices[i].vertex_ids.z = vertex_boxes[i].vertex_ids[2];
+        }
 
         boxes->vertices[i].element_id = i;
     }
