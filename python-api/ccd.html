@@ -5294,7 +5294,7 @@
 <h1 id="continuous-collision-detection">Continuous Collision Detection<a class="headerlink" href="#continuous-collision-detection" title="Link to this heading">¶</a></h1>
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.is_step_collision_free">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">is_step_collision_free</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">broad_phase:</span> <span class="pre">ipctk.BroadPhase</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.HashGrid</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f2d2ce42030&gt;,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f2d2ce41ff0&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.is_step_collision_free" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">is_step_collision_free</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">broad_phase:</span> <span class="pre">ipctk.BroadPhase</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.HashGrid</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f48801f4a70&gt;,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f488db712b0&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.is_step_collision_free" title="Link to this definition">¶</a></dt>
 <dd><p>Determine if the step is collision free.</p>
 <div class="note admonition">
 <p class="admonition-title">Note</p>
@@ -5325,7 +5325,7 @@
 
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.compute_collision_free_stepsize">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">compute_collision_free_stepsize</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">broad_phase:</span> <span class="pre">ipctk.BroadPhase</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.HashGrid</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f2d2ce42230&gt;,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f2d2ce421f0&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.compute_collision_free_stepsize" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">compute_collision_free_stepsize</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">broad_phase:</span> <span class="pre">ipctk.BroadPhase</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.HashGrid</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f48801f47b0&gt;,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f48801f47f0&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.compute_collision_free_stepsize" title="Link to this definition">¶</a></dt>
 <dd><p>Computes a maximal step size that is collision free.</p>
 <div class="note admonition">
 <p class="admonition-title">Note</p>
@@ -5357,7 +5357,7 @@
 <h2 id="narrow-phase-ccd">Narrow Phase CCD<a class="headerlink" href="#narrow-phase-ccd" title="Link to this heading">¶</a></h2>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.NarrowPhaseCCD">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">NarrowPhaseCCD</span></span><a class="headerlink" href="#ipctk.NarrowPhaseCCD" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">NarrowPhaseCCD</span></span><a class="headerlink" href="#ipctk.NarrowPhaseCCD" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Methods:</p>
@@ -5426,7 +5426,7 @@
 <h3 id="tight-inclusion-ccd">Tight Inclusion CCD<a class="headerlink" href="#tight-inclusion-ccd" title="Link to this heading">¶</a></h3>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.TightInclusionCCD">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">TightInclusionCCD</span></span><a class="headerlink" href="#ipctk.TightInclusionCCD" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">TightInclusionCCD</span></span><a class="headerlink" href="#ipctk.TightInclusionCCD" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ipctk.NarrowPhaseCCD" title="ipctk.NarrowPhaseCCD (Python class) — Bases: pybind11_object"><code class="xref py py-class docutils literal notranslate"><span class="pre">NarrowPhaseCCD</span></code></a></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
@@ -5536,19 +5536,19 @@
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.TightInclusionCCD.conservative_rescaling">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">conservative_rescaling</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">float</span></span><a class="headerlink" href="#ipctk.TightInclusionCCD.conservative_rescaling" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">conservative_rescaling</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">float</span></span><a class="headerlink" href="#ipctk.TightInclusionCCD.conservative_rescaling" title="Link to this definition">¶</a></dt>
 <dd><p>Conservative rescaling of the time of impact.</p>
 </dd></dl>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.TightInclusionCCD.max_iterations">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_iterations</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.TightInclusionCCD.max_iterations" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_iterations</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.TightInclusionCCD.max_iterations" title="Link to this definition">¶</a></dt>
 <dd><p>Maximum number of iterations.</p>
 </dd></dl>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.TightInclusionCCD.tolerance">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tolerance</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">float</span></span><a class="headerlink" href="#ipctk.TightInclusionCCD.tolerance" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tolerance</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">float</span></span><a class="headerlink" href="#ipctk.TightInclusionCCD.tolerance" title="Link to this definition">¶</a></dt>
 <dd><p>Solver tolerance.</p>
 </dd></dl>
 
@@ -5557,7 +5557,7 @@
 <h3 id="additive-ccd">Additive CCD<a class="headerlink" href="#additive-ccd" title="Link to this heading">¶</a></h3>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.AdditiveCCD">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">AdditiveCCD</span></span><a class="headerlink" href="#ipctk.AdditiveCCD" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">AdditiveCCD</span></span><a class="headerlink" href="#ipctk.AdditiveCCD" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ipctk.NarrowPhaseCCD" title="ipctk.NarrowPhaseCCD (Python class) — Bases: pybind11_object"><code class="xref py py-class docutils literal notranslate"><span class="pre">NarrowPhaseCCD</span></code></a></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
@@ -5637,7 +5637,7 @@
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.AdditiveCCD.conservative_rescaling">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">conservative_rescaling</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">float</span></span><a class="headerlink" href="#ipctk.AdditiveCCD.conservative_rescaling" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">conservative_rescaling</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">float</span></span><a class="headerlink" href="#ipctk.AdditiveCCD.conservative_rescaling" title="Link to this definition">¶</a></dt>
 <dd><p>The conservative rescaling value used to avoid taking steps exactly to impact.</p>
 </dd></dl>
 
@@ -5685,7 +5685,7 @@ Output time of impact</p>
 <h2 id="nonlinear-ccd">Nonlinear CCD<a class="headerlink" href="#nonlinear-ccd" title="Link to this heading">¶</a></h2>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.NonlinearTrajectory">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">NonlinearTrajectory</span></span><a class="headerlink" href="#ipctk.NonlinearTrajectory" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">NonlinearTrajectory</span></span><a class="headerlink" href="#ipctk.NonlinearTrajectory" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Methods:</p>
@@ -5749,7 +5749,7 @@ Output time of impact</p>
 
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.IntervalNonlinearTrajectory">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">IntervalNonlinearTrajectory</span></span><a class="headerlink" href="#ipctk.IntervalNonlinearTrajectory" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">IntervalNonlinearTrajectory</span></span><a class="headerlink" href="#ipctk.IntervalNonlinearTrajectory" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ipctk.NonlinearTrajectory" title="ipctk.NonlinearTrajectory (Python class) — Bases: pybind11_object"><code class="xref py py-class docutils literal notranslate"><span class="pre">NonlinearTrajectory</span></code></a></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Methods:</p>
@@ -6027,7 +6027,7 @@ Output time of impact</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Nov 25, 2025
+    Dec 09, 2025
   </span>
 
     
@@ -6113,7 +6113,7 @@ Output time of impact</p>
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    8.1.3.
+    8.2.3.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -6136,7 +6136,7 @@ Output time of impact</p>
         <script src="../_static/sphinx_immaterial_theme.32136f45f91ae6956.min.js?v=a7a9472a"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
+        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js"></script>
     
   </body>
 </html>

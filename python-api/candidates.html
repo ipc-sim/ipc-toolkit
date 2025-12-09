@@ -4351,7 +4351,7 @@
 <h2 id="id1">Candidates<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.Candidates">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">Candidates</span></span><a class="headerlink" href="#ipctk.Candidates" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">Candidates</span></span><a class="headerlink" href="#ipctk.Candidates" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
@@ -4447,7 +4447,7 @@
 <span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.Candidates.build" title="ipctk.Candidates.build.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.Candidates.build" title="ipctk.Candidates.build.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.Candidates.build" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>build(self: ipctk.Candidates, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n], flags.f_contiguous], inflation_radius: float = 0, broad_phase: ipctk.BroadPhase = &lt;ipctk.HashGrid object at 0x7f2d3d3bf8b0&gt;) -&gt; None</p>
+<li><p>build(self: ipctk.Candidates, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n], flags.f_contiguous], inflation_radius: float = 0, broad_phase: ipctk.BroadPhase = &lt;ipctk.HashGrid object at 0x7f489077f4f0&gt;) -&gt; None</p>
 <blockquote>
 <div><p>Initialize the set of discrete collision detection candidates.</p>
 <dl class="simple">
@@ -4459,7 +4459,7 @@ broad_phase: Broad phase to use.</p>
 </dl>
 </div></blockquote>
 </li>
-<li><p>build(self: ipctk.Candidates, mesh: ipc::CollisionMesh, vertices_t0: numpy.ndarray[numpy.float64[m, n], flags.f_contiguous], vertices_t1: numpy.ndarray[numpy.float64[m, n], flags.f_contiguous], inflation_radius: float = 0, broad_phase: ipctk.BroadPhase = &lt;ipctk.HashGrid object at 0x7f2d3e2fe2b0&gt;) -&gt; None</p>
+<li><p>build(self: ipctk.Candidates, mesh: ipc::CollisionMesh, vertices_t0: numpy.ndarray[numpy.float64[m, n], flags.f_contiguous], vertices_t1: numpy.ndarray[numpy.float64[m, n], flags.f_contiguous], inflation_radius: float = 0, broad_phase: ipctk.BroadPhase = &lt;ipctk.HashGrid object at 0x7f489077f5b0&gt;) -&gt; None</p>
 <blockquote>
 <div><p>Initialize the set of continuous collision detection candidates.</p>
 <dl class="simple">
@@ -4484,7 +4484,7 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py method objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.Candidates.compute_cfl_stepsize">
-<span class="sig-name descname"><span class="pre">compute_cfl_stepsize</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.Candidates,</span> <span class="pre">mesh:</span> <span class="pre">ipc::CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">dhat:</span> <span class="pre">float,</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">broad_phase:</span> <span class="pre">ipctk.BroadPhase</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.HashGrid</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f2d3a7bddb0&gt;,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f2d3adde5b0&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.Candidates.compute_cfl_stepsize" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">compute_cfl_stepsize</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.Candidates,</span> <span class="pre">mesh:</span> <span class="pre">ipc::CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">dhat:</span> <span class="pre">float,</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">broad_phase:</span> <span class="pre">ipctk.BroadPhase</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.HashGrid</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f488db67bb0&gt;,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f488db67b70&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.Candidates.compute_cfl_stepsize" title="Link to this definition">¶</a></dt>
 <dd><p>Computes a CFL-inspired CCD maximum step step size.</p>
 <dl class="field-list simple">
 <dt class="field-odd" id="ipctk.Candidates.compute_cfl_stepsize-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.Candidates.compute_cfl_stepsize-parameters" title="Permalink to this headline">¶</a></dt>
@@ -4510,7 +4510,7 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py method objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.Candidates.compute_collision_free_stepsize">
-<span class="sig-name descname"><span class="pre">compute_collision_free_stepsize</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.Candidates,</span> <span class="pre">mesh:</span> <span class="pre">ipc::CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f2d3adde5f0&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.Candidates.compute_collision_free_stepsize" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">compute_collision_free_stepsize</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.Candidates,</span> <span class="pre">mesh:</span> <span class="pre">ipc::CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f488db67970&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.Candidates.compute_collision_free_stepsize" title="Link to this definition">¶</a></dt>
 <dd><p>Computes a maximal step size that is collision free using the set of collision candidates.</p>
 <div class="note admonition">
 <p class="admonition-title">Note</p>
@@ -4557,7 +4557,7 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.Candidates.ee_candidates">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ee_candidates</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[ipc::EdgeEdgeCandidate]</span></span><a class="headerlink" href="#ipctk.Candidates.ee_candidates" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ee_candidates</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[ipc::EdgeEdgeCandidate]</span></span><a class="headerlink" href="#ipctk.Candidates.ee_candidates" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method objdesc">
@@ -4567,17 +4567,17 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.Candidates.ev_candidates">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ev_candidates</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[ipc::EdgeVertexCandidate]</span></span><a class="headerlink" href="#ipctk.Candidates.ev_candidates" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ev_candidates</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[ipc::EdgeVertexCandidate]</span></span><a class="headerlink" href="#ipctk.Candidates.ev_candidates" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.Candidates.fv_candidates">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fv_candidates</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[ipc::FaceVertexCandidate]</span></span><a class="headerlink" href="#ipctk.Candidates.fv_candidates" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fv_candidates</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[ipc::FaceVertexCandidate]</span></span><a class="headerlink" href="#ipctk.Candidates.fv_candidates" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.Candidates.is_step_collision_free">
-<span class="sig-name descname"><span class="pre">is_step_collision_free</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.Candidates,</span> <span class="pre">mesh:</span> <span class="pre">ipc::CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f2d3efefa70&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.Candidates.is_step_collision_free" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_step_collision_free</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.Candidates,</span> <span class="pre">mesh:</span> <span class="pre">ipc::CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n],</span> <span class="pre">flags.f_contiguous],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f4891ea32f0&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.Candidates.is_step_collision_free" title="Link to this definition">¶</a></dt>
 <dd><p>Determine if the step is collision free from the set of candidates.</p>
 <div class="note admonition">
 <p class="admonition-title">Note</p>
@@ -4611,7 +4611,7 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.Candidates.vv_candidates">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vv_candidates</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[ipc::VertexVertexCandidate]</span></span><a class="headerlink" href="#ipctk.Candidates.vv_candidates" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vv_candidates</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[ipc::VertexVertexCandidate]</span></span><a class="headerlink" href="#ipctk.Candidates.vv_candidates" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -4624,7 +4624,7 @@ broad_phase: Broad phase to use.</p>
 <h2 id="vertex-vertex-candidate">Vertex-Vertex Candidate<a class="headerlink" href="#vertex-vertex-candidate" title="Link to this heading">¶</a></h2>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.VertexVertexCandidate">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">VertexVertexCandidate</span></span><a class="headerlink" href="#ipctk.VertexVertexCandidate" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">VertexVertexCandidate</span></span><a class="headerlink" href="#ipctk.VertexVertexCandidate" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">CollisionStencil</span></code></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
@@ -4759,13 +4759,13 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.VertexVertexCandidate.vertex0_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex0_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.VertexVertexCandidate.vertex0_id" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex0_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.VertexVertexCandidate.vertex0_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of the first vertex</p>
 </dd></dl>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.VertexVertexCandidate.vertex1_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex1_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.VertexVertexCandidate.vertex1_id" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex1_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.VertexVertexCandidate.vertex1_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of the second vertex</p>
 </dd></dl>
 
@@ -4774,7 +4774,7 @@ broad_phase: Broad phase to use.</p>
 <h2 id="edge-vertex-candidate">Edge-Vertex Candidate<a class="headerlink" href="#edge-vertex-candidate" title="Link to this heading">¶</a></h2>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.EdgeVertexCandidate">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">EdgeVertexCandidate</span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">EdgeVertexCandidate</span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">CollisionStencil</span></code></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
@@ -4912,7 +4912,7 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.EdgeVertexCandidate.edge_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate.edge_id" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate.edge_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of the edge</p>
 </dd></dl>
 
@@ -4923,7 +4923,7 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.EdgeVertexCandidate.vertex_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate.vertex_id" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate.vertex_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of the vertex</p>
 </dd></dl>
 
@@ -4932,7 +4932,7 @@ broad_phase: Broad phase to use.</p>
 <h2 id="edge-edge-candidate">Edge-Edge Candidate<a class="headerlink" href="#edge-edge-candidate" title="Link to this heading">¶</a></h2>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.EdgeEdgeCandidate">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">EdgeEdgeCandidate</span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">EdgeEdgeCandidate</span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">CollisionStencil</span></code></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
@@ -5070,13 +5070,13 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.EdgeEdgeCandidate.edge0_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge0_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.edge0_id" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge0_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.edge0_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of the first edge.</p>
 </dd></dl>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.EdgeEdgeCandidate.edge1_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge1_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.edge1_id" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge1_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.edge1_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of the second edge.</p>
 </dd></dl>
 
@@ -5090,7 +5090,7 @@ broad_phase: Broad phase to use.</p>
 <h2 id="edge-face-candidate">Edge-Face Candidate<a class="headerlink" href="#edge-face-candidate" title="Link to this heading">¶</a></h2>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.EdgeFaceCandidate">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">EdgeFaceCandidate</span></span><a class="headerlink" href="#ipctk.EdgeFaceCandidate" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">EdgeFaceCandidate</span></span><a class="headerlink" href="#ipctk.EdgeFaceCandidate" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
@@ -5188,13 +5188,13 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.EdgeFaceCandidate.edge_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeFaceCandidate.edge_id" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeFaceCandidate.edge_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of the edge</p>
 </dd></dl>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.EdgeFaceCandidate.face_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">face_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeFaceCandidate.face_id" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">face_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.EdgeFaceCandidate.face_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of the face</p>
 </dd></dl>
 
@@ -5203,7 +5203,7 @@ broad_phase: Broad phase to use.</p>
 <h2 id="face-vertex-candidate">Face-Vertex Candidate<a class="headerlink" href="#face-vertex-candidate" title="Link to this heading">¶</a></h2>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.FaceVertexCandidate">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">FaceVertexCandidate</span></span><a class="headerlink" href="#ipctk.FaceVertexCandidate" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">FaceVertexCandidate</span></span><a class="headerlink" href="#ipctk.FaceVertexCandidate" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">CollisionStencil</span></code></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
@@ -5341,7 +5341,7 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.FaceVertexCandidate.face_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">face_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.FaceVertexCandidate.face_id" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">face_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.FaceVertexCandidate.face_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of the face</p>
 </dd></dl>
 
@@ -5352,7 +5352,7 @@ broad_phase: Broad phase to use.</p>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.FaceVertexCandidate.vertex_id">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.FaceVertexCandidate.vertex_id" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_id</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.FaceVertexCandidate.vertex_id" title="Link to this definition">¶</a></dt>
 <dd><p>ID of the vertex</p>
 </dd></dl>
 
@@ -5377,7 +5377,7 @@ broad_phase: Broad phase to use.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Nov 25, 2025
+    Dec 09, 2025
   </span>
 
     
@@ -5463,7 +5463,7 @@ broad_phase: Broad phase to use.</p>
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    8.1.3.
+    8.2.3.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -5486,7 +5486,7 @@ broad_phase: Broad phase to use.</p>
         <script src="../_static/sphinx_immaterial_theme.32136f45f91ae6956.min.js?v=a7a9472a"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
+        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js"></script>
     
   </body>
 </html>
