@@ -111,12 +111,37 @@ include(ipc_toolkit_use_colors)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ################################################################################
+# CUDA
+################################################################################
+
+if(IPC_TOOLKIT_WITH_CUDA)
+  # If CMAKE_CUDA_ARCHITECTURES was not specified, set it to native.
+  if(DEFINED CMAKE_CUDA_ARCHITECTURES)
+    message(STATUS "CMAKE_CUDA_ARCHITECTURES was specified, skipping auto-detection")
+  else()
+    message(STATUS "CMAKE_CUDA_ARCHITECTURES was not specified, set it to native")
+    set(CMAKE_CUDA_ARCHITECTURES "native")
+  endif()
+  message(STATUS "Targeting CUDA_ARCHITECTURES \"${CMAKE_CUDA_ARCHITECTURES}\"")
+
+  # Enable CUDA support
+  enable_language(CUDA)
+endif()
+
+################################################################################
 # IPC Toolkit Library
 ################################################################################
 
 # Add an empty library and fill in the list of sources in `src/ipc/CMakeLists.txt`.
 add_library(ipc_toolkit)
 add_library(ipc::toolkit ALIAS ipc_toolkit)
+
+if(IPC_TOOLKIT_WITH_CUDA)
+  # We need to explicitly state that we need all CUDA files in the particle
+  # library to be built with -dc as the member functions could be called by
+  # other libraries and executables.
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+endif()
 
 # Fill in configuration options
 configure_file(
@@ -232,29 +257,6 @@ endif()
 
 # Use C++17
 target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
-
-################################################################################
-# CUDA
-################################################################################
-
-if(IPC_TOOLKIT_WITH_CUDA)
-  # If CMAKE_CUDA_ARCHITECTURES was not specified, set it to native.
-  if(DEFINED CMAKE_CUDA_ARCHITECTURES)
-    message(STATUS "CMAKE_CUDA_ARCHITECTURES was specified, skipping auto-detection")
-  else()
-    message(STATUS "CMAKE_CUDA_ARCHITECTURES was not specified, set it to native")
-    set(CMAKE_CUDA_ARCHITECTURES "native")
-  endif()
-  message(STATUS "Targeting CUDA_ARCHITECTURES \"${CMAKE_CUDA_ARCHITECTURES}\"")
-
-  # Enable CUDA support
-  enable_language(CUDA)
-
-  # We need to explicitly state that we need all CUDA files in the particle
-  # library to be built with -dc as the member functions could be called by
-  # other libraries and executables.
-  set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-endif()
 
 ################################################################################
 # Tests
