@@ -215,13 +215,13 @@ endif()
 # Faster unordered map
 if(IPC_TOOLKIT_WITH_ROBIN_MAP)
   include(robin_map)
-  target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
+  target_link_libraries(ipc_toolkit PRIVATE tsl::robin_map)
 endif()
 
 # Hashes
 if(IPC_TOOLKIT_WITH_ABSEIL)
   include(abseil)
-  target_link_libraries(ipc_toolkit PUBLIC absl::hash)
+  target_link_libraries(ipc_toolkit PRIVATE absl::hash)
 endif()
 
 # Intervals
@@ -298,7 +298,7 @@ endif()
 # Xcode
 ################################################################################
 
-if (CMAKE_GENERATOR STREQUAL "Xcode")
+if (IPC_TOOLKIT_TOPLEVEL_PROJECT AND CMAKE_GENERATOR STREQUAL "Xcode")
   set(CMAKE_XCODE_SCHEME_LAUNCH_CONFIGURATION "${CMAKE_BUILD_TYPE}")
   set_target_properties(ipc_toolkit PROPERTIES XCODE_GENERATE_SCHEME ON)
   if(IPC_TOOLKIT_BUILD_TESTS)

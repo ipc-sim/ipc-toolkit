@@ -22,6 +22,7 @@
     tutorials/advanced_friction.rst
     tutorials/convergent.rst
     tutorials/gcp.rst
+    tutorials/ogc.rst
     tutorials/nonlinear_ccd.rst
     tutorials/adhesion.rst
     tutorials/simulation.rst

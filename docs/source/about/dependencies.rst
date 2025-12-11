@@ -48,6 +48,10 @@ These dependencies are all `permissively licensed <license.html>`_, and we list 
       - Logger
       - MIT
       - `github.com/gabime/spdlog <https://github.com/gabime/spdlog>`_
+    * - TinyAD
+      - Automatic differentiation for testing and in non-performance critical smooth contact functions
+      - MIT
+      - `github.com/microsoft/TinyAD <https://github.com/patr-schm/TinyAD>`_
 
 Optional Dependencies
 ---------------------
@@ -103,7 +107,7 @@ Additionally, IPC Toolkit may optionally use the following libraries:
 Some of these libraries are enabled by default, and some are not. You can enable or disable them by passing the appropriate CMake option when you configure the IPC Toolkit build.
 
 .. warning::
-    ``filib`` is licensed under `LGPL-2.1 <https://github.com/zfergus/filib/blob/main/LICENSE>`_ and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynaic linkage requires copying the ``.so``/``.dylib``/``.dll`` file to the binary directory or system path. To enable this, set the CMake option ``FILIB_BUILD_SHARED_LIBS`` to ``ON`` and add this CMake code to copy the shared libaray object to the binary directory:
+    ``filib`` is licensed under `LGPL-2.1 <https://github.com/zfergus/filib/blob/main/LICENSE>`_ and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynamic linkage requires copying the ``.so``/``.dylib``/``.dll`` file to the binary directory or system path. To enable this, set the CMake option ``FILIB_BUILD_SHARED_LIBS`` to ``ON`` and add this CMake code to copy the shared libaray object to the binary directory:
 
     .. code-block:: cmake
 

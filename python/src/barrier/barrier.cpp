@@ -117,6 +117,23 @@ void define_barrier(py::module_& m)
         )ipc_Qu8mg5v7")
         .def(py::init());
 
+    py::class_<TwoStageBarrier, Barrier, std::shared_ptr<TwoStageBarrier>>(
+        m, "TwoStageBarrier",
+        R"ipc_Qu8mg5v7(
+        Two-stage activation barrier from [Chen et al. 2025].
+
+        .. math::
+
+            b(d) = \begin{cases}
+                -\frac{\hat{d}^2}{4} \left(\ln\left(\frac{2d}{\hat{d}}\right) -
+                \tfrac{1}{2}\right) & d < \frac{\hat{d}}{2}\\
+                \tfrac{1}{2} (\hat{d} - d)^2 & d < \hat{d}\\
+                0 & d \ge \hat{d}
+            \end{cases}
+
+        )ipc_Qu8mg5v7")
+        .def(py::init());
+
     m.def(
         "barrier", &barrier, "d"_a, "dhat"_a,
         R"ipc_Qu8mg5v7(

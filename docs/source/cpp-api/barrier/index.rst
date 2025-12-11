@@ -10,6 +10,7 @@ Barrier
    NormalizedBarrier.rst
    ClampedLogSqBarrier.rst
    CubicBarrier.rst
+   TwoStageBarrier.rst
 
 Barrier functions and functionals.
 
@@ -21,16 +22,19 @@ Types
 
     * - Name
       - Description
-    * - :doc:`Barrier <Barrier>`
+    * - :cpp:class:`ipc::Barrier`
       - Base class for barrier functions.
-    * - :doc:`ClampedLogBarrier <ClampedLogBarrier>`
+    * - :cpp:class:`ipc::ClampedLogBarrier`
       - Smoothly clamped log barrier functions from [Li et al.].
-    * - :doc:`ClampedLogSqBarrier <ClampedLogSqBarrier>`
+    * - :cpp:class:`ipc::ClampedLogSqBarrier`
       - Clamped log barrier with a quadratic log term from [Huang et al.].
-    * - :doc:`CubicBarrier <CubicBarrier>`
+    * - :cpp:class:`ipc::CubicBarrier`
       - Cubic barrier function from [Ando 2024].
-    * - :doc:`NormalizedBarrier <NormalizedBarrier>`
+    * - :cpp:class:`ipc::NormalizedBarrier`
       - Normalized barrier function from [Li et al.].
+    * - :cpp:class:`ipc::TwoStageBarrier`
+      - Two-stage barrier function from [Chen et al. 2025].
+
 
 Functions
 ---------
@@ -40,21 +44,21 @@ Functions
 
     * - Name
       - Description
-    * - :func:`ipc::barrier`
+    * - :cpp:func:`ipc::barrier`
       - Evaluate the barrier function.
-    * - :func:`ipc::barrier_first_derivative`
+    * - :cpp:func:`ipc::barrier_first_derivative`
       - Derivative of the barrier function.
-    * - :func:`ipc::barrier_second_derivative`
+    * - :cpp:func:`ipc::barrier_second_derivative`
       - Second derivative of the barrier function.
-    * - :func:`ipc::barrier_force_magnitude`
+    * - :cpp:func:`ipc::barrier_force_magnitude`
       - Compute the barrier force magnitude.
-    * - :func:`ipc::barrier_force_magnitude_gradient`
+    * - :cpp:func:`ipc::barrier_force_magnitude_gradient`
       - Compute the gradient of the barrier force magnitude.
-    * - :func:`ipc::initial_barrier_stiffness`
+    * - :cpp:func:`ipc::initial_barrier_stiffness`
       - Compute the initial barrier stiffness.
-    * - :func:`ipc::update_barrier_stiffness`
+    * - :cpp:func:`ipc::update_barrier_stiffness`
       - Update the barrier stiffness based on the current state.
-    * - :func:`ipc::semi_implicit_stiffness`
+    * - :cpp:func:`ipc::semi_implicit_stiffness`
       - Compute the semi-implicit stiffness for all collisions.
 
 Function Details
