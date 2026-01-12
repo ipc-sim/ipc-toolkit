@@ -95,5 +95,5 @@ TEST_CASE("Has intersections", "[intersection]")
     REQUIRE(success);
 
     CAPTURE(broad_phase->name());
-    CHECK(has_intersections(CollisionMesh(V, E, F), V, broad_phase));
+    CHECK(has_intersections(CollisionMesh(V, E, F), V, broad_phase.get()));
 }

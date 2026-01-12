@@ -13,7 +13,7 @@ BarrierPotential::BarrierPotential(
 }
 
 BarrierPotential::BarrierPotential(
-    const std::shared_ptr<Barrier>& barrier,
+    const std::shared_ptr<Barrier> barrier,
     const double dhat,
     const bool use_physical_barrier)
     : m_barrier(barrier)

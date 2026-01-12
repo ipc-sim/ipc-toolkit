@@ -82,7 +82,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
     V1 = mesh.vertices(V1);
 
     Candidates candidates;
-    candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
+    candidates.build(mesh, V0, V1, inflation_radius, broad_phase.get());
 
     bool has_collisions = !candidates.is_step_collision_free(
         mesh, V0, V1, MIN_DISTANCE,
@@ -105,7 +105,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
         // CHECK(!has_intersections(Vt, E, F));
 
         if (recompute_candidates) {
-            candidates.build(mesh, V0, Vt, inflation_radius, broad_phase);
+            candidates.build(mesh, V0, Vt, inflation_radius, broad_phase.get());
         }
 
         has_collisions_repeated = !candidates.is_step_collision_free(
@@ -223,7 +223,7 @@ TEST_CASE("Thick Cloth CCD", "[CCD][!benchmark]")
 
     // Broad phase
     Candidates candidates;
-    candidates.build(mesh, V0, V1, min_distance / 2, broad_phase);
+    candidates.build(mesh, V0, V1, min_distance / 2, broad_phase.get());
 
     const TightInclusionCCD tight_inclusion(
         /*tolerance=*/100 * TightInclusionCCD::DEFAULT_TOLERANCE);

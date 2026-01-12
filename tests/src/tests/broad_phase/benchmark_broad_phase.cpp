@@ -86,7 +86,7 @@ TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
         BENCHMARK(fmt::format("BP {} ({})", testcase_name, broad_phase->name()))
         {
             Candidates candidates;
-            candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
+            candidates.build(mesh, V0, V1, inflation_radius, broad_phase.get());
         };
     }
 }
@@ -142,7 +142,7 @@ TEST_CASE(
         BENCHMARK(fmt::format("BP Real Data ({})", broad_phase->name()))
         {
             Candidates candidates;
-            candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
+            candidates.build(mesh, V0, V1, inflation_radius, broad_phase.get());
         };
     }
 }

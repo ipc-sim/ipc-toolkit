@@ -145,7 +145,7 @@ void NormalCollisions::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double dhat,
     const double dmin,
-    const std::shared_ptr<BroadPhase>& broad_phase)
+    BroadPhase* broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
