@@ -44,15 +44,17 @@ TEST_CASE("GPU CCD", "[ccd][gpu]")
     const int max_iterations = 1e7;
     const double min_distance = 0;
 
+    SweepAndPrune sap;
     const double toi_cpu = compute_collision_free_stepsize(
-        mesh, V0, V1, min_distance, std::make_shared<SweepAndPrune>(),
+        mesh, V0, V1, min_distance, &sap,
         TightInclusionCCD(tolerance, max_iterations));
 
     // Got this value from running the code
     CHECK(toi_cpu == Catch::Approx(4.76837158203125000e-06));
 
+    SweepAndTiniestQueue stq;
     const double toi_gpu = compute_collision_free_stepsize(
-        mesh, V0, V1, min_distance, std::make_shared<SweepAndTiniestQueue>(),
+        mesh, V0, V1, min_distance, &stq,
         TightInclusionCCD(tolerance, max_iterations));
 
     // Got this value from running the code

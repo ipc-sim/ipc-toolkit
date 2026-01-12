@@ -23,7 +23,7 @@ public:
     /// @param dhat The activation distance of the barrier.
     /// @param use_physical_barrier Whether to use the physical barrier.
     BarrierPotential(
-        const std::shared_ptr<Barrier> barrier,
+        std::shared_ptr<Barrier> barrier,
         const double dhat,
         const bool use_physical_barrier = false);
 
@@ -47,7 +47,7 @@ public:
 
     /// @brief Set the barrier function used to compute the potential.
     /// @param barrier The barrier function used to compute the potential.
-    void set_barrier(const std::shared_ptr<Barrier> barrier)
+    void set_barrier(const std::shared_ptr<Barrier>& barrier)
     {
         assert(barrier != nullptr);
         m_barrier = barrier;
