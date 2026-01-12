@@ -77,7 +77,7 @@ TEST_CASE(
         mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
         vertices = mesh.vertices(vertices);
     }
-    collisions.build(mesh, vertices, dhat, /*dmin=*/0, broad_phase);
+    collisions.build(mesh, vertices, dhat, /*dmin=*/0, broad_phase.get());
     CAPTURE(
         dhat, broad_phase->name(), all_vertices_on_surface, use_area_weighting,
         use_improved_max_approximator);
