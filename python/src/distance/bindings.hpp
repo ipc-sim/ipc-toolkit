@@ -11,3 +11,4 @@ void define_point_line_distance(py::module_& m);
 void define_point_point_distance(py::module_& m);
 void define_point_plane_distance(py::module_& m);
 void define_point_triangle_distance(py::module_& m);
+void define_signed_distance(py::module_& m);

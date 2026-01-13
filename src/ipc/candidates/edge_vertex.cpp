@@ -82,7 +82,7 @@ VectorMax3d EdgeVertexCandidate::compute_unnormalized_normal(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     const int dim = this->dim(positions.size());
-    return edge_vertex_unnormalized_normal(
+    return point_line_unnormalized_normal(
         positions.head(dim), positions.segment(dim, dim), positions.tail(dim));
 }
 
@@ -91,7 +91,7 @@ EdgeVertexCandidate::compute_unnormalized_normal_jacobian(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     const int dim = this->dim(positions.size());
-    return edge_vertex_unnormalized_normal_jacobian(
+    return point_line_unnormalized_normal_jacobian(
         positions.head(dim), positions.segment(dim, dim), positions.tail(dim));
 }
 
