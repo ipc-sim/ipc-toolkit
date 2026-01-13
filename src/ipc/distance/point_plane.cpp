@@ -1,5 +1,6 @@
 #include "point_plane.hpp"
 
+#include <ipc/geometry/normal.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Geometry>
@@ -21,7 +22,7 @@ double point_plane_distance(
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2)
 {
-    return point_plane_distance(p, t0, (t1 - t0).cross(t2 - t0));
+    return point_plane_distance(p, t0, triangle_normal(t0, t1, t2));
 }
 
 Eigen::Vector3d point_plane_distance_gradient(
