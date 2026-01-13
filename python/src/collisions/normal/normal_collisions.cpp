@@ -35,9 +35,8 @@ void define_smooth_collisions(py::module_& m, std::string name)
                 use_adaptive_dhat: If the adaptive dhat should be used.
                 broad_phase: Broad phase method.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"), py::arg("param"),
-            py::arg("use_adaptive_dhat") = false,
-            py::arg("broad_phase") = nullptr)
+            "mesh"_a, "vertices"_a, "param"_a, "use_adaptive_dhat"_a = false,
+            "broad_phase"_a = nullptr)
         .def(
             "compute_minimum_distance",
             &SmoothCollisions::compute_minimum_distance,
@@ -51,7 +50,7 @@ void define_smooth_collisions(py::module_& m, std::string name)
             Returns:
                 The minimum distance between any non-adjacent elements.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"))
+            "mesh"_a, "vertices"_a)
         .def(
             "__len__", &SmoothCollisions::size, "Get the number of collisions.")
         .def(
@@ -72,10 +71,10 @@ void define_smooth_collisions(py::module_& m, std::string name)
             Returns:
                 A reference to the collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def(
-            "to_string", &SmoothCollisions::to_string, py::arg("mesh"),
-            py::arg("vertices"), py::arg("param"))
+            "to_string", &SmoothCollisions::to_string, "mesh"_a, "vertices"_a,
+            "param"_a)
         .def(
             "n_candidates", &SmoothCollisions::n_candidates,
             "Get the number of candidates.");
@@ -272,7 +271,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 The potential (not scaled by the barrier stiffness) of this collision pair.
             )ipc_Qu8mg5v7",
-            py::arg("positions"), py::arg("params"))
+            "positions"_a, "params"_a)
         .def(
             "__getitem__",
             [](SmoothCollision& self, size_t i) -> long { return self[i]; },
@@ -285,7 +284,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 The index of the primitive.
             )ipc_Qu8mg5v7",
-            py::arg("i"));
+            "i"_a);
 
     define_smooth_collision_template<
         SmoothCollisionTemplate<Edge2, Point2>, SmoothCollision>(

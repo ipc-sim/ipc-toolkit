@@ -38,8 +38,7 @@ void define_trust_region(py::module_& m)
                 broad_phase: Broad phase collision detection.
             )ipc_Qu8mg5v7",
             "mesh"_a, "x"_a, "pred_x"_a, "collisions"_a, "dhat"_a,
-            "min_distance"_a = 0.0,
-            "broad_phase"_a = make_default_broad_phase())
+            "min_distance"_a = 0.0, "broad_phase"_a = nullptr)
         .def(
             "update", &ogc::TrustRegion::update,
             R"ipc_Qu8mg5v7(
@@ -53,7 +52,7 @@ void define_trust_region(py::module_& m)
                 broad_phase: Broad phase collision detection.
             )ipc_Qu8mg5v7",
             "mesh"_a, "x"_a, "collisions"_a, "min_distance"_a = 0.0,
-            "broad_phase"_a = make_default_broad_phase())
+            "broad_phase"_a = nullptr)
         .def(
             "update_if_needed", &ogc::TrustRegion::update_if_needed,
             R"ipc_Qu8mg5v7(
@@ -67,7 +66,7 @@ void define_trust_region(py::module_& m)
                 broad_phase: Broad phase collision detection.
             )ipc_Qu8mg5v7",
             "mesh"_a, "x"_a, "collisions"_a, "min_distance"_a = 0.0,
-            "broad_phase"_a = make_default_broad_phase())
+            "broad_phase"_a = nullptr)
         .def(
             "filter_step", &ogc::TrustRegion::filter_step,
             R"ipc_Qu8mg5v7(
