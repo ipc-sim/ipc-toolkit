@@ -14,8 +14,15 @@ void TrustRegion::warm_start_time_step(
     NormalCollisions& collisions,
     const double dhat,
     const double min_distance,
-    const std::shared_ptr<BroadPhase>& broad_phase)
+    BroadPhase* broad_phase)
 {
+    // Assign a default broad phase if none is provided.
+    std::unique_ptr<BroadPhase> default_broad_phase;
+    if (broad_phase == nullptr) {
+        default_broad_phase = make_default_broad_phase();
+        broad_phase = default_broad_phase.get();
+    }
+
     const int N = x.rows();
     assert(x.rows() == pred_x.rows() && x.cols() == pred_x.cols());
 
@@ -58,7 +65,7 @@ void TrustRegion::update(
     Eigen::ConstRef<Eigen::MatrixXd> x,
     NormalCollisions& collisions,
     const double min_distance,
-    const std::shared_ptr<BroadPhase>& broad_phase)
+    BroadPhase* broad_phase)
 {
     assert(0 < relaxed_radius_scaling && relaxed_radius_scaling < 1);
 

@@ -83,6 +83,7 @@ PYBIND11_MODULE(ipctk, m)
     define_point_point_distance(m);
     define_point_plane_distance(m);
     define_point_triangle_distance(m);
+    define_signed_distance(m);
 
     // friction
     define_smooth_friction_mollifier(m);

@@ -8,6 +8,7 @@ set(SOURCES
   point_plane.cpp
   point_point.cpp
   point_triangle.cpp
+  signed_distance.cpp
 )
 
 target_sources(ipctk PRIVATE ${SOURCES})

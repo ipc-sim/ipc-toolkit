@@ -9,6 +9,7 @@ set(SOURCES
   test_point_plane.cpp
   test_point_point.cpp
   test_point_triangle.cpp
+  test_signed_distance.cpp
 
   # Benchmarks
 

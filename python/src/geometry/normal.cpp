@@ -92,56 +92,56 @@ void define_normal(py::module_& m)
         )ipc_qu8mg5v7");
 
     m.def(
-        "edge_vertex_unnormalized_normal", &edge_vertex_unnormalized_normal,
+        "point_line_unnormalized_normal", &point_line_unnormalized_normal,
         R"ipc_qu8mg5v7(
-        Computes the unnormalized normal vector of an edge-vertex pair.
+        Computes the unnormalized normal vector of a point-line pair.
 
         Parameters
         ----------
-        v: The vertex position.
-        e0: The start position of the edge.
-        e1: The end position of the edge.
+        p: The point's position.
+        e0: The start position of the line.
+        e1: The end position of the line.
 
         Returns
         -------
         The unnormalized normal vector.
         )ipc_qu8mg5v7",
-        py::arg("v"), py::arg("e0"), py::arg("e1"));
+        py::arg("p"), py::arg("e0"), py::arg("e1"));
 
     m.def(
-        "edge_vertex_normal", &edge_vertex_normal,
+        "point_line_normal", &point_line_normal,
         R"ipc_qu8mg5v7(
-        Computes the normal vector of an edge-vertex pair.
+        Computes the normal vector of a point-line pair.
 
         Parameters
         ----------
-        v: The vertex position.
-        e0: The start position of the edge.
-        e1: The end position of the edge.
+        p: The point's position.
+        e0: The start position of the line.
+        e1: The end position of the line.
 
         Returns
         -------
         The normal vector.
         )ipc_qu8mg5v7",
-        py::arg("v"), py::arg("e0"), py::arg("e1"));
+        py::arg("p"), py::arg("e0"), py::arg("e1"));
 
     m.def(
-        "edge_vertex_unnormalized_normal_jacobian",
-        &edge_vertex_unnormalized_normal_jacobian,
+        "point_line_unnormalized_normal_jacobian",
+        &point_line_unnormalized_normal_jacobian,
         R"ipc_qu8mg5v7(
-        Computes the Jacobian of the unnormalized normal vector of an edge-vertex pair.
+        Computes the Jacobian of the unnormalized normal vector of a point-line pair.
 
         Parameters
         ----------
-        v: The vertex position.
-        e0: The start position of the edge.
-        e1: The end position of the edge.
+        p: The point's position.
+        e0: The start position of the line.
+        e1: The end position of the line.
 
         Returns
         -------
-        The Jacobian of the unnormalized normal vector.
+        The Jacobian of the unnormalized normal vector of the point-line pair.
         )ipc_qu8mg5v7",
-        py::arg("v"), py::arg("e0"), py::arg("e1"));
+        py::arg("p"), py::arg("e0"), py::arg("e1"));
 
     m.def(
         "triangle_unnormalized_normal", &triangle_unnormalized_normal,
@@ -248,112 +248,112 @@ void define_normal(py::module_& m)
         py::arg("a"), py::arg("b"), py::arg("c"));
 
     m.def(
-        "edge_edge_unnormalized_normal", &edge_edge_unnormalized_normal,
+        "line_line_unnormalized_normal", &line_line_unnormalized_normal,
         R"ipc_qu8mg5v7(
-        Computes the unnormalized normal vector of two edges.
+        Computes the unnormalized normal vector of two lines.
 
         Parameters
         ----------
-        ea0: The first vertex of the first edge.
-        ea1: The second vertex of the first edge.
-        eb0: The first vertex of the second edge.
-        eb1: The second vertex of the second edge.
+        ea0: The first vertex of the first line.
+        ea1: The second vertex of the first line.
+        eb0: The first vertex of the second line.
+        eb1: The second vertex of the second line.
 
         Returns
         -------
-        The unnormalized normal vector of the two edges.
+        The unnormalized normal vector of the two lines.
         )ipc_qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 
     m.def(
-        "edge_edge_normal", &edge_edge_normal,
+        "line_line_normal", &line_line_normal,
         R"ipc_qu8mg5v7(
-        Computes the normal vector of two edges.
+        Computes the normal vector of two lines.
 
         Parameters
         ----------
-        ea0: The first vertex of the first edge.
-        ea1: The second vertex of the first edge.
-        eb0: The first vertex of the second edge.
-        eb1: The second vertex of the second edge.
+        ea0: The first vertex of the first line.
+        ea1: The second vertex of the first line.
+        eb0: The first vertex of the second line.
+        eb1: The second vertex of the second line.
 
         Returns
         -------
-        The normal vector of the two edges.
+        The normal vector of the two lines.
         )ipc_qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 
     m.def(
-        "edge_edge_unnormalized_normal_jacobian",
-        &edge_edge_unnormalized_normal_jacobian,
+        "line_line_unnormalized_normal_jacobian",
+        &line_line_unnormalized_normal_jacobian,
         R"ipc_qu8mg5v7(
-        Computes the Jacobian of the unnormalized normal vector of two edges.
+        Computes the Jacobian of the unnormalized normal vector of two lines.
 
         Parameters
         ----------
-        ea0: The first vertex of the first edge.
-        ea1: The second vertex of the first edge.
-        eb0: The first vertex of the second edge.
-        eb1: The second vertex of the second edge.
+        ea0: The first vertex of the first line.
+        ea1: The second vertex of the first line.
+        eb0: The first vertex of the second line.
+        eb1: The second vertex of the second line.
 
         Returns
         -------
-        The Jacobian of the unnormalized normal vector of the two edges.
+        The Jacobian of the unnormalized normal vector of the two lines.
         )ipc_qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 
     m.def(
-        "edge_edge_normal_jacobian", &edge_edge_normal_jacobian,
+        "line_line_normal_jacobian", &line_line_normal_jacobian,
         R"ipc_qu8mg5v7(
-        Computes the Jacobian of the normal vector of two edges.
+        Computes the Jacobian of the normal vector of two lines.
 
         Parameters
         ----------
-        ea0: The first vertex of the first edge.
-        ea1: The second vertex of the first edge.
-        eb0: The first vertex of the second edge.
-        eb1: The second vertex of the second edge.
+        ea0: The first vertex of the first line.
+        ea1: The second vertex of the first line.
+        eb0: The first vertex of the second line.
+        eb1: The second vertex of the second line.
 
         Returns
         -------
-        The Jacobian of the normal vector of the two edges.
+        The Jacobian of the normal vector of the two lines.
         )ipc_qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 
     m.def(
-        "edge_edge_unnormalized_normal_hessian",
-        &edge_edge_unnormalized_normal_hessian,
+        "line_line_unnormalized_normal_hessian",
+        &line_line_unnormalized_normal_hessian,
         R"ipc_qu8mg5v7(
-        Computes the Hessian of the unnormalized normal vector of two edges.
+        Computes the Hessian of the unnormalized normal vector of two lines.
 
         Parameters
         ----------
-        ea0: The first vertex of the first edge.
-        ea1: The second vertex of the first edge.
-        eb0: The first vertex of the second edge.
-        eb1: The second vertex of the second edge.
+        ea0: The first vertex of the first line.
+        ea1: The second vertex of the first line.
+        eb0: The first vertex of the second line.
+        eb1: The second vertex of the second line.
 
         Returns
         -------
-        The Hessian of the unnormalized normal vector of the two edges.
+        The Hessian of the unnormalized normal vector of the two lines.
         )ipc_qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 
     m.def(
-        "edge_edge_normal_hessian", &edge_edge_normal_hessian,
+        "line_line_normal_hessian", &line_line_normal_hessian,
         R"ipc_qu8mg5v7(
-        Computes the Hessian of the normal vector of two edges.
+        Computes the Hessian of the normal vector of two lines.
 
         Parameters
         ----------
-        ea0: The first vertex of the first edge.
-        ea1: The second vertex of the first edge.
-        eb0: The first vertex of the second edge.
-        eb1: The second vertex of the second edge.
+        ea0: The first vertex of the first line.
+        ea1: The second vertex of the first line.
+        eb0: The first vertex of the second line.
+        eb1: The second vertex of the second line.
 
         Returns
         -------
-        The Hessian of the normal vector of the two edges.
+        The Hessian of the normal vector of the two lines.
         )ipc_qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 }

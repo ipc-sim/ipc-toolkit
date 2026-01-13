@@ -43,7 +43,7 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
         V1.col(1) *= 0.5;
 
         Candidates candidates;
-        candidates.build(mesh, vertices, V1, thickness, broad_phase);
+        candidates.build(mesh, vertices, V1, thickness, broad_phase.get());
 
         CHECK(!candidates.empty());
         CHECK(candidates.vv_candidates.size() == candidates.size());
@@ -81,7 +81,7 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
         collisions.set_collision_set_type(collision_set_type);
         collisions.set_enable_shape_derivatives(enable_shape_derivatives);
 
-        collisions.build(mesh, vertices, dhat, min_distance, broad_phase);
+        collisions.build(mesh, vertices, dhat, min_distance, broad_phase.get());
 
         CHECK(collisions.size() == 12);
         CHECK(collisions.vv_collisions.size() == 12);
@@ -137,7 +137,7 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
         V1.bottomRows(3).col(1).array() -= 4; // Translate the codim vertices
 
         Candidates candidates;
-        candidates.build(mesh, vertices, V1, thickness, broad_phase);
+        candidates.build(mesh, vertices, V1, thickness, broad_phase.get());
 
         CHECK(candidates.size() == 15);
         CHECK(candidates.vv_candidates.size() == 3);
@@ -179,7 +179,7 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
 
         const double dhat = 0.25;
         collisions.build(
-            mesh, vertices, dhat, /*min_distance=*/0.8, broad_phase);
+            mesh, vertices, dhat, /*min_distance=*/0.8, broad_phase.get());
 
         const int expected_num_collisions = 6
             + int(collision_set_type

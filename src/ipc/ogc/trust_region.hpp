@@ -54,8 +54,7 @@ struct TrustRegion {
         NormalCollisions& collisions,
         const double dhat,
         const double min_distance = 0.0,
-        const std::shared_ptr<BroadPhase>& broad_phase =
-            make_default_broad_phase());
+        BroadPhase* broad_phase = nullptr);
 
     /// @brief Update the trust region based on the current positions.
     /// @param[in] mesh The collision mesh.
@@ -68,16 +67,14 @@ struct TrustRegion {
         Eigen::ConstRef<Eigen::MatrixXd> x,
         NormalCollisions& collisions,
         const double min_distance = 0.0,
-        const std::shared_ptr<BroadPhase>& broad_phase =
-            make_default_broad_phase());
+        BroadPhase* broad_phase = nullptr);
 
     void update_if_needed(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> x,
         NormalCollisions& collisions,
         const double min_distance = 0.0,
-        const std::shared_ptr<BroadPhase>& broad_phase =
-            make_default_broad_phase())
+        BroadPhase* broad_phase = nullptr)
     {
         if (should_update_trust_region) {
             update(mesh, x, collisions, min_distance, broad_phase);

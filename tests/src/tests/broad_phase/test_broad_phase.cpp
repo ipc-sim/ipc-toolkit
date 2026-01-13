@@ -71,7 +71,7 @@ void test_broad_phase(
     double inflation_radius = 0;
 
     Candidates candidates;
-    candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
+    candidates.build(mesh, V0, V1, inflation_radius, broad_phase.get());
 
     if (expect_collision) {
         CHECK(!candidates.is_step_collision_free(mesh, V0, V1));
@@ -99,7 +99,7 @@ std::shared_ptr<Candidates> test_broad_phase(
     REQUIRE(V.rows() == mesh.num_vertices());
 
     auto candidates = std::make_shared<Candidates>();
-    candidates->build(mesh, V, inflation_radius, broad_phase);
+    candidates->build(mesh, V, inflation_radius, broad_phase.get());
 
     if (broad_phase->name() != "BruteForce") {
         brute_force_comparison(

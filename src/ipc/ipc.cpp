@@ -19,7 +19,7 @@ bool is_step_collision_free(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance,
-    const std::shared_ptr<BroadPhase>& broad_phase,
+    BroadPhase* broad_phase,
     const NarrowPhaseCCD& narrow_phase_ccd)
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
@@ -43,12 +43,17 @@ double compute_collision_free_stepsize(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance,
-    const std::shared_ptr<BroadPhase>& broad_phase,
+    BroadPhase* broad_phase,
     const NarrowPhaseCCD& narrow_phase_ccd)
 {
-    assert(broad_phase != nullptr);
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
+
+    std::unique_ptr<BroadPhase> default_broad_phase;
+    if (broad_phase == nullptr) {
+        default_broad_phase = make_default_broad_phase();
+        broad_phase = default_broad_phase.get();
+    }
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
     if (broad_phase->name() == "SweepAndTiniestQueue") {
@@ -91,10 +96,15 @@ double compute_collision_free_stepsize(
 bool has_intersections(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::shared_ptr<BroadPhase>& broad_phase)
+    BroadPhase* broad_phase)
 {
-    assert(broad_phase != nullptr);
     assert(vertices.rows() == mesh.num_vertices());
+
+    std::unique_ptr<BroadPhase> default_broad_phase;
+    if (broad_phase == nullptr) {
+        default_broad_phase = make_default_broad_phase();
+        broad_phase = default_broad_phase.get();
+    }
 
     const double conservative_inflation_radius =
         1e-6 * world_bbox_diagonal_length(vertices);

@@ -68,7 +68,7 @@ TEST_CASE(
     collisions.set_use_area_weighting(use_area_weighting);
     collisions.set_collision_set_type(collision_set_type);
     mesh = CollisionMesh(vertices, edges, faces);
-    collisions.build(mesh, vertices, dhat, /*dmin=*/0, broad_phase);
+    collisions.build(mesh, vertices, dhat, /*dmin=*/0, broad_phase.get());
     CAPTURE(dhat, broad_phase->name(), use_area_weighting, collision_set_type);
     CHECK(!collisions.empty());
 

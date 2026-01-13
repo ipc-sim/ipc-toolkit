@@ -47,8 +47,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double dhat,
         const double dmin = 0,
-        const std::shared_ptr<BroadPhase>& broad_phase =
-            make_default_broad_phase());
+        BroadPhase* broad_phase = nullptr);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param candidates Distance candidates from which the collision set is built.

@@ -100,7 +100,7 @@ VectorMax3d EdgeEdgeCandidate::compute_unnormalized_normal(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 12);
-    return edge_edge_unnormalized_normal(
+    return line_line_unnormalized_normal(
         positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
         positions.tail<3>());
 }
@@ -110,7 +110,7 @@ EdgeEdgeCandidate::compute_unnormalized_normal_jacobian(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 12);
-    return edge_edge_unnormalized_normal_jacobian(
+    return line_line_unnormalized_normal_jacobian(
         positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
         positions.tail<3>());
 }

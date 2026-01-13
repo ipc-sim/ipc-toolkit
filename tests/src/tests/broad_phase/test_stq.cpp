@@ -76,10 +76,10 @@ TEST_CASE("Puffer-Ball", "[ccd][broad_phase][stq][cuda]")
 
     CollisionMesh mesh(V0, E, F);
 
-    const auto stq = std::make_shared<SweepAndTiniestQueue>();
+    SweepAndTiniestQueue stq;
 
     Candidates candidates;
-    candidates.build(mesh, V0, V1, /*inflation_radius=*/0, stq);
+    candidates.build(mesh, V0, V1, /*inflation_radius=*/0, &stq);
 
     CHECK(candidates.size() == 249'805'425);
     CHECK(candidates.vv_candidates.size() == 0);

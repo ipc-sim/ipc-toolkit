@@ -27,7 +27,7 @@ bool is_step_collision_free(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance = 0.0,
-    const std::shared_ptr<BroadPhase>& broad_phase = make_default_broad_phase(),
+    BroadPhase* broad_phase = nullptr,
     const NarrowPhaseCCD& narrow_phase_ccd = DEFAULT_NARROW_PHASE_CCD);
 
 /// @brief Computes a maximal step size that is collision free.
@@ -44,7 +44,7 @@ double compute_collision_free_stepsize(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance = 0.0,
-    const std::shared_ptr<BroadPhase>& broad_phase = make_default_broad_phase(),
+    BroadPhase* broad_phase = nullptr,
     const NarrowPhaseCCD& narrow_phase_ccd = DEFAULT_NARROW_PHASE_CCD);
 
 // ============================================================================
@@ -58,7 +58,6 @@ double compute_collision_free_stepsize(
 bool has_intersections(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::shared_ptr<BroadPhase>& broad_phase =
-        make_default_broad_phase());
+    BroadPhase* broad_phase = nullptr);
 
 } // namespace ipc
