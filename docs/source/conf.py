@@ -64,6 +64,7 @@ extensions = [
     # 'sphinx_autodoc_toolbox.collapse',
     "sphinxcontrib.bibtex",
     "sphinxemoji.sphinxemoji",
+    "sphinxcontrib.youtube",
     "sphinx_last_updated_by_git",
 ]
 
@@ -114,7 +115,8 @@ autodoc_default_options = {
 # -- GraphViz configuration ----------------------------------
 graphviz_output_format = 'svg'
 
-graphviz_dot_args = ["-Ecolor=#CE93D8", "-Kdot", "-Gbgcolor=transparent", "-Nfontname=Menlo"]
+graphviz_dot_args = ["-Ecolor=#CE93D8", "-Kdot",
+                     "-Gbgcolor=transparent", "-Nfontname=Menlo"]
 
 # python_apigen_modules = {
 #     "ipctk": "",

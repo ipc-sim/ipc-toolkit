@@ -106,8 +106,8 @@ void check_friction_force_jacobian(
             NormalCollisions fd_collisions;
             fd_collisions.set_use_area_weighting(
                 collisions.use_area_weighting());
-            fd_collisions.set_use_improved_max_approximator(
-                collisions.use_improved_max_approximator());
+            fd_collisions.set_collision_set_type(
+                collisions.collision_set_type());
             fd_collisions.set_enable_shape_derivatives(true);
             fd_collisions.build(fd_mesh, fd_X + Ut, dhat);
 
@@ -144,8 +144,8 @@ void check_friction_force_jacobian(
             NormalCollisions fd_collisions;
             fd_collisions.set_use_area_weighting(
                 collisions.use_area_weighting());
-            fd_collisions.set_use_improved_max_approximator(
-                collisions.use_improved_max_approximator());
+            fd_collisions.set_collision_set_type(
+                collisions.collision_set_type());
             fd_collisions.set_enable_shape_derivatives(true);
             fd_collisions.build(mesh, X + fd_Ut, dhat);
 
@@ -256,7 +256,10 @@ TEST_CASE(
     "[friction][force-jacobian][real-data]")
 {
     bool use_area_weighting = GENERATE(true, false);
-    bool use_improved_max_approximator = GENERATE(true, false);
+    const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+        NormalCollisions::CollisionSetType::IPC,
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+        NormalCollisions::CollisionSetType::OGC);
 
     std::string scene;
     bool is_2D = true;
@@ -297,7 +300,7 @@ TEST_CASE(
 
     CAPTURE(
         scene, mu, dhat, kappa, epsv_dt, use_area_weighting,
-        use_improved_max_approximator);
+        collision_set_type);
 
     Eigen::MatrixXd X, Ut, U;
     Eigen::MatrixXi E, F;
@@ -332,7 +335,7 @@ TEST_CASE(
 
     NormalCollisions collisions;
     collisions.set_use_area_weighting(use_area_weighting);
-    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
+    collisions.set_collision_set_type(collision_set_type);
     collisions.set_enable_shape_derivatives(true);
     collisions.build(mesh, X + Ut, dhat);
 

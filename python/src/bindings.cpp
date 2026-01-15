@@ -103,6 +103,12 @@ PYBIND11_MODULE(ipctk, m)
     // math
     define_interval(m);
 
+    // ogc
+    py::module_ ogc =
+        m.def_submodule("ogc", "Offset Geometric Contact (OGC) helpers");
+    define_feasible_region(ogc);
+    define_trust_region(ogc);
+
     // potentials
     define_normal_potential(m); // define early because it is used next
     define_barrier_potential(m);

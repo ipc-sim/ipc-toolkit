@@ -30,7 +30,7 @@ void define_angle(py::module_& m)
             double
                 The bending angle between the two triangles.
         )ipc_Qu8mg5v7",
-        py::arg("x0"), py::arg("x1"), py::arg("x2"), py::arg("x3"));
+        "x0"_a, "x1"_a, "x2"_a, "x3"_a);
 
     m.def(
         "dihedral_angle_gradient", &dihedral_angle_gradient,
@@ -56,5 +56,5 @@ void define_angle(py::module_& m)
             Eigen::Vector<double, 12>
                 The Jacobian matrix of the bending angle with respect to the input vertices.
         )ipc_Qu8mg5v7",
-        py::arg("x0"), py::arg("x1"), py::arg("x2"), py::arg("x3"));
+        "x0"_a, "x1"_a, "x2"_a, "x3"_a);
 }

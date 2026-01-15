@@ -1,9 +1,14 @@
+// NOTE: This is an internal header file, not meant to be used outside of the
+// IPC Toolkit library. It includes unordered_map_and_set.hpp which is a private
+// dependency of the IPC Toolkit library. To use this outside of the library,
+// one needs to link against Abseil and tsl::robin_map.
+
 #pragma once
 
-#include "smooth_collisions.hpp"
-
 #include <ipc/collision_mesh.hpp>
+#include <ipc/smooth_contact/smooth_collisions.hpp>
 #include <ipc/utils/maybe_parallel_for.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <Eigen/Core>
 
