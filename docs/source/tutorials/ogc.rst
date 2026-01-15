@@ -14,6 +14,12 @@ OGC integrates into the optimization process by replacing the continuous
 collision detection (CCD) line search with a trust region-based approach using
 vertex-specific displacement bounds.
 
+For more details on the OGC algorithm, please refer to :cite:`Chen2025Offset`
+and there associated video:
+
+.. youtube:: xxyniqSLJik
+   :width: 100%
+
 Algorithm
 ---------
 
@@ -77,13 +83,13 @@ At a high-level, the OGC algorithm proceeds as follows:
                     // Keep track of how many vertices were truncated
                     num_vertices_exceed_bound++
 
-            // D. Re-check for Collision Detection
+            // e. Re-check for Collision Detection
             // If too many vertices moved beyond their conservative bounds,
             // a new, full collision detection is needed in the next step
             if num_vertices_exceed_bound ≥ threshold (γₖ):
                 collision_detection_required = true
 
-            // E. Check for Convergence
+            // f. Check for Convergence
             // If the simulation is stable and changes are small
             if evaluateConvergence(X, Xt, Vt, collisions):
                 break
@@ -154,7 +160,7 @@ Start by constructing a ``TrustRegion`` instance with the desired parameters:
             ipc::ogc::TrustRegion trust_region(dhat);
             // Optionally set parameters like:
             trust_region.relaxed_radius_scaling = 0.9; // 2γₚ in the paper
-            trust_region.update_threshold = 0.01; // γₑ in the paper
+            trust_region.update_threshold = 0.01;      // γₑ in the paper
 
     .. md-tab-item:: Python
 
@@ -165,8 +171,219 @@ Start by constructing a ``TrustRegion`` instance with the desired parameters:
             trust_region = ogc.TrustRegion(dhat)
             # Optionally set parameters like:
             trust_region.relaxed_radius_scaling = 0.9  # 2γₚ in the paper
-            trust_region.update_threshold = 0.01  # γₑ in the paper
+            trust_region.update_threshold = 0.01       # γₑ in the paper
 
 
-Next step 2b in the pseudocode is to compute the conservative step for each vertex.
-This is done via ``TrustRegion::compute_conservative_step``,
+Step 1 & 2c: Initialization and Prediction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The first step of the algorithm (Step 1) and the initial collision detection update (Step 2a) are handled by ``warm_start_time_step``. This function initializes the trust region around the current positions and moves the vertices towards their predicted positions (``pred_x``) while respecting the conservative bounds.
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            // Initialize trust region and move x towards pred_x
+            trust_region.warm_start_time_step(
+                collision_mesh, x, pred_x, collisions, dhat);
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            # Initialize trust region and move x towards pred_x
+            trust_region.warm_start_time_step(
+                collision_mesh, x, pred_x, collisions, dhat)
+
+This function effectively performs the initial "Apply Initial Guess" and "Compute Conservative Step" logic.
+
+Step 2d: Conservative Bound Check (Filter Step)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Inside your solver loop (e.g., Newton's method or Vertex Block Descent), you must ensure that the computed search direction or step (``dx``) does not violate the trust region bounds. This corresponds to Step 2d in the pseudocode.
+
+Use the ``filter_step`` method to truncate any vertex displacements that exceed their trust region radius.
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            // dx is the proposed step (e.g., from the linear solver)
+            trust_region.filter_step(collision_mesh, x, dx);
+
+            // Now dx is safe to apply: x += dx
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            # dx is the proposed step
+            trust_region.filter_step(collision_mesh, x, dx)
+
+            # Now dx is safe to apply: x += dx
+
+Step 2a & 2e: Re-check for Collision Detection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If ``filter_step`` detects that a significant number of vertices (determined by ``update_threshold``) were restricted by the trust region, it flags that a collision update is needed. You should check this at the beginning of each solver iteration using ``update_if_needed``.
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            // At the start of the solver loop:
+            trust_region.update_if_needed(collision_mesh, x, collisions, dhat);
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            # At the start of the solver loop:
+            trust_region.update_if_needed(collision_mesh, x, collisions, dhat)
+
+Full Optimization Loop Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Putting it all together, a single simulation step using OGC looks like this:
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            // 1. Initial setup
+            ipc::NormalCollisions collisions;
+            collisions.set_collision_set_type(ipc::NormalCollisions::CollisionSetType::OGC);
+            ipc::ogc::TrustRegion trust_region(dhat);
+
+            // 2. Warm start (Predict & Initialize)
+            // x is current position, pred_x is x^t + dt * v^t
+            trust_region.warm_start_time_step(
+                mesh, x, pred_x, collisions, dhat);
+
+            // 3. Solver Loop
+            for (int i = 0; i < max_iterations; ++i) {
+                // Update trust region if too many vertices hit the bound in previous step
+                trust_region.update_if_needed(mesh, x, collisions, dhat);
+
+                // Compute search direction (Solver specific)
+                Eigen::MatrixXd dx = compute_search_direction(x, ...);
+
+                // Filter the step to respect OGC bounds
+                trust_region.filter_step(mesh, x, dx);
+
+                // Update positions
+                x += dx;
+
+                // Check convergence...
+            }
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            # 1. Initial setup
+            collisions = ipctk.NormalCollisions()
+            collisions.collision_set_type = ipctk.NormalCollisions.CollisionSetType.OGC
+            trust_region = ipctk.ogc.TrustRegion(dhat)
+
+            # 2. Warm start (Predict & Initialize)
+            trust_region.warm_start_time_step(
+                mesh, x, pred_x, collisions, dhat)
+
+            # 3. Solver Loop
+            for i in range(max_iterations):
+                # Update trust region if needed
+                trust_region.update_if_needed(mesh, x, collisions, dhat)
+
+                # Compute search direction (Solver specific)
+                dx = compute_search_direction(x, ...)
+
+                # Filter the step to respect OGC bounds
+                trust_region.filter_step(mesh, x, dx)
+
+                # Update positions
+                x += dx
+
+                # Check convergence...
+
+Algorithm Details and Adaptations
+---------------------------------
+
+While the implementation follows the core OGC algorithm (Algorithm 3 in :cite:`Chen2025Offset`), there are several practical adaptations in ``TrustRegion`` to ensure robustness, numerical stability, and compatibility with line-search-based solvers.
+
+Step Scaling vs. Closest-Point Projection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The most significant deviation from the original paper lies in how vertices are constrained when they exceed their trust region bounds (Step 2d).
+
+* **Original Paper Approach (Projection):** The original algorithm typically projects the proposed position to the closest point within the trust region (minimizing geometric distance). While this finds the optimal position locally within the valid region, the vector from the current position to this projected point may effectively change the update direction.
+* **Toolkit Implementation (Step Scaling):** The implementation in ``filter_step`` solves for a scalar :math:`\beta \in (0, 1]` that scales the original search direction :math:`\Delta x` such that the new position lies exactly on the trust region boundary.
+
+    That is, given the trust region center :math:`c`, current position :math:`x`, and search direction :math:`\Delta x`, it solves for :math:`\beta` such that:
+
+    .. math::
+
+        \| x + \beta \Delta x - c \|^2 = r^2
+
+    This value of :math:`\beta` is then used to scale the step:
+
+    .. code-block:: c++
+
+        // trust_region.cpp
+        // Solve || x + beta * dx - c ||^2 = r^2 for beta
+        // ... (quadratic formula solution) ...
+        dx.row(i).array() *= beta;
+
+    This ensures that vertices constrained by the trust region are placed exactly on the valid boundary surface, maximizing the allowed step size without violating the constraint.
+
+**Why this matters:**
+Mixing Trust Region constraints with Line Search methods can be delicate. If you use a projection method, the resulting update vector might no longer be a *descent direction* for the energy function. This can cause subsequent line searches to fail or the solver to stagnate.
+
+By **scaling** the step instead of projecting it, the toolkit guarantees that the modified step remains parallel to the original search direction. If the solver (e.g., Newton's method) generated a valid descent direction, this method preserves that property, ensuring compatibility with line search checks that may occur after the OGC filter is applied.
+
+
+Dynamic Trust Region Inflation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In Step 1 (Initialization), the implementation dynamically computes the radius used for building the collision set (``trust_region_inflation_radius``). Instead of a fixed radius, it uses the maximum displacement from the predicted motion (``pred_x - x``) combined with the offset distance ``dhat``.
+
+.. code-block:: c++
+
+    // trust_region.cpp
+    trust_region_inflation_radius = std::max(2 * dhat, dx_norm.maxCoeff());
+
+This follows the recommendation in Section 4.1 of the paper:
+
+    In practice, we found an :math:`r_q` of :math:`r` plus the inertial displacement magnitude to strike a good balance between query performance and bound size.
+
+Safety Factor and Double-Sided Contact
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When computing the per-vertex safe distances (Step 2b), the implementation applies a scaling factor and explicitly divides by 2.
+
+.. code-block:: c++
+
+    // trust_region.cpp
+    // Use < half the safe distance to account for double sided contact
+    reduced_trust_region_radii *= relaxed_radius_scaling / 2;
+
+* **Relaxed Radius Scaling:** Corresponds to the parameter :math:`2\gamma_p` in the paper (default 0.9). It shrinks the trust region slightly to provide a numerical safety margin.
+* **Division by 2:** Accounts for the worst-case scenario where two primitives move towards each other; each is allowed to move only half the available distance to guarantee no intersection.
+
+Adaptive Warm Start
+~~~~~~~~~~~~~~~~~~~
+
+The ``warm_start_time_step`` function includes an adaptive heuristic. During the initial prediction:
+1.  It moves vertices to their predicted positions ``pred_x`` if they are within the trust region.
+2.  If they are outside, it effectively projects them to the boundary (using the scaling method described above).
+3.  **Crucially**, if the number of vertices hitting the boundary exceeds ``update_threshold`` immediately during this warm start, it triggers a second ``update()`` call.
+
+This prevents the solver from starting with a trust region that is already too restrictive for the bulk of the mesh, potentially saving solver iterations later.

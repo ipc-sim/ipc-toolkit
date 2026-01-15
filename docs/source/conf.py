@@ -64,6 +64,7 @@ extensions = [
     # 'sphinx_autodoc_toolbox.collapse',
     "sphinxcontrib.bibtex",
     "sphinxemoji.sphinxemoji",
+    "sphinxcontrib.youtube",
     "sphinx_last_updated_by_git",
 ]
 

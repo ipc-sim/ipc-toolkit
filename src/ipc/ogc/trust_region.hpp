@@ -69,6 +69,12 @@ struct TrustRegion {
         const double min_distance = 0.0,
         BroadPhase* broad_phase = nullptr);
 
+    /// @brief Update the trust region if should_update_trust_region is true.
+    /// @param[in] mesh The collision mesh.
+    /// @param[in] x Current vertex positions.
+    /// @param[out] collisions Collisions to be updated.
+    /// @param[in] min_distance Minimum distance between elements.
+    /// @param[in] broad_phase Broad phase collision detection.
     void update_if_needed(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> x,

@@ -11,3 +11,4 @@ sphinxcontrib-bibtex
 sphinxemoji
 sphinx-last-updated-by-git
 sphinx-autobuild
+sphinxcontrib-youtube
