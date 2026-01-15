@@ -15,7 +15,7 @@ collision detection (CCD) line search with a trust region-based approach using
 vertex-specific displacement bounds.
 
 For more details on the OGC algorithm, please refer to :cite:`Chen2025Offset`
-and there associated video:
+and their associated video:
 
 .. youtube:: xxyniqSLJik
    :width: 100%

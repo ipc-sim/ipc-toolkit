@@ -23,12 +23,11 @@ void TrustRegion::warm_start_time_step(
         broad_phase = default_broad_phase.get();
     }
 
-    const int N = x.rows();
     assert(x.rows() == pred_x.rows() && x.cols() == pred_x.cols());
 
     // Compute the norm of the translation for each vertex.
     Eigen::VectorXd dx_norm = (pred_x - x).rowwise().norm();
-    assert(dx_norm.size() == N);
+    assert(dx_norm.size() == x.rows());
 
     // Compute a trust region inflation radius based on the distance
     // between the current positions x and the predicted positions x̂.
@@ -39,7 +38,7 @@ void TrustRegion::warm_start_time_step(
     should_update_trust_region = false;
 
     int num_updates = 0;
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < x.rows(); i++) {
         const VectorMax3d x_i = x.row(i);
         const VectorMax3d pred_x_i = pred_x.row(i);
 
@@ -125,10 +124,9 @@ void TrustRegion::filter_step(
     Eigen::Ref<Eigen::MatrixXd> dx)
 {
     assert(x.rows() == dx.rows() && x.cols() == dx.cols());
-    const int N = x.size() / 3;
 
     int num_updates = 0;
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < x.rows(); i++) {
         const VectorMax3d ci = trust_region_centers.row(i);
         const VectorMax3d xi = x.row(i);
         const VectorMax3d dxi = dx.row(i);
