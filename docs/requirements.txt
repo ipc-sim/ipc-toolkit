@@ -1,4 +1,4 @@
-sphinx
+sphinx<9.0.0
 sphinx-sitemap
 sphinx-immaterial
 autoclasstoc
@@ -11,4 +11,3 @@ sphinxcontrib-bibtex
 sphinxemoji
 sphinx-last-updated-by-git
 sphinx-autobuild
-sphinxcontrib-youtube
