@@ -807,6 +807,30 @@
   
   
     <li class="md-nav__item">
+      <a href="../tutorials/ogc.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/ogc.rst (reference label)"><span>Offset Geometric Contact</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../tutorials/nonlinear_ccd.html" class="md-nav__link">
         
   
@@ -1924,6 +1948,30 @@
 
               
             
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/tools.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/developers/tools.rst (reference label)"><span>Tools for Developers</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2051,6 +2099,11 @@ Default dependencies of the <code class="docutils literal notranslate"><span cla
 <td><p>MIT</p></td>
 <td><p><a class="reference external" href="https://github.com/gabime/spdlog">github.com/gabime/spdlog</a></p></td>
 </tr>
+<tr class="row-odd"><td><p>TinyAD</p></td>
+<td><p>Automatic differentiation for testing and in non-performance critical smooth contact functions</p></td>
+<td><p>MIT</p></td>
+<td><p><a class="reference external" href="https://github.com/patr-schm/TinyAD">github.com/microsoft/TinyAD</a></p></td>
+</tr>
 </tbody>
 </table>
 <h2 id="optional-dependencies">Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading">¶</a></h2>
@@ -2113,7 +2166,7 @@ Default dependencies of the <code class="docutils literal notranslate"><span cla
 <p>Some of these libraries are enabled by default, and some are not. You can enable or disable them by passing the appropriate CMake option when you configure the IPC Toolkit build.</p>
 <div class="warning admonition">
 <p class="admonition-title">Warning</p>
-<p><code class="docutils literal notranslate"><span class="pre">filib</span></code> is licensed under <a class="reference external" href="https://github.com/zfergus/filib/blob/main/LICENSE">LGPL-2.1</a> and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynaic linkage requires copying the <code class="docutils literal notranslate"><span class="pre">.so</span></code>/<code class="docutils literal notranslate"><span class="pre">.dylib</span></code>/<code class="docutils literal notranslate"><span class="pre">.dll</span></code> file to the binary directory or system path. To enable this, set the CMake option <code class="docutils literal notranslate"><span class="pre">FILIB_BUILD_SHARED_LIBS</span></code> to <code class="docutils literal notranslate"><span class="pre">ON</span></code> and add this CMake code to copy the shared libaray object to the binary directory:</p>
+<p><code class="docutils literal notranslate"><span class="pre">filib</span></code> is licensed under <a class="reference external" href="https://github.com/zfergus/filib/blob/main/LICENSE">LGPL-2.1</a> and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynamic linkage requires copying the <code class="docutils literal notranslate"><span class="pre">.so</span></code>/<code class="docutils literal notranslate"><span class="pre">.dylib</span></code>/<code class="docutils literal notranslate"><span class="pre">.dll</span></code> file to the binary directory or system path. To enable this, set the CMake option <code class="docutils literal notranslate"><span class="pre">FILIB_BUILD_SHARED_LIBS</span></code> to <code class="docutils literal notranslate"><span class="pre">ON</span></code> and add this CMake code to copy the shared libaray object to the binary directory:</p>
 <div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><code><span class="c"># Copy shared lib to the output directory</span>
 <span class="nb">add_custom_command</span><span class="p">(</span>
 <span class="w">    </span><span class="s">TARGET</span><span class="w"> </span><span class="o">${</span><span class="nv">MY_EXE_TARGET</span><span class="o">}</span><span class="w"> </span><span class="s">POST_BUILD</span>
@@ -2168,7 +2221,7 @@ Default dependencies of the <code class="docutils literal notranslate"><span cla
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Jan 13, 2026
+    Jan 16, 2026
   </span>
 
     

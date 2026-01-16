@@ -817,6 +817,30 @@
   
   
     <li class="md-nav__item">
+      <a href="ogc.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/ogc.rst (reference label)"><span>Offset Geometric Contact</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="nonlinear_ccd.html" class="md-nav__link">
         
   
@@ -1934,6 +1958,30 @@
 
               
             
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/tools.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/developers/tools.rst (reference label)"><span>Tools for Developers</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2013,7 +2061,7 @@
 
 <h1 id="convergent-formulation"><span id="convergent-collision-formulation"></span>Convergent Formulation<a class="headerlink" href="#convergent-formulation" title="Link to this heading">¶</a></h1>
 <p>In addition to the original implementation of <span id="id1">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>, we also implement the convergent formulation of <span id="id2">Li <em>et al.</em> [<a class="reference internal" href="references.html#id4" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Convergent incremental potential contact. 2023. arXiv:2307.15908.">2023</a>]</span>.</p>
-<p>Fully enabling the convergent formulation requires to set three flags: <code class="docutils literal notranslate"><span class="pre">use_area_weighting</span></code> and <code class="docutils literal notranslate"><span class="pre">use_improved_max_approximator</span></code> in <code class="docutils literal notranslate"><span class="pre">Collisions</span></code> (before calling <code class="docutils literal notranslate"><span class="pre">build</span></code>) and <code class="docutils literal notranslate"><span class="pre">use_physical_barrier</span></code> in <code class="docutils literal notranslate"><span class="pre">BarrierPotential</span></code>.</p>
+<p>Fully enabling the convergent formulation requires to set three things: <code class="docutils literal notranslate"><span class="pre">use_area_weighting</span></code> and <code class="docutils literal notranslate"><span class="pre">collision_set_type</span></code> in <code class="docutils literal notranslate"><span class="pre">Collisions</span></code> (before calling <code class="docutils literal notranslate"><span class="pre">build</span></code>) and <code class="docutils literal notranslate"><span class="pre">use_physical_barrier</span></code> in <code class="docutils literal notranslate"><span class="pre">BarrierPotential</span></code>.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2">
 <input checked type="radio" id="__tabbed_1_1" name="__tabbed_1"><input type="radio" id="__tabbed_1_2" name="__tabbed_1"><div class="tabbed-labels docutils">
 <label class="tabbed-label" for="__tabbed_1_1">
@@ -2022,7 +2070,8 @@ Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">collisions</span><span class="p">.</span><span class="n">set_use_area_weighting</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
-<span class="n">collisions</span><span class="p">.</span><span class="n">set_use_improved_max_approximator</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+<span class="n">collisions</span><span class="p">.</span><span class="n">set_collision_set_type</span><span class="p">(</span>
+<span class="w">    </span><span class="n">ipc</span><span class="o">::</span><span class="n">NormalCollisions</span><span class="o">::</span><span class="n">CollisionSetType</span><span class="o">::</span><span class="n">IMPROVED_MAX_APPROX</span><span class="p">);</span>
 <span class="n">collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span>
 
 <span class="n">barrier_potential</span><span class="p">.</span><span class="n">set_use_physical_barrier</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
@@ -2032,7 +2081,8 @@ Python</label></div>
 </div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">collisions</span><span class="o">.</span><span class="n">use_area_weighting</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">collisions</span><span class="o">.</span><span class="n">use_improved_max_approximator</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">collisions</span><span class="o">.</span><span class="n">collision_set_type</span> <span class="o">=</span> \
+    <span class="n">ipctk</span><span class="o">.</span><span class="n">NormalCollisions</span><span class="o">.</span><span class="n">CollisionSetType</span><span class="o">.</span><span class="n">IMPROVED_MAX_APPROX</span>
 <span class="n">collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">dhat</span><span class="p">)</span>
 
 <span class="n">barrier_potential</span><span class="o">.</span><span class="n">use_physical_barrier</span> <span class="o">=</span> <span class="kc">True</span>
@@ -2043,7 +2093,7 @@ Python</label></div>
 </div>
 </div><div class="important tip admonition">
 <p class="admonition-title">Important</p>
-<p>The flags <code class="docutils literal notranslate"><span class="pre">use_area_weighting</span></code> and <code class="docutils literal notranslate"><span class="pre">use_improved_max_approximator</span></code> should be set before calling <code class="docutils literal notranslate"><span class="pre">build</span></code> for them to take effect. By default, they are <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+<p>The members <code class="docutils literal notranslate"><span class="pre">use_area_weighting</span></code> and <code class="docutils literal notranslate"><span class="pre">collision_set_type</span></code> should be set before calling <code class="docutils literal notranslate"><span class="pre">build</span></code> for them to take effect. By default, they are <code class="docutils literal notranslate"><span class="pre">false</span></code> and <code class="docutils literal notranslate"><span class="pre">IPC</span></code>.</p>
 </div>
 <h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Link to this heading">¶</a></h2>
 <p><em>We briefly summarize the convergent formulation here for convenience.</em></p>
@@ -2081,7 +2131,7 @@ Comparison of the improved max approximator (right) to and exact max (left) and 
 </figure>
 <div class="tip admonition">
 <p class="admonition-title">Tip</p>
-<p>The improved max approximator is enabled by setting <code class="docutils literal notranslate"><span class="pre">use_improved_max_approximator</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code> in <code class="docutils literal notranslate"><span class="pre">Collisions</span></code>.</p>
+<p>The improved max approximator is enabled by setting <code class="docutils literal notranslate"><span class="pre">collision_set_type</span></code> to <code class="docutils literal notranslate"><span class="pre">IMPROVED_MAX_APPROX</span></code> in <code class="docutils literal notranslate"><span class="pre">Collisions</span></code>.</p>
 </div>
 <p>The corresponding discrete barrier potential is then simply</p>
 <div class="math notranslate nohighlight">
@@ -2133,7 +2183,7 @@ The intention is to treat the barrier as a thin elastic region around the mesh, 
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Jan 13, 2026
+    Jan 16, 2026
   </span>
 
     

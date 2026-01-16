@@ -1,0 +1,2776 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="gcp.html">
+      
+      
+        <link rel="next" href="nonlinear_ccd.html">
+      
+      
+      <link rel="icon" href="../_static/favicon.ico">
+    
+    
+      
+        <title>Offset Geometric Contact - IPC Toolkit</title>
+      
+    
+    
+      
+        
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.acf80fe7f4d9ef9e2.min.css?v=9e56d0d2" />
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=36089943" />
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#algorithm" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="IPC Toolkit" class="md-header__button md-logo" aria-label="IPC Toolkit" data-md-component="logo">
+      <img src="../_static/hammer-wrench.svg" alt="logo">
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IPC Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Offset Geometric Contact
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ipc-sim/ipc-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ipc-sim/ipc-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../index.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>About</span>
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../build/c%2B%2B.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>Build</span>
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="getting_started.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>Tutorials</span>
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../cpp-api/index.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>C++ API</span>
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../python-api/index.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>Python API</span>
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../developers/contributing.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>Developers</span>
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="IPC Toolkit" class="md-nav__button md-logo" aria-label="IPC Toolkit" data-md-component="logo">
+      <img src="../_static/hammer-wrench.svg" alt="logo">
+    </a>
+    IPC Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ipc-sim/ipc-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ipc-sim/ipc-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>About</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            <span>About</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span>Home</span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/release_notes.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/about/release_notes.rst (reference label)"><span>Release Notes</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/license.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/about/license.rst (reference label)"><span>License</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/dependencies.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/about/dependencies.rst (reference label)"><span>Dependencies</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>Build</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            <span>Build</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build/c%2B%2B.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/build/c++.rst (reference label)"><span>Library</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build/python.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/build/python.rst (reference label)"><span>Python Bindings</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>Tutorials</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            <span>Tutorials</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="getting_started.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/getting_started.rst (reference label)"><span>Getting Started</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="advanced_friction.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/advanced_friction.rst (reference label)"><span>Advanced Friction</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="convergent.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/convergent.rst (reference label)"><span>Convergent Formulation</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="gcp.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/gcp.rst (reference label)"><span>Geometric Contact Potential</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/ogc.rst (reference label)"><span>Offset Geometric Contact</span></span>
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/ogc.rst (reference label)"><span>Offset Geometric Contact</span></span>
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#algorithm" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#algorithm (reference label)"><span>Algorithm</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#implementation (reference label)"><span>Implementation</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-ogc-collision-set-type" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#using-ogc-collision-set-type (reference label)"><span>Using OGC Collision Set Type</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trust-region-logic" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#trust-region-logic (reference label)"><span>Trust Region Logic</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Trust Region Logic">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-2c-initialization-and-prediction" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#step-1-2c-initialization-and-prediction (reference label)"><span>Step 1 &amp; 2c:<wbr> Initialization and Prediction</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2d-conservative-bound-check-filter-step" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#step-2d-conservative-bound-check-filter-step (reference label)"><span>Step 2d:<wbr> Conservative Bound Check <wbr>(Filter Step)</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2a-2e-re-check-for-collision-detection" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#step-2a-2e-re-check-for-collision-detection (reference label)"><span>Step 2a &amp; 2e:<wbr> Re-<wbr>check for Collision Detection</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-optimization-loop-example" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#full-optimization-loop-example (reference label)"><span>Full Optimization Loop Example</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#algorithm-details-and-adaptations" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#algorithm-details-and-adaptations (reference label)"><span>Algorithm Details and Adaptations</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithm Details and Adaptations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-scaling-vs-closest-point-projection" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#step-scaling-vs-closest-point-projection (reference label)"><span>Step Scaling vs.<wbr> Closest-<wbr>Point Projection</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-trust-region-inflation" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#dynamic-trust-region-inflation (reference label)"><span>Dynamic Trust Region Inflation</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#safety-factor-and-double-sided-contact" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#safety-factor-and-double-sided-contact (reference label)"><span>Safety Factor and Double-<wbr>Sided Contact</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adaptive-warm-start" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#adaptive-warm-start (reference label)"><span>Adaptive Warm Start</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="nonlinear_ccd.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/nonlinear_ccd.rst (reference label)"><span>Nonlinear CCD</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="adhesion.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/adhesion.rst (reference label)"><span>Adhesion</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="simulation.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/simulation.rst (reference label)"><span>Physical Simulation</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="misc.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/misc.rst (reference label)"><span>Miscellaneous</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="faq.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/faq.rst (reference label)"><span>Frequently Asked Questions</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="references.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/references.rst (reference label)"><span>References</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>C++ API</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            <span>C++ API</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/index.rst (reference label)"><span>Index</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/adhesion.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/adhesion.rst (reference label)"><span>Adhesion</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/barrier/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/barrier/index.rst (reference label)"><span>Barrier</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/broad_phase.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/broad_phase.rst (reference label)"><span>Broad Phase</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/candidates.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/candidates.rst (reference label)"><span>Candidates</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/ccd.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/ccd.rst (reference label)"><span>Continuous Collision Detection</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/collision_mesh.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/collision_mesh.rst (reference label)"><span>Collision Mesh</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/distance.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/distance.rst (reference label)"><span>Distance</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/friction.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/friction.rst (reference label)"><span>Friction</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/intersections.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/intersections.rst (reference label)"><span>Intersections</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/interval.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/interval.rst (reference label)"><span>Interval Arithmetic</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/normal_collisions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/normal_collisions.rst (reference label)"><span>Normal Collisions</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/potentials/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/potentials/index.rst (reference label)"><span>Potentials</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/tangent.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/tangent.rst (reference label)"><span>Tangent</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/tangential_collisions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/tangential_collisions.rst (reference label)"><span>Tangential Collisions</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/utils.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/utils.rst (reference label)"><span>Utils</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>Python API</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            <span>Python API</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/index.rst (reference label)"><span>Index</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/adhesion.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/adhesion.rst (reference label)"><span>Adhesion</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/barrier.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/barrier.rst (reference label)"><span>Barrier</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/broad_phase.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/broad_phase.rst (reference label)"><span>Broad Phase</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/candidates.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/candidates.rst (reference label)"><span>Candidates</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/ccd.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/ccd.rst (reference label)"><span>Continuous Collision Detection</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/collision_mesh.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/collision_mesh.rst (reference label)"><span>Collision Mesh</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/distance.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/distance.rst (reference label)"><span>Distance</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/friction.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/friction.rst (reference label)"><span>Friction</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/intersections.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/intersections.rst (reference label)"><span>Intersections</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/interval.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/interval.rst (reference label)"><span>Interval Arithmetic</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/normal_collisions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/normal_collisions.rst (reference label)"><span>Normal Collisions</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/potentials.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/potentials.rst (reference label)"><span>Potentials</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/tangent.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/tangent.rst (reference label)"><span>Tangent</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/tangential_collisions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/tangential_collisions.rst (reference label)"><span>Tangential Collisions</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/utils.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/utils.rst (reference label)"><span>Utils</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>Developers</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            <span>Developers</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/contributing.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/developers/contributing.rst (reference label)"><span>Contributing</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/style_guide.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/developers/style_guide.rst (reference label)"><span>Style Guide</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/code_of_conduct.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/developers/code_of_conduct.rst (reference label)"><span>Code of Conduct</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/tools.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/developers/tools.rst (reference label)"><span>Tools for Developers</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#algorithm" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#algorithm (reference label)"><span>Algorithm</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#implementation (reference label)"><span>Implementation</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-ogc-collision-set-type" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#using-ogc-collision-set-type (reference label)"><span>Using OGC Collision Set Type</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trust-region-logic" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#trust-region-logic (reference label)"><span>Trust Region Logic</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Trust Region Logic">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-2c-initialization-and-prediction" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#step-1-2c-initialization-and-prediction (reference label)"><span>Step 1 &amp; 2c:<wbr> Initialization and Prediction</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2d-conservative-bound-check-filter-step" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#step-2d-conservative-bound-check-filter-step (reference label)"><span>Step 2d:<wbr> Conservative Bound Check <wbr>(Filter Step)</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2a-2e-re-check-for-collision-detection" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#step-2a-2e-re-check-for-collision-detection (reference label)"><span>Step 2a &amp; 2e:<wbr> Re-<wbr>check for Collision Detection</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-optimization-loop-example" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#full-optimization-loop-example (reference label)"><span>Full Optimization Loop Example</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#algorithm-details-and-adaptations" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#algorithm-details-and-adaptations (reference label)"><span>Algorithm Details and Adaptations</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Algorithm Details and Adaptations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-scaling-vs-closest-point-projection" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#step-scaling-vs-closest-point-projection (reference label)"><span>Step Scaling vs.<wbr> Closest-<wbr>Point Projection</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-trust-region-inflation" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#dynamic-trust-region-inflation (reference label)"><span>Dynamic Trust Region Inflation</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#safety-factor-and-double-sided-contact" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#safety-factor-and-double-sided-contact (reference label)"><span>Safety Factor and Double-<wbr>Sided Contact</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adaptive-warm-start" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#adaptive-warm-start (reference label)"><span>Adaptive Warm Start</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset" role="main">
+                
+                
+                  
+
+
+<h1 id="offset-geometric-contact">Offset Geometric Contact<a class="headerlink" href="#offset-geometric-contact" title="Link to this heading">¶</a></h1>
+<p>This tutorial explains how to implement the Offset Geometric Contact
+(OGC) <span id="id1">[<a class="reference internal" href="references.html#id13" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span> algorithm using the IPC Toolkit.</p>
+<p>OGC is a contact model designed to guarantee penetration-free simulation of
+objects while incurring minimal computational overhead. It works by constructing
+a volumetric shape around the object by offsetting each face along its normal
+direction, which ensures orthogonal contact forces and robustly allows for a
+large contact radius without introducing artifacts.</p>
+<p>OGC integrates into the optimization process by replacing the continuous
+collision detection (CCD) line search with a trust region-based approach using
+vertex-specific displacement bounds.</p>
+<p>For more details on the OGC algorithm, please refer to <span id="id2">[<a class="reference internal" href="references.html#id13" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span>
+and their associated video <a class="reference external" href="https://www.youtube.com/watch?v=xxyniqSLJik">here</a>.</p>
+<h2 id="algorithm">Algorithm<a class="headerlink" href="#algorithm" title="Link to this heading">¶</a></h2>
+<p>At a high-level, the OGC algorithm proceeds as follows:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// Input: Current positions (X), previous positions (Xt), velocities (Vt),</span>
+<span class="c1">//        mass matrix (M), contact radius (r), query radius (r_q).</span>
+<span class="c1">// Output: New positions (X) for the current step.</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">SimulationStep</span><span class="p">(</span><span class="nx">X</span><span class="p">,</span><span class="w"> </span><span class="nx">Xt</span><span class="p">,</span><span class="w"> </span><span class="nx">Vt</span><span class="p">,</span><span class="w"> </span><span class="nx">M</span><span class="p">,</span><span class="w"> </span><span class="nx">r</span><span class="p">,</span><span class="w"> </span><span class="nx">r_q</span><span class="p">)</span><span class="o">:</span>
+
+<span class="w">    </span><span class="c1">// 1. Initial position and prediction</span>
+<span class="w">    </span><span class="nx">collision_detection_required</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="nx">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Xt</span>
+
+<span class="w">    </span><span class="c1">// Predict new positions using an explicit integration step (e.g., a simple euler step)</span>
+<span class="w">    </span><span class="nx">Y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">X</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">dt</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">Vt</span>
+
+<span class="w">    </span><span class="c1">// 2. Iterative correction loop</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">max_iterations</span><span class="o">:</span>
+
+<span class="w">        </span><span class="c1">// a. Collision detection phase (run only when required)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="nx">collision_detection_required</span><span class="o">:</span>
+
+<span class="w">            </span><span class="c1">// i. Update collision structures with current positions</span>
+<span class="w">            </span><span class="nx">updateCollisions</span><span class="p">(</span><span class="nx">collisions</span><span class="p">,</span><span class="w"> </span><span class="nx">X</span><span class="p">,</span><span class="w"> </span><span class="nx">r</span><span class="p">,</span><span class="w"> </span><span class="nx">r_q</span><span class="p">)</span>
+
+<span class="w">            </span><span class="c1">// ii. Store previous positions for later comparison</span>
+<span class="w">            </span><span class="nx">X_prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">X</span>
+
+<span class="w">            </span><span class="c1">// iii. Reset the flag; no collision detection needed until further notice</span>
+<span class="w">            </span><span class="nx">collision_detection_required</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+
+<span class="w">        </span><span class="c1">// b. Compute the conservative step (b) for each vertex</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="nx">each</span><span class="w"> </span><span class="nx">vertex</span><span class="w"> </span><span class="nx">v</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nx">set</span><span class="w"> </span><span class="nx">vertices</span><span class="o">:</span>
+<span class="w">            </span><span class="nx">b</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">computeConservativeStep</span><span class="p">(</span><span class="nx">collisions</span><span class="p">,</span><span class="w"> </span><span class="nx">v</span><span class="p">)</span>
+
+<span class="w">        </span><span class="c1">// c. Simulation and correction phase</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="nx">is</span><span class="w"> </span><span class="mf">0</span><span class="o">:</span>
+<span class="w">            </span><span class="c1">// Apply a special initial guess/setup for the first iteration</span>
+<span class="w">            </span><span class="nx">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">applyInitialGuess</span><span class="p">(</span><span class="nx">Xt</span><span class="p">,</span><span class="w"> </span><span class="nx">Vt</span><span class="p">,</span><span class="w"> </span><span class="nx">b</span><span class="p">)</span>
+
+<span class="w">        </span><span class="c1">// Apply an update step (e.g., gradient, Newton, or vertex block descent)</span>
+<span class="w">        </span><span class="c1">// This finds the new position X by respecting contacts and forces</span>
+<span class="w">        </span><span class="nx">X</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">updatePositions</span><span class="p">(</span><span class="nx">X</span><span class="p">,</span><span class="w"> </span><span class="nx">Xt</span><span class="p">,</span><span class="w"> </span><span class="nx">Y</span><span class="p">,</span><span class="w"> </span><span class="nx">Vt</span><span class="p">,</span><span class="w"> </span><span class="nx">collisions</span><span class="p">)</span>
+
+<span class="w">        </span><span class="c1">// d. Conservative bound check</span>
+<span class="w">        </span><span class="nx">num_vertices_exceed_bound</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span>
+
+<span class="w">        </span><span class="c1">// Truncate the vertex displacements to be within the conservative bound (b_v)</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="nx">each</span><span class="w"> </span><span class="nx">vertex</span><span class="w"> </span><span class="nx">v</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nx">set</span><span class="w"> </span><span class="nx">vertices</span><span class="o">:</span>
+<span class="w">            </span><span class="c1">// If the distance moved is greater than the conservative bound</span>
+<span class="w">            </span><span class="nx">dX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">X</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nx">X_prev</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="nx">norm</span><span class="p">(</span><span class="nx">dX</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nx">b</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span><span class="o">:</span>
+
+<span class="w">                </span><span class="c1">// Truncate the new position to respect the conservative bound</span>
+<span class="w">                </span><span class="nx">X</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">b</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nx">dX</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nx">norm</span><span class="p">(</span><span class="nx">dX</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">X_prev</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span>
+
+<span class="w">                </span><span class="c1">// Keep track of how many vertices were truncated</span>
+<span class="w">                </span><span class="nx">num_vertices_exceed_bound</span><span class="o">++</span>
+
+<span class="w">        </span><span class="c1">// e. Re-check for Collision Detection</span>
+<span class="w">        </span><span class="c1">// If too many vertices moved beyond their conservative bounds,</span>
+<span class="w">        </span><span class="c1">// a new, full collision detection is needed in the next step</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="nx">num_vertices_exceed_bound</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="nx">threshold</span><span class="w"> </span><span class="p">(</span><span class="nx">γₖ</span><span class="p">)</span><span class="o">:</span>
+<span class="w">            </span><span class="nx">collision_detection_required</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+
+<span class="w">        </span><span class="c1">// f. Check for Convergence</span>
+<span class="w">        </span><span class="c1">// If the simulation is stable and changes are small</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="nx">evaluateConvergence</span><span class="p">(</span><span class="nx">X</span><span class="p">,</span><span class="w"> </span><span class="nx">Xt</span><span class="p">,</span><span class="w"> </span><span class="nx">Vt</span><span class="p">,</span><span class="w"> </span><span class="nx">collisions</span><span class="p">)</span><span class="o">:</span>
+<span class="w">            </span><span class="k">break</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">X</span>
+</code></pre></div>
+</div>
+<p>Essentially, OGC replaces the CCD line search with a trust region approach
+that uses per-vertex displacement bounds. If too many vertices exceed their
+bounds, a new collision detection is triggered to update the contact set.</p>
+<h2 id="implementation">Implementation<a class="headerlink" href="#implementation" title="Link to this heading">¶</a></h2>
+<p>There are two main components to implementing OGC with the IPC Toolkit:</p>
+<ol class="arabic simple">
+<li><p>Set the <code class="docutils literal notranslate"><span class="pre">CollisionSetType</span></code> to <code class="docutils literal notranslate"><span class="pre">OGC</span></code> in the <code class="docutils literal notranslate"><span class="pre">NormalCollisions</span></code> class to
+enable OGC filtering and construction of the collision set.</p></li>
+<li><p>Use the <code class="docutils literal notranslate"><span class="pre">TrustRegion</span></code> helper class to filter the step and compute the per-vertex safe distances.</p></li>
+</ol>
+<h3 id="using-ogc-collision-set-type">Using OGC Collision Set Type<a class="headerlink" href="#using-ogc-collision-set-type" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">NormalCollisions</span></code> class supports several collision set types via
+<code class="docutils literal notranslate"><span class="pre">NormalCollisions::CollisionSetType</span></code>. To build a collision set that uses the
+OGC filtering and construction logic, set the collision set type to <code class="docutils literal notranslate"><span class="pre">OGC</span></code>
+before calling <code class="docutils literal notranslate"><span class="pre">build</span></code>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2">
+<input checked type="radio" id="__tabbed_1_1" name="__tabbed_1"><input type="radio" id="__tabbed_1_2" name="__tabbed_1"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_1_1">
+C++</label><label class="tabbed-label" for="__tabbed_1_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipc</span><span class="o">::</span><span class="n">NormalCollisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
+<span class="n">collisions</span><span class="p">.</span><span class="n">set_use_area_weighting</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span><span class="w"> </span><span class="c1">// optional, for convergent form</span>
+<span class="n">collisions</span><span class="p">.</span><span class="n">set_collision_set_type</span><span class="p">(</span><span class="n">ipc</span><span class="o">::</span><span class="n">NormalCollisions</span><span class="o">::</span><span class="n">CollisionSetType</span><span class="o">::</span><span class="n">OGC</span><span class="p">);</span>
+<span class="n">collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">dmin</span><span class="p">);</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">NormalCollisions</span><span class="p">()</span>
+<span class="n">collisions</span><span class="o">.</span><span class="n">use_area_weighting</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># optional, for convergent form</span>
+<span class="n">collisions</span><span class="o">.</span><span class="n">collision_set_type</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">NormalCollisions</span><span class="o">.</span><span class="n">CollisionSetType</span><span class="o">.</span><span class="n">OGC</span>
+<span class="n">collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">dhat</span><span class="p">,</span> <span class="n">dmin</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>Set <code class="docutils literal notranslate"><span class="pre">collision_set_type</span></code> before calling <code class="docutils literal notranslate"><span class="pre">build</span></code>; this configures how
+<code class="docutils literal notranslate"><span class="pre">NormalCollisions</span></code> constructs the final collision sets (vv/ev/ee/fv)
+respecting the OGC filters and any improved-max or convergent options.</p>
+</div>
+<h3 id="trust-region-logic">Trust Region Logic<a class="headerlink" href="#trust-region-logic" title="Link to this heading">¶</a></h3>
+<p>From the above pseudocode, the <code class="docutils literal notranslate"><span class="pre">TrustRegion</span></code> helper class implements the logic for each piece.</p>
+<p>Start by constructing a <code class="docutils literal notranslate"><span class="pre">TrustRegion</span></code> instance with the desired parameters:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2">
+<input checked type="radio" id="__tabbed_2_1" name="__tabbed_2"><input type="radio" id="__tabbed_2_2" name="__tabbed_2"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_2_1">
+C++</label><label class="tabbed-label" for="__tabbed_2_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/ogc/trust_region.hpp&gt;</span>
+
+<span class="n">ipc</span><span class="o">::</span><span class="n">ogc</span><span class="o">::</span><span class="n">TrustRegion</span><span class="w"> </span><span class="nf">trust_region</span><span class="p">(</span><span class="n">dhat</span><span class="p">);</span>
+<span class="c1">// Optionally set parameters like:</span>
+<span class="n">trust_region</span><span class="p">.</span><span class="n">relaxed_radius_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.9</span><span class="p">;</span><span class="w"> </span><span class="c1">// 2γₚ in the paper</span>
+<span class="n">trust_region</span><span class="p">.</span><span class="n">update_threshold</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.01</span><span class="p">;</span><span class="w">      </span><span class="c1">// γₑ in the paper</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">ipctk</span><span class="w"> </span><span class="kn">import</span> <span class="n">ogc</span>
+
+<span class="n">trust_region</span> <span class="o">=</span> <span class="n">ogc</span><span class="o">.</span><span class="n">TrustRegion</span><span class="p">(</span><span class="n">dhat</span><span class="p">)</span>
+<span class="c1"># Optionally set parameters like:</span>
+<span class="n">trust_region</span><span class="o">.</span><span class="n">relaxed_radius_scaling</span> <span class="o">=</span> <span class="mf">0.9</span>  <span class="c1"># 2γₚ in the paper</span>
+<span class="n">trust_region</span><span class="o">.</span><span class="n">update_threshold</span> <span class="o">=</span> <span class="mf">0.01</span>       <span class="c1"># γₑ in the paper</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><h4 id="step-1-2c-initialization-and-prediction">Step 1 &amp; 2c: Initialization and Prediction<a class="headerlink" href="#step-1-2c-initialization-and-prediction" title="Link to this heading">¶</a></h4>
+<p>The first step of the algorithm (Step 1) and the initial collision detection update (Step 2a) are handled by <code class="docutils literal notranslate"><span class="pre">warm_start_time_step</span></code>. This function initializes the trust region around the current positions and moves the vertices towards their predicted positions (<code class="docutils literal notranslate"><span class="pre">pred_x</span></code>) while respecting the conservative bounds.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2">
+<input checked type="radio" id="__tabbed_3_1" name="__tabbed_3"><input type="radio" id="__tabbed_3_2" name="__tabbed_3"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_3_1">
+C++</label><label class="tabbed-label" for="__tabbed_3_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// Initialize trust region and move x towards pred_x</span>
+<span class="n">trust_region</span><span class="p">.</span><span class="n">warm_start_time_step</span><span class="p">(</span>
+<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">pred_x</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># Initialize trust region and move x towards pred_x</span>
+<span class="n">trust_region</span><span class="o">.</span><span class="n">warm_start_time_step</span><span class="p">(</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">pred_x</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">dhat</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><p>This function effectively performs the initial “Apply Initial Guess” and “Compute Conservative Step” logic.</p>
+<h4 id="step-2d-conservative-bound-check-filter-step">Step 2d: Conservative Bound Check (Filter Step)<a class="headerlink" href="#step-2d-conservative-bound-check-filter-step" title="Link to this heading">¶</a></h4>
+<p>Inside your solver loop (e.g., Newton’s method or Vertex Block Descent), you must ensure that the computed search direction or step (<code class="docutils literal notranslate"><span class="pre">dx</span></code>) does not violate the trust region bounds. This corresponds to Step 2d in the pseudocode.</p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">filter_step</span></code> method to truncate any vertex displacements that exceed their trust region radius.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2">
+<input checked type="radio" id="__tabbed_4_1" name="__tabbed_4"><input type="radio" id="__tabbed_4_2" name="__tabbed_4"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_4_1">
+C++</label><label class="tabbed-label" for="__tabbed_4_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// dx is the proposed step (e.g., from the linear solver)</span>
+<span class="n">trust_region</span><span class="p">.</span><span class="n">filter_step</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">dx</span><span class="p">);</span>
+
+<span class="c1">// Now dx is safe to apply: x += dx</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># dx is the proposed step</span>
+<span class="n">trust_region</span><span class="o">.</span><span class="n">filter_step</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
+
+<span class="c1"># Now dx is safe to apply: x += dx</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><h4 id="step-2a-2e-re-check-for-collision-detection">Step 2a &amp; 2e: Re-check for Collision Detection<a class="headerlink" href="#step-2a-2e-re-check-for-collision-detection" title="Link to this heading">¶</a></h4>
+<p>If <code class="docutils literal notranslate"><span class="pre">filter_step</span></code> detects that a significant number of vertices (determined by <code class="docutils literal notranslate"><span class="pre">update_threshold</span></code>) were restricted by the trust region, it flags that a collision update is needed. You should check this at the beginning of each solver iteration using <code class="docutils literal notranslate"><span class="pre">update_if_needed</span></code>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2">
+<input checked type="radio" id="__tabbed_5_1" name="__tabbed_5"><input type="radio" id="__tabbed_5_2" name="__tabbed_5"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_5_1">
+C++</label><label class="tabbed-label" for="__tabbed_5_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// At the start of the solver loop:</span>
+<span class="n">trust_region</span><span class="p">.</span><span class="n">update_if_needed</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># At the start of the solver loop:</span>
+<span class="n">trust_region</span><span class="o">.</span><span class="n">update_if_needed</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">dhat</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><h3 id="full-optimization-loop-example">Full Optimization Loop Example<a class="headerlink" href="#full-optimization-loop-example" title="Link to this heading">¶</a></h3>
+<p>Putting it all together, a single simulation step using OGC looks like this:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2">
+<input checked type="radio" id="__tabbed_6_1" name="__tabbed_6"><input type="radio" id="__tabbed_6_2" name="__tabbed_6"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_6_1">
+C++</label><label class="tabbed-label" for="__tabbed_6_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// 1. Initial setup</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">NormalCollisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
+<span class="n">collisions</span><span class="p">.</span><span class="n">set_collision_set_type</span><span class="p">(</span><span class="n">ipc</span><span class="o">::</span><span class="n">NormalCollisions</span><span class="o">::</span><span class="n">CollisionSetType</span><span class="o">::</span><span class="n">OGC</span><span class="p">);</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">ogc</span><span class="o">::</span><span class="n">TrustRegion</span><span class="w"> </span><span class="nf">trust_region</span><span class="p">(</span><span class="n">dhat</span><span class="p">);</span>
+
+<span class="c1">// 2. Warm start (Predict &amp; Initialize)</span>
+<span class="c1">// x is current position, pred_x is x^t + dt * v^t</span>
+<span class="n">trust_region</span><span class="p">.</span><span class="n">warm_start_time_step</span><span class="p">(</span>
+<span class="w">    </span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">pred_x</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span>
+
+<span class="c1">// 3. Solver Loop</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">max_iterations</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Update trust region if too many vertices hit the bound in previous step</span>
+<span class="w">    </span><span class="n">trust_region</span><span class="p">.</span><span class="n">update_if_needed</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Compute search direction (Solver specific)</span>
+<span class="w">    </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">dx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compute_search_direction</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="p">...);</span>
+
+<span class="w">    </span><span class="c1">// Filter the step to respect OGC bounds</span>
+<span class="w">    </span><span class="n">trust_region</span><span class="p">.</span><span class="n">filter_step</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">dx</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Update positions</span>
+<span class="w">    </span><span class="n">x</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">dx</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Check convergence...</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># 1. Initial setup</span>
+<span class="n">collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">NormalCollisions</span><span class="p">()</span>
+<span class="n">collisions</span><span class="o">.</span><span class="n">collision_set_type</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">NormalCollisions</span><span class="o">.</span><span class="n">CollisionSetType</span><span class="o">.</span><span class="n">OGC</span>
+<span class="n">trust_region</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">ogc</span><span class="o">.</span><span class="n">TrustRegion</span><span class="p">(</span><span class="n">dhat</span><span class="p">)</span>
+
+<span class="c1"># 2. Warm start (Predict &amp; Initialize)</span>
+<span class="n">trust_region</span><span class="o">.</span><span class="n">warm_start_time_step</span><span class="p">(</span>
+    <span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">pred_x</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">dhat</span><span class="p">)</span>
+
+<span class="c1"># 3. Solver Loop</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iterations</span><span class="p">):</span>
+    <span class="c1"># Update trust region if needed</span>
+    <span class="n">trust_region</span><span class="o">.</span><span class="n">update_if_needed</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">dhat</span><span class="p">)</span>
+
+    <span class="c1"># Compute search direction (Solver specific)</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">compute_search_direction</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+
+    <span class="c1"># Filter the step to respect OGC bounds</span>
+    <span class="n">trust_region</span><span class="o">.</span><span class="n">filter_step</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
+
+    <span class="c1"># Update positions</span>
+    <span class="n">x</span> <span class="o">+=</span> <span class="n">dx</span>
+
+    <span class="c1"># Check convergence...</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><h2 id="algorithm-details-and-adaptations">Algorithm Details and Adaptations<a class="headerlink" href="#algorithm-details-and-adaptations" title="Link to this heading">¶</a></h2>
+<p>While the implementation follows the core OGC algorithm (Algorithm 3 in <span id="id3">[<a class="reference internal" href="references.html#id13" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span>), there are several practical adaptations in <code class="docutils literal notranslate"><span class="pre">TrustRegion</span></code> to ensure robustness, numerical stability, and compatibility with line-search-based solvers.</p>
+<h3 id="step-scaling-vs-closest-point-projection">Step Scaling vs. Closest-Point Projection<a class="headerlink" href="#step-scaling-vs-closest-point-projection" title="Link to this heading">¶</a></h3>
+<p>The most significant deviation from the original paper lies in how vertices are constrained when they exceed their trust region bounds (Step 2d).</p>
+<ul class="simple">
+<li><p><strong>Original Paper Approach (Projection):</strong> The original algorithm typically projects the proposed position to the closest point within the trust region (minimizing geometric distance). While this finds the optimal position locally within the valid region, the vector from the current position to this projected point may effectively change the update direction.</p></li>
+<li><p><strong>Toolkit Implementation (Step Scaling):</strong> The implementation in <code class="docutils literal notranslate"><span class="pre">filter_step</span></code> solves for a scalar <span class="math notranslate nohighlight">\(\beta \in (0, 1]\)</span> that scales the original search direction <span class="math notranslate nohighlight">\(\Delta x\)</span> such that the new position lies exactly on the trust region boundary.</p></li>
+</ul>
+<p>That is, given the trust region center <span class="math notranslate nohighlight">\(c\)</span>, current position <span class="math notranslate nohighlight">\(x\)</span>, and search direction <span class="math notranslate nohighlight">\(\Delta x\)</span>, it solves for <span class="math notranslate nohighlight">\(\beta\)</span> such that:</p>
+<div class="math notranslate nohighlight">
+\[\| x + \beta \Delta x - c \|^2 = r^2\]</div>
+<p>This value of <span class="math notranslate nohighlight">\(\beta\)</span> is then used to scale the step:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// trust_region.cpp</span>
+<span class="c1">// Solve || x + beta * dx - c ||^2 = r^2 for beta</span>
+<span class="c1">// ... (quadratic formula solution) ...</span>
+<span class="n">dx</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">i</span><span class="p">).</span><span class="n">array</span><span class="p">()</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">beta</span><span class="p">;</span>
+</code></pre></div>
+</div>
+<p>This ensures that vertices constrained by the trust region are placed exactly on the valid boundary surface, maximizing the allowed step size without violating the constraint.</p>
+<p><strong>Why this matters:</strong>
+Mixing Trust Region constraints with Line Search methods can be delicate. If you use a projection method, the resulting update vector might no longer be a <em>descent direction</em> for the energy function. This can cause subsequent line searches to fail or the solver to stagnate.</p>
+<p>By <strong>scaling</strong> the step instead of projecting it, the toolkit guarantees that the modified step remains parallel to the original search direction. If the solver (e.g., Newton’s method) generated a valid descent direction, this method preserves that property, ensuring compatibility with line search checks that may occur after the OGC filter is applied.</p>
+<h3 id="dynamic-trust-region-inflation">Dynamic Trust Region Inflation<a class="headerlink" href="#dynamic-trust-region-inflation" title="Link to this heading">¶</a></h3>
+<p>In Step 1 (Initialization), the implementation dynamically computes the radius used for building the collision set (<code class="docutils literal notranslate"><span class="pre">trust_region_inflation_radius</span></code>). Instead of a fixed radius, it uses the maximum displacement from the predicted motion (<code class="docutils literal notranslate"><span class="pre">pred_x</span> <span class="pre">-</span> <span class="pre">x</span></code>) combined with the offset distance <code class="docutils literal notranslate"><span class="pre">dhat</span></code>.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// trust_region.cpp</span>
+<span class="n">trust_region_inflation_radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">dx_norm</span><span class="p">.</span><span class="n">maxCoeff</span><span class="p">());</span>
+</code></pre></div>
+</div>
+<p>This follows the recommendation in Section 4.1 of the paper:</p>
+<blockquote>
+<div><p>In practice, we found an <span class="math notranslate nohighlight">\(r_q\)</span> of <span class="math notranslate nohighlight">\(r\)</span> plus the inertial displacement magnitude to strike a good balance between query performance and bound size.</p>
+</div></blockquote>
+<h3 id="safety-factor-and-double-sided-contact">Safety Factor and Double-Sided Contact<a class="headerlink" href="#safety-factor-and-double-sided-contact" title="Link to this heading">¶</a></h3>
+<p>When computing the per-vertex safe distances (Step 2b), the implementation applies a scaling factor and explicitly divides by 2.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// trust_region.cpp</span>
+<span class="c1">// Use &lt; half the safe distance to account for double sided contact</span>
+<span class="n">reduced_trust_region_radii</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">relaxed_radius_scaling</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+</code></pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Relaxed Radius Scaling:</strong> Corresponds to the parameter <span class="math notranslate nohighlight">\(2\gamma_p\)</span> in the paper (default 0.9). It shrinks the trust region slightly to provide a numerical safety margin.</p></li>
+<li><p><strong>Division by 2:</strong> Accounts for the worst-case scenario where two primitives move towards each other; each is allowed to move only half the available distance to guarantee no intersection.</p></li>
+</ul>
+<h3 id="adaptive-warm-start">Adaptive Warm Start<a class="headerlink" href="#adaptive-warm-start" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">warm_start_time_step</span></code> function includes an adaptive heuristic. During the initial prediction:
+1.  It moves vertices to their predicted positions <code class="docutils literal notranslate"><span class="pre">pred_x</span></code> if they are within the trust region.
+2.  If they are outside, it effectively projects them to the boundary (using the scaling method described above).
+3.  <strong>Crucially</strong>, if the number of vertices hitting the boundary exceeds <code class="docutils literal notranslate"><span class="pre">update_threshold</span></code> immediately during this warm start, it triggers a second <code class="docutils literal notranslate"><span class="pre">update()</span></code> call.</p>
+<p>This prevents the solver from starting with a trust region that is already too restrictive for the bulk of the mesh, potentially saving solver iterations later.</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    Jan 16, 2026
+  </span>
+
+    
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="gcp.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Geometric Contact Potential">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Geometric Contact Potential
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="nonlinear_ccd.html" class="md-footer__link md-footer__link--next" aria-label="Next: Nonlinear CCD">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Nonlinear CCD
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        &#169; Copyright 2020-2026, IPC-Sim Organization; MIT License.
+        
+    </div>
+  
+    Created using
+    <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
+    8.2.3.
+     and
+    <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.tabs.link", "navigation.footer", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
+    
+      
+        <script src="../_static/sphinx_immaterial_theme.32136f45f91ae6956.min.js?v=a7a9472a"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js"></script>
+    
+  </body>
+</html>

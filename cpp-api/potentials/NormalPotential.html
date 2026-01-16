@@ -743,6 +743,30 @@
   
   
     <li class="md-nav__item">
+      <a href="../../tutorials/ogc.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/ogc.rst (reference label)"><span>Offset Geometric Contact</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../tutorials/nonlinear_ccd.html" class="md-nav__link">
         
   
@@ -2937,6 +2961,30 @@
 
               
             
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developers/tools.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/developers/tools.rst (reference label)"><span>Tools for Developers</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3819,7 +3867,7 @@
 <h1 id="normalpotential">NormalPotential<a class="headerlink" href="#normalpotential" title="Link to this heading">¶</a></h1>
 <dl class="cpp class objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc15NormalPotentialE">
-<span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">NormalPotential</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="Potential.html#_CPPv4I0EN3ipc9PotentialE" title="ipc::Potential (C++ class) — Base class for potentials."><span class="n">Potential</span></a><span class="p">&lt;</span><a class="desctype reference internal" href="../normal_collisions.html#_CPPv4N3ipc16NormalCollisionsE" title="ipc::NormalCollisions (C++ class) — The type of the collisions."><span class="n">NormalCollisions</span></a><span class="p">&gt;;</span><a class="headerlink" href="#_CPPv4N3ipc15NormalPotentialE" title="Link to this definition">¶</a></dt>
+<span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">NormalPotential</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="Potential.html#_CPPv4I0EN3ipc9PotentialE" title="ipc::Potential (C++ class) — Base class for potentials."><span class="n">Potential</span></a><span class="p">&lt;</span><a class="desctype reference internal" href="../normal_collisions.html#_CPPv4N3ipc16NormalCollisionsE" title="ipc::NormalCollisions (C++ class) — How to construct the collision set."><span class="n">NormalCollisions</span></a><span class="p">&gt;;</span><a class="headerlink" href="#_CPPv4N3ipc15NormalPotentialE" title="Link to this definition">¶</a></dt>
 <dd><p>Base class for distance-based potentials. </p>
 <p>Subclassed by <a class="reference internal" href="BarrierPotential.html#classipc_1_1_barrier_potential"><span class="std std-ref">ipc::BarrierPotential</span></a>, <a class="reference internal" href="NormalAdhesionPotential.html#classipc_1_1_normal_adhesion_potential"><span class="std std-ref">ipc::NormalAdhesionPotential</span></a></p>
 <div class="breathe-sectiondef docutils container">
@@ -3836,12 +3884,12 @@
 
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE">
-<span class="n">Eigen</span><span class="p">::</span><span class="n">SparseMatrix</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">shape_derivative</span></span><span class="p">(<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="../normal_collisions.html#_CPPv4N3ipc16NormalCollisionsE" title="ipc::NormalCollisions (C++ class) — The type of the collisions."><span class="n">NormalCollisions</span></a><span class="w">&amp;&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-collisions" title="ipc::NormalPotential::shape_derivative::collisions (C++ function parameter) — The set of collisions."><span class="n sig-param">collisions</span></a></span><span class="p">,&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="../collision_mesh.html#_CPPv4N3ipc13CollisionMeshE" title="ipc::CollisionMesh (C++ class) — A class for encapsulating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh."><span class="n">CollisionMesh</span></a><span class="w">&amp;&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-mesh" title="ipc::NormalPotential::shape_derivative::mesh (C++ function parameter) — The collision mesh."><span class="n sig-param">mesh</span></a></span><span class="p">,<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="n">Eigen</span><span class="p">::</span><span class="n">ConstRef</span><span class="p">&lt;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXd</span><span class="p">&gt;</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-vertices" title="ipc::NormalPotential::shape_derivative::vertices (C++ function parameter) — Vertices of the collision mesh."><span class="n sig-param">vertices</span></a></span><span class="p">)</span><span class="w">&nbsp;</span><span class="k">const;</span><a class="headerlink" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE" title="Link to this definition">¶</a></dt>
+<span class="n">Eigen</span><span class="p">::</span><span class="n">SparseMatrix</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">shape_derivative</span></span><span class="p">(<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="../normal_collisions.html#_CPPv4N3ipc16NormalCollisionsE" title="ipc::NormalCollisions (C++ class) — How to construct the collision set."><span class="n">NormalCollisions</span></a><span class="w">&amp;&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-collisions" title="ipc::NormalPotential::shape_derivative::collisions (C++ function parameter) — The set of collisions."><span class="n sig-param">collisions</span></a></span><span class="p">,&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="../collision_mesh.html#_CPPv4N3ipc13CollisionMeshE" title="ipc::CollisionMesh (C++ class) — A class for encapsulating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh."><span class="n">CollisionMesh</span></a><span class="w">&amp;&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-mesh" title="ipc::NormalPotential::shape_derivative::mesh (C++ function parameter) — The collision mesh."><span class="n sig-param">mesh</span></a></span><span class="p">,<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="n">Eigen</span><span class="p">::</span><span class="n">ConstRef</span><span class="p">&lt;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXd</span><span class="p">&gt;</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-vertices" title="ipc::NormalPotential::shape_derivative::vertices (C++ function parameter) — Vertices of the collision mesh."><span class="n sig-param">vertices</span></a></span><span class="p">)</span><span class="w">&nbsp;</span><span class="k">const;</span><a class="headerlink" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE" title="Link to this definition">¶</a></dt>
 <dd><p>Compute the shape derivative of the potential. </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-parameters" title="Permalink to this headline">¶</a></dt>
 <dd class="field-odd"><dl class="simple api-field highlight">
-<dt id="_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-collisions"><span class="k">const</span><span class="w"> </span><a class="desctype reference internal" href="../normal_collisions.html#_CPPv4N3ipc16NormalCollisionsE" title="ipc::NormalCollisions (C++ class) — The type of the collisions."><span class="n">NormalCollisions</span></a><span class="w"> </span><span class="p">&amp;</span><span class="n sig-param sig-name">collisions</span><a class="headerlink" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-collisions" title="Permalink to this definition">¶</a></dt><dd><p>The set of collisions. </p>
+<dt id="_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-collisions"><span class="k">const</span><span class="w"> </span><a class="desctype reference internal" href="../normal_collisions.html#_CPPv4N3ipc16NormalCollisionsE" title="ipc::NormalCollisions (C++ class) — How to construct the collision set."><span class="n">NormalCollisions</span></a><span class="w"> </span><span class="p">&amp;</span><span class="n sig-param sig-name">collisions</span><a class="headerlink" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-collisions" title="Permalink to this definition">¶</a></dt><dd><p>The set of collisions. </p>
 </dd>
 <dt id="_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-mesh"><span class="k">const</span><span class="w"> </span><a class="desctype reference internal" href="../collision_mesh.html#_CPPv4N3ipc13CollisionMeshE" title="ipc::CollisionMesh (C++ class) — A class for encapsulating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh."><span class="n">CollisionMesh</span></a><span class="w"> </span><span class="p">&amp;</span><span class="n sig-param sig-name">mesh</span><a class="headerlink" href="#_CPPv4NK3ipc15NormalPotential16shape_derivativeERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE-p-mesh" title="Permalink to this definition">¶</a></dt><dd><p>The collision mesh. </p>
 </dd>
@@ -4048,7 +4096,7 @@
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-types">Private Types<a class="headerlink" href="#breathe-section-title-private-types" title="Permalink to this headline">¶</a></p>
 <dl class="cpp type objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc15NormalPotential5SuperE">
-<span class="k">using</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">Super</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><a class="reference internal" href="Potential.html#_CPPv4N3ipc9Potential9PotentialEv" title="ipc::Potential::Potential (C++ function)"><span class="n">Potential</span></a><span class="p">&lt;</span><a class="desctype reference internal" href="../normal_collisions.html#_CPPv4N3ipc16NormalCollisionsE" title="ipc::NormalCollisions (C++ class) — The type of the collisions."><span class="n">NormalCollisions</span></a><span class="p">&gt;;</span><a class="headerlink" href="#_CPPv4N3ipc15NormalPotential5SuperE" title="Link to this definition">¶</a></dt>
+<span class="k">using</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">Super</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><a class="reference internal" href="Potential.html#_CPPv4N3ipc9Potential9PotentialEv" title="ipc::Potential::Potential (C++ function)"><span class="n">Potential</span></a><span class="p">&lt;</span><a class="desctype reference internal" href="../normal_collisions.html#_CPPv4N3ipc16NormalCollisionsE" title="ipc::NormalCollisions (C++ class) — How to construct the collision set."><span class="n">NormalCollisions</span></a><span class="p">&gt;;</span><a class="headerlink" href="#_CPPv4N3ipc15NormalPotential5SuperE" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -4073,7 +4121,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Jan 13, 2026
+    Jan 16, 2026
   </span>
 
     

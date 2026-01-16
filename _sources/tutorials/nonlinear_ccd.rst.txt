@@ -216,7 +216,7 @@ The following code snippet shows an example of how to use interval arithmetic to
                 return R * (point - center) + center;
             }
 
-        The full documentation for the ``Interval`` class can be found `here <../../cpp-api/interval.html>`_.
+        The full documentation for the ``Interval`` class can be found `in the C++ API <../../cpp-api/interval.html>`_.
 
     .. md-tab-item:: Python
 
@@ -233,4 +233,4 @@ The following code snippet shows an example of how to use interval arithmetic to
                 ])
                 return R @ (point - center) + center
 
-        The full documentation for the filib python bindings can be found `here <../python-api/interval.html>`_.
+        The full documentation for the filib python bindings can be found `in the Python API <../python-api/interval.html>`_.
