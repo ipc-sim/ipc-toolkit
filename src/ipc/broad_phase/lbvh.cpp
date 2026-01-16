@@ -102,7 +102,8 @@ namespace {
             // handle duplicate morton codes
             int element_idx_i = i; // sorted_morton_codes[i].elementIdx;
             int element_idx_j = j; // sorted_morton_codes[j].elementIdx;
-// add 32 for common prefix of code_i ^ code_j
+
+            // add 32 for common prefix of code_i ^ code_j
 #if defined(__GNUC__) || defined(__clang__)
             return 32 + __builtin_clz(element_idx_i ^ element_idx_j);
 #elif defined(WIN32)
@@ -399,6 +400,9 @@ namespace {
         do {
             const LBVH::Node& node = lbvh[node_idx];
 
+            // Check left and right are valid pointers
+            assert(node.is_inner());
+
 #if defined(__GNUC__) || defined(__clang__)
             // Prefetch child nodes to reduce cache misses
             __builtin_prefetch(&lbvh[node.left], 0, 1);
@@ -425,11 +429,13 @@ namespace {
             bool traverse_r = (intersects_r && !child_r.is_leaf());
 
             if (!traverse_l && !traverse_r) {
+                assert(stack_ptr > 0);
                 node_idx = stack[--stack_ptr];
             } else {
                 node_idx = traverse_l ? node.left : node.right;
                 if (traverse_l && traverse_r) {
                     // Postpone traversal of the right child
+                    assert(stack_ptr < MAX_STACK_SIZE);
                     stack[stack_ptr++] = node.right;
                 }
             }

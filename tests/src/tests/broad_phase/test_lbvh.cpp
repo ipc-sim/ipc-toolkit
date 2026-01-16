@@ -45,8 +45,8 @@ void traverse_lbvh(
         CHECK(!visited[index]);
         visited[index] = true;
 
-        uint32_t left_child_index = LBVH::Node::POINTER(index, node.left);
-        uint32_t right_child_index = LBVH::Node::POINTER(index, node.right);
+        uint32_t left_child_index = LBVH::Node::pointer(index, node.left);
+        uint32_t right_child_index = LBVH::Node::pointer(index, node.right);
 
         // verify aabbs
         LBVH::Node childA = lbvh_nodes[left_child_index];

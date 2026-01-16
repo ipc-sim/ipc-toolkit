@@ -16,7 +16,7 @@ ps.init()
 ps.set_give_focus_on_show(True)
 
 ps_mesh = ps.register_surface_mesh(
-    "bunny",
+    "mesh",
     mesh.points,
     mesh.cells_dict["triangle"]
 )
