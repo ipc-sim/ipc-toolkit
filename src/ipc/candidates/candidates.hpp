@@ -217,7 +217,7 @@ public:
     std::vector<FaceVertexCandidate> fv_candidates;
 
 private:
-    static bool default_is_active(double) { return true; }
+    static bool default_is_active(double candidate) { return true; }
 };
 
 } // namespace ipc
