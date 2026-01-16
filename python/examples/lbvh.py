@@ -6,8 +6,7 @@ import numpy as np
 
 import pathlib
 
-mesh = meshio.read(pathlib.Path(
-    __file__).parents[2] / "tests/data/puffer-ball/20.ply")
+mesh = meshio.read(pathlib.Path(__file__).parents[2] / "tests/data/puffer-ball/20.ply") # noqa
 
 lbvh = ipctk.LBVH()
 lbvh.build(mesh.points, np.array([], dtype=int), mesh.cells_dict["triangle"])

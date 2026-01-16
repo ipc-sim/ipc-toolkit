@@ -24,7 +24,7 @@ public:
         // helper function to handle relative pointers on
         // CPU side, i.e. convert them to absolute
         // pointers for array indexing
-        static constexpr uint32_t POINTER(uint32_t index, uint32_t pointer)
+        static constexpr uint32_t pointer(uint32_t index, uint32_t pointer)
         {
             return ABSOLUTE_POINTERS ? pointer : index + pointer;
         }
@@ -34,13 +34,13 @@ public:
         /// @brief The max corner of the AABB
         ArrayMax3d aabb_max;
         /// @brief The vertex ids (v0, v1, v2)
-        std::array<index_t, 3> vertex_ids;
+        std::array<index_t, 3> vertex_ids = { { -1, -1, -1 } };
         /// @brief Pointer to the left child or INVALID_POINTER in case of leaf
-        int left;
+        int left = -1;
         /// @brief Pointer to the right child or INVALID_POINTER in case of leaf
-        int right;
+        int right = -1;
         /// @brief The primitive id (INVALID_ID <=> inner node)
-        index_t primitive_id;
+        index_t primitive_id = -1;
 
         bool is_leaf() const
         {
@@ -72,7 +72,7 @@ public:
 
     struct ConstructionInfo {
         /// @brief Parent to the parent
-        int parent;
+        int parent = -1;
         /// @brief Number of threads that arrived
         std::atomic<int> visitation_count = 0;
     };

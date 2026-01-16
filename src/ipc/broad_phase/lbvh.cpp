@@ -186,7 +186,7 @@ namespace {
 void LBVH::init_bvh(
     const std::vector<AABB>& boxes, std::vector<Node>& lbvh) const
 {
-    if (boxes.size() == 0) {
+    if (boxes.empty()) {
         return;
     }
 
@@ -317,9 +317,9 @@ void LBVH::init_bvh(
                         // both children are computed -> compute aabb union and
                         // continue
                         const Node& child_b =
-                            lbvh[Node::POINTER(node_idx, lbvh[node_idx].right)];
+                            lbvh[Node::pointer(node_idx, lbvh[node_idx].right)];
                         const Node& child_a =
-                            lbvh[Node::POINTER(node_idx, lbvh[node_idx].left)];
+                            lbvh[Node::pointer(node_idx, lbvh[node_idx].left)];
 
                         lbvh[node_idx].aabb_min =
                             child_a.aabb_min.min(child_b.aabb_min);
@@ -614,7 +614,7 @@ void LBVH::detect_candidates(
 void LBVH::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
-    if (vertex_boxes.size() == 0) {
+    if (vertex_boxes.empty()) {
         return;
     }
 
@@ -626,7 +626,7 @@ void LBVH::detect_vertex_vertex_candidates(
 void LBVH::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
-    if (edge_boxes.size() == 0 || vertex_boxes.size() == 0) {
+    if (edge_boxes.empty() || vertex_boxes.empty()) {
         return;
     }
 
@@ -642,7 +642,7 @@ void LBVH::detect_edge_vertex_candidates(
 void LBVH::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
-    if (edge_boxes.size() == 0) {
+    if (edge_boxes.empty()) {
         return;
     }
 
@@ -656,7 +656,7 @@ void LBVH::detect_edge_edge_candidates(
 void LBVH::detect_face_vertex_candidates(
     std::vector<FaceVertexCandidate>& candidates) const
 {
-    if (face_boxes.size() == 0 || vertex_boxes.size() == 0) {
+    if (face_boxes.empty() || vertex_boxes.empty()) {
         return;
     }
 
@@ -671,7 +671,7 @@ void LBVH::detect_face_vertex_candidates(
 void LBVH::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
-    if (edge_boxes.size() == 0 || face_boxes.size() == 0) {
+    if (edge_boxes.empty() || face_boxes.empty()) {
         return;
     }
 
@@ -686,7 +686,7 @@ void LBVH::detect_edge_face_candidates(
 void LBVH::detect_face_face_candidates(
     std::vector<FaceFaceCandidate>& candidates) const
 {
-    if (face_boxes.size() == 0) {
+    if (face_boxes.empty()) {
         return;
     }
 

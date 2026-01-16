@@ -105,29 +105,6 @@ TEST_CASE("LBVH::build", "[broad_phase][lbvh]")
         lbvh->build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
     }
 
-    std::ofstream dot_file("/Users/zachary/Downloads/lbvh.dot");
-    dot_file << "digraph G {\nnode [shape = circle;];" << std::endl;
-
-    for (int i = 0; i < lbvh->vertex_nodes().size(); ++i) {
-        dot_file << "N" << i << " [label = \""
-                 << (lbvh->vertex_nodes()[i].is_inner() ? "I" : "L")
-                 << (lbvh->vertex_nodes()[i].is_inner()
-                         ? i
-                         : lbvh->vertex_nodes()[i].primitive_id)
-                 << "\"];" << std::endl;
-    }
-
-    for (int i = 0; i < lbvh->vertex_nodes().size(); ++i) {
-        const auto& node = lbvh->vertex_nodes()[i];
-        if (node.is_inner()) {
-            dot_file << "N" << i << " -> N" << node.left << ";" << std::endl;
-            dot_file << "N" << i << " -> N" << node.right << ";" << std::endl;
-        }
-    }
-
-    dot_file << "}" << std::endl;
-    dot_file.close();
-
     // -- TODO: Check the morton codes ----------------------------------------
     // -- TODO: Check the morton codes are sorted -----------------------------
 

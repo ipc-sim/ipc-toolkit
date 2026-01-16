@@ -94,7 +94,10 @@ Profiler& profiler();
 class ChronoTimer {
 public:
     void start() { m_start = std::chrono::high_resolution_clock::now(); }
+
     void stop() { m_end = std::chrono::high_resolution_clock::now(); }
+
+    // NOLINTNEXTLINE(readability-identifier-naming)
     double getElapsedTimeInMilliSec() const
     {
         return std::chrono::duration<double, std::milli>(m_end - m_start)
