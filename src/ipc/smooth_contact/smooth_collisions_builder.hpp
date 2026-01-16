@@ -1,9 +1,14 @@
+// NOTE: This is an internal header file, not meant to be used outside of the
+// IPC Toolkit library. It includes unordered_map_and_set.hpp which is a private
+// dependency of the IPC Toolkit library. To use this outside of the library,
+// one needs to link against Abseil and tsl::robin_map.
+
 #pragma once
 
-#include "smooth_collisions.hpp"
-
 #include <ipc/collision_mesh.hpp>
+#include <ipc/smooth_contact/smooth_collisions.hpp>
 #include <ipc/utils/maybe_parallel_for.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <Eigen/Core>
 
@@ -17,7 +22,7 @@ public:
 
     void add_edge_vertex_collisions(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<EdgeVertexCandidate>& candidates,
         const SmoothContactParameters& params,
         const std::function<double(const index_t)>& vert_dhat,
@@ -53,7 +58,7 @@ public:
 
     void add_edge_edge_collisions(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<EdgeEdgeCandidate>& candidates,
         const SmoothContactParameters& params,
         const std::function<double(const index_t)>& vert_dhat,
@@ -63,7 +68,7 @@ public:
 
     void add_face_vertex_collisions(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<FaceVertexCandidate>& candidates,
         const SmoothContactParameters& params,
         const std::function<double(const index_t)>& vert_dhat,

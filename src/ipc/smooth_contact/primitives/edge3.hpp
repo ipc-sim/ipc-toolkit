@@ -14,7 +14,7 @@ public:
     Edge3(
         const index_t id,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const VectorMax3d& d,
         const SmoothContactParameters& params);
 
@@ -22,11 +22,14 @@ public:
     int n_dofs() const override { return n_vertices() * DIM; }
 
     double potential(
-        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const;
+        Eigen::ConstRef<Eigen::Vector3d> d,
+        Eigen::ConstRef<VectorMax12d> x) const;
     Vector15d grad(
-        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const;
+        Eigen::ConstRef<Eigen::Vector3d> d,
+        Eigen::ConstRef<VectorMax12d> x) const;
     Matrix15d hessian(
-        Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector12d> x) const;
+        Eigen::ConstRef<Eigen::Vector3d> d,
+        Eigen::ConstRef<VectorMax12d> x) const;
 
 private:
     OrientationTypes otypes;
@@ -45,7 +48,7 @@ double smooth_edge3_normal_term(
     const double beta,
     const OrientationTypes& otypes);
 
-GradType<15> smooth_edge3_normal_term_gradient(
+GradientType<15> smooth_edge3_normal_term_gradient(
     Eigen::ConstRef<Eigen::Vector3d> dn,
     Eigen::ConstRef<Eigen::Vector3d> e0,
     Eigen::ConstRef<Eigen::Vector3d> e1,

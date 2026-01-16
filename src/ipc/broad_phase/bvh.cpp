@@ -79,7 +79,7 @@ void BVH::detect_candidates(
                 bvh.intersect_box(boxes[i].min, boxes[i].max, js);
 
                 for (const unsigned int j : js) {
-                    int ai = i, bi = j;
+                    size_t ai = i, bi = j;
                     if constexpr (swap_order) {
                         std::swap(ai, bi);
                     }

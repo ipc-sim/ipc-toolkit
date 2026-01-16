@@ -683,7 +683,7 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
     assert(rest_positions.size() == velocities.size());
 
     // const VectorMaxNd x = dof(rest_positions, edges, faces);
-    // const Vector<double, -1, STENCIL_NDOF> u =
+    // const VectorMax<double, STENCIL_NDOF> u =
     //     dof(lagged_displacements, edges, faces);
     // const VectorMaxNd v = dof(velocities, edges, faces);
     const VectorMaxNd lagged_positions =

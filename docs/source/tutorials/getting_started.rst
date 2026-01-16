@@ -519,9 +519,9 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
             #include <ipc/candidates/candidates.hpp>
 
             ipc::Candidates candidates;
+            ipc::HashGrid broad_phase;
             candidates.build(
-                mesh, vertices_t0, vertices_t1, /*inflation_radius=*/0.0,
-                /*broad_phase=*/std::make_shared<ipc::HashGrid>());
+                mesh, vertices_t0, vertices_t1, /*inflation_radius=*/0.0, broad_phase);
 
     .. md-tab-item:: Python
 

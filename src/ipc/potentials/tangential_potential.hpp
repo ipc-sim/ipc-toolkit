@@ -181,13 +181,10 @@ public:
 
     /// @brief Compute the friction force Jacobian assuming the contact force magnitude being 1.
     /// @param collision The collision
-    /// @param rest_positions Rest positions of the vertices (rowwise).
-    /// @param lagged_displacements Previous displacements of the vertices (rowwise).
+    /// @param lagged_positions Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
-    /// @param barrier_potential Barrier potential (used for normal force magnitude).
-    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
     /// @param wrt Variable to differentiate the friction force with respect to.
-    /// @param dmin Minimum distance (used for normal force magnitude).
+    /// @param no_mu Whether to not multiply by mu
     /// @return Friction force Jacobian
     MatrixMaxNd smooth_contact_force_jacobian_unit(
         const TangentialCollision& collision,

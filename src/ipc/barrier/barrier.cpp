@@ -116,4 +116,41 @@ double CubicBarrier::second_derivative(const double d, const double dhat) const
     }
 }
 
+// ============================================================================
+
+double TwoStageBarrier::operator()(const double d, const double dhat) const
+{
+    if (d >= dhat) {
+        return 0.0;
+    } else if (d >= 0.5 * dhat) {
+        return 0.5 * (dhat - d) * (dhat - d);
+    } else {
+        return -0.25 * dhat * dhat * (std::log(2 * d / dhat) - 0.5);
+    }
+}
+
+double
+TwoStageBarrier::first_derivative(const double d, const double dhat) const
+{
+    if (d >= dhat) {
+        return 0.0;
+    } else if (d >= 0.5 * dhat) {
+        return d - dhat;
+    } else {
+        return -0.25 * dhat * dhat / d;
+    }
+}
+
+double
+TwoStageBarrier::second_derivative(const double d, const double dhat) const
+{
+    if (d >= dhat) {
+        return 0.0;
+    } else if (d >= 0.5 * dhat) {
+        return 1.0;
+    } else {
+        return (0.25 * dhat * dhat) / (d * d);
+    }
+}
+
 } // namespace ipc

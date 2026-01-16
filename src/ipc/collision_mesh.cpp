@@ -1,10 +1,13 @@
 #include "collision_mesh.hpp"
 
-#include <ipc/utils/area_gradient.hpp>
+#include <ipc/geometry/area.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
+
+#include <tbb/blocked_range.h>
+#include <tbb/parallel_for.h>
 
 #include <algorithm>
 
@@ -226,25 +229,49 @@ Eigen::SparseMatrix<double> CollisionMesh::vertex_matrix_to_dof_matrix(
 
 // ============================================================================
 
+namespace {
+
+    void remove_duplicates(std::vector<std::vector<index_t>>& v)
+    {
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(0, v.size()),
+            [&](const tbb::blocked_range<size_t>& r) {
+                for (size_t i = r.begin(); i < r.end(); i++) {
+                    std::sort(v[i].begin(), v[i].end());
+                    auto last = std::unique(v[i].begin(), v[i].end());
+                    v[i].erase(last, v[i].end());
+                    v[i].shrink_to_fit();
+                }
+            });
+    }
+
+} // namespace
+
 void CollisionMesh::init_adjacencies()
 {
     m_vertex_vertex_adjacencies.resize(num_vertices());
     m_vertex_edge_adjacencies.resize(num_vertices());
     // Edges includes the edges of the faces
     for (int i = 0; i < m_edges.rows(); i++) {
-        m_vertex_vertex_adjacencies[m_edges(i, 0)].insert(m_edges(i, 1));
-        m_vertex_vertex_adjacencies[m_edges(i, 1)].insert(m_edges(i, 0));
-        m_vertex_edge_adjacencies[m_edges(i, 0)].insert(i);
-        m_vertex_edge_adjacencies[m_edges(i, 1)].insert(i);
+        m_vertex_vertex_adjacencies[m_edges(i, 0)].push_back(m_edges(i, 1));
+        m_vertex_vertex_adjacencies[m_edges(i, 1)].push_back(m_edges(i, 0));
+        m_vertex_edge_adjacencies[m_edges(i, 0)].push_back(i);
+        m_vertex_edge_adjacencies[m_edges(i, 1)].push_back(i);
     }
+    remove_duplicates(m_vertex_vertex_adjacencies);
+    remove_duplicates(m_vertex_edge_adjacencies);
 
-    m_edge_vertex_adjacencies.resize(m_edges.rows());
+    m_vertex_face_adjacencies.resize(num_vertices());
+    m_edge_vertex_adjacencies.resize(num_edges());
     for (int i = 0; i < m_faces.rows(); i++) {
         for (int j = 0; j < 3; ++j) {
-            m_edge_vertex_adjacencies[m_faces_to_edges(i, j)].insert(
+            m_vertex_face_adjacencies[m_faces(i, j)].push_back(i);
+            m_edge_vertex_adjacencies[m_faces_to_edges(i, j)].push_back(
                 m_faces(i, (j + 2) % 3));
         }
     }
+    remove_duplicates(m_vertex_face_adjacencies);
+    remove_duplicates(m_edge_vertex_adjacencies);
 
     // Is the vertex on the boundary of the triangle mesh in 3D or polyline in
     // 2D
@@ -264,6 +291,22 @@ void CollisionMesh::init_adjacencies()
             }
         }
     }
+
+// The adjacencies should be sorted for binary search
+#ifndef NDEBUG
+    for (const auto& adj : m_vertex_vertex_adjacencies) {
+        assert(std::is_sorted(adj.begin(), adj.end()));
+    }
+    for (const auto& adj : m_vertex_edge_adjacencies) {
+        assert(std::is_sorted(adj.begin(), adj.end()));
+    }
+    for (const auto& adj : m_vertex_face_adjacencies) {
+        assert(std::is_sorted(adj.begin(), adj.end()));
+    }
+    for (const auto& adj : m_edge_vertex_adjacencies) {
+        assert(std::is_sorted(adj.begin(), adj.end()));
+    }
+#endif
 }
 
 void CollisionMesh::init_areas()
@@ -286,9 +329,7 @@ void CollisionMesh::init_areas()
     Eigen::VectorXd vertex_edge_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
     for (int i = 0; i < m_edges.rows(); i++) {
-        const VectorMax3d e0 = m_rest_positions.row(m_edges(i, 0));
-        const VectorMax3d e1 = m_rest_positions.row(m_edges(i, 1));
-        double edge_len = (e1 - e0).norm();
+        double edge_len = edge_length(i);
 
         for (int j = 0; j < m_edges.cols(); j++) {
             vertex_edge_areas[m_edges(i, j)] =
@@ -303,10 +344,10 @@ void CollisionMesh::init_areas()
     m_edge_areas.setConstant(m_edges.rows(), -1);
     if (dim() == 3) {
         for (int i = 0; i < m_faces.rows(); i++) {
-            const Eigen::Vector3d f0 = m_rest_positions.row(m_faces(i, 0));
-            const Eigen::Vector3d f1 = m_rest_positions.row(m_faces(i, 1));
-            const Eigen::Vector3d f2 = m_rest_positions.row(m_faces(i, 2));
-            double face_area = 0.5 * (f1 - f0).cross(f2 - f0).norm();
+            double face_area = triangle_area(
+                m_rest_positions.row(m_faces(i, 0)),
+                m_rest_positions.row(m_faces(i, 1)),
+                m_rest_positions.row(m_faces(i, 2)));
 
             for (int j = 0; j < m_faces.cols(); ++j) {
                 vertex_face_areas[m_faces(i, j)] =
@@ -330,9 +371,7 @@ void CollisionMesh::init_areas()
     for (int i = 0; i < m_edge_areas.size(); i++) {
         if (m_edge_areas[i] < 0) {
             // Use the edge length for codim edges
-            const VectorMax3d e0 = m_rest_positions.row(m_edges(i, 0));
-            const VectorMax3d e1 = m_rest_positions.row(m_edges(i, 1));
-            m_edge_areas[i] = (e1 - e0).norm();
+            m_edge_areas[i] = edge_length(i);
         }
     }
 }
@@ -508,9 +547,9 @@ Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
 
 double CollisionMesh::edge_length(const index_t edge_id) const
 {
-    return (m_rest_positions.row(m_edges(edge_id, 0))
-            - m_rest_positions.row(m_edges(edge_id, 1)))
-        .norm();
+    return ::ipc::edge_length(
+        m_rest_positions.row(m_edges(edge_id, 0)),
+        m_rest_positions.row(m_edges(edge_id, 1)));
 }
 
 double CollisionMesh::max_edge_length() const

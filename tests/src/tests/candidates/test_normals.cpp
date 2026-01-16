@@ -1,8 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
+#include <catch2/generators/catch_generators_all.hpp>
 #include <catch2/catch_approx.hpp>
 
 #include <ipc/candidates/candidates.hpp>
+#include <ipc/geometry/normal.hpp>
 #include <ipc/collisions/normal/plane_vertex.hpp>
 
 #include <igl/edges.h>
@@ -97,6 +98,56 @@ TEST_CASE("Edge-vertex collision normal", "[ev][normal]")
     }
 }
 
+TEST_CASE("Point-line normal hessian", "[pl][normal]")
+{
+    const int DIM = GENERATE(2, 3);
+
+    VectorMax3d p(DIM);
+    VectorMax3d e0(DIM);
+    VectorMax3d e1(DIM);
+    Eigen::VectorXd x(3 * DIM);
+
+    const int case_i = GENERATE(range(0, 10));
+    p.setRandom();
+    e0.setRandom();
+    e1.setRandom();
+
+    x << p, e0, e1;
+
+    // Check hessian using finite differences
+    Eigen::MatrixXd hessian = point_line_unnormalized_normal_hessian(p, e0, e1);
+    Eigen::MatrixXd fd_hessian;
+    fd::finite_jacobian(
+        x,
+        [DIM](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
+            return point_line_unnormalized_normal_jacobian(
+                x_fd.segment(0, DIM), x_fd.segment(DIM, DIM),
+                x_fd.segment(2 * DIM, DIM));
+        },
+        fd_hessian);
+    CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
+    if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
+        std::cout << "Hessian:\n" << hessian << std::endl;
+        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
+    }
+
+    // Check hessian using finite differences
+    hessian = point_line_normal_hessian(p, e0, e1);
+    fd::finite_jacobian(
+        x,
+        [DIM](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
+            return point_line_normal_jacobian(
+                x_fd.segment(0, DIM), x_fd.segment(DIM, DIM),
+                x_fd.segment(2 * DIM, DIM));
+        },
+        fd_hessian);
+    CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
+    if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
+        std::cout << "Hessian:\n" << hessian << std::endl;
+        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
+    }
+}
+
 TEST_CASE("Edge-edge collision normal", "[ee][normal]")
 {
     Eigen::MatrixXd V(4, 3);
@@ -139,6 +190,58 @@ TEST_CASE("Edge-edge collision normal", "[ee][normal]")
     if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
         std::cout << "Jacobian:\n" << jacobian << std::endl;
         std::cout << "FD Jacobian:\n" << fd_jacobian << std::endl;
+    }
+}
+
+TEST_CASE("Line-line normal hessian", "[ee][normal][hessian]")
+{
+    Eigen::Vector3d a(0, 0, 0);
+    Eigen::Vector3d b(1, 0, 0);
+    Eigen::Vector3d c(0, 1, 0);
+    Eigen::Vector3d d(0, 1, 1);
+    Eigen::VectorXd x(12);
+
+    const int case_i = GENERATE(range(0, 10));
+    if (case_i > 0) {
+        a.setRandom();
+        b.setRandom();
+        c.setRandom();
+        d.setRandom();
+    }
+
+    x << a, b, c, d;
+
+    // Check hessian using finite differences
+    Eigen::MatrixXd hessian = line_line_unnormalized_normal_hessian(a, b, c, d);
+    Eigen::MatrixXd fd_hessian;
+    fd::finite_jacobian(
+        x,
+        [](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
+            return line_line_unnormalized_normal_jacobian(
+                x_fd.segment<3>(0), x_fd.segment<3>(3), x_fd.segment<3>(6),
+                x_fd.segment<3>(9));
+        },
+        fd_hessian);
+    CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
+    if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
+        std::cout << "Hessian:\n" << hessian << std::endl;
+        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
+    }
+
+    // Check hessian using finite differences
+    hessian = line_line_normal_hessian(a, b, c, d);
+    fd::finite_jacobian(
+        x,
+        [](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
+            return line_line_normal_jacobian(
+                x_fd.segment<3>(0), x_fd.segment<3>(3), x_fd.segment<3>(6),
+                x_fd.segment<3>(9));
+        },
+        fd_hessian);
+    CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
+    if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
+        std::cout << "Hessian:\n" << hessian << std::endl;
+        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
     }
 }
 
@@ -187,6 +290,67 @@ TEST_CASE("Face-vertex collision normal", "[fv][normal]")
     if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
         std::cout << "Jacobian:\n" << jacobian << std::endl;
         std::cout << "FD Jacobian:\n" << fd_jacobian << std::endl;
+    }
+}
+
+TEST_CASE("Triangle normal hessian", "[normal]")
+{
+    Eigen::Vector3d a(0, 0, 0);
+    Eigen::Vector3d b(1, 0, 0);
+    Eigen::Vector3d c(0, 1, 0);
+    Eigen::VectorXd x(9);
+
+    const int case_i = GENERATE(range(0, 10));
+    if (case_i > 0) {
+        a.setRandom();
+        b.setRandom();
+        c.setRandom();
+    }
+
+    x << a, b, c;
+
+    // Cross product matrix jacobian
+    Eigen::MatrixXd J_cross = cross_product_matrix_jacobian();
+    Eigen::MatrixXd fd_J_cross;
+    fd::finite_jacobian(
+        a,
+        [](const Eigen::Vector3d& a_fd) { return cross_product_matrix(a_fd); },
+        fd_J_cross);
+    CHECK(fd::compare_jacobian(J_cross, fd_J_cross, 1e-6));
+    if (!fd::compare_jacobian(J_cross, fd_J_cross, 1e-6)) {
+        std::cout << "Hessian:\n" << J_cross << std::endl;
+        std::cout << "FD Hessian:\n" << fd_J_cross << std::endl;
+    }
+
+    // Check hessian using finite differences
+    Eigen::MatrixXd hessian = triangle_unnormalized_normal_hessian(a, b, c);
+    Eigen::MatrixXd fd_hessian;
+    fd::finite_jacobian(
+        x,
+        [](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
+            return triangle_unnormalized_normal_jacobian(
+                x_fd.segment<3>(0), x_fd.segment<3>(3), x_fd.segment<3>(6));
+        },
+        fd_hessian);
+    CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
+    if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
+        std::cout << "Hessian:\n" << hessian << std::endl;
+        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
+    }
+
+    // Check hessian using finite differences
+    hessian = triangle_normal_hessian(a, b, c);
+    fd::finite_jacobian(
+        x,
+        [](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
+            return triangle_normal_jacobian(
+                x_fd.segment<3>(0), x_fd.segment<3>(3), x_fd.segment<3>(6));
+        },
+        fd_hessian);
+    CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
+    if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
+        std::cout << "Hessian:\n" << hessian << std::endl;
+        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
     }
 }
 

@@ -84,6 +84,7 @@ PYBIND11_MODULE(ipctk, m)
     define_point_point_distance(m);
     define_point_plane_distance(m);
     define_point_triangle_distance(m);
+    define_signed_distance(m);
 
     // friction
     define_smooth_friction_mollifier(m);
@@ -91,8 +92,23 @@ PYBIND11_MODULE(ipctk, m)
 
     define_smooth_potential(m);
 
+    // geometry
+    define_angle(m);
+    define_area(m);
+    define_intersection(m);
+    define_normal(m);
+
     // implicits
     define_plane_implicit(m);
+
+    // math
+    define_interval(m);
+
+    // ogc
+    py::module_ ogc =
+        m.def_submodule("ogc", "Offset Geometric Contact (OGC) helpers");
+    define_feasible_region(ogc);
+    define_trust_region(ogc);
 
     // potentials
     define_normal_potential(m); // define early because it is used next
@@ -103,9 +119,6 @@ PYBIND11_MODULE(ipctk, m)
     define_tangential_adhesion_potential(m);
 
     // utils
-    define_area_gradient(m);
-    define_interval(m);
-    define_intersection(m);
     define_logger(m);
     define_thread_limiter(m);
     define_vertex_to_min_edge(m);

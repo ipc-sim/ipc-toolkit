@@ -2,7 +2,7 @@
   "version": 3,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 18
+    "minor": 24
   },
   "configurePresets": [{
       "name": "release",

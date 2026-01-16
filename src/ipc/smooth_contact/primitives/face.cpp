@@ -23,7 +23,7 @@ namespace ipc {
 Face::Face(
     const index_t id,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const VectorMax3d& d,
     const SmoothContactParameters& params)
     : Primitive(id, params)

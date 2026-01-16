@@ -23,7 +23,18 @@
 namespace ipc {
 
 // Type definitions
+#cmakedefine IPC_TOOLKIT_USE_64BIT_INDICES
+#ifdef IPC_TOOLKIT_USE_64BIT_INDICES
+using index_t = int64_t;
+#else
 using index_t = int32_t;
+#endif
+
+// #cmakedefine IPC_TOOLKIT_USE_DOUBLE_PRECISION
+// #ifdef IPC_TOOLKIT_USE_DOUBLE_PRECISION
 // using scalar_t = double;
+// #else
+// using scalar_t = float;
+// #endif
 
 } // namespace ipc

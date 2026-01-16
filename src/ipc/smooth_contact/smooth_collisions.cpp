@@ -22,7 +22,7 @@ void SmoothCollisions::compute_adaptive_dhat(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices, // set to zero for rest pose
     const SmoothContactParameters params,
-    const std::shared_ptr<BroadPhase>& broad_phase)
+    BroadPhase* broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
@@ -118,7 +118,7 @@ void SmoothCollisions::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const SmoothContactParameters params,
     const bool use_adaptive_dhat,
-    const std::shared_ptr<BroadPhase>& broad_phase)
+    BroadPhase* broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 

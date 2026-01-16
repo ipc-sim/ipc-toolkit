@@ -20,6 +20,19 @@ public:
     /// @brief The type of the collisions.
     using value_type = NormalCollision;
 
+    /// @brief How to construct the collision set.
+    /// This choice is described in the "Offset Geometric Contact" [Chen et al.
+    /// 2025] using the notation: \f$\mathcal{F}\f$ and \f$\mathcal{E}\f$ for
+    /// the face and edge sets, respectively.
+    enum class CollisionSetType : uint8_t {
+        /// @brief IPC set type, which uses the original formulation described in [Li et al. 2020].
+        IPC,
+        /// @brief Improved max approximation set type, which uses the improved max approximation formulation described in [Li et al. 2023].
+        IMPROVED_MAX_APPROX,
+        /// @brief Offset Geometric Contact set type, which uses the formulation described in [Chen et al. 2025].
+        OGC,
+    };
+
 public:
     NormalCollisions() = default;
 
@@ -34,8 +47,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double dhat,
         const double dmin = 0,
-        const std::shared_ptr<BroadPhase>& broad_phase =
-            make_default_broad_phase());
+        BroadPhase* broad_phase = nullptr);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param candidates Distance candidates from which the collision set is built.
@@ -119,16 +131,36 @@ public:
     /// @brief Get if the collision set should use the improved max approximator.
     /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
     /// @return If the collision set should use the improved max approximator.
+    [[deprecated(
+        "use_improved_max_approximator() is deprecated. Use collision_set_type() instead.")]]
     bool use_improved_max_approximator() const
     {
-        return m_use_improved_max_approximator;
+        return m_collision_set_type == CollisionSetType::IMPROVED_MAX_APPROX;
     }
 
     /// @brief Set if the collision set should use the improved max approximator.
     /// @warning This must be set before the collisions are built.
     /// @param use_improved_max_approximator If the collision set should use the improved max approximator.
+    [[deprecated(
+        "set_use_improved_max_approximator() is deprecated. Use set_collision_set_type() instead.")]]
     void
-    set_use_improved_max_approximator(const bool use_improved_max_approximator);
+    set_use_improved_max_approximator(const bool use_improved_max_approximator)
+    {
+        // Default to IPC if not using improved max approximator
+        set_collision_set_type(
+            use_improved_max_approximator
+                ? CollisionSetType::IMPROVED_MAX_APPROX
+                : CollisionSetType::IPC);
+    }
+
+    /// @brief Get the set type of the collision set.
+    /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
+    /// @return The set type of the collision set.
+    CollisionSetType collision_set_type() const { return m_collision_set_type; }
+
+    /// @brief Set the set type of the collision set.
+    /// @param type The set type of the collision set.
+    void set_collision_set_type(const CollisionSetType type);
 
     /// @brief Get if the collision set are using the convergent formulation.
     /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
@@ -157,8 +189,8 @@ public:
     std::vector<PlaneVertexNormalCollision> pv_collisions;
 
 protected:
+    CollisionSetType m_collision_set_type = CollisionSetType::IPC;
     bool m_use_area_weighting = false;
-    bool m_use_improved_max_approximator = false;
     bool m_enable_shape_derivatives = false;
 };
 

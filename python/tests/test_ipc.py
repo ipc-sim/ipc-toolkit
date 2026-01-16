@@ -16,7 +16,10 @@ def check_ipc_derivatives(broad_phase, use_convergent_formulation, mesh_name, dh
 
     collisions = ipctk.NormalCollisions()
     collisions.use_area_weighting = use_convergent_formulation
-    collisions.use_improved_max_approximator = use_convergent_formulation
+    if use_convergent_formulation:
+        collisions.collision_set_type = ipctk.NormalCollisions.CollisionSetType.IMPROVED_MAX_APPROX
+    else:
+        collisions.collision_set_type = ipctk.NormalCollisions.CollisionSetType.IPC
     collisions.build(mesh, vertices, dhat, broad_phase=broad_phase)
     assert len(collisions) > 0
 

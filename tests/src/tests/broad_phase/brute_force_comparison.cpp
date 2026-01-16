@@ -25,8 +25,8 @@ void brute_force_comparison(
     Candidates bf_candidates;
     if (cached_bf_candidates.empty()
         || !load_candidates(cached_bf_candidates, bf_candidates)) {
-        bf_candidates.build(
-            mesh, V0, V1, inflation_radius, std::make_shared<BruteForce>());
+        BruteForce bf;
+        bf_candidates.build(mesh, V0, V1, inflation_radius, &bf);
         if (!cached_bf_candidates.empty()) {
             save_candidates(cached_bf_candidates, bf_candidates);
         }

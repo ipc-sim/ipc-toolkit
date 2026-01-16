@@ -13,15 +13,15 @@ BarrierPotential::BarrierPotential(
 }
 
 BarrierPotential::BarrierPotential(
-    const std::shared_ptr<Barrier>& barrier,
+    std::shared_ptr<Barrier> barrier,
     const double dhat,
     const bool use_physical_barrier)
-    : m_barrier(barrier)
+    : m_barrier(std::move(barrier))
     , m_dhat(dhat)
     , m_use_physical_barrier(use_physical_barrier)
 {
     assert(dhat > 0);
-    assert(barrier != nullptr);
+    assert(m_barrier != nullptr);
 }
 
 double BarrierPotential::force_magnitude(

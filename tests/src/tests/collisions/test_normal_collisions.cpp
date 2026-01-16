@@ -43,7 +43,7 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
         V1.col(1) *= 0.5;
 
         Candidates candidates;
-        candidates.build(mesh, vertices, V1, thickness, broad_phase);
+        candidates.build(mesh, vertices, V1, thickness, broad_phase.get());
 
         CHECK(!candidates.empty());
         CHECK(candidates.vv_candidates.size() == candidates.size());
@@ -68,18 +68,20 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
     SECTION("Collisions")
     {
         const bool use_area_weighting = GENERATE(false, true);
-        const bool use_improved_max_approximator = GENERATE(false, true);
+        const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+            NormalCollisions::CollisionSetType::IPC,
+            NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+            NormalCollisions::CollisionSetType::OGC);
         const bool use_physical_barrier = GENERATE(false, true);
         const bool enable_shape_derivatives = GENERATE(false, true);
         const double dhat = 0.25;
 
         NormalCollisions collisions;
         collisions.set_use_area_weighting(use_area_weighting);
-        collisions.set_use_improved_max_approximator(
-            use_improved_max_approximator);
+        collisions.set_collision_set_type(collision_set_type);
         collisions.set_enable_shape_derivatives(enable_shape_derivatives);
 
-        collisions.build(mesh, vertices, dhat, min_distance, broad_phase);
+        collisions.build(mesh, vertices, dhat, min_distance, broad_phase.get());
 
         CHECK(collisions.size() == 12);
         CHECK(collisions.vv_collisions.size() == 12);
@@ -135,7 +137,7 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
         V1.bottomRows(3).col(1).array() -= 4; // Translate the codim vertices
 
         Candidates candidates;
-        candidates.build(mesh, vertices, V1, thickness, broad_phase);
+        candidates.build(mesh, vertices, V1, thickness, broad_phase.get());
 
         CHECK(candidates.size() == 15);
         CHECK(candidates.vv_candidates.size() == 3);
@@ -163,24 +165,28 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
     SECTION("Collisions")
     {
         const bool use_area_weighting = GENERATE(false, true);
-        const bool use_improved_max_approximator = GENERATE(false, true);
+        const NormalCollisions::CollisionSetType collision_set_type = GENERATE(
+            NormalCollisions::CollisionSetType::IPC,
+            NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX,
+            NormalCollisions::CollisionSetType::OGC);
         const bool use_physical_barrier = GENERATE(false, true);
         const bool enable_shape_derivatives = GENERATE(false, true);
 
         NormalCollisions collisions;
         collisions.set_use_area_weighting(use_area_weighting);
-        collisions.set_use_improved_max_approximator(
-            use_improved_max_approximator);
+        collisions.set_collision_set_type(collision_set_type);
         collisions.set_enable_shape_derivatives(enable_shape_derivatives);
 
         const double dhat = 0.25;
         collisions.build(
-            mesh, vertices, dhat, /*min_distance=*/0.8, broad_phase);
+            mesh, vertices, dhat, /*min_distance=*/0.8, broad_phase.get());
 
-        const int expected_num_collisions =
-            6 + int(use_improved_max_approximator);
-        const int expected_num_vv_collisions =
-            2 + int(use_improved_max_approximator);
+        const int expected_num_collisions = 6
+            + int(collision_set_type
+                  == NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
+        const int expected_num_vv_collisions = 2
+            + int(collision_set_type
+                  == NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
 
         CHECK(collisions.size() == expected_num_collisions);
         CHECK(collisions.vv_collisions.size() == expected_num_vv_collisions);
@@ -327,7 +333,8 @@ TEST_CASE("NormalCollisions::to_string", "[collisions]")
 
     NormalCollisions collisions;
     collisions.set_use_area_weighting(true);
-    collisions.set_use_improved_max_approximator(true);
+    collisions.set_collision_set_type(
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
     collisions.build(mesh, vertices, dhat);
 
     std::sort(collisions.vv_collisions.begin(), collisions.vv_collisions.end());

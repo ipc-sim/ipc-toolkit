@@ -1,4 +1,10 @@
 set(SOURCES
+  angle.cpp
+  angle.hpp
+  area.cpp
+  area.hpp
+  intersection.cpp
+  intersection.hpp
   normal.cpp
   normal.hpp
 )

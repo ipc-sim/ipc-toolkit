@@ -3,7 +3,7 @@
 #include <ipc/config.hpp>
 #include <ipc/ccd/tight_inclusion_ccd.hpp>
 #ifdef IPC_TOOLKIT_WITH_FILIB
-#include <ipc/utils/interval.hpp>
+#include <ipc/math/interval.hpp>
 #endif
 
 #include <functional>
@@ -149,7 +149,7 @@ bool point_triangle_nonlinear_ccd(
 /// @param[in] linear_ccd Perform linear CCD on a given time interval.
 /// @param[out] toi Output time of impact.
 /// @param[in] tmax Maximum time to check for collision.
-/// @param[in] min_distance Minimum separation distance between the objects.
+/// @param[in] min_sep_distance Minimum separation distance between the objects.
 /// @param[in] conservative_rescaling Conservative rescaling of the time of impact.
 /// @return True if a collision was detected, false otherwise.
 bool conservative_piecewise_linear_ccd(

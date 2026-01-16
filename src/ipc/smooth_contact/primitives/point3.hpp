@@ -14,14 +14,14 @@ public:
     Point3(
         const index_t id,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const VectorMax3d& d,
         const SmoothContactParameters& params);
 
     Point3(
         const index_t id,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices);
+        Eigen::ConstRef<Eigen::MatrixXd> vertices);
     virtual ~Point3() = default;
 
     int n_vertices() const override;
@@ -29,15 +29,15 @@ public:
 
     // assume the following functions are only called if active
     double potential(
-        const Vector<double, DIM>& d,
-        const Vector<double, -1, MAX_SIZE>& x) const;
+        const Eigen::Vector<double, DIM>& d,
+        const VectorMax<double, MAX_SIZE>& x) const;
     // derivatives including wrt. d (the closest direction) in front
-    Vector<double, -1, MAX_SIZE + DIM> grad(
-        const Vector<double, DIM>& d,
-        const Vector<double, -1, MAX_SIZE>& x) const;
+    VectorMax<double, MAX_SIZE + DIM> grad(
+        const Eigen::Vector<double, DIM>& d,
+        const VectorMax<double, MAX_SIZE>& x) const;
     MatrixMax<double, MAX_SIZE + DIM, MAX_SIZE + DIM> hessian(
-        const Vector<double, DIM>& d,
-        const Vector<double, -1, MAX_SIZE>& x) const;
+        const Eigen::Vector<double, DIM>& d,
+        const VectorMax<double, MAX_SIZE>& x) const;
 
     /// @brief
     /// @tparam scalar
@@ -52,7 +52,7 @@ public:
         const Eigen::Matrix<scalar, n_verts, 3>& X,
         Eigen::ConstRef<Eigen::RowVector3<scalar>> direc) const;
 
-    GradType<-1> smooth_point3_term_gradient(
+    GradientType<-1> smooth_point3_term_gradient(
         Eigen::ConstRef<Eigen::RowVector3d> direc,
         Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
         const SmoothContactParameters& params) const;
@@ -62,7 +62,7 @@ public:
         Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
         const SmoothContactParameters& params) const;
 
-    GradType<-1> smooth_point3_term_tangent_gradient(
+    GradientType<-1> smooth_point3_term_tangent_gradient(
         Eigen::ConstRef<Eigen::RowVector3d> direc,
         Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
         const double alpha,
@@ -74,7 +74,7 @@ public:
         const double alpha,
         const double beta) const;
 
-    GradType<-1> smooth_point3_term_normal_gradient(
+    GradientType<-1> smooth_point3_term_normal_gradient(
         Eigen::ConstRef<Eigen::RowVector3d> direc,
         Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
         const double alpha,

@@ -1,142 +1,18 @@
 #include "normal_collisions.hpp"
 
 #include <ipc/collisions/normal/normal_collisions_builder.hpp>
-#include <ipc/distance/edge_edge.hpp>
-#include <ipc/distance/point_edge.hpp>
-#include <ipc/distance/point_line.hpp>
-#include <ipc/distance/point_plane.hpp>
-#include <ipc/distance/point_point.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
-#include <tbb/parallel_sort.h>
 
 #include <stdexcept> // std::out_of_range
 
 namespace ipc {
 
 namespace {
-    /// @brief Convert element-vertex candidates to vertex-vertex candidates
-    /// @param elements Elements matrix of the mesh
-    /// @param vertices Vertex positions of the mesh
-    /// @param ev_candidates Element-vertex candidates
-    /// @param is_active Function to determine if a candidate is active
-    /// @return Vertex-vertex candidates
-    template <typename Candidate>
-    std::vector<VertexVertexCandidate>
-    element_vertex_to_vertex_vertex_candidates(
-        Eigen::ConstRef<Eigen::MatrixXi> elements,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<Candidate>& candidates,
-        const std::function<bool(double)>& is_active)
-    {
-        std::vector<VertexVertexCandidate> vv_candidates;
-        for (const auto& [ei, vi] : candidates) {
-            for (int j = 0; j < elements.cols(); j++) {
-                const int vj = elements(ei, j);
-                if (is_active(point_point_distance(
-                        vertices.row(vi), vertices.row(vj)))) {
-                    vv_candidates.emplace_back(vi, vj);
-                }
-            }
-        }
-
-        // Remove duplicates
-        tbb::parallel_sort(vv_candidates.begin(), vv_candidates.end());
-        vv_candidates.erase(
-            std::unique(vv_candidates.begin(), vv_candidates.end()),
-            vv_candidates.end());
-
-        return vv_candidates;
-    }
-
-    std::vector<VertexVertexCandidate> edge_vertex_to_vertex_vertex_candidates(
-        const CollisionMesh& mesh,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<EdgeVertexCandidate>& ev_candidates,
-        const std::function<bool(double)>& is_active)
-    {
-        return element_vertex_to_vertex_vertex_candidates(
-            mesh.edges(), vertices, ev_candidates, is_active);
-    }
-
-    std::vector<VertexVertexCandidate> face_vertex_to_vertex_vertex_candidates(
-        const CollisionMesh& mesh,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<FaceVertexCandidate>& fv_candidates,
-        const std::function<bool(double)>& is_active)
-    {
-        return element_vertex_to_vertex_vertex_candidates(
-            mesh.faces(), vertices, fv_candidates, is_active);
-    }
-
-    std::vector<EdgeVertexCandidate> face_vertex_to_edge_vertex_candidates(
-        const CollisionMesh& mesh,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<FaceVertexCandidate>& fv_candidates,
-        const std::function<bool(double)>& is_active)
-    {
-        std::vector<EdgeVertexCandidate> ev_candidates;
-        for (const auto& [fi, vi] : fv_candidates) {
-            for (int j = 0; j < 3; j++) {
-                const int ei = mesh.faces_to_edges()(fi, j);
-                const int vj = mesh.edges()(ei, 0);
-                const int vk = mesh.edges()(ei, 1);
-                if (is_active(point_edge_distance(
-                        vertices.row(vi), //
-                        vertices.row(vj), vertices.row(vk)))) {
-                    ev_candidates.emplace_back(ei, vi);
-                }
-            }
-        }
-
-        // Remove duplicates
-        tbb::parallel_sort(ev_candidates.begin(), ev_candidates.end());
-        ev_candidates.erase(
-            std::unique(ev_candidates.begin(), ev_candidates.end()),
-            ev_candidates.end());
-
-        return ev_candidates;
-    }
-
-    std::vector<EdgeVertexCandidate> edge_edge_to_edge_vertex_candidates(
-        const CollisionMesh& mesh,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<EdgeEdgeCandidate>& ee_candidates,
-        const std::function<bool(double)>& is_active)
-    {
-        std::vector<EdgeVertexCandidate> ev_candidates;
-        for (const EdgeEdgeCandidate& ee : ee_candidates) {
-            for (int i = 0; i < 2; i++) {
-                const int ei = i == 0 ? ee.edge0_id : ee.edge1_id;
-                const int ej = i == 0 ? ee.edge1_id : ee.edge0_id;
-
-                const int ei0 = mesh.edges()(ei, 0);
-                const int ei1 = mesh.edges()(ei, 1);
-
-                for (int j = 0; j < 2; j++) {
-                    const int vj = mesh.edges()(ej, j);
-                    if (is_active(point_edge_distance(
-                            vertices.row(vj), //
-                            vertices.row(ei0), vertices.row(ei1)))) {
-                        ev_candidates.emplace_back(ei, vj);
-                    }
-                }
-            }
-        }
-
-        // Remove duplicates
-        tbb::parallel_sort(ev_candidates.begin(), ev_candidates.end());
-        ev_candidates.erase(
-            std::unique(ev_candidates.begin(), ev_candidates.end()),
-            ev_candidates.end());
-
-        return ev_candidates;
-    }
-
     inline double sqr(double x) { return x * x; }
 } // namespace
 
@@ -145,7 +21,7 @@ void NormalCollisions::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double dhat,
     const double dmin,
-    const std::shared_ptr<BroadPhase>& broad_phase)
+    BroadPhase* broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
@@ -175,7 +51,8 @@ void NormalCollisions::build(
     };
 
     tbb::enumerable_thread_specific<NormalCollisionsBuilder> storage(
-        use_area_weighting(), enable_shape_derivatives());
+        use_area_weighting(), enable_shape_derivatives(),
+        collision_set_type() == CollisionSetType::OGC);
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), candidates.vv_candidates.size()),
@@ -209,12 +86,11 @@ void NormalCollisions::build(
                 r.end());
         });
 
-    if (use_improved_max_approximator()) {
+    if (collision_set_type() == CollisionSetType::IMPROVED_MAX_APPROX) {
         if (!candidates.ev_candidates.empty()) {
             // Convert edge-vertex to vertex-vertex
-            const std::vector<VertexVertexCandidate> vv_candidates =
-                edge_vertex_to_vertex_vertex_candidates(
-                    mesh, vertices, candidates.ev_candidates, is_active);
+            const auto vv_candidates = candidates.edge_vertex_to_vertex_vertex(
+                mesh, vertices, is_active);
 
             tbb::parallel_for(
                 tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
@@ -227,8 +103,8 @@ void NormalCollisions::build(
 
         if (!candidates.ee_candidates.empty()) {
             // Convert edge-edge to edge-vertex
-            const auto ev_candidates = edge_edge_to_edge_vertex_candidates(
-                mesh, vertices, candidates.ee_candidates, is_active);
+            const auto ev_candidates =
+                candidates.edge_edge_to_edge_vertex(mesh, vertices, is_active);
 
             tbb::parallel_for(
                 tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
@@ -241,9 +117,8 @@ void NormalCollisions::build(
 
         if (!candidates.fv_candidates.empty()) {
             // Convert face-vertex to edge-vertex
-            const std::vector<EdgeVertexCandidate> ev_candidates =
-                face_vertex_to_edge_vertex_candidates(
-                    mesh, vertices, candidates.fv_candidates, is_active);
+            const auto ev_candidates = candidates.face_vertex_to_edge_vertex(
+                mesh, vertices, is_active);
 
             tbb::parallel_for(
                 tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
@@ -254,9 +129,8 @@ void NormalCollisions::build(
                 });
 
             // Convert face-vertex to vertex-vertex
-            const std::vector<VertexVertexCandidate> vv_candidates =
-                face_vertex_to_vertex_vertex_candidates(
-                    mesh, vertices, candidates.fv_candidates, is_active);
+            const auto vv_candidates = candidates.face_vertex_to_vertex_vertex(
+                mesh, vertices, is_active);
 
             tbb::parallel_for(
                 tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
@@ -288,30 +162,30 @@ void NormalCollisions::set_use_area_weighting(const bool use_area_weighting)
             "Re-build collisions for this to have an effect.");
     }
 
-    if (!use_area_weighting && use_improved_max_approximator()) {
+    if (!use_area_weighting
+        && collision_set_type() == CollisionSetType::IMPROVED_MAX_APPROX) {
         logger().warn(
-            "Disabling area weighting while using the improved max approximator may lead to incorrect results.");
+            "Disabling area weighting while using the improved max approximation may lead to incorrect results.");
     }
 
     m_use_area_weighting = use_area_weighting;
 }
 
-void NormalCollisions::set_use_improved_max_approximator(
-    const bool use_improved_max_approximator)
+void NormalCollisions::set_collision_set_type(const CollisionSetType type)
 {
-    if (!empty()
-        && use_improved_max_approximator != m_use_improved_max_approximator) {
+    if (!empty() && type != m_collision_set_type) {
         logger().warn(
-            "Setting use_improved_max_approximator after building collisions. "
+            "Setting collision_set_type after building collisions. "
             "Re-build collisions for this to have an effect.");
     }
 
-    if (!use_area_weighting() && use_improved_max_approximator) {
+    if (!use_area_weighting()
+        && type == CollisionSetType::IMPROVED_MAX_APPROX) {
         logger().warn(
             "Enabling the improved max approximator while not using area weighting may lead to incorrect results.");
     }
 
-    m_use_improved_max_approximator = use_improved_max_approximator;
+    m_collision_set_type = type;
 }
 
 void NormalCollisions::set_enable_shape_derivatives(

@@ -6,6 +6,8 @@
 
 namespace ipc {
 
+// =============================================================================
+
 /// @brief Computes the normalization and Jacobian of a vector.
 /// @param x The input vector.
 /// @return A tuple containing the normalized vector and its Jacobian.
@@ -35,6 +37,8 @@ normalization_hessian(Eigen::ConstRef<VectorMax3d> x)
     return std::get<2>(normalization_and_jacobian_and_hessian(x));
 }
 
+// =============================================================================
+
 /// @brief Cross product matrix for 3D vectors.
 /// @param v Vector to create the cross product matrix for.
 /// @return The cross product matrix of the vector.
@@ -47,44 +51,89 @@ inline Eigen::Matrix3d cross_product_matrix(Eigen::ConstRef<Eigen::Vector3d> v)
     return m;
 }
 
+/// @brief Computes the Jacobian of the cross product matrix.
+/// @return The Jacobian of the cross product matrix.
+Eigen::Matrix<double, 3, 9> cross_product_matrix_jacobian();
+
+// =============================================================================
+
 /**
- * \defgroup geometry Edge-vertex normal
- * \brief Functions for computing an edge-vertex normal and resp. Jacobians.
+ * \defgroup geometry Point-line normal
+ * \brief Functions for computing a point-line normal and resp. Jacobians.
  * @{
  */
 
-/// @brief Computes the unnormalized normal vector of an edge-vertex pair.
-/// @param v The vertex position.
-/// @param e0 The start position of the edge.
-/// @param e1 The end position of the edge.
+/// @brief Computes the unnormalized normal vector of a point-line pair.
+/// @param p The vertex position.
+/// @param e0 The start position of the line.
+/// @param e1 The end position of the line.
 /// @return The unnormalized normal vector.
-VectorMax3d edge_vertex_unnormalized_normal(
-    Eigen::ConstRef<VectorMax3d> v,
+VectorMax3d point_line_unnormalized_normal(
+    Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
 
-/// @brief Computes the normal vector of an edge-vertex pair.
-/// @param v The vertex position.
-/// @param e0 The start position of the edge.
-/// @param e1 The end position of the edge.
+/// @brief Computes the normal vector of a point-line pair.
+/// @param p The vertex position.
+/// @param e0 The start position of the line.
+/// @param e1 The end position of the line.
 /// @return The normal vector.
-inline VectorMax3d edge_vertex_normal(
-    Eigen::ConstRef<VectorMax3d> v,
+inline VectorMax3d point_line_normal(
+    Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1)
 {
-    return edge_vertex_unnormalized_normal(v, e0, e1).normalized();
+    return point_line_unnormalized_normal(p, e0, e1).normalized();
 }
 
-/// @brief Computes the Jacobian of the unnormalized normal vector of an edge-vertex pair.
-/// @param v The vertex position.
-/// @param e0 The start position of the edge.
-/// @param e1 The end position of the edge.
+/// @brief Computes the Jacobian of the unnormalized normal vector of a point-line pair.
+/// @param p The vertex position.
+/// @param e0 The start position of the line.
+/// @param e1 The end position of the line.
 /// @return The Jacobian of the unnormalized normal vector.
-MatrixMax<double, 3, 9> edge_vertex_unnormalized_normal_jacobian(
-    Eigen::ConstRef<VectorMax3d> v,
+MatrixMax<double, 3, 9> point_line_unnormalized_normal_jacobian(
+    Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
+
+/// @brief Computes the Hessian of the unnormalized normal vector of a point-line pair.
+/// @param p The vertex position.
+/// @param e0 The start position of the line.
+/// @param e1 The end position of the line.
+/// @return The Hessian of the unnormalized normal vector of the point-line pair.
+MatrixMax<double, 3, 81> point_line_unnormalized_normal_hessian(
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1);
+
+/// @brief Computes the Jacobian of the normal vector of a point-line pair.
+/// @param p The vertex position.
+/// @param e0 The start position of the line.
+/// @param e1 The end position of the line.
+/// @return The Jacobian of the normal vector.
+inline MatrixMax<double, 3, 9> point_line_normal_jacobian(
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1)
+{
+    // ∂n̂/∂x = ∂n̂/∂n * ∂n/∂x
+    return normalization_jacobian(point_line_unnormalized_normal(p, e0, e1))
+        * point_line_unnormalized_normal_jacobian(p, e0, e1);
+}
+
+/// @brief Computes the Hessian of the normal vector of a point-line pair.
+/// @param p The vertex position.
+/// @param e0 The start position of the line.
+/// @param e1 The end position of the line.
+/// @return The Hessian of the normal vector.
+MatrixMax<double, 3, 81> point_line_normal_hessian(
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1);
+
+/** @} */
+
+// =============================================================================
 
 /**
  * \defgroup geometry Triangle normal
@@ -129,11 +178,21 @@ inline Eigen::Matrix<double, 3, 9> triangle_unnormalized_normal_jacobian(
     Eigen::ConstRef<Eigen::Vector3d> c)
 {
     Eigen::Matrix<double, 3, 9> J;
-    J.middleCols<3>(0) = cross_product_matrix(c - b);
-    J.middleCols<3>(3) = cross_product_matrix(a - c);
-    J.middleCols<3>(6) = cross_product_matrix(b - a);
+    J.middleCols<3>(0) = cross_product_matrix(c - b); // ∂n/∂a
+    J.middleCols<3>(3) = cross_product_matrix(a - c); // ∂n/∂b
+    J.middleCols<3>(6) = cross_product_matrix(b - a); // ∂n/∂c
     return J;
 }
+
+/// @brief Computes the Hessian of the unnormalized normal vector of a triangle.
+/// @param a The first vertex of the triangle.
+/// @param b The second vertex of the triangle.
+/// @param c The third vertex of the triangle.
+/// @return The Hessian of the unnormalized normal vector of the triangle.
+Eigen::Matrix<double, 3, 81> triangle_unnormalized_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> a,
+    Eigen::ConstRef<Eigen::Vector3d> b,
+    Eigen::ConstRef<Eigen::Vector3d> c);
 
 /// @brief Computes the Jacobian of the normal vector of a triangle.
 /// @param a The first vertex of the triangle.
@@ -150,21 +209,33 @@ inline Eigen::Matrix<double, 3, 9> triangle_normal_jacobian(
         * triangle_unnormalized_normal_jacobian(a, b, c);
 }
 
+/// @brief Computes the Hessian of the normal vector of a triangle.
+/// @param a The first vertex of the triangle.
+/// @param b The second vertex of the triangle.
+/// @param c The third vertex of the triangle.
+/// @return The Hessian of the normal vector of the triangle.
+Eigen::Matrix<double, 3, 81> triangle_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> a,
+    Eigen::ConstRef<Eigen::Vector3d> b,
+    Eigen::ConstRef<Eigen::Vector3d> c);
+
 /** @} */
 
+// =============================================================================
+
 /**
- * \defgroup geometry Edge-edge normal
- * \brief Functions for computing an edge-edge normal and resp. Jacobians.
+ * \defgroup geometry Line-line normal
+ * \brief Functions for computing a line-line normal and resp. Jacobians.
  * @{
  */
 
-/// @brief Computes the unnormalized normal vector of two edges.
-/// @param ea0 The first vertex of the first edge.
-/// @param ea1 The second vertex of the first edge.
-/// @param eb0 The first vertex of the second edge.
-/// @param eb1 The second vertex of the second edge.
-/// @return The unnormalized normal vector of the two edges.
-inline Eigen::Vector3d edge_edge_unnormalized_normal(
+/// @brief Computes the unnormalized normal vector of two lines.
+/// @param ea0 The first vertex of the first line.
+/// @param ea1 The second vertex of the first line.
+/// @param eb0 The first vertex of the second line.
+/// @param eb1 The second vertex of the second line.
+/// @return The unnormalized normal vector of the two lines.
+inline Eigen::Vector3d line_line_unnormalized_normal(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -173,28 +244,28 @@ inline Eigen::Vector3d edge_edge_unnormalized_normal(
     return (ea1 - ea0).cross(eb1 - eb0);
 }
 
-/// @brief Computes the normal vector of two edges.
-/// @param ea0 The first vertex of the first edge.
-/// @param ea1 The second vertex of the first edge.
-/// @param eb0 The first vertex of the second edge.
-/// @param eb1 The second vertex of the second edge.
-/// @return The normal vector of the two edges.
-inline Eigen::Vector3d edge_edge_normal(
+/// @brief Computes the normal vector of two lines.
+/// @param ea0 The first vertex of the first line.
+/// @param ea1 The second vertex of the first line.
+/// @param eb0 The first vertex of the second line.
+/// @param eb1 The second vertex of the second line.
+/// @return The normal vector of the two lines.
+inline Eigen::Vector3d line_line_normal(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
     Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
-    return edge_edge_unnormalized_normal(ea0, ea1, eb0, eb1).normalized();
+    return line_line_unnormalized_normal(ea0, ea1, eb0, eb1).normalized();
 }
 
-/// @brief Computes the Jacobian of the unnormalized normal vector of two edges.
-/// @param ea0 The first vertex of the first edge.
-/// @param ea1 The second vertex of the first edge.
-/// @param eb0 The first vertex of the second edge.
-/// @param eb1 The second vertex of the second edge.
-/// @return The Jacobian of the unnormalized normal vector of the two edges.
-inline Eigen::Matrix<double, 3, 12> edge_edge_unnormalized_normal_jacobian(
+/// @brief Computes the Jacobian of the unnormalized normal vector of two lines.
+/// @param ea0 The first vertex of the first line.
+/// @param ea1 The second vertex of the first line.
+/// @param eb0 The first vertex of the second line.
+/// @param eb1 The second vertex of the second line.
+/// @return The Jacobian of the unnormalized normal vector of the two lines.
+inline Eigen::Matrix<double, 3, 12> line_line_unnormalized_normal_jacobian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -208,13 +279,13 @@ inline Eigen::Matrix<double, 3, 12> edge_edge_unnormalized_normal_jacobian(
     return J;
 }
 
-/// @brief Computes the Jacobian of the normal vector of two edges.
-/// @param ea0 The first vertex of the first edge.
-/// @param ea1 The second vertex of the first edge.
-/// @param eb0 The first vertex of the second edge.
-/// @param eb1 The second vertex of the second edge.
-/// @return The Jacobian of the normal vector of the two edges.
-inline Eigen::Matrix<double, 3, 12> edge_edge_normal_jacobian(
+/// @brief Computes the Jacobian of the normal vector of two lines.
+/// @param ea0 The first vertex of the first line.
+/// @param ea1 The second vertex of the first line.
+/// @param eb0 The first vertex of the second line.
+/// @param eb1 The second vertex of the second line.
+/// @return The Jacobian of the normal vector of the two lines.
+inline Eigen::Matrix<double, 3, 12> line_line_normal_jacobian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -222,8 +293,34 @@ inline Eigen::Matrix<double, 3, 12> edge_edge_normal_jacobian(
 {
     // ∂n̂/∂x = ∂n̂/∂n * ∂n/∂x
     return normalization_jacobian(
-               edge_edge_unnormalized_normal(ea0, ea1, eb0, eb1))
-        * edge_edge_unnormalized_normal_jacobian(ea0, ea1, eb0, eb1);
+               line_line_unnormalized_normal(ea0, ea1, eb0, eb1))
+        * line_line_unnormalized_normal_jacobian(ea0, ea1, eb0, eb1);
 }
+
+/// @brief Computes the Hessian of the unnormalized normal vector of two lines.
+/// @param ea0 The first vertex of the first line.
+/// @param ea1 The second vertex of the first line.
+/// @param eb0 The first vertex of the second line.
+/// @param eb1 The second vertex of the second line.
+/// @return The Hessian of the unnormalized normal vector of the two lines.
+Eigen::Matrix<double, 3, 144> line_line_unnormalized_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
+
+/// @brief Computes the Hessian of the normal vector of two lines.
+/// @param ea0 The first vertex of the first line.
+/// @param ea1 The second vertex of the first line.
+/// @param eb0 The first vertex of the second line.
+/// @param eb1 The second vertex of the second line.
+/// @return The Hessian of the normal vector of the two lines.
+Eigen::Matrix<double, 3, 144> line_line_normal_hessian(
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
+
+/** @} */
 
 } // namespace ipc

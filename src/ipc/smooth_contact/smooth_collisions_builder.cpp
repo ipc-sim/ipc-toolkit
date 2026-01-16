@@ -12,11 +12,12 @@ namespace ipc {
 namespace {
     template <int dim, typename TCollision>
     void add_collision(
-        const std::shared_ptr<TCollision>& pair,
+        const std::shared_ptr<TCollision> pair,
         unordered_map<std::pair<index_t, index_t>, std::shared_ptr<TCollision>>&
             cc_to_id,
         std::vector<std::shared_ptr<SmoothCollision>>& collisions)
     {
+        assert(pair != nullptr);
         if (pair->is_active()
             && cc_to_id.find(pair->get_hash()) == cc_to_id.end()) {
             // New collision, so add it to the end of collisions
@@ -27,9 +28,10 @@ namespace {
 
     template <int dim, typename TCollision>
     void add_collision(
-        const std::shared_ptr<TCollision>& pair,
+        const std::shared_ptr<TCollision> pair,
         std::vector<std::shared_ptr<SmoothCollision>>& collisions)
     {
+        assert(pair != nullptr);
         if (pair->is_active()) {
             collisions.push_back(pair);
         }
@@ -38,7 +40,7 @@ namespace {
 
 void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
     const SmoothContactParameters& params,
     const std::function<double(const index_t)>& vert_dhat,
@@ -80,7 +82,7 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
 
 void SmoothCollisionsBuilder<3>::add_edge_edge_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<EdgeEdgeCandidate>& candidates,
     const SmoothContactParameters& params,
     const std::function<double(const index_t)>& vert_dhat,
@@ -115,7 +117,7 @@ void SmoothCollisionsBuilder<3>::add_edge_edge_collisions(
 
 void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<FaceVertexCandidate>& candidates,
     const SmoothContactParameters& params,
     const std::function<double(const index_t)>& vert_dhat,

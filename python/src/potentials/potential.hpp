@@ -47,7 +47,7 @@ void define_potential_methods(PyClass& potential)
                 X: Degrees of freedom of the collision mesh (e.g., vertices or velocities).
 
             Returns:
-                The gradient of the potential w.r.t. X. This will have a size of |X|.
+                The gradient of the potential w.r.t. X. This will have a size of X.size.
             )ipc_Qu8mg5v7",
             "collisions"_a, "mesh"_a, "X"_a)
         .def(
@@ -66,7 +66,7 @@ void define_potential_methods(PyClass& potential)
                 project_hessian_to_psd: Make sure the hessian is positive semi-definite.
 
             Returns:
-                The Hessian of the potential w.r.t. X. This will have a size of |X|×|X|.
+                The Hessian of the potential w.r.t. X. This will have a size of X.size by X.size.
             )ipc_Qu8mg5v7",
             "collisions"_a, "mesh"_a, "X"_a,
             "project_hessian_to_psd"_a = PSDProjectionMethod::NONE)

@@ -9,7 +9,7 @@ public:
     static constexpr int N_CORE_POINTS = 2;
     using DVector = Eigen::Vector<double, DIM>;
     using XVector = Eigen::Vector<double, DIM == 2 ? 4 : 12>;
-    using GradType = Eigen::Vector<double, DIM == 2 ? 6 : 15>;
+    using GradientType = Eigen::Vector<double, DIM == 2 ? 6 : 15>;
     static constexpr int HESSIAN_ROWS = DIM == 2 ? 6 : 15;
     static constexpr int HESSIAN_COLS = HESSIAN_ROWS;
     using HessianType = Eigen::Matrix<double, HESSIAN_ROWS, HESSIAN_COLS>;
@@ -19,7 +19,7 @@ public:
     Edge(
         const index_t id,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const VectorMax3d& d,
         const SmoothContactParameters& params);
 
@@ -37,7 +37,8 @@ public:
     /// @param d Vector from closest point on the edge to the point outside of the edge
     /// @param x Positions of the two vertices of this edge
     /// @return Gradient of the potential wrt. d and x
-    GradType grad(Eigen::ConstRef<DVector> d, Eigen::ConstRef<XVector> x) const;
+    GradientType
+    grad(Eigen::ConstRef<DVector> d, Eigen::ConstRef<XVector> x) const;
 
     /// @brief Compute the Hessian of potential wrt. d and x
     /// @param d Vector from closest point on the edge to the point outside of the edge

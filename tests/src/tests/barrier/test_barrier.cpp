@@ -8,7 +8,7 @@
 #include <ipc/geometry/normal.hpp>
 #include <ipc/smooth_contact/primitives/point3.hpp>
 #include <ipc/utils/autodiff_types.hpp>
-#include <ipc/utils/math.hpp>
+#include <ipc/math/math.hpp>
 
 #include <finitediff.hpp>
 #include <igl/edges.h>
@@ -139,8 +139,8 @@ TEST_CASE("Normalize vector derivatives", "[deriv]")
     using T = ipc::ADHessian<3>;
     for (int i = 1; i <= n_samples; i++) {
         Eigen::Vector3d x = Eigen::Vector3d::Random();
-        ipc::Vector<T, 3> x_ad = ipc::slice_positions<T, 3, 1>(x);
-        ipc::Vector<T, 3> y_ad = x_ad / x_ad.norm();
+        Eigen::Vector<T, 3> x_ad = ipc::slice_positions<T, 3, 1>(x);
+        Eigen::Vector<T, 3> y_ad = x_ad / x_ad.norm();
 
         const auto [y, grad, hess] =
             ipc::normalization_and_jacobian_and_hessian(x);
@@ -165,11 +165,11 @@ TEST_CASE("line-line closest direction derivatives", "[deriv]")
     using T = ipc::ADHessian<12>;
     for (int i = 1; i <= n_samples; i++) {
         ipc::Vector6d ea = ipc::Vector6d::Random();
-        ipc::Vector<T, 6> eaT = ipc::slice_positions<T, 6, 1>(ea);
+        Eigen::Vector<T, 6> eaT = ipc::slice_positions<T, 6, 1>(ea);
         ipc::Vector6d eb = ipc::Vector6d::Random();
-        ipc::Vector<T, 6> ebT = ipc::slice_positions<T, 6, 1>(eb, 6);
+        Eigen::Vector<T, 6> ebT = ipc::slice_positions<T, 6, 1>(eb, 6);
 
-        ipc::Vector<T, 3> dT = ipc::line_line_closest_point_direction<T>(
+        Eigen::Vector<T, 3> dT = ipc::line_line_closest_point_direction<T>(
             eaT.head<3>(), eaT.tail<3>(), ebT.head<3>(), ebT.tail<3>());
 
         const auto [d1, grad1] =
@@ -201,7 +201,7 @@ TEST_CASE("opposite_direction_penalty derivatives", "[deriv]")
     const double beta = 1;
     for (int i = 1; i <= n_samples; i++) {
         ipc::Vector6d x = ipc::Vector6d::Random();
-        ipc::Vector<T, 6> x_ad = ipc::slice_positions<T, 6, 1>(x);
+        Eigen::Vector<T, 6> x_ad = ipc::slice_positions<T, 6, 1>(x);
         T y_ad = ipc::Math<T>::smooth_heaviside(
             x_ad.tail(3).dot(x_ad.head(3)) / x_ad.head(3).norm(), alpha, beta);
 
@@ -222,8 +222,8 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
         ScalarBase::setVariableCount(9);
         using T = ipc::ADHessian<9>;
         ipc::Vector9d x = ipc::Vector9d::Random();
-        ipc::Vector<T, 9> x_ad = ipc::slice_positions<T, 9, 1>(x);
-        ipc::Vector<T, 3> t = x_ad.head<3>().cross(x_ad.segment<3>(3));
+        Eigen::Vector<T, 9> x_ad = ipc::slice_positions<T, 9, 1>(x);
+        Eigen::Vector<T, 3> t = x_ad.head<3>().cross(x_ad.segment<3>(3));
         T y_ad = ipc::Math<T>::smooth_heaviside(
             x_ad.tail(3).dot(t) / t.norm(), alpha, beta);
 
@@ -426,6 +426,7 @@ TEST_CASE("Barrier derivatives", "[barrier]")
         barrier = std::make_unique<ipc::ClampedLogSqBarrier>();
     }
     SECTION("Cubic") { barrier = std::make_unique<ipc::CubicBarrier>(); }
+    SECTION("TwoStage") { barrier = std::make_unique<ipc::TwoStageBarrier>(); }
 
     if (use_dist_sqr) {
         d_vec *= d;

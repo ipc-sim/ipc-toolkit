@@ -6,9 +6,9 @@
 namespace ipc {
 template <typename scalar, int dim>
 scalar point_edge_mollifier(
-    Eigen::ConstRef<Vector<scalar, dim>> p,
-    Eigen::ConstRef<Vector<scalar, dim>> e0,
-    Eigen::ConstRef<Vector<scalar, dim>> e1,
+    Eigen::ConstRef<Eigen::Vector<scalar, dim>> p,
+    Eigen::ConstRef<Eigen::Vector<scalar, dim>> e0,
+    Eigen::ConstRef<Eigen::Vector<scalar, dim>> e1,
     const scalar& dist_sqr);
 
 std::array<HeavisideType, 4> edge_edge_mollifier_type(
@@ -28,7 +28,7 @@ scalar edge_edge_mollifier(
     const scalar& dist_sqr);
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
-GradType<13> edge_edge_mollifier_gradient(
+GradientType<13> edge_edge_mollifier_gradient(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -54,7 +54,7 @@ scalar point_face_mollifier(
     const scalar& dist_sqr);
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
-GradType<13> point_face_mollifier_gradient(
+GradientType<13> point_face_mollifier_gradient(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> e0,
     Eigen::ConstRef<Eigen::Vector3d> e1,
