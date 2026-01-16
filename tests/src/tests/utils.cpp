@@ -6,6 +6,7 @@
 #include <ipc/broad_phase/hash_grid.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/bvh.hpp>
+#include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/broad_phase/sweep_and_prune.hpp>
 #ifdef IPC_TOOLKIT_WITH_CUDA
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
@@ -27,6 +28,7 @@ std::vector<std::shared_ptr<BroadPhase>> broad_phases()
         std::make_shared<HashGrid>(),
         std::make_shared<SpatialHash>(),
         std::make_shared<BVH>(),
+        std::make_shared<LBVH>(),
         std::make_shared<SweepAndPrune>(),
 #ifdef IPC_TOOLKIT_WITH_CUDA
         std::make_shared<SweepAndTiniestQueue>(),
