@@ -158,6 +158,6 @@ IPC Toolkit is created and maintained by academics: citations let us know our wo
 
 This project is licensed under the MIT License.
 
-You are free to use, modify, and distribute this code in your projects, even commercial ones, as long as you include the original copyright and license notice. A copy of the full license text can be found in the `License <license.html>`_ file.
+You are free to use, modify, and distribute this code in your projects, even commercial ones, as long as you include the original copyright and license notice. A copy of the full license text can be found in the `License <about/license.html>`_ file.
 
 If you use this code in a product you distribute to others, you are required to **include a copy of the original copyright and license notice**. This is typically done in the product's documentation, an "About" or "Third-Party Licenses" section, or in a clear open-source software statement.
