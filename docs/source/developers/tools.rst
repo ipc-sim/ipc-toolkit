@@ -1,5 +1,5 @@
 Tools for Developers
-=====================
+====================
 
 Using Pre-Commit Hooks
 ----------------------
@@ -7,11 +7,12 @@ Using Pre-Commit Hooks
 Use the ``.pre-commit-config.yaml`` file to apply clang-format on before commits.
 
 Steps:
+
 1. ``pip install pre-commit``
 2. ``pre-commit install``
 3. ``git add . && git commit -m "My commit message"``
 
-Hopefully, that will avoid upsetting the GitHub checks :slightly_smiling_face:
+Hopefully, that will avoid upsetting the GitHub checks.
 
 Clang-Tidy
 ----------

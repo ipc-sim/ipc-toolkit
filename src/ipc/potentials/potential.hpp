@@ -35,7 +35,7 @@ public:
     /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
-    /// @returns The gradient of the potential w.r.t. X. This will have a size of |X|.
+    /// @returns The gradient of the potential w.r.t. X. This will have a size of X.size().
     Eigen::VectorXd gradient(
         const TCollisions& collisions,
         const CollisionMesh& mesh,
@@ -46,7 +46,7 @@ public:
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
     /// @param project_hessian_to_psd Make sure the hessian is positive semi-definite.
-    /// @returns The Hessian of the potential w.r.t. X. This will have a size of |X|×|X|.
+    /// @returns The Hessian of the potential w.r.t. X. This will have a size of X.size() by X.size().
     Eigen::SparseMatrix<double> hessian(
         const TCollisions& collisions,
         const CollisionMesh& mesh,

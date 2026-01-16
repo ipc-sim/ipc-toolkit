@@ -15,10 +15,7 @@ collision detection (CCD) line search with a trust region-based approach using
 vertex-specific displacement bounds.
 
 For more details on the OGC algorithm, please refer to :cite:`Chen2025Offset`
-and their associated video:
-
-.. youtube:: xxyniqSLJik
-   :width: 100%
+and their associated video `here <https://www.youtube.com/watch?v=xxyniqSLJik>`_.
 
 Algorithm
 ---------
@@ -86,7 +83,7 @@ At a high-level, the OGC algorithm proceeds as follows:
             // e. Re-check for Collision Detection
             // If too many vertices moved beyond their conservative bounds,
             // a new, full collision detection is needed in the next step
-            if num_vertices_exceed_bound ≥ threshold (γₖ):
+            if num_vertices_exceed_bound >= threshold (γₖ):
                 collision_detection_required = true
 
             // f. Check for Convergence
@@ -327,22 +324,22 @@ The most significant deviation from the original paper lies in how vertices are 
 * **Original Paper Approach (Projection):** The original algorithm typically projects the proposed position to the closest point within the trust region (minimizing geometric distance). While this finds the optimal position locally within the valid region, the vector from the current position to this projected point may effectively change the update direction.
 * **Toolkit Implementation (Step Scaling):** The implementation in ``filter_step`` solves for a scalar :math:`\beta \in (0, 1]` that scales the original search direction :math:`\Delta x` such that the new position lies exactly on the trust region boundary.
 
-    That is, given the trust region center :math:`c`, current position :math:`x`, and search direction :math:`\Delta x`, it solves for :math:`\beta` such that:
+That is, given the trust region center :math:`c`, current position :math:`x`, and search direction :math:`\Delta x`, it solves for :math:`\beta` such that:
 
-    .. math::
+.. math::
 
-        \| x + \beta \Delta x - c \|^2 = r^2
+    \| x + \beta \Delta x - c \|^2 = r^2
 
-    This value of :math:`\beta` is then used to scale the step:
+This value of :math:`\beta` is then used to scale the step:
 
-    .. code-block:: c++
+.. code-block:: c++
 
-        // trust_region.cpp
-        // Solve || x + beta * dx - c ||^2 = r^2 for beta
-        // ... (quadratic formula solution) ...
-        dx.row(i).array() *= beta;
+    // trust_region.cpp
+    // Solve || x + beta * dx - c ||^2 = r^2 for beta
+    // ... (quadratic formula solution) ...
+    dx.row(i).array() *= beta;
 
-    This ensures that vertices constrained by the trust region are placed exactly on the valid boundary surface, maximizing the allowed step size without violating the constraint.
+This ensures that vertices constrained by the trust region are placed exactly on the valid boundary surface, maximizing the allowed step size without violating the constraint.
 
 **Why this matters:**
 Mixing Trust Region constraints with Line Search methods can be delicate. If you use a projection method, the resulting update vector might no longer be a *descent direction* for the energy function. This can cause subsequent line searches to fail or the solver to stagnate.

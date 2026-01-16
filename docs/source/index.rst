@@ -79,6 +79,7 @@
     developers/contributing.rst
     developers/style_guide.rst
     Code of Conduct <developers/code_of_conduct.md>
+    developers/tools.rst
 
 .. image:: _static/logo.png
     :alt: IPC Toolkit

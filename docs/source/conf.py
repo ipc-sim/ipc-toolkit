@@ -212,3 +212,22 @@ html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
 
 # html_last_updated_fmt = "%B %d, %Y"
+
+# -- Custom skip logic for autodoc --------------------------------------------
+
+
+def setup(app):
+    def skip(app, what, name, obj, skip, options):
+        # Skip the specific private attribute that is causing the crash
+        if name == "__entries":
+            return True
+        # Skip the internal pybind11 base classes and builtins
+        if name == "pybind11_object" or name.startswith("pybind11_builtins"):
+            return True
+        # Optional: Skip the module's "self" capsule if it appears
+        if name == "PyCapsule":
+            return True
+        return skip
+
+    # Connect the function to the event
+    app.connect("autodoc-skip-member", skip)

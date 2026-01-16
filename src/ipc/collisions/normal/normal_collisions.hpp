@@ -159,7 +159,7 @@ public:
     CollisionSetType collision_set_type() const { return m_collision_set_type; }
 
     /// @brief Set the set type of the collision set.
-    /// @param set_type The set type of the collision set.
+    /// @param type The set type of the collision set.
     void set_collision_set_type(const CollisionSetType type);
 
     /// @brief Get if the collision set are using the convergent formulation.

@@ -1,7 +1,7 @@
 .. _geometric-contact-potential-formulation:
 
 Geometric Contact Potential
-======================
+===========================
 
 In addition to the original implementation of :cite:t:`Li2020IPC`, we also implement the Geometric Contact Potential (GCP) from :cite:t:`Huang2025GCP`.
 
@@ -56,9 +56,9 @@ Since :math:`H(z;\alpha,\beta)` takes the dot and cross products of unit vectors
 As :math:`\alpha + \beta` decreases, the support size of the Heaviside function reduces and the function becomes less smooth, thus, the overall potential becomes harder to optimize.
 
 .. tip::
-    For simplicity, we recommend to just use :math:`\beta_n = \beta_t = 0`. To make sure the potential landscape is smooth, the recommended parameter choices are :math:`\alpha_t\in [0.2, 0.9]`, :math:`\alpha_n = 0.1`. 
+    For simplicity, we recommend to just use :math:`\beta_n = \beta_t = 0`. To make sure the potential landscape is smooth, the recommended parameter choices are :math:`\alpha_t\in [0.2, 0.9]`, :math:`\alpha_n = 0.1`.
 
 Friction
 --------
 
-We implement the original friction formulation of :cite:t:`Li2020IPC` following the same style, details are covered in the paper :cite:t:`Huang2025GCP`. 
+We implement the original friction formulation of :cite:t:`Li2020IPC` following the same style, details are covered in the paper :cite:t:`Huang2025GCP`.

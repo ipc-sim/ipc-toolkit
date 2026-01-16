@@ -30,7 +30,6 @@ using MatrixXb = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
 
 /// @brief A dynamic size vector with a fixed maximum size.
 /// @tparam T The type of the vector elements.
-/// @tparam dim The size of the vector.
 /// @tparam max_dim The maximum size of the vector.
 template <typename T, int max_dim>
 using VectorMax =
@@ -38,7 +37,6 @@ using VectorMax =
 
 /// @brief A dynamic size row vector with a fixed maximum size.
 /// @tparam T The type of the vector elements.
-/// @tparam dim The size of the vector.
 /// @tparam max_dim The maximum size of the vector.
 template <typename T, int max_dim>
 using RowVectorMax =

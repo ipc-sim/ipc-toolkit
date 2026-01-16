@@ -137,13 +137,14 @@ public:
         const double inflation_radius,
         const double min_distance = 0.0) const;
 
-    /// @brief Compute the maximum distance every vertex can move (independently) without colliding with any other element.
-    /// @note Cap the value at one.
-    /// @param mesh The collision mesh.
-    /// @param vertices_t0 Surface vertex starting positions (rowwise).
-    /// @param vertices_t1 Surface vertex ending positions (rowwise).
-    /// @param min_distance The minimum distance allowable between any two elements.
-    /// @return A vector of values in [0, 1], one for each vertex.
+    // clang-format off
+    // /// @brief Compute the maximum distance every vertex can move (independently) without colliding with any other element.
+    // /// @note Cap the value at one.
+    // /// @param mesh The collision mesh.
+    // /// @param vertices_t0 Surface vertex starting positions (rowwise).
+    // /// @param vertices_t1 Surface vertex ending positions (rowwise).
+    // /// @param min_distance The minimum distance allowable between any two elements.
+    // /// @return A vector of values in [0, 1], one for each vertex.
     // Eigen::VectorXd compute_per_vertex_collision_free_stepsize(
     //     const CollisionMesh& mesh,
     //     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
@@ -151,6 +152,7 @@ public:
     //     const double min_distance = 0.0,
     //     const NarrowPhaseCCD& narrow_phase_ccd =
     //         DEFAULT_NARROW_PHASE_CCD) const;
+    // clang-format on
 
     // == Convert to subelement candidates ====================================
 
@@ -162,9 +164,7 @@ public:
     std::vector<VertexVertexCandidate> edge_vertex_to_vertex_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::function<bool(double)>& is_active = [](double) {
-            return true;
-        }) const;
+        const std::function<bool(double)>& is_active = default_is_active) const;
 
     /// @brief Convert face-vertex candidates to vertex-vertex candidates.
     /// @param mesh The collision mesh.
@@ -174,9 +174,7 @@ public:
     std::vector<VertexVertexCandidate> face_vertex_to_vertex_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::function<bool(double)>& is_active = [](double) {
-            return true;
-        }) const;
+        const std::function<bool(double)>& is_active = default_is_active) const;
 
     /// @brief Convert face-vertex candidates to edge-vertex candidates.
     /// @param mesh The collision mesh.
@@ -186,9 +184,7 @@ public:
     std::vector<EdgeVertexCandidate> face_vertex_to_edge_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::function<bool(double)>& is_active = [](double) {
-            return true;
-        }) const;
+        const std::function<bool(double)>& is_active = default_is_active) const;
 
     /// @brief Convert edge-edge candidates to edge-vertex candidates.
     /// @param mesh The collision mesh.
@@ -198,9 +194,7 @@ public:
     std::vector<EdgeVertexCandidate> edge_edge_to_edge_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::function<bool(double)>& is_active = [](double) {
-            return true;
-        }) const;
+        const std::function<bool(double)>& is_active = default_is_active) const;
 
     // == Save candidates to file =============================================
 
@@ -221,6 +215,9 @@ public:
     std::vector<EdgeVertexCandidate> ev_candidates;
     std::vector<EdgeEdgeCandidate> ee_candidates;
     std::vector<FaceVertexCandidate> fv_candidates;
+
+private:
+    static bool default_is_active(double) { return true; }
 };
 
 } // namespace ipc

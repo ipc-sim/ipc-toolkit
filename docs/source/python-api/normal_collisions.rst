@@ -16,7 +16,7 @@ Normal Collision
     .. autoclasstoc::
 
 Vertex-Vertex Normal Collision
------------------------------
+------------------------------
 
 .. autoclass:: ipctk.VertexVertexNormalCollision
 
