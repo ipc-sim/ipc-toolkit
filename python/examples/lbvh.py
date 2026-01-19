@@ -21,7 +21,7 @@ ps_mesh = ps.register_surface_mesh(
     mesh.cells_dict["triangle"]
 )
 
-nodes = lbvh.vertex_nodes
+nodes = lbvh.face_nodes
 
 
 def traverse_lbvh(node, max_depth):

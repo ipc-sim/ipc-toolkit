@@ -14,50 +14,52 @@ public:
     struct Node {
         static constexpr int32_t INVALID_POINTER = 0x0; // do not change
 
-        // true to use absolute pointers (left/right child pointer is the
-        // absolute index of the child in the buffer/array) or false for
-        // relative pointers (left/right child pointer is the relative pointer
-        // from the parent index to the child index in the buffer, i.e. absolute
-        // child pointer = absolute parent pointer + relative child pointer)
-        static constexpr bool ABSOLUTE_POINTERS = true;
-
-        // helper function to handle relative pointers on
-        // CPU side, i.e. convert them to absolute
-        // pointers for array indexing
-        static constexpr uint32_t pointer(uint32_t index, uint32_t pointer)
-        {
-            return ABSOLUTE_POINTERS ? pointer : index + pointer;
-        }
-
         /// @brief The min corner of the AABB
-        ArrayMax3d aabb_min;
+        Eigen::Array3f aabb_min;
         /// @brief The max corner of the AABB
-        ArrayMax3d aabb_max;
-        /// @brief The vertex ids (v0, v1, v2)
-        std::array<index_t, 3> vertex_ids = { { -1, -1, -1 } };
-        /// @brief Pointer to the left child or INVALID_POINTER in case of leaf
-        int left = -1;
-        /// @brief Pointer to the right child or INVALID_POINTER in case of leaf
-        int right = -1;
-        /// @brief The primitive id (INVALID_ID <=> inner node)
-        index_t primitive_id = -1;
+        Eigen::Array3f aabb_max;
 
-        bool is_leaf() const
-        {
-            assert(is_valid());
-            return left == INVALID_POINTER && right == INVALID_POINTER;
-        }
+        // Union to overlap Leaf data and Internal Node data.
+        // This compresses the Node size to 64 bytes (1 cache line),
+        // reducing cache misses during traversal.
+        union {
+            struct {
+                /// @brief Pointer to the left child or INVALID_POINTER in case of leaf
+                int left;
+                /// @brief Pointer to the right child or INVALID_POINTER in case of leaf
+                int right;
+            };
 
-        bool is_inner() const
-        {
-            return left != INVALID_POINTER && right != INVALID_POINTER;
-        }
+            struct {
+                /// @brief The primitive id (INVALID_ID <=> inner node)
+                /// @note We use this to distinguish leaves from internal nodes to safely access the union.
+                int primitive_id;
 
+                /// @brief Marker to indicate this is an inner node
+                /// If is_inner == 0 then right = 0 which is INVALID_POINTER
+                /// If is_inner != 0 then right = actual right pointer
+                int is_inner_marker;
+            };
+        };
+
+        /// @brief Default constructor
+        Node();
+
+        /// @brief Check if this node is an inner node.
+        bool is_inner() const { return is_inner_marker; }
+
+        /// @brief Check if this node is a leaf node.
+        bool is_leaf() const { return !is_inner(); }
+
+        /// @brief Check if this node is valid.
         bool is_valid() const
         {
-            return !((left == INVALID_POINTER) ^ (right == INVALID_POINTER));
+            return is_inner()
+                ? (left != INVALID_POINTER && right != INVALID_POINTER)
+                : primitive_id >= 0;
         }
 
+        /// @brief Check if this node's AABB intersects with another node's AABB.
         bool intersects(const Node& other) const
         {
             return (aabb_min <= other.aabb_max).all()
@@ -167,16 +169,38 @@ protected:
             source_and_target, source_and_target, can_collide, candidates);
     }
 
+    // -------------------------------------------------------------------------
+    // BroadPhase::*_boxes are cleared, so we have to override these methods to
+    // not depend on them.
+    bool has_vertices() const { return !vertex_bvh.empty(); }
+    bool has_edges() const { return !edge_bvh.empty(); }
+    bool has_faces() const { return !face_bvh.empty(); }
+    bool can_edge_vertex_collide(size_t ei, size_t vi) const override;
+    bool can_edges_collide(size_t eai, size_t ebi) const override;
+    bool can_face_vertex_collide(size_t fi, size_t vi) const override;
+    bool can_edge_face_collide(size_t ei, size_t fi) const override;
+    bool can_faces_collide(size_t fai, size_t fbi) const override;
+    // -------------------------------------------------------------------------
+
     /// @brief BVH containing the vertices.
     std::vector<Node> vertex_bvh;
     /// @brief BVH containing the edges.
     std::vector<Node> edge_bvh;
     /// @brief BVH containing the faces.
     std::vector<Node> face_bvh;
+
+    /// @brief Edge vertices in the original mesh order.
+    std::vector<std::array<index_t, 2>> edge_vertex_ids;
+    /// @brief Face vertices in the original mesh order.
+    std::vector<std::array<index_t, 3>> face_vertex_ids;
+
+    /// @brief Dimension of the simulation for which the broad phase was built.
+    int dim;
+
     /// @brief The axis-aligned bounding box of the entire mesh.
     struct {
-        ArrayMax3d min;
-        ArrayMax3d max;
+        Eigen::Array3d min;
+        Eigen::Array3d max;
     } mesh_aabb;
 };
 

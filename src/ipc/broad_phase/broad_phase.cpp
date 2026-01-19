@@ -78,6 +78,7 @@ void BroadPhase::detect_collision_candidates(
 
 bool BroadPhase::can_edge_vertex_collide(size_t ei, size_t vi) const
 {
+    assert(ei < edge_boxes.size());
     const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
 
     return vi != e0i && vi != e1i
@@ -86,7 +87,9 @@ bool BroadPhase::can_edge_vertex_collide(size_t ei, size_t vi) const
 
 bool BroadPhase::can_edges_collide(size_t eai, size_t ebi) const
 {
+    assert(eai < edge_boxes.size());
     const auto& [ea0i, ea1i, _] = edge_boxes[eai].vertex_ids;
+    assert(ebi < edge_boxes.size());
     const auto& [eb0i, eb1i, __] = edge_boxes[ebi].vertex_ids;
 
     const bool share_endpoint =
@@ -100,6 +103,7 @@ bool BroadPhase::can_edges_collide(size_t eai, size_t ebi) const
 
 bool BroadPhase::can_face_vertex_collide(size_t fi, size_t vi) const
 {
+    assert(fi < face_boxes.size());
     const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
 
     return vi != f0i && vi != f1i && vi != f2i
@@ -109,7 +113,9 @@ bool BroadPhase::can_face_vertex_collide(size_t fi, size_t vi) const
 
 bool BroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
 {
+    assert(ei < edge_boxes.size());
     const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
+    assert(fi < face_boxes.size());
     const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
 
     const bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i
@@ -124,7 +130,9 @@ bool BroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
 
 bool BroadPhase::can_faces_collide(size_t fai, size_t fbi) const
 {
+    assert(fai < face_boxes.size());
     const auto& [fa0i, fa1i, fa2i] = face_boxes[fai].vertex_ids;
+    assert(fbi < face_boxes.size());
     const auto& [fb0i, fb1i, fb2i] = face_boxes[fbi].vertex_ids;
 
     const bool share_endpoint = fa0i == fb0i || fa0i == fb1i || fa0i == fb2i

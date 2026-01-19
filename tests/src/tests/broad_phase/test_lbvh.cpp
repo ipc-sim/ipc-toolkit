@@ -8,6 +8,8 @@
 // #include <ipc/broad_phase/vulkan/shaders/single_radixsort.hpp>
 #include <ipc/utils/profiler.hpp>
 
+#include <tbb/parallel_sort.h>
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <iostream>
@@ -21,11 +23,11 @@ namespace {
 bool is_aabb_union(LBVH::Node parent, LBVH::Node childA, LBVH::Node childB)
 {
     AABB children;
-    children.min = childA.aabb_min.min(childB.aabb_min);
-    children.max = childA.aabb_max.max(childB.aabb_max);
+    children.min = childA.aabb_min.min(childB.aabb_min).cast<double>();
+    children.max = childA.aabb_max.max(childB.aabb_max).cast<double>();
     constexpr float EPS = 1e-4f;
-    return (abs(parent.aabb_max - children.max) < EPS).all()
-        && (abs(parent.aabb_min - children.min) < EPS).all();
+    return (abs(parent.aabb_max.cast<double>() - children.max) < EPS).all()
+        && (abs(parent.aabb_min.cast<double>() - children.min) < EPS).all();
 }
 
 void traverse_lbvh(
@@ -45,25 +47,22 @@ void traverse_lbvh(
         CHECK(!visited[index]);
         visited[index] = true;
 
-        uint32_t left_child_index = LBVH::Node::pointer(index, node.left);
-        uint32_t right_child_index = LBVH::Node::pointer(index, node.right);
-
         // verify aabbs
-        LBVH::Node childA = lbvh_nodes[left_child_index];
-        LBVH::Node childB = lbvh_nodes[right_child_index];
+        LBVH::Node childA = lbvh_nodes[node.left];
+        LBVH::Node childB = lbvh_nodes[node.right];
 
         {
             CAPTURE(
-                index, left_child_index, right_child_index,
-                node.aabb_min.transpose(), childA.aabb_min.transpose(),
-                childB.aabb_min.transpose(), node.aabb_max.transpose(),
-                childA.aabb_max.transpose(), childB.aabb_max.transpose());
+                index, node.left, node.right, node.aabb_min.transpose(),
+                childA.aabb_min.transpose(), childB.aabb_min.transpose(),
+                node.aabb_max.transpose(), childA.aabb_max.transpose(),
+                childB.aabb_max.transpose());
             CHECK(is_aabb_union(node, childA, childB));
         }
 
         // continue traversal
-        traverse_lbvh(lbvh_nodes, left_child_index, visited);
-        traverse_lbvh(lbvh_nodes, right_child_index, visited);
+        traverse_lbvh(lbvh_nodes, node.left, visited);
+        traverse_lbvh(lbvh_nodes, node.right, visited);
     }
 }
 
@@ -126,6 +125,38 @@ TEST_CASE("LBVH::build", "[broad_phase][lbvh]")
     CHECK(lbvh->face_nodes().empty());
 }
 
+namespace {
+
+/// @brief Checks if every candidate in the expected vector is present in the actual vector.
+/// @tparam Candidate The type of the candidate (e.g., VertexVertexCandidate, EdgeEdgeCandidate).
+/// @param actual The vector of candidates found by the algorithm.
+/// @param expected The vector of candidates that are expected to be found.
+/// @return true If all candidates in `expected` are found in `actual`.
+/// @return false Otherwise.
+template <typename Candidate>
+bool contains_all_candidates(
+    std::vector<Candidate> actual, std::vector<Candidate> expected)
+{
+    // 1. Sort the actual candidates to prepare for set operations
+    tbb::parallel_sort(actual.begin(), actual.end());
+    // Ensure 'actual' has no duplicates to treat it as a mathematical set
+    REQUIRE(std::unique(actual.begin(), actual.end()) == actual.end());
+
+    // 2. Sort the expected candidates
+    tbb::parallel_sort(expected.begin(), expected.end());
+    // Ensure 'expected' has no duplicates to treat it as a mathematical set
+    REQUIRE(std::unique(expected.begin(), expected.end()) == expected.end());
+
+    // 3. Check if 'expected' is a subset of 'actual'
+    // std::includes requires both ranges to be sorted.
+    // It returns true if every element in the second range is found in the
+    // first range.
+    return std::includes(
+        actual.begin(), actual.end(), expected.begin(), expected.end());
+}
+
+} // namespace
+
 TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
 {
     constexpr double inflation_radius = 0;
@@ -141,6 +172,28 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         mesh_t0 = "cloth_ball92.ply";
         mesh_t1 = "cloth_ball93.ply";
     }
+#ifdef NDEBUG
+    SECTION("Armadillo-Rollers")
+    {
+        mesh_t0 = "armadillo-rollers/326.ply";
+        mesh_t1 = "armadillo-rollers/327.ply";
+    }
+    SECTION("Cloth-Funnel")
+    {
+        mesh_t0 = "cloth-funnel/227.ply";
+        mesh_t1 = "cloth-funnel/228.ply";
+    }
+    SECTION("N-Body-Simulation")
+    {
+        mesh_t0 = "n-body-simulation/balls16_18.ply";
+        mesh_t1 = "n-body-simulation/balls16_19.ply";
+    }
+    SECTION("Rod-Twist")
+    {
+        mesh_t0 = "rod-twist/3036.ply";
+        mesh_t1 = "rod-twist/3037.ply";
+    }
+#endif
     // SECTION("Puffer-Ball")
     // {
     //     mesh_t0 = "puffer-ball/20.ply";
@@ -166,8 +219,8 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         std::vector<VertexVertexCandidate> expected_vv_candidates;
         bvh->detect_vertex_vertex_candidates(expected_vv_candidates);
 
-        CHECK(vv_candidates.size() == expected_vv_candidates.size());
-        // TODO: Check the candidates are the same
+        CHECK(vv_candidates.size() >= expected_vv_candidates.size());
+        contains_all_candidates(vv_candidates, expected_vv_candidates);
     }
 
     {
@@ -177,8 +230,8 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         std::vector<EdgeVertexCandidate> expected_ev_candidates;
         bvh->detect_edge_vertex_candidates(expected_ev_candidates);
 
-        CHECK(ev_candidates.size() == expected_ev_candidates.size());
-        // TODO: Check the candidates are the same
+        CHECK(ev_candidates.size() >= expected_ev_candidates.size());
+        contains_all_candidates(ev_candidates, expected_ev_candidates);
     }
 
     {
@@ -188,8 +241,8 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         std::vector<EdgeEdgeCandidate> expected_ee_candidates;
         bvh->detect_edge_edge_candidates(expected_ee_candidates);
 
-        CHECK(ee_candidates.size() == expected_ee_candidates.size());
-        // TODO: Check the candidates are the same
+        CHECK(ee_candidates.size() >= expected_ee_candidates.size());
+        contains_all_candidates(ee_candidates, expected_ee_candidates);
     }
 
     {
@@ -199,8 +252,8 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         std::vector<FaceVertexCandidate> expected_fv_candidates;
         bvh->detect_face_vertex_candidates(expected_fv_candidates);
 
-        CHECK(fv_candidates.size() == expected_fv_candidates.size());
-        // TODO: Check the candidates are the same
+        CHECK(fv_candidates.size() >= expected_fv_candidates.size());
+        contains_all_candidates(fv_candidates, expected_fv_candidates);
     }
 
     {
@@ -210,8 +263,8 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         std::vector<EdgeFaceCandidate> expected_ef_candidates;
         bvh->detect_edge_face_candidates(expected_ef_candidates);
 
-        CHECK(ef_candidates.size() == expected_ef_candidates.size());
-        // TODO: Check the candidates are the same
+        CHECK(ef_candidates.size() >= expected_ef_candidates.size());
+        contains_all_candidates(ef_candidates, expected_ef_candidates);
     }
 
     {
@@ -221,8 +274,8 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         std::vector<FaceFaceCandidate> expected_ff_candidates;
         bvh->detect_face_face_candidates(expected_ff_candidates);
 
-        CHECK(ff_candidates.size() == expected_ff_candidates.size());
-        // TODO: Check the candidates are the same
+        CHECK(ff_candidates.size() >= expected_ff_candidates.size());
+        contains_all_candidates(ff_candidates, expected_ff_candidates);
     }
 
 #ifdef IPC_TOOLKIT_WITH_PROFILER
