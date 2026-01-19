@@ -194,14 +194,14 @@ protected:
     /// @brief Face vertices in the original mesh order.
     std::vector<std::array<index_t, 3>> face_vertex_ids;
 
-    /// @brief Dimension of the simulation for which the broad phase was built.
-    int dim;
-
     /// @brief The axis-aligned bounding box of the entire mesh.
     struct {
         Eigen::Array3d min;
         Eigen::Array3d max;
     } mesh_aabb;
+
+    /// @brief Dimension of the simulation for which the broad phase was built.
+    uint8_t dim;
 };
 
 } // namespace ipc

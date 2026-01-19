@@ -9,7 +9,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
-#if defined(__APPLE__)
+#ifdef __APPLE__
 // We utilize SIMD registers to compare 1 Node against 4 Queries simultaneously.
 #include <simd/simd.h>
 #endif
@@ -37,11 +37,11 @@ namespace {
     }
 } // namespace
 
-LBVH::LBVH() : BroadPhase() { }
+LBVH::LBVH() : BroadPhase(), dim(0) { }
 
 LBVH::~LBVH() = default;
 
-// Initialize defaults
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 LBVH::Node::Node() : primitive_id(INVALID_ID), is_inner_marker(0)
 {
     static_assert(
@@ -214,7 +214,8 @@ void LBVH::init_bvh(
                 for (size_t i = r.begin(); i < r.end(); i++) {
                     const auto& box = boxes[i];
 
-                    const Eigen::Array3d center = 0.5 * (box.min + box.max);
+                    const Eigen::Array3d center =
+                        to_3D(0.5 * (box.min + box.max));
                     const Eigen::Array3d mapped_center =
                         (center - mesh_aabb.min) / mesh_width;
 
