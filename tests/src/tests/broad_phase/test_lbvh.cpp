@@ -38,7 +38,7 @@ void traverse_lbvh(
     const LBVH::Node& node = lbvh_nodes[index];
     CHECK(node.is_valid());
 
-    if (node.left == LBVH::Node::INVALID_POINTER) {
+    if (node.is_leaf()) {
         // leaf
         CHECK(!visited[index]);
         visited[index] = true;
