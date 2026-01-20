@@ -37,7 +37,7 @@ inline uint64_t expand_bits_2(uint64_t v)
 /// @return The 64-bit Morton code.
 inline uint64_t morton_2D(double x, double y)
 {
-    constexpr double scale = 1ul << 32;
+    constexpr double scale = 1ULL << 32;
     x = std::clamp(x * scale, 0.0, scale - 1);
     y = std::clamp(y * scale, 0.0, scale - 1);
     uint64_t xx = expand_bits_1(uint64_t(x));
@@ -52,7 +52,7 @@ inline uint64_t morton_2D(double x, double y)
 /// @return The 63-bit Morton code.
 inline uint64_t morton_3D(double x, double y, double z)
 {
-    constexpr double scale = 1 << 21;
+    constexpr double scale = 1ULL << 21;
     x = std::clamp(x * scale, 0.0, scale - 1);
     y = std::clamp(y * scale, 0.0, scale - 1);
     z = std::clamp(z * scale, 0.0, scale - 1);
