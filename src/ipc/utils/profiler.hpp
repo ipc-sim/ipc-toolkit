@@ -27,65 +27,48 @@ namespace ipc {
 
 class Profiler {
 public:
-    Profiler() = default;
+    Profiler();
 
     // ~Profiler() { print(); }
 
-    void clear() { m_data.clear(); }
+    /// @brief Clear all profiling data.
+    void clear();
 
-    void start(const std::string& name)
-    {
-        current_scope.push_back(name);
-        if (!m_data.contains(current_scope)) {
-            m_data[current_scope] = {
-                { "time_ms", 0 },
-                { "count", 0 },
-            };
-        }
-    }
+    /// @brief Start timing a new scope.
+    /// @param name The name of the scope.
+    void start(const std::string& name);
 
-    void stop(const double time_ms)
-    {
-        const static std::string log_fmt_text = fmt::format(
-            "[{}] {{}} {{:.6f}} ms",
-            fmt::format(fmt::fg(fmt::terminal_color::magenta), "timing"));
+    /// @brief Stop timing the current scope and record the elapsed time.
+    /// @param time_ms The elapsed time in milliseconds.
+    void stop(const double time_ms);
 
-        logger().trace(
-            fmt::runtime(log_fmt_text), current_scope.to_string(), time_ms);
+    /// @brief Reset the profiler data and scopes.
+    void reset();
 
-        assert(m_data.contains(current_scope));
-        assert(m_data.at(current_scope).contains("time_ms"));
-        assert(m_data.at(current_scope).contains("count"));
-        m_data[current_scope]["time_ms"] =
-            m_data[current_scope]["time_ms"].get<double>() + time_ms;
-        m_data[current_scope]["count"] =
-            m_data[current_scope]["count"].get<size_t>() + 1;
-        current_scope.pop_back();
-    }
+    /// @brief Print the profiler data to the logger.
+    void print() const;
 
-    void reset()
-    {
-        m_data.clear();
-        current_scope = nlohmann::json::json_pointer(); // root
-    }
-
-    void print() const
-    {
-        logger().info(
-            "[{}] profiler: {}",
-            fmt::format(fmt::fg(fmt::terminal_color::magenta), "timing"),
-            m_data.dump(2));
-    }
-
-    void write_csv(const std::string& filename) const;
-    void print_csv() const { write_csv(std::cout); }
+    /// @brief Write the profiler data to an output stream in CSV format.
     void write_csv(std::ostream& os) const;
 
+    /// @brief Write the profiler data to a CSV file.
+    void write_csv(const std::string& filename) const;
+
+    /// @brief Print the profiler data to standard output in CSV format.
+    void print_csv() const { write_csv(std::cout); }
+
+    // Return a snapshot copy of the profiler data to avoid exposing internal
+    // structure that would require external synchronization.
     const nlohmann::json& data() const { return m_data; }
+
+    // Non-const accessor that also returns a copy.
     nlohmann::json& data() { return m_data; }
 
 protected:
+    /// @brief The profiling data stored as a JSON object.
     nlohmann::json m_data;
+
+    /// @brief The global scope pointer into the JSON data.
     nlohmann::json::json_pointer current_scope;
 };
 
