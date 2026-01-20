@@ -55,14 +55,14 @@ void AABB::conservative_inflation(
 
     // Nudge the bounds outward to ensure conservativity.
 
-    constexpr double inf = std::numeric_limits<double>::infinity();
-
     min = min.unaryExpr([inflation_radius](double v) {
-        return std::nextafter(v - inflation_radius, -inf);
+        return std::nextafter(
+            v - inflation_radius, -std::numeric_limits<double>::infinity());
     });
 
     max = max.unaryExpr([inflation_radius](double v) {
-        return std::nextafter(v + inflation_radius, inf);
+        return std::nextafter(
+            v + inflation_radius, std::numeric_limits<double>::infinity());
     });
 }
 
