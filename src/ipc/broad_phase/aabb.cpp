@@ -49,20 +49,21 @@ void AABB::conservative_inflation(
     Eigen::Ref<ArrayMax3d> max,
     const double inflation_radius)
 {
-#pragma STDC FENV_ACCESS ON
     assert(min.size() == max.size());
     assert((min <= max).all());
     assert(inflation_radius >= 0);
 
-    const int current_round = std::fegetround();
+    // Nudge the bounds outward to ensure conservativity.
 
-    std::fesetround(FE_DOWNWARD);
-    min -= inflation_radius;
+    constexpr double inf = std::numeric_limits<double>::infinity();
 
-    std::fesetround(FE_UPWARD);
-    max += inflation_radius;
+    min = min.unaryExpr([inflation_radius](double v) {
+        return std::nextafter(v - inflation_radius, -inf);
+    });
 
-    std::fesetround(current_round);
+    max = max.unaryExpr([inflation_radius](double v) {
+        return std::nextafter(v + inflation_radius, inf);
+    });
 }
 
 void build_vertex_boxes(

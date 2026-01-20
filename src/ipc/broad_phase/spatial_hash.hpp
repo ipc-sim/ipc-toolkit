@@ -62,11 +62,11 @@ public: // constructor
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     void build(
-        const std::vector<AABB>& vertex_boxes,
+        const std::vector<AABB>& _vertex_boxes,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) override
     {
-        build(vertex_boxes, edges, faces, /*voxel_size=*/-1);
+        build(_vertex_boxes, edges, faces, /*voxel_size=*/-1);
     }
 
     // ------------------------------------------------------------------------

@@ -14,6 +14,8 @@ public:
     /// @return The name of the broad phase method.
     std::string name() const override { return "SweepAndPrune"; }
 
+    using BroadPhase::build;
+
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges

@@ -86,7 +86,7 @@ double suggest_good_voxel_size(const std::vector<AABB>& boxes)
         box_sizes(i) = (boxes[i].max - boxes[i].min).maxCoeff();
     }
 
-    double voxel_size;
+    double voxel_size = 0;
     igl::median(box_sizes, voxel_size);
 
     if (voxel_size <= 0) {

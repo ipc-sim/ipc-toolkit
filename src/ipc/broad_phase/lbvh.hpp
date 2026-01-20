@@ -19,6 +19,9 @@ public:
         /// @brief The max corner of the AABB
         Eigen::Array3f aabb_max;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
         // Union to overlap Leaf data and Internal Node data.
         // This compresses the Node size to 32 bytes (2 per cache line),
         // reducing cache misses during traversal.
@@ -41,6 +44,8 @@ public:
                 int32_t is_inner_marker;
             };
         };
+
+#pragma GCC diagnostic pop
 
         /// @brief Default constructor
         Node();
