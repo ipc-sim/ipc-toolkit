@@ -20,25 +20,25 @@ public:
         Eigen::Array3f aabb_max;
 
         // Union to overlap Leaf data and Internal Node data.
-        // This compresses the Node size to 64 bytes (1 cache line),
+        // This compresses the Node size to 32 bytes (2 per cache line),
         // reducing cache misses during traversal.
         union {
             struct {
                 /// @brief Pointer to the left child or INVALID_POINTER in case of leaf
-                int left;
+                int32_t left;
                 /// @brief Pointer to the right child or INVALID_POINTER in case of leaf
-                int right;
+                int32_t right;
             };
 
             struct {
                 /// @brief The primitive id (INVALID_ID <=> inner node)
                 /// @note We use this to distinguish leaves from internal nodes to safely access the union.
-                int primitive_id;
+                int32_t primitive_id;
 
                 /// @brief Marker to indicate this is an inner node
                 /// If is_inner == 0 then right = 0 which is INVALID_POINTER
                 /// If is_inner != 0 then right = actual right pointer
-                int is_inner_marker;
+                int32_t is_inner_marker;
             };
         };
 

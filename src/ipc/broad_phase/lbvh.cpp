@@ -105,7 +105,7 @@ namespace {
         uint64_t code_i,
         int j)
     {
-        if (j < 0 || j > sorted_morton_codes.size() - 1) {
+        if (j < 0 || j >= sorted_morton_codes.size()) {
             return -1;
         }
         uint64_t code_j = sorted_morton_codes[j].morton_code;

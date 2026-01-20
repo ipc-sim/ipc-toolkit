@@ -57,11 +57,10 @@ public:
     /// @brief Print the profiler data to standard output in CSV format.
     void print_csv() const { write_csv(std::cout); }
 
-    // Return a snapshot copy of the profiler data to avoid exposing internal
-    // structure that would require external synchronization.
+    /// @brief Access the profiling data as a JSON object.
     const nlohmann::json& data() const { return m_data; }
 
-    // Non-const accessor that also returns a copy.
+    /// @brief Access the profiling data as a JSON object.
     nlohmann::json& data() { return m_data; }
 
 protected:

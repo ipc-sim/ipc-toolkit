@@ -220,7 +220,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         bvh->detect_vertex_vertex_candidates(expected_vv_candidates);
 
         CHECK(vv_candidates.size() >= expected_vv_candidates.size());
-        contains_all_candidates(vv_candidates, expected_vv_candidates);
+        CHECK(contains_all_candidates(vv_candidates, expected_vv_candidates));
     }
 
     {
@@ -231,7 +231,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         bvh->detect_edge_vertex_candidates(expected_ev_candidates);
 
         CHECK(ev_candidates.size() >= expected_ev_candidates.size());
-        contains_all_candidates(ev_candidates, expected_ev_candidates);
+        CHECK(contains_all_candidates(ev_candidates, expected_ev_candidates));
     }
 
     {
@@ -242,7 +242,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         bvh->detect_edge_edge_candidates(expected_ee_candidates);
 
         CHECK(ee_candidates.size() >= expected_ee_candidates.size());
-        contains_all_candidates(ee_candidates, expected_ee_candidates);
+        CHECK(contains_all_candidates(ee_candidates, expected_ee_candidates));
     }
 
     {
@@ -253,7 +253,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         bvh->detect_face_vertex_candidates(expected_fv_candidates);
 
         CHECK(fv_candidates.size() >= expected_fv_candidates.size());
-        contains_all_candidates(fv_candidates, expected_fv_candidates);
+        CHECK(contains_all_candidates(fv_candidates, expected_fv_candidates));
     }
 
     {
@@ -264,7 +264,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         bvh->detect_edge_face_candidates(expected_ef_candidates);
 
         CHECK(ef_candidates.size() >= expected_ef_candidates.size());
-        contains_all_candidates(ef_candidates, expected_ef_candidates);
+        CHECK(contains_all_candidates(ef_candidates, expected_ef_candidates));
     }
 
     {
@@ -275,7 +275,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         bvh->detect_face_face_candidates(expected_ff_candidates);
 
         CHECK(ff_candidates.size() >= expected_ff_candidates.size());
-        contains_all_candidates(ff_candidates, expected_ff_candidates);
+        CHECK(contains_all_candidates(ff_candidates, expected_ff_candidates));
     }
 
 #ifdef IPC_TOOLKIT_WITH_PROFILER
