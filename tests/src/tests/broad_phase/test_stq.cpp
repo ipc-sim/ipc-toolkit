@@ -69,8 +69,8 @@ TEST_CASE("Puffer-Ball", "[ccd][broad_phase][stq][cuda]")
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
 
-    if (!tests::load_mesh("private/puffer-ball/20.ply", V0, E, F)
-        || !tests::load_mesh("private/puffer-ball/21.ply", V1, E, F)) {
+    if (!tests::load_mesh("puffer-ball/20.ply", V0, E, F)
+        || !tests::load_mesh("puffer-ball/21.ply", V1, E, F)) {
         SKIP("Puffer-ball meshes not available");
     }
 

@@ -114,18 +114,18 @@ TEST_CASE(
         mesh_name_t0 = "cloth_ball92.ply";
         mesh_name_t1 = "cloth_ball93.ply";
     }
-    // SECTION("Squishy-Ball")
-    // {
-    //     mesh_name_t0 = "private/puffer-ball/20.ply";
-    //     mesh_name_t1 = "private/puffer-ball/21.ply";
-    // }
+    SECTION("Puffer-Ball")
+    {
+        mesh_name_t0 = "puffer-ball/20.ply";
+        mesh_name_t1 = "puffer-ball/21.ply";
+    }
 
     if (!tests::load_mesh(mesh_name_t0, V0, E, F)
         || !tests::load_mesh(mesh_name_t1, V1, E, F)) {
         SKIP("Slow broadphase CCD meshes are private");
     }
 
-    double inflation_radius = 1e-2; // GENERATE(take(5, random(0.0, 0.1)));
+    double inflation_radius = 0; // GENERATE(take(5, random(0.0, 0.1)));
 
     CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
     // Discard codimensional/internal vertices
