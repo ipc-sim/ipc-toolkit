@@ -58,11 +58,14 @@ if __name__ == "__main__":
     mesh = meshio.read(args.mesh)
     faces = mesh.cells_dict["triangle"]
 
-    edges = ipctk.edges(faces)
+    # edges = ipctk.edges(faces)
     # indices = np.lexsort((edges[:, 1], edges[:, 0]))
-    # sorted_edges = edges[indices]
+    # edges = edges[indices]
+
+    # indices = np.lexsort((faces[:, 2], faces[:, 1], faces[:, 0]))
+    # faces = faces[indices]
 
     lbvh = ipctk.LBVH()
-    lbvh.build(mesh.points, sorted_edges, faces)
+    lbvh.build(mesh.points, edges, faces)
 
     plot_profiler(title=args.mesh.parent.name + "/" + args.mesh.name)
