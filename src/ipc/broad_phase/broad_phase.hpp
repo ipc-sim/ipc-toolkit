@@ -52,6 +52,7 @@ public:
     /// @param vertex_boxes AABBs for the vertices.
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
+    /// @param dim Dimension of the simulation (2D or 3D)
     virtual void build(
         const AABBs& vertex_boxes,
         Eigen::ConstRef<Eigen::MatrixXi> edges,

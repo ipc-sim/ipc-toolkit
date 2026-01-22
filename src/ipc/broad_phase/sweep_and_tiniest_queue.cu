@@ -33,6 +33,8 @@ void SweepAndTiniestQueue::build(
 
     clear();
 
+    dim = _vertices.cols();
+
     // Make sure the vertices are 3D
     const Eigen::MatrixXd vertices = to_X3d(_vertices);
 
@@ -56,6 +58,8 @@ void SweepAndTiniestQueue::build(
 
     clear();
 
+    dim = _vertices_t0.cols();
+
     // Mutable copies of the vertices
     const Eigen::MatrixXd vertices_t0 = to_X3d(_vertices_t0);
     const Eigen::MatrixXd vertices_t1 = to_X3d(_vertices_t1);
@@ -69,12 +73,15 @@ void SweepAndTiniestQueue::build(
 void SweepAndTiniestQueue::build(
     const AABBs& vertex_boxes,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
-    Eigen::ConstRef<Eigen::MatrixXi> faces)
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
+    const uint8_t _dim)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
 
     clear();
+
+    dim = _dim;
 
     // Convert from ipc::AABB to scalable_ccd::cuda::AABB
     boxes->vertices.resize(vertex_boxes.size());

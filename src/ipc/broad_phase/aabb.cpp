@@ -9,6 +9,7 @@
 
 namespace ipc {
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 AABB::AABB(Eigen::ConstRef<ArrayMax3d> _min, Eigen::ConstRef<ArrayMax3d> _max)
     : min(Eigen::Array3d::Zero())
     , max(Eigen::Array3d::Zero())

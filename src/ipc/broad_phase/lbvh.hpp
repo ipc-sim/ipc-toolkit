@@ -13,6 +13,7 @@ class LBVH : public BroadPhase {
 public:
     static constexpr index_t INVALID_ID = 0xFFFFFFFF;
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     struct alignas(32) Node {
         static constexpr int32_t INVALID_POINTER = 0x0; // do not change
 

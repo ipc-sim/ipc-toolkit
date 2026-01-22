@@ -97,6 +97,12 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - `github.com/nlohmann/json <https://github.com/nlohmann/json>`_
       - |:white_large_square:|
       - ``IPC_TOOLKIT_WITH_PROFILER``
+    * - pybind11_json
+      - JSON support for pybind11 (used in profiler)
+      - MIT
+      - `github.com/pybind/pybind11_json <https://github.com/pybind/pybind11_json>`_
+      - |:white_large_square:|
+      - ``IPC_TOOLKIT_BUILD_PYTHON`` and ``IPC_TOOLKIT_WITH_PROFILER``
     * - rational-cpp
       - Rational arithmetic used for exact intersection checks (requires `GMP <https://gmplib.org>`_ to be installed at a system level)
       - MIT

@@ -12,15 +12,18 @@ namespace ipc {
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 class alignas(64) AABB {
 public:
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     AABB() = default;
 
     AABB(Eigen::ConstRef<ArrayMax3d> min, Eigen::ConstRef<ArrayMax3d> max);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     AABB(const AABB& aabb1, const AABB& aabb2)
         : AABB(aabb1.min.min(aabb2.min), aabb1.max.max(aabb2.max))
     {
     }
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     AABB(const AABB& aabb1, const AABB& aabb2, const AABB& aabb3)
         : AABB(
               aabb1.min.min(aabb2.min).min(aabb3.min),

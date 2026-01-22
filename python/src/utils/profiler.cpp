@@ -1,8 +1,10 @@
 #include <common.hpp>
 
-#include <pybind11_json/pybind11_json.hpp>
-
 #include <ipc/utils/profiler.hpp>
+
+#ifdef IPC_TOOLKIT_WITH_PROFILER
+#include <pybind11_json/pybind11_json.hpp>
+#endif
 
 using namespace ipc;
 
