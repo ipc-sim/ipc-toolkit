@@ -3,6 +3,7 @@
 #include <ipc/broad_phase/brute_force.hpp>
 #include <ipc/broad_phase/bvh.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
+#include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/sweep_and_prune.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
@@ -21,6 +22,8 @@ create_broad_phase(const BroadPhaseMethod& broad_phase_method)
         return std::make_shared<SpatialHash>();
     case BroadPhaseMethod::BVH:
         return std::make_shared<BVH>();
+    case BroadPhaseMethod::LBVH:
+        return std::make_shared<LBVH>();
     case BroadPhaseMethod::SWEEP_AND_PRUNE:
         return std::make_shared<SweepAndPrune>();
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
