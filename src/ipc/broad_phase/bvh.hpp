@@ -67,7 +67,7 @@ protected:
     /// @brief Initialize a BVH from a set of boxes.
     /// @param[in] boxes Set of boxes to initialize the BVH with.
     /// @param[out] bvh The BVH to initialize.
-    static void init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh);
+    static void init_bvh(const AABBs& boxes, SimpleBVH::BVH& bvh);
 
     /// @brief Detect candidate collisions between a BVH and a sets of boxes.
     /// @tparam Candidate Type of candidate collision.
@@ -82,7 +82,7 @@ protected:
         bool swap_order = false,
         bool triangular = false>
     static void detect_candidates(
-        const std::vector<AABB>& boxes,
+        const AABBs& boxes,
         const SimpleBVH::BVH& bvh,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates);

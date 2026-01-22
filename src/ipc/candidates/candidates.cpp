@@ -56,7 +56,7 @@ void Candidates::build(
 
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
-    broad_phase->detect_collision_candidates(dim, *this);
+    broad_phase->detect_collision_candidates(*this);
 
     // Codim. vertices to codim. vertices:
     if (mesh.num_codim_vertices()) {
@@ -133,7 +133,7 @@ void Candidates::build(
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(
         vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), inflation_radius);
-    broad_phase->detect_collision_candidates(dim, *this);
+    broad_phase->detect_collision_candidates(*this);
 
     // Codim. vertices to codim. vertices:
     if (mesh.num_codim_vertices()) {

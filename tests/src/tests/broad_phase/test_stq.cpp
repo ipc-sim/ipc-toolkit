@@ -36,7 +36,7 @@ TEST_CASE("STQ All Cases", "[broad_phase][stq][cuda]")
     broad_phase->build(V0, V1, E, F, inflation_radius);
 
     Candidates candidates;
-    broad_phase->detect_collision_candidates(V0.cols(), candidates);
+    broad_phase->detect_collision_candidates(candidates);
 
     CHECK(candidates.size() == 6'852'873);
     CHECK(candidates.vv_candidates.size() == 0);

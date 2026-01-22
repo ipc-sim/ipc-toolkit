@@ -1,4 +1,6 @@
 set(SOURCES
+  autodiff_types.hpp
+  default_init_allocator.hpp
   eigen_ext.hpp
   eigen_ext.tpp
   local_to_global.hpp

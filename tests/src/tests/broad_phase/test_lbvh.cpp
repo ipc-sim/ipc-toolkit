@@ -31,7 +31,7 @@ bool is_aabb_union(LBVH::Node parent, LBVH::Node childA, LBVH::Node childB)
 }
 
 void traverse_lbvh(
-    const std::vector<LBVH::Node>& lbvh_nodes,
+    const LBVH::Nodes& lbvh_nodes,
     const uint32_t index,
     std::vector<bool>& visited)
 {
@@ -66,7 +66,7 @@ void traverse_lbvh(
     }
 }
 
-void check_valid_lbvh_nodes(const std::vector<LBVH::Node>& lbvh_nodes)
+void check_valid_lbvh_nodes(const LBVH::Nodes& lbvh_nodes)
 {
     std::vector<bool> visited(lbvh_nodes.size(), false);
     traverse_lbvh(lbvh_nodes, 0, visited);
@@ -110,8 +110,8 @@ TEST_CASE("LBVH::build", "[broad_phase][lbvh]")
     // -- Check the LBVH nodes are all reachable and contain their children ---
 
     check_valid_lbvh_nodes(lbvh->vertex_nodes());
-    // check_valid_lbvh_nodes(lbvh->edge_nodes());
-    // check_valid_lbvh_nodes(lbvh->face_nodes());
+    check_valid_lbvh_nodes(lbvh->edge_nodes());
+    check_valid_lbvh_nodes(lbvh->face_nodes());
 
     // -- Check clear() works -------------------------------------------------
     lbvh->clear();

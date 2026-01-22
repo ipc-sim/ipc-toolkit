@@ -30,6 +30,8 @@ void SweepAndPrune::build(
 
     clear();
 
+    dim = vertices.cols();
+
     scalable_ccd::build_vertex_boxes(
         vertices, boxes->vertices, inflation_radius);
     scalable_ccd::build_edge_boxes(boxes->vertices, edges, boxes->edges);
@@ -48,6 +50,8 @@ void SweepAndPrune::build(
 
     clear();
 
+    dim = vertices_t0.cols();
+
     scalable_ccd::build_vertex_boxes(
         vertices_t0, vertices_t1, boxes->vertices, inflation_radius);
     scalable_ccd::build_edge_boxes(boxes->vertices, edges, boxes->edges);
@@ -55,14 +59,17 @@ void SweepAndPrune::build(
 }
 
 void SweepAndPrune::build(
-    const std::vector<AABB>& p_vertex_boxes,
+    const AABBs& p_vertex_boxes,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
-    Eigen::ConstRef<Eigen::MatrixXi> faces)
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
+    const uint8_t p_dim)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
 
     clear();
+
+    dim = p_dim;
 
     // Convert from ipc::AABB to scalable_ccd::AABB (additional element_id)
     boxes->vertices.resize(p_vertex_boxes.size());

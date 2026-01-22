@@ -91,6 +91,12 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - `github.com/zfergus/filib <https://github.com/zfergus/filib>`_
       - |:white_check_mark:|
       - ``IPC_TOOLKIT_WITH_FILIB``
+    * - nlohmann/json
+      - JSON parsing for profiler and tests
+      - MIT
+      - `github.com/nlohmann/json <https://github.com/nlohmann/json>`_
+      - |:white_large_square:|
+      - ``IPC_TOOLKIT_WITH_PROFILER``
     * - rational-cpp
       - Rational arithmetic used for exact intersection checks (requires `GMP <https://gmplib.org>`_ to be installed at a system level)
       - MIT
@@ -137,6 +143,3 @@ Unit Test Dependencies
     * - finite-diff
       - Finite-difference comparisons
       - `github.com/zfergus/finite-diff <https://github.com/zfergus/finite-diff>`_
-    * - Nlohmann JSON
-      - Loading test data from JSON files
-      - `github.com/nlohmann/json <https://github.com/nlohmann/json>`_

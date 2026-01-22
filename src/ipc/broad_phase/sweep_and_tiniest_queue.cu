@@ -67,7 +67,7 @@ void SweepAndTiniestQueue::build(
 }
 
 void SweepAndTiniestQueue::build(
-    const std::vector<AABB>& vertex_boxes,
+    const AABBs& vertex_boxes,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces)
 {
@@ -81,13 +81,11 @@ void SweepAndTiniestQueue::build(
     for (int i = 0; i < vertex_boxes.size(); ++i) {
         boxes->vertices[i].min.x = vertex_boxes[i].min.x();
         boxes->vertices[i].min.y = vertex_boxes[i].min.y();
-        boxes->vertices[i].min.z =
-            vertex_boxes[i].min.size() > 2 ? vertex_boxes[i].min.z() : 0;
+        boxes->vertices[i].min.z = vertex_boxes[i].min.z();
 
         boxes->vertices[i].max.x = vertex_boxes[i].max.x();
         boxes->vertices[i].max.y = vertex_boxes[i].max.y();
-        boxes->vertices[i].max.z =
-            vertex_boxes[i].max.size() > 2 ? vertex_boxes[i].max.z() : 0;
+        boxes->vertices[i].max.z = vertex_boxes[i].max.z();
 
         // If vertex id == -1 it means this slot is not used.
         // But Scalable CCD does not have this kind of special value so we map

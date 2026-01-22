@@ -25,7 +25,7 @@ TEST_CASE("Build SpatialHash", "[broad_phase][spatial_hash][build]")
     sh.build(V0, V1, E, F, inflation_radius);
 
     Candidates candidates;
-    sh.detect_collision_candidates(V0.cols(), candidates);
+    sh.detect_collision_candidates(candidates);
 
     CHECK(candidates.size() == 6'852'873);
     CHECK(candidates.vv_candidates.size() == 0);

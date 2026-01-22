@@ -22,85 +22,84 @@ namespace {
     // Helper to safely convert double AABB to float AABB
     inline void assign_inflated_aabb(const AABB& box, LBVH::Node& node)
     {
-        constexpr float inf = std::numeric_limits<float>::infinity();
         // Round Min down
-        node.aabb_min[0] = std::nextafter(float(box.min[0]), -inf);
-        node.aabb_min[1] = std::nextafter(float(box.min[1]), -inf);
-        node.aabb_min[2] = box.min.size() == 3
-            ? std::nextafter(float(box.min[2]), -inf)
-            : 0.0f;
+        node.aabb_min = box.min.unaryExpr([](double val) {
+            return std::nextafter(
+                float(val), -std::numeric_limits<float>::infinity());
+        });
         // Round Max up
-        node.aabb_max[0] = std::nextafter(float(box.max[0]), inf);
-        node.aabb_max[1] = std::nextafter(float(box.max[1]), inf);
-        node.aabb_max[2] =
-            box.max.size() == 3 ? std::nextafter(float(box.max[2]), inf) : 0.0f;
+        node.aabb_max = box.max.unaryExpr([](double val) {
+            return std::nextafter(
+                float(val), std::numeric_limits<float>::infinity());
+        });
     }
 } // namespace
 
-LBVH::LBVH() : BroadPhase(), dim(0) { }
-
-LBVH::~LBVH() = default;
-
-// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-LBVH::Node::Node() : primitive_id(INVALID_ID), is_inner_marker(0)
+LBVH::LBVH() : BroadPhase()
 {
     static_assert(
-        sizeof(Node) == 32,
+        sizeof(LBVH::Node) == 32,
         "LBVH::Node size must be 32 bytes to fit 2 Nodes in a cache line");
 }
+
+LBVH::~LBVH() = default;
 
 void LBVH::build(
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces)
 {
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::build");
+
     BroadPhase::build(edges, faces); // Build edge_boxes and face_boxes
 
     if (vertex_boxes.empty()) {
         return;
     }
 
-    dim = vertex_boxes[0].min.size();
-    assert(dim == 2 || dim == 3); // Only 2D and 3D supported
+    assert(dim == 2 || dim == 3);
 
-    mesh_aabb = { Eigen::Array3d::Zero(), Eigen::Array3d::Zero() };
-    mesh_aabb.min = to_3D(vertex_boxes[0].min);
-    mesh_aabb.max = to_3D(vertex_boxes[0].max);
-    for (const auto& box : vertex_boxes) {
-        mesh_aabb.min = mesh_aabb.min.min(to_3D(box.min));
-        mesh_aabb.max = mesh_aabb.max.max(to_3D(box.max));
-    }
+    compute_mesh_aabb(mesh_aabb.min, mesh_aabb.max);
 
     init_bvh(vertex_boxes, vertex_bvh);
     init_bvh(edge_boxes, edge_bvh);
     init_bvh(face_boxes, face_bvh);
 
     // Copy edge and face vertex ids for access during traversal
-    edge_vertex_ids.resize(edges.rows());
-    for (int i = 0; i < edges.rows(); i++) {
-        edge_vertex_ids[i][0] = static_cast<index_t>(edges(i, 0));
-        edge_vertex_ids[i][1] = static_cast<index_t>(edges(i, 1));
-    }
-    face_vertex_ids.resize(faces.rows());
-    for (int i = 0; i < faces.rows(); i++) {
-        face_vertex_ids[i][0] = static_cast<index_t>(faces(i, 0));
-        face_vertex_ids[i][1] = static_cast<index_t>(faces(i, 1));
-        face_vertex_ids[i][2] = static_cast<index_t>(faces(i, 2));
+    {
+        IPC_TOOLKIT_PROFILE_BLOCK("copy_vertex_ids");
+
+        edge_vertex_ids.resize(edges.rows());
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(0, edges.rows()),
+            [&](const tbb::blocked_range<size_t>& r) {
+                for (size_t i = r.begin(); i < r.end(); ++i) {
+                    edge_vertex_ids[i][0] = static_cast<index_t>(edges(i, 0));
+                    edge_vertex_ids[i][1] = static_cast<index_t>(edges(i, 1));
+                }
+            });
+
+        face_vertex_ids.resize(faces.rows());
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(0, faces.rows()),
+            [&](const tbb::blocked_range<size_t>& r) {
+                for (size_t i = r.begin(); i < r.end(); ++i) {
+                    face_vertex_ids[i][0] = static_cast<index_t>(faces(i, 0));
+                    face_vertex_ids[i][1] = static_cast<index_t>(faces(i, 1));
+                    face_vertex_ids[i][2] = static_cast<index_t>(faces(i, 2));
+                }
+            });
     }
 
     // Clear parent data to save memory.
     // These are redundant after building the BVHs.
     vertex_boxes.clear();
-    vertex_boxes.shrink_to_fit();
     edge_boxes.clear();
-    edge_boxes.shrink_to_fit();
     face_boxes.clear();
-    face_boxes.shrink_to_fit();
 }
 
 namespace {
-
     int delta(
-        const std::vector<LBVH::MortonCodeElement>& sorted_morton_codes,
+        const LBVH::MortonCodeElements& sorted_morton_codes,
         int i,
         uint64_t code_i,
         int j)
@@ -129,7 +128,7 @@ namespace {
     }
 
     void determine_range(
-        const std::vector<LBVH::MortonCodeElement>& sorted_morton_codes,
+        const LBVH::MortonCodeElements& sorted_morton_codes,
         int idx,
         int& lower,
         int& upper)
@@ -164,7 +163,7 @@ namespace {
     }
 
     int find_split(
-        const std::vector<LBVH::MortonCodeElement>& sorted_morton_codes,
+        const LBVH::MortonCodeElements& sorted_morton_codes,
         int first,
         int last)
     {
@@ -195,8 +194,7 @@ namespace {
     }
 } // namespace
 
-void LBVH::init_bvh(
-    const std::vector<AABB>& boxes, std::vector<Node>& lbvh) const
+void LBVH::init_bvh(const AABBs& boxes, Nodes& lbvh) const
 {
     if (boxes.empty()) {
         return;
@@ -204,9 +202,15 @@ void LBVH::init_bvh(
 
     IPC_TOOLKIT_PROFILE_BLOCK("LBVH::init_bvh");
 
-    std::vector<MortonCodeElement> morton_codes(boxes.size());
+    if (lbvh.size() != 2 * boxes.size() - 1) {
+        IPC_TOOLKIT_PROFILE_BLOCK("resize_bvh");
+        lbvh.resize(2 * boxes.size() - 1);
+    }
+
+    LBVH::MortonCodeElements morton_codes(boxes.size());
     {
         IPC_TOOLKIT_PROFILE_BLOCK("compute_morton_codes");
+
         const Eigen::Array3d mesh_width = mesh_aabb.max - mesh_aabb.min;
         tbb::parallel_for(
             tbb::blocked_range<size_t>(0, boxes.size()),
@@ -214,8 +218,7 @@ void LBVH::init_bvh(
                 for (size_t i = r.begin(); i < r.end(); i++) {
                     const auto& box = boxes[i];
 
-                    const Eigen::Array3d center =
-                        to_3D(0.5 * (box.min + box.max));
+                    const Eigen::Array3d center = 0.5 * (box.min + box.max);
                     const Eigen::Array3d mapped_center =
                         (center - mesh_aabb.min) / mesh_width;
 
@@ -241,10 +244,10 @@ void LBVH::init_bvh(
             });
     }
 
+    assert(boxes.size() <= std::numeric_limits<int>::max());
     const int LEAF_OFFSET = int(boxes.size()) - 1;
 
-    lbvh.resize(2 * boxes.size() - 1);
-    std::vector<ConstructionInfo> construction_infos(2 * boxes.size() - 1);
+    LBVH::ConstructionInfos construction_infos(lbvh.size());
     {
         IPC_TOOLKIT_PROFILE_BLOCK("build_hierarchy");
         tbb::parallel_for(
@@ -259,10 +262,11 @@ void LBVH::init_bvh(
                         Node leaf_node; // Create leaf node
                         assign_inflated_aabb(box, leaf_node);
                         leaf_node.primitive_id = morton_codes[i].box_id;
+                        leaf_node.is_inner_marker = 0;
                         lbvh[LEAF_OFFSET + i] = leaf_node; // Store leaf
                     }
 
-                    if (i < boxes.size() - 1) {
+                    if (i < LEAF_OFFSET) {
                         // Find out which range of objects the node corresponds
                         // to. (This is where the magic happens!)
 
@@ -295,11 +299,17 @@ void LBVH::init_bvh(
                         lbvh[i].right = child_b;
                         construction_infos[child_a].parent = int(i);
                         construction_infos[child_b].parent = int(i);
+                        construction_infos[child_a].visitation_count.store(
+                            0, std::memory_order_relaxed);
+                        construction_infos[child_b].visitation_count.store(
+                            0, std::memory_order_relaxed);
                     }
 
-                    // node 0 is the root
+                    // node 0 is the root and has no parent to set these values
                     if (i == 0) {
                         construction_infos[0].parent = 0;
+                        construction_infos[0].visitation_count.store(
+                            0, std::memory_order_relaxed);
                     }
                 }
             });
@@ -382,7 +392,7 @@ namespace {
     template <typename Candidate, bool swap_order, bool triangular>
     void traverse_lbvh(
         const LBVH::Node& query,
-        const std::vector<LBVH::Node>& lbvh,
+        const LBVH::Nodes& lbvh,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates)
     {
@@ -445,7 +455,7 @@ namespace {
     void traverse_lbvh_simd(
         const LBVH::Node* queries,
         const size_t n_queries,
-        const std::vector<LBVH::Node>& lbvh,
+        const LBVH::Nodes& lbvh,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates)
     {
@@ -561,8 +571,8 @@ namespace {
         bool triangular,
         bool use_simd = true>
     void independent_traversal(
-        const std::vector<LBVH::Node>& source,
-        const std::vector<LBVH::Node>& target,
+        const LBVH::Nodes& source,
+        const LBVH::Nodes& target,
         const std::function<bool(size_t, size_t)>& can_collide,
         tbb::enumerable_thread_specific<std::vector<Candidate>>& storage)
     {
@@ -604,8 +614,8 @@ namespace {
 
 template <typename Candidate, bool swap_order, bool triangular>
 void LBVH::detect_candidates(
-    const std::vector<Node>& source,
-    const std::vector<Node>& target,
+    const Nodes& source,
+    const Nodes& target,
     const std::function<bool(size_t, size_t)>& can_collide,
     std::vector<Candidate>& candidates)
 {

@@ -49,7 +49,7 @@ public:
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     void build(
-        const std::vector<AABB>& vertex_boxes,
+        const AABBs& vertex_boxes,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) override;
 

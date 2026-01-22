@@ -1,17 +1,19 @@
 #pragma once
 
 #include <ipc/broad_phase/broad_phase.hpp>
+#include <ipc/utils/default_init_allocator.hpp>
 
 #include <memory>
 
 namespace ipc {
 
 /// @brief Linear Bounding Volume Hierarchy (LBVH) broad phase collision detection.
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 class LBVH : public BroadPhase {
 public:
     static constexpr index_t INVALID_ID = 0xFFFFFFFF;
 
-    struct Node {
+    struct alignas(32) Node {
         static constexpr int32_t INVALID_POINTER = 0x0; // do not change
 
         /// @brief The min corner of the AABB
@@ -47,9 +49,6 @@ public:
 
 #pragma GCC diagnostic pop
 
-        /// @brief Default constructor
-        Node();
-
         /// @brief Check if this node is an inner node.
         bool is_inner() const { return is_inner_marker; }
 
@@ -77,12 +76,21 @@ public:
         size_t box_id;        ///< Pointer into boxes buffer
     };
 
+    // Vectors with custom allocator to avoid initialization overhead
+    using Nodes = std::vector<Node, DefaultInitAllocator<Node>>;
+    using MortonCodeElements =
+        std::vector<MortonCodeElement, DefaultInitAllocator<MortonCodeElement>>;
+
+private:
     struct ConstructionInfo {
         /// @brief Parent to the parent
-        int parent = -1;
+        int parent;
         /// @brief Number of threads that arrived
-        std::atomic<int> visitation_count = 0;
+        std::atomic<int> visitation_count;
     };
+
+    using ConstructionInfos =
+        std::vector<ConstructionInfo, DefaultInitAllocator<ConstructionInfo>>;
 
 public:
     LBVH();
@@ -127,9 +135,9 @@ public:
     void detect_face_face_candidates(
         std::vector<FaceFaceCandidate>& candidates) const override;
 
-    const std::vector<Node>& vertex_nodes() const { return vertex_bvh; }
-    const std::vector<Node>& edge_nodes() const { return edge_bvh; }
-    const std::vector<Node>& face_nodes() const { return face_bvh; }
+    const Nodes& vertex_nodes() const { return vertex_bvh; }
+    const Nodes& edge_nodes() const { return edge_bvh; }
+    const Nodes& face_nodes() const { return face_bvh; }
 
 protected:
     /// @brief Build the broad phase for collision detection.
@@ -143,8 +151,7 @@ protected:
     /// @brief Initialize a LBVH from a set of boxes.
     /// @param[in] boxes Set of boxes to initialize the LBVH with.
     /// @param[out] bvh The LBVH to initialize.
-    void
-    init_bvh(const std::vector<AABB>& boxes, std::vector<Node>& lbvh) const;
+    void init_bvh(const AABBs& boxes, Nodes& lbvh) const;
 
     /// @brief Detect candidate collisions between a LBVH and a sets of boxes.
     /// @tparam Candidate Type of candidate collision.
@@ -159,14 +166,14 @@ protected:
         bool swap_order = false,
         bool triangular = false>
     static void detect_candidates(
-        const std::vector<Node>& source,
-        const std::vector<Node>& target,
+        const Nodes& source,
+        const Nodes& target,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates);
 
     template <typename Candidate>
     static void detect_candidates(
-        const std::vector<Node>& source_and_target,
+        const Nodes& source_and_target,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates)
     {
@@ -188,25 +195,31 @@ protected:
     // -------------------------------------------------------------------------
 
     /// @brief BVH containing the vertices.
-    std::vector<Node> vertex_bvh;
+    Nodes vertex_bvh;
     /// @brief BVH containing the edges.
-    std::vector<Node> edge_bvh;
+    Nodes edge_bvh;
     /// @brief BVH containing the faces.
-    std::vector<Node> face_bvh;
+    Nodes face_bvh;
+
+private:
+    // Vectors with custom allocator to avoid initialization overhead
+    using EdgeIndices = std::vector<
+        std::array<index_t, 2>,
+        DefaultInitAllocator<std::array<index_t, 2>>>;
+    using FaceIndices = std::vector<
+        std::array<index_t, 3>,
+        DefaultInitAllocator<std::array<index_t, 3>>>;
 
     /// @brief Edge vertices in the original mesh order.
-    std::vector<std::array<index_t, 2>> edge_vertex_ids;
+    EdgeIndices edge_vertex_ids;
     /// @brief Face vertices in the original mesh order.
-    std::vector<std::array<index_t, 3>> face_vertex_ids;
+    FaceIndices face_vertex_ids;
 
     /// @brief The axis-aligned bounding box of the entire mesh.
     struct {
         Eigen::Array3d min;
         Eigen::Array3d max;
     } mesh_aabb;
-
-    /// @brief Dimension of the simulation for which the broad phase was built.
-    uint8_t dim;
 };
 
 } // namespace ipc

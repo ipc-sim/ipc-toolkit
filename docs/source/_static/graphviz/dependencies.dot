@@ -83,4 +83,7 @@ digraph "IPC Toolkit Dependencies" {
     "node5" -> "node13" [color = "#8FB976";];
     "node13" -> "node0" [color = "#BE6562";];
     "node13" -> "node9" [color = "#BE6562";];
+    // ipc_toolkit -> nlohmann_json
+    "node14" [label = "nlohmann_json\n(nlohmann_json::nlohmann_json)";shape = box;style = "rounded,filled";fillcolor = "#FFE6CC";color = "#DAA52D";];
+    "node5" -> "node14" [color = "#8FB976";];
 }

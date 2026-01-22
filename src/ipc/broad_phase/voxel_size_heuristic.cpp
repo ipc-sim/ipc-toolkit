@@ -77,7 +77,7 @@ double suggest_good_voxel_size(
     return voxel_size;
 }
 
-double suggest_good_voxel_size(const std::vector<AABB>& boxes)
+double suggest_good_voxel_size(const AABBs& boxes)
 {
     assert(!boxes.empty());
 

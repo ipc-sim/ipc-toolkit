@@ -26,13 +26,14 @@ void BVH::build(
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces)
 {
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::build");
     BroadPhase::build(edges, faces); // Build edge_boxes and face_boxes
     init_bvh(vertex_boxes, *vertex_bvh);
     init_bvh(edge_boxes, *edge_bvh);
     init_bvh(face_boxes, *face_bvh);
 }
 
-void BVH::init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh)
+void BVH::init_bvh(const AABBs& boxes, SimpleBVH::BVH& bvh)
 {
     if (boxes.empty()) {
         return;
@@ -40,9 +41,10 @@ void BVH::init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh)
 
     IPC_TOOLKIT_PROFILE_BLOCK("BVH::init_bvh");
 
+    // Convert AABBs to the format expected by SimpleBVH
     std::vector<std::array<Eigen::Vector3d, 2>> vector_boxes(boxes.size());
     for (int i = 0; i < boxes.size(); i++) {
-        vector_boxes[i] = { { to_3D(boxes[i].min), to_3D(boxes[i].max) } };
+        vector_boxes[i] = { { boxes[i].min, boxes[i].max } };
     }
 
     bvh.init(vector_boxes);
@@ -58,7 +60,7 @@ void BVH::clear()
 
 template <typename Candidate, bool swap_order, bool triangular>
 void BVH::detect_candidates(
-    const std::vector<AABB>& boxes,
+    const AABBs& boxes,
     const SimpleBVH::BVH& bvh,
     const std::function<bool(size_t, size_t)>& can_collide,
     std::vector<Candidate>& candidates)

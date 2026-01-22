@@ -62,11 +62,12 @@ public: // constructor
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     void build(
-        const std::vector<AABB>& _vertex_boxes,
+        const AABBs& _vertex_boxes,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) override
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        const uint8_t dim) override
     {
-        build(_vertex_boxes, edges, faces, /*voxel_size=*/-1);
+        build(_vertex_boxes, edges, faces, dim, /*voxel_size=*/-1);
     }
 
     // ------------------------------------------------------------------------
@@ -108,9 +109,10 @@ public: // constructor
     /// @param faces Collision mesh faces
     /// @param voxel_size Size of the voxels used in the spatial hash.
     void build(
-        const std::vector<AABB>& vertex_boxes,
+        const AABBs& vertex_boxes,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces,
+        const uint8_t dim,
         double voxel_size);
 
     /// @brief Clear any built data.
@@ -155,32 +157,33 @@ private: // helper functions
         Eigen::ConstRef<Eigen::MatrixXi> faces,
         double voxel_size);
 
-    int locate_voxel_index(Eigen::ConstRef<VectorMax3d> p) const;
+    int locate_voxel_index(Eigen::ConstRef<Eigen::Array3d> p) const;
 
-    ArrayMax3i locate_voxel_axis_index(Eigen::ConstRef<VectorMax3d> p) const;
+    Eigen::Array3i
+    locate_voxel_axis_index(Eigen::ConstRef<Eigen::Array3d> p) const;
 
     void locate_box_voxel_axis_index(
-        ArrayMax3d min_corner,
-        ArrayMax3d max_corner,
-        Eigen::Ref<ArrayMax3i> min_index,
-        Eigen::Ref<ArrayMax3i> max_index,
+        Eigen::Array3d min_corner,
+        Eigen::Array3d max_corner,
+        Eigen::Ref<Eigen::Array3i> min_index,
+        Eigen::Ref<Eigen::Array3i> max_index,
         const double inflation_radius = 0) const;
 
     int voxel_axis_index_to_voxel_index(
-        Eigen::ConstRef<ArrayMax3i> voxel_axis_index) const;
+        Eigen::ConstRef<Eigen::Array3i> voxel_axis_index) const;
 
     int voxel_axis_index_to_voxel_index(int ix, int iy, int iz) const;
 
     // --- Data members -------------------------------------------------------
 
     /// @brief The left bottom corner of the world bounding box.
-    ArrayMax3d left_bottom_corner;
+    Eigen::Array3d left_bottom_corner;
 
     /// @brief The right top corner of the world bounding box.
-    ArrayMax3d right_top_corner;
+    Eigen::Array3d right_top_corner;
 
     /// @brief The number of voxels in each dimension.
-    ArrayMax3i voxel_count;
+    Eigen::Array3i voxel_count;
 
     /// @note Use the Pimpl idiom to hide unordered_map and unordered_set from the public API.
     struct Impl;
@@ -192,9 +195,6 @@ private: // helper functions
 
     /// @brief The number of voxels in the first two dimensions.
     int voxel_count_0x1 = -1;
-
-    /// @brief The dimension of the space (2D or 3D).
-    int dim = -1;
 };
 
 } // namespace ipc

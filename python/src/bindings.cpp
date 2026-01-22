@@ -120,6 +120,7 @@ PYBIND11_MODULE(ipctk, m)
 
     // utils
     define_logger(m);
+    define_profiler(m);
     define_thread_limiter(m);
     define_vertex_to_min_edge(m);
     define_world_bbox_diagonal_length(m);

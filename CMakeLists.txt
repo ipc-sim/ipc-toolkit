@@ -234,7 +234,7 @@ endif()
 if(IPC_TOOLKIT_WITH_PROFILER)
   # Add nlohmann/json for the profiler
   include(json)
-  target_link_libraries(ipc_toolkit PRIVATE nlohmann_json::nlohmann_json)
+  target_link_libraries(ipc_toolkit PUBLIC nlohmann_json::nlohmann_json)
 endif()
 
 # Extra warnings (link last for highest priority)

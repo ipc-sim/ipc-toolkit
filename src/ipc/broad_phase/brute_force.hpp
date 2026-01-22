@@ -53,8 +53,8 @@ private:
     /// @param[out] candidates The candidate collisions.
     template <typename Candidate, bool triangular = false>
     void detect_candidates(
-        const std::vector<AABB>& boxes0,
-        const std::vector<AABB>& boxes1,
+        const AABBs& boxes0,
+        const AABBs& boxes1,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates) const;
 };

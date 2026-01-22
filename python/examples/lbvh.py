@@ -6,7 +6,16 @@ import numpy as np
 
 import pathlib
 
-mesh = meshio.read(pathlib.Path(__file__).parents[2] / "tests/data/puffer-ball/20.ply") # noqa
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--mesh",
+    type=pathlib.Path,
+    default=(pathlib.Path(__file__).parents[2] / "tests/data/puffer-ball/20.ply"))
+args = parser.parse_args()
+
+mesh = meshio.read(args.mesh)
 
 lbvh = ipctk.LBVH()
 lbvh.build(mesh.points, np.array([], dtype=int), mesh.cells_dict["triangle"])
