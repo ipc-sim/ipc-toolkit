@@ -53,19 +53,29 @@ if __name__ == "__main__":
         "--mesh",
         type=pathlib.Path,
         default=(pathlib.Path(__file__).parents[2] / "tests/data/puffer-ball/20.ply"))
+    parser.add_argument(
+        "--method",
+        type=str,
+        default="lvbh")
     args = parser.parse_args()
 
     mesh = meshio.read(args.mesh)
     faces = mesh.cells_dict["triangle"]
 
-    # edges = ipctk.edges(faces)
+    edges = ipctk.edges(faces)
     # indices = np.lexsort((edges[:, 1], edges[:, 0]))
     # edges = edges[indices]
 
     # indices = np.lexsort((faces[:, 2], faces[:, 1], faces[:, 0]))
     # faces = faces[indices]
 
-    lbvh = ipctk.LBVH()
-    lbvh.build(mesh.points, edges, faces)
+    if args.method.lower() == "bvh":
+        bp = ipctk.BVH()
+    elif args.method.lower() == "lbvh":
+        bp = ipctk.LBVH()
+
+    bp.build(mesh.points, edges, faces)
+
+    candidates = bp.detect_collision_candidates()
 
     plot_profiler(title=args.mesh.parent.name + "/" + args.mesh.name)
