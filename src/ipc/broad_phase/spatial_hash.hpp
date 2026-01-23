@@ -65,9 +65,9 @@ public: // constructor
         const AABBs& _vertex_boxes,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces,
-        const uint8_t dim) override
+        const uint8_t _dim) override
     {
-        build(_vertex_boxes, edges, faces, dim, /*voxel_size=*/-1);
+        build(_vertex_boxes, edges, faces, _dim, /*voxel_size=*/-1);
     }
 
     // ------------------------------------------------------------------------
