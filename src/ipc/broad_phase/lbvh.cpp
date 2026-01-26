@@ -470,7 +470,7 @@ namespace {
             // 1. Create a buffer of the correct architecture-dependent size
             alignas(xs::default_arch::alignment())
                 std::array<float, batch_t::size>
-                    buffer;
+                    buffer {};
 
 #pragma unroll
             // 2. Fill the buffer, respecting the actual number of queries
