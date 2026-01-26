@@ -9,7 +9,7 @@
 // NOTE: Avoid error about abs casting double to int. Eigen does this
 // internally but seemingly only if EIGEN_DONT_VECTORIZE is not defined.
 // TODO: We should always using std::abs to avoid this issue.
-using std::abs;
+EIGEN_USING_STD(abs); // using std::abs;
 #endif
 
 namespace Eigen {
