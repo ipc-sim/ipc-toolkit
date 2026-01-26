@@ -80,6 +80,7 @@ option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather tha
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
 option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
 option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
+option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
 
 # Advanced options
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
@@ -228,6 +229,12 @@ endif()
 if(IPC_TOOLKIT_WITH_FILIB)
   include(filib)
   target_link_libraries(ipc_toolkit PUBLIC filib::filib)
+endif()
+
+if(IPC_TOOLKIT_WITH_PROFILER)
+  # Add nlohmann/json for the profiler
+  include(json)
+  target_link_libraries(ipc_toolkit PUBLIC nlohmann_json::nlohmann_json)
 endif()
 
 # Extra warnings (link last for highest priority)

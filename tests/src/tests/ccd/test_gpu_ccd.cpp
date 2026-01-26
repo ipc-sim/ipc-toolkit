@@ -24,10 +24,10 @@ TEST_CASE("GPU CCD", "[ccd][gpu]")
         mesh_name_t0 = "cloth_ball92.ply";
         mesh_name_t1 = "cloth_ball93.ply";
     }
-    // SECTION("Squishy-Ball")
+    // SECTION("Puffer-Ball")
     // {
-    //     mesh_name_t0 = "private/puffer-ball/20.ply";
-    //     mesh_name_t1 = "private/puffer-ball/21.ply";
+    //     mesh_name_t0 = "puffer-ball/20.ply";
+    //     mesh_name_t1 = "puffer-ball/21.ply";
     // }
 
     if (!tests::load_mesh(mesh_name_t0, V0, E, F)

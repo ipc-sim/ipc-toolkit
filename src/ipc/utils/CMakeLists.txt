@@ -1,10 +1,14 @@
 set(SOURCES
+  autodiff_types.hpp
+  default_init_allocator.hpp
   eigen_ext.hpp
   eigen_ext.tpp
   local_to_global.hpp
   logger.cpp
   logger.hpp
   merge_thread_local.hpp
+  profiler.cpp
+  profiler.hpp
   save_obj.cpp
   save_obj.hpp
   unordered_map_and_set.cpp

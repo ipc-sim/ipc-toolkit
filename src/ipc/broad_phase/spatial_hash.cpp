@@ -39,7 +39,7 @@ namespace {
     void fill_primitive_to_voxels(
         Eigen::ConstRef<Eigen::Array3i> min_voxel,
         Eigen::ConstRef<Eigen::Array3i> max_voxel,
-        Eigen::ConstRef<ArrayMax3i> voxel_count,
+        Eigen::ConstRef<Eigen::Array3i> voxel_count,
         const int voxel_count_0x1,
         std::vector<int>& primitive_to_voxels)
     {
@@ -70,6 +70,7 @@ void SpatialHash::build(
     double voxel_size)
 {
     clear();
+    dim = static_cast<uint8_t>(vertices.cols());
     build_vertex_boxes(vertices, vertex_boxes, inflation_radius);
     build(edges, faces, voxel_size);
 }
@@ -83,20 +84,23 @@ void SpatialHash::build(
     double voxel_size)
 {
     clear();
+    dim = static_cast<uint8_t>(vertices_t0.cols());
     build_vertex_boxes(
         vertices_t0, vertices_t1, vertex_boxes, inflation_radius);
     build(edges, faces, voxel_size);
 }
 
 void SpatialHash::build(
-    const std::vector<AABB>& _vertex_boxes,
+    const AABBs& _vertex_boxes,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces,
+    const uint8_t _dim,
     double voxel_size)
 {
     // WARNING: Clear will reset vertex_boxes if this assert is triggered
     assert(&(this->vertex_boxes) != &_vertex_boxes);
     clear();
+    this->dim = _dim;
     this->vertex_boxes = _vertex_boxes;
     build(edges, faces, voxel_size);
 }
@@ -108,7 +112,7 @@ void SpatialHash::build(
 {
     const size_t num_vertices = vertex_boxes.size();
     assert(num_vertices > 0);
-    dim = vertex_boxes[0].min.size();
+    assert(dim == 2 || dim == 3);
 
     BroadPhase::build(edges, faces);
 
@@ -117,17 +121,12 @@ void SpatialHash::build(
             edges.rows() > 0 ? edge_boxes : vertex_boxes);
     }
 
-    left_bottom_corner = vertex_boxes[0].min;
-    right_top_corner = vertex_boxes[0].max;
-    for (const auto& box : vertex_boxes) {
-        left_bottom_corner = left_bottom_corner.min(box.min);
-        right_top_corner = right_top_corner.max(box.max);
-    }
+    compute_mesh_aabb(left_bottom_corner, right_top_corner);
 
     one_div_voxel_size = 1.0 / voxel_size;
 
-    const ArrayMax3d range = right_top_corner - left_bottom_corner;
-    voxel_count = (range * one_div_voxel_size).ceil().template cast<int>();
+    const Eigen::Array3d range = right_top_corner - left_bottom_corner;
+    voxel_count = (range * one_div_voxel_size).ceil().cast<int>();
     if (voxel_count.minCoeff() <= 0) {
         // cast overflow due to huge search direction
         one_div_voxel_size = 1.0 / (range.maxCoeff() * 1.01);
@@ -138,14 +137,12 @@ void SpatialHash::build(
     // ------------------------------------------------------------------------
     // precompute vertex min and max voxel axis indices
 
-    std::vector<Eigen::Array3i> vertex_min_voxel_axis_index(
-        num_vertices, Eigen::Array3i::Zero());
-    std::vector<Eigen::Array3i> vertex_max_voxel_axis_index(
-        num_vertices, Eigen::Array3i::Zero());
+    std::vector<Eigen::Array3i> vertex_min_voxel_axis_index(num_vertices);
+    std::vector<Eigen::Array3i> vertex_max_voxel_axis_index(num_vertices);
     tbb::parallel_for(size_t(0), num_vertices, [&](size_t vi) {
-        vertex_min_voxel_axis_index[vi].head(dim) =
+        vertex_min_voxel_axis_index[vi] =
             locate_voxel_axis_index(vertex_boxes[vi].min);
-        vertex_max_voxel_axis_index[vi].head(dim) =
+        vertex_max_voxel_axis_index[vi] =
             locate_voxel_axis_index(vertex_boxes[vi].max);
     });
 
@@ -198,8 +195,8 @@ namespace {
 
     template <typename Candidate, bool swap_order, bool triangular = false>
     void detect_candidates(
-        const std::vector<AABB>& boxesA,
-        const std::vector<AABB>& boxesB,
+        const AABBs& boxesA,
+        const AABBs& boxesB,
         const std::function<void(int, unordered_set<int>&)>& query_A_for_Bs,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates)
@@ -243,7 +240,7 @@ namespace {
 
     template <typename Candidate>
     void detect_candidates(
-        const std::vector<AABB>& boxesA,
+        const AABBs& boxesA,
         const std::function<void(int, unordered_set<int>&)>& query_A_for_As,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates)
@@ -350,37 +347,36 @@ void SpatialHash::detect_face_face_candidates(
 
 // ============================================================================
 
-int SpatialHash::locate_voxel_index(Eigen::ConstRef<VectorMax3d> p) const
+int SpatialHash::locate_voxel_index(Eigen::ConstRef<Eigen::Array3d> p) const
 {
     return voxel_axis_index_to_voxel_index(locate_voxel_axis_index(p));
 }
 
-ArrayMax3i
-SpatialHash::locate_voxel_axis_index(Eigen::ConstRef<VectorMax3d> p) const
+Eigen::Array3i
+SpatialHash::locate_voxel_axis_index(Eigen::ConstRef<Eigen::Array3d> p) const
 {
     return ((p.array() - left_bottom_corner) * one_div_voxel_size)
         .floor()
-        .template cast<int>();
+        .cast<int>();
 }
 
 void SpatialHash::locate_box_voxel_axis_index(
-    ArrayMax3d min_corner,            // input but will be modified
-    ArrayMax3d max_corner,            // input but will be modified
-    Eigen::Ref<ArrayMax3i> min_index, // output
-    Eigen::Ref<ArrayMax3i> max_index, // output
+    Eigen::Array3d min_corner,            // input but will be modified
+    Eigen::Array3d max_corner,            // input but will be modified
+    Eigen::Ref<Eigen::Array3i> min_index, // output
+    Eigen::Ref<Eigen::Array3i> max_index, // output
     const double inflation_radius) const
 {
     AABB::conservative_inflation(min_corner, max_corner, inflation_radius);
-    min_index = locate_voxel_axis_index(min_corner).max(ArrayMax3i::Zero(dim));
+    min_index = locate_voxel_axis_index(min_corner).max(0);
     max_index = locate_voxel_axis_index(max_corner).min(voxel_count - 1);
 }
 
 int SpatialHash::voxel_axis_index_to_voxel_index(
-    Eigen::ConstRef<ArrayMax3i> voxel_axis_index) const
+    Eigen::ConstRef<Eigen::Array3i> voxel_axis_index) const
 {
     return voxel_axis_index_to_voxel_index(
-        voxel_axis_index[0], voxel_axis_index[1],
-        voxel_axis_index.size() >= 3 ? voxel_axis_index[2] : 0);
+        voxel_axis_index[0], voxel_axis_index[1], voxel_axis_index[2]);
 }
 
 int SpatialHash::voxel_axis_index_to_voxel_index(int ix, int iy, int iz) const

@@ -5,6 +5,7 @@
 #include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <ipc/ipc.hpp>
+#include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/ccd/tight_inclusion_ccd.hpp>
 
 using namespace ipc;
@@ -30,11 +31,11 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
         mesh_name_t0 = "cloth_ball92.ply";
         mesh_name_t1 = "cloth_ball93.ply";
     }
-    // SECTION("Squishy-Ball")
-    // {
-    //     mesh_name_t0 = "private/puffer-ball/20.ply";
-    //     mesh_name_t1 = "private/puffer-ball/21.ply";
-    // }
+    SECTION("Puffer-Ball")
+    {
+        mesh_name_t0 = "puffer-ball/20.ply";
+        mesh_name_t1 = "puffer-ball/21.ply";
+    }
 
     if (!tests::load_mesh(mesh_name_t0, V0, E, F)
         || !tests::load_mesh(mesh_name_t1, V1, E, F)) {
@@ -48,8 +49,13 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
 
     TightInclusionCCD ccd(/*tolerance=*/1e-6, /*max_iterations=*/1e7);
 
+    LBVH broad_phase;
+
     Candidates candidates;
-    candidates.build(mesh, V0, V1);
+    BENCHMARK("Broad-Phase Candidate Generation")
+    {
+        candidates.build(mesh, V0, V1, 0, &broad_phase);
+    };
 
     double toi;
     BENCHMARK("Earliest ToI Narrow-Phase")

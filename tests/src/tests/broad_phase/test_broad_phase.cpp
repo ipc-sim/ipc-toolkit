@@ -274,7 +274,7 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
 {
     using namespace ipc;
 
-    std::vector<AABB> boxes(100);
+    AABBs boxes(100);
     for (int i = 0; i < boxes.size(); ++i) {
         boxes[i].min = Eigen::Array3d(i * 0.6, 0, 0);
         boxes[i].max = Eigen::Array3d(boxes[i].min.x() + 1.0, 0, 0);
@@ -284,7 +284,7 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
     REQUIRE(!boxes[0].intersects(boxes[2]));
 
     const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
-    broad_phase->build(boxes, Eigen::MatrixXi(), Eigen::MatrixXi());
+    broad_phase->build(boxes, Eigen::MatrixXi(), Eigen::MatrixXi(), /*dim=*/3);
 
     std::vector<VertexVertexCandidate> candidates;
     broad_phase->detect_vertex_vertex_candidates(candidates);

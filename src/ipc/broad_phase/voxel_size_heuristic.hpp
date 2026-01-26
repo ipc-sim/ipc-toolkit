@@ -29,7 +29,7 @@ double suggest_good_voxel_size(
 /// @brief Suggest a good voxel size for the given mesh.
 /// @param boxes The axis-aligned bounding boxes of the mesh.
 /// @return The suggested voxel size.
-double suggest_good_voxel_size(const std::vector<AABB>& boxes);
+double suggest_good_voxel_size(const AABBs& boxes);
 
 /// @brief Compute the average edge length of a mesh.
 /// @param vertices_t0 The vertex positions of the mesh at time t0.

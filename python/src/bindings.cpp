@@ -27,6 +27,7 @@ PYBIND11_MODULE(ipctk, m)
     define_brute_force(m);
     define_bvh(m);
     define_hash_grid(m);
+    define_lbvh(m);
     define_spatial_hash(m);
     define_sweep_and_prune(m);
     define_sweep_and_tiniest_queue(m);
@@ -119,6 +120,7 @@ PYBIND11_MODULE(ipctk, m)
 
     // utils
     define_logger(m);
+    define_profiler(m);
     define_thread_limiter(m);
     define_vertex_to_min_edge(m);
     define_world_bbox_diagonal_length(m);

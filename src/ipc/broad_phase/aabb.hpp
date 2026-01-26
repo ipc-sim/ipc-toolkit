@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/config.hpp>
+#include <ipc/utils/default_init_allocator.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <array>
@@ -8,17 +9,21 @@
 namespace ipc {
 
 /// @brief Axis aligned bounding-box of some type
-class AABB {
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+class alignas(64) AABB {
 public:
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     AABB() = default;
 
     AABB(Eigen::ConstRef<ArrayMax3d> min, Eigen::ConstRef<ArrayMax3d> max);
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     AABB(const AABB& aabb1, const AABB& aabb2)
         : AABB(aabb1.min.min(aabb2.min), aabb1.max.max(aabb2.max))
     {
     }
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     AABB(const AABB& aabb1, const AABB& aabb2, const AABB& aabb3)
         : AABB(
               aabb1.min.min(aabb2.min).min(aabb3.min),
@@ -61,12 +66,15 @@ public:
 
 public:
     /// @brief Minimum corner of the AABB.
-    ArrayMax3d min;
+    Eigen::Array3d min;
     /// @brief Maximum corner of the AABB.
-    ArrayMax3d max;
+    Eigen::Array3d max;
     /// @brief Vertex IDs attached to the AABB.
-    std::array<index_t, 3> vertex_ids = { { -1, -1, -1 } };
+    std::array<index_t, 3> vertex_ids;
 };
+
+/// @brief Vector of AABBs with default initialization allocator.
+using AABBs = std::vector<AABB, DefaultInitAllocator<AABB>>;
 
 /// @brief Build one AABB per vertex position (row of V).
 /// @param[in] vertices Vertex positions (rowwise).
@@ -74,7 +82,7 @@ public:
 /// @param[in] inflation_radius Radius of a sphere around the points which the AABBs enclose.
 void build_vertex_boxes(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    std::vector<AABB>& vertex_boxes,
+    AABBs& vertex_boxes,
     const double inflation_radius = 0);
 
 /// @brief Build one AABB per vertex position moving linearly from t=0 to t=1.
@@ -85,7 +93,7 @@ void build_vertex_boxes(
 void build_vertex_boxes(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-    std::vector<AABB>& vertex_boxes,
+    AABBs& vertex_boxes,
     const double inflation_radius = 0);
 
 /// @brief Build one AABB per edge.
@@ -93,17 +101,17 @@ void build_vertex_boxes(
 /// @param edges Edges (rowwise).
 /// @param edge_boxes Edge AABBs.
 void build_edge_boxes(
-    const std::vector<AABB>& vertex_boxes,
+    const AABBs& vertex_boxes,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
-    std::vector<AABB>& edge_boxes);
+    AABBs& edge_boxes);
 
 /// @brief Build one AABB per face.
 /// @param vertex_boxes Vertex AABBs.
 /// @param faces Faces (rowwise).
 /// @param face_boxes Face AABBs.
 void build_face_boxes(
-    const std::vector<AABB>& vertex_boxes,
+    const AABBs& vertex_boxes,
     Eigen::ConstRef<Eigen::MatrixXi> faces,
-    std::vector<AABB>& face_boxes);
+    AABBs& face_boxes);
 
 } // namespace ipc

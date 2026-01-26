@@ -23,12 +23,8 @@ void HashGrid::build(
 {
     BroadPhase::build(edges, faces);
 
-    ArrayMax3d mesh_min = vertex_boxes[0].min;
-    ArrayMax3d mesh_max = vertex_boxes[0].max;
-    for (const auto& box : vertex_boxes) {
-        mesh_min = mesh_min.min(box.min);
-        mesh_max = mesh_max.max(box.max);
-    }
+    Eigen::Array3d mesh_min, mesh_max;
+    compute_mesh_aabb(mesh_min, mesh_max);
 
     const double cell_size =
         suggest_good_voxel_size(edges.rows() > 0 ? edge_boxes : vertex_boxes);
@@ -38,8 +34,8 @@ void HashGrid::build(
 }
 
 void HashGrid::resize(
-    Eigen::ConstRef<ArrayMax3d> domain_min,
-    Eigen::ConstRef<ArrayMax3d> domain_max,
+    Eigen::ConstRef<Eigen::Array3d> domain_min,
+    Eigen::ConstRef<Eigen::Array3d> domain_max,
     const double cell_size)
 {
     assert(cell_size > 0.0);
@@ -53,7 +49,7 @@ void HashGrid::resize(
 
     logger().trace(
         "hash-grid resized with a size of {:d}x{:d}x{:d}", grid_size()[0],
-        grid_size()[1], grid_size().size() == 3 ? grid_size()[2] : 1);
+        grid_size()[1], grid_size()[2]);
 }
 
 void HashGrid::insert_boxes()
@@ -64,7 +60,7 @@ void HashGrid::insert_boxes()
 }
 
 void HashGrid::insert_boxes(
-    const std::vector<AABB>& boxes, std::vector<HashItem>& items) const
+    const AABBs& boxes, std::vector<HashItem>& items) const
 {
     tbb::enumerable_thread_specific<std::vector<HashItem>> storage;
 
@@ -87,20 +83,22 @@ void HashGrid::insert_boxes(
 void HashGrid::insert_box(
     const AABB& aabb, const long id, std::vector<HashItem>& items) const
 {
-    ArrayMax3i int_min = ((aabb.min - domain_min()) / cell_size()).cast<int>();
+    Eigen::Array3i int_min =
+        ((aabb.min - domain_min()) / cell_size()).cast<int>();
     // We can round down to -1, but not less
     assert((int_min >= -1).all());
     assert((int_min <= grid_size()).all());
     int_min = int_min.max(0).min(grid_size() - 1);
 
-    ArrayMax3i int_max = ((aabb.max - domain_min()) / cell_size()).cast<int>();
+    Eigen::Array3i int_max =
+        ((aabb.max - domain_min()) / cell_size()).cast<int>();
     assert((int_max >= -1).all());
     assert((int_max <= grid_size()).all());
     int_max = int_max.max(0).min(grid_size() - 1);
     assert((int_min <= int_max).all());
 
-    int min_z = int_min.size() == 3 ? int_min.z() : 0;
-    int max_z = int_max.size() == 3 ? int_max.z() : 0;
+    const int min_z = dim == 3 ? int_min.z() : 0;
+    const int max_z = dim == 3 ? int_max.z() : 0;
     for (int x = int_min.x(); x <= int_max.x(); ++x) {
         for (int y = int_min.y(); y <= int_max.y(); ++y) {
             for (int z = min_z; z <= max_z; ++z) {
@@ -114,8 +112,8 @@ template <typename Candidate>
 void HashGrid::detect_candidates(
     const std::vector<HashItem>& items0,
     const std::vector<HashItem>& items1,
-    const std::vector<AABB>& boxes0,
-    const std::vector<AABB>& boxes1,
+    const AABBs& boxes0,
+    const AABBs& boxes1,
     const std::function<bool(size_t, size_t)>& can_collide,
     std::vector<Candidate>& candidates) const
 {
@@ -221,7 +219,7 @@ void HashGrid::detect_candidates(
 template <typename Candidate>
 void HashGrid::detect_candidates(
     const std::vector<HashItem>& items,
-    const std::vector<AABB>& boxes,
+    const AABBs& boxes,
     const std::function<bool(size_t, size_t)>& can_collide,
     std::vector<Candidate>& candidates) const
 {

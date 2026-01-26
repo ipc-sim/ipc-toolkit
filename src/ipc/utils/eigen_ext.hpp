@@ -217,10 +217,10 @@ project_to_psd(
 /// @brief Convert a 2D or 3D vector to a 3D vector.
 /// @param v Vector to convert, can be 2D or 3D.
 /// @return Converted 3D vector. If 2D, the z-component is set to 0.
-inline Eigen::Vector3d to_3D(Eigen::ConstRef<VectorMax3d> v)
+inline Eigen::Array3d to_3D(Eigen::ConstRef<ArrayMax3d> v)
 {
     assert(v.size() == 2 || v.size() == 3);
-    return v.size() == 2 ? Eigen::Vector3d(v.x(), v.y(), 0) : v.head<3>();
+    return v.size() == 2 ? Eigen::Array3d(v.x(), v.y(), 0) : v.head<3>();
 }
 
 // TODO: Change return type to Eigen::MatrixX3f

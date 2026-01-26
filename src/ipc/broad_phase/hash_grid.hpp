@@ -74,9 +74,10 @@ public:
         std::vector<FaceFaceCandidate>& candidates) const override;
 
     double cell_size() const { return m_cell_size; }
-    const ArrayMax3i& grid_size() const { return m_grid_size; }
-    const ArrayMax3d& domain_min() const { return m_domain_min; }
-    const ArrayMax3d& domain_max() const { return m_domain_max; }
+    // TODO: Update this
+    const Eigen::Array3i& grid_size() const { return m_grid_size; }
+    const Eigen::Array3d& domain_min() const { return m_domain_min; }
+    const Eigen::Array3d& domain_max() const { return m_domain_max; }
 
 protected:
     /// @brief Build the broad phase for collision detection.
@@ -88,14 +89,13 @@ protected:
         Eigen::ConstRef<Eigen::MatrixXi> faces) override;
 
     void resize(
-        Eigen::ConstRef<ArrayMax3d> domain_min,
-        Eigen::ConstRef<ArrayMax3d> domain_max,
+        Eigen::ConstRef<Eigen::Array3d> domain_min,
+        Eigen::ConstRef<Eigen::Array3d> domain_max,
         double cell_size);
 
     void insert_boxes();
 
-    void insert_boxes(
-        const std::vector<AABB>& boxes, std::vector<HashItem>& items) const;
+    void insert_boxes(const AABBs& boxes, std::vector<HashItem>& items) const;
 
     /// @brief Add an AABB of the extents to the hash grid.
     void insert_box(
@@ -124,8 +124,8 @@ private:
     void detect_candidates(
         const std::vector<HashItem>& items0,
         const std::vector<HashItem>& items1,
-        const std::vector<AABB>& boxes0,
-        const std::vector<AABB>& boxes1,
+        const AABBs& boxes0,
+        const AABBs& boxes1,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates) const;
 
@@ -138,15 +138,15 @@ private:
     template <typename Candidate>
     void detect_candidates(
         const std::vector<HashItem>& items,
-        const std::vector<AABB>& boxes,
+        const AABBs& boxes,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates) const;
 
 protected:
     double m_cell_size = -1;
-    ArrayMax3i m_grid_size;
-    ArrayMax3d m_domain_min;
-    ArrayMax3d m_domain_max;
+    Eigen::Array3i m_grid_size;
+    Eigen::Array3d m_domain_min;
+    Eigen::Array3d m_domain_max;
 
     std::vector<HashItem> vertex_items;
     std::vector<HashItem> edge_items;

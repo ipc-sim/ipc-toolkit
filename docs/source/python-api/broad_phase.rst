@@ -36,6 +36,13 @@ BVH
 
     .. autoclasstoc::
 
+LBVH
+----
+
+.. autoclass:: ipctk.LBVH
+
+    .. autoclasstoc::
+
 Sweep and Prune
 ---------------
 

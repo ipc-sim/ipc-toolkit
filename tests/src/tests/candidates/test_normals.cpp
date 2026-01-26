@@ -107,7 +107,7 @@ TEST_CASE("Point-line normal hessian", "[pl][normal]")
     VectorMax3d e1(DIM);
     Eigen::VectorXd x(3 * DIM);
 
-    const int case_i = GENERATE(range(0, 10));
+    const int _ = GENERATE(range(0, 10));
     p.setRandom();
     e0.setRandom();
     e1.setRandom();

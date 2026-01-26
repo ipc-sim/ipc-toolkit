@@ -14,6 +14,8 @@ public:
     /// @return The name of the broad phase method.
     std::string name() const override { return "SweepAndPrune"; }
 
+    using BroadPhase::build;
+
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges
@@ -43,9 +45,10 @@ public:
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     void build(
-        const std::vector<AABB>& vertex_boxes,
+        const AABBs& vertex_boxes,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) override;
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        const uint8_t dim) override;
 
     /// @brief Clear any built data.
     void clear() override;

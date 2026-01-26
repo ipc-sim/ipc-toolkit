@@ -52,18 +52,19 @@ public:
     /// @param vertex_boxes AABBs for the vertices.
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
+    /// @param dim Dimension of the simulation (2D or 3D)
     virtual void build(
-        const std::vector<AABB>& vertex_boxes,
+        const AABBs& vertex_boxes,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces);
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        const uint8_t dim);
 
     /// @brief Clear any built data.
     virtual void clear();
 
     /// @brief Detect all collision candidates needed for a given dimensional simulation.
-    /// @param dim The dimension of the simulation (i.e., 2 or 3).
     /// @param candidates The detected collision candidates.
-    void detect_collision_candidates(int dim, Candidates& candidates) const;
+    void detect_collision_candidates(Candidates& candidates) const;
 
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisions.
@@ -108,6 +109,13 @@ protected:
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces);
 
+    /// @brief Compute the axis-aligned bounding box (AABB) of the mesh.
+    /// @param[out] mesh_min Minimum corner of the mesh AABB.
+    /// @param[out] mesh_max Maximum corner of the mesh AABB.
+    void compute_mesh_aabb(
+        Eigen::Ref<Eigen::Array3d> mesh_min,
+        Eigen::Ref<Eigen::Array3d> mesh_max) const;
+
     virtual bool can_edge_vertex_collide(size_t ei, size_t vi) const;
     virtual bool can_edges_collide(size_t eai, size_t ebi) const;
     virtual bool can_face_vertex_collide(size_t fi, size_t vi) const;
@@ -120,9 +128,15 @@ protected:
         return true;
     }
 
-    std::vector<AABB> vertex_boxes;
-    std::vector<AABB> edge_boxes;
-    std::vector<AABB> face_boxes;
+    /// @brief AABBs for the vertices.
+    AABBs vertex_boxes;
+    /// @brief AABBs for the edges.
+    AABBs edge_boxes;
+    /// @brief AABBs for the faces.
+    AABBs face_boxes;
+
+    /// @brief Dimension of the simulation for which the broad phase was built.
+    uint8_t dim = 0;
 };
 
 } // namespace ipc

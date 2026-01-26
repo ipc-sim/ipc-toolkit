@@ -100,6 +100,9 @@ else()
 
     -Wno-sign-compare
 
+    -Wno-gnu-anonymous-struct
+    -Wno-nested-anon-types
+
     ###########
     # GCC 6.1 #
     ###########

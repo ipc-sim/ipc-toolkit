@@ -1,4 +1,4 @@
-# filib (https://github.com/zfergus/filib.git)
+# filib (https://github.com/zfergus/filib)
 # License: LGPL-2.1
 if(TARGET filib::filib)
   return()

@@ -30,6 +30,11 @@ if (FILIB_BUILD_SHARED_LIB AND WIN32)
   )
 endif()
 
+if (IPC_TOOLKIT_WITH_PROFILER)
+  include(pybind11_json)
+  target_link_libraries(ipctk PRIVATE pybind11::json)
+endif()
+
 # Extra warnings
 # target_link_libraries(ipctk PRIVATE IPCToolkit::warnings)
 
