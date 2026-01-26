@@ -543,6 +543,16 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#python-bindings-dependencies" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/dependencies.rst#python-bindings-dependencies (reference label)"><span>Python Bindings Dependencies</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#unit-test-dependencies" class="md-nav__link">
     
     <span class="md-ellipsis">
@@ -2014,6 +2024,16 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#python-bindings-dependencies" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/dependencies.rst#python-bindings-dependencies (reference label)"><span>Python Bindings Dependencies</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#unit-test-dependencies" class="md-nav__link">
     
     <span class="md-ellipsis">
@@ -2119,12 +2139,12 @@ Default dependencies of the <code class="docutils literal notranslate"><span cla
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Pybind11</p></td>
-<td><p>Python bindings</p></td>
+<tr class="row-even"><td><p>xsimd</p></td>
+<td><p>Cross-platform SIMD library for vectorization</p></td>
 <td><p>BSD-3-Clause</p></td>
-<td><p><a class="reference external" href="https://github.com/pybind/pybind11">github.com/pybind/pybind11</a></p></td>
+<td><p><a class="reference external" href="https://xsimd.readthedocs.io/en/latest">xsimd.readthedocs.io</a></p></td>
 <td><p>✅</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_PYTHON</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_SIMD</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>robin-map</p></td>
 <td><p>Faster hashing</p></td>
@@ -2154,21 +2174,14 @@ Default dependencies of the <code class="docutils literal notranslate"><span cla
 <td><p>⬜</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_PROFILER</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>pybind11_json</p></td>
-<td><p>JSON support for pybind11 (used in profiler)</p></td>
-<td><p>MIT</p></td>
-<td><p><a class="reference external" href="https://github.com/pybind/pybind11_json">github.com/pybind/pybind11_json</a></p></td>
-<td><p>⬜</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_PYTHON</span></code> and <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_PROFILER</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p>rational-cpp</p></td>
+<tr class="row-odd"><td><p>rational-cpp</p></td>
 <td><p>Rational arithmetic used for exact intersection checks (requires <a class="reference external" href="https://gmplib.org">GMP</a> to be installed at a system level)</p></td>
 <td><p>MIT</p></td>
 <td><p><a class="reference external" href="https://github.io/zfergus/rational-cpp">github.io/zfergus/rational-cpp</a></p></td>
 <td><p>⬜</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>Etienne Vouga’s Collision Detection Library</p></td>
+<tr class="row-even"><td><p>Etienne Vouga’s Collision Detection Library</p></td>
 <td><p>Inexact CCD (included for comparison with the original IPC library)</p></td>
 <td><p>???</p></td>
 <td><p><a class="reference external" href="https://github.com/evouga/collisiondetection">github.com/evouga/collisiondetection</a></p></td>
@@ -2192,22 +2205,61 @@ Default dependencies of the <code class="docutils literal notranslate"><span cla
 <p>where <code class="docutils literal notranslate"><span class="pre">${MY_EXE_TARGET}</span></code> is the name of your executable target. If you know a better way to handle this, please <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/discussions">let us know</a>!</p>
 <p>If you would rather avoid LGPL code entirely, you can disable filib by setting <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_FILIB</span></code> to <code class="docutils literal notranslate"><span class="pre">OFF</span></code>. With this option disabled, CMake will not download or use any of filib’s code.</p>
 </div>
-<h2 id="unit-test-dependencies">Unit Test Dependencies<a class="headerlink" href="#unit-test-dependencies" title="Link to this heading">¶</a></h2>
+<h2 id="python-bindings-dependencies">Python Bindings Dependencies<a class="headerlink" href="#python-bindings-dependencies" title="Link to this heading">¶</a></h2>
+<p>The following dependencies are optionally used when building Python bindings:</p>
 <table class="docutils data align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Purpose</p></th>
+<th class="head"><p>License</p></th>
 <th class="head"><p>Link</p></th>
+<th class="head"><p>Enabled</p></th>
+<th class="head"><p>CMake Option</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Pybind11</p></td>
+<td><p>Python bindings</p></td>
+<td><p>BSD-3-Clause</p></td>
+<td><p><a class="reference external" href="https://github.com/pybind/pybind11">github.com/pybind/pybind11</a></p></td>
+<td><p>✅</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_PYTHON</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>pybind11_json</p></td>
+<td><p>JSON support for pybind11 (used in profiler)</p></td>
+<td><p>MIT</p></td>
+<td><p><a class="reference external" href="https://github.com/pybind/pybind11_json">github.com/pybind/pybind11_json</a></p></td>
+<td><p>⬜</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_PYTHON</span></code> and <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_PROFILER</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<h2 id="unit-test-dependencies">Unit Test Dependencies<a class="headerlink" href="#unit-test-dependencies" title="Link to this heading">¶</a></h2>
+<p>The following dependencies are optionally used when unit tests are enabled:</p>
+<table class="docutils data align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Purpose</p></th>
+<th class="head"><p>License</p></th>
+<th class="head"><p>Link</p></th>
+<th class="head"><p>Enabled</p></th>
+<th class="head"><p>CMake Option</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Catch2</p></td>
 <td><p>Testing framework</p></td>
+<td><p>BSL-1.0</p></td>
 <td><p><a class="reference external" href="https://github.com/catchorg/Catch2.git">github.com/catchorg/Catch2</a></p></td>
+<td><p>✅</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_TESTS</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>finite-diff</p></td>
 <td><p>Finite-difference comparisons</p></td>
+<td><p>MIT</p></td>
 <td><p><a class="reference external" href="https://github.com/zfergus/finite-diff">github.com/zfergus/finite-diff</a></p></td>
+<td><p>✅</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_TESTS</span></code></p></td>
 </tr>
 </tbody>
 </table>
