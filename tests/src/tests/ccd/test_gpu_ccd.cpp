@@ -84,8 +84,10 @@ TEST_CASE("GPU CCD parameter extraction", "[ccd][gpu]")
     // Test 1: Custom TightInclusionCCD parameters should be extracted and used
     SECTION("Custom TightInclusionCCD parameters")
     {
-        const double custom_tolerance = 1e-5; // Different from default (1e-6)
-        const long custom_max_iterations = 5000000L; // Different from default (10M)
+        // Different from default (1e-6)
+        const double custom_tolerance = 1e-5;
+        // Different from default (10M)
+        const long custom_max_iterations = 5'000'000L;
 
         const double toi_custom = compute_collision_free_stepsize(
             mesh, V0, V1, min_distance, &stq,
@@ -118,22 +120,42 @@ TEST_CASE("GPU CCD parameter extraction", "[ccd][gpu]")
         CHECK(toi_additive <= 1.0);
     }
 
-    // Test 4: Verify that different tolerance values can produce different results
+    // Test 4: Verify that different tolerance values can produce different
+    // results
     SECTION("Different tolerance values")
     {
-        const double toi_tight = compute_collision_free_stepsize(
+        // Use default tolerance explicitly - should match default constructor
+        const double toi_explicit_default = compute_collision_free_stepsize(
             mesh, V0, V1, min_distance, &stq,
-            TightInclusionCCD(1e-6, TightInclusionCCD::DEFAULT_MAX_ITERATIONS));
+            TightInclusionCCD(
+                TightInclusionCCD::DEFAULT_TOLERANCE,
+                TightInclusionCCD::DEFAULT_MAX_ITERATIONS));
 
+        const double toi_implicit_default = compute_collision_free_stepsize(
+            mesh, V0, V1, min_distance, &stq, TightInclusionCCD());
+
+        // Explicit default should match implicit default (verifies parameter
+        // extraction works)
+        CHECK(toi_explicit_default == Catch::Approx(toi_implicit_default));
+
+        // Use different tolerance - may produce different result
         const double toi_loose = compute_collision_free_stepsize(
             mesh, V0, V1, min_distance, &stq,
             TightInclusionCCD(1e-4, TightInclusionCCD::DEFAULT_MAX_ITERATIONS));
 
-        // Both should be valid
-        CHECK(toi_tight >= 0.0);
-        CHECK(toi_tight <= 1.0);
+        // All should be valid
+        CHECK(toi_explicit_default >= 0.0);
+        CHECK(toi_explicit_default <= 1.0);
+        CHECK(toi_implicit_default >= 0.0);
+        CHECK(toi_implicit_default <= 1.0);
         CHECK(toi_loose >= 0.0);
         CHECK(toi_loose <= 1.0);
+
+        // Verify parameters are being used: different tolerance should
+        // potentially produce different results (though they may be the same
+        // if no collisions or if difference is within numerical precision)
+        // The key is that explicit default matches implicit default, proving
+        // parameter extraction works
     }
 }
 
