@@ -31,6 +31,12 @@ BVH
 .. doxygenclass:: ipc::BVH
     :allow-dot-graphs:
 
+LBVH
+---
+
+.. doxygenclass:: ipc::LBVH
+    :allow-dot-graphs:
+
 Sweep and Prune
 -----------------------
 
