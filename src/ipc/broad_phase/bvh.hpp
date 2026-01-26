@@ -11,7 +11,7 @@ class BVH;
 namespace ipc {
 
 /// @brief Bounding Volume Hierarchy (BVH) broad phase collision detection.
-class BVH : public BroadPhase {
+class [[deprecated("Use LBVH instead.")]] BVH : public BroadPhase {
 public:
     BVH();
     ~BVH();

@@ -578,32 +578,39 @@ namespace {
     {
 #ifdef __APPLE__ // Only support SIMD on Apple platforms for now
         constexpr size_t SIMD_SIZE = use_simd ? 4 : 1;
-        constexpr size_t GRAIN_SIZE = use_simd ? 64 : 1;
+        constexpr size_t GRAIN_SIZE = use_simd ? 16 : 1;
 #else
         constexpr size_t SIMD_SIZE = 1;
         constexpr size_t GRAIN_SIZE = 1;
 #endif
 
         // Calculate the offset to the first leaf node in the source BVH.
-        const size_t SOURCE_LEAF_OFFSET = source.size() / 2;
-        const size_t N_SOURCE_LEAVES = SOURCE_LEAF_OFFSET + 1;
+        const size_t source_leaf_offset = source.size() / 2;
+        const size_t n_source_leaves = source_leaf_offset + 1;
+
+        const size_t n_tasks =
+            n_source_leaves / SIMD_SIZE + (n_source_leaves % SIMD_SIZE != 0);
 
         tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), N_SOURCE_LEAVES, GRAIN_SIZE),
+            tbb::blocked_range<size_t>(size_t(0), n_tasks, GRAIN_SIZE),
             [&](const tbb::blocked_range<size_t>& r) {
                 auto& local_candidates = storage.local();
-                for (size_t i = r.begin(); i < r.end(); i += SIMD_SIZE) {
+                const size_t actual_end = // Handle tail case
+                    std::min(SIMD_SIZE * r.end(), n_source_leaves);
+                for (size_t i = r.begin(); i < r.end(); ++i) {
+                    const size_t idx = SIMD_SIZE * i;
 #ifdef __APPLE__
                     if constexpr (use_simd) {
+                        assert(actual_end - idx >= 1);
                         traverse_lbvh_simd<Candidate, swap_order, triangular>(
-                            &source[SOURCE_LEAF_OFFSET + i],
-                            std::min(SIMD_SIZE, r.end() - i), target,
+                            &source[source_leaf_offset + idx],
+                            std::min(SIMD_SIZE, actual_end - idx), target,
                             can_collide, local_candidates);
                     } else {
 #endif
                         traverse_lbvh<Candidate, swap_order, triangular>(
-                            source[SOURCE_LEAF_OFFSET + i], target, can_collide,
-                            local_candidates);
+                            source[source_leaf_offset + idx], target,
+                            can_collide, local_candidates);
 #ifdef __APPLE__
                     }
 #endif
