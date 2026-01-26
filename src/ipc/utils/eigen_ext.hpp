@@ -5,6 +5,13 @@
 
 #include <cassert>
 
+#ifdef EIGEN_DONT_VECTORIZE
+// NOTE: Avoid error about abs casting double to int. Eigen does this
+// internally but seemingly only if EIGEN_DONT_VECTORIZE is not defined.
+// TODO: We should always using std::abs to avoid this issue.
+using std::abs;
+#endif
+
 namespace Eigen {
 template <typename T> using RowRef = Ref<T, 0, Eigen::InnerStride<>>;
 template <typename T> using ConstRef = const Ref<const T>&;
