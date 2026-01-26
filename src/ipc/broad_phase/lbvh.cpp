@@ -15,6 +15,8 @@
 namespace xs = xsimd;
 #endif
 
+#include <array>
+
 using namespace std::placeholders;
 
 namespace ipc {
@@ -451,7 +453,7 @@ namespace {
 
 #ifdef IPC_TOOLKIT_WITH_SIMD
     // SIMD Traversal
-    // Traverses 4 queries simultaneously using SIMD.
+    // Traverses multiple queries simultaneously using SIMD.
     template <typename Candidate, bool swap_order, bool triangular>
     void traverse_lbvh_simd(
         const LBVH::Node* queries,
@@ -460,15 +462,24 @@ namespace {
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates)
     {
-        assert(n_queries >= 1 && n_queries <= 4);
-        // Load 4 queries into single registers (Structure of Arrays)
-        auto make_simd = [&](auto F) -> xs::batch<float> {
-            return xs::batch<float> {
-                F(0),
-                n_queries > 1 ? F(1) : 0.0f,
-                n_queries > 2 ? F(2) : 0.0f,
-                n_queries > 3 ? F(3) : 0.0f,
-            };
+        using batch_t = xs::batch<float>;
+        assert(n_queries >= 1 && n_queries <= batch_t::size);
+
+        // Load queries into single registers
+        auto make_simd = [&](auto F) -> batch_t {
+            // 1. Create a buffer of the correct architecture-dependent size
+            alignas(xs::default_arch::alignment())
+                std::array<float, batch_t::size>
+                    buffer;
+
+#pragma unroll
+            // 2. Fill the buffer, respecting the actual number of queries
+            for (size_t i = 0; i < batch_t::size; ++i) {
+                buffer[i] = (i < n_queries) ? F(static_cast<int>(i)) : 0.0f;
+            }
+
+            // 3. Load the buffer into the SIMD register
+            return batch_t::load_aligned(buffer.data());
         };
 
         const auto q_min_x =
