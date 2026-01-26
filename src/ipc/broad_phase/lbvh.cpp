@@ -10,7 +10,8 @@
 #include <tbb/parallel_sort.h>
 
 #ifdef IPC_TOOLKIT_WITH_SIMD
-// We utilize SIMD registers to compare 1 Node against 4 Queries simultaneously.
+// We utilize SIMD registers to compare one node against multiple queries simultaneously,
+// with the number of queries determined by xs::batch<float>::size.
 #include <xsimd/xsimd.hpp>
 namespace xs = xsimd;
 #endif
@@ -590,7 +591,7 @@ namespace {
         const std::function<bool(size_t, size_t)>& can_collide,
         tbb::enumerable_thread_specific<std::vector<Candidate>>& storage)
     {
-#ifdef IPC_TOOLKIT_WITH_SIMD // Only support SIMD on Apple platforms for now
+#ifdef IPC_TOOLKIT_WITH_SIMD // Enable SIMD acceleration when available
         constexpr size_t SIMD_SIZE = use_simd ? xs::batch<float>::size : 1;
         static_assert(
             64 % xs::batch<float>::size == 0, "GRAIN_SIZE must be an integer");

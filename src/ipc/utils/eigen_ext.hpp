@@ -8,7 +8,7 @@
 #ifdef EIGEN_DONT_VECTORIZE
 // NOTE: Avoid error about abs casting double to int. Eigen does this
 // internally but seemingly only if EIGEN_DONT_VECTORIZE is not defined.
-// TODO: We should always using std::abs to avoid this issue.
+// TODO: We should always use std::abs to avoid this issue.
 EIGEN_USING_STD(abs); // using std::abs;
 #endif
 
