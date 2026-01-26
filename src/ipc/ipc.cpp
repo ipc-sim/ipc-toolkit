@@ -8,6 +8,7 @@
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 #include <scalable_ccd/cuda/ipc_ccd_strategy.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 #endif
 
 #include <igl/predicates/segment_segment_intersect.h>
@@ -61,11 +62,14 @@ double compute_collision_free_stepsize(
             throw std::runtime_error(
                 "Sweep and Tiniest Queue is only supported in 3D!");
         }
-        // TODO: Use correct min_distance
-        // TODO: Expose tolerance and max_iterations
-        constexpr double tolerance = TightInclusionCCD::DEFAULT_TOLERANCE;
-        constexpr long max_iterations =
-            TightInclusionCCD::DEFAULT_MAX_ITERATIONS;
+        // Extract tolerance and max_iterations from narrow_phase_ccd if it's TightInclusionCCD
+        double tolerance = TightInclusionCCD::DEFAULT_TOLERANCE;
+        long max_iterations = TightInclusionCCD::DEFAULT_MAX_ITERATIONS;
+        if (const TightInclusionCCD* ti_ccd =
+                dynamic_cast<const TightInclusionCCD*>(&narrow_phase_ccd)) {
+            tolerance = ti_ccd->tolerance;
+            max_iterations = ti_ccd->max_iterations;
+        }
         const double step_size = scalable_ccd::cuda::ipc_ccd_strategy(
             vertices_t0, vertices_t1, mesh.edges(), mesh.faces(),
             /*min_distance=*/0.0, max_iterations, tolerance);
