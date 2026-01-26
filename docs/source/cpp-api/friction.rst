@@ -21,3 +21,9 @@ Smooth :math:`\mu`
 .. doxygenfunction:: smooth_mu_f2
 .. doxygenfunction:: smooth_mu_f1_over_x
 .. doxygenfunction:: smooth_mu_f2_x_minus_mu_f1_over_x3
+
+Anisotropic Friction Helpers
+-----------------------------
+
+.. doxygenfunction:: anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq
+.. doxygenfunction:: anisotropic_mu_eff_dtau

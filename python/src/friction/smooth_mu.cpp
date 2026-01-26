@@ -124,4 +124,67 @@ void define_smooth_mu(py::module_& m)
             The value of the expression at y.
         )ipc_Qu8mg5v7",
         "y"_a, "mu_s"_a, "mu_k"_a, "eps_v"_a);
+
+    m.def(
+        "anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq",
+        &anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq,
+        R"ipc_Qu8mg5v7(
+        Compute effective friction coefficients for elliptical anisotropy (L2
+        projection).
+
+        For anisotropic friction, the friction coefficient depends on the
+        direction of tangential velocity. This function computes the effective
+        friction coefficients along a given direction using the elliptical L2
+        projection model: μ_eff = sqrt((μ₀ t₀)² + (μ₁ t₁)²), where t = τ / ||τ||
+        is the unit direction vector. The function name describes the mathematical
+        expression: sqrt(mu0*t0² + mu1*t1²).
+
+        Parameters:
+            tau_dir: Unit 2D direction of tangential velocity (tau / ||tau||).
+                     Must be a unit vector.
+            mu_s_aniso: Static friction ellipse axes (2D vector). Each component
+                        represents the friction coefficient along the
+                        corresponding tangent basis direction.
+            mu_k_aniso: Kinetic friction ellipse axes (2D vector). Each
+                        component represents the friction coefficient along the
+                        corresponding tangent basis direction.
+
+        Returns:
+            A tuple containing (mu_s_eff, mu_k_eff), the effective static and
+            kinetic friction coefficients along the direction tau_dir.
+
+        Note:
+            If mu_s_aniso and mu_k_aniso are zero vectors, the function returns
+            (0, 0), which triggers backward-compatible isotropic behavior.
+        )ipc_Qu8mg5v7",
+        "tau_dir"_a, "mu_s_aniso"_a, "mu_k_aniso"_a);
+
+    m.def(
+        "anisotropic_mu_eff_dtau",
+        &anisotropic_mu_eff_dtau,
+        R"ipc_Qu8mg5v7(
+        Compute the derivative of effective friction coefficient with respect
+        to tangential velocity for elliptical anisotropy.
+
+        This function computes ∂μ_eff/∂τ for the elliptical anisotropy model.
+        The derivative is needed for computing the Jacobian of friction forces
+        when anisotropic friction is enabled.
+
+        Parameters:
+            tau: Tangential velocity (2D vector). The velocity vector in the
+                 tangent plane.
+            mu_aniso: Ellipse axes (2D vector). The anisotropic friction
+                      coefficients along each tangent direction.
+            mu_eff: Effective friction coefficient computed from
+                    anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(). This is
+                    passed to avoid recomputation.
+
+        Returns:
+            The derivative ∂μ_eff/∂τ as a 2D vector.
+
+        Note:
+            Returns zero vector if ||tau|| ≈ 0 or mu_eff ≈ 0 to handle edge
+            cases gracefully.
+        )ipc_Qu8mg5v7",
+        "tau"_a, "mu_aniso"_a, "mu_eff"_a);
 }

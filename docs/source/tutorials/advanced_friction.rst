@@ -158,13 +158,107 @@ While this approach provides a smooth transition between static and kinetic fric
 
 If you have suggestions for improving this approach or alternative methods, please reach out on our `GitHub Discussions <https://github.com/ipc-sim/ipc-toolkit/discussions>`_.
 
+Anisotropic Friction
+--------------------
+
+.. tip::
+    :title: New Feature
+
+    Anisotropic friction support was introduced to allow direction-dependent
+    friction coefficients. This enables modeling materials with different
+    friction properties along different directions (e.g., wood grain, brushed
+    surfaces).
+
+Anisotropic friction allows you to specify different friction coefficients
+along different directions in the tangent plane. This is useful for modeling
+materials that exhibit direction-dependent friction behavior, such as wood
+(with different friction along vs. across the grain) or brushed metal surfaces.
+
+The IPC Toolkit implements anisotropic friction using an elliptical L2
+projection model. For a given tangential velocity direction :math:`\mathbf{t} =
+\boldsymbol{\tau} / \|\boldsymbol{\tau}\|`, the effective friction coefficient
+is computed as:
+
+.. math::
+   \mu_{\text{eff}} = \sqrt{(\mu_0 t_0)^2 + (\mu_1 t_1)^2}
+
+where :math:`\mu_0` and :math:`\mu_1` are the friction coefficients along the
+two tangent basis directions, and :math:`t_0` and :math:`t_1` are the
+components of the unit direction vector.
+
+Usage
+~~~~~
+
+To use anisotropic friction, you can assign anisotropic friction coefficients
+to each tangential collision after building the collisions:
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            ipc::TangentialCollisions tangential_collisions;
+            tangential_collisions.build(
+                collision_mesh, vertices, collisions, B, barrier_stiffness,
+                mu_s, mu_k);
+
+            // Assign anisotropic friction coefficients per collision
+            for (size_t i = 0; i < tangential_collisions.size(); ++i) {
+                // Higher friction in first tangent direction, lower in second
+                tangential_collisions[i].mu_s_aniso = Eigen::Vector2d(0.8, 0.4);
+                tangential_collisions[i].mu_k_aniso = Eigen::Vector2d(0.6, 0.3);
+            }
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            tangential_collisions = ipctk.TangentialCollisions()
+            tangential_collisions.build(
+                collision_mesh, vertices, collisions, B, barrier_stiffness,
+                mu_s, mu_k)
+
+            # Assign anisotropic friction coefficients per collision
+            for i in range(tangential_collisions.size()):
+                # Higher friction in first tangent direction, lower in second
+                tangential_collisions[i].mu_s_aniso = np.array([0.8, 0.4])
+                tangential_collisions[i].mu_k_aniso = np.array([0.6, 0.3])
+
+Relationship with Other Anisotropy Mechanisms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The IPC Toolkit supports two different anisotropy mechanisms:
+
+1. **Velocity scaling** (``mu_aniso``): Scales the tangential velocity vector
+   component-wise before computing friction. This affects the effective
+   velocity magnitude used in friction calculations.
+
+2. **Direction-dependent coefficients** (``mu_s_aniso``, ``mu_k_aniso``):
+   Specifies different friction coefficients along different tangent
+   directions. This affects the effective friction coefficient based on the
+   direction of motion.
+
+These two mechanisms can be used independently or together. When both are
+enabled, the velocity scaling is applied first, then the direction-dependent
+coefficients are computed based on the scaled velocity direction.
+
+Backward Compatibility
+~~~~~~~~~~~~~~~~~~~~~~~
+
+If ``mu_s_aniso`` and ``mu_k_aniso`` are set to zero vectors (the default),
+the system falls back to using the scalar ``mu_s`` and ``mu_k`` values,
+maintaining backward compatibility with existing code.
+
 Future Directions
 -----------------
 
 The IPC Toolkit is continuously evolving, and future releases may include:
 
-- Anisotropic friction models that account for direction-dependent friction.
-- Velocity-dependent friction models that adjust friction coefficients based on relative velocity magnitude.
+- Velocity-dependent friction models that adjust friction coefficients based
+  on relative velocity magnitude.
 - Rolling coefficients of friction for scenarios involving rolling contacts.
 
-We encourage community contributions to expand these advanced friction models. Feel free to submit pull requests with your improvements or open a discussion on GitHub to propose new features.
+We encourage community contributions to expand these advanced friction
+models. Feel free to submit pull requests with your improvements or open a
+discussion on GitHub to propose new features.

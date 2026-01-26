@@ -127,6 +127,18 @@ void define_tangential_collision(py::module_& m)
         .def_readwrite(
             "mu_k", &TangentialCollision::mu_k,
             "Ratio between normal and kinetic tangential forces (e.g., friction coefficient)")
+        .def_readwrite(
+            "mu_aniso", &TangentialCollision::mu_aniso,
+            "Tangential anisotropy scaling in the collision's tangent basis. "
+            "(1,1) = isotropic (default). Scales tau before evaluating friction.")
+        .def_readwrite(
+            "mu_s_aniso", &TangentialCollision::mu_s_aniso,
+            "Anisotropic static friction coefficients (2D vector, one per tangent direction). "
+            "If zero vector, uses scalar mu_s instead (backward compatible).")
+        .def_readwrite(
+            "mu_k_aniso", &TangentialCollision::mu_k_aniso,
+            "Anisotropic kinetic friction coefficients (2D vector, one per tangent direction). "
+            "If zero vector, uses scalar mu_k instead (backward compatible).")
         .def_readwrite("weight", &TangentialCollision::weight, "Weight")
         .def_property(
             "weight_gradient",
