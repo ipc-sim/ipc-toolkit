@@ -69,7 +69,7 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - CMake Option
     * - xsimd
       - Cross-platform SIMD library for vectorization
-      - BSD-2-Clause
+      - BSD-3-Clause
       - `xsimd.readthedocs.io <https://xsimd.readthedocs.io/en/latest>`_
       - |:white_check_mark:|
       - ``IPC_TOOLKIT_WITH_SIMD``
