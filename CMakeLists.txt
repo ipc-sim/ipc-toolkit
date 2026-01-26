@@ -75,6 +75,7 @@ else()
 endif()
 
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
+option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                    ON)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
@@ -83,10 +84,8 @@ option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD meth
 option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
 
 # Advanced options
-option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
 
-mark_as_advanced(IPC_TOOLKIT_WITH_SIMD)          # This does not work reliably
 mark_as_advanced(IPC_TOOLKIT_WITH_CODE_COVERAGE) # This is used in GitHub Actions
 
 # Set default minimum C++ standard
@@ -112,9 +111,10 @@ include(ipc_toolkit_use_colors)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ################################################################################
-# CUDA
+# Verify Options
 ################################################################################
 
+# CUDA support
 if(IPC_TOOLKIT_WITH_CUDA)
   # If CMAKE_CUDA_ARCHITECTURES was not specified, set it to native.
   if(DEFINED CMAKE_CUDA_ARCHITECTURES)
@@ -127,6 +127,19 @@ if(IPC_TOOLKIT_WITH_CUDA)
 
   # Enable CUDA support
   enable_language(CUDA)
+endif()
+
+## SIMD support
+if(IPC_TOOLKIT_WITH_SIMD)
+  # Figure out SIMD support
+  message(STATUS "Testing SIMD capabilities...")
+  find_package(SIMD)
+  if (SIMD_CXX_FLAGS)
+    message(STATUS "SIMD support found: ${SIMD_CXX_FLAGS}")
+  else()
+    message(WARNING "SIMD support requested but not found. Continuing without SIMD.")
+    set(IPC_TOOLKIT_WITH_SIMD OFF CACHE BOOL "Enable SIMD" FORCE)
+  endif()
 endif()
 
 ################################################################################
@@ -247,14 +260,15 @@ target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 
 ## SIMD support
 if(IPC_TOOLKIT_WITH_SIMD)
-  # Figure out SIMD support
-  message(STATUS "Testing SIMD capabilities...")
-  find_package(SIMD)
   # Add SIMD flags to compiler flags
-  message(STATUS "Using SIMD flags: ${SIMD_FLAGS}")
-  target_compile_options(ipc_toolkit PRIVATE ${SIMD_FLAGS})
-else()
-  message(STATUS "SIMD support disabled")
+  target_compile_options(ipc_toolkit PRIVATE ${SIMD_CXX_FLAGS})
+
+  # Link against cross-platform xsimd library
+  include(xsimd)
+  target_link_libraries(ipc_toolkit PRIVATE xsimd::xsimd)
+
+  # Disable vectorization in Eigen since I've found it to cause issues.
+  target_compile_definitions(Eigen3_Eigen INTERFACE EIGEN_DONT_VECTORIZE)
 endif()
 
 # For MSVC, do not use the min and max macros.
