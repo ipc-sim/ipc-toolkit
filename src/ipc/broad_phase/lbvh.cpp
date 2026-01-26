@@ -10,8 +10,9 @@
 #include <tbb/parallel_sort.h>
 
 #ifdef IPC_TOOLKIT_WITH_SIMD
-// We utilize SIMD registers to compare one node against multiple queries simultaneously,
-// with the number of queries determined by xs::batch<float>::size.
+// We utilize SIMD registers to compare one node against multiple queries
+// simultaneously, with the number of queries determined by
+// xs::batch<float>::size.
 #include <xsimd/xsimd.hpp>
 namespace xs = xsimd;
 #endif
@@ -518,7 +519,7 @@ namespace {
             const LBVH::Node& child_l = lbvh[node.left];
             const LBVH::Node& child_r = lbvh[node.right];
 
-            // 1. Intersect 4 queries at once
+            // 1. Intersect multiple queries at once
             // (child_l.min <= query.max) && (query.min <= child_l.max)
             const xs::batch_bool<float> intersects_l =
                 (child_l.aabb_min.x() <= q_max_x)
@@ -528,7 +529,7 @@ namespace {
                 & (q_min_y <= child_l.aabb_max.y())
                 & (q_min_z <= child_l.aabb_max.z());
 
-            // 2. Intersect 4 queries at once
+            // 2. Intersect multiple queries at once
             // (child_r.min <= query.max) && (query.min <= child_r.max)
             const xs::batch_bool<float> intersects_r =
                 (child_r.aabb_min.x() <= q_max_x)
