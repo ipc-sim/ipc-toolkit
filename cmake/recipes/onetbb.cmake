@@ -53,7 +53,7 @@ function(onetbb_import_target)
 
     set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME tbb)
     include(CPM)
-    CPMAddPackage("gh:uxlfoundation/oneTBB@2022.1.0")
+    CPMAddPackage("gh:uxlfoundation/oneTBB@2022.3.0")
 
     pop_variable(BUILD_SHARED_LIBS)
 endfunction()

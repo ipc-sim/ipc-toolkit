@@ -67,12 +67,12 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - Link
       - Enabled
       - CMake Option
-    * - Pybind11
-      - Python bindings
-      - BSD-3-Clause
-      - `github.com/pybind/pybind11 <https://github.com/pybind/pybind11>`_
+    * - xsimd
+      - Cross-platform SIMD library for vectorization
+      - BSD-2-Clause
+      - `xsimd.readthedocs.io <https://xsimd.readthedocs.io/en/latest>`_
       - |:white_check_mark:|
-      - ``IPC_TOOLKIT_BUILD_PYTHON``
+      - ``IPC_TOOLKIT_WITH_SIMD``
     * - robin-map
       - Faster hashing
       - MIT
@@ -97,12 +97,6 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - `github.com/nlohmann/json <https://github.com/nlohmann/json>`_
       - |:white_large_square:|
       - ``IPC_TOOLKIT_WITH_PROFILER``
-    * - pybind11_json
-      - JSON support for pybind11 (used in profiler)
-      - MIT
-      - `github.com/pybind/pybind11_json <https://github.com/pybind/pybind11_json>`_
-      - |:white_large_square:|
-      - ``IPC_TOOLKIT_BUILD_PYTHON`` and ``IPC_TOOLKIT_WITH_PROFILER``
     * - rational-cpp
       - Rational arithmetic used for exact intersection checks (requires `GMP <https://gmplib.org>`_ to be installed at a system level)
       - MIT
@@ -134,18 +128,56 @@ Some of these libraries are enabled by default, and some are not. You can enable
 
     If you would rather avoid LGPL code entirely, you can disable filib by setting ``IPC_TOOLKIT_WITH_FILIB`` to ``OFF``. With this option disabled, CMake will not download or use any of filib's code.
 
-Unit Test Dependencies
-----------------------
+Python Bindings Dependencies
+----------------------------
+
+The following dependencies are optionally used when building Python bindings:
 
 .. list-table::
     :header-rows: 1
 
     * - Name
       - Purpose
+      - License
       - Link
+      - Enabled
+      - CMake Option
+    * - Pybind11
+      - Python bindings
+      - BSD-3-Clause
+      - `github.com/pybind/pybind11 <https://github.com/pybind/pybind11>`_
+      - |:white_check_mark:|
+      - ``IPC_TOOLKIT_BUILD_PYTHON``
+    * - pybind11_json
+      - JSON support for pybind11 (used in profiler)
+      - MIT
+      - `github.com/pybind/pybind11_json <https://github.com/pybind/pybind11_json>`_
+      - |:white_large_square:|
+      - ``IPC_TOOLKIT_BUILD_PYTHON`` and ``IPC_TOOLKIT_WITH_PROFILER``
+
+Unit Test Dependencies
+----------------------
+
+The following dependencies are optionally used when unit tests are enabled:
+
+.. list-table::
+    :header-rows: 1
+
+    * - Name
+      - Purpose
+      - License
+      - Link
+      - Enabled
+      - CMake Option
     * - Catch2
       - Testing framework
+      - BSL-1.0
       - `github.com/catchorg/Catch2 <https://github.com/catchorg/Catch2.git>`_
+      - |:white_check_mark:|
+      - ``IPC_TOOLKIT_BUILD_TESTS``
     * - finite-diff
       - Finite-difference comparisons
+      - MIT
       - `github.com/zfergus/finite-diff <https://github.com/zfergus/finite-diff>`_
+      - |:white_check_mark:|
+      - ``IPC_TOOLKIT_BUILD_TESTS``

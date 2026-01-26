@@ -10,7 +10,7 @@ include(eigen)
 
 include(CPM)
 CPMAddPackage(
-    URI "gh:libigl/libigl#89267b4a80b1904de3f6f2812a2053e5e9332b7e"
+    URI "gh:libigl/libigl@2.6.0"
     OPTIONS "LIBIGL_PREDICATES ON"
 )
 
