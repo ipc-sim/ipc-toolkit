@@ -154,6 +154,11 @@ Eigen::Vector2d anisotropic_mu_eff_dtau(
     result[1] = tau[1] * (Math<double>::sqr(mu_aniso[1]) - mu_eff_sq)
         / (mu_eff * tau_norm_sq);
 
+    // Ensure result is finite (handle numerical edge cases)
+    if (!std::isfinite(result[0]) || !std::isfinite(result[1])) {
+        return Eigen::Vector2d::Zero();
+    }
+
     return result;
 }
 

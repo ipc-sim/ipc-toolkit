@@ -160,8 +160,7 @@ void define_smooth_mu(py::module_& m)
         "tau_dir"_a, "mu_s_aniso"_a, "mu_k_aniso"_a);
 
     m.def(
-        "anisotropic_mu_eff_dtau",
-        &anisotropic_mu_eff_dtau,
+        "anisotropic_mu_eff_dtau", &anisotropic_mu_eff_dtau,
         R"ipc_Qu8mg5v7(
         Compute the derivative of effective friction coefficient with respect
         to tangential velocity for elliptical anisotropy.
