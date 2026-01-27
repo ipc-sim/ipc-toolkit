@@ -96,8 +96,7 @@ std::pair<double, double> anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
     Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso);
 
-/// @brief Compute the derivative of effective friction coefficient with respect
-///        to tangential velocity for elliptical anisotropy: d(μ_eff)/d(τ).
+/// @brief Compute ∂μ_eff/∂τᵢ = τᵢ·(μᵢ² - μ_eff²)/(μ_eff·||τ||²).
 /// @details This function computes \f$\frac{\partial \mu_{\text{eff}}}{\partial
 ///          \tau}\f$ for the elliptical anisotropy model. The derivative is
 ///          needed for computing the Jacobian of friction forces when

@@ -145,10 +145,14 @@ Eigen::Vector2d anisotropic_mu_eff_dtau(
         return Eigen::Vector2d::Zero();
     }
 
-    // d(mu_eff)/d(tau) = (1/||tau||) * [mu0^2*tau0, mu1^2*tau1] / mu_eff
+    // d(mu_eff)/d(tau_i) = tau_i * (mu_i^2 - mu_eff^2) / (mu_eff * ||tau||^2)
+    const double tau_norm_sq = tau_norm * tau_norm;
+    const double mu_eff_sq = mu_eff * mu_eff;
     Eigen::Vector2d result;
-    result[0] = (Math<double>::sqr(mu_aniso[0]) * tau[0]) / (tau_norm * mu_eff);
-    result[1] = (Math<double>::sqr(mu_aniso[1]) * tau[1]) / (tau_norm * mu_eff);
+    result[0] = tau[0] * (Math<double>::sqr(mu_aniso[0]) - mu_eff_sq)
+        / (mu_eff * tau_norm_sq);
+    result[1] = tau[1] * (Math<double>::sqr(mu_aniso[1]) - mu_eff_sq)
+        / (mu_eff * tau_norm_sq);
 
     return result;
 }

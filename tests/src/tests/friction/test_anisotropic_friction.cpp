@@ -268,8 +268,8 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
     Eigen::MatrixXd velocities(2, 3);
     // Velocity in tangent plane: (cos(angle), sin(angle), 0)
     velocities << velocity_magnitude * std::cos(angle),
-        velocity_magnitude * std::sin(angle),
-        0.0, 0.0, 0.0, 0.0;
+        velocity_magnitude * std::sin(angle), 0.0, //
+        0.0, 0.0, 0.0;
 
     CAPTURE(angle, velocity_magnitude, mu_s_aniso, mu_k_aniso);
 
@@ -459,8 +459,8 @@ TEST_CASE(
 
     Eigen::MatrixXd velocities(2, 3);
     velocities << velocity_magnitude * std::cos(angle),
-        velocity_magnitude * std::sin(angle),
-        0.0, 0.0, 0.0, 0.0;
+        velocity_magnitude * std::sin(angle), 0.0, //
+        0.0, 0.0, 0.0;
 
     CAPTURE(mu_aniso, mu_s_aniso, mu_k_aniso, angle, velocity_magnitude);
 
