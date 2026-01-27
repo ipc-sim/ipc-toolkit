@@ -18,6 +18,7 @@ struct AffineBody {
     {
     }
 
+    // NOLINTNEXTLINE(readability-identifier-naming)
     Eigen::SparseMatrix<double> J(const Eigen::MatrixXd& rest_positions) const
     {
         std::vector<Eigen::Triplet<double>> triplets;

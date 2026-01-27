@@ -31,6 +31,7 @@ namespace {
         }
     }
 
+    // NOLINTNEXTLINE(readability-identifier-naming)
     inline Eigen::DiagonalMatrix<double, 3> compute_J(const VectorMax3d& I)
     {
         if (I.size() == 1) {
