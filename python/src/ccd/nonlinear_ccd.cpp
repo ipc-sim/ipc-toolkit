@@ -78,7 +78,20 @@ void define_nonlinear_ccd(py::module_& m)
 #endif
 
     py::class_<NonlinearCCD>(m, "NonlinearCCD")
-        .def(py::init<>())
+        .def(
+            py::init<const double, const long, const double>(),
+            "tolerance"_a = NonlinearCCD::DEFAULT_TOLERANCE,
+            "max_iterations"_a = NonlinearCCD::DEFAULT_MAX_ITERATIONS,
+            "conservative_rescaling"_a =
+                NonlinearCCD::DEFAULT_CONSERVATIVE_RESCALING)
+        .def_readwrite(
+            "tolerance", &NonlinearCCD::tolerance, "Solver tolerance.")
+        .def_readwrite(
+            "max_iterations", &NonlinearCCD::max_iterations,
+            "Maximum number of iterations.")
+        .def_readwrite(
+            "conservative_rescaling", &NonlinearCCD::conservative_rescaling,
+            "Conservative rescaling of the time of impact.")
         .def(
             "point_point_ccd",
             [](const NonlinearCCD& self, const NonlinearTrajectory& p0,

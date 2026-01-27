@@ -204,7 +204,7 @@ public:
     /// @param edges Collision mesh edge indices (rowwise).
     /// @param faces Collision mesh face indices (rowwise).
     /// @return True if the file was written successfully.
-    bool save_obj(
+    bool write_obj(
         const std::string& filename,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,

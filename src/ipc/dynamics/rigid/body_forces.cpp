@@ -1,9 +1,8 @@
 #include "body_forces.hpp"
 
 #include <ipc/dynamics/rigid/rigid_body.hpp>
+#include <ipc/geometry/normal.hpp>
 #include <ipc/utils/eigen_ext.hpp>
-
-#include <iostream>
 
 namespace ipc::rigid {
 

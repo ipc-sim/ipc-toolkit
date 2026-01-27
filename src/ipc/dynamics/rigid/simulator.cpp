@@ -3,6 +3,7 @@
 #include <ipc/dynamics/rigid/inertial_term.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 #include <ipc/dynamics/rigid/time_integrator.hpp>
+#include <ipc/geometry/normal.hpp>
 
 #include <igl/PI.h>
 

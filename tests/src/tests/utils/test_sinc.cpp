@@ -8,7 +8,7 @@
 #include <igl/PI.h>
 
 // #include <autodiff/autodiff_types.hpp>
-#include <ipc/utils/sinc.hpp>
+#include <ipc/math/sinc.hpp>
 
 using namespace ipc;
 

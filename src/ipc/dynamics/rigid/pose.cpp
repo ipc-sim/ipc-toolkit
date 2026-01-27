@@ -1,6 +1,7 @@
 #include "pose.hpp"
 
-#include <ipc/utils/sinc.hpp>
+#include <ipc/geometry/normal.hpp>
+#include <ipc/math/sinc.hpp>
 
 namespace ipc::rigid {
 

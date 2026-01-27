@@ -2,7 +2,7 @@
 
 #include <ipc/broad_phase/bvh.hpp>
 #include <ipc/dynamics/rigid/mass.hpp>
-#include <ipc/utils/sinc.hpp>
+#include <ipc/math/sinc.hpp>
 
 namespace ipc::rigid {
 

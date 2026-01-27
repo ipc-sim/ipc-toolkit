@@ -199,7 +199,7 @@ The following code snippet shows an example of how to use interval arithmetic to
 
         .. code-block:: cpp
 
-            #include <ipc/utils/interval.hpp>
+            #include <ipc/math/interval.hpp>
 
             using namespace ipc;
 

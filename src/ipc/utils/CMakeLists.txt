@@ -14,8 +14,6 @@ set(SOURCES
   merge_thread_local.hpp
   profiler.cpp
   profiler.hpp
-  sinc.cpp
-  sinc.hpp
   unordered_map_and_set.cpp
   unordered_map_and_set.hpp
   vertex_to_min_edge.cpp
