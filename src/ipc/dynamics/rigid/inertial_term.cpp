@@ -3,8 +3,6 @@
 #include <ipc/dynamics/rigid/rigid_body.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
-#include <iostream>
-
 namespace ipc::rigid {
 
 void InertialTerm::update(const RigidBodies& bodies)
@@ -16,7 +14,7 @@ void InertialTerm::update(const RigidBodies& bodies)
 // ---- Cumulative functions ---------------------------------------------------
 
 double InertialTerm::operator()(
-    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
+    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     assert(predicted_poses().size() == bodies.num_bodies());
 
@@ -32,7 +30,7 @@ double InertialTerm::operator()(
 }
 
 Eigen::VectorXd InertialTerm::gradient(
-    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
+    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     assert(predicted_poses().size() == bodies.num_bodies());
 
@@ -50,7 +48,7 @@ Eigen::VectorXd InertialTerm::gradient(
 Eigen::MatrixXd InertialTerm::hessian(
     const RigidBodies& bodies,
     Eigen::ConstRef<Eigen::VectorXd> x,
-    const PSDProjectionMethod project_hessian_to_psd)
+    const PSDProjectionMethod project_hessian_to_psd) const
 {
     assert(predicted_poses().size() == bodies.num_bodies());
 

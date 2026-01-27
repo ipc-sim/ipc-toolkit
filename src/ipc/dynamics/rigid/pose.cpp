@@ -110,7 +110,7 @@ rotation_vector_to_matrix_hessian(Eigen::ConstRef<Eigen::Vector3d> theta)
 
 Eigen::Vector3d rotation_matrix_to_vector(Eigen::ConstRef<Eigen::Matrix3d> R)
 {
-#if false
+#if false // NOLINT
     // Eigen does this conversion by going from SO(3) -> Quaternion -> 𝔰𝔬(3),
     // but we can do it directly from SO(3) -> 𝔰𝔬(3). In random benchmarking,
     // this is about 2x faster than the Eigen implementation. However, this

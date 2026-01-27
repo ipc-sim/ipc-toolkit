@@ -12,7 +12,7 @@ namespace ipc::rigid {
 
 class RigidBody {
 public:
-    enum class Type {
+    enum class Type : uint8_t {
         /// @brief Static rigid body, does not move
         STATIC,
         /// @brief Kinematic rigid body, moves but does not respond to forces
@@ -31,7 +31,9 @@ public:
 
     double mass() const { return m_mass; }
     const VectorMax3d& moment_of_inertia() const { return m_moment_of_inertia; }
+    // NOLINTNEXTLINE(readability-identifier-naming)
     const Eigen::DiagonalMatrix<double, 3>& J() const { return m_J; }
+    // NOLINTNEXTLINE(readability-identifier-naming)
     const MatrixMax3d& R0() const { return m_R0; }
     const Pose& external_force() const { return m_external_force; }
     std::shared_ptr<const BVH> bvh() const { return m_bvh; }
@@ -44,6 +46,7 @@ private:
     /// @brief Moment of inertia measured with respect to the principal axes
     VectorMax3d m_moment_of_inertia;
 
+    // NOLINTNEXTLINE(readability-identifier-naming)
     Eigen::DiagonalMatrix<double, 3> m_J;
 
     /// @brief Rotation matrix from the principal axes to the world frame
@@ -51,7 +54,7 @@ private:
     /// This is useful for converting to and from input world coordinates.
     /// @note Maybe this should be a rotation vector instead?
     /// @note Maybe we should store position as well?
-    MatrixMax3d m_R0;
+    MatrixMax3d m_R0; // NOLINT(readability-identifier-naming)
 
     /// @brief External force and torque applied to the rigid body
     Pose m_external_force;

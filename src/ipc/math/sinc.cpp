@@ -4,10 +4,9 @@ namespace ipc {
 
 namespace {
     // We use these bounds because for example 1 + x^2 = 1 for x < sqrt(ϵ).
-    static constexpr double taylor_0_bound =
-        std::numeric_limits<double>::epsilon();
-    static const double taylor_2_bound = sqrt(taylor_0_bound);
-    static const double taylor_n_bound = sqrt(taylor_2_bound);
+    constexpr double TAYLOR_0_BOUND = std::numeric_limits<double>::epsilon();
+    const double TAYLOR_2_BOUND = sqrt(TAYLOR_0_BOUND);
+    const double TAYLOR_N_BOUND = sqrt(TAYLOR_2_BOUND);
 
     // WARNING: Assumes x is a single value and uses interval arithmetic to
     // account for rounding.
@@ -15,7 +14,7 @@ namespace {
     {
         const filib::Interval x(x_double);
 
-        if (abs(x.INF) >= taylor_n_bound) {
+        if (abs(x.INF) >= TAYLOR_N_BOUND) {
             return sin(x) / x;
         }
 
@@ -57,20 +56,20 @@ namespace {
 
 double sinc(const double x)
 {
-    if (abs(x) >= taylor_n_bound) {
+    if (abs(x) >= TAYLOR_N_BOUND) {
         return sin(x) / x;
     }
 
     // approximation by taylor series in x at 0 up to order 1
     double result = 1;
 
-    if (abs(x) >= taylor_0_bound) {
+    if (abs(x) >= TAYLOR_0_BOUND) {
         const double squared_x = x * x;
 
         // approximation by taylor series in x at 0 up to order 3
         result -= squared_x / 6.0;
 
-        if (abs(x) >= taylor_2_bound) {
+        if (abs(x) >= TAYLOR_2_BOUND) {
             // approximation by taylor series in x at 0 up to order 5
             result += (squared_x * squared_x) / 120.0;
         }

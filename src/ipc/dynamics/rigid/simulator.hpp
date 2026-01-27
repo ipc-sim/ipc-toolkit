@@ -18,7 +18,7 @@ public:
     /// @param initial_poses Initial poses of the rigid bodies
     /// @param dt Time step
     Simulator(
-        const std::shared_ptr<RigidBodies> bodies,
+        const std::shared_ptr<RigidBodies>& bodies,
         const std::vector<Pose>& initial_poses,
         const double dt);
 
@@ -28,7 +28,7 @@ public:
     void run(
         // const double dt,
         const double t_end,
-        const std::function<void(void)> callback = []() { });
+        const std::function<void(void)>& callback = []() { });
 
     /// @brief Step the simulation
     /// @param dt Time step

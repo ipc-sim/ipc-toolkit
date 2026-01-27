@@ -57,9 +57,9 @@ RigidBodies::RigidBodies(
     const std::vector<double>& densities,
     std::vector<Pose>& initial_poses)
     : CollisionMesh(_rest_positions, _edges, _faces)
-    , body_vertex_starts(std::move(_body_vertex_starts))
-    , body_edge_starts(std::move(_body_edge_starts))
-    , body_face_starts(std::move(_body_face_starts))
+    , body_vertex_starts(_body_vertex_starts)
+    , body_edge_starts(_body_edge_starts)
+    , body_face_starts(_body_face_starts)
 {
     assert(body_vertex_starts.size() == body_edge_starts.size());
     assert(body_edge_starts.size() == body_face_starts.size());

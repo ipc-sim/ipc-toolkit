@@ -10,10 +10,10 @@
 namespace ipc::rigid {
 
 Simulator::Simulator(
-    const std::shared_ptr<RigidBodies> _bodies,
+    const std::shared_ptr<RigidBodies>& _bodies,
     const std::vector<Pose>& initial_poses,
     const double dt)
-    : m_bodies(std::move(_bodies))
+    : m_bodies(_bodies)
 {
     assert(initial_poses.size() == m_bodies->num_bodies());
     m_pose_history.push_back(initial_poses);
@@ -48,7 +48,7 @@ Simulator::Simulator(
 void Simulator::run(
     // const double dt,
     const double t_end,
-    const std::function<void(void)> callback)
+    const std::function<void(void)>& callback)
 {
     if (t_end <= m_t) {
         logger().warn(

@@ -24,15 +24,15 @@ public:
     /// @param bodies The collection of rigid bodies.
     /// @param x The DOFs of the rigid bodies, where the first 3 entries are the positions and the last 3 entries are the rotations.
     /// @return The total energy of the rigid bodies.
-    double
-    operator()(const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x);
+    double operator()(
+        const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const;
 
     /// @brief Compute the gradient of the total energy for all rigid bodies.
     /// @param bodies The collection of rigid bodies.
     /// @param x The DOFs of the rigid bodies, where the first 3 entries are the positions and the last 3 entries are the rotations.
     /// @return The gradient of the total energy of the rigid bodies.
-    Eigen::VectorXd
-    gradient(const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x);
+    Eigen::VectorXd gradient(
+        const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const;
 
     /// @brief Compute the Hessian of the total energy for all rigid bodies.
     /// @param bodies The collection of rigid bodies.
@@ -42,7 +42,7 @@ public:
         const RigidBodies& bodies,
         Eigen::ConstRef<Eigen::VectorXd> x,
         const PSDProjectionMethod project_hessian_to_psd =
-            PSDProjectionMethod::NONE);
+            PSDProjectionMethod::NONE) const;
 
     // ---- Per-body functions -------------------------------------------------
 

@@ -50,7 +50,7 @@ struct Pose {
     {
     }
 
-    static Pose Zero(const int dim)
+    static Pose Zero(const int dim) // NOLINT(readability-identifier-naming)
     {
         return Pose(VectorMax3d::Zero(dim), VectorMax3d::Zero(dim));
     }
