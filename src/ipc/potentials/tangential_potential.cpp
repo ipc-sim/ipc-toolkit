@@ -530,26 +530,29 @@ MatrixMax12d TangentialPotential::force_jacobian(
             grad_mu_f1_over_norm_tau =
                 f2 * tau_aniso.transpose() * jac_tau_aniso;
 
-            // Additional term: d(mu_eff)/d(tau_aniso) contribution.
-            // For the combined model, the derivative is computed with respect
+            // Additional term: ∇_τ_aniso μ_eff contribution.
+            // For the combined model, the gradient is computed with respect
             // to tau_aniso (the scaled velocity), not raw tau.
-            const auto [dmu_s_eff_dtau, dmu_k_eff_dtau] =
-                compute_anisotropic_mu_eff_derivatives(
-                    tau_aniso, collision.mu_s_aniso, collision.mu_k_aniso, mu_s,
-                    mu_k);
+            const auto [g_s, g_k] = anisotropic_mu_eff_grad_tau_aniso(
+                tau_aniso, collision.mu_s_aniso, collision.mu_k_aniso, mu_s,
+                mu_k);
 
-            // Approximate the contribution: ∂(μ f₁/‖τ‖)/∂μ_eff * dμ_eff/dτ *
-            // ∇τ. We use the average of static and kinetic derivatives as an
+            // Approximate the contribution: ∂(μ f₁/‖τ‖)/∂μ_eff * ∇_τ_aniso μ_eff
+            // * ∇τ. We use the average of static and kinetic gradients as an
             // approximation.
-            Eigen::Vector2d dmu_eff_dtau_avg =
-                (dmu_s_eff_dtau + dmu_k_eff_dtau) * 0.5;
+            Eigen::Vector2d g_avg = (g_s + g_k) * 0.5;
+
+            // Ensure the average is finite before using in matrix operations
+            if (!std::isfinite(g_avg[0]) || !std::isfinite(g_avg[1])) {
+                // Skip anisotropic contribution if gradients are not finite
+                g_avg.setZero();
+            }
 
             // The derivative of mu_f1_over_x with respect to mu_eff is
             // approximately smooth_mu_f1_over_x evaluated at the current
             // point. We multiply by the change in mu_eff per unit change in
             // tau_aniso direction.
-            VectorMax12d dmu_eff_contribution =
-                dmu_eff_dtau_avg.transpose() * jac_tau_aniso;
+            VectorMax12d dmu_eff_contribution = g_avg.transpose() * jac_tau_aniso;
             // Scale by the sensitivity of mu_f1_over_x to changes in mu
             grad_mu_f1_over_norm_tau +=
                 0.1 * mu_f1_over_norm_tau * dmu_eff_contribution;

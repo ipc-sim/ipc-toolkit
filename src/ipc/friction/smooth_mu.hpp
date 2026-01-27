@@ -151,19 +151,21 @@ std::pair<double, double> compute_anisotropic_mu_eff_from_tau_aniso(
     const double mu_k_isotropic,
     const bool no_mu);
 
-/// @brief Compute derivatives of effective friction coefficients with respect
+/// @brief Compute gradients of effective friction coefficients with respect
 ///        to tau_aniso for anisotropic friction.
-/// @details This function computes the derivatives needed for the Jacobian
+/// @details This function computes the gradients needed for the Jacobian
 ///          calculation when anisotropic friction is enabled. It computes both
-///          d(mu_s_eff)/d(tau_aniso) and d(mu_k_eff)/d(tau_aniso).
+///          \f$\nabla_{\tau_{\text{aniso}}} \mu_{s,\text{eff}}\f$ and
+///          \f$\nabla_{\tau_{\text{aniso}}} \mu_{k,\text{eff}}\f$.
 /// @param tau_aniso Anisotropically-scaled tangential velocity (2D vector).
 /// @param mu_s_aniso Static friction ellipse axes (2D vector).
 /// @param mu_k_aniso Kinetic friction ellipse axes (2D vector).
 /// @param mu_s_eff Effective static friction coefficient (precomputed).
 /// @param mu_k_eff Effective kinetic friction coefficient (precomputed).
-/// @return A pair containing (dmu_s_eff_dtau, dmu_k_eff_dtau).
+/// @return A pair containing (g_s, g_k) where g_s = ∇_τ_aniso μ_s_eff and
+///         g_k = ∇_τ_aniso μ_k_eff.
 std::pair<Eigen::Vector2d, Eigen::Vector2d>
-compute_anisotropic_mu_eff_derivatives(
+anisotropic_mu_eff_grad_tau_aniso(
     Eigen::ConstRef<Eigen::Vector2d> tau_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso,

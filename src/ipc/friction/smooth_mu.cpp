@@ -209,20 +209,28 @@ std::pair<double, double> compute_anisotropic_mu_eff_from_tau_aniso(
 }
 
 std::pair<Eigen::Vector2d, Eigen::Vector2d>
-compute_anisotropic_mu_eff_derivatives(
+anisotropic_mu_eff_grad_tau_aniso(
     Eigen::ConstRef<Eigen::Vector2d> tau_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso,
     const double mu_s_eff,
     const double mu_k_eff)
 {
-    // Compute derivatives of effective mu w.r.t. tau_aniso
-    const Eigen::Vector2d dmu_s_eff_dtau =
+    // Compute gradients of effective mu w.r.t. tau_aniso: g_s = ∇_τ_aniso μ_s_eff, g_k = ∇_τ_aniso μ_k_eff
+    const Eigen::Vector2d g_s =
         anisotropic_mu_eff_dtau(tau_aniso, mu_s_aniso, mu_s_eff);
-    const Eigen::Vector2d dmu_k_eff_dtau =
+    const Eigen::Vector2d g_k =
         anisotropic_mu_eff_dtau(tau_aniso, mu_k_aniso, mu_k_eff);
 
-    return std::make_pair(dmu_s_eff_dtau, dmu_k_eff_dtau);
+    // Ensure both gradients are finite before returning
+    Eigen::Vector2d g_s_safe =
+        (std::isfinite(g_s[0]) && std::isfinite(g_s[1])) ? g_s
+                                                          : Eigen::Vector2d::Zero();
+    Eigen::Vector2d g_k_safe =
+        (std::isfinite(g_k[0]) && std::isfinite(g_k[1])) ? g_k
+                                                           : Eigen::Vector2d::Zero();
+
+    return std::make_pair(g_s_safe, g_k_safe);
 }
 
 } // namespace ipc
