@@ -7,14 +7,18 @@ set(SOURCES
   brute_force.hpp
   bvh.cpp
   bvh.hpp
+  create_broad_phase.cpp
+  create_broad_phase.hpp
   default_broad_phase.hpp
   hash_grid.cpp
   hash_grid.hpp
+  lbvh.cpp
+  lbvh.hpp
   spatial_hash.cpp
   spatial_hash.hpp
   sweep_and_prune.cpp
   sweep_and_prune.hpp
-  sweep_and_tiniest_queue.cpp
+  sweep_and_tiniest_queue.cu
   sweep_and_tiniest_queue.hpp
   voxel_size_heuristic.cpp
   voxel_size_heuristic.hpp

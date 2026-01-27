@@ -48,6 +48,10 @@ These dependencies are all `permissively licensed <license.html>`_, and we list 
       - Logger
       - MIT
       - `github.com/gabime/spdlog <https://github.com/gabime/spdlog>`_
+    * - TinyAD
+      - Automatic differentiation for testing and in non-performance critical smooth contact functions
+      - MIT
+      - `github.com/microsoft/TinyAD <https://github.com/patr-schm/TinyAD>`_
 
 Optional Dependencies
 ---------------------
@@ -63,12 +67,12 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - Link
       - Enabled
       - CMake Option
-    * - Pybind11
-      - Python bindings
+    * - xsimd
+      - Cross-platform SIMD library for vectorization
       - BSD-3-Clause
-      - `github.com/pybind/pybind11 <https://github.com/pybind/pybind11>`_
+      - `xsimd.readthedocs.io <https://xsimd.readthedocs.io/en/latest>`_
       - |:white_check_mark:|
-      - ``IPC_TOOLKIT_BUILD_PYTHON``
+      - ``IPC_TOOLKIT_WITH_SIMD``
     * - robin-map
       - Faster hashing
       - MIT
@@ -87,6 +91,12 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - `github.com/zfergus/filib <https://github.com/zfergus/filib>`_
       - |:white_check_mark:|
       - ``IPC_TOOLKIT_WITH_FILIB``
+    * - nlohmann/json
+      - JSON parsing for profiler and tests
+      - MIT
+      - `github.com/nlohmann/json <https://github.com/nlohmann/json>`_
+      - |:white_large_square:|
+      - ``IPC_TOOLKIT_WITH_PROFILER``
     * - rational-cpp
       - Rational arithmetic used for exact intersection checks (requires `GMP <https://gmplib.org>`_ to be installed at a system level)
       - MIT
@@ -103,7 +113,7 @@ Additionally, IPC Toolkit may optionally use the following libraries:
 Some of these libraries are enabled by default, and some are not. You can enable or disable them by passing the appropriate CMake option when you configure the IPC Toolkit build.
 
 .. warning::
-    ``filib`` is licensed under `LGPL-2.1 <https://github.com/zfergus/filib/blob/main/LICENSE>`_ and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynaic linkage requires copying the ``.so``/``.dylib``/``.dll`` file to the binary directory or system path. To enable this, set the CMake option ``FILIB_BUILD_SHARED_LIBS`` to ``ON`` and add this CMake code to copy the shared libaray object to the binary directory:
+    ``filib`` is licensed under `LGPL-2.1 <https://github.com/zfergus/filib/blob/main/LICENSE>`_ and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynamic linkage requires copying the ``.so``/``.dylib``/``.dll`` file to the binary directory or system path. To enable this, set the CMake option ``FILIB_BUILD_SHARED_LIBS`` to ``ON`` and add this CMake code to copy the shared library object to the binary directory:
 
     .. code-block:: cmake
 
@@ -118,21 +128,56 @@ Some of these libraries are enabled by default, and some are not. You can enable
 
     If you would rather avoid LGPL code entirely, you can disable filib by setting ``IPC_TOOLKIT_WITH_FILIB`` to ``OFF``. With this option disabled, CMake will not download or use any of filib's code.
 
-Unit Test Dependencies
-----------------------
+Python Bindings Dependencies
+----------------------------
+
+The following dependencies are optionally used when building Python bindings:
 
 .. list-table::
     :header-rows: 1
 
     * - Name
       - Purpose
+      - License
       - Link
+      - Enabled
+      - CMake Option
+    * - Pybind11
+      - Python bindings
+      - BSD-3-Clause
+      - `github.com/pybind/pybind11 <https://github.com/pybind/pybind11>`_
+      - |:white_check_mark:|
+      - ``IPC_TOOLKIT_BUILD_PYTHON``
+    * - pybind11_json
+      - JSON support for pybind11 (used in profiler)
+      - MIT
+      - `github.com/pybind/pybind11_json <https://github.com/pybind/pybind11_json>`_
+      - |:white_large_square:|
+      - ``IPC_TOOLKIT_BUILD_PYTHON`` and ``IPC_TOOLKIT_WITH_PROFILER``
+
+Unit Test Dependencies
+----------------------
+
+The following dependencies are optionally used when unit tests are enabled:
+
+.. list-table::
+    :header-rows: 1
+
+    * - Name
+      - Purpose
+      - License
+      - Link
+      - Enabled
+      - CMake Option
     * - Catch2
       - Testing framework
+      - BSL-1.0
       - `github.com/catchorg/Catch2 <https://github.com/catchorg/Catch2.git>`_
+      - |:white_check_mark:|
+      - ``IPC_TOOLKIT_BUILD_TESTS``
     * - finite-diff
       - Finite-difference comparisons
+      - MIT
       - `github.com/zfergus/finite-diff <https://github.com/zfergus/finite-diff>`_
-    * - Nlohmann JSON
-      - Loading test data from JSON files
-      - `github.com/nlohmann/json <https://github.com/nlohmann/json>`_
+      - |:white_check_mark:|
+      - ``IPC_TOOLKIT_BUILD_TESTS``

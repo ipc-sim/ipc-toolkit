@@ -12,7 +12,7 @@
 
 using namespace ipc;
 
-TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
+TEST_CASE("Benchmark broad phase on simple scenes", "[!benchmark][broad_phase]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
@@ -86,19 +86,52 @@ TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
         BENCHMARK(fmt::format("BP {} ({})", testcase_name, broad_phase->name()))
         {
             Candidates candidates;
-            candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
+            candidates.build(mesh, V0, V1, inflation_radius, broad_phase.get());
         };
     }
 }
 
-TEST_CASE(
-    "Benchmark broad phase on real data",
-    "[!benchmark][broad_phase][real_data]")
+TEST_CASE("Benchmark broad phase on real scenes", "[!benchmark][broad_phase]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
 
     std::string mesh_name_t0, mesh_name_t1;
+    SECTION("Two cubes")
+    {
+        mesh_name_t0 = "two-cubes-far.ply";
+        mesh_name_t1 = "two-cubes-intersecting.ply";
+    }
+    SECTION("Cloth-Ball")
+    {
+        mesh_name_t0 = "cloth_ball92.ply";
+        mesh_name_t1 = "cloth_ball93.ply";
+    }
+    SECTION("Armadillo-Rollers")
+    {
+        mesh_name_t0 = "armadillo-rollers/326.ply";
+        mesh_name_t1 = "armadillo-rollers/327.ply";
+    }
+    SECTION("Cloth-Funnel")
+    {
+        mesh_name_t0 = "cloth-funnel/227.ply";
+        mesh_name_t1 = "cloth-funnel/228.ply";
+    }
+    SECTION("N-Body-Simulation")
+    {
+        mesh_name_t0 = "n-body-simulation/balls16_18.ply";
+        mesh_name_t1 = "n-body-simulation/balls16_19.ply";
+    }
+    SECTION("Rod-Twist")
+    {
+        mesh_name_t0 = "rod-twist/3036.ply";
+        mesh_name_t1 = "rod-twist/3037.ply";
+    }
+    SECTION("Puffer-Ball")
+    {
+        mesh_name_t0 = "puffer-ball/20.ply";
+        mesh_name_t1 = "puffer-ball/21.ply";
+    }
     SECTION("Data 0")
     {
         mesh_name_t0 = "private/slow-broadphase-ccd/0.ply";
@@ -109,23 +142,13 @@ TEST_CASE(
         mesh_name_t0 = "private/slow-broadphase-ccd/s0.ply";
         mesh_name_t1 = "private/slow-broadphase-ccd/s1.ply";
     }
-    SECTION("Cloth-Ball")
-    {
-        mesh_name_t0 = "cloth_ball92.ply";
-        mesh_name_t1 = "cloth_ball93.ply";
-    }
-    // SECTION("Squishy-Ball")
-    // {
-    //     mesh_name_t0 = "private/puffer-ball/20.ply";
-    //     mesh_name_t1 = "private/puffer-ball/21.ply";
-    // }
 
     if (!tests::load_mesh(mesh_name_t0, V0, E, F)
         || !tests::load_mesh(mesh_name_t1, V1, E, F)) {
-        SKIP("Slow broadphase CCD meshes are private");
+        SKIP("Some broadphase CCD meshes are private. Skipping benchmark.");
     }
 
-    double inflation_radius = 1e-2; // GENERATE(take(5, random(0.0, 0.1)));
+    double inflation_radius = 0; // GENERATE(take(5, random(0.0, 0.1)));
 
     CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
     // Discard codimensional/internal vertices
@@ -134,15 +157,21 @@ TEST_CASE(
 
     const auto broad_phases = tests::broad_phases();
 
+    fmt::print(
+        "Benchmarking broad phase on meshes: {} -> {}\n", mesh_name_t0,
+        mesh_name_t1);
+    fmt::print("Number of vertices: {}\n", V0.rows());
+    fmt::print("Number of edges: {}\n", E.rows());
+    fmt::print("Number of faces: {}\n", F.rows());
     for (const auto& broad_phase : broad_phases) {
         if (broad_phase->name() == "BruteForce") {
             continue;
         }
 
-        BENCHMARK(fmt::format("BP Real Data ({})", broad_phase->name()))
+        BENCHMARK(fmt::format("{}", broad_phase->name()))
         {
             Candidates candidates;
-            candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
+            candidates.build(mesh, V0, V1, inflation_radius, broad_phase.get());
         };
     }
 }

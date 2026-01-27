@@ -31,7 +31,7 @@ void define_ipc(py::module_& m)
             True if <b>any</b> collisions occur.
         )ipc_Qu8mg5v7",
         "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
-        "broad_phase"_a = make_default_broad_phase(),
+        "broad_phase"_a = nullptr,
         "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD);
 
     m.def(
@@ -41,6 +41,9 @@ void define_ipc(py::module_& m)
 
         Note:
             Assumes the trajectory is linear.
+            When using SweepAndTiniestQueue broad phase, tolerance and
+            max_iterations are extracted from TightInclusionCCD if provided,
+            otherwise defaults are used.
 
         Parameters:
             mesh: The collision mesh.
@@ -54,7 +57,7 @@ void define_ipc(py::module_& m)
             A step-size :math:`\in [0, 1]` that is collision free. A value of 1.0 if a full step and 0.0 is no step.
         )ipc_Qu8mg5v7",
         "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
-        "broad_phase"_a = make_default_broad_phase(),
+        "broad_phase"_a = nullptr,
         "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD);
 
     m.def(
@@ -70,7 +73,7 @@ void define_ipc(py::module_& m)
         Returns:
             A boolean for if the mesh has intersections.
         )ipc_Qu8mg5v7",
-        "mesh"_a, "vertices"_a, "broad_phase"_a = make_default_broad_phase());
+        "mesh"_a, "vertices"_a, "broad_phase"_a = nullptr);
 
     m.def(
         "edges",

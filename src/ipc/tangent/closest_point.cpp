@@ -1,5 +1,7 @@
 #include "closest_point.hpp"
 
+#include <ipc/smooth_contact/distance/autogen.hpp>
+
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
 
@@ -37,6 +39,28 @@ VectorMax9d point_edge_closest_point_jacobian(
     return J;
 }
 
+MatrixMax9d point_edge_closest_point_hessian(
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1)
+{
+    const int dim = p.size();
+    assert(dim == 2 || dim == 3);
+    assert(e0.size() == dim && e1.size() == dim);
+
+    MatrixMax9d H(3 * dim, 3 * dim);
+    if (dim == 2) {
+        autogen::point_edge_closest_point_2D_hessian(
+            p(0), p(1), e0(0), e0(1), e1(0), e1(1), H.data());
+    } else {
+        autogen::point_edge_closest_point_3D_hessian(
+            p(0), p(1), p(2), e0(0), e0(1), e0(2), e1(0), e1(1), e1(2),
+            H.data());
+    }
+
+    return H;
+}
+
 // ============================================================================
 // Edge - Edge
 
@@ -50,17 +74,17 @@ Eigen::Vector2d edge_edge_closest_point(
     const Eigen::Vector3d ea = ea1 - ea0;
     const Eigen::Vector3d eb = eb1 - eb0;
 
-    Eigen::Matrix<double, 2, 2> coefMtr;
-    coefMtr(0, 0) = ea.squaredNorm();
-    coefMtr(0, 1) = coefMtr(1, 0) = -eb.dot(ea);
-    coefMtr(1, 1) = eb.squaredNorm();
+    Eigen::Matrix<double, 2, 2> A;
+    A(0, 0) = ea.squaredNorm();
+    A(0, 1) = A(1, 0) = -eb.dot(ea);
+    A(1, 1) = eb.squaredNorm();
 
     Eigen::Vector2d rhs;
     rhs[0] = -eb_to_ea.dot(ea);
     rhs[1] = eb_to_ea.dot(eb);
 
-    const Eigen::Vector2d x = coefMtr.ldlt().solve(rhs);
-    assert((coefMtr * x - rhs).norm() < 1e-10);
+    const Eigen::Vector2d x = A.ldlt().solve(rhs);
+    assert((A * x - rhs).norm() < 1e-10);
     return x;
 }
 
@@ -115,6 +139,273 @@ Eigen::Matrix<double, 2, 12> point_triangle_closest_point_jacobian(
 // ============================================================================
 
 namespace autogen {
+    // hess is (6×6) flattened in column-major order
+    void point_edge_closest_point_2D_hessian(
+        double p_x,
+        double p_y,
+        double e0_x,
+        double e0_y,
+        double e1_x,
+        double e1_y,
+        double hess[36])
+    {
+        const auto t0 = e0_x - e1_x;
+        const auto t1 = t0 * t0;
+        const auto t2 = e0_y - e1_y;
+        const auto t3 = t2 * t2;
+        const auto t4 = t1 + t3;
+        const auto t5 = 1.0 / t4;
+        const auto t6 = 2 * t5;
+        const auto t7 = t1 * t6 - 1;
+        const auto t8 = t5 * t7;
+        const auto t9 = t5 * t5;
+        const auto t10 = 2 * t9;
+        const auto t11 = t0 * t2;
+        const auto t12 = t10 * t11;
+        const auto t13 = -t5 * t7;
+        const auto t14 = -t12;
+        const auto t15 = t3 * t6 - 1;
+        const auto t16 = t15 * t5;
+        const auto t17 = -t15 * t5;
+        const auto t18 = -2 * e0_x + e1_x + p_x;
+        const auto t19 = t0 * t18 * t6;
+        const auto t20 = e0_x - p_x;
+        const auto t21 = t0 * t20;
+        const auto t22 = e0_y - p_y;
+        const auto t23 = t2 * t22;
+        const auto t24 = t21 + t23;
+        const auto t25 = t24 * t9;
+        const auto t26 = t24 * t5;
+        const auto t27 = 1 - t26;
+        const auto t28 = -2 * e0_y + e1_y + p_y;
+        const auto t29 = t0 * t28;
+        const auto t30 = 4 * t11 * t26;
+        const auto t31 = t18 * t2 + t30;
+        const auto t32 = t10 * (t29 + t31);
+        const auto t33 = 8 * t25;
+        const auto t34 = -2 * t24 * t5 + 1;
+        const auto t35 = t5 * (2 * t0 * t20 * t5 - t1 * t33 - t19 - t34);
+        const auto t36 = t0 * t22;
+        const auto t37 = t10 * (-t31 + t36);
+        const auto t38 = t2 * t28 * t6;
+        const auto t39 = t2 * t20;
+        const auto t40 = t10 * (-t29 - t30 + t39);
+        const auto t41 = t5 * (2 * t2 * t22 * t5 - t3 * t33 - t34 - t38);
+        const auto t42 = t10 * (t30 - t36 - t39);
+        hess[0] = 0;
+        hess[1] = 0;
+        hess[2] = t8;
+        hess[3] = t12;
+        hess[4] = t13;
+        hess[5] = t14;
+        hess[6] = 0;
+        hess[7] = 0;
+        hess[8] = t12;
+        hess[9] = t16;
+        hess[10] = t14;
+        hess[11] = t17;
+        hess[12] = t8;
+        hess[13] = t12;
+        hess[14] = t6 * (4 * t1 * t25 + t19 + t27);
+        hess[15] = t32;
+        hess[16] = t35;
+        hess[17] = t37;
+        hess[18] = t12;
+        hess[19] = t16;
+        hess[20] = t32;
+        hess[21] = t6 * (4 * t25 * t3 + t27 + t38);
+        hess[22] = t40;
+        hess[23] = t41;
+        hess[24] = t13;
+        hess[25] = t14;
+        hess[26] = t35;
+        hess[27] = t40;
+        hess[28] = t10 * (4 * t1 * t24 * t5 - 3 * t21 - t23);
+        hess[29] = t42;
+        hess[30] = t14;
+        hess[31] = t17;
+        hess[32] = t37;
+        hess[33] = t41;
+        hess[34] = t42;
+        hess[35] = t10 * (-t21 - 3 * t23 + 4 * t24 * t3 * t5);
+    }
+
+    // hess is (9×9) flattened in column-major order
+    void point_edge_closest_point_3D_hessian(
+        double p_x,
+        double p_y,
+        double p_z,
+        double e0_x,
+        double e0_y,
+        double e0_z,
+        double e1_x,
+        double e1_y,
+        double e1_z,
+        double hess[81])
+    {
+        const auto t0 = e0_x - e1_x;
+        const auto t1 = t0 * t0;
+        const auto t2 = e0_y - e1_y;
+        const auto t3 = t2 * t2;
+        const auto t4 = e0_z - e1_z;
+        const auto t5 = t4 * t4;
+        const auto t6 = t1 + t3 + t5;
+        const auto t7 = 1.0 / t6;
+        const auto t8 = 2 * t7;
+        const auto t9 = t1 * t8 - 1;
+        const auto t10 = t7 * t9;
+        const auto t11 = t7 * t7;
+        const auto t12 = 2 * t11;
+        const auto t13 = t0 * t12;
+        const auto t14 = t13 * t2;
+        const auto t15 = t13 * t4;
+        const auto t16 = -t7 * t9;
+        const auto t17 = -t14;
+        const auto t18 = -t15;
+        const auto t19 = t3 * t8 - 1;
+        const auto t20 = t19 * t7;
+        const auto t21 = t2 * t4;
+        const auto t22 = t12 * t21;
+        const auto t23 = -t19 * t7;
+        const auto t24 = -t22;
+        const auto t25 = t5 * t8 - 1;
+        const auto t26 = t25 * t7;
+        const auto t27 = -t25 * t7;
+        const auto t28 = -2 * e0_x + e1_x + p_x;
+        const auto t29 = t0 * t28 * t8;
+        const auto t30 = e0_x - p_x;
+        const auto t31 = t0 * t30;
+        const auto t32 = e0_y - p_y;
+        const auto t33 = t2 * t32;
+        const auto t34 = e0_z - p_z;
+        const auto t35 = t34 * t4;
+        const auto t36 = t33 + t35;
+        const auto t37 = t31 + t36;
+        const auto t38 = t11 * t37;
+        const auto t39 = t37 * t7;
+        const auto t40 = 1 - t39;
+        const auto t41 = -2 * e0_y + e1_y + p_y;
+        const auto t42 = t0 * t41;
+        const auto t43 = 4 * t39;
+        const auto t44 = t0 * t43;
+        const auto t45 = t2 * t44;
+        const auto t46 = t2 * t28 + t45;
+        const auto t47 = t12 * (t42 + t46);
+        const auto t48 = -2 * e0_z + e1_z + p_z;
+        const auto t49 = t0 * t48;
+        const auto t50 = t4 * t44;
+        const auto t51 = t28 * t4 + t50;
+        const auto t52 = t12 * (t49 + t51);
+        const auto t53 = 8 * t38;
+        const auto t54 = -2 * t37 * t7 + 1;
+        const auto t55 = t7 * (2 * t0 * t30 * t7 - t1 * t53 - t29 - t54);
+        const auto t56 = t0 * t32;
+        const auto t57 = t12 * (-t46 + t56);
+        const auto t58 = t0 * t34;
+        const auto t59 = t12 * (-t51 + t58);
+        const auto t60 = t2 * t41 * t8;
+        const auto t61 = 4 * t38;
+        const auto t62 = t2 * t48;
+        const auto t63 = t21 * t43;
+        const auto t64 = t4 * t41 + t63;
+        const auto t65 = t12 * (t62 + t64);
+        const auto t66 = t2 * t30;
+        const auto t67 = t12 * (-t42 - t45 + t66);
+        const auto t68 = t7 * (2 * t2 * t32 * t7 - t3 * t53 - t54 - t60);
+        const auto t69 = t2 * t34;
+        const auto t70 = t12 * (-t64 + t69);
+        const auto t71 = t4 * t48 * t8;
+        const auto t72 = t30 * t4;
+        const auto t73 = t12 * (-t49 - t50 + t72);
+        const auto t74 = t32 * t4;
+        const auto t75 = t12 * (-t62 - t63 + t74);
+        const auto t76 = t7 * (2 * t34 * t4 * t7 - t5 * t53 - t54 - t71);
+        const auto t77 = t12 * (t45 - t56 - t66);
+        const auto t78 = t12 * (t50 - t58 - t72);
+        const auto t79 = t12 * (t63 - t69 - t74);
+        hess[0] = 0;
+        hess[1] = 0;
+        hess[2] = 0;
+        hess[3] = t10;
+        hess[4] = t14;
+        hess[5] = t15;
+        hess[6] = t16;
+        hess[7] = t17;
+        hess[8] = t18;
+        hess[9] = 0;
+        hess[10] = 0;
+        hess[11] = 0;
+        hess[12] = t14;
+        hess[13] = t20;
+        hess[14] = t22;
+        hess[15] = t17;
+        hess[16] = t23;
+        hess[17] = t24;
+        hess[18] = 0;
+        hess[19] = 0;
+        hess[20] = 0;
+        hess[21] = t15;
+        hess[22] = t22;
+        hess[23] = t26;
+        hess[24] = t18;
+        hess[25] = t24;
+        hess[26] = t27;
+        hess[27] = t10;
+        hess[28] = t14;
+        hess[29] = t15;
+        hess[30] = t8 * (4 * t1 * t38 + t29 + t40);
+        hess[31] = t47;
+        hess[32] = t52;
+        hess[33] = t55;
+        hess[34] = t57;
+        hess[35] = t59;
+        hess[36] = t14;
+        hess[37] = t20;
+        hess[38] = t22;
+        hess[39] = t47;
+        hess[40] = t8 * (t3 * t61 + t40 + t60);
+        hess[41] = t65;
+        hess[42] = t67;
+        hess[43] = t68;
+        hess[44] = t70;
+        hess[45] = t15;
+        hess[46] = t22;
+        hess[47] = t26;
+        hess[48] = t52;
+        hess[49] = t65;
+        hess[50] = t8 * (t40 + t5 * t61 + t71);
+        hess[51] = t73;
+        hess[52] = t75;
+        hess[53] = t76;
+        hess[54] = t16;
+        hess[55] = t17;
+        hess[56] = t18;
+        hess[57] = t55;
+        hess[58] = t67;
+        hess[59] = t73;
+        hess[60] = t12 * (4 * t1 * t37 * t7 - 3 * t31 - t36);
+        hess[61] = t77;
+        hess[62] = t78;
+        hess[63] = t17;
+        hess[64] = t23;
+        hess[65] = t24;
+        hess[66] = t57;
+        hess[67] = t68;
+        hess[68] = t75;
+        hess[69] = t77;
+        hess[70] = t12 * (4 * t3 * t37 * t7 - t31 - 3 * t33 - t35);
+        hess[71] = t79;
+        hess[72] = t18;
+        hess[73] = t24;
+        hess[74] = t27;
+        hess[75] = t59;
+        hess[76] = t70;
+        hess[77] = t76;
+        hess[78] = t78;
+        hess[79] = t79;
+        hess[80] = t12 * (-t31 - t33 - 3 * t35 + 4 * t37 * t5 * t7);
+    }
+
     // J is (2×12) flattened in column-major order
     void edge_edge_closest_point_jacobian(
         double ea0_x,

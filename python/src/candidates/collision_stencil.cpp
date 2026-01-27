@@ -125,6 +125,25 @@ void define_collision_stencil(py::module_& m)
             )ipc_Qu8mg5v7",
             "vertices"_a, "edges"_a, "faces"_a)
         .def(
+            "compute_coefficients",
+            py::overload_cast<
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>>(
+                &CollisionStencil::compute_coefficients, py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
+
+            Parameters:
+                vertices: Collision mesh vertices.
+                edges: Collision mesh edges.
+                faces: Collision mesh faces.
+
+            Returns:
+                Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
+            )ipc_Qu8mg5v7",
+            "vertices"_a, "edges"_a, "faces"_a)
+        .def(
             "compute_distance",
             py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
                 &CollisionStencil::compute_distance, py::const_),
@@ -173,6 +192,23 @@ void define_collision_stencil(py::module_& m)
 
             Returns:
                 Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
+            )ipc_Qu8mg5v7",
+            "positions"_a)
+        .def(
+            "compute_coefficients",
+            py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
+                &CollisionStencil::compute_coefficients, py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the distance coefficients of the stencil w.r.t. the stencil's vertex positions.
+
+            Note:
+                positions can be computed as stencil.dof(vertices, edges, faces)
+
+            Parameters:
+                positions: Stencil's vertex positions.
+
+            Returns:
+                Distance of the stencil.
             )ipc_Qu8mg5v7",
             "positions"_a)
         .def(

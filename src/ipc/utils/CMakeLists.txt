@@ -1,16 +1,19 @@
 set(SOURCES
-  area_gradient.cpp
-  area_gradient.hpp
+  autodiff_types.hpp
+  autodiff_types.hpp
+  default_init_allocator.hpp
   eigen_ext.hpp
   eigen_ext.tpp
-  intersection.cpp
-  intersection.hpp
-  interval.cpp
-  interval.hpp
   local_to_global.hpp
   logger.cpp
   logger.hpp
+  matrix_cache.cpp
+  matrix_cache.hpp
+  maybe_parallel_for.hpp
+  maybe_parallel_for.tpp
   merge_thread_local.hpp
+  profiler.cpp
+  profiler.hpp
   sinc.cpp
   sinc.hpp
   unordered_map_and_set.cpp

@@ -1,6 +1,7 @@
 #include "edge_vertex.hpp"
 
 #include <ipc/distance/point_edge.hpp>
+#include <ipc/geometry/normal.hpp>
 #include <ipc/tangent/closest_point.hpp>
 
 #include <iostream>
@@ -81,20 +82,8 @@ VectorMax3d EdgeVertexCandidate::compute_unnormalized_normal(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     const int dim = this->dim(positions.size());
-
-    if (dim == 2) {
-        // In 2D, the normal is simply the perpendicular vector to the edge
-        const Eigen::Vector2d e = positions.tail<2>() - positions.segment<2>(2);
-        return Eigen::Vector2d(-e.y(), e.x());
-    }
-
-    // Use triple product expansion of the cross product -e × (e × d)
-    // (https://en.wikipedia.org/wiki/Cross_product#Triple_product_expansion)
-    // NOTE: This would work in 2D as well, but we handle that case above.
-    assert(dim == 3);
-    const Eigen::Vector3d e = positions.tail<3>() - positions.segment<3>(3);
-    const Eigen::Vector3d d = positions.head<3>() - positions.segment<3>(3);
-    return d * e.dot(e) - e * e.dot(d);
+    return point_line_unnormalized_normal(
+        positions.head(dim), positions.segment(dim, dim), positions.tail(dim));
 }
 
 MatrixMax<double, 3, 12>
@@ -102,30 +91,8 @@ EdgeVertexCandidate::compute_unnormalized_normal_jacobian(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     const int dim = this->dim(positions.size());
-    if (dim == 2) {
-        // In 2D, the normal is simply the perpendicular vector to the edge
-        MatrixMax<double, 3, 12> dn(2, 6);
-        dn.leftCols<2>().setZero();
-        dn.middleCols<2>(2) << 0, 1, -1, 0;
-        dn.rightCols<2>() << 0, -1, 1, 0;
-        return dn;
-    }
-
-    assert(dim == 3);
-    const Eigen::Vector3d e = positions.tail<3>() - positions.segment<3>(3);
-    const Eigen::Vector3d d = positions.head<3>() - positions.segment<3>(3);
-
-    const auto I = Eigen::Matrix3d::Identity();
-
-    MatrixMax<double, 3, 12> dn(3, 9);
-    // ∂n/∂x0
-    dn.leftCols<3>() = e.dot(e) * I - e * e.transpose();
-    // ∂n/∂x2
-    dn.rightCols<3>() =
-        -e.dot(d) * I - e * d.transpose() + (2 * d) * e.transpose();
-    // ∂n/∂x1
-    dn.middleCols<3>(3) = -dn.leftCols<3>() - dn.rightCols<3>();
-    return dn;
+    return point_line_unnormalized_normal_jacobian(
+        positions.head(dim), positions.segment(dim, dim), positions.tail(dim));
 }
 
 bool EdgeVertexCandidate::ccd(

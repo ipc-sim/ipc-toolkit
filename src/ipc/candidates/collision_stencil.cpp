@@ -1,5 +1,7 @@
 #include "collision_stencil.hpp"
 
+#include <ipc/geometry/normal.hpp>
+
 namespace ipc {
 
 VectorMax3d CollisionStencil::compute_normal(
@@ -30,21 +32,10 @@ MatrixMax<double, 3, 12> CollisionStencil::compute_normal_jacobian(
 {
     const int dim = this->dim(positions.size());
 
-    VectorMax3d n = compute_unnormalized_normal(positions);
+    const VectorMax3d n = compute_unnormalized_normal(positions);
 
-    MatrixMax<double, 3, 12> dn =
-        compute_unnormalized_normal_jacobian(positions);
-
-#if true
-    // Derivative of normalization (n̂ = n / ‖n‖)
-    const double n_norm = n.norm();
-    n /= n_norm; // n̂
-
-    MatrixMax3d A =
-        (MatrixMax3d::Identity(dim, dim) - n * n.transpose()) / n_norm;
-
-    dn = A * dn;
-#endif
+    MatrixMax<double, 3, 12> dn = normalization_jacobian(n)
+        * compute_unnormalized_normal_jacobian(positions);
 
     if (flip_if_negative
         && (positions.head(dim) - positions.tail(dim)).dot(n) < 0) {

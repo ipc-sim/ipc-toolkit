@@ -4,7 +4,9 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <ipc/distance/point_point.hpp>
+#include <ipc/smooth_contact/distance/primitive_distance.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/math/math.hpp>
 
 #include <finitediff.hpp>
 
@@ -62,6 +64,20 @@ TEMPLATE_TEST_CASE_SIG(
     fd::finite_gradient(x, point_point_distance_stacked<dim>, fgrad);
 
     CHECK(fd::compare_gradient(grad, fgrad));
+
+    constexpr int n_dofs = 2 * dim;
+    Eigen::Vector<ADGrad<n_dofs>, n_dofs> X =
+        slice_positions<ADGrad<n_dofs>, n_dofs, 1>(x);
+    ADGrad<n_dofs> dist;
+    if constexpr (dim == 2) {
+        dist = PrimitiveDistanceTemplate<Point2, Point2, ADGrad<n_dofs>>::
+            compute_distance(X, PointPointDistanceType::AUTO);
+    } else {
+        dist = PrimitiveDistanceTemplate<Point3, Point3, ADGrad<n_dofs>>::
+            compute_distance(X, PointPointDistanceType::AUTO);
+    }
+
+    CHECK(fd::compare_gradient(dist.grad, fgrad));
 }
 
 TEMPLATE_TEST_CASE_SIG(

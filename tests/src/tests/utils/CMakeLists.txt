@@ -1,6 +1,6 @@
 set(SOURCES
   # Tests
-  test_interval.cpp
+  test_matrixcache.cpp
   test_sinc.cpp
   test_utils.cpp
 

@@ -1,6 +1,7 @@
 #include <common.hpp>
 
 #include <ipc/broad_phase/aabb.hpp>
+#include <ipc/utils/logger.hpp>
 
 using namespace ipc;
 
@@ -60,6 +61,19 @@ void define_aabb(py::module_& m)
                 If the two AABBs intersect.
             )ipc_Qu8mg5v7",
             "other"_a)
+        .def(
+            "__repr__",
+            [](const AABB& aabb) {
+                return fmt::format(
+                    "AABB(min={}, max={})", aabb.min.transpose(),
+                    aabb.max.transpose());
+            })
+        .def(
+            "__str__",
+            [](const AABB& aabb) {
+                return fmt::format(
+                    "{}×{}", aabb.min.transpose(), aabb.max.transpose());
+            })
         .def_static(
             "conservative_inflation",
             [](ArrayMax3d min, ArrayMax3d max, const double inflation_radius) {
@@ -78,7 +92,7 @@ void define_aabb(py::module_& m)
         "build_vertex_boxes",
         [](Eigen::ConstRef<Eigen::MatrixXd> vertices,
            const double inflation_radius = 0) {
-            std::vector<AABB> vertex_boxes;
+            AABBs vertex_boxes;
             build_vertex_boxes(vertices, vertex_boxes, inflation_radius);
             return vertex_boxes;
         },
@@ -99,7 +113,7 @@ void define_aabb(py::module_& m)
         [](Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
            Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
            const double inflation_radius = 0) {
-            std::vector<AABB> vertex_boxes;
+            AABBs vertex_boxes;
             build_vertex_boxes(
                 vertices_t0, vertices_t1, vertex_boxes, inflation_radius);
             return vertex_boxes;
@@ -119,9 +133,8 @@ void define_aabb(py::module_& m)
 
     m.def(
         "build_edge_boxes",
-        [](const std::vector<AABB>& vertex_boxes,
-           Eigen::ConstRef<Eigen::MatrixXi> edges) {
-            std::vector<AABB> edge_boxes;
+        [](const AABBs& vertex_boxes, Eigen::ConstRef<Eigen::MatrixXi> edges) {
+            AABBs edge_boxes;
             build_edge_boxes(vertex_boxes, edges, edge_boxes);
             return edge_boxes;
         },
@@ -139,9 +152,8 @@ void define_aabb(py::module_& m)
 
     m.def(
         "build_face_boxes",
-        [](const std::vector<AABB>& vertex_boxes,
-           Eigen::ConstRef<Eigen::MatrixXi> faces) {
-            std::vector<AABB> face_boxes;
+        [](const AABBs& vertex_boxes, Eigen::ConstRef<Eigen::MatrixXi> faces) {
+            AABBs face_boxes;
             build_face_boxes(vertex_boxes, faces, face_boxes);
             return face_boxes;
         },

@@ -7,7 +7,7 @@ else()
 endif()
 
 # Check required CMake version
-set(REQUIRED_CMAKE_VERSION "3.18.0")
+set(REQUIRED_CMAKE_VERSION "3.24.0")
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   cmake_minimum_required(VERSION ${REQUIRED_CMAKE_VERSION})
 else()
@@ -64,9 +64,6 @@ project(IPCToolkit
         LANGUAGES CXX
         VERSION "1.5.0")
 
-include(CheckLanguage)
-check_language(CUDA)
-
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
   option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
@@ -77,22 +74,18 @@ else()
   set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings" FORCE)
 endif()
 
-if(CMAKE_CUDA_COMPILER)
-  option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" ON)
-else()
-  option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" OFF)
-endif()
+option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
+option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                    ON)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
 option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
 option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
+option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
 
 # Advanced options
-option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
 
-mark_as_advanced(IPC_TOOLKIT_WITH_SIMD)          # This does not work reliably
 mark_as_advanced(IPC_TOOLKIT_WITH_CODE_COVERAGE) # This is used in GitHub Actions
 
 # Set default minimum C++ standard
@@ -118,12 +111,51 @@ include(ipc_toolkit_use_colors)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ################################################################################
+# Verify Options
+################################################################################
+
+# CUDA support
+if(IPC_TOOLKIT_WITH_CUDA)
+  # If CMAKE_CUDA_ARCHITECTURES was not specified, set it to native.
+  if(DEFINED CMAKE_CUDA_ARCHITECTURES)
+    message(STATUS "CMAKE_CUDA_ARCHITECTURES was specified, skipping auto-detection")
+  else()
+    message(STATUS "CMAKE_CUDA_ARCHITECTURES was not specified, set it to native")
+    set(CMAKE_CUDA_ARCHITECTURES "native")
+  endif()
+  message(STATUS "Targeting CUDA_ARCHITECTURES \"${CMAKE_CUDA_ARCHITECTURES}\"")
+
+  # Enable CUDA support
+  enable_language(CUDA)
+endif()
+
+## SIMD support
+if(IPC_TOOLKIT_WITH_SIMD)
+  # Figure out SIMD support
+  message(STATUS "Testing SIMD capabilities...")
+  find_package(SIMD)
+  if (SIMD_CXX_FLAGS)
+    message(STATUS "SIMD support found: ${SIMD_CXX_FLAGS}")
+  else()
+    message(WARNING "SIMD support requested but not found. Continuing without SIMD.")
+    set(IPC_TOOLKIT_WITH_SIMD OFF CACHE BOOL "Enable SIMD" FORCE)
+  endif()
+endif()
+
+################################################################################
 # IPC Toolkit Library
 ################################################################################
 
 # Add an empty library and fill in the list of sources in `src/ipc/CMakeLists.txt`.
 add_library(ipc_toolkit)
 add_library(ipc::toolkit ALIAS ipc_toolkit)
+
+if(IPC_TOOLKIT_WITH_CUDA)
+  # We need to explicitly state that we need all CUDA files in the particle
+  # library to be built with -dc as the member functions could be called by
+  # other libraries and executables.
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+endif()
 
 # Fill in configuration options
 configure_file(
@@ -176,6 +208,11 @@ target_link_libraries(ipc_toolkit PRIVATE simple_bvh::simple_bvh)
 include(spdlog)
 target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
+# TinyAD
+include(tinyad)
+# TODO: Make this a private dependency once we stop exposing TinyAD types in the public API.
+target_link_libraries(ipc_toolkit PUBLIC TinyAD::TinyAD)
+
 # TinyGLTF
 include(tinygltf)
 target_link_libraries(ipc_toolkit PRIVATE tinygltf::tinygltf)
@@ -196,19 +233,25 @@ endif()
 # Faster unordered map
 if(IPC_TOOLKIT_WITH_ROBIN_MAP)
   include(robin_map)
-  target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
+  target_link_libraries(ipc_toolkit PRIVATE tsl::robin_map)
 endif()
 
 # Hashes
 if(IPC_TOOLKIT_WITH_ABSEIL)
   include(abseil)
-  target_link_libraries(ipc_toolkit PUBLIC absl::hash)
+  target_link_libraries(ipc_toolkit PRIVATE absl::hash)
 endif()
 
 # Intervals
 if(IPC_TOOLKIT_WITH_FILIB)
   include(filib)
   target_link_libraries(ipc_toolkit PUBLIC filib::filib)
+endif()
+
+if(IPC_TOOLKIT_WITH_PROFILER)
+  # Add nlohmann/json for the profiler
+  include(json)
+  target_link_libraries(ipc_toolkit PUBLIC nlohmann_json::nlohmann_json)
 endif()
 
 # Extra warnings (link last for highest priority)
@@ -221,14 +264,12 @@ target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 
 ## SIMD support
 if(IPC_TOOLKIT_WITH_SIMD)
-  # Figure out SIMD support
-  message(STATUS "Testing SIMD capabilities...")
-  find_package(SIMD)
   # Add SIMD flags to compiler flags
-  message(STATUS "Using SIMD flags: ${SIMD_FLAGS}")
-  target_compile_options(ipc_toolkit PRIVATE ${SIMD_FLAGS})
-else()
-  message(STATUS "SIMD support disabled")
+  target_compile_options(ipc_toolkit PRIVATE ${SIMD_CXX_FLAGS})
+
+  # Link against cross-platform xsimd library
+  include(xsimd)
+  target_link_libraries(ipc_toolkit PRIVATE xsimd::xsimd)
 endif()
 
 # For MSVC, do not use the min and max macros.
@@ -238,28 +279,6 @@ endif()
 
 # Use C++17
 target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
-
-################################################################################
-# CUDA
-################################################################################
-
-if(IPC_TOOLKIT_WITH_CUDA)
-  if(NOT CMAKE_CUDA_COMPILER)
-    message(FATAL_ERROR "CUDA support requested but no CUDA compiler found!")
-  endif()
-
-  # Enable CUDA support
-  enable_language(CUDA)
-
-  # We need to explicitly state that we need all CUDA files in the particle
-  # library to be built with -dc as the member functions could be called by
-  # other libraries and executables.
-  set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-  # Use the same CUDA architectures Scalable CCD
-  get_target_property(CMAKE_CUDA_ARCHITECTURES scalable_ccd CUDA_ARCHITECTURES)
-  set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
-endif()
 
 ################################################################################
 # Tests
@@ -301,7 +320,7 @@ endif()
 # Xcode
 ################################################################################
 
-if (CMAKE_GENERATOR STREQUAL "Xcode")
+if (IPC_TOOLKIT_TOPLEVEL_PROJECT AND CMAKE_GENERATOR STREQUAL "Xcode")
   set(CMAKE_XCODE_SCHEME_LAUNCH_CONFIGURATION "${CMAKE_BUILD_TYPE}")
   set_target_properties(ipc_toolkit PROPERTIES XCODE_GENERATE_SCHEME ON)
   if(IPC_TOOLKIT_BUILD_TESTS)

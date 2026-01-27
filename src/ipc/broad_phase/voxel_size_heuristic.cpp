@@ -77,16 +77,16 @@ double suggest_good_voxel_size(
     return voxel_size;
 }
 
-double suggest_good_voxel_size(const std::vector<AABB>& boxes)
+double suggest_good_voxel_size(const AABBs& boxes)
 {
-    assert(boxes.size() > 0);
+    assert(!boxes.empty());
 
     Eigen::VectorXd box_sizes(boxes.size());
     for (size_t i = 0; i < boxes.size(); ++i) {
         box_sizes(i) = (boxes[i].max - boxes[i].min).maxCoeff();
     }
 
-    double voxel_size;
+    double voxel_size = 0;
     igl::median(box_sizes, voxel_size);
 
     if (voxel_size <= 0) {

@@ -247,18 +247,12 @@ void define_broad_phase(py::module_& m)
             )ipc_Qu8mg5v7")
         .def(
             "detect_collision_candidates",
-            [](const BroadPhase& self, int dim) {
+            [](const BroadPhase& self) {
                 Candidates candidates;
-                self.detect_collision_candidates(dim, candidates);
+                self.detect_collision_candidates(candidates);
                 return candidates;
             },
-            R"ipc_Qu8mg5v7(
-            Detect all collision candidates needed for a given dimensional simulation.
-
-            Parameters:
-                dim: The dimension of the simulation (i.e., 2 or 3).
-            )ipc_Qu8mg5v7",
-            "dim"_a)
+            "Detect all collision candidates needed for a given dimensional simulation.")
         .def_readwrite(
             "can_vertices_collide", &BroadPhase::can_vertices_collide,
             "Function for determining if two vertices can collide.");

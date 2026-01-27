@@ -1,6 +1,7 @@
 #include "bvh.hpp"
 
 #include <ipc/utils/merge_thread_local.hpp>
+#include <ipc/utils/profiler.hpp>
 
 #include <SimpleBVH/BVH.hpp>
 #include <tbb/blocked_range.h>
@@ -25,21 +26,25 @@ void BVH::build(
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces)
 {
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::build");
     BroadPhase::build(edges, faces); // Build edge_boxes and face_boxes
     init_bvh(vertex_boxes, *vertex_bvh);
     init_bvh(edge_boxes, *edge_bvh);
     init_bvh(face_boxes, *face_bvh);
 }
 
-void BVH::init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh)
+void BVH::init_bvh(const AABBs& boxes, SimpleBVH::BVH& bvh)
 {
-    if (boxes.size() == 0) {
+    if (boxes.empty()) {
         return;
     }
 
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::init_bvh");
+
+    // Convert AABBs to the format expected by SimpleBVH
     std::vector<std::array<Eigen::Vector3d, 2>> vector_boxes(boxes.size());
     for (int i = 0; i < boxes.size(); i++) {
-        vector_boxes[i] = { { to_3D(boxes[i].min), to_3D(boxes[i].max) } };
+        vector_boxes[i] = { { boxes[i].min, boxes[i].max } };
     }
 
     bvh.init(vector_boxes);
@@ -47,6 +52,7 @@ void BVH::init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh)
 
 void BVH::clear()
 {
+    BroadPhase::clear();
     vertex_bvh->clear();
     edge_bvh->clear();
     face_bvh->clear();
@@ -54,7 +60,7 @@ void BVH::clear()
 
 template <typename Candidate, bool swap_order, bool triangular>
 void BVH::detect_candidates(
-    const std::vector<AABB>& boxes,
+    const AABBs& boxes,
     const SimpleBVH::BVH& bvh,
     const std::function<bool(size_t, size_t)>& can_collide,
     std::vector<Candidate>& candidates)
@@ -75,7 +81,7 @@ void BVH::detect_candidates(
                 bvh.intersect_box(boxes[i].min, boxes[i].max, js);
 
                 for (const unsigned int j : js) {
-                    int ai = i, bi = j;
+                    size_t ai = i, bi = j;
                     if constexpr (swap_order) {
                         std::swap(ai, bi);
                     }
@@ -101,9 +107,11 @@ void BVH::detect_candidates(
 void BVH::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
-    if (vertex_boxes.size() == 0) {
+    if (vertex_boxes.empty()) {
         return;
     }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_vertex_vertex_candidates");
 
     detect_candidates<
         VertexVertexCandidate, /*swap_order=*/false, /*triangular=*/true>(
@@ -113,9 +121,11 @@ void BVH::detect_vertex_vertex_candidates(
 void BVH::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
-    if (edge_boxes.size() == 0 || vertex_boxes.size() == 0) {
+    if (edge_boxes.empty() || vertex_boxes.empty()) {
         return;
     }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_edge_vertex_candidates");
 
     // In 2D and for codimensional edge-vertex collisions, there are more
     // vertices than edges, so we want to iterate over the edges.
@@ -127,9 +137,11 @@ void BVH::detect_edge_vertex_candidates(
 void BVH::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
-    if (edge_boxes.size() == 0) {
+    if (edge_boxes.empty()) {
         return;
     }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_edge_edge_candidates");
 
     detect_candidates<
         EdgeEdgeCandidate, /*swap_order=*/false, /*triangular=*/true>(
@@ -140,9 +152,11 @@ void BVH::detect_edge_edge_candidates(
 void BVH::detect_face_vertex_candidates(
     std::vector<FaceVertexCandidate>& candidates) const
 {
-    if (face_boxes.size() == 0 || vertex_boxes.size() == 0) {
+    if (face_boxes.empty() || vertex_boxes.empty()) {
         return;
     }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_face_vertex_candidates");
 
     // The ratio vertices:faces is 1:2, so we want to iterate over the vertices.
     detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
@@ -153,9 +167,11 @@ void BVH::detect_face_vertex_candidates(
 void BVH::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
-    if (edge_boxes.size() == 0 || face_boxes.size() == 0) {
+    if (edge_boxes.empty() || face_boxes.empty()) {
         return;
     }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_edge_face_candidates");
 
     // The ratio edges:faces is 3:2, so we want to iterate over the faces.
     detect_candidates<EdgeFaceCandidate, /*swap_order=*/true>(
@@ -166,9 +182,11 @@ void BVH::detect_edge_face_candidates(
 void BVH::detect_face_face_candidates(
     std::vector<FaceFaceCandidate>& candidates) const
 {
-    if (face_boxes.size() == 0) {
+    if (face_boxes.empty()) {
         return;
     }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("BVH::detect_face_face_candidates");
 
     detect_candidates<
         FaceFaceCandidate, /*swap_order=*/false, /*triangular=*/true>(

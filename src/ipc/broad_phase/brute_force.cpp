@@ -14,15 +14,15 @@ namespace ipc {
 
 template <typename Candidate, bool triangular>
 void BruteForce::detect_candidates(
-    const std::vector<AABB>& boxes0,
-    const std::vector<AABB>& boxes1,
+    const AABBs& boxes0,
+    const AABBs& boxes1,
     const std::function<bool(size_t, size_t)>& can_collide,
     std::vector<Candidate>& candidates) const
 {
     tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
 
     tbb::parallel_for(
-        tbb::blocked_range2d<size_t>(0ul, boxes0.size(), 0ul, boxes1.size()),
+        tbb::blocked_range2d<size_t>(0UL, boxes0.size(), 0UL, boxes1.size()),
         [&](const tbb::blocked_range2d<size_t>& r) {
             auto& local_candidates = storage.local();
 

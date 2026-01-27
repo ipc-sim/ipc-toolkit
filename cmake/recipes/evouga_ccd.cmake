@@ -1,4 +1,4 @@
-# Etienne Vouga's CCD Library (https://github.com/evouga/collisiondetection.git)
+# Etienne Vouga's CCD Library (https://github.com/evouga/collisiondetection)
 # License: ???
 if(TARGET evouga::ccd)
     return()

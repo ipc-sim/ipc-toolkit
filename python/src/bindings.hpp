@@ -9,7 +9,10 @@
 #include <distance/bindings.hpp>
 #include <dynamics/bindings.hpp>
 #include <friction/bindings.hpp>
+#include <geometry/bindings.hpp>
 #include <implicits/bindings.hpp>
+#include <math/bindings.hpp>
+#include <ogc/bindings.hpp>
 #include <potentials/bindings.hpp>
 #include <tangent/bindings.hpp>
 #include <utils/bindings.hpp>

@@ -18,6 +18,8 @@ public:
     /// @return The name of the broad phase method.
     std::string name() const override { return "SweepAndTiniestQueue"; }
 
+    using BroadPhase::build;
+
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges
@@ -46,10 +48,12 @@ public:
     /// @param vertex_boxes Precomputed vertex AABBs
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
+    /// @param dim Dimension of the simulation (2D or 3D)
     void build(
-        const std::vector<AABB>& vertex_boxes,
+        const AABBs& vertex_boxes,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) override;
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        const uint8_t dim) override;
 
     /// @brief Clear any built data.
     void clear() override;

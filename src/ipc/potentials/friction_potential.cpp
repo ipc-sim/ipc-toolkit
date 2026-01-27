@@ -4,9 +4,11 @@
 
 namespace ipc {
 
-FrictionPotential::FrictionPotential(const double eps_v) : Super()
+FrictionPotential::FrictionPotential(const double eps_v)
+    : Super()
+    , m_eps_v(eps_v)
 {
-    set_eps_v(eps_v);
+    assert(eps_v > 0);
 }
 
 double FrictionPotential::mu_f0(

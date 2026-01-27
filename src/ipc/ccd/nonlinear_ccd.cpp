@@ -15,9 +15,9 @@
 namespace ipc {
 
 #ifdef USE_FIXED_PIECES
-static constexpr size_t FIXED_NUM_PIECES = 100l;
+static constexpr size_t FIXED_NUM_PIECES = 100L;
 #else
-static constexpr size_t MAX_NUM_SUBDIVISIONS = 1000l;
+static constexpr size_t MAX_NUM_SUBDIVISIONS = 1000L;
 #endif
 
 // ============================================================================

@@ -3,12 +3,15 @@
 #include <tests/utils.hpp>
 
 #include <ipc/broad_phase/brute_force.hpp>
+#include <ipc/broad_phase/create_broad_phase.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
 #include <igl/readCSV.h>
 #include <igl/readDMAT.h>
+
+#include <optional>
 
 using namespace ipc;
 
@@ -47,7 +50,7 @@ void test_face_face_broad_phase(
     std::vector<FaceFaceCandidate> bf_ff_candidates;
     bf.detect_face_face_candidates(bf_ff_candidates);
 
-    CHECK(ff_candidates.size() > 0);
+    CHECK(!ff_candidates.empty());
     CHECK(ff_candidates.size() == bf_ff_candidates.size());
 }
 
@@ -68,7 +71,7 @@ void test_broad_phase(
     double inflation_radius = 0;
 
     Candidates candidates;
-    candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
+    candidates.build(mesh, V0, V1, inflation_radius, broad_phase.get());
 
     if (expect_collision) {
         CHECK(!candidates.is_step_collision_free(mesh, V0, V1));
@@ -96,7 +99,7 @@ std::shared_ptr<Candidates> test_broad_phase(
     REQUIRE(V.rows() == mesh.num_vertices());
 
     auto candidates = std::make_shared<Candidates>();
-    candidates->build(mesh, V, inflation_radius, broad_phase);
+    candidates->build(mesh, V, inflation_radius, broad_phase.get());
 
     if (broad_phase->name() != "BruteForce") {
         brute_force_comparison(
@@ -271,7 +274,7 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
 {
     using namespace ipc;
 
-    std::vector<AABB> boxes(100);
+    AABBs boxes(100);
     for (int i = 0; i < boxes.size(); ++i) {
         boxes[i].min = Eigen::Array3d(i * 0.6, 0, 0);
         boxes[i].max = Eigen::Array3d(boxes[i].min.x() + 1.0, 0, 0);
@@ -281,11 +284,23 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
     REQUIRE(!boxes[0].intersects(boxes[2]));
 
     const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
-    broad_phase->build(boxes, Eigen::MatrixXi(), Eigen::MatrixXi());
+    broad_phase->build(boxes, Eigen::MatrixXi(), Eigen::MatrixXi(), /*dim=*/3);
 
     std::vector<VertexVertexCandidate> candidates;
     broad_phase->detect_vertex_vertex_candidates(candidates);
 
     CAPTURE(broad_phase->name());
     CHECK(candidates.size() == boxes.size() - 1);
+}
+
+TEST_CASE("Create broad phase", "[broad_phase]")
+{
+#ifdef IPC_TOOLKIT_WITH_CUDA
+    uint8_t n_broad_phase_methods = 6;
+#else
+    uint8_t n_broad_phase_methods = 5;
+#endif
+    for (uint8_t i = 0; i < n_broad_phase_methods; i++) {
+        CHECK(create_broad_phase(static_cast<ipc::BroadPhaseMethod>(i)));
+    }
 }

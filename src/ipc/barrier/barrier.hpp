@@ -33,6 +33,7 @@ public:
     second_derivative(const double d, const double dhat) const = 0;
 
     /// @brief Get the units of the barrier function.
+    /// Essentially, barrier(d, d̂) / units(d̂) should be dimensionless.
     /// @param dhat The activation distance of the barrier.
     /// @return The units of the barrier function.
     virtual double units(const double dhat) const = 0;
@@ -194,7 +195,10 @@ public:
     /// @brief Get the units of the barrier function.
     /// @param dhat The activation distance of the barrier.
     /// @return The units of the barrier function.
-    double units(const double dhat) const override { return 1.0; }
+    double units(const double dhat) const override
+    {
+        return 1.0; // The normalized barrier is dimensionless.
+    }
 };
 
 using NormalizedClampedLogBarrier = NormalizedBarrier<ClampedLogBarrier>;
@@ -296,6 +300,77 @@ public:
     /// @param d The distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The second derivative of the barrier wrt d.
+    double second_derivative(const double d, const double dhat) const override;
+
+    /// @brief Get the units of the barrier function.
+    /// @param dhat The activation distance of the barrier.
+    /// @return The units of the barrier function.
+    double units(const double dhat) const override
+    {
+        // (d - d̂)² = d̂² (d/d̂ - 1)²
+        return dhat * dhat;
+    }
+};
+
+// ============================================================================
+// 2-Stage activation function from [Chen et al. 2025]
+// ============================================================================
+
+/// @brief 2-Stage activation function from [Chen et al. 2025].
+class TwoStageBarrier : public Barrier {
+public:
+    TwoStageBarrier() = default;
+
+    /**
+     * @brief Two-stage activation barrier.
+     *
+     * \f\[
+     *     b(d) = \begin{cases}
+     *         -\frac{\hat{d}^2}{4} \left(\ln\left(\frac{2d}{\hat{d}}\right) -
+     *         \tfrac{1}{2}\right) & d < \frac{\hat{d}}{2}\\
+     *         \tfrac{1}{2} (\hat{d} - d)^2 & d < \hat{d}\\
+     *         0 & d \ge \hat{d}
+     *     \end{cases}
+     * \f\]
+     *
+     * @param d The distance.
+     * @param dhat Activation distance of the barrier.
+     * @return The value of the barrier function at d.
+     */
+    double operator()(const double d, const double dhat) const override;
+
+    /**
+     * @brief Derivative of the barrier function.
+     *
+     * \f\[
+     *     b'(d) = \begin{cases}
+     *         -\frac{\hat{d}}{4d} & d < \frac{\hat{d}}{2}\\
+     *         d - \hat{d} & d < \hat{d}\\
+     *         0 & d \ge \hat{d}
+     *     \end{cases}
+     * \f\]
+     *
+     * @param d The distance.
+     * @param dhat Activation distance of the barrier.
+     * @return The derivative of the barrier wrt d.
+     */
+    double first_derivative(const double d, const double dhat) const override;
+
+    /**
+     * @brief Second derivative of the barrier function.
+     *
+     * \f\[
+     *     b''(d) = \begin{cases}
+     *         \frac{\hat{d}}{4d^2} & d < \frac{\hat{d}}{2}\\
+     *         1 & d < \hat{d}\\
+     *         0 & d \ge \hat{d}
+     *     \end{cases}
+     * \f\]
+     *
+     * @param d The distance.
+     * @param dhat Activation distance of the barrier.
+     * @return The second derivative of the barrier wrt d.
+     */
     double second_derivative(const double d, const double dhat) const override;
 
     /// @brief Get the units of the barrier function.
