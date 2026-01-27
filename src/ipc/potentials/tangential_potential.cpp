@@ -194,7 +194,8 @@ VectorMax12d TangentialPotential::gradient(
     const double mu_f1_over_norm_u =
         mu_f1_over_x(u_aniso.norm(), collision.mu_s, collision.mu_k);
 
-    // μ(‖u_aniso‖) N(xᵗ) f₁(‖u_aniso‖)/‖u_aniso‖ T(xᵗ) u_aniso ∈ (n×2)(2×1) = (n×1)
+    // μ(‖u_aniso‖) N(xᵗ) f₁(‖u_aniso‖)/‖u_aniso‖ T(xᵗ) u_aniso ∈ (n×2)(2×1) =
+    // (n×1)
     return T
         * ((collision.weight * collision.normal_force_magnitude
             * mu_f1_over_norm_u)
@@ -252,14 +253,16 @@ MatrixMax12d TangentialPotential::hessian(
             hess.setZero(collision.ndof(), collision.ndof());
         } else {
             assert(collision.dim() == 3);
-            // I - u_aniso u_anisoᵀ/‖u_aniso‖² = ūūᵀ / ‖u_aniso‖² (where ū⋅u_aniso = 0)
+            // I - u_aniso u_anisoᵀ/‖u_aniso‖² = ūūᵀ / ‖u_aniso‖² (where
+            // ū⋅u_aniso = 0)
             const Eigen::Vector2d u_perp(-u_aniso[1], u_aniso[0]);
             // Apply anisotropic scaling to T: T_aniso = T * diag(mu_aniso)
             MatrixMax<double, 12, 2> T_aniso = T;
             T_aniso.col(0) *= collision.mu_aniso[0];
             T_aniso.col(1) *= collision.mu_aniso[1];
             hess = // grouped to reduce number of operations
-                (T_aniso * ((scale * mu_f1_over_norm_u / (norm_u * norm_u)) * u_perp))
+                (T_aniso
+                 * ((scale * mu_f1_over_norm_u / (norm_u * norm_u)) * u_perp))
                 * (u_perp.transpose() * T_aniso.transpose());
         }
     } else if (norm_u == 0) {
@@ -276,7 +279,8 @@ MatrixMax12d TangentialPotential::hessian(
             hess = scale * mu_f1_over_norm_u * T_aniso * T_aniso.transpose();
         }
     } else {
-        // ∇²D(v) = μ N T [f₂(‖u_aniso‖) u_aniso u_anisoᵀ + f₁(‖u_aniso‖)/‖u_aniso‖ I] Tᵀ
+        // ∇²D(v) = μ N T [f₂(‖u_aniso‖) u_aniso u_anisoᵀ +
+        // f₁(‖u_aniso‖)/‖u_aniso‖ I] Tᵀ
         //  ⟹ only need to project the inner 2x2 matrix to PSD
         const double f2 =
             mu_f2_x_minus_mu_f1_over_x3(norm_u, collision.mu_s, collision.mu_k);
@@ -317,7 +321,8 @@ VectorMax12d TangentialPotential::force(
     //
     // Combined anisotropic friction model:
     //   1. mu_aniso velocity scaling: τ_aniso = diag(mu_aniso) · τ
-    //   2. Direction-dependent coefficients (when mu_s_aniso.squaredNorm() > 0):
+    //   2. Direction-dependent coefficients (when mu_s_aniso.squaredNorm() >
+    //   0):
     //      - Direction computed from τ_aniso: τ_dir = τ_aniso / ‖τ_aniso‖
     //      - Effective mu from ellipse: μ_eff = ‖diag(μ_aniso) · τ_dir‖
     //   3. Isotropic path (when mu_s_aniso is zero): uses scalar mu_s/mu_k
@@ -357,8 +362,8 @@ VectorMax12d TangentialPotential::force(
 
     // Compute effective mu (handles both anisotropic and isotropic cases)
     const auto [mu_s, mu_k] = compute_anisotropic_mu_eff_from_tau_aniso(
-        tau_aniso, collision.mu_s_aniso, collision.mu_k_aniso,
-        collision.mu_s, collision.mu_k, no_mu);
+        tau_aniso, collision.mu_s_aniso, collision.mu_k_aniso, collision.mu_s,
+        collision.mu_k, no_mu);
 
     // Compute μ(‖τ_aniso‖) f₁(‖τ_aniso‖)/‖τ_aniso‖
     const double tau_aniso_norm = tau_aniso.norm();
@@ -499,8 +504,8 @@ MatrixMax12d TangentialPotential::force_jacobian(
 
     // Compute effective mu (handles both anisotropic and isotropic cases)
     const auto [mu_s, mu_k] = compute_anisotropic_mu_eff_from_tau_aniso(
-        tau_aniso, collision.mu_s_aniso, collision.mu_k_aniso,
-        collision.mu_s, collision.mu_k, false);
+        tau_aniso, collision.mu_s_aniso, collision.mu_k_aniso, collision.mu_s,
+        collision.mu_k, false);
 
     // Compute μ f₁(‖τ_aniso‖)/‖τ_aniso‖
     const double tau_aniso_norm = tau_aniso.norm();
@@ -520,8 +525,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
             // Main term: (f₂(‖τ_aniso‖)‖τ_aniso‖ - f₁(‖τ_aniso‖)) /
             // ‖τ_aniso‖³ τ_anisoᵀ ∇τ_aniso. This treats mu_eff as constant
             // (evaluated at current tau_aniso direction).
-            double f2 =
-                mu_f2_x_minus_mu_f1_over_x3(tau_aniso_norm, mu_s, mu_k);
+            double f2 = mu_f2_x_minus_mu_f1_over_x3(tau_aniso_norm, mu_s, mu_k);
             assert(std::isfinite(f2));
             grad_mu_f1_over_norm_tau =
                 f2 * tau_aniso.transpose() * jac_tau_aniso;
@@ -531,8 +535,8 @@ MatrixMax12d TangentialPotential::force_jacobian(
             // to tau_aniso (the scaled velocity), not raw tau.
             const auto [dmu_s_eff_dtau, dmu_k_eff_dtau] =
                 compute_anisotropic_mu_eff_derivatives(
-                    tau_aniso, collision.mu_s_aniso, collision.mu_k_aniso,
-                    mu_s, mu_k);
+                    tau_aniso, collision.mu_s_aniso, collision.mu_k_aniso, mu_s,
+                    mu_k);
 
             // Approximate the contribution: ∂(μ f₁/‖τ‖)/∂μ_eff * dμ_eff/dτ *
             // ∇τ. We use the average of static and kinetic derivatives as an
@@ -552,8 +556,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
         } else {
             // Isotropic: ∇ (f₁(‖tau_aniso‖)/‖tau_aniso‖) = (f₂‖τ‖ - f₁) / ‖τ‖³
             // τ_anisoᵀ ∇tau_aniso
-            double f2 =
-                mu_f2_x_minus_mu_f1_over_x3(tau_aniso_norm, mu_s, mu_k);
+            double f2 = mu_f2_x_minus_mu_f1_over_x3(tau_aniso_norm, mu_s, mu_k);
             assert(std::isfinite(f2));
             grad_mu_f1_over_norm_tau =
                 f2 * tau_aniso.transpose() * jac_tau_aniso;
@@ -820,7 +823,8 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
     // Compute f₁(‖tau_aniso‖)/‖tau_aniso‖
     const double mu_s = no_mu ? 1.0 : collision.mu_s;
     const double mu_k = no_mu ? 1.0 : collision.mu_k;
-    const double mu_f1_over_norm_tau = mu_f1_over_x(tau_aniso.norm(), mu_s, mu_k);
+    const double mu_f1_over_norm_tau =
+        mu_f1_over_x(tau_aniso.norm(), mu_s, mu_k);
 
     // F = -μ N f₁(‖tau_aniso‖)/‖tau_aniso‖ T tau_aniso
     // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
@@ -932,7 +936,8 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
         // lim_{x→0} f₂(x)x² = 0
         grad_f1_over_norm_tau.setZero(n);
     } else {
-        // ∇ (f₁(‖tau_aniso‖)/‖tau_aniso‖) = (f₁'(‖tau_aniso‖)‖tau_aniso‖ - f₁(‖tau_aniso‖)) / ‖tau_aniso‖³ tau_anisoᵀ ∇tau_aniso
+        // ∇ (f₁(‖tau_aniso‖)/‖tau_aniso‖) = (f₁'(‖tau_aniso‖)‖tau_aniso‖ -
+        // f₁(‖tau_aniso‖)) / ‖tau_aniso‖³ tau_anisoᵀ ∇tau_aniso
         double f2 = mu_f2_x_minus_mu_f1_over_x3(tau_norm, mu_s, mu_k);
         assert(std::isfinite(f2));
         grad_f1_over_norm_tau = f2 * tau_aniso.transpose() * jac_tau_aniso;

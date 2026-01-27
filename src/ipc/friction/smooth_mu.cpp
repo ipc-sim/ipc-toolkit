@@ -3,9 +3,10 @@
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/math/math.hpp>
 
+#include <Eigen/Core>
+
 #include <cassert>
 #include <cmath>
-#include <Eigen/Core>
 
 namespace ipc {
 
@@ -122,12 +123,12 @@ std::pair<double, double> anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
     // Elliptical model (L2 projection):
     // mu_eff = sqrt((mu0*t0)^2 + (mu1*t1)^2) where t = tau_dir
     const double mu_s_eff = std::sqrt(
-        Math<double>::sqr(mu_s_aniso[0] * tau_dir[0]) +
-        Math<double>::sqr(mu_s_aniso[1] * tau_dir[1]));
+        Math<double>::sqr(mu_s_aniso[0] * tau_dir[0])
+        + Math<double>::sqr(mu_s_aniso[1] * tau_dir[1]));
 
     const double mu_k_eff = std::sqrt(
-        Math<double>::sqr(mu_k_aniso[0] * tau_dir[0]) +
-        Math<double>::sqr(mu_k_aniso[1] * tau_dir[1]));
+        Math<double>::sqr(mu_k_aniso[0] * tau_dir[0])
+        + Math<double>::sqr(mu_k_aniso[1] * tau_dir[1]));
 
     return std::make_pair(mu_s_eff, mu_k_eff);
 }
@@ -162,8 +163,8 @@ Eigen::Vector2d anisotropic_mu_eff_dtau(
     return result;
 }
 
-Eigen::Vector2d compute_tau_dir_from_tau_aniso(
-    Eigen::ConstRef<Eigen::Vector2d> tau_aniso)
+Eigen::Vector2d
+compute_tau_dir_from_tau_aniso(Eigen::ConstRef<Eigen::Vector2d> tau_aniso)
 {
     constexpr double tiny = 1e-10;
     const double tau_aniso_norm = tau_aniso.norm();
@@ -198,8 +199,7 @@ std::pair<double, double> compute_anisotropic_mu_eff_from_tau_aniso(
             anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
                 tau_dir, mu_s_aniso, mu_k_aniso);
 
-        return std::make_pair(
-            no_mu ? 1.0 : mu_s_eff, no_mu ? 1.0 : mu_k_eff);
+        return std::make_pair(no_mu ? 1.0 : mu_s_eff, no_mu ? 1.0 : mu_k_eff);
     } else {
         // Isotropic friction: use scalar mu_s/mu_k (mu_aniso scaling already
         // applied to tau_aniso)
