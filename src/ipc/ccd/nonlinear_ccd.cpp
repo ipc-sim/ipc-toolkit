@@ -72,15 +72,15 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
         const bool /*no_zero_toi*/,
         double& /*toi*/)>& linear_ccd,
     double& toi,
+    const double min_distance,
     const double tmax,
-    const double min_sep_distance,
     const double conservative_rescaling)
 {
     const double distance_t0 = distance(0);
-    if (check_initial_distance(distance_t0, min_sep_distance, toi)) {
+    if (check_initial_distance(distance_t0, min_distance, toi)) {
         return true;
     }
-    assert(distance_t0 > min_sep_distance);
+    assert(distance_t0 > min_distance);
 
     double ti0 = 0;
     std::stack<double> ts;
@@ -112,7 +112,7 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
             return true;
         }
 
-        double min_distance = max_distance_from_linear(ti0, ti1);
+        double min_distance_linear = max_distance_from_linear(ti0, ti1);
 
 #ifndef USE_FIXED_PIECES
         // Check if the minimum distance is too large and we need to subdivide
@@ -129,21 +129,21 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
         }
 #endif
 
-        min_distance += min_sep_distance;
+        min_distance_linear += min_distance;
 
-        const bool is_impacting =
-            linear_ccd(ti0, ti1, min_distance, /*no_zero_toi=*/ti0 == 0, toi);
+        const bool is_impacting = linear_ccd(
+            ti0, ti1, min_distance_linear, /*no_zero_toi=*/ti0 == 0, toi);
 
         logger().trace(
             "Evaluated at ti=[{:g}, {:g}] min_distance={:g} distance_ti0={:g}; result={}{}",
-            ti0, ti1, min_distance, distance_ti0, is_impacting,
+            ti0, ti1, min_distance_linear, distance_ti0, is_impacting,
             is_impacting ? fmt::format(" toi={:g}", (ti1 - ti0) * toi + ti0)
                          : "");
 
         if (is_impacting) {
             toi = (ti1 - ti0) * toi + ti0;
             if (toi == 0) {
-                // This is impossible because distance_t0 > min_sep_distance
+                // This is impossible because distance_t0 > min_distance
                 ts.push((ti1 + ti0) / 2);
                 num_subdivisions++;
                 continue;
@@ -191,7 +191,7 @@ bool NonlinearCCD::point_point_ccd(
                 output_tolerance,             // delta_actual
                 no_zero_toi);                 // no zero toi
         },
-        toi, tmax, min_distance, conservative_rescaling);
+        toi, min_distance, tmax, conservative_rescaling);
 }
 
 bool NonlinearCCD::point_edge_ccd(
@@ -227,7 +227,7 @@ bool NonlinearCCD::point_edge_ccd(
                 output_tolerance,             // delta_actual
                 no_zero_toi);                 // no zero toi
         },
-        toi, tmax, min_distance, conservative_rescaling);
+        toi, min_distance, tmax, conservative_rescaling);
 }
 
 bool NonlinearCCD::edge_edge_ccd(
@@ -266,7 +266,7 @@ bool NonlinearCCD::edge_edge_ccd(
                 output_tolerance,             // delta_actual
                 no_zero_toi);                 // no zero toi
         },
-        toi, tmax, min_distance, conservative_rescaling);
+        toi, min_distance, tmax, conservative_rescaling);
 }
 
 bool NonlinearCCD::point_triangle_ccd(
@@ -304,7 +304,7 @@ bool NonlinearCCD::point_triangle_ccd(
                 output_tolerance,             // delta_actual
                 no_zero_toi);                 // no zero toi
         },
-        toi, tmax, min_distance, conservative_rescaling);
+        toi, min_distance, tmax, conservative_rescaling);
 }
 
 } // namespace ipc

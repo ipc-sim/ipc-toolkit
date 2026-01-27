@@ -47,8 +47,6 @@ void HashGrid::resize(
     m_grid_size =
         ((domain_max - domain_min) / cell_size).ceil().cast<int>().max(1);
 
-    assert(m_grid_size.maxCoeff() < 200'000);
-
     logger().trace(
         "hash-grid resized with a size of {:d}x{:d}x{:d}", grid_size()[0],
         grid_size()[1], grid_size()[2]);
