@@ -126,18 +126,16 @@ void define_smooth_mu(py::module_& m)
         "y"_a, "mu_s"_a, "mu_k"_a, "eps_v"_a);
 
     m.def(
-        "anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq",
-        &anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq,
+        "anisotropic_mu_eff_f",
+        &anisotropic_mu_eff_f,
         R"ipc_Qu8mg5v7(
         Compute effective friction coefficients for elliptical anisotropy (L2
-        projection).
+        projection): μ_eff = f(x) = sqrt((μ₀ t₀)² + (μ₁ t₁)²) at direction
+        x = τ_dir.
 
         For anisotropic friction, the friction coefficient depends on the
-        direction of tangential velocity. This function computes the effective
-        friction coefficients along a given direction using the elliptical L2
-        projection model: μ_eff = sqrt((μ₀ t₀)² + (μ₁ t₁)²), where t = τ / ||τ||
-        is the unit direction vector. The function name describes the mathematical
-        expression: sqrt(mu0*t0² + mu1*t1²).
+        direction of tangential velocity. The ``f`` in the name refers to the
+        effective-μ formula; ``x`` is the unit direction.
 
         Parameters:
             tau_dir: Unit 2D direction of tangential velocity (tau / ||tau||).
@@ -155,15 +153,14 @@ void define_smooth_mu(py::module_& m)
 
         Note:
             If mu_s_aniso and mu_k_aniso are zero vectors, the function returns
-            (0, 0), which triggers backward-compatible isotropic behavior.
+            (0, 0), which triggers compatible isotropic behavior.
         )ipc_Qu8mg5v7",
         "tau_dir"_a, "mu_s_aniso"_a, "mu_k_aniso"_a);
 
     m.def(
-        "anisotropic_mu_eff_dtau", &anisotropic_mu_eff_dtau,
+        "anisotropic_mu_eff_f_dtau", &anisotropic_mu_eff_f_dtau,
         R"ipc_Qu8mg5v7(
-        Compute the derivative of effective friction coefficient with respect
-        to tangential velocity for elliptical anisotropy.
+        Compute ∂μ_eff/∂τ for elliptical anisotropy (derivative of f w.r.t. τ).
 
         This function computes ∂μ_eff/∂τ for the elliptical anisotropy model.
         The derivative is needed for computing the Jacobian of friction forces
@@ -175,8 +172,7 @@ void define_smooth_mu(py::module_& m)
             mu_aniso: Ellipse axes (2D vector). The anisotropic friction
                       coefficients along each tangent direction.
             mu_eff: Effective friction coefficient computed from
-                    anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(). This is
-                    passed to avoid recomputation.
+                    anisotropic_mu_eff_f(). This is passed to avoid recomputation.
 
         Returns:
             The derivative ∂μ_eff/∂τ as a 2D vector.

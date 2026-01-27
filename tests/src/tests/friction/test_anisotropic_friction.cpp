@@ -36,7 +36,7 @@ TEST_CASE("Anisotropic mu effective computation", "[friction][anisotropic][mu]")
     CAPTURE(mu_s_aniso, mu_k_aniso, tau_dir);
 
     const auto [mu_s_eff, mu_k_eff] =
-        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+        anisotropic_mu_eff_f(
             tau_dir, mu_s_aniso, mu_k_aniso);
 
     // Verify L2 projection formula: mu_eff = sqrt((mu0*t0)^2 + (mu1*t1)^2)
@@ -102,13 +102,13 @@ TEST_CASE(
         tau_dir = tau / tau.norm();
     }
     const auto [mu_s_eff, mu_k_eff] =
-        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+        anisotropic_mu_eff_f(
             tau_dir, mu_aniso, mu_aniso);
     const double mu_eff = mu_s_eff; // Same for this test
 
     // Compute analytical derivative
     const Eigen::Vector2d dmu_eff_dtau =
-        anisotropic_mu_eff_dtau(tau, mu_aniso, mu_eff);
+        anisotropic_mu_eff_f_dtau(tau, mu_aniso, mu_eff);
 
     // Compare with finite differences
     Eigen::Matrix<double, 2, 1> Tau;
@@ -126,7 +126,7 @@ TEST_CASE(
                 _tau_dir = _tau / _tau.norm();
             }
             const auto [_mu_s_eff, _mu_k_eff] =
-                anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+                anisotropic_mu_eff_f(
                     _tau_dir, mu_aniso, mu_aniso);
             return _mu_s_eff;
         },
@@ -143,10 +143,10 @@ TEST_CASE(
     Eigen::Vector2d tau_zero(1e-12, 1e-12);
     Eigen::Vector2d tau_dir_zero = tau_zero / tau_zero.norm();
     const auto [mu_s_eff_zero, mu_k_eff_zero] =
-        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+        anisotropic_mu_eff_f(
             tau_dir_zero, mu_aniso, mu_aniso);
     const Eigen::Vector2d dmu_eff_dtau_zero =
-        anisotropic_mu_eff_dtau(tau_zero, mu_aniso, mu_s_eff_zero);
+        anisotropic_mu_eff_f_dtau(tau_zero, mu_aniso, mu_s_eff_zero);
     CHECK(dmu_eff_dtau_zero.norm() < 1e-6); // Should be approximately zero
 }
 
@@ -167,7 +167,7 @@ TEST_CASE(
     // When anisotropic coefficients are zero, the function should handle it
     // gracefully (though the effective mu will be zero, which is expected)
     const auto [mu_s_eff, mu_k_eff] =
-        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+        anisotropic_mu_eff_f(
             tau_dir, mu_s_aniso_zero, mu_k_aniso_zero);
 
     CHECK(mu_s_eff == Catch::Approx(0.0).margin(1e-10));
@@ -292,13 +292,13 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
     if (std::abs(std::sin(angle)) < 1e-6) {
         // Pure x direction
         const auto [mu_s_eff, mu_k_eff] =
-            anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+            anisotropic_mu_eff_f(
                 Eigen::Vector2d(1.0, 0.0), mu_s_aniso, mu_k_aniso);
         CHECK(mu_s_eff == Catch::Approx(mu_s_aniso[0]).margin(MARGIN));
     } else if (std::abs(std::cos(angle)) < 1e-6) {
         // Pure y direction
         const auto [mu_s_eff, mu_k_eff] =
-            anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+            anisotropic_mu_eff_f(
                 Eigen::Vector2d(0.0, 1.0), mu_s_aniso, mu_k_aniso);
         CHECK(mu_s_eff == Catch::Approx(mu_s_aniso[1]).margin(MARGIN));
     }

@@ -85,7 +85,7 @@ TEST_CASE("Smooth mu", "[friction][mollifier][mu]")
 }
 
 TEST_CASE(
-    "anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq helper",
+    "anisotropic_mu_eff_f helper",
     "[friction][smooth-mu][anisotropic]")
 {
     static constexpr double EPSILON = 1e-6;
@@ -107,7 +107,7 @@ TEST_CASE(
 
     // Test x direction
     const auto [mu_s_eff_x, mu_k_eff_x] =
-        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+        anisotropic_mu_eff_f(
             tau_dir_x, mu_s_aniso, mu_k_aniso);
     CHECK(
         mu_s_eff_x
@@ -118,7 +118,7 @@ TEST_CASE(
 
     // Test y direction
     const auto [mu_s_eff_y, mu_k_eff_y] =
-        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+        anisotropic_mu_eff_f(
             tau_dir_y, mu_s_aniso, mu_k_aniso);
     CHECK(
         mu_s_eff_y
@@ -129,7 +129,7 @@ TEST_CASE(
 
     // Test diagonal direction
     const auto [mu_s_eff_diag, mu_k_eff_diag] =
-        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+        anisotropic_mu_eff_f(
             tau_dir_diag, mu_s_aniso, mu_k_aniso);
     const double expected_mu_s_diag = std::sqrt(
         mu_s_aniso[0] * mu_s_aniso[0] * 0.5
@@ -146,7 +146,7 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "anisotropic_mu_eff_dtau helper",
+    "anisotropic_mu_eff_f_dtau helper",
     "[friction][smooth-mu][anisotropic-derivative]")
 {
     static constexpr double EPSILON = 1e-4;
@@ -167,12 +167,12 @@ TEST_CASE(
         tau_dir = tau / tau.norm();
     }
     const auto [mu_s_eff, mu_k_eff] =
-        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+        anisotropic_mu_eff_f(
             tau_dir, mu_aniso, mu_aniso);
     const double mu_eff = mu_s_eff;
 
     const Eigen::Vector2d dmu_eff_dtau =
-        anisotropic_mu_eff_dtau(tau, mu_aniso, mu_eff);
+        anisotropic_mu_eff_f_dtau(tau, mu_aniso, mu_eff);
 
     // Finite difference check
     Eigen::Matrix<double, 2, 1> Tau;
@@ -190,7 +190,7 @@ TEST_CASE(
                 _tau_dir = _tau / _tau.norm();
             }
             const auto [_mu_s_eff, _mu_k_eff] =
-                anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+                anisotropic_mu_eff_f(
                     _tau_dir, mu_aniso, mu_aniso);
             return _mu_s_eff;
         },
@@ -207,9 +207,9 @@ TEST_CASE(
     Eigen::Vector2d tau_zero(1e-12, 1e-12);
     Eigen::Vector2d tau_dir_zero = tau_zero / tau_zero.norm();
     const auto [mu_s_eff_zero, mu_k_eff_zero] =
-        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+        anisotropic_mu_eff_f(
             tau_dir_zero, mu_aniso, mu_aniso);
     const Eigen::Vector2d dmu_eff_dtau_zero =
-        anisotropic_mu_eff_dtau(tau_zero, mu_aniso, mu_s_eff_zero);
+        anisotropic_mu_eff_f_dtau(tau_zero, mu_aniso, mu_s_eff_zero);
     CHECK(dmu_eff_dtau_zero.norm() < 1e-6); // Should be approximately zero
 }

@@ -25,5 +25,8 @@ Smooth :math:`\mu`
 Anisotropic Friction Helpers
 -----------------------------
 
-.. doxygenfunction:: anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq
-.. doxygenfunction:: anisotropic_mu_eff_dtau
+.. doxygenfunction:: anisotropic_mu_eff_f
+.. doxygenfunction:: anisotropic_mu_eff_f_dtau
+.. doxygenfunction:: anisotropic_x_from_tau_aniso
+.. doxygenfunction:: anisotropic_mu_eff_from_tau_aniso
+.. doxygenfunction:: anisotropic_mu_eff_f_grad

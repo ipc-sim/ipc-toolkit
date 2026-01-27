@@ -24,5 +24,5 @@ Smooth :math:`\mu`
 Anisotropic Friction Helpers
 -----------------------------
 
-.. autofunction:: ipctk.anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq
-.. autofunction:: ipctk.anisotropic_mu_eff_dtau
+.. autofunction:: ipctk.anisotropic_mu_eff_f
+.. autofunction:: ipctk.anisotropic_mu_eff_f_dtau

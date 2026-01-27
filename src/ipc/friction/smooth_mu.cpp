@@ -115,7 +115,7 @@ double smooth_mu_f2_x_minus_mu_f1_over_x3(
     }
 }
 
-std::pair<double, double> anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+std::pair<double, double> anisotropic_mu_eff_f(
     Eigen::ConstRef<Eigen::Vector2d> tau_dir,
     Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso)
@@ -133,7 +133,7 @@ std::pair<double, double> anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
     return std::make_pair(mu_s_eff, mu_k_eff);
 }
 
-Eigen::Vector2d anisotropic_mu_eff_dtau(
+Eigen::Vector2d anisotropic_mu_eff_f_dtau(
     Eigen::ConstRef<Eigen::Vector2d> tau,
     Eigen::ConstRef<Eigen::Vector2d> mu_aniso,
     const double mu_eff)
@@ -164,7 +164,7 @@ Eigen::Vector2d anisotropic_mu_eff_dtau(
 }
 
 Eigen::Vector2d
-compute_tau_dir_from_tau_aniso(Eigen::ConstRef<Eigen::Vector2d> tau_aniso)
+anisotropic_x_from_tau_aniso(Eigen::ConstRef<Eigen::Vector2d> tau_aniso)
 {
     constexpr double tiny = 1e-10;
     const double tau_aniso_norm = tau_aniso.norm();
@@ -176,7 +176,7 @@ compute_tau_dir_from_tau_aniso(Eigen::ConstRef<Eigen::Vector2d> tau_aniso)
     }
 }
 
-std::pair<double, double> compute_anisotropic_mu_eff_from_tau_aniso(
+std::pair<double, double> anisotropic_mu_eff_from_tau_aniso(
     Eigen::ConstRef<Eigen::Vector2d> tau_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso,
@@ -192,12 +192,10 @@ std::pair<double, double> compute_anisotropic_mu_eff_from_tau_aniso(
         // tau_aniso direction (after mu_aniso scaling). This combines both
         // mechanisms: mu_aniso velocity scaling AND mu_s_aniso/mu_k_aniso
         // direction-dependent coefficients.
-        const Eigen::Vector2d tau_dir =
-            compute_tau_dir_from_tau_aniso(tau_aniso);
+        const Eigen::Vector2d tau_dir = anisotropic_x_from_tau_aniso(tau_aniso);
 
         const auto [mu_s_eff, mu_k_eff] =
-            anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
-                tau_dir, mu_s_aniso, mu_k_aniso);
+            anisotropic_mu_eff_f(tau_dir, mu_s_aniso, mu_k_aniso);
 
         return std::make_pair(no_mu ? 1.0 : mu_s_eff, no_mu ? 1.0 : mu_k_eff);
     } else {
@@ -208,27 +206,27 @@ std::pair<double, double> compute_anisotropic_mu_eff_from_tau_aniso(
     }
 }
 
-std::pair<Eigen::Vector2d, Eigen::Vector2d>
-anisotropic_mu_eff_grad_tau_aniso(
+std::pair<Eigen::Vector2d, Eigen::Vector2d> anisotropic_mu_eff_f_grad(
     Eigen::ConstRef<Eigen::Vector2d> tau_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso,
     const double mu_s_eff,
     const double mu_k_eff)
 {
-    // Compute gradients of effective mu w.r.t. tau_aniso: g_s = ∇_τ_aniso μ_s_eff, g_k = ∇_τ_aniso μ_k_eff
+    // Compute gradients of effective mu w.r.t. tau_aniso: g_s = ∇_τ_aniso
+    // μ_s_eff, g_k = ∇_τ_aniso μ_k_eff
     const Eigen::Vector2d g_s =
-        anisotropic_mu_eff_dtau(tau_aniso, mu_s_aniso, mu_s_eff);
+        anisotropic_mu_eff_f_dtau(tau_aniso, mu_s_aniso, mu_s_eff);
     const Eigen::Vector2d g_k =
-        anisotropic_mu_eff_dtau(tau_aniso, mu_k_aniso, mu_k_eff);
+        anisotropic_mu_eff_f_dtau(tau_aniso, mu_k_aniso, mu_k_eff);
 
     // Ensure both gradients are finite before returning
-    Eigen::Vector2d g_s_safe =
-        (std::isfinite(g_s[0]) && std::isfinite(g_s[1])) ? g_s
-                                                          : Eigen::Vector2d::Zero();
-    Eigen::Vector2d g_k_safe =
-        (std::isfinite(g_k[0]) && std::isfinite(g_k[1])) ? g_k
-                                                           : Eigen::Vector2d::Zero();
+    Eigen::Vector2d g_s_safe = (std::isfinite(g_s[0]) && std::isfinite(g_s[1]))
+        ? g_s
+        : Eigen::Vector2d::Zero();
+    Eigen::Vector2d g_k_safe = (std::isfinite(g_k[0]) && std::isfinite(g_k[1]))
+        ? g_k
+        : Eigen::Vector2d::Zero();
 
     return std::make_pair(g_s_safe, g_k_safe);
 }
