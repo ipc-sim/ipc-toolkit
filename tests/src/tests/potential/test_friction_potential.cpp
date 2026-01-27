@@ -18,9 +18,12 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
         data;
 
-    const Eigen::MatrixXd U = V1 - V0;
-
     const CollisionMesh mesh(V0, E, F);
+
+    // Ensure U matches the mesh size
+    const Eigen::MatrixXd U_full = V1 - V0;
+    const Eigen::MatrixXd U =
+        U_full.rows() == mesh.num_vertices() ? U_full : mesh.vertices(U_full);
 
     TangentialCollisions tangential_collisions;
     tangential_collisions.build(
