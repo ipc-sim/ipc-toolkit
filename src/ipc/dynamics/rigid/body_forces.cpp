@@ -105,7 +105,7 @@ double BodyForces::operator()(
             const Eigen::Matrix3d Q = rotation_vector_to_matrix(x.tail<3>());
             energy += (Q.transpose() * Q_hat).trace();
         } else {
-            assert(torque.size() == 1);
+            assert(Q_hat.size() == 1);
             energy += x(2) * Q_hat(0, 0);
         }
     }
@@ -134,7 +134,7 @@ VectorMax6d BodyForces::gradient(
                 rotation_vector_to_matrix_jacobian(x.tail<3>());
             grad.tail<3>() = dQ_dx.transpose() * Q_hat.reshaped();
         } else {
-            assert(torque.size() == 1);
+            assert(Q_hat.size() == 1);
             grad(2) = Q_hat(0, 0);
         }
     }
