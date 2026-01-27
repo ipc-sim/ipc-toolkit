@@ -35,39 +35,48 @@ TEST_CASE("Anisotropic mu effective computation", "[friction][anisotropic][mu]")
 
     CAPTURE(mu_s_aniso, mu_k_aniso, tau_dir);
 
-    const auto [mu_s_eff, mu_k_eff] = anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
-        tau_dir, mu_s_aniso, mu_k_aniso);
+    const auto [mu_s_eff, mu_k_eff] =
+        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+            tau_dir, mu_s_aniso, mu_k_aniso);
 
     // Verify L2 projection formula: mu_eff = sqrt((mu0*t0)^2 + (mu1*t1)^2)
     const double expected_mu_s_eff = std::sqrt(
-        mu_s_aniso[0] * mu_s_aniso[0] * tau_dir[0] * tau_dir[0] +
-        mu_s_aniso[1] * mu_s_aniso[1] * tau_dir[1] * tau_dir[1]);
+        mu_s_aniso[0] * mu_s_aniso[0] * tau_dir[0] * tau_dir[0]
+        + mu_s_aniso[1] * mu_s_aniso[1] * tau_dir[1] * tau_dir[1]);
     const double expected_mu_k_eff = std::sqrt(
-        mu_k_aniso[0] * mu_k_aniso[0] * tau_dir[0] * tau_dir[0] +
-        mu_k_aniso[1] * mu_k_aniso[1] * tau_dir[1] * tau_dir[1]);
+        mu_k_aniso[0] * mu_k_aniso[0] * tau_dir[0] * tau_dir[0]
+        + mu_k_aniso[1] * mu_k_aniso[1] * tau_dir[1] * tau_dir[1]);
 
-    CHECK(mu_s_eff
-          == Catch::Approx(expected_mu_s_eff).margin(MARGIN).epsilon(EPSILON));
-    CHECK(mu_k_eff
-          == Catch::Approx(expected_mu_k_eff).margin(MARGIN).epsilon(EPSILON));
+    CHECK(
+        mu_s_eff
+        == Catch::Approx(expected_mu_s_eff).margin(MARGIN).epsilon(EPSILON));
+    CHECK(
+        mu_k_eff
+        == Catch::Approx(expected_mu_k_eff).margin(MARGIN).epsilon(EPSILON));
 
     // Verify symmetry: mu_eff should be symmetric around principal axes
     if (std::abs(tau_dir[0]) < 1e-10) {
         // Pure y direction
-        CHECK(mu_s_eff
-              == Catch::Approx(mu_s_aniso[1]).margin(MARGIN).epsilon(EPSILON));
-        CHECK(mu_k_eff
-              == Catch::Approx(mu_k_aniso[1]).margin(MARGIN).epsilon(EPSILON));
+        CHECK(
+            mu_s_eff
+            == Catch::Approx(mu_s_aniso[1]).margin(MARGIN).epsilon(EPSILON));
+        CHECK(
+            mu_k_eff
+            == Catch::Approx(mu_k_aniso[1]).margin(MARGIN).epsilon(EPSILON));
     } else if (std::abs(tau_dir[1]) < 1e-10) {
         // Pure x direction
-        CHECK(mu_s_eff
-              == Catch::Approx(mu_s_aniso[0]).margin(MARGIN).epsilon(EPSILON));
-        CHECK(mu_k_eff
-              == Catch::Approx(mu_k_aniso[0]).margin(MARGIN).epsilon(EPSILON));
+        CHECK(
+            mu_s_eff
+            == Catch::Approx(mu_s_aniso[0]).margin(MARGIN).epsilon(EPSILON));
+        CHECK(
+            mu_k_eff
+            == Catch::Approx(mu_k_aniso[0]).margin(MARGIN).epsilon(EPSILON));
     }
 }
 
-TEST_CASE("Anisotropic mu effective derivative", "[friction][anisotropic][derivative]")
+TEST_CASE(
+    "Anisotropic mu effective derivative",
+    "[friction][anisotropic][derivative]")
 {
     static constexpr double EPSILON = 1e-4;
     static constexpr double MARGIN = 1e-6;
@@ -92,13 +101,14 @@ TEST_CASE("Anisotropic mu effective derivative", "[friction][anisotropic][deriva
     } else {
         tau_dir = tau / tau.norm();
     }
-    const auto [mu_s_eff, mu_k_eff] = anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
-        tau_dir, mu_aniso, mu_aniso);
+    const auto [mu_s_eff, mu_k_eff] =
+        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+            tau_dir, mu_aniso, mu_aniso);
     const double mu_eff = mu_s_eff; // Same for this test
 
     // Compute analytical derivative
-    const Eigen::Vector2d dmu_eff_dtau = anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq_derivative(
-        tau, mu_aniso, mu_eff);
+    const Eigen::Vector2d dmu_eff_dtau =
+        anisotropic_mu_eff_dtau(tau, mu_aniso, mu_eff);
 
     // Compare with finite differences
     Eigen::Matrix<double, 2, 1> Tau;
@@ -115,28 +125,33 @@ TEST_CASE("Anisotropic mu effective derivative", "[friction][anisotropic][deriva
             } else {
                 _tau_dir = _tau / _tau.norm();
             }
-            const auto [_mu_s_eff, _mu_k_eff] = anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
-                _tau_dir, mu_aniso, mu_aniso);
+            const auto [_mu_s_eff, _mu_k_eff] =
+                anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+                    _tau_dir, mu_aniso, mu_aniso);
             return _mu_s_eff;
         },
         fd_dmu_eff_dtau, fd::AccuracyOrder::SECOND, H);
 
-    CHECK(dmu_eff_dtau[0]
-          == Catch::Approx(fd_dmu_eff_dtau[0]).margin(MARGIN).epsilon(EPSILON));
-    CHECK(dmu_eff_dtau[1]
-          == Catch::Approx(fd_dmu_eff_dtau[1]).margin(MARGIN).epsilon(EPSILON));
+    CHECK(
+        dmu_eff_dtau[0]
+        == Catch::Approx(fd_dmu_eff_dtau[0]).margin(MARGIN).epsilon(EPSILON));
+    CHECK(
+        dmu_eff_dtau[1]
+        == Catch::Approx(fd_dmu_eff_dtau[1]).margin(MARGIN).epsilon(EPSILON));
 
     // Test edge case: ||tau|| ≈ 0
     Eigen::Vector2d tau_zero(1e-12, 1e-12);
     Eigen::Vector2d tau_dir_zero = tau_zero / tau_zero.norm();
-    const auto [mu_s_eff_zero, mu_k_eff_zero] = anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
-        tau_dir_zero, mu_aniso, mu_aniso);
+    const auto [mu_s_eff_zero, mu_k_eff_zero] =
+        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+            tau_dir_zero, mu_aniso, mu_aniso);
     const Eigen::Vector2d dmu_eff_dtau_zero =
-        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq_derivative(tau_zero, mu_aniso, mu_s_eff_zero);
+        anisotropic_mu_eff_dtau(tau_zero, mu_aniso, mu_s_eff_zero);
     CHECK(dmu_eff_dtau_zero.norm() < 1e-6); // Should be approximately zero
 }
 
-TEST_CASE("Anisotropic friction backward compatibility", "[friction][anisotropic][compatibility]")
+TEST_CASE(
+    "Anisotropic friction isotropic", "[friction][anisotropic][isotropic]")
 {
     // When mu_s_aniso and mu_k_aniso are zero, should use scalar mu_s and mu_k
     Eigen::Vector2d mu_s_aniso_zero = Eigen::Vector2d::Zero();
@@ -151,35 +166,27 @@ TEST_CASE("Anisotropic friction backward compatibility", "[friction][anisotropic
 
     // When anisotropic coefficients are zero, the function should handle it
     // gracefully (though the effective mu will be zero, which is expected)
-    const auto [mu_s_eff, mu_k_eff] = anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
-        tau_dir, mu_s_aniso_zero, mu_k_aniso_zero);
+    const auto [mu_s_eff, mu_k_eff] =
+        anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+            tau_dir, mu_s_aniso_zero, mu_k_aniso_zero);
 
     CHECK(mu_s_eff == Catch::Approx(0.0).margin(1e-10));
     CHECK(mu_k_eff == Catch::Approx(0.0).margin(1e-10));
 }
 
-TEST_CASE("Anisotropic friction per-pair assignment", "[friction][anisotropic][per-pair]")
+TEST_CASE(
+    "Anisotropic friction per-pair assignment",
+    "[friction][anisotropic][per-pair]")
 {
     // Create a simple mesh for testing
     Eigen::MatrixXd vertices(4, 3);
-    vertices << 0.0, 0.0, 0.0,
-                1.0, 0.0, 0.0,
-                0.0, 1.0, 0.0,
-                0.0, 0.0, 1.0;
+    vertices << 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0;
 
     Eigen::MatrixXi edges(6, 2);
-    edges << 0, 1,
-             0, 2,
-             0, 3,
-             1, 2,
-             1, 3,
-             2, 3;
+    edges << 0, 1, 0, 2, 0, 3, 1, 2, 1, 3, 2, 3;
 
     Eigen::MatrixXi faces(4, 3);
-    faces << 0, 1, 2,
-             0, 1, 3,
-             0, 2, 3,
-             1, 2, 3;
+    faces << 0, 1, 2, 0, 1, 3, 0, 2, 3, 1, 2, 3;
 
     CollisionMesh mesh(vertices, edges, faces);
 
@@ -218,8 +225,8 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
 
     // Create a simple mesh with two vertices
     Eigen::MatrixXd vertices(2, 3);
-    vertices << 0.0, 0.0, 0.0,  // vertex 0
-                0.05, 0.0, 0.0; // vertex 1 (close to vertex 0)
+    vertices << 0.0, 0.0, 0.0, // vertex 0
+        0.05, 0.0, 0.0;        // vertex 1 (close to vertex 0)
 
     Eigen::MatrixXi edges, faces;
     CollisionMesh mesh(vertices, edges, faces);
@@ -261,8 +268,8 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
     Eigen::MatrixXd velocities(2, 3);
     // Velocity in tangent plane: (cos(angle), sin(angle), 0)
     velocities << velocity_magnitude * std::cos(angle),
-                   velocity_magnitude * std::sin(angle), 0.0,
-                   0.0, 0.0, 0.0;
+        velocity_magnitude * std::sin(angle),
+        0.0, 0.0, 0.0, 0.0;
 
     CAPTURE(angle, velocity_magnitude, mu_s_aniso, mu_k_aniso);
 
@@ -284,18 +291,21 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
     // When velocity is along y-axis (angle=π/2), mu_eff should be mu_s_aniso[1]
     if (std::abs(std::sin(angle)) < 1e-6) {
         // Pure x direction
-        const auto [mu_s_eff, mu_k_eff] = anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
-            Eigen::Vector2d(1.0, 0.0), mu_s_aniso, mu_k_aniso);
+        const auto [mu_s_eff, mu_k_eff] =
+            anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+                Eigen::Vector2d(1.0, 0.0), mu_s_aniso, mu_k_aniso);
         CHECK(mu_s_eff == Catch::Approx(mu_s_aniso[0]).margin(MARGIN));
     } else if (std::abs(std::cos(angle)) < 1e-6) {
         // Pure y direction
-        const auto [mu_s_eff, mu_k_eff] = anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
-            Eigen::Vector2d(0.0, 1.0), mu_s_aniso, mu_k_aniso);
+        const auto [mu_s_eff, mu_k_eff] =
+            anisotropic_mu_eff_sqrt_mu0_t0_sq_plus_mu1_t1_sq(
+                Eigen::Vector2d(0.0, 1.0), mu_s_aniso, mu_k_aniso);
         CHECK(mu_s_eff == Catch::Approx(mu_s_aniso[1]).margin(MARGIN));
     }
 }
 
-TEST_CASE("Anisotropic friction force jacobian", "[friction][anisotropic][jacobian]")
+TEST_CASE(
+    "Anisotropic friction force jacobian", "[friction][anisotropic][jacobian]")
 {
     static constexpr double EPSILON = 1e-3;
     static constexpr double MARGIN = 1e-5;
@@ -303,8 +313,8 @@ TEST_CASE("Anisotropic friction force jacobian", "[friction][anisotropic][jacobi
 
     // Create a simple mesh with two vertices
     Eigen::MatrixXd vertices(2, 3);
-    vertices << 0.0, 0.0, 0.0,  // vertex 0
-                0.05, 0.0, 0.0; // vertex 1 (close to vertex 0)
+    vertices << 0.0, 0.0, 0.0, // vertex 0
+        0.05, 0.0, 0.0;        // vertex 1 (close to vertex 0)
 
     Eigen::MatrixXi edges, faces;
     CollisionMesh mesh(vertices, edges, faces);
@@ -341,8 +351,8 @@ TEST_CASE("Anisotropic friction force jacobian", "[friction][anisotropic][jacobi
 
     // Test with a specific velocity
     Eigen::MatrixXd velocities(2, 3);
-    velocities << 0.1, 0.05, 0.0,  // velocity in tangent plane
-                  0.0, 0.0, 0.0;
+    velocities << 0.1, 0.05, 0.0, // velocity in tangent plane
+        0.0, 0.0, 0.0;
 
     CAPTURE(mu_s_aniso, mu_k_aniso);
 
@@ -384,8 +394,9 @@ TEST_CASE("Anisotropic friction force jacobian", "[friction][anisotropic][jacobi
     }
 }
 
-TEST_CASE("Combined mu_aniso and mu_s_aniso/mu_k_aniso friction",
-          "[friction][anisotropic][combined]")
+TEST_CASE(
+    "Combined mu_aniso and mu_s_aniso/mu_k_aniso friction",
+    "[friction][anisotropic][combined]")
 {
     static constexpr double EPSILON = 1e-3;
     static constexpr double MARGIN = 1e-5;
@@ -397,8 +408,8 @@ TEST_CASE("Combined mu_aniso and mu_s_aniso/mu_k_aniso friction",
 
     // Create a simple mesh with two vertices
     Eigen::MatrixXd vertices(2, 3);
-    vertices << 0.0, 0.0, 0.0,  // vertex 0
-                0.05, 0.0, 0.0; // vertex 1 (close to vertex 0)
+    vertices << 0.0, 0.0, 0.0, // vertex 0
+        0.05, 0.0, 0.0;        // vertex 1 (close to vertex 0)
 
     Eigen::MatrixXi edges, faces;
     CollisionMesh mesh(vertices, edges, faces);
@@ -448,8 +459,8 @@ TEST_CASE("Combined mu_aniso and mu_s_aniso/mu_k_aniso friction",
 
     Eigen::MatrixXd velocities(2, 3);
     velocities << velocity_magnitude * std::cos(angle),
-                   velocity_magnitude * std::sin(angle), 0.0,
-                   0.0, 0.0, 0.0;
+        velocity_magnitude * std::sin(angle),
+        0.0, 0.0, 0.0, 0.0;
 
     CAPTURE(mu_aniso, mu_s_aniso, mu_k_aniso, angle, velocity_magnitude);
 

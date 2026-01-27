@@ -1,5 +1,8 @@
 #pragma once
 
+#include <ipc/utils/eigen_ext.hpp>
+#include <utility>
+
 namespace ipc {
 
 /// @brief Smooth coefficient from static to kinetic friction.
@@ -79,11 +82,11 @@ double smooth_mu_f2_x_minus_mu_f1_over_x3(
 /// @param tau_dir Unit 2D direction of tangential velocity (tau / ||tau||).
 ///                Must be a unit vector.
 /// @param mu_s_aniso Static friction ellipse axes (2D vector). Each component
-///                   represents the friction coefficient along the corresponding
-///                   tangent basis direction.
+///                   represents the friction coefficient along the
+///                   corresponding tangent basis direction.
 /// @param mu_k_aniso Kinetic friction ellipse axes (2D vector). Each component
-///                   represents the friction coefficient along the corresponding
-///                   tangent basis direction.
+///                   represents the friction coefficient along the
+///                   corresponding tangent basis direction.
 /// @return A pair containing (mu_s_eff, mu_k_eff), the effective static and
 ///         kinetic friction coefficients along the direction tau_dir.
 /// @note If mu_s_aniso and mu_k_aniso are zero vectors, the function returns
@@ -119,8 +122,8 @@ Eigen::Vector2d anisotropic_mu_eff_dtau(
 ///        cases.
 /// @param tau_aniso Anisotropically-scaled tangential velocity (2D vector).
 /// @return Unit direction vector. Returns (1, 0) if ||tau_aniso|| ≈ 0.
-Eigen::Vector2d compute_tau_dir_from_tau_aniso(
-    Eigen::ConstRef<Eigen::Vector2d> tau_aniso);
+Eigen::Vector2d
+compute_tau_dir_from_tau_aniso(Eigen::ConstRef<Eigen::Vector2d> tau_aniso);
 
 /// @brief Compute effective friction coefficients from tau_aniso, handling both
 ///        anisotropic and isotropic cases.
