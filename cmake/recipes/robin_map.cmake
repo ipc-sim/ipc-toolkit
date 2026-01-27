@@ -7,4 +7,4 @@ endif()
 message(STATUS "Third-party: creating target 'tsl::robin_map'")
 
 include(CPM)
-CPMAddPackage("gh:Tessil/robin-map@1.4.0")
+CPMAddPackage("gh:Tessil/robin-map@1.4.1")

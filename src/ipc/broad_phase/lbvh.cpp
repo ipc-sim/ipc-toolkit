@@ -9,10 +9,15 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
-#ifdef __APPLE__
-// We utilize SIMD registers to compare 1 Node against 4 Queries simultaneously.
-#include <simd/simd.h>
+#ifdef IPC_TOOLKIT_WITH_SIMD
+// We utilize SIMD registers to compare one node against multiple queries
+// simultaneously, with the number of queries determined by
+// xs::batch<float>::size.
+#include <xsimd/xsimd.hpp>
+namespace xs = xsimd;
 #endif
+
+#include <array>
 
 using namespace std::placeholders;
 
@@ -448,9 +453,9 @@ namespace {
         } while (node_idx != LBVH::Node::INVALID_POINTER); // Same as root
     }
 
-#ifdef __APPLE__
+#ifdef IPC_TOOLKIT_WITH_SIMD
     // SIMD Traversal
-    // Traverses 4 queries simultaneously using SIMD.
+    // Traverses multiple queries simultaneously using SIMD.
     template <typename Candidate, bool swap_order, bool triangular>
     void traverse_lbvh_simd(
         const LBVH::Node* queries,
@@ -459,28 +464,37 @@ namespace {
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates)
     {
-        assert(n_queries >= 1 && n_queries <= 4);
-        // Load 4 queries into single registers (Structure of Arrays)
-        auto make_simd = [&](auto F) -> simd_float4 {
-            return simd_float4 {
-                F(0),
-                n_queries > 1 ? F(1) : 0.0f,
-                n_queries > 2 ? F(2) : 0.0f,
-                n_queries > 3 ? F(3) : 0.0f,
-            };
+        using batch_t = xs::batch<float>;
+        assert(n_queries >= 1 && n_queries <= batch_t::size);
+
+        // Load queries into single registers
+        auto make_simd = [&](auto F) -> batch_t {
+            // 1. Create a buffer of the correct architecture-dependent size
+            alignas(xs::default_arch::alignment())
+                std::array<float, batch_t::size>
+                    buffer {};
+
+#pragma unroll
+            // 2. Fill the buffer, respecting the actual number of queries
+            for (size_t i = 0; i < batch_t::size; ++i) {
+                buffer[i] = (i < n_queries) ? F(static_cast<int>(i)) : 0.0f;
+            }
+
+            // 3. Load the buffer into the SIMD register
+            return batch_t::load_aligned(buffer.data());
         };
 
-        const simd_float4 q_min_x =
+        const auto q_min_x =
             make_simd([&](int k) { return queries[k].aabb_min.x(); });
-        const simd_float4 q_min_y =
+        const auto q_min_y =
             make_simd([&](int k) { return queries[k].aabb_min.y(); });
-        const simd_float4 q_min_z =
+        const auto q_min_z =
             make_simd([&](int k) { return queries[k].aabb_min.z(); });
-        const simd_float4 q_max_x =
+        const auto q_max_x =
             make_simd([&](int k) { return queries[k].aabb_max.x(); });
-        const simd_float4 q_max_y =
+        const auto q_max_y =
             make_simd([&](int k) { return queries[k].aabb_max.y(); });
-        const simd_float4 q_max_z =
+        const auto q_max_z =
             make_simd([&](int k) { return queries[k].aabb_max.z(); });
 
         // Use a fixed-size array as a stack to avoid dynamic allocations
@@ -505,31 +519,33 @@ namespace {
             const LBVH::Node& child_l = lbvh[node.left];
             const LBVH::Node& child_r = lbvh[node.right];
 
-            // 1. Intersect 4 queries at once
+            // 1. Intersect multiple queries at once
             // (child_l.min <= query.max) && (query.min <= child_l.max)
-            const simd_int4 intersects_l = (child_l.aabb_min.x() <= q_max_x)
+            const xs::batch_bool<float> intersects_l =
+                (child_l.aabb_min.x() <= q_max_x)
                 & (child_l.aabb_min.y() <= q_max_y)
                 & (child_l.aabb_min.z() <= q_max_z)
                 & (q_min_x <= child_l.aabb_max.x())
                 & (q_min_y <= child_l.aabb_max.y())
                 & (q_min_z <= child_l.aabb_max.z());
 
-            // 2. Intersect 4 queries at once
+            // 2. Intersect multiple queries at once
             // (child_r.min <= query.max) && (query.min <= child_r.max)
-            const simd_int4 intersects_r = (child_r.aabb_min.x() <= q_max_x)
+            const xs::batch_bool<float> intersects_r =
+                (child_r.aabb_min.x() <= q_max_x)
                 & (child_r.aabb_min.y() <= q_max_y)
                 & (child_r.aabb_min.z() <= q_max_z)
                 & (q_min_x <= child_r.aabb_max.x())
                 & (q_min_y <= child_r.aabb_max.y())
                 & (q_min_z <= child_r.aabb_max.z());
 
-            const bool any_intersects_l = simd_any(intersects_l);
-            const bool any_intersects_r = simd_any(intersects_r);
+            const bool any_intersects_l = xs::any(intersects_l);
+            const bool any_intersects_r = xs::any(intersects_r);
 
             // Query overlaps a leaf node => report collision
             if (any_intersects_l && child_l.is_leaf()) {
                 for (int k = 0; k < n_queries; ++k) {
-                    if (intersects_l[k]) {
+                    if (intersects_l.get(k)) {
                         attempt_add_candidate<
                             Candidate, swap_order, triangular>(
                             queries[k], child_l, can_collide, candidates);
@@ -538,7 +554,7 @@ namespace {
             }
             if (any_intersects_r && child_r.is_leaf()) {
                 for (int k = 0; k < n_queries; ++k) {
-                    if (intersects_r[k]) {
+                    if (intersects_r.get(k)) {
                         attempt_add_candidate<
                             Candidate, swap_order, triangular>(
                             queries[k], child_r, can_collide, candidates);
@@ -576,9 +592,12 @@ namespace {
         const std::function<bool(size_t, size_t)>& can_collide,
         tbb::enumerable_thread_specific<std::vector<Candidate>>& storage)
     {
-#ifdef __APPLE__ // Only support SIMD on Apple platforms for now
-        constexpr size_t SIMD_SIZE = use_simd ? 4 : 1;
-        constexpr size_t GRAIN_SIZE = use_simd ? 16 : 1;
+#ifdef IPC_TOOLKIT_WITH_SIMD // Enable SIMD acceleration when available
+        constexpr size_t SIMD_SIZE = use_simd ? xs::batch<float>::size : 1;
+        static_assert(
+            64 % xs::batch<float>::size == 0, "GRAIN_SIZE must be an integer");
+        constexpr size_t GRAIN_SIZE =
+            use_simd ? (64 / xs::batch<float>::size) : 1;
 #else
         constexpr size_t SIMD_SIZE = 1;
         constexpr size_t GRAIN_SIZE = 1;
@@ -595,11 +614,13 @@ namespace {
             tbb::blocked_range<size_t>(size_t(0), n_tasks, GRAIN_SIZE),
             [&](const tbb::blocked_range<size_t>& r) {
                 auto& local_candidates = storage.local();
+#ifdef IPC_TOOLKIT_WITH_SIMD
                 const size_t actual_end = // Handle tail case
                     std::min(SIMD_SIZE * r.end(), n_source_leaves);
+#endif
                 for (size_t i = r.begin(); i < r.end(); ++i) {
                     const size_t idx = SIMD_SIZE * i;
-#ifdef __APPLE__
+#ifdef IPC_TOOLKIT_WITH_SIMD
                     if constexpr (use_simd) {
                         assert(actual_end - idx >= 1);
                         traverse_lbvh_simd<Candidate, swap_order, triangular>(
@@ -611,7 +632,7 @@ namespace {
                         traverse_lbvh<Candidate, swap_order, triangular>(
                             source[source_leaf_offset + idx], target,
                             can_collide, local_candidates);
-#ifdef __APPLE__
+#ifdef IPC_TOOLKIT_WITH_SIMD
                     }
 #endif
                 }

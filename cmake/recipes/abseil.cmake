@@ -12,4 +12,4 @@ option(ABSL_BUILD_TESTING "If ON, Abseil will build all of Abseil's own tests." 
 set(ABSL_IDE_FOLDER "ThirdParty/Abseil")
 
 include(CPM)
-CPMAddPackage("gh:abseil/abseil-cpp#20250512.1")
+CPMAddPackage("gh:abseil/abseil-cpp#d407ef122a08203648451e0fec77b3f868b71112") # Abseil LTS 20260107.0
