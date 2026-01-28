@@ -153,9 +153,6 @@ TEST_CASE(
     Eigen::Vector2d mu_s_aniso_zero = Eigen::Vector2d::Zero();
     Eigen::Vector2d mu_k_aniso_zero = Eigen::Vector2d::Zero();
 
-    const double mu_s = 0.5;
-    const double mu_k = 0.3;
-
     // Test with various directions
     const double angle = GENERATE(range(0.0, 2.0 * M_PI, M_PI / 4.0));
     Eigen::Vector2d tau_dir(std::cos(angle), std::sin(angle));
@@ -215,7 +212,6 @@ TEST_CASE(
 
 TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
 {
-    static constexpr double EPSILON = 1e-4;
     static constexpr double MARGIN = 1e-6;
 
     // Create a simple mesh with two vertices
@@ -391,8 +387,6 @@ TEST_CASE(
     "Combined mu_aniso and mu_s_aniso/mu_k_aniso friction",
     "[friction][anisotropic][combined]")
 {
-    static constexpr double EPSILON = 1e-3;
-    static constexpr double MARGIN = 1e-5;
     static constexpr double H = 1e-6;
 
     // Test that both mechanisms work together:

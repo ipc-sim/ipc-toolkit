@@ -126,8 +126,7 @@ void define_smooth_mu(py::module_& m)
         "y"_a, "mu_s"_a, "mu_k"_a, "eps_v"_a);
 
     m.def(
-        "anisotropic_mu_eff_f",
-        &anisotropic_mu_eff_f,
+        "anisotropic_mu_eff_f", &anisotropic_mu_eff_f,
         R"ipc_Qu8mg5v7(
         Compute effective friction coefficients for elliptical anisotropy (L2
         projection): μ_eff = f(x) = sqrt((μ₀ t₀)² + (μ₁ t₁)²) at direction

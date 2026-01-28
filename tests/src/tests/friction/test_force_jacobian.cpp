@@ -109,6 +109,14 @@ void check_friction_force_jacobian(
         CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
         fd_mesh.init_area_jacobians();
 
+        // Ensure Ut_mesh and velocities match fd_mesh size
+        // Since fd_X is created from X (which is filtered), fd_mesh should have
+        // the same number of vertices as the original mesh, so Ut_mesh and
+        // velocities should already match. But check to be safe.
+        assert(fd_mesh.num_vertices() == mesh.num_vertices());
+        assert(Ut_mesh.rows() == fd_mesh.num_vertices());
+        assert(velocities.rows() == fd_mesh.num_vertices());
+
         TangentialCollisions fd_friction_collisions;
         if (recompute_collisions) {
             NormalCollisions fd_collisions;
@@ -541,14 +549,22 @@ void check_smooth_friction_force_jacobian(
 
         CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
 
+        // Ensure Ut_mesh and velocities match fd_mesh size
+        // Since fd_X is created from X (which is filtered), fd_mesh should have
+        // the same number of vertices as the original mesh
+        assert(fd_mesh.num_vertices() == mesh.num_vertices());
+        assert(Ut_mesh.rows() == fd_mesh.num_vertices());
+        assert(velocities.rows() == fd_mesh.num_vertices());
+
         auto fd_collisions =
             create_smooth_collision(fd_mesh, fd_lagged_positions);
 
         TangentialCollisions fd_friction_collisions;
         fd_friction_collisions.build(
             fd_mesh, fd_lagged_positions, fd_collisions, params,
-            barrier_stiffness, Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
-            Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
+            barrier_stiffness,
+            Eigen::VectorXd::Ones(fd_mesh.num_vertices()) * mu,
+            Eigen::VectorXd::Ones(fd_mesh.num_vertices()) * mu);
 
         return D.smooth_contact_force(
             fd_friction_collisions, fd_mesh, fd_X, Ut_mesh, velocities);
@@ -572,7 +588,7 @@ void check_smooth_friction_force_jacobian(
         FrictionPotential::DiffWRT::LAGGED_DISPLACEMENTS);
 
     auto F_Ut = [&](const Eigen::VectorXd& ut) {
-        Eigen::MatrixXd fd_Ut = fd::unflatten(ut, Ut.cols());
+        Eigen::MatrixXd fd_Ut = fd::unflatten(ut, Ut_mesh.cols());
         Eigen::MatrixXd fd_lagged_positions = X + fd_Ut;
 
         auto fd_collisions = create_smooth_collision(mesh, fd_lagged_positions);

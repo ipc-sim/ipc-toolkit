@@ -243,13 +243,6 @@ These two mechanisms can be used independently or together. When both are
 enabled, the velocity scaling is applied first, then the direction-dependent
 coefficients are computed based on the scaled velocity direction.
 
-Backward Compatibility
-~~~~~~~~~~~~~~~~~~~~~~~
-
-If ``mu_s_aniso`` and ``mu_k_aniso`` are set to zero vectors (the default),
-the system falls back to using the scalar ``mu_s`` and ``mu_k`` values,
-maintaining backward compatibility with existing code.
-
 Future Directions
 -----------------
 
