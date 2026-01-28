@@ -117,12 +117,12 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
 #ifndef USE_FIXED_PIECES
         // Check if the minimum distance is too large and we need to subdivide
         // (Large distances cause the slow CCD)
-        if ((min_distance
+        if ((min_distance_linear
              >= std::min((1 - conservative_rescaling) * distance_ti0, 0.01))
             && (num_subdivisions < MAX_NUM_SUBDIVISIONS || ti0 == 0)) {
             logger().trace(
                 "Subdividing at ti=[{:g}, {:g}] min_distance={:g} distance_ti0={:g}",
-                ti0, ti1, min_distance, distance_ti0);
+                ti0, ti1, min_distance_linear, distance_ti0);
             ts.push((ti1 + ti0) / 2);
             num_subdivisions++;
             continue;

@@ -147,8 +147,8 @@ public:
     /// @param[in] max_distance_from_linear Return the maximum distance from the linearized trajectory for a given time interval.
     /// @param[in] linear_ccd Perform linear CCD on a given time interval.
     /// @param[out] toi Output time of impact.
-    /// @param[in] tmax Maximum time to check for collision.
     /// @param[in] min_distance Minimum separation distance between the objects.
+    /// @param[in] tmax Maximum time to check for collision.
     /// @param[in] conservative_rescaling Conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     static bool conservative_piecewise_linear_ccd(

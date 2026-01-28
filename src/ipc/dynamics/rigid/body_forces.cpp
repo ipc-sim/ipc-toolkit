@@ -88,25 +88,25 @@ Eigen::MatrixXd BodyForces::hessian(
 double BodyForces::operator()(
     const RigidBody& body,
     Eigen::ConstRef<VectorMax6d> x,
-    Eigen::ConstRef<VectorMax3d> q_hat,
-    Eigen::ConstRef<MatrixMax3d> Q_hat) const
+    Eigen::ConstRef<VectorMax3d> force,
+    Eigen::ConstRef<MatrixMax3d> torque) const
 {
     double energy = 0.0;
 
     // if (!body.is_dof_fixed.head(pose.pos_ndof()).all())
     {
-        energy += x.head(forces.size()).dot(q_hat);
+        energy += x.head(forces.size()).dot(force);
     }
 
     // Rotational energy
     // if (!body.is_dof_fixed.tail(pose.rot_ndof()).all())
     {
-        if (Q_hat.size() == 9) {
+        if (torque.size() == 9) {
             const Eigen::Matrix3d Q = rotation_vector_to_matrix(x.tail<3>());
-            energy += (Q.transpose() * Q_hat).trace();
+            energy += (Q.transpose() * torque).trace();
         } else {
-            assert(Q_hat.size() == 1);
-            energy += x(2) * Q_hat(0, 0);
+            assert(torque.size() == 1);
+            energy += x(2) * torque(0, 0);
         }
     }
 
@@ -116,26 +116,26 @@ double BodyForces::operator()(
 VectorMax6d BodyForces::gradient(
     const RigidBody& body,
     Eigen::ConstRef<VectorMax6d> x,
-    Eigen::ConstRef<VectorMax3d> q_hat,
-    Eigen::ConstRef<MatrixMax3d> Q_hat) const
+    Eigen::ConstRef<VectorMax3d> force,
+    Eigen::ConstRef<MatrixMax3d> torque) const
 {
     VectorMax6d grad = VectorMax6d::Zero(x.size());
 
     // if (!body.is_dof_fixed.head(pose.pos_ndof()).all())
     {
-        grad.head(gravity().size()) = q_hat;
+        grad.head(gravity().size()) = force;
     }
 
     // Rotational energy
     // if (!body.is_dof_fixed.tail(pose.rot_ndof()).all())
     {
-        if (Q_hat.size() == 9) {
+        if (torque.size() == 9) {
             const Eigen::Matrix<double, 9, 3> dQ_dx =
                 rotation_vector_to_matrix_jacobian(x.tail<3>());
-            grad.tail<3>() = dQ_dx.transpose() * Q_hat.reshaped();
+            grad.tail<3>() = dQ_dx.transpose() * torque.reshaped();
         } else {
-            assert(Q_hat.size() == 1);
-            grad(2) = Q_hat(0, 0);
+            assert(torque.size() == 1);
+            grad(2) = torque(0, 0);
         }
     }
 
@@ -145,8 +145,8 @@ VectorMax6d BodyForces::gradient(
 MatrixMax6d BodyForces::hessian(
     const RigidBody& body,
     Eigen::ConstRef<VectorMax6d> x,
-    Eigen::ConstRef<VectorMax3d> q_hat,
-    Eigen::ConstRef<MatrixMax3d> Q_hat,
+    Eigen::ConstRef<VectorMax3d> force,
+    Eigen::ConstRef<MatrixMax3d> torque,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
     MatrixMax6d hess = MatrixMax6d::Zero(x.size(), x.size());
@@ -154,12 +154,12 @@ MatrixMax6d BodyForces::hessian(
     // Rotational energy
     // if (!body.is_dof_fixed.tail(pose.rot_ndof()).all())
     {
-        if (Q_hat.size() == 9) {
+        if (torque.size() == 9) {
             const Eigen::Matrix<double, 9, 9> d2Q_dx2 =
                 rotation_vector_to_matrix_hessian(x.tail<3>());
 
             const Eigen::Matrix3d hess_rotation =
-                (d2Q_dx2.transpose() * Q_hat.reshaped()).reshaped(3, 3);
+                (d2Q_dx2.transpose() * torque.reshaped()).reshaped(3, 3);
 
             hess.bottomRightCorner<3, 3>() =
                 project_to_psd(hess_rotation, project_hessian_to_psd);

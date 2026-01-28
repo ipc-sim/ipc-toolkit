@@ -6,7 +6,7 @@
 
 namespace ipc::rigid {
 
-/// @brief Class representing the term ½m‖q - q̂‖² + ½tr((Q - Q̂) J (Q - Q̂)ᵀ)
+/// @brief Class representing the term qᵀf + tr(Qᵀτ)
 class BodyForces {
 public:
     BodyForces(const std::shared_ptr<const ImplicitEuler>& _time_integrator)
@@ -14,7 +14,7 @@ public:
     {
     }
 
-    /// @brief Update the predicted poses of the rigid bodies.
+    /// @brief Update the forces and torques of the rigid bodies.
     /// @param bodies The collection of rigid bodies.
     void update(const RigidBodies& bodies);
 
@@ -49,40 +49,42 @@ public:
     /// @brief Compute the energy of a rigid body at a given pose.
     /// @param body The rigid body.
     /// @param pose The pose of the rigid body.
+    /// @param force The linear force on the rigid body.
+    /// @param torque The torque on the rigid body.
     /// @return The energy of the rigid body at the given pose.
     double operator()(
         const RigidBody& body,
         Eigen::ConstRef<VectorMax6d> x,
-        Eigen::ConstRef<VectorMax3d> q_hat,
-        Eigen::ConstRef<MatrixMax3d> Q_hat) const;
+        Eigen::ConstRef<VectorMax3d> force,
+        Eigen::ConstRef<MatrixMax3d> torque) const;
 
     /// @brief Compute the gradient of the energy of a rigid body at a given pose.
     /// @param body The rigid body.
     /// @param x The pose of the rigid body.
-    /// @param q_hat The predicted rotation of the rigid body.
-    /// @param Q_hat The predicted rotation matrix of the rigid body.
+    /// @param force The linear force on the rigid body.
+    /// @param torque The torque on the rigid body.
     /// @return The gradient of the energy of the rigid body at the given pose.
     VectorMax6d gradient(
         const RigidBody& body,
         Eigen::ConstRef<VectorMax6d> x,
-        Eigen::ConstRef<VectorMax3d> q_hat,
-        Eigen::ConstRef<MatrixMax3d> Q_hat) const;
+        Eigen::ConstRef<VectorMax3d> force,
+        Eigen::ConstRef<MatrixMax3d> torque) const;
 
     /// @brief Compute the Hessian of the energy of a rigid body at a given pose.
     /// @param body The rigid body.
     /// @param x The pose of the rigid body.
-    /// @param q_hat The predicted rotation of the rigid body.
-    /// @param Q_hat The predicted rotation matrix of the rigid body.
+    /// @param force The linear force on the rigid body.
+    /// @param torque The torque on the rigid body.
     /// @return The Hessian of the energy of the rigid body at the given pose.
     MatrixMax6d hessian(
         const RigidBody& body,
         Eigen::ConstRef<VectorMax6d> x,
-        Eigen::ConstRef<VectorMax3d> q_hat,
-        Eigen::ConstRef<MatrixMax3d> Q_hat,
+        Eigen::ConstRef<VectorMax3d> force,
+        Eigen::ConstRef<MatrixMax3d> torque,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const;
 
-    // ---- Predicted poses ----------------------------------------------------
+    // ---- Gravity ------------------------------------------------------------
 
     const VectorMax3d& gravity() const { return m_gravity; }
     void set_gravity(const VectorMax3d& gravity) { m_gravity = gravity; }
