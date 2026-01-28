@@ -31,6 +31,41 @@ How do I build the edge matrix from the face matrix?
 
 To build the edge matrix you can use :cpp:`igl::edges(faces, edges);` in C++ or :python:`ipctk.edges(faces)` in Python.
 
+Is there a way to ignore select collisions?
+-------------------------------------------
+
+Yes, it is possible to ignore select collisions.
+
+The functionality for doing so is through the :cpp:`BroadPhase::can_vertices_collide`.
+This function takes two vertex IDs and returns a true if the vertices can collide otherwise false.
+
+This is used to determine if any geometry connected to the verties can collide. E.g., when checking if vertex ``vi`` can collide with triangle ``f = (vj, vk, vl)``, the code checks:
+
+.. code-block::
+
+    can_face_vertex_collide(f, vi) := can_vertices_collide(vj, vi) && can_vertices_collide(vk, vi) && can_vertices_collide(vl, vi)
+
+This is a little limited since it will ignore the one-ring around a vertex instead of a single face-vertex pair, but hopefully that can get you started.
+
+To get something more customized, you can try to modify the BroadPhase class, which has these functions hard-coded:
+
+.. code-block:: c++
+
+    virtual bool can_edge_vertex_collide(size_t ei, size_t vi) const;
+    virtual bool can_edges_collide(size_t eai, size_t ebi) const;
+    virtual bool can_face_vertex_collide(size_t fi, size_t vi) const;
+    virtual bool can_edge_face_collide(size_t ei, size_t fi) const;
+    virtual bool can_faces_collide(size_t fai, size_t fbi) const;
+
+You can modify these with function pointers or override them to have the specific implementation you are interested in.
+
+.. note::
+
+    If you are building collisions through the ``Candidates`` class, the ``Candidates::build`` function sets the ``BroadPhase::can_vertices_collide`` using the ``CollisionMesh::can_collide`` function pointer. This ``CollisionMesh::can_collide`` function uses the same interface as the ``BroadPhase::can_vertices_collide`` above.
+
+.. warning::
+    This method is not recommended for Python since calling a Python lambda function from the C++ side is too slow to use. Instead there are ``SparseCanCollide`` and ``VertexPatchesCanCollide`` classes in Python to help do this efficiently.
+
 My question is not answered here. What should I do?
 ---------------------------------------------------
 
