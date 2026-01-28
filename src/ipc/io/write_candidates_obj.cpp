@@ -1,4 +1,4 @@
-#include "save_obj.hpp"
+#include "write_candidates_obj.hpp"
 
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/edge_face.hpp>
@@ -10,7 +10,7 @@
 namespace ipc {
 
 template <>
-void save_obj(
+void write_candidates_obj(
     std::ostream& out,
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> /*unused*/,
@@ -26,7 +26,7 @@ void save_obj(
 }
 
 template <>
-void save_obj(
+void write_candidates_obj(
     std::ostream& out,
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
@@ -46,7 +46,7 @@ void save_obj(
 }
 
 template <>
-void save_obj(
+void write_candidates_obj(
     std::ostream& out,
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
@@ -68,7 +68,7 @@ void save_obj(
 }
 
 template <>
-void save_obj(
+void write_candidates_obj(
     std::ostream& out,
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
@@ -89,7 +89,7 @@ void save_obj(
 }
 
 template <>
-void save_obj(
+void write_candidates_obj(
     std::ostream& out,
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
