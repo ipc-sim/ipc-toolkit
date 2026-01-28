@@ -11,7 +11,10 @@ struct AffineBody {
 
     AffineBody() = default;
 
-    AffineBody(const MatrixMax3d& A, const VectorMax3d& p, const double volume)
+    AffineBody(
+        Eigen::ConstRef<MatrixMax3d> A,
+        Eigen::ConstRef<VectorMax3d> p,
+        const double volume)
         : A(A)
         , p(p)
         , volume(volume)

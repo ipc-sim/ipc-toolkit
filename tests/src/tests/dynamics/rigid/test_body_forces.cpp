@@ -1,13 +1,10 @@
-// src/ipc/dynamics/rigid/test_inertial_term.hpp
 #include <catch2/catch_all.hpp>
 
 #include <tests/utils.hpp>
 
 #include <finitediff.hpp>
 
-#include <ipc/dynamics/rigid/inertial_term.hpp>
-#include <ipc/dynamics/rigid/rigid_bodies.hpp>
-#include <ipc/dynamics/rigid/time_integrator.hpp>
+#include <ipc/dynamics/rigid/body_forces.hpp>
 
 using namespace ipc;
 using namespace ipc::rigid;
@@ -31,8 +28,13 @@ RigidBodies rigid_bodies()
     std::vector<Pose> initial_poses;
     initial_poses.push_back(Pose::Zero(3)); // Initial pose at the origin
 
-    return RigidBodies::build_from_meshes(
+    RigidBodies bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { density }, initial_poses);
+
+    bodies[0].set_external_force(
+        Pose(Eigen::Vector3d::Random(), Eigen::Vector3d::Random()));
+
+    return bodies;
 }
 
 std::shared_ptr<const ImplicitEuler> time_integrator(const RigidBodies& bodies)
@@ -52,17 +54,18 @@ std::shared_ptr<const ImplicitEuler> time_integrator(const RigidBodies& bodies)
 } // namespace
 
 TEST_CASE(
-    "InertialTerm energy and derivative",
-    "[inertial_term][energy][gradient][hessian]")
+    "BodyForces energy and derivative",
+    "[body_forces][energy][gradient][hessian]")
 {
     RigidBodies bodies = rigid_bodies();
-    InertialTerm inertial_term(time_integrator(bodies));
+    BodyForces body_forces(time_integrator(bodies));
+    body_forces.update(bodies);
 
     VectorMax6d x = VectorMax6d::Random(6);
-    VectorMax3d q_hat = VectorMax3d::Random(3);
-    MatrixMax3d Q_hat = MatrixMax3d::Random(3, 3);
+    VectorMax3d force = body_forces.forces()[0];
+    MatrixMax3d torque = body_forces.torques()[0];
 
-    double energy = inertial_term(bodies[0], x, q_hat, Q_hat);
+    double energy = body_forces(bodies[0], x, force, torque);
 
     // Since we don't have a ground truth, we can only check if the energy is a
     // valid number
@@ -72,14 +75,13 @@ TEST_CASE(
     MatrixMax6d analytical_hessian;
 
     {
-        analytical_gradient =
-            inertial_term.gradient(bodies[0], x, q_hat, Q_hat);
+        analytical_gradient = body_forces.gradient(bodies[0], x, force, torque);
 
         // Numerical gradient calculation
         auto f = [&](const Eigen::VectorXd& x_arg) {
-            return inertial_term(
-                bodies[0], x_arg, q_hat,
-                Q_hat); // Capture other variables by value
+            return body_forces(
+                bodies[0], x_arg, force,
+                torque); // Capture other variables by value
         };
         Eigen::VectorXd numerical_gradient;
         fd::finite_gradient(x, f, numerical_gradient);
@@ -92,11 +94,11 @@ TEST_CASE(
     }
 
     {
-        analytical_hessian = inertial_term.hessian(bodies[0], x, q_hat, Q_hat);
+        analytical_hessian = body_forces.hessian(bodies[0], x, force, torque);
 
         // Numerical hessian calculation
         auto f = [&](const Eigen::VectorXd& x_arg) {
-            return inertial_term.gradient(bodies[0], x_arg, q_hat, Q_hat);
+            return body_forces.gradient(bodies[0], x_arg, force, torque);
         };
         Eigen::MatrixXd numerical_hessian;
         fd::finite_jacobian(x, f, numerical_hessian);
@@ -117,8 +119,8 @@ TEST_CASE(
         if (newton_direction.dot(analytical_gradient) < 0.0) {
             CHECK(true);
         } else {
-            analytical_hessian = inertial_term.hessian(
-                bodies[0], x, q_hat, Q_hat, PSDProjectionMethod::ABS);
+            analytical_hessian = body_forces.hessian(
+                bodies[0], x, force, torque, PSDProjectionMethod::ABS);
 
             newton_direction =
                 -analytical_hessian.ldlt().solve(analytical_gradient);
@@ -131,32 +133,31 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "InertialTerm total energy and derivatives",
-    "[rigid][inertial_term][total_energy][total_gradient][total_hessian]")
+    "BodyForces total energy and derivatives",
+    "[rigid][body_forces][total_energy][total_gradient][total_hessian]")
 {
     RigidBodies bodies = rigid_bodies();
-    InertialTerm inertial_term(time_integrator(bodies));
-    inertial_term.update(bodies);
+    BodyForces body_forces(time_integrator(bodies));
+    body_forces.set_gravity(Eigen::Vector3d(0, -9.81, 0));
+    body_forces.update(bodies);
 
     VectorMax6d x = VectorMax6d::Random(6);
 
-    CHECK(
-        inertial_term(bodies, x)
-        == inertial_term(
-            bodies[0], x, inertial_term.predicted_poses()[0].position,
-            inertial_term.predicted_poses()[0].rotation));
+    REQUIRE(body_forces.forces().size() == 1);
+    REQUIRE(body_forces.torques().size() == 1);
+
+    const auto& force = body_forces.forces()[0];
+    const auto& torque = body_forces.torques()[0];
+
+    CHECK(body_forces(bodies, x) == body_forces(bodies[0], x, force, torque));
 
     CHECK(
         fd::compare_gradient(
-            inertial_term.gradient(bodies, x),
-            inertial_term.gradient(
-                bodies[0], x, inertial_term.predicted_poses()[0].position,
-                inertial_term.predicted_poses()[0].rotation)));
+            body_forces.gradient(bodies, x),
+            body_forces.gradient(bodies[0], x, force, torque)));
 
     CHECK(
-        inertial_term.hessian(bodies, x, PSDProjectionMethod::ABS)
-        == inertial_term.hessian(
-            bodies[0], x, inertial_term.predicted_poses()[0].position,
-            inertial_term.predicted_poses()[0].rotation,
-            PSDProjectionMethod::ABS));
+        body_forces.hessian(bodies, x, PSDProjectionMethod::ABS)
+        == body_forces.hessian(
+            bodies[0], x, force, torque, PSDProjectionMethod::ABS));
 }

@@ -12,12 +12,12 @@ namespace {
 /// Compares the time of impact of different implementations
 /// against the expected time of impact
 void check_toi(
-    const VectorMax3d& p_t0,
-    const VectorMax3d& e0_t0,
-    const VectorMax3d& e1_t0,
-    const VectorMax3d& p_t1,
-    const VectorMax3d& e0_t1,
-    const VectorMax3d& e1_t1,
+    Eigen::ConstRef<VectorMax3d> p_t0,
+    Eigen::ConstRef<VectorMax3d> e0_t0,
+    Eigen::ConstRef<VectorMax3d> e1_t0,
+    Eigen::ConstRef<VectorMax3d> p_t1,
+    Eigen::ConstRef<VectorMax3d> e0_t1,
+    Eigen::ConstRef<VectorMax3d> e1_t1,
     const double toi_expected)
 {
     double toi;

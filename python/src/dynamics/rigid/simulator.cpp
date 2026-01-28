@@ -3,6 +3,7 @@
 #include <ipc/dynamics/rigid/simulator.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 
+#include <pybind11/detail/common.h>
 #include <pybind11/stl_bind.h>
 
 namespace py = pybind11;
@@ -28,7 +29,9 @@ void define_rigid_simulator(py::module_& m)
     py::class_<Pose>(m, "Pose")
         .def(py::init<>())
         .def(
-            py::init<const Eigen::Vector3d&, const Eigen::Vector3d&>(),
+            py::init<
+                Eigen::ConstRef<Eigen::Vector3d>,
+                Eigen::ConstRef<Eigen::Vector3d>>(),
             py::arg("position"), py::arg("rotation"))
         .def("rotation_matrix", &Pose::rotation_matrix)
         .def(
@@ -75,7 +78,9 @@ void define_rigid_simulator(py::module_& m)
              )ipc_Qu8mg5v7",
             py::arg("poses"))
         .def_property_readonly("num_bodies", &RigidBodies::num_bodies)
-        .def("__getitem__", &RigidBodies::operator[], py::arg("index"));
+        .def(
+            "__getitem__", py::overload_cast<size_t>(&RigidBodies::operator[]),
+            py::arg("index"));
 
     py::class_<Simulator>(m, "Simulator")
         .def(

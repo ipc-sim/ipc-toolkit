@@ -55,7 +55,7 @@ public:
     // void set_dt(const double dt) { m_time_integrator->set_dt(dt); }
 
     // VectorMax3d gravity() const { return m_inertial_term->gravity(); }
-    // void set_gravity(const VectorMax3d& gravity)
+    // void set_gravity(Eigen::ConstRef<VectorMax3d> gravity)
     // {
     //     m_inertial_term->set_gravity(gravity);
     // }

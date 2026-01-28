@@ -8,8 +8,6 @@
 
 #include <ipc/dynamics/rigid/rigid_body.hpp>
 
-#include <iostream>
-
 using namespace ipc;
 using namespace ipc::rigid;
 

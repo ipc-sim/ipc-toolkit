@@ -6,8 +6,6 @@
 #include <igl/PI.h>
 #include <finitediff.hpp>
 
-#include <iostream>
-
 using namespace ipc::rigid;
 
 TEST_CASE("so(3) -> SO(3)", "[rigid][pose]")

@@ -5,7 +5,7 @@
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
-class BVH;
+class LBVH;
 }
 
 namespace ipc::rigid {
@@ -29,6 +29,7 @@ public:
         const double density,
         Pose& initial_pose);
 
+    // ---- Getters ------------------------------------------------------------
     double mass() const { return m_mass; }
     const VectorMax3d& moment_of_inertia() const { return m_moment_of_inertia; }
     // NOLINTNEXTLINE(readability-identifier-naming)
@@ -36,8 +37,19 @@ public:
     // NOLINTNEXTLINE(readability-identifier-naming)
     const MatrixMax3d& R0() const { return m_R0; }
     const Pose& external_force() const { return m_external_force; }
-    std::shared_ptr<const BVH> bvh() const { return m_bvh; }
+    std::shared_ptr<const LBVH> bvh() const { return m_bvh; }
     double bounding_radius() const { return m_bounding_radius; }
+
+    // ---- Setters ------------------------------------------------------------
+
+    void set_external_force(const Pose& external_force)
+    {
+        assert(
+            external_force.position.size() == m_external_force.position.size());
+        assert(
+            external_force.rotation.size() == m_external_force.rotation.size());
+        m_external_force = external_force;
+    }
 
 private:
     /// @brief Total mass of the rigid body
@@ -61,7 +73,7 @@ private:
 
     /// @brief Statically constructed bounding volume hierarchy for collision detection
     /// @note This is defined in the inertial reference frame
-    std::shared_ptr<BVH> m_bvh;
+    std::shared_ptr<LBVH> m_bvh;
 
     /// @brief Bounding radius of the rigid body
     double m_bounding_radius;

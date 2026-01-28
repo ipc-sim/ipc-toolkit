@@ -1,6 +1,6 @@
 #include "rigid_body.hpp"
 
-#include <ipc/broad_phase/bvh.hpp>
+#include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/dynamics/rigid/mass.hpp>
 #include <ipc/math/sinc.hpp>
 
@@ -31,8 +31,8 @@ namespace {
         }
     }
 
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    inline Eigen::DiagonalMatrix<double, 3> compute_J(const VectorMax3d& I)
+    inline Eigen::DiagonalMatrix<double, 3>
+    compute_J(Eigen::ConstRef<VectorMax3d> I) // NOLINT
     {
         if (I.size() == 1) {
             return I.asDiagonal();
@@ -156,6 +156,8 @@ RigidBody::RigidBody(
     // this->velocity.zero_dof(is_dof_fixed, m_R0);
     // this->force.zero_dof(is_dof_fixed, m_R0);
 
+    m_external_force = Pose::Zero(dim);
+
     // Compute and construct some useful constants
     // mass_matrix.resize(ndof());
     // mass_matrix.diagonal().head(pos_ndof()).setConstant(mass);
@@ -175,7 +177,7 @@ RigidBody::RigidBody(
     // }
     // assert(std::isfinite(average_edge_length));
 
-    m_bvh = std::make_shared<BVH>();
+    m_bvh = std::make_shared<LBVH>();
     m_bvh->build(vertices, edges, faces);
 }
 

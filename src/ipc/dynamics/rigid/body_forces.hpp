@@ -24,15 +24,15 @@ public:
     /// @param bodies The collection of rigid bodies.
     /// @param x The DOFs of the rigid bodies, where the first 3 entries are the positions and the last 3 entries are the rotations.
     /// @return The total energy of the rigid bodies.
-    double
-    operator()(const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x);
+    double operator()(
+        const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const;
 
     /// @brief Compute the gradient of the total energy for all rigid bodies.
     /// @param bodies The collection of rigid bodies.
     /// @param x The DOFs of the rigid bodies, where the first 3 entries are the positions and the last 3 entries are the rotations.
     /// @return The gradient of the total energy of the rigid bodies.
-    Eigen::VectorXd
-    gradient(const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x);
+    Eigen::VectorXd gradient(
+        const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const;
 
     /// @brief Compute the Hessian of the total energy for all rigid bodies.
     /// @param bodies The collection of rigid bodies.
@@ -42,7 +42,7 @@ public:
         const RigidBodies& bodies,
         Eigen::ConstRef<Eigen::VectorXd> x,
         const PSDProjectionMethod project_hessian_to_psd =
-            PSDProjectionMethod::NONE);
+            PSDProjectionMethod::NONE) const;
 
     // ---- Per-body functions -------------------------------------------------
 
@@ -87,13 +87,20 @@ public:
     // ---- Gravity ------------------------------------------------------------
 
     const VectorMax3d& gravity() const { return m_gravity; }
-    void set_gravity(const VectorMax3d& gravity) { m_gravity = gravity; }
+
+    void set_gravity(Eigen::ConstRef<VectorMax3d> gravity)
+    {
+        m_gravity = gravity;
+    }
+
+    const std::vector<VectorMax3d>& forces() const { return m_forces; }
+    const std::vector<MatrixMax3d>& torques() const { return m_torques; }
 
 private:
     const std::shared_ptr<const ImplicitEuler> time_integrator;
 
-    std::vector<VectorMax3d> forces;
-    std::vector<MatrixMax3d> torques;
+    std::vector<VectorMax3d> m_forces;
+    std::vector<MatrixMax3d> m_torques;
 
     VectorMax3d m_gravity = VectorMax3d::Zero(3);
 };

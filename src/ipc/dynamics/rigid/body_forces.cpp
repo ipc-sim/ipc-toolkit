@@ -10,14 +10,14 @@ void BodyForces::update(const RigidBodies& bodies)
 {
     const double dt_sq = time_integrator->dt * time_integrator->dt;
 
-    forces.resize(bodies.num_bodies());
-    torques.resize(bodies.num_bodies());
+    m_forces.resize(bodies.num_bodies());
+    m_torques.resize(bodies.num_bodies());
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, bodies.num_bodies()),
         [&](const tbb::blocked_range<size_t>& r) {
             for (size_t i = r.begin(); i < r.end(); ++i) {
-                forces[i] = -dt_sq
+                m_forces[i] = -dt_sq
                     * (bodies[i].mass() * gravity()
                        + bodies[i].external_force().position);
 
@@ -29,11 +29,11 @@ void BodyForces::update(const RigidBodies& bodies)
                     // Transform the world space torque into body space
                     const Eigen::Matrix3d Tau =
                         Q.transpose() * cross_product_matrix(torque);
-                    torques[i] = -dt_sq * Tau;
+                    m_torques[i] = -dt_sq * Tau;
                 } else {
                     assert(torque.size() == 1);
-                    torques[i].resize(1, 1);
-                    torques[i](0, 0) = -dt_sq * torque(0);
+                    m_torques[i].resize(1, 1);
+                    m_torques[i](0, 0) = -dt_sq * torque(0);
                 }
             }
         });
@@ -42,27 +42,27 @@ void BodyForces::update(const RigidBodies& bodies)
 // ---- Cumulative functions ---------------------------------------------------
 
 double BodyForces::operator()(
-    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
+    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     const int ndof = x.size() / bodies.num_bodies();
 
     double energy = 0.0;
     for (size_t i = 0; i < bodies.num_bodies(); ++i) {
         energy += operator()(
-            bodies[i], x.segment(i * ndof, ndof), forces[i], torques[i]);
+            bodies[i], x.segment(i * ndof, ndof), forces()[i], torques()[i]);
     }
     return energy;
 }
 
 Eigen::VectorXd BodyForces::gradient(
-    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
+    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     const int ndof = x.size() / bodies.num_bodies();
 
     Eigen::VectorXd grad = Eigen::VectorXd::Zero(x.size());
     for (size_t i = 0; i < bodies.num_bodies(); ++i) {
         grad.segment(i * ndof, ndof) = gradient(
-            bodies[i], x.segment(i * ndof, ndof), forces[i], torques[i]);
+            bodies[i], x.segment(i * ndof, ndof), forces()[i], torques()[i]);
     }
     return grad;
 }
@@ -70,14 +70,14 @@ Eigen::VectorXd BodyForces::gradient(
 Eigen::MatrixXd BodyForces::hessian(
     const RigidBodies& bodies,
     Eigen::ConstRef<Eigen::VectorXd> x,
-    const PSDProjectionMethod project_hessian_to_psd)
+    const PSDProjectionMethod project_hessian_to_psd) const
 {
     const int ndof = x.size() / bodies.num_bodies();
 
     Eigen::MatrixXd hess(x.size(), x.size());
     for (size_t i = 0; i < bodies.num_bodies(); ++i) {
         hess.block(i * ndof, i * ndof, ndof, ndof) = hessian(
-            bodies[i], x.segment(i * ndof, ndof), forces[i], torques[i],
+            bodies[i], x.segment(i * ndof, ndof), forces()[i], torques()[i],
             project_hessian_to_psd);
     }
     return hess;
@@ -95,7 +95,7 @@ double BodyForces::operator()(
 
     // if (!body.is_dof_fixed.head(pose.pos_ndof()).all())
     {
-        energy += x.head(forces.size()).dot(force);
+        energy += x.head(force.size()).dot(force);
     }
 
     // Rotational energy

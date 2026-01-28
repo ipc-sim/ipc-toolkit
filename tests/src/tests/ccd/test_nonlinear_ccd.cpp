@@ -12,8 +12,8 @@ using namespace ipc;
 class RotationalTrajectory : virtual public NonlinearTrajectory {
 public:
     RotationalTrajectory(
-        const VectorMax3d& _point,
-        const VectorMax3d& _center,
+        Eigen::ConstRef<VectorMax3d> _point,
+        Eigen::ConstRef<VectorMax3d> _center,
         const double _z_angular_velocity)
         : center(_center)
         , point(_point)
@@ -46,8 +46,8 @@ protected:
 
     template <typename T>
     static VectorMax3<T> position(
-        const VectorMax3d& center,
-        const VectorMax3d& point,
+        Eigen::ConstRef<VectorMax3d> center,
+        Eigen::ConstRef<VectorMax3d> point,
         const double z_angular_velocity,
         const T& t)
     {
@@ -71,8 +71,8 @@ class IntervalRotationalTrajectory : public RotationalTrajectory,
                                      public IntervalNonlinearTrajectory {
 public:
     IntervalRotationalTrajectory(
-        const VectorMax3d& _point,
-        const VectorMax3d& _center,
+        Eigen::ConstRef<VectorMax3d> _point,
+        Eigen::ConstRef<VectorMax3d> _center,
         const double _z_angular_velocity)
         : RotationalTrajectory(_point, _center, _z_angular_velocity)
     {
@@ -95,7 +95,7 @@ public:
 
 class StaticTrajectory : public NonlinearTrajectory {
 public:
-    StaticTrajectory(const VectorMax3d& _point) : point(_point) { }
+    StaticTrajectory(Eigen::ConstRef<VectorMax3d> _point) : point(_point) { }
 
     VectorMax3d operator()(const double t) const override { return point; }
 
@@ -113,9 +113,9 @@ protected:
 class Rigid2DTrajectory : virtual public ipc::NonlinearTrajectory {
 public:
     Rigid2DTrajectory(
-        const Eigen::Vector2d& _position,
-        const Eigen::Vector2d& _translation,
-        const Eigen::Vector2d& _delta_translation,
+        Eigen::ConstRef<Eigen::Vector2d> _position,
+        Eigen::ConstRef<Eigen::Vector2d> _translation,
+        Eigen::ConstRef<Eigen::Vector2d> _delta_translation,
         const double _rotation,
         const double _delta_rotation)
         : position(_position)

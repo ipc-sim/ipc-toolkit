@@ -41,6 +41,11 @@ public:
     /// @brief Get the rigid body at index i.
     /// @param i Index of the rigid body.
     /// @return Reference to the rigid body at index i.
+    RigidBody& operator[](size_t i) { return bodies[i]; }
+
+    /// @brief Get the rigid body at index i.
+    /// @param i Index of the rigid body.
+    /// @return Const reference to the rigid body at index i.
     const RigidBody& operator[](size_t i) const { return bodies[i]; }
 
     /// @brief Get the number of rigid bodies in the system.
