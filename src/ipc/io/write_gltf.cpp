@@ -140,7 +140,7 @@ bool write_gltf(
         buffer_view->name = body_name + "Vertices";
         buffer_view->buffer = 0;
         buffer_view->byteLength =
-            sizeof(Float) * bodies.body_vertices(i).size();
+            sizeof(Float) * bodies.body_rest_positions(i).size();
         buffer_view->byteOffset = byte_offset;
         byte_offset += buffer_view->byteLength;
 
@@ -186,7 +186,7 @@ bool write_gltf(
     for (int i = 0; i < num_bodies; i++) {
         // NOTE: Apply the initial rotation to the vertices
         Eigen::MatrixXd V =
-            bodies.body_vertices(i) * bodies[i].R0().transpose();
+            bodies.body_rest_positions(i) * bodies[i].R0().transpose();
         for (int r = 0; r < V.rows(); r++) {
             for (int c = 0; c < V.cols(); c++) {
                 Float v = V(r, c);

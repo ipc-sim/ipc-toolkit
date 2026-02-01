@@ -11,7 +11,10 @@ set(SOURCES
   rigid_bodies.hpp
   rigid_body.cpp
   rigid_body.hpp
+  rigid_candidates.cpp
+  rigid_candidates.hpp
   simulator.cpp
+  simulator.hpp
   time_integrator.hpp
 )
 

@@ -76,20 +76,43 @@ struct Pose {
             + position.transpose();
     }
 
+    Pose inverse() const
+    {
+        Pose inv;
+        const MatrixMax3d R_inv = rotation_matrix().transpose();
+        inv.position = -(R_inv * position);
+        if (position.size() == 2) {
+            // Negate angle directly
+            inv.rotation = -rotation;
+        } else {
+            // Convert inverse rotation to a vector
+            inv.rotation = rotation_matrix_to_vector(R_inv);
+        }
+        return inv;
+    }
+
     friend Pose operator*(const Pose& a, const Pose& b)
     {
         Pose c;
 
-        c.position = a.position + b.position;
+        const MatrixMax3d Ra = a.rotation_matrix();
+
+        c.position = Ra * b.position + a.position;
 
         if (c.position.size() == 2) {
+            // Combine angles directly
             c.rotation = a.rotation + b.rotation;
         } else {
-            MatrixMax3d R = a.rotation_matrix() * b.rotation_matrix();
-            c.rotation = rotation_matrix_to_vector(R);
+            // Combine rotation matrices multiplicatively
+            c.rotation = rotation_matrix_to_vector(Ra * b.rotation_matrix());
         }
 
         return c;
+    }
+
+    friend bool operator==(const Pose& a, const Pose& b)
+    {
+        return a.position == b.position && a.rotation == b.rotation;
     }
 };
 

@@ -1,9 +1,10 @@
 #pragma once
 
 #include <ipc/candidates/candidates.hpp>
+#include <ipc/ccd/nonlinear_ccd.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 
-namespace ipc {
+namespace ipc::rigid {
 
 /// @brief A class for storing and managing collision candidates.
 class RigidCandidates : public Candidates {
@@ -21,13 +22,7 @@ public:
         const RigidBodies& bodies,
         const std::vector<Pose>& poses,
         const double inflation_radius = 0,
-        const std::shared_ptr<BroadPhase> broad_phase =
-            make_default_broad_phase())
-    {
-        // TODO: Customize this to us
-        return Candidates::build(
-            bodies, bodies.vertices(poses), inflation_radius, broad_phase);
-    }
+        BroadPhase* broad_phase = nullptr);
 
     /// @brief Initialize the set of continuous collision detection candidates.
     /// @note Assumes the trajectory is linear.
@@ -41,8 +36,7 @@ public:
         const std::vector<Pose>& poses_t0,
         const std::vector<Pose>& poses_t1,
         const double inflation_radius = 0,
-        const std::shared_ptr<BroadPhase> broad_phase =
-            make_default_broad_phase());
+        BroadPhase* broad_phase = nullptr);
 
     /// @brief Determine if the step is collision free from the set of candidates.
     /// @note Assumes the trajectory is linear.
@@ -100,12 +94,6 @@ public:
         const std::shared_ptr<BroadPhase> broad_phase =
             make_default_broad_phase(),
         const NonlinearCCD& nonlinear_ccd = NonlinearCCD()) const;
-
-public:
-    std::vector<VertexVertexCandidate> vv_candidates;
-    std::vector<EdgeVertexCandidate> ev_candidates;
-    std::vector<EdgeEdgeCandidate> ee_candidates;
-    std::vector<FaceVertexCandidate> fv_candidates;
 };
 
-} // namespace ipc
+} // namespace ipc::rigid

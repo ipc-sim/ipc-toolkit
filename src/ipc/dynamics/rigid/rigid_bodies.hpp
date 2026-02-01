@@ -79,26 +79,42 @@ public:
     /// @brief Get the vertices of the i-th rigid body mesh.
     /// @param i Index of the rigid body mesh.
     /// @return Vertices of the i-th rigid body mesh.
-    auto body_vertices(size_t i) const
+    auto body_rest_positions(size_t i) const
     {
         return rest_positions().middleRows(
             body_vertex_starts[i], num_body_vertices(i));
     }
 
+    /// @brief Get the vertices of the i-th rigid body mesh.
+    /// @param i Index of the rigid body mesh.
+    /// @return Vertices of the i-th rigid body mesh.
+    Eigen::MatrixXd body_vertices(size_t i, const Pose& pose) const
+    {
+        return pose.transform_vertices(body_rest_positions(i));
+    }
+
     /// @brief Get the edges of the i-th rigid body mesh.
+    /// @note Returns indices in the local body vertex indexing.
     /// @param i Index of the rigid body mesh.
     /// @return Edges of the i-th rigid body mesh.
-    auto body_edges(size_t i) const
+    Eigen::MatrixXi body_edges(size_t i) const
     {
-        return edges().middleRows(body_edge_starts[i], num_body_edges(i));
+        return edges()
+                   .middleRows(body_edge_starts[i], num_body_edges(i))
+                   .array()
+            - body_vertex_starts[i];
     }
 
     /// @brief Get the faces of the i-th rigid body mesh.
+    /// @note Returns indices in the local body vertex indexing.
     /// @param i Index of the rigid body mesh.
     /// @return Faces of the i-th rigid body mesh.
-    auto body_faces(size_t i) const
+    Eigen::MatrixXi body_faces(size_t i) const
     {
-        return faces().middleRows(body_face_starts[i], num_body_faces(i));
+        return faces()
+                   .middleRows(body_face_starts[i], num_body_faces(i))
+                   .array()
+            - body_vertex_starts[i];
     }
 
 private:
