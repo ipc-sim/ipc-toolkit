@@ -28,7 +28,7 @@ Matrix12d line_line_signed_distance_hessian(
     // Precompute normal's Jacobian and Hessian
     const Eigen::Matrix<double, 3, 12> jac_n =
         line_line_normal_jacobian(ea0, ea1, eb0, eb1);
-    const Eigen::Matrix<double, 3, 144> hess_n =
+    const Eigen::Matrix<double, 36, 12> hess_n =
         line_line_normal_hessian(ea0, ea1, eb0, eb1);
 
     // Vector from eb0 to ea0 (Distance vector)
@@ -39,10 +39,12 @@ Matrix12d line_line_signed_distance_hessian(
     // ---------------------------------------------------------
     // 1. Tensor Contraction (Curvature Term)
     // ---------------------------------------------------------
-    // Contract the normal Hessian (3x144) with vector v (3x1).
+    // Contract the normal Hessian (3x12x12) with vector v (3x1).
     // This computes (v ⋅ d²n/dx²).
-    // The result is a 1x144 vector, which maps to the 12x12 Hessian matrix.
-    hess = (v.transpose() * hess_n).reshaped(12, 12);
+    // The result is a 1x12x12 vector, which maps to the 12x12 Hessian matrix.
+    for (int i = 0; i < 12; ++i) {
+        hess.row(i) = hess_n.middleRows<3>(3 * i).transpose() * v;
+    }
 
     // ---------------------------------------------------------
     // 2. Add Jacobian Terms (Product Rule Corrections)

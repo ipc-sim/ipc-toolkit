@@ -5,6 +5,8 @@
 
 #include <finitediff.hpp>
 
+#include <iostream>
+
 using namespace ipc;
 
 TEST_CASE(
@@ -30,22 +32,21 @@ TEST_CASE(
     Vector12d x;
     x << p, t0, t1, t2;
 
-    Eigen::MatrixXd tmp;
-    fd::finite_jacobian(
+    Eigen::MatrixXd J_fd;
+    fd::finite_jacobian_tensor<3>(
         x,
-        [](const Eigen::VectorXd& _x) -> Eigen::VectorXd {
+        [](const Eigen::VectorXd& _x) -> Eigen::MatrixXd {
             return point_triangle_tangent_basis(
-                       _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
-                       _x.segment<3>(9))
-                .reshaped();
+                _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
+                _x.segment<3>(9));
         },
-        tmp);
-
-    Eigen::Matrix<double, 36, 2> J_fd;
-    J_fd.col(0) = tmp.topRows(3).reshaped();
-    J_fd.col(1) = tmp.bottomRows(3).reshaped();
+        J_fd);
 
     CHECK(fd::compare_jacobian(J, J_fd));
+    if (!fd::compare_jacobian(J, J_fd)) {
+        std::cout << "J_analytic:\n" << J << "\n\n";
+        std::cout << "J_numerical:\n" << J_fd << "\n\n";
+    }
 }
 
 TEST_CASE(
@@ -71,20 +72,15 @@ TEST_CASE(
     Vector12d x;
     x << ea0, ea1, eb0, eb1;
 
-    Eigen::MatrixXd tmp;
-    fd::finite_jacobian(
+    Eigen::MatrixXd J_fd;
+    fd::finite_jacobian_tensor<3>(
         x,
-        [](const Eigen::VectorXd& _x) -> Eigen::VectorXd {
+        [](const Eigen::VectorXd& _x) -> Eigen::MatrixXd {
             return edge_edge_tangent_basis(
-                       _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
-                       _x.segment<3>(9))
-                .reshaped();
+                _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
+                _x.segment<3>(9));
         },
-        tmp);
-
-    Eigen::Matrix<double, 36, 2> J_fd;
-    J_fd.col(0) = tmp.topRows(3).reshaped();
-    J_fd.col(1) = tmp.bottomRows(3).reshaped();
+        J_fd);
 
     CHECK(fd::compare_jacobian(J, J_fd));
 }
@@ -111,19 +107,14 @@ TEST_CASE(
     Vector9d x;
     x << p, e0, e1;
 
-    Eigen::MatrixXd tmp;
-    fd::finite_jacobian(
+    Eigen::MatrixXd J_fd;
+    fd::finite_jacobian_tensor<3>(
         x,
-        [](const Eigen::VectorXd& _x) -> Eigen::VectorXd {
+        [](const Eigen::VectorXd& _x) -> Eigen::MatrixXd {
             return point_edge_tangent_basis(
-                       _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6))
-                .reshaped();
+                _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6));
         },
-        tmp);
-
-    Eigen::Matrix<double, 27, 2> J_fd;
-    J_fd.col(0) = tmp.topRows(3).reshaped();
-    J_fd.col(1) = tmp.bottomRows(3).reshaped();
+        J_fd);
 
     CHECK(fd::compare_jacobian(J, J_fd));
 }
@@ -150,18 +141,13 @@ TEST_CASE(
     Vector6d x;
     x << p0, p1;
 
-    Eigen::MatrixXd tmp;
-    fd::finite_jacobian(
+    Eigen::MatrixXd J_fd;
+    fd::finite_jacobian_tensor<3>(
         x,
-        [](const Eigen::VectorXd& _x) -> Eigen::VectorXd {
-            return point_point_tangent_basis(_x.head<3>(), _x.tail<3>())
-                .reshaped();
+        [](const Eigen::VectorXd& _x) -> Eigen::MatrixXd {
+            return point_point_tangent_basis(_x.head<3>(), _x.tail<3>());
         },
-        tmp);
-
-    Eigen::Matrix<double, 18, 2> J_fd;
-    J_fd.col(0) = tmp.topRows(3).reshaped();
-    J_fd.col(1) = tmp.bottomRows(3).reshaped();
+        J_fd);
 
     CHECK(fd::compare_jacobian(J, J_fd));
 }
@@ -183,14 +169,13 @@ TEST_CASE(
     x << p, e0, e1;
 
     Eigen::MatrixXd J_fd;
-    fd::finite_jacobian(
+    fd::finite_jacobian_tensor<3>(
         x,
         [](const Eigen::VectorXd& _x) -> Eigen::VectorXd {
             return point_edge_tangent_basis(
                 _x.segment<2>(0), _x.segment<2>(2), _x.segment<2>(4));
         },
         J_fd);
-    J_fd = J_fd.reshaped();
 
     CHECK(fd::compare_jacobian(J, J_fd));
 }
@@ -213,13 +198,12 @@ TEST_CASE(
     x << p0, p1;
 
     Eigen::MatrixXd J_fd;
-    fd::finite_jacobian(
+    fd::finite_jacobian_tensor<3>(
         x,
         [](const Eigen::VectorXd& _x) -> Eigen::VectorXd {
             return point_point_tangent_basis(_x.head<2>(), _x.tail<2>());
         },
         J_fd);
-    J_fd = J_fd.reshaped();
 
     CHECK(fd::compare_jacobian(J, J_fd));
 }

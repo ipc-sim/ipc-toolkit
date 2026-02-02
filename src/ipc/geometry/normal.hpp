@@ -53,7 +53,7 @@ inline Eigen::Matrix3d cross_product_matrix(Eigen::ConstRef<Eigen::Vector3d> v)
 
 /// @brief Computes the Jacobian of the cross product matrix.
 /// @return The Jacobian of the cross product matrix.
-Eigen::Matrix<double, 3, 9> cross_product_matrix_jacobian();
+Eigen::Matrix<double, 9, 3> cross_product_matrix_jacobian();
 
 // =============================================================================
 
@@ -101,7 +101,7 @@ MatrixMax<double, 3, 9> point_line_unnormalized_normal_jacobian(
 /// @param e0 The start position of the line.
 /// @param e1 The end position of the line.
 /// @return The Hessian of the unnormalized normal vector of the point-line pair.
-MatrixMax<double, 3, 81> point_line_unnormalized_normal_hessian(
+MatrixMax<double, 27, 9> point_line_unnormalized_normal_hessian(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -126,7 +126,7 @@ inline MatrixMax<double, 3, 9> point_line_normal_jacobian(
 /// @param e0 The start position of the line.
 /// @param e1 The end position of the line.
 /// @return The Hessian of the normal vector.
-MatrixMax<double, 3, 81> point_line_normal_hessian(
+MatrixMax<double, 27, 9> point_line_normal_hessian(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -189,7 +189,7 @@ inline Eigen::Matrix<double, 3, 9> triangle_unnormalized_normal_jacobian(
 /// @param b The second vertex of the triangle.
 /// @param c The third vertex of the triangle.
 /// @return The Hessian of the unnormalized normal vector of the triangle.
-Eigen::Matrix<double, 3, 81> triangle_unnormalized_normal_hessian(
+Eigen::Matrix<double, 27, 9> triangle_unnormalized_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3d> a,
     Eigen::ConstRef<Eigen::Vector3d> b,
     Eigen::ConstRef<Eigen::Vector3d> c);
@@ -214,7 +214,7 @@ inline Eigen::Matrix<double, 3, 9> triangle_normal_jacobian(
 /// @param b The second vertex of the triangle.
 /// @param c The third vertex of the triangle.
 /// @return The Hessian of the normal vector of the triangle.
-Eigen::Matrix<double, 3, 81> triangle_normal_hessian(
+Eigen::Matrix<double, 27, 9> triangle_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3d> a,
     Eigen::ConstRef<Eigen::Vector3d> b,
     Eigen::ConstRef<Eigen::Vector3d> c);
@@ -303,7 +303,7 @@ inline Eigen::Matrix<double, 3, 12> line_line_normal_jacobian(
 /// @param eb0 The first vertex of the second line.
 /// @param eb1 The second vertex of the second line.
 /// @return The Hessian of the unnormalized normal vector of the two lines.
-Eigen::Matrix<double, 3, 144> line_line_unnormalized_normal_hessian(
+Eigen::Matrix<double, 36, 12> line_line_unnormalized_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -315,7 +315,7 @@ Eigen::Matrix<double, 3, 144> line_line_unnormalized_normal_hessian(
 /// @param eb0 The first vertex of the second line.
 /// @param eb1 The second vertex of the second line.
 /// @return The Hessian of the normal vector of the two lines.
-Eigen::Matrix<double, 3, 144> line_line_normal_hessian(
+Eigen::Matrix<double, 36, 12> line_line_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
