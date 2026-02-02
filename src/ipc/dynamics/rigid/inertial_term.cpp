@@ -124,7 +124,7 @@ VectorMax6d InertialTerm::gradient(
         if (q_hat.size() == 3) {
             const Eigen::Matrix3d Q = rotation_vector_to_matrix(x.tail<3>());
 
-            // ∂f​/∂xₖ = ∑ᵢ∑ⱼ ∂E/∂Qᵢⱼ ∂Qᵢⱼ/∂xₖ
+            // ∂f/∂xₖ = ∑ᵢ∑ⱼ ∂E/∂Qᵢⱼ ∂Qᵢⱼ/∂xₖ
             const Eigen::Matrix<double, 9, 3> dQ_dx =
                 rotation_vector_to_matrix_jacobian(x.tail<3>());
             const Eigen::Vector<double, 9> dE_dQ =
