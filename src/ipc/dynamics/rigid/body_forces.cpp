@@ -94,13 +94,13 @@ double BodyForces::operator()(
     double energy = 0.0;
 
     // if (!body.is_dof_fixed.head(pose.pos_ndof()).all())
-    {
+    if (!force.isZero()) {
         energy += x.head(force.size()).dot(force);
     }
 
     // Rotational energy
     // if (!body.is_dof_fixed.tail(pose.rot_ndof()).all())
-    {
+    if (!torque.isZero()) {
         if (torque.size() == 9) {
             const Eigen::Matrix3d Q = rotation_vector_to_matrix(x.tail<3>());
             energy += (Q.transpose() * torque).trace();
@@ -122,13 +122,13 @@ VectorMax6d BodyForces::gradient(
     VectorMax6d grad = VectorMax6d::Zero(x.size());
 
     // if (!body.is_dof_fixed.head(pose.pos_ndof()).all())
-    {
+    if (!force.isZero()) {
         grad.head(gravity().size()) = force;
     }
 
     // Rotational energy
     // if (!body.is_dof_fixed.tail(pose.rot_ndof()).all())
-    {
+    if (!torque.isZero()) {
         if (torque.size() == 9) {
             const Eigen::Matrix<double, 9, 3> dQ_dx =
                 rotation_vector_to_matrix_jacobian(x.tail<3>());
@@ -154,7 +154,7 @@ MatrixMax6d BodyForces::hessian(
     // Rotational energy
     // if (!body.is_dof_fixed.tail(pose.rot_ndof()).all())
     {
-        if (torque.size() == 9) {
+        if (torque.size() == 9 && !torque.isZero()) {
             const Eigen::Matrix<double, 9, 9> d2Q_dx2 =
                 rotation_vector_to_matrix_hessian(x.tail<3>());
 

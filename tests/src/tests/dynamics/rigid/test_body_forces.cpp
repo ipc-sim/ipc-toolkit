@@ -6,6 +6,8 @@
 
 #include <ipc/dynamics/rigid/body_forces.hpp>
 
+#include <iostream>
+
 using namespace ipc;
 using namespace ipc::rigid;
 
@@ -86,11 +88,13 @@ TEST_CASE(
         Eigen::VectorXd numerical_gradient;
         fd::finite_gradient(x, f, numerical_gradient);
 
-        // std::cout << "Analytical Gradient:\n" << analytical_gradient <<
-        // "\n\n"; std::cout << "Numerical Gradient:\n" << numerical_gradient <<
-        // "\n\n";
-
         CHECK(fd::compare_gradient(analytical_gradient, numerical_gradient));
+        if (!fd::compare_gradient(analytical_gradient, numerical_gradient)) {
+            std::cout << "Analytical Gradient:\n"
+                      << analytical_gradient << "\n\n";
+            std::cout << "Numerical Gradient:\n"
+                      << numerical_gradient << "\n\n";
+        }
     }
 
     {
@@ -103,11 +107,13 @@ TEST_CASE(
         Eigen::MatrixXd numerical_hessian;
         fd::finite_jacobian(x, f, numerical_hessian);
 
-        // std::cout << "Analytical Hessian:\n" << analytical_hessian << "\n\n";
-        // std::cout << "Numerical Hessian:\n" << numerical_hessian << "\n\n";
-
         // Compare analytical and numerical Hessians
         CHECK(fd::compare_jacobian(analytical_hessian, numerical_hessian));
+        if (!fd::compare_jacobian(analytical_hessian, numerical_hessian)) {
+            std::cout << "Analytical Hessian:\n"
+                      << analytical_hessian << "\n\n";
+            std::cout << "Numerical Hessian:\n" << numerical_hessian << "\n\n";
+        }
     }
 
     // Newton direction
