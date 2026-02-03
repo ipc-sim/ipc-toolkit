@@ -234,8 +234,8 @@ namespace {
     void set_cross_product_matrix_jacobian(
         Eigen::Ref<Eigen::Matrix<double, 9, 3>> Jx, double chain_rule = 1.0)
     {
-        Jx(1, 2) = Jx(5, 0) = Jx(6, 1) = -chain_rule;
-        Jx(2, 1) = Jx(3, 2) = Jx(7, 0) = chain_rule;
+        Jx(2, 1) = Jx(3, 2) = Jx(7, 0) = -chain_rule;
+        Jx(1, 2) = Jx(5, 0) = Jx(6, 1) = chain_rule;
     }
 } // namespace
 
@@ -254,15 +254,15 @@ Eigen::Matrix<double, 27, 9> triangle_unnormalized_normal_hessian(
     Eigen::Matrix<double, 27, 9> H = Eigen::Matrix<double, 27, 9>::Zero();
 
     // ∂²n/∂a² = 0
-    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 3), 1.0);  // ∂²n/∂a∂b
-    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 6), -1.0); // ∂²n/∂a∂c
+    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 3), -1.0); // ∂²n/∂a∂b
+    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 6), 1.0);  // ∂²n/∂a∂c
     /**/
-    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 0), -1.0); // ∂²n/∂b∂a
+    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 0), 1.0); // ∂²n/∂b∂a
     // ∂²n/∂b² = 0
-    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 6), 1.0); // ∂²n/∂b∂c
+    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 6), -1.0); // ∂²n/∂b∂c
     /**/
-    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 0), 1.0);  // ∂²n/∂c∂a
-    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 3), -1.0); // ∂²n/∂c∂b
+    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 0), -1.0); // ∂²n/∂c∂a
+    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 3), 1.0);  // ∂²n/∂c∂b
     // ∂²n/∂c² = 0
 
     return H;
@@ -314,21 +314,21 @@ Eigen::Matrix<double, 36, 12> line_line_unnormalized_normal_hessian(
 
     // ∂²n/∂a² = 0
     // ∂²n/∂a∂b = 0
-    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 6), 1.0);  // ∂²n/∂a∂c
-    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 9), -1.0); // ∂²n/∂a∂d
+    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 6), -1.0); // ∂²n/∂a∂c
+    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 9), 1.0);  // ∂²n/∂a∂d
     /**/
     // ∂²n/∂b∂a = 0
     // ∂²n/∂b² = 0
-    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 6), -1.0); // ∂²n/∂b∂c
-    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 9), 1.0);  // ∂²n/∂b∂d
+    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 6), 1.0);  // ∂²n/∂b∂c
+    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 9), -1.0); // ∂²n/∂b∂d
     /**/
-    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 0), -1.0); // ∂²n/∂c∂a
-    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 3), 1.0);  // ∂²n/∂c∂b
+    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 0), 1.0);  // ∂²n/∂c∂a
+    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 3), -1.0); // ∂²n/∂c∂b
     // ∂²n/∂c² = 0
     // ∂²n/∂d² = 0
     /**/
-    set_cross_product_matrix_jacobian(H.block<9, 3>(27, 0), 1.0);  // ∂²n/∂d∂a
-    set_cross_product_matrix_jacobian(H.block<9, 3>(27, 3), -1.0); // ∂²n/∂d∂b
+    set_cross_product_matrix_jacobian(H.block<9, 3>(27, 0), -1.0); // ∂²n/∂d∂a
+    set_cross_product_matrix_jacobian(H.block<9, 3>(27, 3), 1.0);  // ∂²n/∂d∂b
     // ∂²n/∂d∂c = 0
     // ∂²n/∂d² = 0
 

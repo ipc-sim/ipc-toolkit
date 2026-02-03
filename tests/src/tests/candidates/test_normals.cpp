@@ -313,8 +313,7 @@ TEST_CASE("Triangle normal hessian", "[normal]")
     // Cross product matrix jacobian
     Eigen::MatrixXd J_cross = cross_product_matrix_jacobian();
     Eigen::MatrixXd fd_J_cross;
-    // NOTE: Derivative of a matrix w.r.t. a vector => a 3rd-order tensor.
-    fd::finite_jacobian_tensor</*TensorOrder=*/3>(
+    fd::finite_jacobian_tensor<3>(
         a,
         [](const Eigen::Vector3d& a_fd) { return cross_product_matrix(a_fd); },
         fd_J_cross);
