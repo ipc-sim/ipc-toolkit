@@ -26,9 +26,7 @@ target_include_directories(Eigen3_Eigen SYSTEM INTERFACE
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-if(EIGEN_DONT_VECTORIZE OR IPC_TOOLKIT_WITH_SIMD)
-
-    # Disable vectorization in Eigen since I've found it to have alignment issues.
+if(EIGEN_DONT_VECTORIZE)
     target_compile_definitions(Eigen3_Eigen INTERFACE EIGEN_DONT_VECTORIZE=1)
 endif()
 

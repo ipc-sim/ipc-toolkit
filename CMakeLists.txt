@@ -266,6 +266,9 @@ if(IPC_TOOLKIT_WITH_SIMD)
   # Link against cross-platform xsimd library
   include(xsimd)
   target_link_libraries(ipc_toolkit PRIVATE xsimd::xsimd)
+
+  # Disable vectorization in Eigen since I've found it to have alignment issues.
+  target_compile_definitions(Eigen3_Eigen INTERFACE EIGEN_DONT_VECTORIZE=1)
 endif()
 
 # For MSVC, do not use the min and max macros.
