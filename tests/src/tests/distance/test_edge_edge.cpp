@@ -413,8 +413,9 @@ TEST_CASE(
             fjac);
 
         for (int d = 0; d < 3; d++) {
-            CHECK(fd::compare_jacobian(
-                fjac.row(d), direc(d).grad.transpose(), 1e-5));
+            CHECK(
+                fd::compare_jacobian(
+                    fjac.row(d), direc(d).grad.transpose(), 1e-5));
         }
     }
 }
