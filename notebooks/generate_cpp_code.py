@@ -1,23 +1,36 @@
 import numpy as np
 import sympy
 from sympy import Matrix, MatrixSymbol
+from sympy.core.relational import Relational
+from sympy.logic.boolalg import Boolean
 from sympy.printing import ccode
 import subprocess
+import re
 
 from utils import jacobian
 
 
 def generate_code(expr, out_var_name=None):
-    CSE_results = sympy.cse(
-        expr, sympy.numbered_symbols("t"), optimizations='basic')
+    CSE_results = sympy.cse(expr, sympy.numbered_symbols("t"), optimizations="basic")
     lines = []
     for helper in CSE_results[0]:
+        var_name = sympy.cxxcode(helper[0])
+        value = helper[1]
+
+        # 1. Determine the Correct C++ Type
         if isinstance(helper[1], MatrixSymbol):
-            lines.append(f'const auto {helper[0]}[{helper[1].size}];')
-            lines.append(sympy.cxxcode(helper[1], helper[0]))
+            cpp_type = "const double"
+            lines.append(f"{cpp_type} {var_name}[{value.size}];")
+            lines.append(sympy.cxxcode(value, var_name))
+            continue  # Skip the standard assignment line below
+
+        if isinstance(value, (Relational, Boolean)) or value.is_Boolean:
+            cpp_type = "const bool"
         else:
-            lines.append(
-                f'const auto {sympy.cxxcode(helper[0])} = {sympy.cxxcode(helper[1])};')
+            cpp_type = "const double"
+
+        # 2. Append the formatted assignment
+        lines.append(f"{cpp_type} {var_name} = {sympy.cxxcode(value)};")
 
     if out_var_name != None:
         for i, result in enumerate(CSE_results[1]):
@@ -26,7 +39,18 @@ def generate_code(expr, out_var_name=None):
         for i, result in enumerate(CSE_results[1]):
             lines.append(f"return {sympy.cxxcode(result)};")
 
-    return '\n'.join(lines)
+    code = "\n".join(lines)
+
+    # Regex replacements for better C++ code
+    code = re.sub(r"std::pow\(\s*([^,]+),\s*2\s*\)", r"((\1) * (\1))", code)
+    code = re.sub(
+        r"std::pow\(\s*([^,]+),\s*3\.0\s*/\s*2\.0\s*\)", r"((\1) * std::sqrt(\1))", code
+    )
+    code = re.sub(
+        r"std::pow\(\s*([^,]+),\s*-1\.0\s*/\s*2\.0\s*\)", r"(1.0 / std::sqrt(\1))", code
+    )
+
+    return code
 
 
 class CXXFunctionGenerator:
@@ -79,26 +103,30 @@ class CXXHessianGenerator(CXXJacobianGenerator):
 
 def generate_hpp_file(code_generators, file_name, transformer=None):
     newline = "\n"
-    with open(file_name, 'w') as f:
-        f.write(f"""\
+    with open(file_name, "w") as f:
+        f.write(
+            f"""\
 #pragma once
 
 namespace ipc::autogen{{
     {newline.join(code_generator.signature()
                   for code_generator in code_generators)}
 }}
-""")
+"""
+        )
     subprocess.run(["clang-format", str(file_name), "-i"])
 
 
 def generate_cpp_file(code_generators, file_name):
     newline = "\n"
-    with open(file_name, 'w') as f:
-        f.write(f"""\
+    with open(file_name, "w") as f:
+        f.write(
+            f"""\
 #include <{file_name[:-4]}.hpp>
 
 namespace ipc::autogen{{
     {newline.join(code_generator() for code_generator in code_generators)}
 }}
-""")
+"""
+        )
     subprocess.run(["clang-format", str(file_name), "-i"])

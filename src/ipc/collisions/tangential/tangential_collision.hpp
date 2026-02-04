@@ -50,7 +50,7 @@ public:
     /// @brief Compute the Jacobian of the tangent basis of the collision.
     /// @param positions Collision stencil's vertex positions.
     /// @return Jacobian of the tangent basis of the collision.
-    virtual MatrixMax<double, 36, 2> compute_tangent_basis_jacobian(
+    virtual MatrixMax<double, 6, 12> compute_tangent_basis_jacobian(
         Eigen::ConstRef<VectorMax12d> positions) const = 0;
 
     /// @brief Compute the barycentric coordinates of the closest point.
@@ -74,21 +74,21 @@ public:
     /// @brief Construct the premultiplier matrix for the relative velocity.
     /// @note Uses the cached closest point.
     /// @return A matrix M such that `relative_velocity = M * velocities`.
-    virtual MatrixMax<double, 3, 12> relative_velocity_matrix() const
+    virtual MatrixMax<double, 3, 12> relative_velocity_jacobian() const
     {
-        return relative_velocity_matrix(closest_point);
+        return relative_velocity_jacobian(closest_point);
     }
 
     /// @brief Construct the premultiplier matrix for the relative velocity.
     /// @param closest_point Barycentric coordinates of the closest point.
     /// @return A matrix M such that `relative_velocity = M * velocities`.
-    virtual MatrixMax<double, 3, 12> relative_velocity_matrix(
+    virtual MatrixMax<double, 3, 12> relative_velocity_jacobian(
         Eigen::ConstRef<VectorMax2d> closest_point) const = 0;
 
     /// @brief Construct the Jacobian of the relative velocity premultiplier wrt the closest points.
     /// @param closest_point Barycentric coordinates of the closest point.
     /// @return Jacobian of the relative velocity premultiplier wrt the closest points.
-    virtual MatrixMax<double, 6, 12> relative_velocity_matrix_jacobian(
+    virtual MatrixMax<double, 3, 24> relative_velocity_dx_dbeta(
         Eigen::ConstRef<VectorMax2d> closest_point) const = 0;
 
 public:

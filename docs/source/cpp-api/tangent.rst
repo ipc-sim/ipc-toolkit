@@ -28,18 +28,18 @@ Relative Velocity
 Relative Velocity as Multiplier Matricies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. doxygenfunction:: ipc::point_point_relative_velocity_matrix
-.. doxygenfunction:: ipc::point_edge_relative_velocity_matrix
-.. doxygenfunction:: ipc::edge_edge_relative_velocity_matrix
-.. doxygenfunction:: ipc::point_triangle_relative_velocity_matrix
+.. doxygenfunction:: ipc::point_point_relative_velocity_jacobian
+.. doxygenfunction:: ipc::point_edge_relative_velocity_jacobian
+.. doxygenfunction:: ipc::edge_edge_relative_velocity_jacobian
+.. doxygenfunction:: ipc::point_triangle_relative_velocity_jacobian
 
 Relative Velocity Matrix Jacobians
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. doxygenfunction:: ipc::point_point_relative_velocity_matrix_jacobian
-.. doxygenfunction:: ipc::point_edge_relative_velocity_matrix_jacobian
-.. doxygenfunction:: ipc::edge_edge_relative_velocity_matrix_jacobian
-.. doxygenfunction:: ipc::point_triangle_relative_velocity_matrix_jacobian
+.. doxygenfunction:: ipc::point_point_relative_velocity_dx_dbeta
+.. doxygenfunction:: ipc::point_edge_relative_velocity_dx_dbeta
+.. doxygenfunction:: ipc::edge_edge_relative_velocity_dx_dbeta
+.. doxygenfunction:: ipc::point_triangle_relative_velocity_dx_dbeta
 
 Closet Points
 -------------

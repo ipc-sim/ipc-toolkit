@@ -26,8 +26,7 @@ TEST_CASE(
         == Catch::Approx(1));
 
     // Jacobian
-    const Eigen::Matrix<double, 36, 2> J =
-        point_triangle_tangent_basis_jacobian(p, t0, t1, t2);
+    const auto J = point_triangle_tangent_basis_jacobian(p, t0, t1, t2);
 
     Vector12d x;
     x << p, t0, t1, t2;
@@ -66,8 +65,7 @@ TEST_CASE(
         == Catch::Approx(1));
 
     // Jacobian
-    const Eigen::Matrix<double, 36, 2> J =
-        edge_edge_tangent_basis_jacobian(ea0, ea1, eb0, eb1);
+    const auto J = edge_edge_tangent_basis_jacobian(ea0, ea1, eb0, eb1);
 
     Vector12d x;
     x << ea0, ea1, eb0, eb1;
@@ -101,8 +99,7 @@ TEST_CASE(
         == Catch::Approx(1));
 
     // Jacobian
-    const Eigen::Matrix<double, 27, 2> J =
-        point_edge_tangent_basis_jacobian(p, e0, e1);
+    const auto J = point_edge_tangent_basis_jacobian(p, e0, e1);
 
     Vector9d x;
     x << p, e0, e1;
@@ -135,8 +132,7 @@ TEST_CASE(
         == Catch::Approx(1));
 
     // Jacobian
-    const Eigen::Matrix<double, 18, 2> J =
-        point_point_tangent_basis_jacobian(p0, p1);
+    const auto J = point_point_tangent_basis_jacobian(p0, p1);
 
     Vector6d x;
     x << p0, p1;
@@ -163,7 +159,7 @@ TEST_CASE(
     CHECK(std::abs(basis.dot(Eigen::Vector2d::UnitX())) == Catch::Approx(1));
 
     // Jacobian
-    const Vector12d J = point_edge_tangent_basis_jacobian(p, e0, e1);
+    const auto J = point_edge_tangent_basis_jacobian(p, e0, e1);
 
     Vector6d x;
     x << p, e0, e1;
@@ -191,8 +187,7 @@ TEST_CASE(
     CHECK(std::abs(basis.dot(Eigen::Vector2d::UnitX())) == Catch::Approx(1));
 
     // Jacobian
-    const Eigen::Vector<double, 8> J =
-        point_point_tangent_basis_jacobian(p0, p1);
+    const auto J = point_point_tangent_basis_jacobian(p0, p1);
 
     Eigen::Vector4d x;
     x << p0, p1;

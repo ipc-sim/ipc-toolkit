@@ -78,9 +78,9 @@ void define_tangential_collision(py::module_& m)
             )ipc_Qu8mg5v7",
             "velocities"_a)
         .def(
-            "relative_velocity_matrix",
+            "relative_velocity_jacobian",
             py::overload_cast<>(
-                &TangentialCollision::relative_velocity_matrix, py::const_),
+                &TangentialCollision::relative_velocity_jacobian, py::const_),
             R"ipc_Qu8mg5v7(
             Construct the premultiplier matrix for the relative velocity.
 
@@ -91,9 +91,9 @@ void define_tangential_collision(py::module_& m)
                 A matrix M such that `relative_velocity = M * velocities`.
             )ipc_Qu8mg5v7")
         .def(
-            "relative_velocity_matrix",
+            "relative_velocity_jacobian",
             py::overload_cast<Eigen::ConstRef<VectorMax2d>>(
-                &TangentialCollision::relative_velocity_matrix, py::const_),
+                &TangentialCollision::relative_velocity_jacobian, py::const_),
             R"ipc_Qu8mg5v7(
             Construct the premultiplier matrix for the relative velocity.
 
@@ -105,8 +105,8 @@ void define_tangential_collision(py::module_& m)
             )ipc_Qu8mg5v7",
             "closest_point"_a)
         .def(
-            "relative_velocity_matrix_jacobian",
-            &TangentialCollision::relative_velocity_matrix_jacobian,
+            "relative_velocity_dx_dbeta",
+            &TangentialCollision::relative_velocity_dx_dbeta,
             R"ipc_Qu8mg5v7(
             Construct the Jacobian of the relative velocity premultiplier wrt the closest points.
 
