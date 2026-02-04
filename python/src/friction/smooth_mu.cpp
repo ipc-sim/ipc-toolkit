@@ -126,8 +126,7 @@ void define_smooth_mu(py::module_& m)
         "y"_a, "mu_s"_a, "mu_k"_a, "eps_v"_a);
 
     m.def(
-        "anisotropic_mu_eff_f",
-        &anisotropic_mu_eff_f,
+        "anisotropic_mu_eff_f", &anisotropic_mu_eff_f,
         R"ipc_Qu8mg5v7(
         Effective static and kinetic friction along a unit direction for the
         elliptical (matchstick) model: μ_eff = sqrt((μ₀ t₀)² + (μ₁ t₁)²).

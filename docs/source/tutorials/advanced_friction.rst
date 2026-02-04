@@ -79,7 +79,7 @@ where :math:`\lambda` is the contact force magnitude, :math:`T(x) \in \mathbb{R}
         1 & \text{otherwise}
     \end{cases}
 
-where :math:`\epsilon_v` is a small constant (e.g., ``0.001``). The following plot show the behavior of the function :math:`f_1`:
+where :math:`\epsilon_v` is a small constant (e.g., ``0.001``). The following plot shows the behavior of the function :math:`f_1`:
 
 .. figure:: ../_static/img/f1.png
    :align: center
@@ -95,7 +95,7 @@ To create a dissipative potential we integrate :math:`f_1` to obtain a smooth mo
     \end{cases}
 
 
-The following plot show the behavior of the function :math:`f_0`:
+The following plot shows the behavior of the function :math:`f_0`:
 
 .. figure:: /_static/img/f0.png
    :align: center
@@ -105,7 +105,7 @@ The following plot show the behavior of the function :math:`f_0`:
 Smooth :math:`\mu`
 ^^^^^^^^^^^^^^^^^^
 
-When adding separate coefficients for static and kinetic friction, we need to maintain the :math:`C^1` continuity of the friction force. This lead us to define a smooth coefficient of friction :math:`\mu(y)` that transitions between the static and kinetic coefficients based on the magnitude of the relative velocity :math:`y = \|\mathbf{u}\|`. The smooth coefficient of friction is defined as
+When adding separate coefficients for static and kinetic friction, we need to maintain the :math:`C^1` continuity of the friction force. This leads us to define a smooth coefficient of friction :math:`\mu(y)` that transitions between the static and kinetic coefficients based on the magnitude of the relative velocity :math:`y = \|\mathbf{u}\|`. The smooth coefficient of friction is defined as
 
 .. math::
     \mu(y) = \begin{cases}
