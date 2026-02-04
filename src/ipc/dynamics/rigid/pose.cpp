@@ -170,4 +170,86 @@ Eigen::Vector3d rotation_matrix_to_vector(Eigen::ConstRef<Eigen::Matrix3d> R)
 #endif
 }
 
+Eigen::MatrixXd
+Pose::transform_vertices_jacobian(Eigen::ConstRef<Eigen::MatrixXd> V) const
+{
+    const int dim = V.cols();
+    const int ndof = position.size() + rotation.size();
+    assert(dim == position.size());
+
+    Eigen::MatrixXd jac = Eigen::MatrixXd::Zero(V.size(), ndof);
+
+    // Derivative w.r.t. position is identity
+    for (int d = 0; d < dim; ++d) {
+        jac.block(d * V.rows(), d, V.rows(), 1).setOnes();
+    }
+
+    // Precompute dR/dθ
+    MatrixMax<double, 9, 3> dR_dtheta;
+    if (dim == 2) {
+        dR_dtheta.resize(4, 1);
+        // 2D rotation matrix:
+        // R(θ) = [cos(θ) -sin(θ);
+        //         sin(θ)  cos(θ)]
+        const double dcos = -std::sin(rotation(0));
+        const double dsin = std::cos(rotation(0));
+        dR_dtheta(0, 0) = dcos;
+        dR_dtheta(1, 0) = dsin;
+        dR_dtheta(2, 0) = -dsin;
+        dR_dtheta(3, 0) = dcos;
+    } else {
+        dR_dtheta = rotation_vector_to_matrix_jacobian(rotation);
+    }
+
+    // Derivative w.r.t. rotation
+    for (int j = 0; j < rotation.size(); ++j) {
+        jac.block(0, dim + j, V.size(), 1) =
+            (V * dR_dtheta.col(j).reshaped(dim, dim).transpose()).reshaped();
+    }
+
+    return jac;
+}
+
+Eigen::MatrixXd
+Pose::transform_vertices_hessian(Eigen::ConstRef<Eigen::MatrixXd> V) const
+{
+    const int dim = V.cols();
+    const int ndof = position.size() + rotation.size();
+    assert(dim == position.size());
+
+    Eigen::MatrixXd hess = Eigen::MatrixXd::Zero(V.size(), ndof * ndof);
+
+    // Derivative of position Jacobian is zero, so only need to compute
+    // derivatives involving rotation.
+
+    // Precompute d^2R/dθ^2
+    MatrixMax<double, 9, 9> d2R_dtheta2;
+    if (dim == 2) {
+        d2R_dtheta2.resize(4, 1);
+        // 2D rotation matrix:
+        // R(θ) = [cos(θ) -sin(θ);
+        //         sin(θ)  cos(θ)]
+        const double d2cos = -std::cos(rotation(0));
+        const double d2sin = -std::sin(rotation(0));
+        d2R_dtheta2(0, 0) = d2cos;
+        d2R_dtheta2(1, 0) = d2sin;
+        d2R_dtheta2(2, 0) = -d2sin;
+        d2R_dtheta2(3, 0) = d2cos;
+    } else {
+        d2R_dtheta2 = rotation_vector_to_matrix_hessian(rotation);
+    }
+
+    // Derivative w.r.t. rotation
+    for (int j = position.size(); j < ndof; ++j) {
+        for (int i = position.size(); i < ndof; ++i) {
+            const int k = (j - dim) * rotation.size() + (i - dim);
+            hess.col(j * ndof + i) =
+                (V * d2R_dtheta2.col(k).reshaped(dim, dim).transpose())
+                    .reshaped();
+        }
+    }
+
+    return hess;
+}
+
 } // namespace ipc::rigid

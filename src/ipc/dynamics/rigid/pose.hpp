@@ -35,13 +35,17 @@ Eigen::Vector3d rotation_matrix_to_vector(Eigen::ConstRef<Eigen::Matrix3d> R);
 // ----------------------------------------------------------------------------
 
 struct Pose {
-    // Position of the rigid body
+    /// @brief Position of the rigid body
     VectorMax3d position;
-    // Rotation of the rigid body (rotation vector for 3D, angle for 1D)
+    /// @brief Rotation of the rigid body (rotation vector for 3D, angle for 1D)
     VectorMax3d rotation;
 
+    /// @brief Default constructor.
     Pose() = default;
 
+    /// @brief Construct a pose from position and rotation vectors.
+    /// @param _position The position vector
+    /// @param _rotation The rotation vector
     Pose(
         Eigen::ConstRef<VectorMax3d> _position,
         Eigen::ConstRef<VectorMax3d> _rotation)
@@ -50,16 +54,47 @@ struct Pose {
     {
     }
 
+    /// @brief Construct a pose from a concatenated vector.
+    /// @param x The concatenated position and rotation vector
+    explicit Pose(Eigen::ConstRef<VectorMax6d> x)
+    {
+        assert(x.size() == 6 || x.size() == 3);
+        if (x.size() == 3) {
+            position = x.head<2>();
+            rotation = x.tail<1>();
+        } else {
+            position = x.head<3>();
+            rotation = x.tail<3>();
+        }
+    }
+
+    /// @brief Construct a zero pose.
+    /// @param dim The dimension of the pose (2 or 3)
+    /// @return A pose with zero position and rotation
     static Pose Zero(const int dim) // NOLINT(readability-identifier-naming)
     {
         return Pose(VectorMax3d::Zero(dim), VectorMax3d::Zero(dim));
     }
 
+    /// @brief Construct a rotation matrix from the rotation vector.
+    /// @return The rotation matrix corresponding to the rotation vector
     MatrixMax3d rotation_matrix() const
     {
-        return rotation_vector_to_matrix(rotation);
+        assert(rotation.size() == 1 || rotation.size() == 3);
+        if (rotation.size() == 1) {
+            // For 2D, set the rotation matrix directly
+            MatrixMax3d R(2, 2);
+            R << std::cos(rotation(0)), -std::sin(rotation(0)),
+                std::sin(rotation(0)), std::cos(rotation(0));
+            return R;
+        } else {
+            // For 3D, convert the rotation vector to a rotation matrix
+            return rotation_vector_to_matrix(rotation);
+        }
     }
 
+    /// @brief Construct a quaternion from the rotation vector.
+    /// @return The quaternion corresponding to the rotation vector
     Eigen::Quaternion<double> quaternion() const
     {
         assert(rotation.size() == 3);
@@ -68,6 +103,9 @@ struct Pose {
         return Eigen::Quaternion<double>(Eigen::AngleAxis<double>(angle, axis));
     }
 
+    /// @brief Transform vertices from local to world coordinates using the pose.
+    /// @param V The vertices to transform (each row is a vertex)
+    /// @return The transformed vertices
     Eigen::MatrixXd transform_vertices(Eigen::ConstRef<Eigen::MatrixXd> V) const
     {
         // Compute: R(θ) V + p
@@ -76,6 +114,20 @@ struct Pose {
             + position.transpose();
     }
 
+    /// @brief Compute the Jacobian of the transformed vertices with respect to the pose.
+    /// @param V The vertices to transform (each row is a vertex)
+    /// @return The Jacobian matrix of size (num_vertices * dim) x ndof
+    Eigen::MatrixXd
+    transform_vertices_jacobian(Eigen::ConstRef<Eigen::MatrixXd> V) const;
+
+    /// @brief Compute the Hessian of the transformed vertices with respect to the pose.
+    /// @param V The vertices to transform (each row is a vertex)
+    /// @return The Hessian matrix of size (num_vertices * dim) x (ndof * ndof)
+    Eigen::MatrixXd
+    transform_vertices_hessian(Eigen::ConstRef<Eigen::MatrixXd> V) const;
+
+    /// @brief Compute the inverse of the pose.
+    /// @return The inverse pose
     Pose inverse() const
     {
         Pose inv;
@@ -91,6 +143,10 @@ struct Pose {
         return inv;
     }
 
+    /// @brief Combine two poses.
+    /// @param a The first pose
+    /// @param b The second pose
+    /// @return The combined pose
     friend Pose operator*(const Pose& a, const Pose& b)
     {
         Pose c;
@@ -110,6 +166,10 @@ struct Pose {
         return c;
     }
 
+    /// @brief Check if two poses are equal.
+    /// @param a The first pose
+    /// @param b The second pose
+    /// @return True if the poses are equal, false otherwise
     friend bool operator==(const Pose& a, const Pose& b)
     {
         return a.position == b.position && a.rotation == b.rotation;

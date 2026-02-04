@@ -82,7 +82,7 @@ TEST_CASE("Rigid body construction", "[rigid]")
             input_pose.position.transpose(), initial_pose.position.transpose(),
             modified_pose.position.transpose());
         REQUIRE(modified_pose.position.isApprox(
-            input_pose.position + initial_pose.position));
+            (initial_pose * input_pose).position));
     }
 
     // The modified rotation should be the initial rotation times the input

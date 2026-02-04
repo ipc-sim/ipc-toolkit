@@ -63,7 +63,8 @@ RigidBody::RigidBody(
     // 1. Center the vertices, so the mass properties are computed correctly
     // TODO: This should not be necessary. Determine why the mass properties
     // are not computed correctly without centering the vertices.
-    center_vertices(vertices, edges, faces, initial_pose);
+    Pose centering_pose = Pose::Zero(dim);
+    center_vertices(vertices, edges, faces, centering_pose);
 
     // 2. Compute the mass properties
     VectorMax3d center_of_mass;
@@ -129,9 +130,8 @@ RigidBody::RigidBody(
         vertices = vertices * m_R0;
 
         // Store the initial rotation in the pose (R = RᵢR₀)
-        Eigen::AngleAxisd r = Eigen::AngleAxisd(
-            Eigen::Matrix3d(initial_pose.rotation_matrix() * m_R0));
-        initial_pose.rotation = r.angle() * r.axis();
+        Eigen::AngleAxisd r = Eigen::AngleAxisd(Eigen::Matrix3d(m_R0));
+        centering_pose.rotation = r.angle() * r.axis();
 
         // TODO:
         // ω = R₀ᵀω₀ (ω₀ expressed in body coordinates)
@@ -149,6 +149,9 @@ RigidBody::RigidBody(
         // The input orientation is already in the inertial frame
         m_R0 = Eigen::Matrix2d::Identity();
     }
+
+    // 4. Apply the centering pose to the initial pose
+    initial_pose = initial_pose * centering_pose;
 
     m_J = compute_J(m_moment_of_inertia);
 

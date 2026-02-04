@@ -1,11 +1,16 @@
+#include <Eigen/Core>
 #include <catch2/catch_all.hpp>
 
 #include <ipc/dynamics/rigid/pose.hpp>
 
 #include <Eigen/Geometry>
+#include <catch2/generators/catch_generators_range.hpp>
 #include <igl/PI.h>
 #include <finitediff.hpp>
 
+#include <iostream>
+
+using namespace ipc;
 using namespace ipc::rigid;
 
 TEST_CASE("so(3) -> SO(3)", "[rigid][pose]")
@@ -117,17 +122,18 @@ TEST_CASE("so(3) -> SO(3) derivatives", "[rigid][pose]")
         Eigen::Matrix<double, 9, 3> J_analytic =
             rotation_vector_to_matrix_jacobian(theta);
 
-        auto f = [&](const Eigen::VectorXd& x) -> Eigen::VectorXd {
-            return rotation_vector_to_matrix(x).reshaped();
+        auto f = [&](const Eigen::VectorXd& x) -> Eigen::MatrixXd {
+            return rotation_vector_to_matrix(x);
         };
 
         Eigen::MatrixXd J_numerical;
-        fd::finite_jacobian(theta, f, J_numerical);
+        fd::finite_jacobian_tensor<3>(theta, f, J_numerical);
 
         CHECK(fd::compare_jacobian(J_analytic, J_numerical));
-
-        // std::cout << "J_analytic:\n" << J_analytic << "\n\n";
-        // std::cout << "J_numerical:\n" << J_numerical << "\n\n";
+        if (!fd::compare_jacobian(J_analytic, J_numerical)) {
+            std::cout << "J_analytic:\n" << J_analytic << "\n\n";
+            std::cout << "J_numerical:\n" << J_numerical << "\n\n";
+        }
     }
 
     {
@@ -139,12 +145,13 @@ TEST_CASE("so(3) -> SO(3) derivatives", "[rigid][pose]")
         };
 
         Eigen::MatrixXd H_numerical;
-        fd::finite_jacobian(theta, f, H_numerical);
+        fd::finite_jacobian_tensor<4>(theta, f, H_numerical);
 
         CHECK(fd::compare_jacobian(H_analytic, H_numerical));
-
-        // std::cout << "H_analytic:\n" << H_analytic << "\n\n";
-        // std::cout << "H_numerical:\n" << H_numerical << "\n\n";
+        if (!fd::compare_jacobian(H_analytic, H_numerical)) {
+            std::cout << "H_analytic:\n" << H_analytic << "\n\n";
+            std::cout << "H_numerical:\n" << H_numerical << "\n\n";
+        }
     }
 }
 
@@ -194,4 +201,66 @@ TEST_CASE("Benchmark SO(3) -> so(3)", "[!benchmark][rigid][pose]")
         Eigen::AngleAxisd angle_axis(R);
         return angle_axis.angle() * angle_axis.axis();
     };
+}
+
+TEST_CASE("Pose transform vertices Jacobian", "[rigid][pose][jacobian]")
+{
+    GENERATE(range(0, 10));
+    const int DIM = GENERATE(2, 3);
+
+    Pose p;
+    p.position = VectorMax3d::Random(DIM);
+    p.rotation = VectorMax3d::Random(DIM == 2 ? 1 : 3);
+
+    constexpr int NUM_VERTICES = 2;
+    Eigen::MatrixXd V = Eigen::MatrixXd::Random(NUM_VERTICES, DIM);
+
+    Eigen::MatrixXd dV_dx_analytic = p.transform_vertices_jacobian(V);
+
+    auto f = [&](const Eigen::VectorXd& x) -> Eigen::MatrixXd {
+        return Pose(x).transform_vertices(V);
+    };
+
+    Eigen::VectorXd x(DIM == 2 ? 3 : 6);
+    x << p.position, p.rotation;
+
+    Eigen::MatrixXd dV_dx_numerical;
+    fd::finite_jacobian_tensor<3>(x, f, dV_dx_numerical);
+
+    CHECK(fd::compare_jacobian(dV_dx_analytic, dV_dx_numerical));
+    if (!fd::compare_jacobian(dV_dx_analytic, dV_dx_numerical)) {
+        std::cout << "dV_dx_analytic:\n" << dV_dx_analytic << "\n\n";
+        std::cout << "dV_dx_numerical:\n" << dV_dx_numerical << "\n\n";
+    }
+}
+
+TEST_CASE("Pose transform vertices Hessian", "[rigid][pose][hessian]")
+{
+    // GENERATE(range(0, 10));
+    const int DIM = GENERATE(2, 3);
+
+    Pose p;
+    p.position = VectorMax3d::Random(DIM);
+    p.rotation = VectorMax3d::Random(DIM == 2 ? 1 : 3);
+
+    constexpr int NUM_VERTICES = 2;
+    Eigen::MatrixXd V = Eigen::MatrixXd::Random(NUM_VERTICES, DIM);
+
+    Eigen::MatrixXd d2V_dx2_analytic = p.transform_vertices_hessian(V);
+
+    auto f = [&](const Eigen::VectorXd& x) -> Eigen::MatrixXd {
+        return Pose(x).transform_vertices_jacobian(V);
+    };
+
+    Eigen::VectorXd x(DIM == 2 ? 3 : 6);
+    x << p.position, p.rotation;
+
+    Eigen::MatrixXd d2V_dx2_numerical;
+    fd::finite_jacobian_tensor<4>(x, f, d2V_dx2_numerical);
+
+    CHECK(fd::compare_jacobian(d2V_dx2_analytic, d2V_dx2_numerical));
+    if (!fd::compare_jacobian(d2V_dx2_analytic, d2V_dx2_numerical)) {
+        std::cout << "dV_dx_analytic:\n" << d2V_dx2_analytic << "\n\n";
+        std::cout << "dV_dx_numerical:\n" << d2V_dx2_numerical << "\n\n";
+    }
 }

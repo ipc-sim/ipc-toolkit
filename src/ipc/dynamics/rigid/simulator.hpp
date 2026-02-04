@@ -7,9 +7,11 @@
 
 namespace ipc::rigid {
 
-class RigidBodies;
+class BodyForces;
+class GroundContact;
 class ImplicitEuler;
 class InertialTerm;
+class RigidBodies;
 
 class Simulator {
 public:
@@ -61,6 +63,10 @@ public:
     // }
 
 protected:
+    double energy(Eigen::ConstRef<Eigen::VectorXd> x);
+    Eigen::VectorXd gradient(Eigen::ConstRef<Eigen::VectorXd> x);
+    Eigen::MatrixXd hessian(Eigen::ConstRef<Eigen::VectorXd> x);
+
     /// @brief Bodies in the simulation
     std::shared_ptr<RigidBodies> m_bodies;
 
@@ -70,6 +76,13 @@ protected:
     /// @brief Inertial term for the rigid body dynamics
     std::shared_ptr<InertialTerm> m_inertial_term;
 
+    /// @brief Body forces acting on the rigid bodies
+    std::shared_ptr<BodyForces> m_body_forces;
+
+    /// @brief Ground contact handler
+    std::shared_ptr<GroundContact> m_ground_contact;
+
+    /// @brief History of poses at each time step
     std::list<std::vector<Pose>> m_pose_history;
 
     /// @brief t Current simulation time

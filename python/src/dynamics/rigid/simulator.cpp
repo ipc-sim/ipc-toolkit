@@ -78,6 +78,7 @@ void define_rigid_simulator(py::module_& m)
              )ipc_Qu8mg5v7",
             py::arg("poses"))
         .def_property_readonly("num_bodies", &RigidBodies::num_bodies)
+        .def("__len__", &RigidBodies::num_bodies)
         .def(
             "__getitem__", py::overload_cast<size_t>(&RigidBodies::operator[]),
             py::arg("index"));

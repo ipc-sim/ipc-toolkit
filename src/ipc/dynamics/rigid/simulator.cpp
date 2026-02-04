@@ -1,9 +1,12 @@
 #include "simulator.hpp"
 
+#include <ipc/dynamics/rigid/body_forces.hpp>
+#include <ipc/dynamics/rigid/ground_contact.hpp>
 #include <ipc/dynamics/rigid/inertial_term.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 #include <ipc/dynamics/rigid/time_integrator.hpp>
 #include <ipc/geometry/normal.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 #include <igl/PI.h>
 
@@ -25,16 +28,16 @@ Simulator::Simulator(
             initial_poses[i].rotation_matrix().reshaped();
     }
     Eigen::VectorXd v0 = Eigen::VectorXd::Zero(12 * m_bodies->num_bodies());
-    for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
-        // v0.segment<3>(12 * i).y() = 10;
+    // for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
+    //     // v0.segment<3>(12 * i).y() = 10;
 
-        // ω = R₀ᵀω₀ (ω₀ expressed in body coordinates)
-        Eigen::Vector3d omega(0, -100 * igl::PI / 180, 0);
-        omega = (*m_bodies)[i].R0().transpose() * omega;
-        Eigen::Matrix3d Q_t0 = initial_poses[i].rotation_matrix();
-        v0.segment<9>(12 * i + 3) =
-            (Q_t0 * cross_product_matrix(omega)).reshaped();
-    }
+    //     // ω = R₀ᵀω₀ (ω₀ expressed in body coordinates)
+    //     Eigen::Vector3d omega(0, -100 * igl::PI / 180, 0);
+    //     omega = (*m_bodies)[i].R0().transpose() * omega;
+    //     Eigen::Matrix3d Q_t0 = initial_poses[i].rotation_matrix();
+    //     v0.segment<9>(12 * i + 3) =
+    //         (Q_t0 * cross_product_matrix(omega)).reshaped();
+    // }
     Eigen::VectorXd a0 = Eigen::VectorXd::Zero(12 * m_bodies->num_bodies());
 
     // Initialize the time integrator
@@ -43,6 +46,14 @@ Simulator::Simulator(
 
     // Initialize the inertial term
     m_inertial_term = std::make_shared<InertialTerm>(m_time_integrator);
+
+    // Iniaizlie the body force term
+    m_body_forces = std::make_shared<BodyForces>(m_time_integrator);
+    m_body_forces->set_gravity(Eigen::Vector3d(0, -9.81, 0));
+
+    // Initialize the ground contact handler
+    m_ground_contact = std::make_shared<GroundContact>(0.0);
+    m_ground_contact->set_dhat(0.1);
 }
 
 void Simulator::run(
@@ -69,6 +80,7 @@ void Simulator::step()
     std::vector<Pose> poses = m_pose_history.back();
 
     m_inertial_term->update(*m_bodies);
+    m_body_forces->update(*m_bodies);
 
     Eigen::VectorXd x = Eigen::VectorXd(6 * m_bodies->num_bodies());
     for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
@@ -79,17 +91,16 @@ void Simulator::step()
     double dx, grad_norm;
     int iter = 0;
     do {
-        Eigen::VectorXd grad = m_inertial_term->gradient(*m_bodies, x);
+        Eigen::VectorXd grad = gradient(x);
         if ((grad_norm = grad.norm()) < 1e-6) {
             break;
         }
-        Eigen::MatrixXd hess =
-            m_inertial_term->hessian(*m_bodies, x, PSDProjectionMethod::ABS);
+        Eigen::MatrixXd hess = hessian(x);
         Eigen::VectorXd step = -hess.llt().solve(grad);
         dx = step.norm();
         double alpha = 1.0;
-        double Ex = (*m_inertial_term)(*m_bodies, x);
-        while ((*m_inertial_term)(*m_bodies, x + alpha * step) >= Ex) {
+        double Ex = energy(x);
+        while (energy(x + alpha * step) >= Ex) {
             alpha *= 0.5;
         }
         x += alpha * step;
@@ -117,6 +128,27 @@ void Simulator::step()
     m_time_integrator->update(X);
 
     m_t += m_time_integrator->dt;
+}
+
+double Simulator::energy(Eigen::ConstRef<Eigen::VectorXd> x)
+{
+    return m_inertial_term->operator()(*m_bodies, x)
+        + m_body_forces->operator()(*m_bodies, x)
+        + m_ground_contact->operator()(*m_bodies, x);
+}
+
+Eigen::VectorXd Simulator::gradient(Eigen::ConstRef<Eigen::VectorXd> x)
+{
+    return m_inertial_term->gradient(*m_bodies, x)
+        + m_body_forces->gradient(*m_bodies, x)
+        + m_ground_contact->gradient(*m_bodies, x);
+}
+
+Eigen::MatrixXd Simulator::hessian(Eigen::ConstRef<Eigen::VectorXd> x)
+{
+    return m_inertial_term->hessian(*m_bodies, x, PSDProjectionMethod::ABS)
+        + m_body_forces->hessian(*m_bodies, x, PSDProjectionMethod::CLAMP)
+        + m_ground_contact->hessian(*m_bodies, x, PSDProjectionMethod::CLAMP);
 }
 
 void Simulator::reset()
