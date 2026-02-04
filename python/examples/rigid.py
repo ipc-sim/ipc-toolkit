@@ -123,6 +123,14 @@ def callback():
     if imgui.Button("Reset"):
         sim.reset()
         update_mesh()
+    imgui.SameLine()
+    if imgui.Button("Save"):
+        ipctk.write_gltf(
+            "output.glb",
+            bodies,
+            sim.pose_history,
+            1 / 60.0,
+        )
 
 
 ps.set_user_callback(callback)

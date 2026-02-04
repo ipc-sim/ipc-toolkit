@@ -2,6 +2,7 @@
 
 #include <ipc/dynamics/rigid/simulator.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
+#include <ipc/io/write_gltf.hpp>
 
 #include <pybind11/detail/common.h>
 #include <pybind11/stl_bind.h>
@@ -103,4 +104,24 @@ void define_rigid_simulator(py::module_& m)
                  A list of poses at each time step.
              )ipc_Qu8mg5v7")
         .def_property_readonly("t", &rigid::Simulator::t);
+
+    m.def(
+        "write_gltf", &rigid::write_gltf, R"ipc_Qu8mg5v7(
+         Write a sequence of rigid body poses to a glTF file.
+
+         Parameters:
+             filename: The output glTF filename.
+             bodies: The rigid bodies to write.
+             poses: A list of poses for each timestep.
+             timestep: The time interval between each pose in seconds.
+             embed_buffers: Whether to embed the binary buffers in the glTF file.
+             write_binary: Whether to write a binary .glb file (true) or a text .gltf file (false).
+             prettyPrint: Whether to pretty-print the JSON content.
+
+         Returns:
+             True if successful, false otherwise.
+         )ipc_Qu8mg5v7",
+        py::arg("filename"), py::arg("bodies"), py::arg("poses"),
+        py::arg("timestep"), py::arg("embed_buffers") = true,
+        py::arg("write_binary") = true, py::arg("prettyPrint") = true);
 }
