@@ -74,6 +74,44 @@ TEST_CASE("Anisotropic mu effective computation", "[friction][anisotropic][mu]")
 }
 
 TEST_CASE(
+    "Anisotropic friction uses correct mu_s/mu_k transition",
+    "[friction][anisotropic][mu-transition]")
+{
+    static constexpr double EPSILON = 1e-5;
+    static constexpr double MARGIN = 1e-6;
+    static constexpr double eps_v = 1e-3;
+
+    // Fixed direction and anisotropic coefficients
+    const double mu_s0 = GENERATE(0.2, 0.5, 0.8);
+    const double mu_s1 = GENERATE(0.3, 0.6);
+    const double mu_k0 = GENERATE(0.1, 0.4);
+    const double mu_k1 = GENERATE(0.15, 0.35);
+    Eigen::Vector2d mu_s_aniso(mu_s0, mu_s1);
+    Eigen::Vector2d mu_k_aniso(mu_k0, mu_k1);
+    Eigen::Vector2d tau_dir(1.0, 0.0);
+
+    const auto [mu_s_eff, mu_k_eff] =
+        anisotropic_mu_eff_f(tau_dir, mu_s_aniso, mu_k_aniso);
+
+    // At y = 0 (stick), smooth_mu should approximate mu_s_eff
+    const double mu_at_zero = smooth_mu(0.0, mu_s_eff, mu_k_eff, eps_v);
+    CHECK(
+        mu_at_zero == Catch::Approx(mu_s_eff).margin(MARGIN).epsilon(EPSILON));
+
+    // At y = eps_v (slip), smooth_mu should approximate mu_k_eff
+    const double mu_at_eps_v = smooth_mu(eps_v, mu_s_eff, mu_k_eff, eps_v);
+    CHECK(
+        mu_at_eps_v == Catch::Approx(mu_k_eff).margin(MARGIN).epsilon(EPSILON));
+
+    // At y = 0.5*eps_v, smooth_mu should be between mu_s_eff and mu_k_eff
+    const double mu_at_mid = smooth_mu(0.5 * eps_v, mu_s_eff, mu_k_eff, eps_v);
+    const double lo = std::min(mu_s_eff, mu_k_eff);
+    const double hi = std::max(mu_s_eff, mu_k_eff);
+    CHECK(mu_at_mid >= lo - MARGIN);
+    CHECK(mu_at_mid <= hi + MARGIN);
+}
+
+TEST_CASE(
     "Anisotropic mu effective derivative",
     "[friction][anisotropic][derivative]")
 {

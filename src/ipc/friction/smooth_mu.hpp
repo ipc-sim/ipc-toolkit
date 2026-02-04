@@ -71,6 +71,12 @@ double smooth_mu_f1_over_x(
 double smooth_mu_f2_x_minus_mu_f1_over_x3(
     const double y, const double mu_s, const double mu_k, const double eps_v);
 
+/// Elliptical L2 (matchstick cone) anisotropic friction. Call
+/// anisotropic_x_from_tau_aniso, then anisotropic_mu_eff_f; use
+/// anisotropic_mu_eff_f_dtau or anisotropic_mu_eff_f_grad for gradients.
+/// @see Erleben et al., CGF 2019, DOI 10.1111/cgf.13885;
+///      https://github.com/erleben/matchstick
+
 /// @brief Compute effective friction coefficients for elliptical anisotropy
 ///        (L2 projection): \f$\mu_{\text{eff}} = f(x) = \sqrt{(\mu_0 t_0)^2 +
 ///        (\mu_1 t_1)^2}\f$ at direction \f$x = \tau_{\text{dir}}\f$.
@@ -95,7 +101,7 @@ double smooth_mu_f2_x_minus_mu_f1_over_x3(
 ///       (0, 0), which triggers compatible isotropic behavior.
 /// @see anisotropic_x_from_tau_aniso, anisotropic_mu_eff_f_dtau,
 ///      anisotropic_mu_eff_f_grad, anisotropic_mu_eff_from_tau_aniso
-std::pair<double, double> anisotropic_mu_eff_f(
+[[nodiscard]] std::pair<double, double> anisotropic_mu_eff_f(
     Eigen::ConstRef<Eigen::Vector2d> tau_dir,
     Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso);
@@ -117,7 +123,7 @@ std::pair<double, double> anisotropic_mu_eff_f(
 /// @note Returns zero vector if ||tau|| ≈ 0 or mu_eff ≈ 0 to handle edge
 ///       cases gracefully.
 /// @see anisotropic_mu_eff_f (for mu_eff), anisotropic_mu_eff_f_grad
-Eigen::Vector2d anisotropic_mu_eff_f_dtau(
+[[nodiscard]] Eigen::Vector2d anisotropic_mu_eff_f_dtau(
     Eigen::ConstRef<Eigen::Vector2d> tau,
     Eigen::ConstRef<Eigen::Vector2d> mu_aniso,
     const double mu_eff);
@@ -126,7 +132,7 @@ Eigen::Vector2d anisotropic_mu_eff_f_dtau(
 /// @param tau_aniso Anisotropically-scaled tangential velocity (2D vector).
 /// @return Unit direction vector \f$x\f$. Returns (1, 0) if ||tau_aniso|| ≈ 0.
 /// @see anisotropic_mu_eff_f, anisotropic_mu_eff_from_tau_aniso
-Eigen::Vector2d
+[[nodiscard]] Eigen::Vector2d
 anisotropic_x_from_tau_aniso(Eigen::ConstRef<Eigen::Vector2d> tau_aniso);
 
 /// @brief Compute effective friction coefficients from tau_aniso, handling both
@@ -148,7 +154,7 @@ anisotropic_x_from_tau_aniso(Eigen::ConstRef<Eigen::Vector2d> tau_aniso);
 /// @param no_mu If true, returns (1.0, 1.0) regardless of input coefficients.
 /// @return A pair containing (mu_s, mu_k) to use in friction calculations.
 /// @see anisotropic_x_from_tau_aniso, anisotropic_mu_eff_f
-std::pair<double, double> anisotropic_mu_eff_from_tau_aniso(
+[[nodiscard]] std::pair<double, double> anisotropic_mu_eff_from_tau_aniso(
     Eigen::ConstRef<Eigen::Vector2d> tau_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso,
@@ -171,7 +177,8 @@ std::pair<double, double> anisotropic_mu_eff_from_tau_aniso(
 ///         g_k = ∇_τ_aniso μ_k_eff.
 /// @see anisotropic_mu_eff_f (for mu_s_eff, mu_k_eff),
 ///      anisotropic_mu_eff_f_dtau
-std::pair<Eigen::Vector2d, Eigen::Vector2d> anisotropic_mu_eff_f_grad(
+[[nodiscard]] std::pair<Eigen::Vector2d, Eigen::Vector2d>
+anisotropic_mu_eff_f_grad(
     Eigen::ConstRef<Eigen::Vector2d> tau_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso,

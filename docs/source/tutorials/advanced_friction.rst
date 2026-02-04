@@ -1,8 +1,8 @@
 Advanced Friction
 =================
 
-This tutorial covers some advanced features of friction in the IPC Toolkit, including
-spatially varying coefficients of friction and separate coefficients of friction for static and kinetic (dynamic) friction.
+This tutorial describes two advanced friction features: coefficients that vary
+over the mesh and separate static and kinetic friction coefficients.
 
 .. seealso::
 
@@ -18,7 +18,7 @@ Spatially Varying Coefficients of Friction
 
     Spatially varying coefficient of friction is achieved by assigning coefficients to each vertex in the mesh. However, friction coefficients are not a material property and should instead be assigned to the contact pair. This feature will be replaced with a per-pair friction coefficient in a future release.
 
-You can specify spatially varying coefficients of friction by passing an ``Eigen::VectorXd`` to ``TangentialCollisions::build``. Each entry in the vector corresponds to the coefficient of friction for a specific vertex in the mesh. This allows you to assign different friction coefficients to different parts of the mesh, enabling more realistic simulations of complex materials and surfaces.
+You can specify spatially varying coefficients of friction by passing an ``Eigen::VectorXd`` to ``TangentialCollisions::build``. Each entry is the coefficient of friction for one vertex. You can assign different coefficients to different parts of the mesh (e.g. rubber in one region, plastic in another).
 
 You can also provide an optional ``blend_mu`` parameter to blend the coefficient of friction on either side of the contact. The default behavior is to average the coefficients of friction on both sides, but you can specify a custom blending function if needed (e.g., multiplying them or taking the maximum or minimum).
 
@@ -161,30 +161,35 @@ If you have suggestions for improving this approach or alternative methods, plea
 Anisotropic Friction
 --------------------
 
+.. seealso::
+
+    :doc:`/cpp-api/friction` and :doc:`/python-api/friction` for the anisotropic
+    helpers. The ``notebooks/anisotropic_friction_math.ipynb`` notebook has the
+    full derivation and plots.
+
 .. tip::
     :title: New Feature
 
-    Anisotropic friction support was introduced to allow direction-dependent
-    friction coefficients. This enables modeling materials with different
-    friction properties along different directions (e.g., wood grain, brushed
-    surfaces).
+    Anisotropic friction uses direction-dependent coefficients (e.g. wood grain,
+    brushed surfaces).
 
-Anisotropic friction allows you to specify different friction coefficients
-along different directions in the tangent plane. This is useful for modeling
-materials that exhibit direction-dependent friction behavior, such as wood
-(with different friction along vs. across the grain) or brushed metal surfaces.
+You can set different friction coefficients along each tangent direction.
+Wood (along vs. across the grain) and brushed metal are typical cases.
 
-The IPC Toolkit implements anisotropic friction using an elliptical L2
-projection model. For a given tangential velocity direction :math:`\mathbf{t} =
+Anisotropic friction uses an elliptical L2 projection model. For a given
+tangential velocity direction :math:`\mathbf{t} =
 \boldsymbol{\tau} / \|\boldsymbol{\tau}\|`, the effective friction coefficient
-is computed as:
+is:
 
 .. math::
    \mu_{\text{eff}} = \sqrt{(\mu_0 t_0)^2 + (\mu_1 t_1)^2}
 
 where :math:`\mu_0` and :math:`\mu_1` are the friction coefficients along the
 two tangent basis directions, and :math:`t_0` and :math:`t_1` are the
-components of the unit direction vector.
+components of the unit direction vector. This formulation matches the matchstick
+(elliptical Coulomb cone) model. See :cite:t:`Erleben2019Matchstick` (Computer
+Graphics Forum, 2019; DOI 10.1111/cgf.13885). Code:
+`erleben/matchstick <https://github.com/erleben/matchstick>`_.
 
 Usage
 ~~~~~
@@ -228,37 +233,26 @@ to each tangential collision after building the collisions:
 Relationship with Other Anisotropy Mechanisms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The IPC Toolkit supports two different anisotropy mechanisms:
+Two mechanisms are available:
 
-1. **Velocity scaling** (``mu_aniso``): Scales the tangential velocity vector
-   component-wise before computing friction. This affects the effective
-   velocity magnitude used in friction calculations.
+1. **Velocity scaling** (``mu_aniso``): component-wise scaling of the
+   tangential velocity before friction; changes the effective speed in the
+   friction law.
 
 2. **Direction-dependent coefficients** (``mu_s_aniso``, ``mu_k_aniso``):
-   Specifies different friction coefficients along different tangent
-   directions. This affects the effective friction coefficient based on the
-   direction of motion.
+   different :math:`\mu` along each tangent direction.
 
-These two mechanisms can be used independently or together. When both are
-enabled, the velocity scaling is applied first, then the direction-dependent
-coefficients are computed based on the scaled velocity direction.
+Use one or both. When both are set, velocity scaling is applied first, then
+direction-dependent :math:`\mu` from the scaled velocity direction.
 
 Backward Compatibility
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-If ``mu_s_aniso`` and ``mu_k_aniso`` are set to zero vectors (the default),
-the system falls back to using the scalar ``mu_s`` and ``mu_k`` values,
-maintaining backward compatibility with existing code.
+Default zero ``mu_s_aniso`` and ``mu_k_aniso`` means the solver uses the scalar
+``mu_s`` and ``mu_k`` values, so existing setups keep working.
 
 Future Directions
 -----------------
 
-The IPC Toolkit is continuously evolving, and future releases may include:
-
-- Velocity-dependent friction models that adjust friction coefficients based
-  on relative velocity magnitude.
-- Rolling coefficients of friction for scenarios involving rolling contacts.
-
-We encourage community contributions to expand these advanced friction
-models. Feel free to submit pull requests with your improvements or open a
-discussion on GitHub to propose new features.
+Planned or under discussion: velocity-dependent friction and rolling friction.
+See the project's GitHub for current status or to contribute.

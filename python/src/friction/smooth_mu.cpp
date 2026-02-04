@@ -129,57 +129,34 @@ void define_smooth_mu(py::module_& m)
         "anisotropic_mu_eff_f",
         &anisotropic_mu_eff_f,
         R"ipc_Qu8mg5v7(
-        Compute effective friction coefficients for elliptical anisotropy (L2
-        projection): μ_eff = f(x) = sqrt((μ₀ t₀)² + (μ₁ t₁)²) at direction
-        x = τ_dir.
-
-        For anisotropic friction, the friction coefficient depends on the
-        direction of tangential velocity. The ``f`` in the name refers to the
-        effective-μ formula; ``x`` is the unit direction.
+        Effective static and kinetic friction along a unit direction for the
+        elliptical (matchstick) model: μ_eff = sqrt((μ₀ t₀)² + (μ₁ t₁)²).
+        Matchstick model: Erleben et al., CGF 2019, DOI 10.1111/cgf.13885.
 
         Parameters:
-            tau_dir: Unit 2D direction of tangential velocity (tau / ||tau||).
-                     Must be a unit vector.
-            mu_s_aniso: Static friction ellipse axes (2D vector). Each component
-                        represents the friction coefficient along the
-                        corresponding tangent basis direction.
-            mu_k_aniso: Kinetic friction ellipse axes (2D vector). Each
-                        component represents the friction coefficient along the
-                        corresponding tangent basis direction.
+            tau_dir: Unit 2D direction (tau / ||tau||).
+            mu_s_aniso: Static friction ellipse axes (2D).
+            mu_k_aniso: Kinetic friction ellipse axes (2D).
 
         Returns:
-            A tuple containing (mu_s_eff, mu_k_eff), the effective static and
-            kinetic friction coefficients along the direction tau_dir.
-
-        Note:
-            If mu_s_aniso and mu_k_aniso are zero vectors, the function returns
-            (0, 0), which triggers compatible isotropic behavior.
+            (mu_s_eff, mu_k_eff) along tau_dir. (0, 0) if inputs are zero
+            (isotropic fallback).
         )ipc_Qu8mg5v7",
         "tau_dir"_a, "mu_s_aniso"_a, "mu_k_aniso"_a);
 
     m.def(
         "anisotropic_mu_eff_f_dtau", &anisotropic_mu_eff_f_dtau,
         R"ipc_Qu8mg5v7(
-        Compute ∂μ_eff/∂τ for elliptical anisotropy (derivative of f w.r.t. τ).
-
-        This function computes ∂μ_eff/∂τ for the elliptical anisotropy model.
-        The derivative is needed for computing the Jacobian of friction forces
-        when anisotropic friction is enabled.
+        ∂μ_eff/∂τ for the elliptical model (friction force Jacobians).
+        Matchstick model: Erleben et al., CGF 2019, DOI 10.1111/cgf.13885.
 
         Parameters:
-            tau: Tangential velocity (2D vector). The velocity vector in the
-                 tangent plane.
-            mu_aniso: Ellipse axes (2D vector). The anisotropic friction
-                      coefficients along each tangent direction.
-            mu_eff: Effective friction coefficient computed from
-                    anisotropic_mu_eff_f(). This is passed to avoid recomputation.
+            tau: Tangential velocity (2D) in the tangent plane.
+            mu_aniso: Ellipse axes (2D).
+            mu_eff: Effective μ from anisotropic_mu_eff_f (avoids recomputation).
 
         Returns:
-            The derivative ∂μ_eff/∂τ as a 2D vector.
-
-        Note:
-            Returns zero vector if ||tau|| ≈ 0 or mu_eff ≈ 0 to handle edge
-            cases gracefully.
+            ∂μ_eff/∂τ as 2D vector. Zero if ||tau|| ≈ 0 or mu_eff ≈ 0.
         )ipc_Qu8mg5v7",
         "tau"_a, "mu_aniso"_a, "mu_eff"_a);
 }
