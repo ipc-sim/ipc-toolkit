@@ -198,9 +198,17 @@ VectorMax12d TangentialPotential::gradient(
     const double mu_f1_over_norm_u =
         mu_f1_over_x(u_aniso.norm(), collision.mu_s, collision.mu_k);
 
-    // μ(‖u_aniso‖) N(xᵗ) f₁(‖u_aniso‖)/‖u_aniso‖ T(xᵗ) u_aniso ∈ (n×2)(2×1) =
-    // (n×1)
-    return T
+    // Apply anisotropic scaling to T: T_aniso = T * diag(mu_aniso)
+    // This accounts for ∂u_aniso/∂u = diag(mu_aniso) in the chain rule
+    const int tangent_dim = u.size();
+    MatrixMax<double, 12, 2> T_aniso = T;
+    T_aniso.col(0) *= collision.mu_aniso[0];
+    if (tangent_dim > 1) {
+        T_aniso.col(1) *= collision.mu_aniso[1];
+    }
+
+    // μ(‖u_aniso‖) N(xᵗ) f₁(‖u_aniso‖)/‖u_aniso‖ T_aniso(xᵗ) u_aniso
+    return T_aniso
         * ((collision.weight * collision.normal_force_magnitude
             * mu_f1_over_norm_u)
            * u_aniso);
@@ -879,9 +887,21 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
     const VectorMax2d tau_aniso =
         collision.mu_aniso.head(tau.size()).cwiseProduct(tau);
 
-    // Compute f₁(‖tau_aniso‖)/‖tau_aniso‖
-    const double mu_s = no_mu ? 1.0 : collision.mu_s;
-    const double mu_k = no_mu ? 1.0 : collision.mu_k;
+    // Get tangent space dimension (1 for 2D sim, 2 for 3D sim)
+    const int tangent_dim = tau.size();
+
+    // Compute effective mu (handles both anisotropic and isotropic cases)
+    double mu_s, mu_k;
+    if (tangent_dim > 1) {
+        const Eigen::Vector2d tau_aniso_2d = tau_aniso;
+        std::tie(mu_s, mu_k) = anisotropic_mu_eff_from_tau_aniso(
+            tau_aniso_2d, collision.mu_s_aniso, collision.mu_k_aniso,
+            collision.mu_s, collision.mu_k, no_mu);
+    } else {
+        mu_s = no_mu ? 1.0 : collision.mu_s;
+        mu_k = no_mu ? 1.0 : collision.mu_k;
+    }
+
     const double mu_f1_over_norm_tau =
         mu_f1_over_x(tau_aniso.norm(), mu_s, mu_k);
 

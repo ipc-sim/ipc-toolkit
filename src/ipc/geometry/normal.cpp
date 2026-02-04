@@ -253,14 +253,14 @@ Eigen::Matrix<double, 3, 81> triangle_unnormalized_normal_hessian(
 
     // ∂²n/∂a² = 0
     set_cross_product_matrix_jacobian(H.block<9, 3>(0, 3), -1.0); // ∂²n/∂a∂b
-    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 6), 1.0); // ∂²n/∂a∂c
+    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 6), 1.0);  // ∂²n/∂a∂c
     /**/
     set_cross_product_matrix_jacobian(H.block<9, 3>(9, 0), 1.0); // ∂²n/∂b∂a
     // ∂²n/∂b² = 0
     set_cross_product_matrix_jacobian(H.block<9, 3>(9, 6), -1.0); // ∂²n/∂b∂c
     /**/
     set_cross_product_matrix_jacobian(H.block<9, 3>(18, 0), -1.0); // ∂²n/∂c∂a
-    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 3), 1.0); // ∂²n/∂c∂b
+    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 3), 1.0);  // ∂²n/∂c∂b
     // ∂²n/∂c² = 0
 
     return H.reshaped(3, 81);
@@ -310,20 +310,20 @@ Eigen::Matrix<double, 3, 144> line_line_unnormalized_normal_hessian(
     // ∂²n/∂a² = 0
     // ∂²n/∂a∂b = 0
     set_cross_product_matrix_jacobian(H.block<9, 3>(0, 6), -1.0); // ∂²n/∂a∂c
-    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 9), 1.0); // ∂²n/∂a∂d
+    set_cross_product_matrix_jacobian(H.block<9, 3>(0, 9), 1.0);  // ∂²n/∂a∂d
     /**/
     // ∂²n/∂b∂a = 0
     // ∂²n/∂b² = 0
-    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 6), 1.0); // ∂²n/∂b∂c
+    set_cross_product_matrix_jacobian(H.block<9, 3>(9, 6), 1.0);  // ∂²n/∂b∂c
     set_cross_product_matrix_jacobian(H.block<9, 3>(9, 9), -1.0); // ∂²n/∂b∂d
     /**/
-    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 0), 1.0); // ∂²n/∂c∂a
+    set_cross_product_matrix_jacobian(H.block<9, 3>(18, 0), 1.0);  // ∂²n/∂c∂a
     set_cross_product_matrix_jacobian(H.block<9, 3>(18, 3), -1.0); // ∂²n/∂c∂b
     // ∂²n/∂c² = 0
     // ∂²n/∂d² = 0
     /**/
     set_cross_product_matrix_jacobian(H.block<9, 3>(27, 0), -1.0); // ∂²n/∂d∂a
-    set_cross_product_matrix_jacobian(H.block<9, 3>(27, 3), 1.0); // ∂²n/∂d∂b
+    set_cross_product_matrix_jacobian(H.block<9, 3>(27, 3), 1.0);  // ∂²n/∂d∂b
     // ∂²n/∂d∂c = 0
     // ∂²n/∂d² = 0
 
