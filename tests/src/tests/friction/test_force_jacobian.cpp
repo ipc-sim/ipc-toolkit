@@ -658,8 +658,8 @@ TEST_CASE(
     "[friction-smooth][force][no-mu]")
 {
     SmoothFrictionData data = smooth_friction_data_generator_3d();
-    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params,
-        barrier_stiffness] = data;
+    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
+        data;
 
     Eigen::MatrixXd X = V0;
     Eigen::MatrixXd Ut = V0 - X;

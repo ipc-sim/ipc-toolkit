@@ -270,7 +270,8 @@ TEST_CASE(
     CHECK(mu_s == Catch::Approx(1.0).margin(MARGIN));
     CHECK(mu_k == Catch::Approx(1.0).margin(MARGIN));
 
-    // Isotropic path, no_mu == false: expect scalar mu_s_isotropic, mu_k_isotropic
+    // Isotropic path, no_mu == false: expect scalar mu_s_isotropic,
+    // mu_k_isotropic
     std::tie(mu_s, mu_k) = anisotropic_mu_eff_from_tau_aniso(
         tau_aniso, zero_aniso, zero_aniso, mu_s_iso, mu_k_iso, false);
     CHECK(mu_s == Catch::Approx(mu_s_iso).margin(MARGIN));
@@ -286,15 +287,14 @@ TEST_CASE(
     Eigen::Vector2d tau_aniso(0.5, 0.3);
     Eigen::Vector2d mu_s_aniso(0.5, 0.8);
     Eigen::Vector2d mu_k_aniso(0.4, 0.7);
-    const auto [mu_s_eff, mu_k_eff] =
-        anisotropic_mu_eff_f(anisotropic_x_from_tau_aniso(tau_aniso),
-            mu_s_aniso, mu_k_aniso);
+    const auto [mu_s_eff, mu_k_eff] = anisotropic_mu_eff_f(
+        anisotropic_x_from_tau_aniso(tau_aniso), mu_s_aniso, mu_k_aniso);
 
     const auto [g_s, g_k] = anisotropic_mu_eff_f_grad(
         tau_aniso, mu_s_aniso, mu_k_aniso, mu_s_eff, mu_k_eff);
 
-    CHECK(std::isfinite(g_s[0]) && std::isfinite(g_s[1]));
-    CHECK(std::isfinite(g_k[0]) && std::isfinite(g_k[1]));
+    CHECK((std::isfinite(g_s[0]) && std::isfinite(g_s[1])));
+    CHECK((std::isfinite(g_k[0]) && std::isfinite(g_k[1])));
 
     // With near-zero mu_eff, gradients may be zero (safe fallback)
     Eigen::Vector2d tau_near_zero(1e-12, 1e-12);
