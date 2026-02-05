@@ -654,6 +654,75 @@ TEST_CASE(
 }
 
 TEST_CASE(
+    "Smooth friction force no_mu and no_contact_force_multiplier",
+    "[friction-smooth][force][no-mu]")
+{
+    SmoothFrictionData data = smooth_friction_data_generator_3d();
+    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params,
+        barrier_stiffness] = data;
+
+    Eigen::MatrixXd X = V0;
+    Eigen::MatrixXd Ut = V0 - X;
+    Eigen::MatrixXd U = V1 - X;
+    CollisionMesh mesh(X, E, F);
+
+    TangentialCollisions friction_collisions;
+    friction_collisions.build(
+        mesh, X + Ut, collisions, params, barrier_stiffness,
+        Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
+        Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
+
+    if (friction_collisions.empty()) {
+        return;
+    }
+
+    Eigen::MatrixXd velocities = U - Ut;
+    const FrictionPotential D(epsv_times_h);
+
+    // Batch smooth_contact_force with no_mu=false then no_mu=true
+    const Eigen::VectorXd force_default = D.smooth_contact_force(
+        friction_collisions, mesh, X, Ut, velocities, 0.0, false);
+    const Eigen::VectorXd force_no_mu = D.smooth_contact_force(
+        friction_collisions, mesh, X, Ut, velocities, 0.0, true);
+
+    CHECK(force_default.array().isFinite().all());
+    CHECK(force_no_mu.array().isFinite().all());
+    // With no_mu=true, mu is effectively 1; with no_mu=false, mu is applied
+    // So magnitudes can differ (e.g. no_mu force larger when mu < 1)
+    if (force_default.norm() > 1e-12) {
+        CHECK(force_no_mu.norm() > 1e-12);
+    }
+
+    // Single-collision: no_contact_force_multiplier=true uses 1.0 instead of N
+    const auto& collision = friction_collisions[0];
+    const auto rest = collision.dof(X, E, F);
+    const auto lagged = collision.dof(Ut, E, F);
+    const auto vel = collision.dof(velocities, E, F);
+
+    const Eigen::VectorXd local_force_N =
+        D.smooth_contact_force(collision, rest, lagged, vel, false, false);
+    const Eigen::VectorXd local_force_no_N =
+        D.smooth_contact_force(collision, rest, lagged, vel, false, true);
+
+    CHECK(local_force_N.array().isFinite().all());
+    CHECK(local_force_no_N.array().isFinite().all());
+    const double N = collision.normal_force_magnitude;
+    if (N > 1e-10 && local_force_N.norm() > 1e-12) {
+        // F_no_N = F_N / N (formula uses 1.0 instead of N)
+        CHECK(
+            (local_force_no_N - local_force_N / N).norm()
+            <= 1e-8 * local_force_N.norm());
+    }
+
+    // Cover batch smooth_contact_force_jacobian with no_mu=true
+    const Eigen::SparseMatrix<double> jac_no_mu =
+        D.smooth_contact_force_jacobian(
+            friction_collisions, mesh, X, Ut, velocities, params,
+            FrictionPotential::DiffWRT::VELOCITIES, 0.0, true);
+    CHECK(jac_no_mu.size() > 0);
+}
+
+TEST_CASE(
     "Smooth friction force jacobian 3D", "[friction-smooth][force-jacobian]")
 {
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32)) && !defined(NDEBUG)

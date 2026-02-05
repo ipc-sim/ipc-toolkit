@@ -209,6 +209,105 @@ TEST_CASE(
 }
 
 TEST_CASE(
+    "anisotropic_mu_eff_f_dtau edge cases",
+    "[friction][anisotropic][smooth-mu-edge]")
+{
+    static constexpr double MARGIN = 1e-8;
+
+    // Early return when mu_eff < eps: result should be zero
+    Eigen::Vector2d tau(0.5, 0.3);
+    Eigen::Vector2d mu_aniso(0.5, 0.8);
+    const Eigen::Vector2d dtau_zero_mu_eff =
+        anisotropic_mu_eff_f_dtau(tau, mu_aniso, 0.0);
+    CHECK(dtau_zero_mu_eff.norm() < MARGIN);
+
+    const Eigen::Vector2d dtau_tiny_mu_eff =
+        anisotropic_mu_eff_f_dtau(tau, mu_aniso, 1e-12);
+    CHECK(dtau_tiny_mu_eff.norm() < MARGIN);
+}
+
+TEST_CASE(
+    "anisotropic_x_from_tau_aniso", "[friction][anisotropic][smooth-mu-edge]")
+{
+    static constexpr double MARGIN = 1e-10;
+
+    // tau_aniso_norm < tiny: expect default direction (1, 0)
+    Eigen::Vector2d tau_aniso_tiny(1e-12, 1e-12);
+    Eigen::Vector2d x_tiny = anisotropic_x_from_tau_aniso(tau_aniso_tiny);
+    CHECK(x_tiny[0] == Catch::Approx(1.0).margin(MARGIN));
+    CHECK(x_tiny[1] == Catch::Approx(0.0).margin(MARGIN));
+
+    // Non-zero tau_aniso: expect normalized vector
+    Eigen::Vector2d tau_aniso(0.6, 0.8);
+    Eigen::Vector2d x = anisotropic_x_from_tau_aniso(tau_aniso);
+    CHECK(x.norm() == Catch::Approx(1.0).margin(MARGIN));
+    CHECK(x[0] == Catch::Approx(0.6).margin(MARGIN));
+    CHECK(x[1] == Catch::Approx(0.8).margin(MARGIN));
+}
+
+TEST_CASE(
+    "anisotropic_mu_eff_from_tau_aniso no_mu and isotropic",
+    "[friction][anisotropic][smooth-mu-edge]")
+{
+    static constexpr double MARGIN = 1e-10;
+
+    Eigen::Vector2d tau_aniso(0.6, 0.8);
+    const double mu_s_iso = 0.5;
+    const double mu_k_iso = 0.3;
+    Eigen::Vector2d mu_s_aniso(0.6, 0.4);
+    Eigen::Vector2d mu_k_aniso(0.5, 0.25);
+
+    // Anisotropic path, no_mu == true: expect (1.0, 1.0)
+    auto [mu_s, mu_k] = anisotropic_mu_eff_from_tau_aniso(
+        tau_aniso, mu_s_aniso, mu_k_aniso, mu_s_iso, mu_k_iso, true);
+    CHECK(mu_s == Catch::Approx(1.0).margin(MARGIN));
+    CHECK(mu_k == Catch::Approx(1.0).margin(MARGIN));
+
+    // Isotropic path (zero ellipse axes), no_mu == true: expect (1.0, 1.0)
+    Eigen::Vector2d zero_aniso = Eigen::Vector2d::Zero();
+    std::tie(mu_s, mu_k) = anisotropic_mu_eff_from_tau_aniso(
+        tau_aniso, zero_aniso, zero_aniso, mu_s_iso, mu_k_iso, true);
+    CHECK(mu_s == Catch::Approx(1.0).margin(MARGIN));
+    CHECK(mu_k == Catch::Approx(1.0).margin(MARGIN));
+
+    // Isotropic path, no_mu == false: expect scalar mu_s_isotropic, mu_k_isotropic
+    std::tie(mu_s, mu_k) = anisotropic_mu_eff_from_tau_aniso(
+        tau_aniso, zero_aniso, zero_aniso, mu_s_iso, mu_k_iso, false);
+    CHECK(mu_s == Catch::Approx(mu_s_iso).margin(MARGIN));
+    CHECK(mu_k == Catch::Approx(mu_k_iso).margin(MARGIN));
+}
+
+TEST_CASE(
+    "anisotropic_mu_eff_f_grad edge cases",
+    "[friction][anisotropic][smooth-mu-edge]")
+{
+    // Call with zero/near-zero mu_eff so that anisotropic_mu_eff_f_dtau
+    // returns zero (and potentially triggers finite fallback in grad).
+    Eigen::Vector2d tau_aniso(0.5, 0.3);
+    Eigen::Vector2d mu_s_aniso(0.5, 0.8);
+    Eigen::Vector2d mu_k_aniso(0.4, 0.7);
+    const auto [mu_s_eff, mu_k_eff] =
+        anisotropic_mu_eff_f(anisotropic_x_from_tau_aniso(tau_aniso),
+            mu_s_aniso, mu_k_aniso);
+
+    const auto [g_s, g_k] = anisotropic_mu_eff_f_grad(
+        tau_aniso, mu_s_aniso, mu_k_aniso, mu_s_eff, mu_k_eff);
+
+    CHECK(std::isfinite(g_s[0]) && std::isfinite(g_s[1]));
+    CHECK(std::isfinite(g_k[0]) && std::isfinite(g_k[1]));
+
+    // With near-zero mu_eff, gradients may be zero (safe fallback)
+    Eigen::Vector2d tau_near_zero(1e-12, 1e-12);
+    Eigen::Vector2d x_near = anisotropic_x_from_tau_aniso(tau_near_zero);
+    const auto [mu_s_z, mu_k_z] =
+        anisotropic_mu_eff_f(x_near, mu_s_aniso, mu_k_aniso);
+    const auto [g_s_z, g_k_z] = anisotropic_mu_eff_f_grad(
+        tau_near_zero, mu_s_aniso, mu_k_aniso, mu_s_z, mu_k_z);
+    CHECK(g_s_z.norm() < 1e-6);
+    CHECK(g_k_z.norm() < 1e-6);
+}
+
+TEST_CASE(
     "Anisotropic friction per-pair assignment",
     "[friction][anisotropic][per-pair]")
 {
