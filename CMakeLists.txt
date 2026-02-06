@@ -62,7 +62,7 @@ cmake_policy(SET CMP0114 NEW) # Support the Xcode "new build system"
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX
-        VERSION "1.5.0")
+        VERSION "1.6.0")
 
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
@@ -266,6 +266,9 @@ if(IPC_TOOLKIT_WITH_SIMD)
   # Link against cross-platform xsimd library
   include(xsimd)
   target_link_libraries(ipc_toolkit PRIVATE xsimd::xsimd)
+
+  # Disable vectorization in Eigen since I've found it to have alignment issues.
+  target_compile_definitions(Eigen3_Eigen INTERFACE EIGEN_DONT_VECTORIZE=1)
 endif()
 
 # For MSVC, do not use the min and max macros.
