@@ -246,6 +246,14 @@ MatrixMax12d TangentialPotential::hessian(
         collision.relative_velocity_matrix().transpose()
         * collision.tangent_basis;
 
+    // Apply anisotropic scaling to T: T_aniso = T * diag(mu_aniso)
+    // This accounts for ∂u_aniso/∂u = diag(mu_aniso) in the chain rule
+    MatrixMax<double, 12, 2> T_aniso = T;
+    T_aniso.col(0) *= collision.mu_aniso[0];
+    if (tangent_dim > 1) {
+        T_aniso.col(1) *= collision.mu_aniso[1];
+    }
+
     // Compute ‖u_aniso‖
     const double norm_u = u_aniso.norm();
 
@@ -273,12 +281,6 @@ MatrixMax12d TangentialPotential::hessian(
             // I - u_aniso u_anisoᵀ/‖u_aniso‖² = ūūᵀ / ‖u_aniso‖² (where
             // ū⋅u_aniso = 0)
             const Eigen::Vector2d u_perp(-u_aniso[1], u_aniso[0]);
-            // Apply anisotropic scaling to T: T_aniso = T * diag(mu_aniso)
-            MatrixMax<double, 12, 2> T_aniso = T;
-            T_aniso.col(0) *= collision.mu_aniso[0];
-            if (tangent_dim > 1) {
-                T_aniso.col(1) *= collision.mu_aniso[1];
-            }
             hess = // grouped to reduce number of operations
                 (T_aniso
                  * ((scale * mu_f1_over_norm_u / (norm_u * norm_u)) * u_perp))
@@ -291,12 +293,6 @@ MatrixMax12d TangentialPotential::hessian(
         if (project_hessian_to_psd != PSDProjectionMethod::NONE && scale <= 0) {
             hess.setZero(collision.ndof(), collision.ndof()); // -PSD = NSD ⟹ 0
         } else {
-            // Apply anisotropic scaling to T: T_aniso = T * diag(mu_aniso)
-            MatrixMax<double, 12, 2> T_aniso = T;
-            T_aniso.col(0) *= collision.mu_aniso[0];
-            if (tangent_dim > 1) {
-                T_aniso.col(1) *= collision.mu_aniso[1];
-            }
             hess = scale * mu_f1_over_norm_u * T_aniso * T_aniso.transpose();
         }
     } else {
@@ -311,13 +307,6 @@ MatrixMax12d TangentialPotential::hessian(
         inner_hess *= scale; // NOTE: negative scaling will be projected out
         inner_hess = project_to_psd(inner_hess, project_hessian_to_psd);
 
-        // Apply anisotropic scaling to T: T_aniso = T * diag(mu_aniso)
-        // This accounts for ∂u_aniso/∂u = diag(mu_aniso) in the chain rule
-        MatrixMax<double, 12, 2> T_aniso = T;
-        T_aniso.col(0) *= collision.mu_aniso[0];
-        if (tangent_dim > 1) {
-            T_aniso.col(1) *= collision.mu_aniso[1];
-        }
         hess = T_aniso * inner_hess * T_aniso.transpose();
     }
 
@@ -335,7 +324,7 @@ VectorMax12d TangentialPotential::force(
     const bool no_mu) const
 {
     // x is the rest position
-    // u is the displacment at the begginging of the lagged solve
+    // u is the displacement at the beginning of the lagged solve
     // v is the current velocity
     //
     // τ = T(x + u)ᵀv is the tangential sliding velocity
@@ -427,7 +416,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
     const double dmin) const
 {
     // x is the rest position
-    // u is the displacment at the begginging of the lagged solve
+    // u is the displacement at the beginning of the lagged solve
     // v is the current velocity
     //
     // τ = T(x + u)ᵀv is the tangential sliding velocity
@@ -595,9 +584,9 @@ MatrixMax12d TangentialPotential::force_jacobian(
                 tau_aniso, collision.mu_s_aniso, collision.mu_k_aniso, mu_s,
                 mu_k);
 
-            // Approximate the contribution: ∂(μ f₁/‖τ‖)/∂μ_eff * ∇_τ_aniso
-            // μ_eff
-            // * ∇τ. We use the average of static and kinetic gradients as an
+            // Approximate the contribution:
+            // ∂(μ f₁/‖τ‖)/∂μ_eff * ∇_τ_aniso μ_eff * ∇τ.
+            // We use the average of static and kinetic gradients as an
             // approximation.
             Eigen::Vector2d g_avg = (g_s + g_k) * 0.5;
 
