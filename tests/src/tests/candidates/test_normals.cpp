@@ -101,6 +101,7 @@ TEST_CASE("Edge-vertex collision normal", "[ev][normal]")
 TEST_CASE("Point-line normal hessian", "[pl][normal]")
 {
     const int DIM = GENERATE(2, 3);
+    CAPTURE(DIM);
 
     VectorMax3d p(DIM);
     VectorMax3d e0(DIM);
@@ -117,7 +118,7 @@ TEST_CASE("Point-line normal hessian", "[pl][normal]")
     // Check hessian using finite differences
     Eigen::MatrixXd hessian = point_line_unnormalized_normal_hessian(p, e0, e1);
     Eigen::MatrixXd fd_hessian;
-    fd::finite_jacobian(
+    fd::finite_jacobian_tensor<3>(
         x,
         [DIM](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
             return point_line_unnormalized_normal_jacobian(
@@ -133,7 +134,7 @@ TEST_CASE("Point-line normal hessian", "[pl][normal]")
 
     // Check hessian using finite differences
     hessian = point_line_normal_hessian(p, e0, e1);
-    fd::finite_jacobian(
+    fd::finite_jacobian_tensor<3>(
         x,
         [DIM](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
             return point_line_normal_jacobian(
@@ -214,7 +215,7 @@ TEST_CASE("Line-line normal hessian", "[ee][normal][hessian]")
     // Check hessian using finite differences
     Eigen::MatrixXd hessian = line_line_unnormalized_normal_hessian(a, b, c, d);
     Eigen::MatrixXd fd_hessian;
-    fd::finite_jacobian(
+    fd::finite_jacobian_tensor<3>(
         x,
         [](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
             return line_line_unnormalized_normal_jacobian(
@@ -230,7 +231,7 @@ TEST_CASE("Line-line normal hessian", "[ee][normal][hessian]")
 
     // Check hessian using finite differences
     hessian = line_line_normal_hessian(a, b, c, d);
-    fd::finite_jacobian(
+    fd::finite_jacobian_tensor<3>(
         x,
         [](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
             return line_line_normal_jacobian(
@@ -312,7 +313,7 @@ TEST_CASE("Triangle normal hessian", "[normal]")
     // Cross product matrix jacobian
     Eigen::MatrixXd J_cross = cross_product_matrix_jacobian();
     Eigen::MatrixXd fd_J_cross;
-    fd::finite_jacobian(
+    fd::finite_jacobian_tensor<3>(
         a,
         [](const Eigen::Vector3d& a_fd) { return cross_product_matrix(a_fd); },
         fd_J_cross);
@@ -325,7 +326,7 @@ TEST_CASE("Triangle normal hessian", "[normal]")
     // Check hessian using finite differences
     Eigen::MatrixXd hessian = triangle_unnormalized_normal_hessian(a, b, c);
     Eigen::MatrixXd fd_hessian;
-    fd::finite_jacobian(
+    fd::finite_jacobian_tensor<3>(
         x,
         [](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
             return triangle_unnormalized_normal_jacobian(
@@ -340,7 +341,7 @@ TEST_CASE("Triangle normal hessian", "[normal]")
 
     // Check hessian using finite differences
     hessian = triangle_normal_hessian(a, b, c);
-    fd::finite_jacobian(
+    fd::finite_jacobian_tensor<3>(
         x,
         [](const Eigen::VectorXd& x_fd) -> Eigen::MatrixXd {
             return triangle_normal_jacobian(

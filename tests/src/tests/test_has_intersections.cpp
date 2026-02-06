@@ -27,8 +27,8 @@ Eigen::MatrixXi remove_faces_with_degenerate_edges(
 bool combine_meshes(
     const std::string& mesh1_name,
     const std::string& mesh2_name,
-    const Eigen::Matrix3d& R1,
-    const Eigen::Matrix3d& R2,
+    Eigen::ConstRef<Eigen::Matrix3d> R1,
+    Eigen::ConstRef<Eigen::Matrix3d> R2,
     int dim,
     Eigen::MatrixXd& V,
     Eigen::MatrixXi& E,

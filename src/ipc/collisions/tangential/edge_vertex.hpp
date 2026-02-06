@@ -28,7 +28,7 @@ protected:
     MatrixMax<double, 3, 2> compute_tangent_basis(
         Eigen::ConstRef<VectorMax12d> positions) const override;
 
-    MatrixMax<double, 36, 2> compute_tangent_basis_jacobian(
+    MatrixMax<double, 6, 12> compute_tangent_basis_jacobian(
         Eigen::ConstRef<VectorMax12d> positions) const override;
 
     VectorMax2d compute_closest_point(
@@ -40,12 +40,12 @@ protected:
     VectorMax3d
     relative_velocity(Eigen::ConstRef<VectorMax12d> velocities) const override;
 
-    using TangentialCollision::relative_velocity_matrix;
+    using TangentialCollision::relative_velocity_jacobian;
 
-    MatrixMax<double, 3, 12> relative_velocity_matrix(
+    MatrixMax<double, 3, 12> relative_velocity_jacobian(
         Eigen::ConstRef<VectorMax2d> closest_point) const override;
 
-    MatrixMax<double, 6, 12> relative_velocity_matrix_jacobian(
+    MatrixMax<double, 3, 24> relative_velocity_dx_dbeta(
         Eigen::ConstRef<VectorMax2d> closest_point) const override;
 };
 
