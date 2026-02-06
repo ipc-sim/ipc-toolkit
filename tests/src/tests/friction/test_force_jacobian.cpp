@@ -384,9 +384,9 @@ void check_smooth_friction_force_jacobian(
 
     // Ensure Ut and U match the mesh size
     Eigen::MatrixXd Ut_mesh =
-        Ut.rows() == mesh.num_vertices() ? Ut : mesh.vertices(Ut);
+        Ut.rows() == mesh.num_vertices() ? Ut : mesh.map_displacements(Ut);
     Eigen::MatrixXd U_mesh =
-        U.rows() == mesh.num_vertices() ? U : mesh.vertices(U);
+        U.rows() == mesh.num_vertices() ? U : mesh.map_displacements(U);
 
     double distance_t0 = collisions.compute_minimum_distance(mesh, X + Ut_mesh);
     double distance_t1 = collisions.compute_minimum_distance(mesh, X + U_mesh);
