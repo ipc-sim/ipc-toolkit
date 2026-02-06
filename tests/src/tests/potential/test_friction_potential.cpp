@@ -23,7 +23,7 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
     // Ensure U matches the mesh size
     const Eigen::MatrixXd U_full = V1 - V0;
     const Eigen::MatrixXd U =
-        U_full.rows() == mesh.num_vertices() ? U_full : mesh.vertices(U_full);
+        U_full.rows() == mesh.num_vertices() ? U_full : mesh.map_displacements(U_full);
 
     TangentialCollisions tangential_collisions;
     tangential_collisions.build(
