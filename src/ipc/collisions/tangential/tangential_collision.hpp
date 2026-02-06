@@ -106,13 +106,13 @@ public:
 
     /// @brief Anisotropic static friction coefficients (2D, one per tangent direction).
     /// @note Zero vector → scalar mu_s (backward compatible). Elliptical model;
-    ///       see ipc::friction::smooth_mu and Erleben et al., CGF 2019,
+    ///       see ipc::smooth_mu and Erleben et al., CGF 2019,
     ///       DOI 10.1111/cgf.13885.
     Eigen::Vector2d mu_s_aniso = Eigen::Vector2d::Zero();
 
     /// @brief Anisotropic kinetic friction coefficients (2D, one per tangent direction).
     /// @note Zero vector → scalar mu_k (backward compatible). Elliptical model;
-    ///       see ipc::friction::smooth_mu and Erleben et al., CGF 2019,
+    ///       see ipc::smooth_mu and Erleben et al., CGF 2019,
     ///       DOI 10.1111/cgf.13885.
     Eigen::Vector2d mu_k_aniso = Eigen::Vector2d::Zero();
 
@@ -123,7 +123,7 @@ public:
     /// @note Default (1,1) preserves current isotropic behavior.
     ///       Requires a_i > 0. Values scale tau before friction evaluation.
     ///       Used with mu_s_aniso/mu_k_aniso by the elliptical model in
-    ///       ipc::friction::smooth_mu.
+    ///       ipc::smooth_mu.
     Eigen::Vector2d mu_aniso = Eigen::Vector2d::Ones();
 
     /// @brief Gradient of weight with respect to all DOF

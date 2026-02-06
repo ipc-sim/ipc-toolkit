@@ -3,8 +3,6 @@
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/math/math.hpp>
 
-#include <Eigen/Core>
-
 #include <cassert>
 #include <cmath>
 
