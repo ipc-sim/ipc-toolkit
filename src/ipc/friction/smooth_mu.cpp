@@ -1,6 +1,7 @@
 #include "smooth_mu.hpp"
 
 #include <ipc/friction/smooth_friction_mollifier.hpp>
+#include <ipc/math/math.hpp>
 
 #include <cassert>
 #include <cmath>
@@ -110,6 +111,122 @@ double smooth_mu_f2_x_minus_mu_f1_over_x3(
                    + (9 * mu_k - 10 * mu_s) / y);
         }
     }
+}
+
+std::pair<double, double> anisotropic_mu_eff_f(
+    Eigen::ConstRef<Eigen::Vector2d> tau_dir,
+    Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
+    Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso)
+{
+    // Elliptical model (L2 projection):
+    // mu_eff = sqrt((mu0*t0)^2 + (mu1*t1)^2) where t = tau_dir
+    const double mu_s_eff = std::sqrt(
+        Math<double>::sqr(mu_s_aniso[0] * tau_dir[0])
+        + Math<double>::sqr(mu_s_aniso[1] * tau_dir[1]));
+
+    const double mu_k_eff = std::sqrt(
+        Math<double>::sqr(mu_k_aniso[0] * tau_dir[0])
+        + Math<double>::sqr(mu_k_aniso[1] * tau_dir[1]));
+
+    return std::make_pair(mu_s_eff, mu_k_eff);
+}
+
+Eigen::Vector2d anisotropic_mu_eff_f_dtau(
+    Eigen::ConstRef<Eigen::Vector2d> tau,
+    Eigen::ConstRef<Eigen::Vector2d> mu_aniso,
+    const double mu_eff)
+{
+    constexpr double eps = 1e-10;
+    const double tau_norm = tau.norm();
+
+    // Edge cases: return zero vector if ||tau|| ~ 0 or mu_eff ~ 0
+    if (tau_norm < eps || mu_eff < eps) {
+        return Eigen::Vector2d::Zero();
+    }
+
+    // d(mu_eff)/d(tau_i) = tau_i * (mu_i^2 - mu_eff^2) / (mu_eff * ||tau||^2)
+    const double tau_norm_sq = tau_norm * tau_norm;
+    const double mu_eff_sq = mu_eff * mu_eff;
+    Eigen::Vector2d result;
+    result[0] = tau[0] * (Math<double>::sqr(mu_aniso[0]) - mu_eff_sq)
+        / (mu_eff * tau_norm_sq);
+    result[1] = tau[1] * (Math<double>::sqr(mu_aniso[1]) - mu_eff_sq)
+        / (mu_eff * tau_norm_sq);
+
+    // Ensure result is finite (handle numerical edge cases)
+    if (!std::isfinite(result[0]) || !std::isfinite(result[1])) {
+        return Eigen::Vector2d::Zero();
+    }
+
+    return result;
+}
+
+Eigen::Vector2d
+anisotropic_x_from_tau_aniso(Eigen::ConstRef<Eigen::Vector2d> tau_aniso)
+{
+    constexpr double tiny = 1e-10;
+    const double tau_aniso_norm = tau_aniso.norm();
+
+    if (tau_aniso_norm < tiny) {
+        return Eigen::Vector2d(1.0, 0.0); // Default direction
+    } else {
+        return tau_aniso / tau_aniso_norm;
+    }
+}
+
+std::pair<double, double> anisotropic_mu_eff_from_tau_aniso(
+    Eigen::ConstRef<Eigen::Vector2d> tau_aniso,
+    Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
+    Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso,
+    const double mu_s_isotropic,
+    const double mu_k_isotropic,
+    const bool no_mu)
+{
+    // Check if direction-dependent anisotropic friction is enabled
+    const bool is_anisotropic = mu_s_aniso.squaredNorm() > 0;
+
+    if (is_anisotropic) {
+        // Direction-dependent friction: compute effective mu based on
+        // tau_aniso direction (after mu_aniso scaling). This combines both
+        // mechanisms: mu_aniso velocity scaling AND mu_s_aniso/mu_k_aniso
+        // direction-dependent coefficients.
+        const Eigen::Vector2d tau_dir = anisotropic_x_from_tau_aniso(tau_aniso);
+
+        const auto [mu_s_eff, mu_k_eff] =
+            anisotropic_mu_eff_f(tau_dir, mu_s_aniso, mu_k_aniso);
+
+        return std::make_pair(no_mu ? 1.0 : mu_s_eff, no_mu ? 1.0 : mu_k_eff);
+    } else {
+        // Isotropic friction: use scalar mu_s/mu_k (mu_aniso scaling already
+        // applied to tau_aniso)
+        return std::make_pair(
+            no_mu ? 1.0 : mu_s_isotropic, no_mu ? 1.0 : mu_k_isotropic);
+    }
+}
+
+std::pair<Eigen::Vector2d, Eigen::Vector2d> anisotropic_mu_eff_f_grad(
+    Eigen::ConstRef<Eigen::Vector2d> tau_aniso,
+    Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
+    Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso,
+    const double mu_s_eff,
+    const double mu_k_eff)
+{
+    // Compute gradients of effective mu w.r.t. tau_aniso: g_s = ∇_τ_aniso
+    // μ_s_eff, g_k = ∇_τ_aniso μ_k_eff
+    const Eigen::Vector2d g_s =
+        anisotropic_mu_eff_f_dtau(tau_aniso, mu_s_aniso, mu_s_eff);
+    const Eigen::Vector2d g_k =
+        anisotropic_mu_eff_f_dtau(tau_aniso, mu_k_aniso, mu_k_eff);
+
+    // Ensure both gradients are finite before returning
+    Eigen::Vector2d g_s_safe = (std::isfinite(g_s[0]) && std::isfinite(g_s[1]))
+        ? g_s
+        : Eigen::Vector2d::Zero();
+    Eigen::Vector2d g_k_safe = (std::isfinite(g_k[0]) && std::isfinite(g_k[1]))
+        ? g_k
+        : Eigen::Vector2d::Zero();
+
+    return std::make_pair(g_s_safe, g_k_safe);
 }
 
 } // namespace ipc

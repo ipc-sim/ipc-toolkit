@@ -8,6 +8,13 @@ Code Formatting
 
 We utilize `ClangFormat <https://clang.llvm.org/docs/ClangFormat.html>`_ to automate code formatting. Please format your code before pushing and/or creating a pull request.
 
+The project uses the root ``.clang-format`` (80 columns, WebKit-based).
+Under ``tests/``, ``tests/.clang-format`` inherits that style and sets
+``SortIncludes: false``. CI runs clang-format 20; format with the same version
+locally to avoid formatting check failures (e.g. ``clang-format -i`` using
+version 20, or use the pre-commit hook from :doc:`developers/tools`).
+clang-tidy uses the same style via ``FormatStyle: file`` (see ``.clang-tidy``).
+
 Additionally, ensure that your code adheres to the project's linting rules. Use the provided linting tools to check for any issues before committing your changes.
 
 Naming conventions

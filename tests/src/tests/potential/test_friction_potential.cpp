@@ -18,9 +18,13 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
         data;
 
-    const Eigen::MatrixXd U = V1 - V0;
-
     const CollisionMesh mesh(V0, E, F);
+
+    // Ensure U matches the mesh size
+    const Eigen::MatrixXd U_full = V1 - V0;
+    const Eigen::MatrixXd U = U_full.rows() == mesh.num_vertices()
+        ? U_full
+        : mesh.map_displacements(U_full);
 
     TangentialCollisions tangential_collisions;
     tangential_collisions.build(
@@ -32,7 +36,10 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
-        const Eigen::MatrixXd fd_U = fd::unflatten(x, data.V1.cols()) - data.V0;
+        Eigen::MatrixXd fd_U_full = fd::unflatten(x, data.V1.cols()) - data.V0;
+        Eigen::MatrixXd fd_U = fd_U_full.rows() == mesh.num_vertices()
+            ? fd_U_full
+            : mesh.map_displacements(fd_U_full);
         return D(tangential_collisions, mesh, fd_U);
     };
     Eigen::VectorXd fgrad;

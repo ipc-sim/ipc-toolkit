@@ -4,7 +4,7 @@ Tools for Developers
 Using Pre-Commit Hooks
 ----------------------
 
-Use the ``.pre-commit-config.yaml`` file to apply clang-format on before commits.
+Use the ``.pre-commit-config.yaml`` file to apply clang-format before commits. Use clang-format version 20 (see :doc:`developers/style_guide`).
 
 Steps:
 
