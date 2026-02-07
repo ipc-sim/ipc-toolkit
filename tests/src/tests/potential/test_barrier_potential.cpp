@@ -36,7 +36,6 @@ TEST_CASE(
 
     double dhat = -1;
     std::string mesh_name;
-    bool all_vertices_on_surface = true;
     SECTION("cube")
     {
         dhat = sqrt(2.0);
@@ -209,6 +208,8 @@ TEST_CASE(
                 vertices.row(3), vertices.row(0), vertices.row(1))
             < dhat * dhat);
     }
+
+    REQUIRE(vertices.size() > 0);
 
     const CollisionMesh mesh(vertices, edges, faces);
 

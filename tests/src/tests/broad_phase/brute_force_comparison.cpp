@@ -89,8 +89,9 @@ void save_candidates(
 bool load_candidates(const std::string& filename, ipc::Candidates& candidates)
 {
     std::ifstream f(filename);
-    if (!f)
+    if (!f) {
         return false;
+    }
 
     nlohmann::json in;
     f >> in;

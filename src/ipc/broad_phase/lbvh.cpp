@@ -662,7 +662,7 @@ void LBVH::detect_candidates(
 void LBVH::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
-    if (!has_vertices()) {
+    if (vertex_bvh.size() <= 1) { // Need at least 2 vertices for a collision
         return;
     }
 
@@ -690,7 +690,7 @@ void LBVH::detect_edge_vertex_candidates(
 void LBVH::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
-    if (!has_edges()) {
+    if (edge_bvh.size() <= 1) { // Need at least 2 edges for a collision
         return;
     }
 
@@ -734,7 +734,7 @@ void LBVH::detect_edge_face_candidates(
 void LBVH::detect_face_face_candidates(
     std::vector<FaceFaceCandidate>& candidates) const
 {
-    if (!has_faces()) {
+    if (face_bvh.size() <= 1) { // Need at least 2 faces for a collision
         return;
     }
 
