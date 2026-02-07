@@ -46,7 +46,7 @@ MatrixMax<double, 3, 2> FaceVertexTangentialCollision::compute_tangent_basis(
         positions.segment(2 * dim(), dim()), positions.tail(dim()));
 }
 
-MatrixMax<double, 36, 2>
+MatrixMax<double, 6, 12>
 FaceVertexTangentialCollision::compute_tangent_basis_jacobian(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
@@ -89,20 +89,19 @@ VectorMax3d FaceVertexTangentialCollision::relative_velocity(
 }
 
 MatrixMax<double, 3, 12>
-FaceVertexTangentialCollision::relative_velocity_matrix(
+FaceVertexTangentialCollision::relative_velocity_jacobian(
     Eigen::ConstRef<VectorMax2d> _closest_point) const
 {
     assert(_closest_point.size() == 2);
-    return point_triangle_relative_velocity_matrix(dim(), _closest_point);
+    return point_triangle_relative_velocity_jacobian(_closest_point);
 }
 
-MatrixMax<double, 6, 12>
-FaceVertexTangentialCollision::relative_velocity_matrix_jacobian(
+MatrixMax<double, 3, 24>
+FaceVertexTangentialCollision::relative_velocity_dx_dbeta(
     Eigen::ConstRef<VectorMax2d> _closest_point) const
 {
     assert(_closest_point.size() == 2);
-    return point_triangle_relative_velocity_matrix_jacobian(
-        dim(), _closest_point);
+    return point_triangle_relative_velocity_dx_dbeta(_closest_point);
 }
 
 } // namespace ipc

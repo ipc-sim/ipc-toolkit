@@ -127,4 +127,7 @@ PYBIND11_MODULE(ipctk, m)
     // root
     define_collision_mesh(m);
     define_ipc(m);
+
+    // dynamics
+    define_rigid_simulator(m);
 }

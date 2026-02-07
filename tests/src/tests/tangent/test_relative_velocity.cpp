@@ -1,5 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/generators/catch_generators.hpp>
+
+#include <finitediff.hpp>
+#include <iostream>
 
 #include <ipc/tangent/closest_point.hpp>
 #include <ipc/tangent/relative_velocity.hpp>
@@ -84,4 +88,102 @@ TEST_CASE(
 
     Eigen::Vector2d relative_velocity = point_point_relative_velocity(dp0, dp1);
     CHECK((dp0 - relative_velocity).norm() == Catch::Approx(0).margin(1e-12));
+}
+
+TEST_CASE(
+    "Point-point relative velocity matrix Jacobians",
+    "[friction][point-point][relative_velocity][jacobian]")
+{
+    const int dim = GENERATE(2, 3);
+
+    auto J_analytical = point_point_relative_velocity_dx_dbeta(dim);
+
+    Eigen::VectorXd x = Eigen::VectorXd::Zero(1);
+    Eigen::MatrixXd J_numerical;
+    fd::finite_jacobian_tensor<4>(
+        x,
+        [&dim](const Eigen::VectorXd&) -> Eigen::MatrixXd {
+            return point_point_relative_velocity_jacobian(dim);
+        },
+        J_numerical);
+
+    CHECK(fd::compare_jacobian(J_analytical, J_numerical));
+    if (!fd::compare_jacobian(J_analytical, J_numerical)) {
+        std::cout << "Analytical:\n"
+                  << J_analytical << "\nNumerical:\n"
+                  << J_numerical << '\n';
+    }
+}
+
+TEST_CASE(
+    "Point-edge relative velocity matrix Jacobians",
+    "[friction][point-edge][relative_velocity][jacobian]")
+{
+    const int dim = GENERATE(2, 3);
+    Eigen::VectorXd x = Eigen::VectorXd::Random(1);
+
+    auto J_analytical = point_edge_relative_velocity_dx_dbeta(dim, x[0]);
+
+    Eigen::MatrixXd J_numerical;
+    fd::finite_jacobian_tensor<4>(
+        x,
+        [&dim](const Eigen::VectorXd& _x) -> Eigen::MatrixXd {
+            return point_edge_relative_velocity_jacobian(dim, _x[0]);
+        },
+        J_numerical);
+
+    CHECK(fd::compare_jacobian(J_analytical, J_numerical));
+    if (!fd::compare_jacobian(J_analytical, J_numerical)) {
+        std::cout << "Analytical:\n"
+                  << J_analytical << "\nNumerical:\n"
+                  << J_numerical << '\n';
+    }
+}
+
+TEST_CASE(
+    "Edge-edge relative velocity matrix Jacobians",
+    "[friction][edge-edge][relative_velocity][jacobian]")
+{
+    Eigen::VectorXd x = Eigen::VectorXd::Random(2);
+
+    auto J_analytical = edge_edge_relative_velocity_dx_dbeta(x);
+
+    Eigen::MatrixXd J_numerical;
+    fd::finite_jacobian_tensor<4>(
+        x,
+        [](const Eigen::VectorXd& _x) -> Eigen::MatrixXd {
+            return edge_edge_relative_velocity_jacobian(_x);
+        },
+        J_numerical);
+
+    CHECK(fd::compare_jacobian(J_analytical, J_numerical));
+    if (!fd::compare_jacobian(J_analytical, J_numerical)) {
+        std::cout << "Analytical:\n"
+                  << J_analytical << "\nNumerical:\n"
+                  << J_numerical << '\n';
+    }
+}
+
+TEST_CASE(
+    "Point-triangle relative velocity matrix Jacobians",
+    "[friction][point-triangle][relative_velocity][jacobian]")
+{
+    Eigen::VectorXd x = Eigen::VectorXd::Random(2);
+
+    auto J_analytical = point_triangle_relative_velocity_dx_dbeta(x);
+
+    Eigen::MatrixXd J_numerical;
+    fd::finite_jacobian_tensor<4>(
+        x,
+        [](const Eigen::VectorXd& _x) -> Eigen::MatrixXd {
+            return point_triangle_relative_velocity_jacobian(_x);
+        },
+        J_numerical);
+
+    CHECK(fd::compare_jacobian(J_analytical, J_numerical));
+    if (!fd::compare_jacobian(J_analytical, J_numerical)) {
+        std::cout << "Analytical:\n"
+                  << J_analytical << "\nNumerical:\n"
+                  << J_numerical << '\n';
+    }
 }

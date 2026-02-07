@@ -1,8 +1,6 @@
 import numpy as np
-
 from find_ipctk import ipctk
 from ipctk.filib import Interval
-
 from utils import load_mesh
 
 
@@ -28,16 +26,44 @@ def test_custom_ccd():
         def __init__(self):
             ipctk.NarrowPhaseCCD.__init__(self)
 
-        def point_point_ccd(self, p0_t0, p1_t0, p0_t1, p1_t1, min_distance=0.0, tmax=1.0):
+        def point_point_ccd(
+            self, p0_t0, p1_t0, p0_t1, p1_t1, min_distance=0.0, tmax=1.0
+        ):
             return True, 0.0
 
-        def point_edge_ccd(self, p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, min_distance=0.0, tmax=1.0):
+        def point_edge_ccd(
+            self, p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, min_distance=0.0, tmax=1.0
+        ):
             return True, 0.0
 
-        def point_triangle_ccd(self, p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, min_distance=0.0, tmax=1.0):
+        def point_triangle_ccd(
+            self,
+            p_t0,
+            t0_t0,
+            t1_t0,
+            t2_t0,
+            p_t1,
+            t0_t1,
+            t1_t1,
+            t2_t1,
+            min_distance=0.0,
+            tmax=1.0,
+        ):
             return True, 0.0
 
-        def edge_edge_ccd(self, ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, min_distance=0.0, tmax=1.0):
+        def edge_edge_ccd(
+            self,
+            ea0_t0,
+            ea1_t0,
+            eb0_t0,
+            eb1_t0,
+            ea0_t1,
+            ea1_t1,
+            eb0_t1,
+            eb1_t1,
+            min_distance=0.0,
+            tmax=1.0,
+        ):
             return True, 0.0
 
     V0, E, F = load_mesh("two-cubes-close.ply")
@@ -48,10 +74,12 @@ def test_custom_ccd():
     ipctk.set_num_threads(1)
 
     assert not ipctk.is_step_collision_free(
-        mesh, V0, V1, narrow_phase_ccd=DumbNarrowPhaseCCD())
+        mesh, V0, V1, narrow_phase_ccd=DumbNarrowPhaseCCD()
+    )
 
     toi = ipctk.compute_collision_free_stepsize(
-        mesh, V0, V1, narrow_phase_ccd=DumbNarrowPhaseCCD())
+        mesh, V0, V1, narrow_phase_ccd=DumbNarrowPhaseCCD()
+    )
     assert 0 <= toi <= 1
 
 
@@ -90,8 +118,7 @@ def test_custom_broad_phase():
 
     assert ipctk.is_step_collision_free(mesh, V0, V1, broad_phase=broad_phase)
 
-    toi = ipctk.compute_collision_free_stepsize(
-        mesh, V0, V1, broad_phase=broad_phase)
+    toi = ipctk.compute_collision_free_stepsize(mesh, V0, V1, broad_phase=broad_phase)
     assert toi == 1
 
     assert not ipctk.has_intersections(mesh, V0, broad_phase=broad_phase)
@@ -124,7 +151,9 @@ def test_nonlinear_ccd():
     assert p0.max_distance_from_linear(0, 1) == 0
     assert p1.max_distance_from_linear(0, 1) == 0
 
-    is_colliding, toi = ipctk.point_point_nonlinear_ccd(p0, p1)
+    ccd = ipctk.NonlinearCCD()
+
+    is_colliding, toi = ccd.point_point_ccd(p0, p1)
 
     assert is_colliding
     assert 0 < toi < 1
@@ -145,7 +174,7 @@ def test_nonlinear_ccd():
     # p0 = IntervalLinearTrajectory(np.array([-1, 0, 0]), np.array([1, 0, 0]))
     # p1 = IntervalLinearTrajectory(np.array([0, -1, 0]), np.array([0, 1, 0]))
 
-    # is_colliding, toi = ipctk.point_point_nonlinear_ccd(p0, p1)
+    # is_colliding, toi = ccd.point_point_ccd(p0, p1)
 
     # assert is_colliding
     # assert 0 < toi < 1
@@ -153,7 +182,9 @@ def test_nonlinear_ccd():
 
     # BEGIN_RIGID_2D_TRAJECTORY
     class Rigid2DTrajectory(ipctk.NonlinearTrajectory):
-        def __init__(self, position, translation, delta_translation, rotation, delta_rotation):
+        def __init__(
+            self, position, translation, delta_translation, rotation, delta_rotation
+        ):
             ipctk.NonlinearTrajectory.__init__(self)
             self.position = position
             self.translation = translation
@@ -164,9 +195,11 @@ def test_nonlinear_ccd():
         # BEGIN_RIGID_2D_CALL
         def __call__(self, t):
             theta = self.rotation + t * self.delta_rotation
-            R = np.array([[np.cos(theta), -np.sin(theta)],
-                          [np.sin(theta), np.cos(theta)]])
+            R = np.array(
+                [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+            )
             return R @ self.position + self.translation + t * self.delta_translation
+
         # END_RIGID_2D_CALL
 
         # BEGIN_RIGID_2D_MAX_DISTANCE_FROM_LINEAR
@@ -177,20 +210,19 @@ def test_nonlinear_ccd():
             p_t0 = self(t0)
             p_t1 = self(t1)
             return np.linalg.norm(self((t0 + t1) / 2) - ((p_t1 - p_t0) * 0.5 + p_t0))
+
         # END_RIGID_2D_MAX_DISTANCE_FROM_LINEAR
+
     # END_RIGID_2D_TRAJECTORY
 
     # BEGIN_TEST_RIGID_2D_TRAJECTORY
-    p = Rigid2DTrajectory(
-        np.array([0, 0.5]), np.zeros(2), np.zeros(2), 0, 0)
-    e0 = Rigid2DTrajectory(
-        np.array([-1, 0]), np.zeros(2), np.zeros(2), 0, np.pi)
-    e1 = Rigid2DTrajectory(
-        np.array([1, 0]), np.zeros(2), np.zeros(2), 0, np.pi)
+    p = Rigid2DTrajectory(np.array([0, 0.5]), np.zeros(2), np.zeros(2), 0, 0)
+    e0 = Rigid2DTrajectory(np.array([-1, 0]), np.zeros(2), np.zeros(2), 0, np.pi)
+    e1 = Rigid2DTrajectory(np.array([1, 0]), np.zeros(2), np.zeros(2), 0, np.pi)
 
     # increase the conservative_rescaling from 0.8 to 0.9 to get a more accurate estimate
-    collision, toi = ipctk.point_edge_nonlinear_ccd(
-        p, e0, e1, conservative_rescaling=0.9)
+    ccd.conservative_rescaling = 0.9
+    collision, toi = ccd.point_edge_ccd(p, e0, e1)
 
     assert collision
     assert 0.49 <= toi <= 0.5  # conservative estimate

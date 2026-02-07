@@ -28,18 +28,18 @@ Relative Velocity
 Relative Velocity as Multiplier Matricies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: ipctk.point_point_relative_velocity_matrix
-.. autofunction:: ipctk.point_edge_relative_velocity_matrix
-.. autofunction:: ipctk.edge_edge_relative_velocity_matrix
-.. autofunction:: ipctk.point_triangle_relative_velocity_matrix
+.. autofunction:: ipctk.point_point_relative_velocity_jacobian
+.. autofunction:: ipctk.point_edge_relative_velocity_jacobian
+.. autofunction:: ipctk.edge_edge_relative_velocity_jacobian
+.. autofunction:: ipctk.point_triangle_relative_velocity_jacobian
 
 Relative Velocity Matrix Jacobians
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: ipctk.point_point_relative_velocity_matrix_jacobian
-.. autofunction:: ipctk.point_edge_relative_velocity_matrix_jacobian
-.. autofunction:: ipctk.edge_edge_relative_velocity_matrix_jacobian
-.. autofunction:: ipctk.point_triangle_relative_velocity_matrix_jacobian
+.. autofunction:: ipctk.point_point_relative_velocity_dx_dbeta
+.. autofunction:: ipctk.point_edge_relative_velocity_dx_dbeta
+.. autofunction:: ipctk.edge_edge_relative_velocity_dx_dbeta
+.. autofunction:: ipctk.point_triangle_relative_velocity_dx_dbeta
 
 Closet Points
 -------------

@@ -135,7 +135,8 @@ void define_collision_mesh(py::module_& m)
             )ipc_Qu8mg5v7",
             "i"_a, "j"_a);
 
-    py::class_<CollisionMesh>(m, "CollisionMesh")
+    py::class_<CollisionMesh, std::shared_ptr<CollisionMesh>>(
+        m, "CollisionMesh")
         .def(
             py::init<
                 Eigen::ConstRef<Eigen::MatrixXd>,

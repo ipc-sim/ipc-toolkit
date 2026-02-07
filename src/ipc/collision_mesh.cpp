@@ -135,8 +135,7 @@ void CollisionMesh::init_edges_to_faces()
         return;
     }
 
-    m_edges_to_faces.setOnes(num_edges(), 2);
-    m_edges_to_faces *= -1;
+    m_edges_to_faces.setConstant(num_edges(), 2, -1);
     for (int f = 0; f < m_faces_to_edges.rows(); f++) {
         for (int le = 0; le < 3; le++) {
             if (m_edges_to_faces(m_faces_to_edges(f, le), 0) < 0) {
@@ -144,7 +143,11 @@ void CollisionMesh::init_edges_to_faces()
             } else if (m_edges_to_faces(m_faces_to_edges(f, le), 1) < 0) {
                 m_edges_to_faces(m_faces_to_edges(f, le), 1) = f;
             } else {
-                assert(false);
+                logger().warn(
+                    "Edge {} is non-manifold; face {} adjacent to faces {} and {}.",
+                    m_faces_to_edges(f, le), f,
+                    m_edges_to_faces(m_faces_to_edges(f, le), 0),
+                    m_edges_to_faces(m_faces_to_edges(f, le), 1));
             }
         }
     }

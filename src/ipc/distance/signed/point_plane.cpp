@@ -30,7 +30,7 @@ Matrix12d point_plane_signed_distance_hessian(
     // Precompute normal's Jacobian and Hessian
     const Eigen::Matrix<double, 3, 9> jac_n =
         triangle_normal_jacobian(t0, t1, t2);
-    const Eigen::Matrix<double, 3, 81> hess_n =
+    const Eigen::Matrix<double, 27, 9> hess_n =
         triangle_normal_hessian(t0, t1, t2);
 
     // Vector from t0 to p
@@ -60,7 +60,10 @@ Matrix12d point_plane_signed_distance_hessian(
 
     // A. Contraction of the normal Hessian tensor with vector v
     // hess_n is 3x81. v is 3x1. Result is 1x81, which maps to 9x9.
-    hess.block<9, 9>(3, 3) = (v.transpose() * hess_n).reshaped(9, 9);
+    for (int i = 0; i < 9; ++i) {
+        hess.block<1, 9>(i + 3, 3) =
+            hess_n.middleRows<3>(3 * i).transpose() * v;
+    }
 
     // B. Subtract first derivative terms (Product Rule corrections)
     // Extract 3x3 Jacobian blocks for t0, t1, t2

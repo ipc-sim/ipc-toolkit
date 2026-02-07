@@ -180,7 +180,7 @@ VectorMax12d TangentialPotential::gradient(
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T =
-        collision.relative_velocity_matrix().transpose()
+        collision.relative_velocity_jacobian().transpose()
         * collision.tangent_basis;
 
     // Compute μ(‖u‖) f₁(‖u‖)/‖u‖
@@ -215,7 +215,7 @@ MatrixMax12d TangentialPotential::hessian(
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T =
-        collision.relative_velocity_matrix().transpose()
+        collision.relative_velocity_jacobian().transpose()
         * collision.tangent_basis;
 
     // Compute ‖u‖
@@ -313,7 +313,7 @@ VectorMax12d TangentialPotential::force(
 
     // Compute Γ
     const MatrixMax<double, 3, 12> Gamma =
-        collision.relative_velocity_matrix(beta);
+        collision.relative_velocity_jacobian(beta);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
@@ -351,9 +351,9 @@ MatrixMax12d TangentialPotential::force_jacobian(
     // Compute ∇F
     assert(rest_positions.size() == lagged_displacements.size());
     assert(lagged_displacements.size() == velocities.size());
-    const int n = rest_positions.size();
-    const int dim = n / collision.num_vertices();
-    assert(n % collision.num_vertices() == 0);
+    const int ndof = rest_positions.size();
+    const int dim = ndof / collision.num_vertices();
+    assert(ndof % collision.num_vertices() == 0);
 
     // const VectorMax12d x = dof(rest_positions, edges, faces);
     // const VectorMax12d u = dof(lagged_displacements, edges, faces);
@@ -387,39 +387,40 @@ MatrixMax12d TangentialPotential::force_jacobian(
 
     // Compute Γ
     const MatrixMax<double, 3, 12> Gamma =
-        collision.relative_velocity_matrix(beta);
+        collision.relative_velocity_jacobian(beta);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
 
     // Compute ∇T
-    MatrixMax<double, 144, 2> jac_T;
+    MatrixMax<double, 24, 12> jac_T;
     if (need_jac_N_or_T) {
-        jac_T.resize(n * n, dim - 1);
         // ∇T = ∇(ΓᵀP) = ∇ΓᵀP + Γᵀ∇P
-        const MatrixMax<double, 36, 2> jac_P =
+
+        // Compute Γᵀ∇P
+        const MatrixMax<double, 6, 12> jac_P =
             collision.compute_tangent_basis_jacobian(lagged_positions);
-        for (int i = 0; i < n; i++) {
-            // ∂T/∂xᵢ += Γᵀ ∂P/∂xᵢ
-            jac_T.middleRows(i * n, n) =
-                Gamma.transpose() * jac_P.middleRows(i * dim, dim);
-        }
+        jac_T = (Gamma.transpose() * jac_P.reshaped(P.rows(), P.cols() * ndof))
+                    .reshaped(T.size(), ndof);
 
         // Vertex-vertex does not have a closest point
         if (beta.size() != 0) {
-            // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
-            const MatrixMax<double, 2, 12> jac_beta =
+            // Compute: ∇ΓᵀP = (∇ᵦΓ ∇β)ᵀ P
+            const MatrixMax<double, 2, 12> dbeta_dx = // ∇β
                 collision.compute_closest_point_jacobian(lagged_positions);
-            const MatrixMax<double, 6, 12> jac_Gamma_wrt_beta =
-                collision.relative_velocity_matrix_jacobian(beta);
+            const MatrixMax<double, 3, 24> dGamma_dbeta = // ∇ᵦΓ
+                collision.relative_velocity_dx_dbeta(beta);
 
-            for (int k = 0; k < n; k++) {
-                for (int b = 0; b < beta.size(); b++) {
-                    jac_T.middleRows(k * n, n) +=
-                        jac_Gamma_wrt_beta.transpose().middleCols(b * dim, dim)
-                        * (jac_beta(b, k) * P);
-                }
+            // 1. Precompute dT/dβ = [dΓ/dβ]ᵀ P
+            MatrixMax<double, 24, 2> dT_dbeta(T.size(), beta.size());
+            for (int b = 0; b < beta.size(); ++b) {
+                dT_dbeta.col(b) =
+                    (dGamma_dbeta.middleCols(b * ndof, ndof).transpose() * P)
+                        .reshaped();
             }
+
+            // 2. Apply chain rule: dT/dβ * dβ/dx
+            jac_T += dT_dbeta * dbeta_dx;
         }
     }
 
@@ -429,11 +430,12 @@ MatrixMax12d TangentialPotential::force_jacobian(
     // Compute ∇τ = ∇T(x + u)ᵀv + T(x + u)ᵀ∇v
     MatrixMax<double, 2, 12> jac_tau;
     if (need_jac_N_or_T) {
-        jac_tau.resize(dim - 1, n);
+        jac_tau.resize(dim - 1, ndof);
         // Compute ∇T(x + u)ᵀv
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < ndof; i++) {
             jac_tau.col(i) =
-                jac_T.middleRows(i * n, n).transpose() * velocities;
+                jac_T.col(i).reshaped(T.rows(), T.cols()).transpose()
+                * velocities;
         }
     } else {
         jac_tau = T.transpose(); // Tᵀ ∇ᵥv = Tᵀ
@@ -448,7 +450,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
     VectorMax12d grad_mu_f1_over_norm_tau;
     if (tau_norm == 0) {
         // lim_{x→0} f₂(x)x² = 0
-        grad_mu_f1_over_norm_tau.setZero(n);
+        grad_mu_f1_over_norm_tau.setZero(ndof);
     } else {
         // ∇ (f₁(‖τ‖)/‖τ‖) = (f₂(‖τ‖)‖τ‖ - f₁(‖τ‖)) / ‖τ‖³ τᵀ ∇τ
         double f2 = mu_f2_x_minus_mu_f1_over_x3(
@@ -462,7 +464,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
 
     // ------------------------------------------------------------------------
     // Compute J = ∇F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
-    MatrixMax12d J = MatrixMax12d::Zero(n, n);
+    MatrixMax12d J = MatrixMax12d::Zero(ndof, ndof);
 
     // = -μ f₁(‖τ‖)/‖τ‖ (T τ) [∇N]ᵀ
     if (need_jac_N_or_T) {
@@ -475,9 +477,9 @@ MatrixMax12d TangentialPotential::force_jacobian(
     // + -μ N f₁(‖τ‖)/‖τ‖ [∇T] τ
     if (need_jac_N_or_T) {
         const VectorMax2d scaled_tau = N * mu_f1_over_norm_tau * tau;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < ndof; i++) {
             // ∂J/∂xᵢ = ∂T/∂xᵢ * τ
-            J.col(i) += jac_T.middleRows(i * n, n) * scaled_tau;
+            J.col(i) += jac_T.col(i).reshaped(T.rows(), T.cols()) * scaled_tau;
         }
     }
 
@@ -703,7 +705,7 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
 
     // Compute Γ
     const MatrixMax<double, 3, STENCIL_NDOF> Gamma =
-        collision.relative_velocity_matrix(beta);
+        collision.relative_velocity_jacobian(beta);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, STENCIL_NDOF, 2> T = Gamma.transpose() * P;
@@ -739,9 +741,9 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
     //
     // Compute ∇F
     assert(lagged_positions.size() == velocities.size());
-    const int n = lagged_positions.size();
-    const int dim = n / collision.num_vertices();
-    assert(n % collision.num_vertices() == 0);
+    const int ndof = lagged_positions.size();
+    const int dim = ndof / collision.num_vertices();
+    assert(ndof % collision.num_vertices() == 0);
 
     const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
 
@@ -754,39 +756,41 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
 
     // Compute Γ
     const MatrixMax<double, 3, STENCIL_NDOF> Gamma =
-        collision.relative_velocity_matrix(beta);
+        collision.relative_velocity_jacobian(beta);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, STENCIL_NDOF, 2> T = Gamma.transpose() * P;
 
     // Compute ∇T
-    MatrixMax<double, STENCIL_NDOF * STENCIL_NDOF, 2> jac_T;
+    MatrixMax<double, 2 * STENCIL_NDOF, STENCIL_NDOF> jac_T;
     if (need_jac_N_or_T) {
-        jac_T.resize(n * n, dim - 1);
         // ∇T = ∇(ΓᵀP) = ∇ΓᵀP + Γᵀ∇P
-        const MatrixMax<double, 36, 2> jac_P =
+
+        // Compute Γᵀ∇P
+        const MatrixMax<double, 6, 12> jac_P =
             collision.compute_tangent_basis_jacobian(lagged_positions);
-        for (int i = 0; i < n; i++) {
-            // ∂T/∂xᵢ += Γᵀ ∂P/∂xᵢ
-            jac_T.middleRows(i * n, n) =
-                Gamma.transpose() * jac_P.middleRows(i * dim, dim);
-        }
+        jac_T = (Gamma.transpose() * jac_P.reshaped(P.rows(), P.cols() * ndof))
+                    .reshaped(T.size(), ndof);
 
         // Vertex-vertex does not have a closest point
         if (beta.size()) {
-            // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
-            const MatrixMax<double, 2, STENCIL_NDOF> jac_beta =
+            // Compute: ∇ΓᵀP = (∇ᵦΓ ∇β)ᵀ P
+            const MatrixMax<double, 2, STENCIL_NDOF> dbeta_dx = // ∇β
                 collision.compute_closest_point_jacobian(lagged_positions);
-            const MatrixMax<double, 6, STENCIL_NDOF> jac_Gamma_wrt_beta =
-                collision.relative_velocity_matrix_jacobian(beta);
+            const MatrixMax<double, 3, 2 * STENCIL_NDOF> dGamma_dbeta = // ∇ᵦΓ
+                collision.relative_velocity_dx_dbeta(beta);
 
-            for (int k = 0; k < n; k++) {
-                for (int b = 0; b < beta.size(); b++) {
-                    jac_T.middleRows(k * n, n) +=
-                        jac_Gamma_wrt_beta.transpose().middleCols(b * dim, dim)
-                        * (jac_beta(b, k) * P);
-                }
+            // 1. Precompute dT/dβ = [dΓ/dβ]ᵀ P
+            MatrixMax<double, 2 * STENCIL_NDOF, 2> dT_dbeta(
+                T.size(), beta.size());
+            for (int b = 0; b < beta.size(); ++b) {
+                dT_dbeta.col(b) =
+                    (dGamma_dbeta.middleCols(b * ndof, ndof).transpose() * P)
+                        .reshaped();
             }
+
+            // 2. Apply chain rule: dT/dβ * dβ/dx
+            jac_T += dT_dbeta * dbeta_dx;
         }
     }
 
@@ -796,11 +800,12 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
     // Compute ∇τ = ∇T(x + u)ᵀv + T(x + u)ᵀ∇v
     MatrixMax<double, 2, STENCIL_NDOF> jac_tau;
     if (need_jac_N_or_T) {
-        jac_tau.resize(dim - 1, n);
+        jac_tau.resize(dim - 1, ndof);
         // Compute ∇T(x + u)ᵀv
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < ndof; i++) {
             jac_tau.col(i) =
-                jac_T.middleRows(i * n, n).transpose() * velocities;
+                jac_T.col(i).reshaped(T.rows(), T.cols()).transpose()
+                * velocities;
         }
     } else {
         jac_tau = T.transpose(); // Tᵀ ∇ᵥv = Tᵀ
@@ -816,7 +821,7 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
     VectorMaxNd grad_f1_over_norm_tau;
     if (tau_norm == 0) {
         // lim_{x→0} f₂(x)x² = 0
-        grad_f1_over_norm_tau.setZero(n);
+        grad_f1_over_norm_tau.setZero(ndof);
     } else {
         // ∇ (f₁(‖τ‖)/‖τ‖) = (f₁'(‖τ‖)‖τ‖ - f₁(‖τ‖)) / ‖τ‖³ τᵀ ∇τ
         double f2 = mu_f2_x_minus_mu_f1_over_x3(tau_norm, mu_s, mu_k);
@@ -829,7 +834,7 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
 
     // ------------------------------------------------------------------------
     // Compute J = ∇F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
-    MatrixMaxNd J = MatrixMaxNd::Zero(n, n);
+    MatrixMaxNd J = MatrixMaxNd::Zero(ndof, ndof);
 
     // + -μ N T τ [∇(f₁(‖τ‖)/‖τ‖)]
     J += T_times_tau * grad_f1_over_norm_tau.transpose();
@@ -837,9 +842,9 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
     // + -μ N f₁(‖τ‖)/‖τ‖ [∇T] τ
     if (need_jac_N_or_T) {
         const VectorMax2d scaled_tau = f1_over_norm_tau * tau;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < ndof; i++) {
             // ∂J/∂xᵢ = ∂T/∂xᵢ * τ
-            J.col(i) += jac_T.middleRows(i * n, n) * scaled_tau;
+            J.col(i) += jac_T.col(i).reshaped(T.rows(), T.cols()) * scaled_tau;
         }
     }
 
@@ -847,9 +852,9 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
     J += f1_over_norm_tau * T * jac_tau;
 
     // NOTE: ∇ₓw(x) is not local to the collision pair (i.e., it involves more
-    // than the 4 collisioning vertices), so we do not have enough information
+    // than the 4 colliding vertices), so we do not have enough information
     // here to compute the gradient. Instead this should be handled outside of
-    // the function. For a simple multiplicitive model (∑ᵢ wᵢ Fᵢ) this can be
+    // the function. For a simple multiplicative model (∑ᵢ wᵢ Fᵢ) this can be
     // done easily.
     J *= -collision.weight;
 

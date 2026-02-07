@@ -1,7 +1,8 @@
 set(SOURCES
   # Tests
-  test_utils.cpp
   test_matrixcache.cpp
+  test_sinc.cpp
+  test_utils.cpp
 
   # Benchmarks
 

@@ -262,7 +262,7 @@ void define_candidates(py::module_& m)
             )ipc_Qu8mg5v7",
             "mesh"_a, "vertices"_a, "is_active"_a = py::none())
         .def(
-            "save_obj", &Candidates::save_obj, "filename"_a, "vertices"_a,
+            "write_obj", &Candidates::write_obj, "filename"_a, "vertices"_a,
             "edges"_a, "faces"_a)
         .def_readwrite("vv_candidates", &Candidates::vv_candidates)
         .def_readwrite("ev_candidates", &Candidates::ev_candidates)

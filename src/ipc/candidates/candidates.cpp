@@ -2,13 +2,14 @@
 
 #include <ipc/config.hpp>
 #include <ipc/ipc.hpp>
+#include <ipc/broad_phase/default_broad_phase.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_plane.hpp>
 #include <ipc/distance/point_point.hpp>
+#include <ipc/io/write_candidates_obj.hpp>
 #include <ipc/utils/eigen_ext.hpp>
-#include <ipc/utils/save_obj.hpp>
 
 #include <igl/remove_unreferenced.h>
 #include <tbb/blocked_range.h>
@@ -641,7 +642,7 @@ std::vector<EdgeVertexCandidate> Candidates::edge_edge_to_edge_vertex(
 
 // ============================================================================
 
-bool Candidates::save_obj(
+bool Candidates::write_obj(
     const std::string& filename,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
@@ -652,13 +653,17 @@ bool Candidates::save_obj(
         return false;
     }
     int v_offset = 0;
-    ipc::save_obj(obj, vertices, edges, faces, vv_candidates, v_offset);
+    ipc::write_candidates_obj(
+        obj, vertices, edges, faces, vv_candidates, v_offset);
     v_offset += vv_candidates.size() * 2;
-    ipc::save_obj(obj, vertices, edges, faces, ev_candidates, v_offset);
+    ipc::write_candidates_obj(
+        obj, vertices, edges, faces, ev_candidates, v_offset);
     v_offset += ev_candidates.size() * 3;
-    ipc::save_obj(obj, vertices, edges, faces, ee_candidates, v_offset);
+    ipc::write_candidates_obj(
+        obj, vertices, edges, faces, ee_candidates, v_offset);
     v_offset += ee_candidates.size() * 4;
-    ipc::save_obj(obj, vertices, faces, faces, fv_candidates, v_offset);
+    ipc::write_candidates_obj(
+        obj, vertices, faces, faces, fv_candidates, v_offset);
     return true;
 }
 

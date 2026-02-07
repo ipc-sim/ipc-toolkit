@@ -210,6 +210,10 @@ include(tinyad)
 # TODO: Make this a private dependency once we stop exposing TinyAD types in the public API.
 target_link_libraries(ipc_toolkit PUBLIC TinyAD::TinyAD)
 
+# TinyGLTF
+include(tinygltf)
+target_link_libraries(ipc_toolkit PRIVATE tinygltf::tinygltf)
+
 # CCD
 if(IPC_TOOLKIT_WITH_INEXACT_CCD)
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
