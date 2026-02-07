@@ -125,7 +125,7 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
         storages[index++] = &local_storage;
     }
 
-    tbb::parallel_for(size_t(0), storages.size(), [&](int i) {
+    tbb::parallel_for(size_t(0), storages.size(), [&](size_t i) {
         storages[i]->cache->prune();
     });
 
