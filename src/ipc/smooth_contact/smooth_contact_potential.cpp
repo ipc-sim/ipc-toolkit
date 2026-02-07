@@ -1,7 +1,6 @@
 #include "smooth_contact_potential.hpp"
 
 #include <ipc/utils/local_to_global.hpp>
-#include <ipc/utils/maybe_parallel_for.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/combinable.h>
@@ -49,13 +48,14 @@ Eigen::VectorXd SmoothContactPotential::gradient(
 
     const int dim = X.cols();
 
-    auto storage =
-        create_thread_storage<Eigen::VectorXd>(Eigen::VectorXd::Zero(X.size()));
-    maybe_parallel_for(
-        collisions.size(), [&](int start, int end, int thread_id) {
-            auto& global_grad = get_local_thread_storage(storage, thread_id);
+    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
+        Eigen::VectorXd::Zero(X.size()));
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            auto& global_grad = storage.local();
 
-            for (size_t i = start; i < end; i++) {
+            for (size_t i = r.begin(); i < r.end(); i++) {
                 const SmoothCollision& collision = collisions[i];
 
                 const Eigen::VectorXd local_grad =
@@ -93,13 +93,14 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
 
     const int max_triplets_size = int(1e7);
     const int buffer_size = std::min(max_triplets_size, ndof);
-    auto storage =
-        create_thread_storage(LocalThreadMatStorage(buffer_size, ndof, ndof));
-    maybe_parallel_for(
-        collisions.size(), [&](int start, int end, int thread_id) {
-            auto& hess_triplets = get_local_thread_storage(storage, thread_id);
+    tbb::enumerable_thread_specific<LocalThreadMatStorage> storage(
+        LocalThreadMatStorage(buffer_size, ndof, ndof));
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, collisions.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            auto& hess_triplets = storage.local();
 
-            for (size_t i = start; i < end; i++) {
+            for (size_t i = r.begin(); i < r.end(); i++) {
                 const SmoothCollision& collision = collisions[i];
 
                 const Eigen::MatrixXd local_hess = this->hessian(
@@ -124,8 +125,9 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
         storages[index++] = &local_storage;
     }
 
-    maybe_parallel_for(
-        storages.size(), [&](int i) { storages[i]->cache->prune(); });
+    tbb::parallel_for(size_t(0), storages.size(), [&](int i) {
+        storages[i]->cache->prune();
+    });
 
     if (storage.empty()) {
         return Eigen::SparseMatrix<double>();
@@ -160,7 +162,7 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
         triplets.resize(triplet_count);
 
         // Parallel copy into triplets
-        maybe_parallel_for(storages.size(), [&](int i) {
+        tbb::parallel_for(size_t(0), storages.size(), [&](int i) {
             const SparseMatrixCache& cache =
                 dynamic_cast<const SparseMatrixCache&>(*storages[i]->cache);
             int offset = offsets[i];
