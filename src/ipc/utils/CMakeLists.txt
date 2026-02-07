@@ -9,8 +9,6 @@ set(SOURCES
   logger.hpp
   matrix_cache.cpp
   matrix_cache.hpp
-  maybe_parallel_for.hpp
-  maybe_parallel_for.tpp
   merge_thread_local.hpp
   profiler.cpp
   profiler.hpp
