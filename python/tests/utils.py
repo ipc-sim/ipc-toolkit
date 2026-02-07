@@ -19,7 +19,8 @@ def download_test_data_if_needed(directory):
             "clone",
             "https://github.com/ipc-sim/ipc-toolkit-tests-data",
             str(directory),
-        ]
+        ],
+        check=True,
     )
 
 
