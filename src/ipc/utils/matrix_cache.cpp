@@ -1,7 +1,6 @@
 #include "matrix_cache.hpp"
 
 #include <ipc/utils/logger.hpp>
-#include <ipc/utils/maybe_parallel_for.hpp>
 
 namespace ipc {
 

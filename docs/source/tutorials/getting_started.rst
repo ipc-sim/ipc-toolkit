@@ -519,7 +519,7 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
             #include <ipc/candidates/candidates.hpp>
 
             ipc::Candidates candidates;
-            ipc::HashGrid broad_phase;
+            ipc::LBVH broad_phase;
             candidates.build(
                 mesh, vertices_t0, vertices_t1, /*inflation_radius=*/0.0, broad_phase);
 
@@ -529,9 +529,9 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
 
             candidates = ipctk.Candidates()
             candidates.build(
-                mesh, vertices_t0, vertices_t1, broad_phase=ipctk.HashGrid())
+                mesh, vertices_t0, vertices_t1, broad_phase=ipctk.LBVH())
 
-Possible values for ``broad_phase`` are: ``BruteForce`` (parallel brute force culling), ``HashGrid`` (default), ``SpatialHash`` (implementation from the original IPC codebase), ``BVH`` (`SimpleBVH <https://github.com/geometryprocessing/SimpleBVH>`_), ``LBVH`` (CPU implementation of :cite:t:`Karras2012HPG` using TBB), ``SweepAndPrune`` (a.k.a. Sort-and-Sweep from :cite:t:`Baraff1992PhD`), or ``SweepAndTiniestQueue`` (method of :cite:t:`Belgrod2023Time`; requires CUDA).
+Possible values for ``broad_phase`` are: ``BruteForce`` (parallel brute force culling), ``HashGrid``, ``SpatialHash`` (implementation from the original IPC codebase), ``LBVH`` (CPU implementation of :cite:t:`Karras2012HPG` using TBB), ``SweepAndPrune`` (a.k.a. Sort-and-Sweep from :cite:t:`Baraff1992PhD`), or ``SweepAndTiniestQueue`` (method of :cite:t:`Belgrod2023Time`; requires CUDA). The default is ``LBVH``.
 
 Narrow-Phase
 ^^^^^^^^^^^^
