@@ -36,10 +36,6 @@ These dependencies are all `permissively licensed <license.html>`_, and we list 
       - Provably conservative CCD
       - MIT
       - `github.com/Continuous-Collision-Detection/Tight-Inclusion <https://github.com/Continuous-Collision-Detection/Tight-Inclusion>`_
-    * - SimpleBVH
-      - Simple bounding volume hierarchy data structure
-      - MIT
-      - `github.com/geometryprocessing/SimpleBVH <https://github.com/geometryprocessing/SimpleBVH>`_
     * - Scalable-CCD
       - Scalable (GPU) CCD
       - Apache-2.0

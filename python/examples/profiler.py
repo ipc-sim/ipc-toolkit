@@ -1,9 +1,10 @@
-import pandas as pd
-import plotly.express as px
 import pathlib
 from io import StringIO
 
+import pandas as pd
+import plotly.express as px
 from find_ipctk import ipctk
+
 
 def plot_profiler(title=None):
     df = pd.read_csv(StringIO(ipctk.profiler().csv), na_filter=False)
@@ -41,22 +42,19 @@ def plot_profiler(title=None):
     fig.show()
     return fig
 
+
 if __name__ == "__main__":
-    # plot(pathlib.Path(__file__).parent / "lbvh_profile.csv")
+    import argparse
 
     import meshio
-    import argparse
     import numpy as np
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mesh",
         type=pathlib.Path,
-        default=(pathlib.Path(__file__).parents[2] / "tests/data/puffer-ball/20.ply"))
-    parser.add_argument(
-        "--method",
-        type=str,
-        default="lvbh")
+        default=(pathlib.Path(__file__).parents[2] / "tests/data/puffer-ball/20.ply"),
+    )
     args = parser.parse_args()
 
     mesh = meshio.read(args.mesh)
@@ -69,10 +67,7 @@ if __name__ == "__main__":
     # indices = np.lexsort((faces[:, 2], faces[:, 1], faces[:, 0]))
     # faces = faces[indices]
 
-    if args.method.lower() == "bvh":
-        bp = ipctk.BVH()
-    elif args.method.lower() == "lbvh":
-        bp = ipctk.LBVH()
+    bp = ipctk.LBVH()
 
     bp.build(mesh.points, edges, faces)
 
