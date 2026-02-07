@@ -1,7 +1,7 @@
 import pathlib
-import numpy as np
-import meshio
 
+import meshio
+import numpy as np
 from find_ipctk import ipctk
 
 
@@ -12,28 +12,37 @@ def download_test_data_if_needed(directory):
     # Clone the test data repository
     print(f"Downloading test data to {directory}")
     import subprocess
-    subprocess.run([
-        'git', 'clone', 'https://github.com/ipc-sim/ipc-toolkit-tests-data',
-        str(directory)
-    ])
+
+    subprocess.run(
+        [
+            "git",
+            "clone",
+            "https://github.com/ipc-sim/ipc-toolkit-tests-data",
+            str(directory),
+        ]
+    )
 
 
 def test_data_dir():
-    _test_data_dir = pathlib.Path(__file__).parents[2] / 'tests' / 'data'
+    _test_data_dir = pathlib.Path(__file__).parents[2] / "tests" / "data"
     download_test_data_if_needed(_test_data_dir)
     return _test_data_dir
 
 
 def load_mesh(mesh_name):
     mesh = meshio.read(test_data_dir() / mesh_name)
-    return mesh.points, ipctk.edges(mesh.cells_dict['triangle']), mesh.cells_dict['triangle']
+    return (
+        mesh.points,
+        ipctk.edges(mesh.cells_dict["triangle"]),
+        mesh.cells_dict["triangle"],
+    )
 
 
 def broad_phases():
     yield ipctk.BruteForce()
     yield ipctk.HashGrid()
     yield ipctk.SpatialHash()
-    yield ipctk.BVH()
+    yield ipctk.LBVH()
     yield ipctk.SweepAndPrune()
 
 
