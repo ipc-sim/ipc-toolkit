@@ -25,16 +25,27 @@ public:
         const double dt);
 
     /// @brief Run the simulation
+    ///
     /// @param t_end End time
-    /// @param callback Callback function to be called at each step
-    void run(
+    /// @param callback Callback function to be called at each step.
+    ///
+    /// The callback function takes a boolean argument indicating whether the
+    /// step was successful (i.e., did not fail to converge). The callback is
+    /// called after each step, including the final step that reaches t_end.
+    ///
+    /// If the simulation is already complete (i.e., t >= t_end), the simulation
+    /// will not run and the callback will not be called.
+    ///
+    /// @return True if the simulation ran successfully, false if it was terminated (e.g., due to convergence failure)
+    bool run(
         // const double dt,
         const double t_end,
-        const std::function<void(void)>& callback = []() { });
+        const std::function<void(bool)>& callback = [](bool) { });
 
     /// @brief Step the simulation
     /// @param dt Time step
-    void step(
+    /// @return True if the step was successful, false if the simulation should be terminated (e.g., due to convergence failure)
+    bool step(
         // double dt
     );
 
@@ -87,6 +98,11 @@ protected:
 
     /// @brief t Current simulation time
     double m_t = 0.0;
+
+    bool has_time_remaining(const double dt, const double t_end) const
+    {
+        return m_t < t_end && std::abs(m_t - t_end) > dt * 1e-3;
+    }
 };
 
 } // namespace ipc::rigid

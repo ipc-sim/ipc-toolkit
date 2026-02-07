@@ -75,11 +75,15 @@ RigidBodies::RigidBodies(
                 body_vertex_starts[i],
                 body_vertex_starts[i + 1] - body_vertex_starts[i]),
             edges().middleRows(
-                body_edge_starts[i],
-                body_edge_starts[i + 1] - body_edge_starts[i]),
+                       body_edge_starts[i],
+                       body_edge_starts[i + 1] - body_edge_starts[i])
+                    .array()
+                - body_vertex_starts[i],
             faces().middleRows(
-                body_face_starts[i],
-                body_face_starts[i + 1] - body_face_starts[i]),
+                       body_face_starts[i],
+                       body_face_starts[i + 1] - body_face_starts[i])
+                    .array()
+                - body_vertex_starts[i],
             densities[i], initial_poses[i]);
         logger().info(
             "Initial pose: position={}, rotation={}",

@@ -7,36 +7,35 @@ from find_ipctk import ipctk
 from polyscope import imgui
 from scipy.spatial.transform import Rotation
 
-mesh = meshio.read(pathlib.Path(__file__).parents[2] / "tests/data/bunny-lowpoly.obj")
+mesh_names = [
+    "bunny (lowpoly).ply",
+    "bunny (lowpoly).ply",
+    "bowl.ply",
+]
+
+rest_positions = []
+edges = []
+faces = []
+for mesh_name in mesh_names:
+    mesh = meshio.read(pathlib.Path(__file__).parents[2] / "tests" / "data" / mesh_name)
+    rest_positions.append(mesh.points.astype("float64"))
+    edges.append(ipctk.edges(mesh.cells_dict["triangle"]))
+    faces.append(mesh.cells_dict["triangle"])
 
 initial_poses = ipctk.Poses(
     [
-        ipctk.Pose(position=np.zeros(3), rotation=np.zeros(3)),
-        ipctk.Pose(position=np.zeros(3), rotation=np.zeros(3)),
+        ipctk.Pose(np.array([1.0, 1.5, 0]), np.random.random(3)),
+        ipctk.Pose(np.array([-1.0, 2.0, 0.0]), np.array([0.0, np.pi / 4, 0.0])),
+        ipctk.Pose(np.array([0.0, 1.1, 0.0]), np.zeros(3)),
     ]
 )
-initial_poses[0].position = np.array([0, 0.5, 0])  # Lift the bunny above the ground
-initial_poses[0].rotation = np.random.random(3)  # Rotate around x-axis
-initial_poses[1].position = np.array([2.0, 0.5, 0.0])
-initial_poses[1].rotation = np.array([0.0, np.pi / 4, 0.0])  # Rotate around y-axis
-
-n_bodies = 1
 
 bodies = ipctk.RigidBodies(
-    rest_positions=[
-        mesh.points.astype("float64"),
-        mesh.points.astype("float64"),
-    ][:n_bodies],
-    edges=[
-        ipctk.edges(mesh.cells_dict["triangle"]),
-        ipctk.edges(mesh.cells_dict["triangle"]),
-    ][:n_bodies],
-    faces=[
-        mesh.cells_dict["triangle"],
-        mesh.cells_dict["triangle"],
-    ][:n_bodies],
-    densities=[1.0, 1.0][:n_bodies],
-    initial_poses=initial_poses[:n_bodies],
+    rest_positions=rest_positions,
+    edges=edges,
+    faces=faces,
+    densities=np.ones(len(mesh_names)),
+    initial_poses=initial_poses,
 )
 
 # for pose in initial_poses:
@@ -64,7 +63,6 @@ for d in range(3):
     dim = np.zeros((len(bodies), 3))
     for i in range(len(bodies)):
         dim[i, d] = 100 * bodies[i].moment_of_inertia[d]
-        print(bodies[i].moment_of_inertia)
         R = Rotation.from_rotvec(initial_poses[i].rotation.copy()).as_matrix()
         dim[i, :] = R @ dim[i, :]
     ps_com.add_vector_quantity(

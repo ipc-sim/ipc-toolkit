@@ -56,26 +56,28 @@ Simulator::Simulator(
     m_ground_contact->set_dhat(0.1);
 }
 
-void Simulator::run(
+bool Simulator::run(
     // const double dt,
     const double t_end,
-    const std::function<void(void)>& callback)
+    const std::function<void(bool)>& callback)
 {
-    if (t_end <= m_t) {
+    if (!has_time_remaining(m_time_integrator->dt, t_end)) {
         logger().warn(
             "simulation already complete: t={:g} t_end={:g}", m_t, t_end);
-        return;
+        return false; // Simulation already complete
     }
 
     // m_time_integrator->dt = dt;
 
-    while (m_t < t_end) {
-        step(); // increments time by dt
-        callback();
+    bool step_succeeded = true;
+    while (step_succeeded && has_time_remaining(m_time_integrator->dt, t_end)) {
+        step_succeeded = step();
+        callback(step_succeeded);
     }
+    return step_succeeded;
 }
 
-void Simulator::step()
+bool Simulator::step()
 {
     std::vector<Pose> poses = m_pose_history.back();
 
@@ -108,8 +110,20 @@ void Simulator::step()
             "step: dx={:g} norm(grad)={:g} norm(hess)={:g} alpha={:g}", dx,
             grad_norm, hess.norm(), alpha);
     } while (dx > m_time_integrator->dt * 1e-3 && ++iter < 100);
-    logger().info(
-        "converged: iter={} dx={:g} norm(grad)={:g}", iter, dx, grad_norm);
+
+    if (iter == 100) {
+        logger().warn(
+            "failed to converge: iter={} dx={:g} norm(grad)={:g}", iter, dx,
+            grad_norm);
+        // TODO: May want to exit here without pushing the new poses and
+        // updating the time integrator, since the new poses may be unstable and
+        // cause the simulation to blow up. However, this may cause the
+        // simulation to get stuck if it fails to converge at the first step.
+        // May want to add a flag to allow exiting early on convergence failure.
+    } else {
+        logger().info(
+            "converged: iter={} dx={:g} norm(grad)={:g}", iter, dx, grad_norm);
+    }
 
     for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
         poses[i].position = x.segment<3>(6 * i);
@@ -128,6 +142,8 @@ void Simulator::step()
     m_time_integrator->update(X);
 
     m_t += m_time_integrator->dt;
+
+    return iter < 100; // Return false if failed to converge, true otherwise
 }
 
 double Simulator::energy(Eigen::ConstRef<Eigen::VectorXd> x)
