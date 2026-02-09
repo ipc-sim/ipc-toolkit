@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Eigen/Core>
+
 #include <cstdint>
 
 // WARNING: Do not modify config.hpp directly. Instead, modify config.hpp.in.
@@ -36,5 +38,7 @@ using index_t = int32_t;
 // #else
 // using scalar_t = float;
 // #endif
+
+inline constexpr int VERTEX_DERIVATIVE_LAYOUT = Eigen::RowMajor;
 
 } // namespace ipc
