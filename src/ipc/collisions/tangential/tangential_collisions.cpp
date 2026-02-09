@@ -16,7 +16,6 @@ void TangentialCollisions::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const NormalCollisions& collisions,
     const NormalPotential& normal_potential,
-    const double normal_stiffness,
     Eigen::ConstRef<Eigen::VectorXd> mu_s,
     Eigen::ConstRef<Eigen::VectorXd> mu_k,
     const std::function<double(double, double)>& blend_mu)
@@ -38,8 +37,7 @@ void TangentialCollisions::build(
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
         FC_vv.emplace_back(
-            c_vv, c_vv.dof(vertices, edges, faces), normal_potential,
-            normal_stiffness);
+            c_vv, c_vv.dof(vertices, edges, faces), normal_potential);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
 
         FC_vv.back().mu_s = blend_mu(mu_s(v0i), mu_s(v1i));
@@ -49,8 +47,7 @@ void TangentialCollisions::build(
     FC_ev.reserve(C_ev.size());
     for (const auto& c_ev : C_ev) {
         FC_ev.emplace_back(
-            c_ev, c_ev.dof(vertices, edges, faces), normal_potential,
-            normal_stiffness);
+            c_ev, c_ev.dof(vertices, edges, faces), normal_potential);
         const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
 
         const double edge_mu_s =
@@ -75,8 +72,7 @@ void TangentialCollisions::build(
         }
 
         FC_ee.emplace_back(
-            c_ee, c_ee.dof(vertices, edges, faces), normal_potential,
-            normal_stiffness);
+            c_ee, c_ee.dof(vertices, edges, faces), normal_potential);
 
         double ea_mu_s =
             (mu_s(ea1i) - mu_s(ea0i)) * FC_ee.back().closest_point[0]
@@ -98,8 +94,7 @@ void TangentialCollisions::build(
     FC_fv.reserve(C_fv.size());
     for (const auto& c_fv : C_fv) {
         FC_fv.emplace_back(
-            c_fv, c_fv.dof(vertices, edges, faces), normal_potential,
-            normal_stiffness);
+            c_fv, c_fv.dof(vertices, edges, faces), normal_potential);
         const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
 
         double face_mu_s = mu_s(f0i)
