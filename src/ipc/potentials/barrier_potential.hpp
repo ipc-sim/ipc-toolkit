@@ -11,20 +11,30 @@ namespace ipc {
 class BarrierPotential : public NormalPotential {
     using Super = NormalPotential;
 
+    // Delete the constructor that doesn't take stiffness to avoid
+    // accidentally using the default stiffness value of 0.0, which
+    // is likely not what we want.
+    BarrierPotential(const double, const bool) = delete;
+
 public:
     /// @brief Construct a barrier potential.
     /// @param dhat The activation distance of the barrier.
+    /// @param stiffness The stiffness of the barrier.
     /// @param use_physical_barrier Whether to use the physical barrier.
-    explicit BarrierPotential(
-        const double dhat, const bool use_physical_barrier = false);
+    BarrierPotential(
+        const double dhat,
+        const double stiffness,
+        const bool use_physical_barrier = false);
 
     /// @brief Construct a barrier potential.
     /// @param barrier The barrier function.
     /// @param dhat The activation distance of the barrier.
+    /// @param stiffness The stiffness of the barrier.
     /// @param use_physical_barrier Whether to use the physical barrier.
     BarrierPotential(
         std::shared_ptr<Barrier> barrier,
         const double dhat,
+        const double stiffness,
         const bool use_physical_barrier = false);
 
     /// @brief Get the activation distance of the barrier.
@@ -36,6 +46,17 @@ public:
     {
         assert(dhat > 0);
         m_dhat = dhat;
+    }
+
+    /// @brief Get the stiffness of the barrier.
+    double stiffness() const { return m_stiffness; }
+
+    /// @brief Set the stiffness of the barrier.
+    /// @param stiffness The stiffness of the barrier.
+    void set_stiffness(const double stiffness)
+    {
+        assert(stiffness > 0);
+        m_stiffness = stiffness;
     }
 
     /// @brief Get the barrier function used to compute the potential.
@@ -60,24 +81,19 @@ public:
     /// @brief Compute the force magnitude for a collision.
     /// @param distance_squared The squared distance between elements.
     /// @param dmin The minimum distance offset to the barrier.
-    /// @param barrier_stiffness The barrier stiffness.
     /// @return The force magnitude.
     double force_magnitude(
-        const double distance_squared,
-        const double dmin,
-        const double barrier_stiffness) const override;
+        const double distance_squared, const double dmin) const override;
 
     /// @brief Compute the gradient of the force magnitude for a collision.
     /// @param distance_squared The squared distance between elements.
     /// @param distance_squared_gradient The gradient of the squared distance.
     /// @param dmin The minimum distance offset to the barrier.
-    /// @param barrier_stiffness The stiffness of the barrier.
     /// @return The gradient of the force.
     VectorMax12d force_magnitude_gradient(
         const double distance_squared,
         Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
-        const double dmin,
-        const double barrier_stiffness) const override;
+        const double dmin) const override;
 
     /// @brief Get whether to use the physical barrier.
     /// @note When using the convergent formulation we want the barrier to
@@ -124,6 +140,9 @@ protected:
 
     /// @brief The activation distance of the barrier.
     double m_dhat;
+
+    /// @brief The stiffness of the barrier.
+    double m_stiffness;
 
     /// @brief Whether to use the physical barrier.
     /// @note When using the convergent formulation we want the barrier to

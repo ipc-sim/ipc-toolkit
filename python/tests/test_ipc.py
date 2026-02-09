@@ -1,11 +1,11 @@
 import numpy as np
-
+import utils
 from find_ipctk import ipctk
 
-import utils
 
-
-def check_ipc_derivatives(broad_phase, use_convergent_formulation, mesh_name, dhat, all_vertices_on_surface):
+def check_ipc_derivatives(
+    broad_phase, use_convergent_formulation, mesh_name, dhat, all_vertices_on_surface
+):
     vertices, edges, faces = utils.load_mesh(mesh_name)
 
     if all_vertices_on_surface:
@@ -17,25 +17,31 @@ def check_ipc_derivatives(broad_phase, use_convergent_formulation, mesh_name, dh
     collisions = ipctk.NormalCollisions()
     collisions.use_area_weighting = use_convergent_formulation
     if use_convergent_formulation:
-        collisions.collision_set_type = ipctk.NormalCollisions.CollisionSetType.IMPROVED_MAX_APPROX
+        collisions.collision_set_type = (
+            ipctk.NormalCollisions.CollisionSetType.IMPROVED_MAX_APPROX
+        )
     else:
         collisions.collision_set_type = ipctk.NormalCollisions.CollisionSetType.IPC
     collisions.build(mesh, vertices, dhat, broad_phase=broad_phase)
     assert len(collisions) > 0
 
     B = ipctk.BarrierPotential(
-        dhat, use_physical_barrier=use_convergent_formulation)
+        dhat, stiffness=1, use_physical_barrier=use_convergent_formulation
+    )
 
     grad_b = B.gradient(collisions, mesh, vertices)
     fgrad_b = utils.finite_gradient(
-        vertices.flatten(), lambda x: B(collisions, mesh, x.reshape(vertices.shape)))
+        vertices.flatten(), lambda x: B(collisions, mesh, x.reshape(vertices.shape))
+    )
 
     assert np.linalg.norm(grad_b) > 1e-8
     assert np.allclose(grad_b, fgrad_b)
 
     hess_b = B.hessian(collisions, mesh, vertices).toarray()
     fhess_b = utils.finite_jacobian(
-        vertices.flatten(), lambda x: B.gradient(collisions, mesh, x.reshape(vertices.shape)))
+        vertices.flatten(),
+        lambda x: B.gradient(collisions, mesh, x.reshape(vertices.shape)),
+    )
 
     assert np.linalg.norm(hess_b) > 1e-8
     assert np.allclose(hess_b, fhess_b, atol=1e-5)
@@ -44,7 +50,35 @@ def check_ipc_derivatives(broad_phase, use_convergent_formulation, mesh_name, dh
 def test_ipc():
     for method in utils.broad_phases():
         for use_convergent_formulation in (True, False):
-            yield check_ipc_derivatives, method, use_convergent_formulation, "cube.ply", np.sqrt(2.0), True
-            yield check_ipc_derivatives, method, use_convergent_formulation, "two-cubes-far.ply", 1e-1, False
-            yield check_ipc_derivatives, method, use_convergent_formulation, "two-cubes-close.ply", 1e-1, False
-            yield check_ipc_derivatives, method, use_convergent_formulation, "bunny.ply", 5e-3, True
+            yield (
+                check_ipc_derivatives,
+                method,
+                use_convergent_formulation,
+                "cube.ply",
+                np.sqrt(2.0),
+                True,
+            )
+            yield (
+                check_ipc_derivatives,
+                method,
+                use_convergent_formulation,
+                "two-cubes-far.ply",
+                1e-1,
+                False,
+            )
+            yield (
+                check_ipc_derivatives,
+                method,
+                use_convergent_formulation,
+                "two-cubes-close.ply",
+                1e-1,
+                False,
+            )
+            yield (
+                check_ipc_derivatives,
+                method,
+                use_convergent_formulation,
+                "bunny.ply",
+                5e-3,
+                True,
+            )

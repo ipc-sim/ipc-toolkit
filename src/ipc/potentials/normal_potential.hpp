@@ -79,10 +79,8 @@ public:
     /// @param dmin The minimum distance offset to the barrier.
     /// @param barrier_stiffness The barrier stiffness.
     /// @return The force magnitude.
-    virtual double force_magnitude(
-        const double distance_squared,
-        const double dmin,
-        const double barrier_stiffness) const = 0;
+    virtual double
+    force_magnitude(const double distance_squared, const double dmin) const = 0;
 
     /// @brief Compute the gradient of the force magnitude for a collision.
     /// @param distance_squared The squared distance between elements.
@@ -93,8 +91,7 @@ public:
     virtual VectorMax12d force_magnitude_gradient(
         const double distance_squared,
         Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
-        const double dmin,
-        const double barrier_stiffness) const = 0;
+        const double dmin) const = 0;
 
 protected:
     /// @brief Compute the unmollified distance-based potential for a collisions.

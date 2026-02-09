@@ -56,9 +56,8 @@ def contact_force():
     collisions.use_area_weighting = use_area_weighting
     collisions.build(candidates, cmesh, cmesh.rest_positions, dhat)
 
-    B = ipctk.BarrierPotential(dhat)
+    B = ipctk.BarrierPotential(dhat, stiffness=1e5)
     f = -B.gradient(collisions, cmesh, cmesh.rest_positions).reshape(-1, 3, order="C")
-    f *= 1e5
 
     return f
 

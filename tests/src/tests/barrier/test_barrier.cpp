@@ -401,8 +401,8 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     double dhat = GENERATE_COPY(range(use_dist_sqr ? -2 : -5, 0));
     dhat = pow(10, dhat);
 
-    double d =
-        GENERATE_COPY(take(10, random(dhat / 2, 0.9 * dhat))); // ∈ [0, d̂]
+    double step = (0.9 - 0.5) / 10.0 * dhat;
+    auto d = GENERATE_COPY(take(10, range(0.5 * dhat, 0.9 * dhat, step)));
     Eigen::Matrix<double, 1, 1> d_vec;
     d_vec << d;
 
@@ -438,13 +438,13 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     fd::finite_gradient(
         d_vec,
         [&](const Eigen::VectorXd& _d) { return (*barrier)(_d[0], dhat); },
-        fgrad);
+        fgrad, fd::AccuracyOrder::SECOND, 1e-10);
 
     Eigen::VectorXd grad(1);
     grad << barrier->first_derivative(d, dhat);
 
     CAPTURE(dhat, d, fgrad(0), grad(0), use_dist_sqr);
-    CHECK(fd::compare_gradient(fgrad, grad));
+    CHECK(grad(0) == Catch::Approx(fgrad(0)));
 
     // Check second_derivative
 
@@ -453,12 +453,12 @@ TEST_CASE("Barrier derivatives", "[barrier]")
         [&](const Eigen::VectorXd& _d) {
             return barrier->first_derivative(_d[0], dhat);
         },
-        fgrad);
+        fgrad, fd::AccuracyOrder::SECOND, 1e-10);
 
     grad << barrier->second_derivative(d, dhat);
 
     CAPTURE(dhat, d, fgrad(0), grad(0), use_dist_sqr);
-    CHECK(fd::compare_gradient(fgrad, grad));
+    CHECK(grad(0) == Catch::Approx(fgrad(0)));
 }
 
 TEST_CASE("Physical barrier", "[barrier]")

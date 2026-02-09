@@ -197,7 +197,7 @@ TEST_CASE(
 
     TangentialCollisions tangential_collisions;
     tangential_collisions.build(
-        mesh, V_lagged, collisions, BarrierPotential(dhat), barrier_stiffness,
+        mesh, V_lagged, collisions, BarrierPotential(dhat, barrier_stiffness),
         mu);
     REQUIRE(tangential_collisions.size() == collisions.size());
     REQUIRE(

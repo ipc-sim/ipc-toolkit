@@ -86,7 +86,7 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
         CHECK(collisions.size() == 12);
         CHECK(collisions.vv_collisions.size() == 12);
 
-        BarrierPotential barrier_potential(dhat, use_physical_barrier);
+        BarrierPotential barrier_potential(dhat, 1.0, use_physical_barrier);
 
         CHECK(barrier_potential(collisions, mesh, vertices) > 0.0);
         const Eigen::VectorXd grad =
@@ -195,7 +195,7 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
         CHECK(collisions.fv_collisions.size() == 0);
 
         CHECK(
-            BarrierPotential(dhat, use_physical_barrier)(
+            BarrierPotential(dhat, 1.0, use_physical_barrier)(
                 collisions, mesh, vertices)
             > 0.0);
     }
