@@ -22,8 +22,7 @@ public:
     VertexVertexTangentialCollision(
         const VertexVertexNormalCollision& collision,
         Eigen::ConstRef<VectorMax12d> positions,
-        const NormalPotential& normal_potential,
-        const double normal_stiffness);
+        const NormalPotential& normal_potential);
 
 protected:
     MatrixMax<double, 3, 2> compute_tangent_basis(

@@ -67,7 +67,7 @@ void define_normal_potential(py::module_& m)
             Returns:
                 The force magnitude.
             )ipc_Qu8mg5v7",
-            "distance_squared"_a, "dmin"_a, "barrier_stiffness"_a)
+            "distance_squared"_a, "dmin"_a)
         .def(
             "force_magnitude_gradient",
             &NormalPotential::force_magnitude_gradient,
@@ -83,6 +83,5 @@ void define_normal_potential(py::module_& m)
             Returns:
                 The gradient of the force.
             )ipc_Qu8mg5v7",
-            "distance_squared"_a, "distance_squared_gradient"_a, "dmin"_a,
-            "barrier_stiffness"_a);
+            "distance_squared"_a, "distance_squared_gradient"_a, "dmin"_a);
 }

@@ -21,8 +21,7 @@ public:
     EdgeEdgeTangentialCollision(
         const EdgeEdgeNormalCollision& collision,
         Eigen::ConstRef<VectorMax12d> positions,
-        const NormalPotential& normal_potential,
-        const double normal_stiffness);
+        const NormalPotential& normal_potential);
 
 protected:
     EdgeEdgeDistanceType known_dtype() const override
