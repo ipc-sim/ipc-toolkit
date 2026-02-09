@@ -83,7 +83,7 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
 
     // --- Check the potential gradients ---------------------------------------
 
-    CHECK(BarrierPotential(dhat_a)(collisions, mesh, vertices) > 0);
+    CHECK(BarrierPotential(dhat_a, 1.0)(collisions, mesh, vertices) > 0);
 
     NormalAdhesionPotential potential(dhat_p, dhat_a, Y, eps_c);
     CHECK(potential(collisions, mesh, vertices) < 0);
@@ -125,12 +125,12 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
     // --- Maximum normal adhesion force magnitude -----------------------------
 
     CHECK(
-        potential.force_magnitude(1e-3, 0, 1)
+        potential.force_magnitude(1e-3, 0)
         == max_normal_adhesion_force_magnitude(
             dhat_p * dhat_p, dhat_a * dhat_a,
             Y * eps_c / (4 * (dhat_p) * (dhat_p * dhat_p - dhat_a * dhat_a))));
 
-    CHECK(potential.force_magnitude_gradient(1e-3, VectorMax12d::Zero(12), 0, 1)
+    CHECK(potential.force_magnitude_gradient(1e-3, VectorMax12d::Zero(12), 0)
               .isZero());
 }
 
