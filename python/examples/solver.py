@@ -78,7 +78,7 @@ while np.linalg.norm(grad) > 1e-3 and iter < 1000:
             C,
             collision_mesh,
             vertices,
-            project_hessian_to_psd=ipctk.PSDProjectionMethod.CLAM,
+            project_hessian_to_psd=ipctk.PSDProjectionMethod.CLAMP,
         )
         # + ...
     )

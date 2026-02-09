@@ -15,6 +15,8 @@ void define_barrier_potential(py::module_& m)
 
             Parameters:
                 dhat: The activation distance of the barrier.
+                stiffness: The stiffness of the barrier.
+                use_physical_barrier: Whether to use the physical barrier.
             )ipc_Qu8mg5v7",
             "dhat"_a, "stiffness"_a, "use_physical_barrier"_a = false)
         .def(
@@ -27,6 +29,8 @@ void define_barrier_potential(py::module_& m)
             Parameters:
                 barrier: The barrier function.
                 dhat: The activation distance of the barrier.
+                stiffness: The stiffness of the barrier.
+                use_physical_barrier: Whether to use the physical barrier.
             )ipc_Qu8mg5v7",
             "barrier"_a, "dhat"_a, "stiffness"_a,
             "use_physical_barrier"_a = false)

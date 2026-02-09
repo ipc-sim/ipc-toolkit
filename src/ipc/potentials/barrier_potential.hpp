@@ -11,6 +11,11 @@ namespace ipc {
 class BarrierPotential : public NormalPotential {
     using Super = NormalPotential;
 
+    // Delete the constructor that doesn't take stiffness to avoid
+    // accidentally using the default stiffness value of 0.0, which
+    // is likely not what we want.
+    BarrierPotential(const double, const bool) = delete;
+
 public:
     /// @brief Construct a barrier potential.
     /// @param dhat The activation distance of the barrier.
@@ -84,7 +89,6 @@ public:
     /// @param distance_squared The squared distance between elements.
     /// @param distance_squared_gradient The gradient of the squared distance.
     /// @param dmin The minimum distance offset to the barrier.
-    /// @param barrier_stiffness The stiffness of the barrier.
     /// @return The gradient of the force.
     VectorMax12d force_magnitude_gradient(
         const double distance_squared,

@@ -78,7 +78,6 @@ void define_normal_potential(py::module_& m)
                 distance_squared: The squared distance between elements.
                 distance_squared_gradient: The gradient of the squared distance.
                 dmin: The minimum distance offset to the barrier.
-                barrier_stiffness: The stiffness of the barrier.
 
             Returns:
                 The gradient of the force.

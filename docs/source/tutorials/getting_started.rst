@@ -133,7 +133,7 @@ This returns a scalar value ``barrier_potential`` which is the sum of the barrie
 Mathematically this is defined as
 
 .. math::
-   B(\mathbf{x}) = \sum_{k \in C} b(d_k(\mathbf{x}); \hat{d}),
+   B(\mathbf{x}) = \sum_{k \in C} \kappa b(d_k(\mathbf{x}); \hat{d}),
 
 where :math:`\mathbf{x}` is our deformed vertex positions, :math:`C` is the active collisions, :math:`d_k` is the distance (squared) of the :math:`k`-th active collision, and :math:`b` is IPC's C2-clamped log-barrier function.
 
