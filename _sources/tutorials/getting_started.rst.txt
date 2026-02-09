@@ -117,27 +117,25 @@ Now we can compute the barrier potential using the ``BarrierPotential`` class.
 
         .. code-block:: c++
 
-            const ipc::BarrierPotential B(dhat);
+            const ipc::BarrierPotential B(dhat, stiffness);
             double barrier_potential = B(collisions, collision_mesh, vertices);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            B = ipctk.BarrierPotential(dhat)
+            B = ipctk.BarrierPotential(dhat, stiffness)
             barrier_potential = B(collisions, collision_mesh, vertices)
 
+Here ``stiffness`` (:math:`\kappa`) is the barrier stiffness (a weight that is multiplied by the barrier potential to better scale it relative to the energy potential).
 This returns a scalar value ``barrier_potential`` which is the sum of the barrier potentials for each active collision.
 
 Mathematically this is defined as
 
 .. math::
-   B(\mathbf{x}) = \sum_{k \in C} b(d_k(\mathbf{x}); \hat{d}),
+   B(\mathbf{x}) = \sum_{k \in C} \kappa b(d_k(\mathbf{x}); \hat{d}),
 
 where :math:`\mathbf{x}` is our deformed vertex positions, :math:`C` is the active collisions, :math:`d_k` is the distance (squared) of the :math:`k`-th active collision, and :math:`b` is IPC's C2-clamped log-barrier function.
-
-.. note::
-   This is **not** premultiplied by the barrier stiffness :math:`\kappa`.
 
 Barrier Potential Derivatives
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
