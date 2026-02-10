@@ -7,6 +7,8 @@ from find_ipctk import ipctk
 from polyscope import imgui
 from scipy.spatial.transform import Rotation
 
+ipctk.set_logger_level(ipctk.debug)
+
 mesh_names = [
     "bunny (lowpoly).ply",
     "bunny (lowpoly).ply",
@@ -34,7 +36,7 @@ bodies = ipctk.RigidBodies(
     rest_positions=rest_positions,
     edges=edges,
     faces=faces,
-    densities=np.ones(len(mesh_names)),
+    densities=np.full(len(mesh_names), 1000.0),
     initial_poses=initial_poses,
 )
 
@@ -115,7 +117,8 @@ def callback():
         playing = not playing
     imgui.SameLine()
     if imgui.Button("Step") or playing:
-        sim.step()
+        if not sim.step():
+            playing = False
         update_mesh()
     imgui.SameLine()
     if imgui.Button("Reset"):

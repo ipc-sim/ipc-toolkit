@@ -174,14 +174,13 @@ Eigen::MatrixXd
 Pose::transform_vertices_jacobian(Eigen::ConstRef<Eigen::MatrixXd> V) const
 {
     const int dim = V.cols();
-    const int ndof = position.size() + rotation.size();
     assert(dim == position.size());
 
-    Eigen::MatrixXd jac = Eigen::MatrixXd::Zero(V.size(), ndof);
+    Eigen::MatrixXd jac = Eigen::MatrixXd::Zero(V.size(), ndof());
 
     // Derivative w.r.t. position is identity
-    for (int d = 0; d < dim; ++d) {
-        jac.block(d * V.rows(), d, V.rows(), 1).setOnes();
+    for (int i = 0; i < V.rows(); ++i) {
+        jac.block(i * dim, 0, dim, dim).setIdentity();
     }
 
     // Precompute dR/dθ
@@ -204,7 +203,8 @@ Pose::transform_vertices_jacobian(Eigen::ConstRef<Eigen::MatrixXd> V) const
     // Derivative w.r.t. rotation
     for (int j = 0; j < rotation.size(); ++j) {
         jac.block(0, dim + j, V.size(), 1) =
-            (V * dR_dtheta.col(j).reshaped(dim, dim).transpose()).reshaped();
+            (V * dR_dtheta.col(j).reshaped(dim, dim).transpose())
+                .reshaped<Eigen::RowMajor>();
     }
 
     return jac;
@@ -245,7 +245,7 @@ Pose::transform_vertices_hessian(Eigen::ConstRef<Eigen::MatrixXd> V) const
             const int k = (j - dim) * rotation.size() + (i - dim);
             hess.col(j * ndof + i) =
                 (V * d2R_dtheta2.col(k).reshaped(dim, dim).transpose())
-                    .reshaped();
+                    .reshaped<Eigen::RowMajor>();
         }
     }
 

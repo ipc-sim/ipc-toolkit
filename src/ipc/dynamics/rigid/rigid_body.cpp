@@ -63,7 +63,7 @@ RigidBody::RigidBody(
     // 1. Center the vertices, so the mass properties are computed correctly
     // TODO: This should not be necessary. Determine why the mass properties
     // are not computed correctly without centering the vertices.
-    Pose centering_pose = Pose::Zero(dim);
+    Pose centering_pose = Pose::Identity(dim);
     center_vertices(vertices, edges, faces, centering_pose);
 
     // 2. Compute the mass properties
@@ -159,7 +159,7 @@ RigidBody::RigidBody(
     // this->velocity.zero_dof(is_dof_fixed, m_R0);
     // this->force.zero_dof(is_dof_fixed, m_R0);
 
-    m_external_force = Pose::Zero(dim);
+    m_external_force = Pose::Identity(dim);
 
     // Compute and construct some useful constants
     // mass_matrix.resize(ndof());

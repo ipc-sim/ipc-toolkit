@@ -16,7 +16,7 @@ using namespace ipc::rigid;
 namespace {
 
 // Helper function to generate a RigidBody
-RigidBodies rigid_bodies()
+auto rigid_bodies()
 {
     Eigen::MatrixXd V;
     Eigen::MatrixXi E, F;
@@ -30,12 +30,10 @@ RigidBodies rigid_bodies()
     const double density = GENERATE(1.0, 2.0, 3.0);
 
     std::vector<Pose> initial_poses;
-    initial_poses.push_back(Pose::Zero(3)); // Initial pose at the origin
+    initial_poses.push_back(Pose::Identity(3)); // Initial pose at the origin
 
-    RigidBodies bodies = RigidBodies::build_from_meshes(
+    return RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { density }, initial_poses);
-
-    return bodies;
 }
 
 } // namespace
@@ -44,7 +42,7 @@ TEST_CASE(
     "GroundContact energy and derivative",
     "[ground_contact][energy][gradient][hessian]")
 {
-    RigidBodies bodies = rigid_bodies();
+    auto bodies = rigid_bodies();
     GroundContact ground_contact(0.0);
     ground_contact.set_dhat(0.1);
 
@@ -56,7 +54,7 @@ TEST_CASE(
         x(3) = 15.0 * igl::PI / 180.0; // 15 degrees roll
     }
 
-    double energy = ground_contact(bodies, 0, Pose(x.segment(0, 6)));
+    double energy = ground_contact(*bodies, 0, Pose(x.segment(0, 6)));
 
     // Since we don't have a ground truth, we can only check if the energy is a
     // valid number
@@ -67,11 +65,11 @@ TEST_CASE(
 
     {
         analytical_gradient =
-            ground_contact.gradient(bodies, 0, Pose(x.segment(0, 6)));
+            ground_contact.gradient(*bodies, 0, Pose(x.segment(0, 6)));
 
         // Numerical gradient calculation
         auto f = [&](const Eigen::VectorXd& x_arg) {
-            return ground_contact(bodies, 0, Pose(x_arg.segment(0, 6)));
+            return ground_contact(*bodies, 0, Pose(x_arg.segment(0, 6)));
         };
         Eigen::VectorXd numerical_gradient;
         fd::finite_gradient(x, f, numerical_gradient);
@@ -87,12 +85,12 @@ TEST_CASE(
 
     {
         analytical_hessian =
-            ground_contact.hessian(bodies, 0, Pose(x.segment(0, 6)));
+            ground_contact.hessian(*bodies, 0, Pose(x.segment(0, 6)));
 
         // Numerical hessian calculation
         auto f = [&](const Eigen::VectorXd& x_arg) {
             return ground_contact.gradient(
-                bodies, 0, Pose(x_arg.segment(0, 6)));
+                *bodies, 0, Pose(x_arg.segment(0, 6)));
         };
         Eigen::MatrixXd numerical_hessian;
         fd::finite_jacobian(x, f, numerical_hessian);
@@ -118,7 +116,7 @@ TEST_CASE(
             CHECK(true);
         } else {
             analytical_hessian = ground_contact.hessian(
-                bodies, 0, Pose(x.segment(0, 6)), PSDProjectionMethod::ABS);
+                *bodies, 0, Pose(x.segment(0, 6)), PSDProjectionMethod::ABS);
 
             newton_direction =
                 -analytical_hessian.ldlt().solve(analytical_gradient);
@@ -132,21 +130,21 @@ TEST_CASE(
     "GroundContact total energy and derivatives",
     "[rigid][ground_contact][total_energy][total_gradient][total_hessian]")
 {
-    RigidBodies bodies = rigid_bodies();
+    auto bodies = rigid_bodies();
     GroundContact ground_contact(0.0);
     ground_contact.set_dhat(0.1);
 
     VectorMax6d x = VectorMax6d::Random(6);
 
-    CHECK(ground_contact(bodies, x) == ground_contact(bodies, 0, Pose(x)));
+    CHECK(ground_contact(*bodies, x) == ground_contact(*bodies, 0, Pose(x)));
 
     CHECK(
         fd::compare_gradient(
-            ground_contact.gradient(bodies, x),
-            ground_contact.gradient(bodies, 0, Pose(x))));
+            ground_contact.gradient(*bodies, x),
+            ground_contact.gradient(*bodies, 0, Pose(x))));
 
     CHECK(
-        ground_contact.hessian(bodies, x, PSDProjectionMethod::ABS)
+        ground_contact.hessian(*bodies, x, PSDProjectionMethod::ABS)
         == ground_contact.hessian(
-            bodies, 0, Pose(x), PSDProjectionMethod::ABS));
+            *bodies, 0, Pose(x), PSDProjectionMethod::ABS));
 }

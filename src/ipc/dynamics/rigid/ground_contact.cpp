@@ -72,10 +72,6 @@ double GroundContact::operator()(
 VectorMax6d GroundContact::gradient(
     const RigidBodies& bodies, const size_t body_index, const Pose& pose) const
 {
-#ifndef NDEBUG
-    const int ndof = pose.position.size() + pose.rotation.size();
-#endif
-
     const Eigen::MatrixXd vertices = bodies.body_vertices(body_index, pose);
 
     Eigen::VectorXd dE_dV = Eigen::VectorXd::Zero(vertices.size());
@@ -85,12 +81,12 @@ VectorMax6d GroundContact::gradient(
             m_barrier->first_derivative(height_above_ground, m_dhat);
 
         // Gradient wrt y position only
-        dE_dV(vertices.rows() + i) = db_dh;
+        dE_dV(vertices.cols() * i + 1) = db_dh;
     }
 
     const Eigen::MatrixXd dV_dx = pose.transform_vertices_jacobian(
         bodies.body_rest_positions(body_index));
-    assert(dV_dx.rows() == vertices.size() && dV_dx.cols() == ndof);
+    assert(dV_dx.rows() == vertices.size() && dV_dx.cols() == pose.ndof());
 
     return dV_dx.transpose() * dE_dV; // Chain rule
 }
@@ -101,7 +97,7 @@ MatrixMax6d GroundContact::hessian(
     const Pose& pose,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
-    const int ndof = pose.position.size() + pose.rotation.size();
+    const int ndof = pose.ndof();
 
     const Eigen::MatrixXd vertices = bodies.body_vertices(body_index, pose);
 
@@ -113,7 +109,7 @@ MatrixMax6d GroundContact::hessian(
             m_barrier->first_derivative(height_above_ground, m_dhat);
 
         // Gradient wrt y position only
-        dE_dV(vertices.rows() + i) = db_dh;
+        dE_dV(vertices.cols() * i + 1) = db_dh;
     }
 
     // Compute d2E/dV2
@@ -129,7 +125,7 @@ MatrixMax6d GroundContact::hessian(
             if (db_dh != 0.0) {
                 // Hessian wrt y position only
                 triplets.emplace_back(
-                    vertices.rows() + i, vertices.rows() + i, db_dh);
+                    vertices.cols() * i + 1, vertices.cols() * i + 1, db_dh);
             }
         }
 
@@ -148,8 +144,8 @@ MatrixMax6d GroundContact::hessian(
     assert(hess.rows() == ndof && hess.cols() == ndof);
     for (int j = 0; j < ndof; ++j) {
         for (int i = 0; i < ndof; ++i) {
-            auto d2V_dxj_dxk = d2V_dx2.col(i * ndof + j);
-            hess(i, j) += dE_dV.dot(d2V_dxj_dxk);
+            auto d2V_dxi_dxj = d2V_dx2.col(i * ndof + j);
+            hess(i, j) += dE_dV.dot(d2V_dxi_dxj);
         }
     }
 

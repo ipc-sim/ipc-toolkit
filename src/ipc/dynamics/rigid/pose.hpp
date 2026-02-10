@@ -68,13 +68,15 @@ struct Pose {
         }
     }
 
-    /// @brief Construct a zero pose.
+    /// @brief Construct an identity pose with zero position and rotation.
     /// @param dim The dimension of the pose (2 or 3)
-    /// @return A pose with zero position and rotation
-    static Pose Zero(const int dim) // NOLINT(readability-identifier-naming)
+    /// @return Identity pose with zero position and rotation
+    static Pose Identity(const int dim) // NOLINT(readability-identifier-naming)
     {
         return Pose(VectorMax3d::Zero(dim), VectorMax3d::Zero(dim));
     }
+
+    int ndof() const { return position.size() + rotation.size(); }
 
     /// @brief Construct a rotation matrix from the rotation vector.
     /// @return The rotation matrix corresponding to the rotation vector
@@ -173,6 +175,30 @@ struct Pose {
     friend bool operator==(const Pose& a, const Pose& b)
     {
         return a.position == b.position && a.rotation == b.rotation;
+    }
+
+    static std::vector<Pose>
+    to_poses(Eigen::ConstRef<Eigen::VectorXd> x, const int dim)
+    {
+        const int pose_ndof = dim == 2 ? 3 : 6;
+        assert(x.size() % pose_ndof == 0);
+        std::vector<Pose> poses(x.size() / pose_ndof);
+        for (size_t i = 0; i < poses.size(); ++i) {
+            poses[i] = Pose(x.segment(i * pose_ndof, pose_ndof));
+        }
+        return poses;
+    }
+
+    static Eigen::VectorXd from_poses(const std::vector<Pose>& poses)
+    {
+        const int pose_ndof = poses[0].ndof();
+        Eigen::VectorXd x(poses.size() * pose_ndof);
+        for (size_t i = 0; i < poses.size(); ++i) {
+            assert(poses[i].ndof() == pose_ndof);
+            x.segment(i * pose_ndof, pose_ndof) << poses[i].position,
+                poses[i].rotation;
+        }
+        return x;
     }
 };
 

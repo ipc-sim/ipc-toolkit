@@ -67,7 +67,9 @@ void define_rigid_simulator(py::module_& m)
             py::arg("rest_positions"), py::arg("edges"), py::arg("faces"),
             py::arg("densities"), py::arg("initial_poses"))
         .def(
-            "vertices", &RigidBodies::vertices,
+            "vertices",
+            py::overload_cast<const std::vector<Pose>&>(
+                &RigidBodies::vertices, py::const_),
             R"ipc_Qu8mg5v7(
              Compute the vertex positions from the poses of the rigid bodies.
 

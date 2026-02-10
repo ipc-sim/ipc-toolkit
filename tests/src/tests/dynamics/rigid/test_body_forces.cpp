@@ -14,7 +14,7 @@ using namespace ipc::rigid;
 namespace {
 
 // Helper function to generate a RigidBody
-RigidBodies rigid_bodies()
+auto rigid_bodies()
 {
     Eigen::MatrixXd V;
     Eigen::MatrixXi E, F;
@@ -28,12 +28,12 @@ RigidBodies rigid_bodies()
     const double density = GENERATE(1.0, 2.0, 3.0);
 
     std::vector<Pose> initial_poses;
-    initial_poses.push_back(Pose::Zero(3)); // Initial pose at the origin
+    initial_poses.push_back(Pose::Identity(3)); // Initial pose at the origin
 
-    RigidBodies bodies = RigidBodies::build_from_meshes(
+    auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { density }, initial_poses);
 
-    bodies[0].set_external_force(
+    (*bodies)[0].set_external_force(
         Pose(Eigen::Vector3d::Random(), Eigen::Vector3d::Random()));
 
     return bodies;
@@ -59,15 +59,15 @@ TEST_CASE(
     "BodyForces energy and derivative",
     "[body_forces][energy][gradient][hessian]")
 {
-    RigidBodies bodies = rigid_bodies();
-    BodyForces body_forces(time_integrator(bodies));
-    body_forces.update(bodies);
+    auto bodies = rigid_bodies();
+    BodyForces body_forces(time_integrator(*bodies));
+    body_forces.update(*bodies);
 
     VectorMax6d x = VectorMax6d::Random(6);
     VectorMax3d force = body_forces.forces()[0];
     MatrixMax3d torque = body_forces.torques()[0];
 
-    double energy = body_forces(bodies[0], x, force, torque);
+    double energy = body_forces((*bodies)[0], x, force, torque);
 
     // Since we don't have a ground truth, we can only check if the energy is a
     // valid number
@@ -77,12 +77,13 @@ TEST_CASE(
     MatrixMax6d analytical_hessian;
 
     {
-        analytical_gradient = body_forces.gradient(bodies[0], x, force, torque);
+        analytical_gradient =
+            body_forces.gradient((*bodies)[0], x, force, torque);
 
         // Numerical gradient calculation
         auto f = [&](const Eigen::VectorXd& x_arg) {
             return body_forces(
-                bodies[0], x_arg, force,
+                (*bodies)[0], x_arg, force,
                 torque); // Capture other variables by value
         };
         Eigen::VectorXd numerical_gradient;
@@ -98,11 +99,12 @@ TEST_CASE(
     }
 
     {
-        analytical_hessian = body_forces.hessian(bodies[0], x, force, torque);
+        analytical_hessian =
+            body_forces.hessian((*bodies)[0], x, force, torque);
 
         // Numerical hessian calculation
         auto f = [&](const Eigen::VectorXd& x_arg) {
-            return body_forces.gradient(bodies[0], x_arg, force, torque);
+            return body_forces.gradient((*bodies)[0], x_arg, force, torque);
         };
         Eigen::MatrixXd numerical_hessian;
         fd::finite_jacobian(x, f, numerical_hessian);
@@ -126,7 +128,7 @@ TEST_CASE(
             CHECK(true);
         } else {
             analytical_hessian = body_forces.hessian(
-                bodies[0], x, force, torque, PSDProjectionMethod::ABS);
+                (*bodies)[0], x, force, torque, PSDProjectionMethod::ABS);
 
             newton_direction =
                 -analytical_hessian.ldlt().solve(analytical_gradient);
@@ -142,10 +144,10 @@ TEST_CASE(
     "BodyForces total energy and derivatives",
     "[rigid][body_forces][total_energy][total_gradient][total_hessian]")
 {
-    RigidBodies bodies = rigid_bodies();
-    BodyForces body_forces(time_integrator(bodies));
+    auto bodies = rigid_bodies();
+    BodyForces body_forces(time_integrator(*bodies));
     body_forces.set_gravity(Eigen::Vector3d(0, -9.81, 0));
-    body_forces.update(bodies);
+    body_forces.update(*bodies);
 
     VectorMax6d x = VectorMax6d::Random(6);
 
@@ -155,15 +157,17 @@ TEST_CASE(
     const auto& force = body_forces.forces()[0];
     const auto& torque = body_forces.torques()[0];
 
-    CHECK(body_forces(bodies, x) == body_forces(bodies[0], x, force, torque));
+    CHECK(
+        body_forces((*bodies), x)
+        == body_forces((*bodies)[0], x, force, torque));
 
     CHECK(
         fd::compare_gradient(
-            body_forces.gradient(bodies, x),
-            body_forces.gradient(bodies[0], x, force, torque)));
+            body_forces.gradient((*bodies), x),
+            body_forces.gradient((*bodies)[0], x, force, torque)));
 
     CHECK(
-        body_forces.hessian(bodies, x, PSDProjectionMethod::ABS)
+        body_forces.hessian((*bodies), x, PSDProjectionMethod::ABS)
         == body_forces.hessian(
-            bodies[0], x, force, torque, PSDProjectionMethod::ABS));
+            (*bodies)[0], x, force, torque, PSDProjectionMethod::ABS));
 }

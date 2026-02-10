@@ -102,7 +102,7 @@ bool write_gltf(
         accessor->name = body_name + "Vertices";
         accessor->bufferView = 2 * i;
         accessor->componentType = float_component_type;
-        accessor->count = bodies.num_body_vertices(i);
+        accessor->count = bodies.body_num_vertices(i);
         // accessor->max = ...;
         // accessor->min = ...;
         accessor->type = TINYGLTF_TYPE_VEC3;
@@ -111,7 +111,7 @@ bool write_gltf(
         accessor->name = body_name + "Faces";
         accessor->bufferView = 2 * i + 1;
         accessor->componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
-        accessor->count = 3 * bodies.num_body_faces(i);
+        accessor->count = 3 * bodies.body_num_faces(i);
         accessor->type = TINYGLTF_TYPE_SCALAR;
 
         accessor = &model.accessors[2 * num_bodies + 2 * i + 1];

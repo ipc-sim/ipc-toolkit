@@ -24,8 +24,8 @@ TEST_CASE("Rigid body construction", "[rigid]")
 
     const double density = GENERATE(1.0, 2.0, 3.0);
 
-    Pose input_pose = Pose::Zero(3);
-    Pose initial_pose = Pose::Zero(3);
+    Pose input_pose = Pose::Identity(3);
+    Pose initial_pose = Pose::Identity(3);
 
     SECTION("No modification") { }
     SECTION("Input pose")

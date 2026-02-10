@@ -217,15 +217,15 @@ TEST_CASE("Pose transform vertices Jacobian", "[rigid][pose][jacobian]")
 
     Eigen::MatrixXd dV_dx_analytic = p.transform_vertices_jacobian(V);
 
-    auto f = [&](const Eigen::VectorXd& x) -> Eigen::MatrixXd {
-        return Pose(x).transform_vertices(V);
+    auto f = [&](const Eigen::VectorXd& x) -> Eigen::VectorXd {
+        return Pose(x).transform_vertices(V).reshaped<Eigen::RowMajor>();
     };
 
     Eigen::VectorXd x(DIM == 2 ? 3 : 6);
     x << p.position, p.rotation;
 
     Eigen::MatrixXd dV_dx_numerical;
-    fd::finite_jacobian_tensor<3>(x, f, dV_dx_numerical);
+    fd::finite_jacobian(x, f, dV_dx_numerical);
 
     CHECK(fd::compare_jacobian(dV_dx_analytic, dV_dx_numerical));
     if (!fd::compare_jacobian(dV_dx_analytic, dV_dx_numerical)) {

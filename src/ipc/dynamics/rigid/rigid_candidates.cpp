@@ -74,8 +74,8 @@ void RigidCandidates::build(
 
         // Ensure bi has more vertices than bj to take advantage of log(n)
         // traversal.
-        if (bodies.num_body_vertices(body_i)
-            < bodies.num_body_vertices(body_j)) {
+        if (bodies.body_num_vertices(body_i)
+            < bodies.body_num_vertices(body_j)) {
             std::swap(body_i, body_j);
         }
 
@@ -91,7 +91,7 @@ void RigidCandidates::build(
         const Eigen::MatrixXd j_vertices_t1 =
             bodies.body_vertices(body_j, body_j_to_i_t1);
 
-        AABBs body_j_vertex_boxes(bodies.num_body_vertices(body_j));
+        AABBs body_j_vertex_boxes(bodies.body_num_vertices(body_j));
         build_vertex_boxes(
             j_vertices_t0, j_vertices_t1, body_j_vertex_boxes,
             inflation_radius);
