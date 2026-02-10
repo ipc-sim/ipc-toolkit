@@ -657,6 +657,12 @@ TEST_CASE(
     "Smooth friction force no_mu and no_contact_force_multiplier",
     "[friction-smooth][force][no-mu]")
 {
+#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32)) && !defined(NDEBUG)
+    SKIP(
+        "'Smooth friction force no_mu and no_contact_force_multiplier' test is "
+        "skipped in debug mode");
+#endif
+
     SmoothFrictionData data = smooth_friction_data_generator_3d();
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
         data;

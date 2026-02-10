@@ -124,7 +124,7 @@ We plot the smooth coefficient of friction :math:`\mu(y)` below:
 Smooth :math:`\mu` Mollifier
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Replacing the constant coefficient of friction :math:`\mu` with a smooth function :math:`\mu(\|\mathbf{u}\|)` allows us to smoothly transition between static and kinetic friction. The function :math:`\mu(\|\mathbf{u}\|) f_1(\|\mathbf{u}\|)` is plotted below:
+Using a smooth function :math:`\mu(\|\mathbf{u}\|)` instead of a constant :math:`\mu` gives a smooth transition between static and kinetic friction. The function :math:`\mu(\|\mathbf{u}\|) f_1(\|\mathbf{u}\|)` is plotted below:
 
 .. figure:: /_static/img/mu_f1.png
    :align: center
@@ -239,8 +239,8 @@ Two mechanisms are available:
    tangential velocity before friction; changes the effective speed in the
    friction law.
 
-2. **Direction-dependent coefficients** (``mu_s_aniso``, ``mu_k_aniso``):
-   different :math:`\mu` along each tangent direction.
+2. **Ellipse coefficients** (``mu_s_aniso``, ``mu_k_aniso``): different
+   :math:`\mu` along each tangent direction.
 
 Use one or both. When both are set, velocity scaling is applied first, then
 direction-dependent :math:`\mu` from the scaled velocity direction.

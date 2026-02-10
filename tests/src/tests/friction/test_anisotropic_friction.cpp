@@ -279,6 +279,35 @@ TEST_CASE(
 }
 
 TEST_CASE(
+    "anisotropic_mu_eff_from_tau_aniso only mu_k_aniso",
+    "[friction][anisotropic][smooth-mu]")
+{
+    static constexpr double MARGIN = 1e-10;
+
+    // Only kinetic anisotropic: mu_s_aniso = 0, mu_k_aniso non-zero.
+    // Expect mu_s_eff = mu_s_isotropic, mu_k_eff from ellipse.
+    Eigen::Vector2d tau_aniso(1.0, 0.0); // direction (1,0)
+    const double mu_s_iso = 0.5;
+    const double mu_k_iso = 0.3;
+    Eigen::Vector2d mu_s_aniso_zero = Eigen::Vector2d::Zero();
+    Eigen::Vector2d mu_k_aniso(0.6, 0.25);
+
+    auto [mu_s_eff, mu_k_eff] = anisotropic_mu_eff_from_tau_aniso(
+        tau_aniso, mu_s_aniso_zero, mu_k_aniso, mu_s_iso, mu_k_iso, false);
+    CHECK(mu_s_eff == Catch::Approx(mu_s_iso).margin(MARGIN));
+    // For direction (1,0), mu_k_eff = mu_k_aniso[0]
+    CHECK(mu_k_eff == Catch::Approx(mu_k_aniso[0]).margin(MARGIN));
+
+    // Only static anisotropic: mu_s_aniso non-zero, mu_k_aniso = 0.
+    Eigen::Vector2d mu_s_aniso(0.7, 0.35);
+    Eigen::Vector2d mu_k_aniso_zero = Eigen::Vector2d::Zero();
+    std::tie(mu_s_eff, mu_k_eff) = anisotropic_mu_eff_from_tau_aniso(
+        tau_aniso, mu_s_aniso, mu_k_aniso_zero, mu_s_iso, mu_k_iso, false);
+    CHECK(mu_s_eff == Catch::Approx(mu_s_aniso[0]).margin(MARGIN));
+    CHECK(mu_k_eff == Catch::Approx(mu_k_iso).margin(MARGIN));
+}
+
+TEST_CASE(
     "anisotropic_mu_eff_f_grad edge cases",
     "[friction][anisotropic][smooth-mu-edge]")
 {
@@ -311,43 +340,34 @@ TEST_CASE(
     "Anisotropic friction per-pair assignment",
     "[friction][anisotropic][per-pair]")
 {
-    // Create a simple mesh for testing
-    Eigen::MatrixXd vertices(4, 3);
-    vertices << 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0;
+    const double dhat = 1e-2;
+    // Two vertices within dhat so we get at least one normal (and tangential)
+    // collision
+    Eigen::MatrixXd vertices(2, 3);
+    vertices << 0.0, 0.0, 0.0, dhat * 0.5, 0.0, 0.0;
 
-    Eigen::MatrixXi edges(6, 2);
-    edges << 0, 1, 0, 2, 0, 3, 1, 2, 1, 3, 2, 3;
-
-    Eigen::MatrixXi faces(4, 3);
-    faces << 0, 1, 2, 0, 1, 3, 0, 2, 3, 1, 2, 3;
-
+    Eigen::MatrixXi edges, faces;
     CollisionMesh mesh(vertices, edges, faces);
 
-    // Create normal collisions (minimal setup)
     NormalCollisions normal_collisions;
-    // For this test, we'll just verify that we can assign anisotropic
-    // coefficients to tangential collisions after they're built
+    normal_collisions.build(mesh, vertices, dhat);
+    REQUIRE(!normal_collisions.empty());
 
     TangentialCollisions tangential_collisions;
-    BarrierPotential barrier_potential(1e-3);
-
-    // Build with default (isotropic) friction
+    BarrierPotential barrier_potential(dhat);
     tangential_collisions.build(
         mesh, vertices, normal_collisions, barrier_potential, 1.0, 0.5, 0.3);
+    REQUIRE(!tangential_collisions.empty());
 
-    if (tangential_collisions.size() > 0) {
-        // Assign different anisotropic coefficients to different collisions
-        for (size_t i = 0; i < tangential_collisions.size(); ++i) {
-            Eigen::Vector2d mu_s_aniso(0.5 + i * 0.1, 0.3 + i * 0.1);
-            Eigen::Vector2d mu_k_aniso(0.4 + i * 0.1, 0.2 + i * 0.1);
+    for (size_t i = 0; i < tangential_collisions.size(); ++i) {
+        Eigen::Vector2d mu_s_aniso(0.5 + i * 0.1, 0.3 + i * 0.1);
+        Eigen::Vector2d mu_k_aniso(0.4 + i * 0.1, 0.2 + i * 0.1);
 
-            tangential_collisions[i].mu_s_aniso = mu_s_aniso;
-            tangential_collisions[i].mu_k_aniso = mu_k_aniso;
+        tangential_collisions[i].mu_s_aniso = mu_s_aniso;
+        tangential_collisions[i].mu_k_aniso = mu_k_aniso;
 
-            // Verify assignment
-            CHECK(tangential_collisions[i].mu_s_aniso == mu_s_aniso);
-            CHECK(tangential_collisions[i].mu_k_aniso == mu_k_aniso);
-        }
+        CHECK(tangential_collisions[i].mu_s_aniso == mu_s_aniso);
+        CHECK(tangential_collisions[i].mu_k_aniso == mu_k_aniso);
     }
 }
 
@@ -355,34 +375,26 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
 {
     static constexpr double MARGIN = 1e-6;
 
-    // Create a simple mesh with two vertices
+    const double dhat = 1e-2;
+    // Vertices within dhat so we get at least one normal and tangential
+    // collision
     Eigen::MatrixXd vertices(2, 3);
-    vertices << 0.0, 0.0, 0.0, // vertex 0
-        0.05, 0.0, 0.0;        // vertex 1 (close to vertex 0)
+    vertices << 0.0, 0.0, 0.0, dhat * 0.5, 0.0, 0.0;
 
     Eigen::MatrixXi edges, faces;
     CollisionMesh mesh(vertices, edges, faces);
 
-    // Create normal collision
     NormalCollisions normal_collisions;
-    const double dhat = 1e-2;
     normal_collisions.build(mesh, vertices, dhat);
+    REQUIRE(!normal_collisions.empty());
 
-    if (normal_collisions.empty()) {
-        return; // Skip if no collisions
-    }
-
-    // Build tangential collisions
     TangentialCollisions tangential_collisions;
     BarrierPotential barrier_potential(dhat);
     const double barrier_stiffness = 1.0;
     tangential_collisions.build(
         mesh, vertices, normal_collisions, barrier_potential, barrier_stiffness,
         0.5, 0.3);
-
-    if (tangential_collisions.empty()) {
-        return; // Skip if no tangential collisions
-    }
+    REQUIRE(!tangential_collisions.empty());
 
     // Set anisotropic friction coefficients on first collision
     TangentialCollision& collision = tangential_collisions[0];

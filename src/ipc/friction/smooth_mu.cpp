@@ -182,26 +182,24 @@ std::pair<double, double> anisotropic_mu_eff_from_tau_aniso(
     const double mu_k_isotropic,
     const bool no_mu)
 {
-    // Check if direction-dependent anisotropic friction is enabled
-    const bool is_anisotropic = mu_s_aniso.squaredNorm() > 0;
+    // Anisotropic when at least one of mu_s_aniso, mu_k_aniso is non-zero.
+    // Compute mu_s_eff and mu_k_eff independently (ellipse or isotropic).
+    const bool use_aniso_s = mu_s_aniso.squaredNorm() > 0;
+    const bool use_aniso_k = mu_k_aniso.squaredNorm() > 0;
 
-    if (is_anisotropic) {
-        // Direction-dependent friction: compute effective mu based on
-        // tau_aniso direction (after mu_aniso scaling). This combines both
-        // mechanisms: mu_aniso velocity scaling AND mu_s_aniso/mu_k_aniso
-        // direction-dependent coefficients.
-        const Eigen::Vector2d tau_dir = anisotropic_x_from_tau_aniso(tau_aniso);
-
-        const auto [mu_s_eff, mu_k_eff] =
-            anisotropic_mu_eff_f(tau_dir, mu_s_aniso, mu_k_aniso);
-
-        return std::make_pair(no_mu ? 1.0 : mu_s_eff, no_mu ? 1.0 : mu_k_eff);
-    } else {
-        // Isotropic friction: use scalar mu_s/mu_k (mu_aniso scaling already
-        // applied to tau_aniso)
+    if (!use_aniso_s && !use_aniso_k) {
         return std::make_pair(
             no_mu ? 1.0 : mu_s_isotropic, no_mu ? 1.0 : mu_k_isotropic);
     }
+
+    const Eigen::Vector2d tau_dir = anisotropic_x_from_tau_aniso(tau_aniso);
+    const double mu_s_eff = use_aniso_s
+        ? anisotropic_mu_eff_f(tau_dir, mu_s_aniso, mu_s_aniso).first
+        : mu_s_isotropic;
+    const double mu_k_eff = use_aniso_k
+        ? anisotropic_mu_eff_f(tau_dir, mu_k_aniso, mu_k_aniso).second
+        : mu_k_isotropic;
+    return std::make_pair(no_mu ? 1.0 : mu_s_eff, no_mu ? 1.0 : mu_k_eff);
 }
 
 std::pair<Eigen::Vector2d, Eigen::Vector2d> anisotropic_mu_eff_f_grad(
