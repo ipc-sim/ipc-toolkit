@@ -2,20 +2,17 @@
 
 #include <ipc/config.hpp>
 
-#include <stdexcept> // std::out_of_range
-
 namespace ipc {
 
 void TangentialCollision::init(
     const NormalCollision& collision,
     Eigen::ConstRef<VectorMax12d> positions,
-    const NormalPotential& normal_potential,
-    const double normal_stiffness)
+    const NormalPotential& normal_potential)
 {
     init(
         collision, positions,
         normal_potential.force_magnitude(
-            compute_distance(positions), collision.dmin, normal_stiffness));
+            compute_distance(positions), collision.dmin));
 }
 
 void TangentialCollision::init(

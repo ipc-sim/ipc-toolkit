@@ -36,7 +36,6 @@ TEST_CASE(
 
     double dhat = -1;
     std::string mesh_name;
-    bool all_vertices_on_surface = true;
     SECTION("cube")
     {
         dhat = sqrt(2.0);
@@ -72,7 +71,8 @@ TEST_CASE(
     CAPTURE(dhat, broad_phase->name(), use_area_weighting, collision_set_type);
     CHECK(!collisions.empty());
 
-    BarrierPotential barrier_potential(dhat, use_physical_barrier);
+    double kappa = 1.0;
+    BarrierPotential barrier_potential(dhat, kappa, use_physical_barrier);
 
     // -------------------------------------------------------------------------
     // Gradient
@@ -210,6 +210,8 @@ TEST_CASE(
             < dhat * dhat);
     }
 
+    REQUIRE(vertices.size() > 0);
+
     const CollisionMesh mesh(vertices, edges, faces);
 
     NormalCollisions collisions;
@@ -219,7 +221,7 @@ TEST_CASE(
     collisions.build(mesh, vertices, dhat);
     CHECK(!collisions.empty());
 
-    BarrierPotential barrier_potential(dhat, use_physical_barrier);
+    BarrierPotential barrier_potential(dhat, 1.0, use_physical_barrier);
 
     const Eigen::VectorXd grad_b =
         barrier_potential.gradient(collisions, mesh, vertices);
@@ -296,7 +298,7 @@ TEST_CASE(
     collisions.build(candidates, mesh, vertices, dhat);
     REQUIRE(!collisions.ee_collisions.empty());
 
-    BarrierPotential barrier_potential(dhat, use_physical_barrier);
+    BarrierPotential barrier_potential(dhat, 1.0, use_physical_barrier);
 
     for (int i = 0; i < collisions.size(); i++) {
         std::vector<Eigen::Triplet<double>> triplets;
@@ -435,7 +437,7 @@ TEST_CASE(
     collisions.set_enable_shape_derivatives(true);
     collisions.build(mesh, vertices, dhat);
 
-    BarrierPotential barrier_potential(dhat, use_physical_barrier);
+    BarrierPotential barrier_potential(dhat, 1.0, use_physical_barrier);
 
     const Eigen::MatrixXd JF_wrt_X =
         barrier_potential.shape_derivative(collisions, mesh, vertices);
@@ -501,7 +503,7 @@ TEST_CASE(
     CAPTURE(mesh_name, dhat);
     CHECK(!collisions.empty());
 
-    BarrierPotential barrier_potential(dhat, use_physical_barrier);
+    BarrierPotential barrier_potential(dhat, 1.0, use_physical_barrier);
 
     BENCHMARK("Compute barrier potential")
     {
@@ -567,7 +569,7 @@ TEST_CASE(
     collisions.set_enable_shape_derivatives(true);
     collisions.build(mesh, vertices, dhat);
 
-    BarrierPotential barrier_potential(dhat, use_physical_barrier);
+    BarrierPotential barrier_potential(dhat, 1.0, use_physical_barrier);
 
     Eigen::SparseMatrix<double> JF_wrt_X;
 

@@ -25,7 +25,6 @@ PYBIND11_MODULE(ipctk, m)
     define_aabb(m);
     define_broad_phase(m);
     define_brute_force(m);
-    define_bvh(m);
     define_hash_grid(m);
     define_lbvh(m);
     define_spatial_hash(m);

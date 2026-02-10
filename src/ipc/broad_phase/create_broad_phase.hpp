@@ -9,7 +9,6 @@ enum class BroadPhaseMethod : uint8_t {
     BRUTE_FORCE,
     HASH_GRID,
     SPATIAL_HASH,
-    BVH [[deprecated("Use LBVH instead.")]],
     LBVH,
     SWEEP_AND_PRUNE,
     SWEEP_AND_TINIEST_QUEUE

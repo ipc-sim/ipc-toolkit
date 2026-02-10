@@ -13,8 +13,6 @@ void define_vertex_vertex_tangential_collision(py::module_& m)
         .def(
             py::init<
                 const VertexVertexNormalCollision&,
-                Eigen::ConstRef<VectorMax12d>, const NormalPotential&,
-                const double>(),
-            "collision"_a, "positions"_a, "normal_potential"_a,
-            "normal_stiffness"_a);
+                Eigen::ConstRef<VectorMax12d>, const NormalPotential&>(),
+            "collision"_a, "positions"_a, "normal_potential"_a);
 }

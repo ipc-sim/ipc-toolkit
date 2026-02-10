@@ -14,12 +14,10 @@ protected:
     /// @param collision NormalCollision stencil.
     /// @param positions Collision stencil's vertex positions.
     /// @param normal_potential Normal potential used for normal force.
-    /// @param normal_stiffness Normal potential stiffness.
     void init(
         const NormalCollision& collision,
         Eigen::ConstRef<VectorMax12d> positions,
-        const NormalPotential& normal_potential,
-        const double normal_stiffness);
+        const NormalPotential& normal_potential);
 
     /// @brief Initialize the collision.
     /// @param collision NormalCollision stencil.

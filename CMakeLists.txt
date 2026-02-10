@@ -200,9 +200,6 @@ target_link_libraries(ipc_toolkit PRIVATE tight_inclusion::tight_inclusion)
 include(scalable_ccd)
 target_link_libraries(ipc_toolkit PRIVATE scalable_ccd::scalable_ccd)
 
-# SimpleBVH
-include(simple_bvh)
-target_link_libraries(ipc_toolkit PRIVATE simple_bvh::simple_bvh)
 
 # Logger
 include(spdlog)
