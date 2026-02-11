@@ -106,12 +106,16 @@ public:
     /// @note Zero vector → scalar mu_s (backward compatible). Elliptical model;
     ///       see ipc::smooth_mu and Erleben et al., CGF 2019,
     ///       DOI 10.1111/cgf.13885.
+    ///       Components are along the collision's tangent basis (tangent to the
+    ///       mesh at the contact), not world-space directions.
     Eigen::Vector2d mu_s_aniso = Eigen::Vector2d::Zero();
 
     /// @brief Anisotropic kinetic friction coefficients (2D, one per tangent direction).
     /// @note Zero vector → scalar mu_k (backward compatible). Elliptical model;
     ///       see ipc::smooth_mu and Erleben et al., CGF 2019,
     ///       DOI 10.1111/cgf.13885.
+    ///       Components are along the collision's tangent basis (tangent to the
+    ///       mesh at the contact), not world-space directions.
     Eigen::Vector2d mu_k_aniso = Eigen::Vector2d::Zero();
 
     /// @brief Weight

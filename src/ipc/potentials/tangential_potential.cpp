@@ -214,8 +214,7 @@ VectorMax12d TangentialPotential::gradient(
         * collision.tangent_basis;
 
     // Compute μ(‖u_aniso‖) f₁(‖u_aniso‖)/‖u_aniso‖
-    const double mu_f1_over_norm_u =
-        mu_f1_over_x(u_aniso.norm(), mu_s, mu_k);
+    const double mu_f1_over_norm_u = mu_f1_over_x(u_aniso.norm(), mu_s, mu_k);
 
     // Apply anisotropic scaling to T: T_aniso = T * diag(mu_aniso)
     // This accounts for ∂u_aniso/∂u = diag(mu_aniso) in the chain rule
@@ -285,8 +284,7 @@ MatrixMax12d TangentialPotential::hessian(
             collision.mu_s, collision.mu_k, false);
     }
     // Compute μ(‖u_aniso‖) f₁(‖u_aniso‖)/‖u_aniso‖
-    const double mu_f1_over_norm_u =
-        mu_f1_over_x(norm_u, mu_s, mu_k);
+    const double mu_f1_over_norm_u = mu_f1_over_x(norm_u, mu_s, mu_k);
 
     // Compute N(xᵗ)
     const double scale = collision.weight * collision.normal_force_magnitude;
@@ -326,8 +324,7 @@ MatrixMax12d TangentialPotential::hessian(
         // ∇²D(v) = μ N T [f₂(‖u_aniso‖) u_aniso u_anisoᵀ +
         // f₁(‖u_aniso‖)/‖u_aniso‖ I] Tᵀ
         //  ⟹ only need to project the inner 2x2 matrix to PSD
-        const double f2 =
-            mu_f2_x_minus_mu_f1_over_x3(norm_u, mu_s, mu_k);
+        const double f2 = mu_f2_x_minus_mu_f1_over_x3(norm_u, mu_s, mu_k);
 
         MatrixMax2d inner_hess = f2 * u_aniso * u_aniso.transpose();
         inner_hess.diagonal().array() += mu_f1_over_norm_u;
@@ -561,8 +558,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
     // Anisotropic when at least one of mu_s_aniso, mu_k_aniso is non-zero
     // NOTE: Direction-dependent anisotropic friction only makes sense in 3D
     // (2D tangent space). For 2D simulations (1D tangent space), disable.
-    const bool is_anisotropic =
-        tangent_dim > 1
+    const bool is_anisotropic = tangent_dim > 1
         && (collision.mu_s_aniso.squaredNorm() > 0
             || collision.mu_k_aniso.squaredNorm() > 0);
 

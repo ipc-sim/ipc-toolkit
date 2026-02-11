@@ -176,6 +176,41 @@ Anisotropic Friction
 You can set different friction coefficients along each tangent direction.
 Wood (along vs. across the grain) and brushed metal are typical cases.
 
+Directions tangent to the mesh
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The two anisotropy axes are the contact's tangent basis. They lie in the
+plane tangent to the contact and are computed from the collision geometry.
+You do not pass a custom 3D direction (e.g. a world-space "grain" vector).
+You pass coefficients only: ``mu_s_aniso`` and ``mu_k_aniso`` are 2D vectors
+whose first component is along the first tangent direction and second along
+the second. So anisotropy is always along the mesh tangent directions at
+each contact.
+
+Setting coefficients (component 0 = first tangent direction, component 1 =
+second, both tangent to the surface):
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            for (size_t i = 0; i < tangential_collisions.size(); ++i) {
+                // Component 0 = first tangent dir, 1 = second (tangent to surface)
+                tangential_collisions[i].mu_s_aniso = Eigen::Vector2d(0.8, 0.4);
+                tangential_collisions[i].mu_k_aniso = Eigen::Vector2d(0.6, 0.3);
+            }
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            for i in range(len(tangential_collisions)):
+                # Component 0 = first tangent dir, 1 = second (tangent to surface)
+                tangential_collisions[i].mu_s_aniso = np.array([0.8, 0.4])
+                tangential_collisions[i].mu_k_aniso = np.array([0.6, 0.3])
+
 Anisotropic friction uses an elliptical L2 projection model. For a given
 tangential velocity direction :math:`\mathbf{t} =
 \boldsymbol{\tau} / \|\boldsymbol{\tau}\|`, the effective friction coefficient
@@ -210,7 +245,7 @@ to each tangential collision after building the collisions:
 
             // Assign anisotropic friction coefficients per collision
             for (size_t i = 0; i < tangential_collisions.size(); ++i) {
-                // Higher friction in first tangent direction, lower in second
+                // Components 0 and 1 = contact's two tangent dirs (tangent to surface)
                 tangential_collisions[i].mu_s_aniso = Eigen::Vector2d(0.8, 0.4);
                 tangential_collisions[i].mu_k_aniso = Eigen::Vector2d(0.6, 0.3);
             }
@@ -225,8 +260,8 @@ to each tangential collision after building the collisions:
                 mu_s, mu_k)
 
             # Assign anisotropic friction coefficients per collision
-            for i in range(tangential_collisions.size()):
-                # Higher friction in first tangent direction, lower in second
+            for i in range(len(tangential_collisions)):
+                # Components 0 and 1 = contact's two tangent dirs (tangent to surface)
                 tangential_collisions[i].mu_s_aniso = np.array([0.8, 0.4])
                 tangential_collisions[i].mu_k_aniso = np.array([0.6, 0.3])
 
