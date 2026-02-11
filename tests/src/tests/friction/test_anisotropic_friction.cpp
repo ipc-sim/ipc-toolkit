@@ -409,7 +409,10 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
     const double velocity_magnitude = GENERATE(0.01, 0.1);
 
     Eigen::MatrixXd velocities(2, 3);
-    // Velocity in tangent plane: (cos(angle), sin(angle), 0)
+    // Velocity in xy-plane: (cos(angle), sin(angle), 0)
+    // For vertex-vertex along x-axis, tangent plane is yz; tangential
+    // component comes only from sin(angle). When angle=0 or π, tangential
+    // velocity is zero, so friction force is correctly zero.
     velocities << velocity_magnitude * std::cos(angle),
         velocity_magnitude * std::sin(angle), 0.0, //
         0.0, 0.0, 0.0;
@@ -422,8 +425,10 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
         collision.dof(Eigen::MatrixXd::Zero(2, 3), edges, faces),
         collision.dof(velocities, edges, faces), barrier_potential, 0.0, false);
 
-    // Verify force is non-zero (unless velocity is zero)
-    if (velocity_magnitude > 1e-10) {
+    // Verify force is non-zero when tangential velocity is non-zero
+    // (velocity along normal yields zero friction by design)
+    const bool has_tangential_velocity = std::abs(std::sin(angle)) > 1e-10;
+    if (velocity_magnitude > 1e-10 && has_tangential_velocity) {
         CHECK(force.norm() > 1e-10);
     }
 
