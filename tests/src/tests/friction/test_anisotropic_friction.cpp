@@ -354,9 +354,9 @@ TEST_CASE(
     REQUIRE(!normal_collisions.empty());
 
     TangentialCollisions tangential_collisions;
-    BarrierPotential barrier_potential(dhat);
+    BarrierPotential barrier_potential(dhat, 1.0);
     tangential_collisions.build(
-        mesh, vertices, normal_collisions, barrier_potential, 1.0, 0.5, 0.3);
+        mesh, vertices, normal_collisions, barrier_potential, 0.5, 0.3);
     REQUIRE(!tangential_collisions.empty());
 
     for (size_t i = 0; i < tangential_collisions.size(); ++i) {
@@ -389,11 +389,10 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
     REQUIRE(!normal_collisions.empty());
 
     TangentialCollisions tangential_collisions;
-    BarrierPotential barrier_potential(dhat);
     const double barrier_stiffness = 1.0;
+    BarrierPotential barrier_potential(dhat, barrier_stiffness);
     tangential_collisions.build(
-        mesh, vertices, normal_collisions, barrier_potential, barrier_stiffness,
-        0.5, 0.3);
+        mesh, vertices, normal_collisions, barrier_potential, 0.5, 0.3);
     REQUIRE(!tangential_collisions.empty());
 
     // Set anisotropic friction coefficients on first collision
@@ -471,7 +470,7 @@ TEST_CASE(
 
     // Build tangential collisions
     TangentialCollisions tangential_collisions;
-    BarrierPotential barrier_potential(dhat);
+    BarrierPotential barrier_potential(dhat, 1.0);
     tangential_collisions.build(
         mesh, vertices, normal_collisions, barrier_potential, 0.5);
 
@@ -562,7 +561,7 @@ TEST_CASE(
 
     // Build tangential collisions
     TangentialCollisions tangential_collisions;
-    BarrierPotential barrier_potential(dhat);
+    BarrierPotential barrier_potential(dhat, 1.0);
     tangential_collisions.build(
         mesh, vertices, normal_collisions, barrier_potential, 0.5);
 
