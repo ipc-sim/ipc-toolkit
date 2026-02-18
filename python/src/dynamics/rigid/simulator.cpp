@@ -3,6 +3,7 @@
 #include <ipc/dynamics/rigid/simulator.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 #include <ipc/io/write_gltf.hpp>
+#include <ipc/io/read_gltf.hpp>
 
 #include <pybind11/detail/common.h>
 #include <pybind11/stl_bind.h>
@@ -33,11 +34,9 @@ void define_rigid_simulator(py::module_& m)
             py::init<
                 Eigen::ConstRef<Eigen::Vector3d>,
                 Eigen::ConstRef<Eigen::Vector3d>>(),
-            py::arg("position"), py::arg("rotation"))
+            "position"_a, "rotation"_a)
         .def("rotation_matrix", &Pose::rotation_matrix)
-        .def(
-            "transform_vertices", &Pose::transform_vertices,
-            py::arg("vertices"))
+        .def("transform_vertices", &Pose::transform_vertices, "vertices"_a)
         .def(py::self * py::self)
         .def_readwrite("position", &Pose::position)
         .def_readwrite("rotation", &Pose::rotation)
@@ -51,8 +50,7 @@ void define_rigid_simulator(py::module_& m)
             py::init<
                 Eigen::Ref<Eigen::MatrixXd>, Eigen::ConstRef<Eigen::MatrixXi>,
                 Eigen::ConstRef<Eigen::MatrixXi>, const double, Pose&>(),
-            py::arg("vertices"), py::arg("edges"), py::arg("faces"),
-            py::arg("density"), py::arg("initial_pose"))
+            "vertices"_a, "edges"_a, "faces"_a, "density"_a, "initial_pose"_a)
         .def_property_readonly("mass", &RigidBody::mass)
         .def_property_readonly(
             "moment_of_inertia", &RigidBody::moment_of_inertia)
@@ -63,9 +61,9 @@ void define_rigid_simulator(py::module_& m)
     py::class_<RigidBodies, std::shared_ptr<RigidBodies>, CollisionMesh>(
         m, "RigidBodies")
         .def(
-            py::init(&RigidBodies::build_from_meshes),
-            py::arg("rest_positions"), py::arg("edges"), py::arg("faces"),
-            py::arg("densities"), py::arg("initial_poses"))
+            py::init(&RigidBodies::build_from_meshes), "rest_positions"_a,
+            "edges"_a, "faces"_a, "densities"_a, "initial_poses"_a,
+            "convert_planes"_a = false)
         .def(
             "vertices",
             py::overload_cast<const std::vector<Pose>&>(
@@ -79,22 +77,20 @@ void define_rigid_simulator(py::module_& m)
              Returns:
                  The vertex positions of the rigid bodies (#V × dim).
              )ipc_Qu8mg5v7",
-            py::arg("poses"))
+            "poses"_a)
         .def_property_readonly("num_bodies", &RigidBodies::num_bodies)
         .def("__len__", &RigidBodies::num_bodies)
         .def(
             "__getitem__", py::overload_cast<size_t>(&RigidBodies::operator[]),
-            py::arg("index"));
+            "index"_a);
 
     py::class_<Simulator>(m, "Simulator")
         .def(
             py::init<
                 const std::shared_ptr<RigidBodies>, const std::vector<Pose>&,
                 const double>(),
-            py::arg("bodies"), py::arg("initial_poses"), py::arg("dt"))
-        .def(
-            "run", &rigid::Simulator::run, py::arg("t_end"),
-            py::arg("callback"))
+            "bodies"_a, "initial_poses"_a, "dt"_a)
+        .def("run", &rigid::Simulator::run, "t_end"_a, "callback"_a)
         .def("step", &rigid::Simulator::step)
         .def("reset", &rigid::Simulator::reset)
         .def_property_readonly(
@@ -123,7 +119,20 @@ void define_rigid_simulator(py::module_& m)
          Returns:
              True if successful, false otherwise.
          )ipc_Qu8mg5v7",
-        py::arg("filename"), py::arg("bodies"), py::arg("poses"),
-        py::arg("timestep"), py::arg("embed_buffers") = true,
-        py::arg("write_binary") = true, py::arg("prettyPrint") = true);
+        "filename"_a, "bodies"_a, "poses"_a, "timestep"_a,
+        "embed_buffers"_a = true, "write_binary"_a = true,
+        "prettyPrint"_a = true);
+
+    m.def(
+        "read_gltf", &rigid::read_gltf, R"ipc_Qu8mg5v7(
+         Read a rigid body scene from a glTF file and return a RigidBodies object.
+
+         Parameters:
+             filename: The input glTF filename.
+             convert_planes: Whether to convert plane primitives in the glTF file to infinite planes in the RigidBodies object. If false, plane primitives will be ignored.
+
+         Returns:
+             A pair containing the RigidBodies object and a vector of initial poses for each body.
+         )ipc_Qu8mg5v7",
+        "filename"_a, "convert_planes"_a = false);
 }

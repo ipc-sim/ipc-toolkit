@@ -1,4 +1,5 @@
 import pathlib
+import sys
 
 import meshio
 import numpy as np
@@ -9,36 +10,38 @@ from scipy.spatial.transform import Rotation
 
 ipctk.set_logger_level(ipctk.debug)
 
-mesh_names = [
-    "bunny (lowpoly).ply",
-    "bunny (lowpoly).ply",
-    "bowl.ply",
-]
+# mesh_names = [
+#     "bunny (lowpoly).ply",
+#     "bunny (lowpoly).ply",
+#     "bowl.ply",
+# ]
 
-rest_positions = []
-edges = []
-faces = []
-for mesh_name in mesh_names:
-    mesh = meshio.read(pathlib.Path(__file__).parents[2] / "tests" / "data" / mesh_name)
-    rest_positions.append(mesh.points.astype("float64"))
-    edges.append(ipctk.edges(mesh.cells_dict["triangle"]))
-    faces.append(mesh.cells_dict["triangle"])
+# rest_positions = []
+# edges = []
+# faces = []
+# for mesh_name in mesh_names:
+#     mesh = meshio.read(pathlib.Path(__file__).parents[2] / "tests" / "data" / mesh_name)
+#     rest_positions.append(mesh.points.astype("float64"))
+#     edges.append(ipctk.edges(mesh.cells_dict["triangle"]))
+#     faces.append(mesh.cells_dict["triangle"])
 
-initial_poses = ipctk.Poses(
-    [
-        ipctk.Pose(np.array([1.0, 1.5, 0]), np.random.random(3)),
-        ipctk.Pose(np.array([-1.0, 2.0, 0.0]), np.array([0.0, np.pi / 4, 0.0])),
-        ipctk.Pose(np.array([0.0, 1.1, 0.0]), np.zeros(3)),
-    ]
-)
+# initial_poses = ipctk.Poses(
+#     [
+#         ipctk.Pose(np.array([1.0, 1.5, 0]), np.random.random(3)),
+#         ipctk.Pose(np.array([-1.0, 2.0, 0.0]), np.array([0.0, np.pi / 4, 0.0])),
+#         ipctk.Pose(np.array([0.0, 1.1, 0.0]), np.zeros(3)),
+#     ]
+# )
 
-bodies = ipctk.RigidBodies(
-    rest_positions=rest_positions,
-    edges=edges,
-    faces=faces,
-    densities=np.full(len(mesh_names), 1000.0),
-    initial_poses=initial_poses,
-)
+# bodies = ipctk.RigidBodies(
+#     rest_positions=rest_positions,
+#     edges=edges,
+#     faces=faces,
+#     densities=np.full(len(mesh_names), 1000.0),
+#     initial_poses=initial_poses,
+# )
+
+bodies, initial_poses = ipctk.read_gltf(sys.argv[1], True)
 
 # for pose in initial_poses:
 #     print(pose)
@@ -46,7 +49,7 @@ bodies = ipctk.RigidBodies(
 ps.init()
 
 ps.set_ground_plane_height_mode("manual")
-ps.set_ground_plane_height(0.0)
+ps.set_ground_plane_height(bodies.planes[0].origin[1])
 
 ps.set_give_focus_on_show(True)
 
@@ -64,14 +67,14 @@ ps_com = ps.register_point_cloud(
 for d in range(3):
     dim = np.zeros((len(bodies), 3))
     for i in range(len(bodies)):
-        dim[i, d] = 100 * bodies[i].moment_of_inertia[d]
+        dim[i, d] = 1  # 100 * bodies[i].moment_of_inertia[d]
         R = Rotation.from_rotvec(initial_poses[i].rotation.copy()).as_matrix()
         dim[i, :] = R @ dim[i, :]
     ps_com.add_vector_quantity(
         "xyz"[d],
         dim,
         enabled=True,
-        vectortype="ambient",
+        vectortype="standard",
     )
 
 sim = ipctk.Simulator(
@@ -96,7 +99,7 @@ def update_mesh():
     for d in range(3):
         dim = np.zeros((len(bodies), 3))
         for i in range(len(bodies)):
-            dim[i, d] = 100 * bodies[i].moment_of_inertia[d]
+            dim[i, d] = 1  # 100 * bodies[i].moment_of_inertia[d]
             R = Rotation.from_rotvec(
                 sim.pose_history[-1][i].rotation.copy()
             ).as_matrix()
@@ -105,7 +108,7 @@ def update_mesh():
             "xyz"[d],
             dim,
             enabled=True,
-            vectortype="ambient",
+            vectortype="standard",
         )
 
 

@@ -135,6 +135,12 @@ void define_collision_mesh(py::module_& m)
             )ipc_Qu8mg5v7",
             "i"_a, "j"_a);
 
+    py::class_<Plane>(m, "Plane")
+        .def(py::init<>())
+        .def(py::init<Eigen::Vector3d, Eigen::Vector3d>())
+        .def_readwrite("normal", &Plane::normal)
+        .def_readwrite("origin", &Plane::origin);
+
     py::class_<CollisionMesh, std::shared_ptr<CollisionMesh>>(
         m, "CollisionMesh")
         .def(
@@ -490,5 +496,12 @@ void define_collision_mesh(py::module_& m)
             A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide.
 
             By default all primitives can collide with all other primitives.
+            )ipc_Qu8mg5v7")
+        .def_readwrite(
+            "planes", &CollisionMesh::planes,
+            R"ipc_Qu8mg5v7(
+            A vector of planes in the collision mesh.
+
+            Each plane is represented as a Plane object with an origin and a normal vector.
             )ipc_Qu8mg5v7");
 }

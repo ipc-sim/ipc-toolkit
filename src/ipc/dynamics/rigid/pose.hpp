@@ -101,6 +101,9 @@ struct Pose {
     {
         assert(rotation.size() == 3);
         double angle = rotation.norm();
+        if (angle == 0.0) {
+            return Eigen::Quaternion<double>::Identity();
+        }
         Eigen::Vector3d axis = rotation / angle;
         return Eigen::Quaternion<double>(Eigen::AngleAxis<double>(angle, axis));
     }

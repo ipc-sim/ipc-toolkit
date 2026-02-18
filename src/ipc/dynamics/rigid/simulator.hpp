@@ -167,9 +167,6 @@ protected:
     /// @brief Body forces acting on the rigid bodies
     std::unique_ptr<BodyForces> m_body_forces;
 
-    /// @brief Ground contact handler
-    std::unique_ptr<GroundContact> m_ground_contact;
-
     /// @brief History of poses at each time step
     std::list<std::vector<Pose>> m_pose_history;
 

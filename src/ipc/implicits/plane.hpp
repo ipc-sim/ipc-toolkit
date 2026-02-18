@@ -8,6 +8,27 @@
 
 namespace ipc {
 
+/// @brief A simple struct representing a plane, defined by an origin and a normal.
+struct Plane {
+    /// @brief The origin of the plane. A point on the plane.
+    Eigen::Vector3d origin;
+    /// @brief The normal vector of the plane. Should be normalized.
+    Eigen::Vector3d normal;
+
+    /// @brief Construct a new Plane object with default values.
+    Plane() = default;
+
+    /// @brief Construct a new Plane object.
+    /// @param origin The origin of the plane. A point on the plane.
+    /// @param normal The normal vector of the plane. Will be normalized.
+    Plane(const Eigen::Vector3d& origin, const Eigen::Vector3d& normal)
+        : origin(origin)
+        , normal(normal.normalized())
+    {
+    }
+};
+
+/// @brief Default collision filter function for point-plane collisions. By default, all points can collide with all planes.
 inline bool
 default_can_point_plane_collide(size_t /*unused*/, size_t /*unused*/)
 {

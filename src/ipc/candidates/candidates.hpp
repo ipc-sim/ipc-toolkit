@@ -215,6 +215,7 @@ public:
     std::vector<EdgeVertexCandidate> ev_candidates;
     std::vector<EdgeEdgeCandidate> ee_candidates;
     std::vector<FaceVertexCandidate> fv_candidates;
+    std::vector<PlaneVertexCandidate> pv_candidates;
 
 private:
     static bool default_is_active(double candidate) { return true; }

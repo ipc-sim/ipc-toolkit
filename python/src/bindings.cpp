@@ -40,6 +40,7 @@ PYBIND11_MODULE(ipctk, m)
     define_edge_vertex_candidate(m);
     define_face_face_candidate(m);
     define_face_vertex_candidate(m);
+    define_plane_vertex_candidate(m);
     define_vertex_vertex_candidate(m);
 
     // ccd
@@ -72,6 +73,7 @@ PYBIND11_MODULE(ipctk, m)
     define_edge_edge_tangential_collision(m);
     define_edge_vertex_tangential_collision(m);
     define_face_vertex_tangential_collision(m);
+    define_plane_vertex_tangential_collision(m);
     define_vertex_vertex_tangential_collision(m);
 
     // distance

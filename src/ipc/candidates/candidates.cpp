@@ -112,6 +112,16 @@ void Candidates::build(
             vi = mesh.codim_vertices()[vi]; // Map back to vertices
         }
     }
+
+    // Planes to vertices:
+    for (const auto& [origin, normal] : mesh.planes) {
+        for (index_t vi = 0; vi < mesh.num_vertices(); ++vi) {
+            const double d = normal.dot(vertices.row(vi).transpose() - origin);
+            if (d < inflation_radius) { // Negative values too
+                pv_candidates.emplace_back(origin, normal, vi);
+            }
+        }
+    }
 }
 
 void Candidates::build(
@@ -194,6 +204,19 @@ void Candidates::build(
             assert(vi < mesh.codim_vertices().size());
             ei = mesh.codim_edges()[ei];    // Map back to mesh.edges
             vi = mesh.codim_vertices()[vi]; // Map back to vertices
+        }
+    }
+
+    // Planes to vertices:
+    for (const auto& [origin, normal] : mesh.planes) {
+        for (index_t vi = 0; vi < mesh.num_vertices(); ++vi) {
+            const double d_t0 =
+                normal.dot(vertices_t0.row(vi).transpose() - origin);
+            const double d_t1 =
+                normal.dot(vertices_t1.row(vi).transpose() - origin);
+            if (d_t0 < inflation_radius || d_t1 < inflation_radius) {
+                pv_candidates.emplace_back(origin, normal, vi);
+            }
         }
     }
 }
@@ -468,13 +491,14 @@ Eigen::VectorXd Candidates::compute_per_vertex_safe_distances(
 size_t Candidates::size() const
 {
     return vv_candidates.size() + ev_candidates.size() + ee_candidates.size()
-        + fv_candidates.size();
+        + fv_candidates.size() + pv_candidates.size();
 }
 
 bool Candidates::empty() const
 {
     return vv_candidates.empty() && ev_candidates.empty()
-        && ee_candidates.empty() && fv_candidates.empty();
+        && ee_candidates.empty() && fv_candidates.empty()
+        && pv_candidates.empty();
 }
 
 void Candidates::clear()
@@ -483,6 +507,7 @@ void Candidates::clear()
     ev_candidates.clear();
     ee_candidates.clear();
     fv_candidates.clear();
+    pv_candidates.clear();
 }
 
 CollisionStencil& Candidates::operator[](size_t i)
@@ -501,6 +526,10 @@ CollisionStencil& Candidates::operator[](size_t i)
     i -= ee_candidates.size();
     if (i < fv_candidates.size()) {
         return fv_candidates[i];
+    }
+    i -= fv_candidates.size();
+    if (i < pv_candidates.size()) {
+        return pv_candidates[i];
     }
     throw std::out_of_range("Candidate index is out of range!");
 }
@@ -521,6 +550,10 @@ const CollisionStencil& Candidates::operator[](size_t i) const
     i -= ee_candidates.size();
     if (i < fv_candidates.size()) {
         return fv_candidates[i];
+    }
+    i -= fv_candidates.size();
+    if (i < pv_candidates.size()) {
+        return pv_candidates[i];
     }
     throw std::out_of_range("Candidate index is out of range!");
 }

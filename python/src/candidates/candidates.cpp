@@ -267,5 +267,6 @@ void define_candidates(py::module_& m)
         .def_readwrite("vv_candidates", &Candidates::vv_candidates)
         .def_readwrite("ev_candidates", &Candidates::ev_candidates)
         .def_readwrite("ee_candidates", &Candidates::ee_candidates)
-        .def_readwrite("fv_candidates", &Candidates::fv_candidates);
+        .def_readwrite("fv_candidates", &Candidates::fv_candidates)
+        .def_readwrite("pv_candidates", &Candidates::pv_candidates);
 }

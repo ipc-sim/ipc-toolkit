@@ -1,11 +1,13 @@
 #pragma once
 
-#include <ipc/dynamics/rigid/rigid_bodies.hpp>
-
+#include <list>
 #include <string>
-#include <vector>
 
 namespace ipc::rigid {
+
+// Forward declarations
+class RigidBodies;
+struct Pose;
 
 /// @brief Write a sequence of rigid body poses to a glTF file.
 /// @param filename The output glTF filename.

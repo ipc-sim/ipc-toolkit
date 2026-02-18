@@ -1,7 +1,11 @@
 #include "write_gltf.hpp"
 
+#include <ipc/dynamics/rigid/rigid_bodies.hpp>
+
 #include <tiny_gltf.h>
 
+#include <array>
+#include <limits>
 #include <numeric>
 
 namespace ipc::rigid {
@@ -28,6 +32,7 @@ bool write_gltf(
 
     assert(bodies.dim() == 3);
     size_t num_bodies = bodies.num_bodies();
+    size_t num_planes = bodies.planes.size();
     assert(poses.size() > 0);
     size_t num_steps = poses.size();
 
@@ -39,18 +44,19 @@ bool write_gltf(
 
     Scene& scene = model.scenes.emplace_back();
     scene.name = "RigidIPCSimulation";
-    scene.nodes.resize(num_bodies);
+    scene.nodes.resize(num_bodies + num_planes);
     std::iota(scene.nodes.begin(), scene.nodes.end(), 0);
 
-    model.nodes.resize(num_bodies);
+    model.nodes.resize(num_bodies + num_planes);
     model.animations.resize(1);
     Animation& animation = model.animations[0];
     animation.name = "Simulation";
     animation.channels.resize(2 * num_bodies);
     animation.samplers.resize(2 * num_bodies);
-    model.meshes.resize(num_bodies);
-    // Four accessors per bidy: vertices, faces, translations, and rotations
-    model.accessors.resize(4 * num_bodies + 1);
+    model.meshes.resize(num_bodies + num_planes);
+    // Four accessors per body: vertices, faces, translations, and rotations
+    // Plus two accessors per analytic plane: vertices and faces
+    model.accessors.resize(4 * num_bodies + 1 + 2 * num_planes);
     {
         Accessor& accessor = model.accessors[2 * num_bodies];
         accessor.name = "Times";
@@ -129,9 +135,48 @@ bool write_gltf(
         accessor->type = TINYGLTF_TYPE_VEC4;
     }
 
+    // Create meshes, nodes, and accessors for analytic planes
+    for (size_t p = 0; p < num_planes; ++p) {
+        const auto& plane = bodies.planes[p];
+        size_t mesh_index = num_bodies + p;
+
+        Node& node = model.nodes[mesh_index];
+        node.mesh = static_cast<int>(mesh_index);
+        std::string plane_name = "Plane" + std::to_string(p);
+        node.name = plane_name;
+        node.translation = { { plane.origin.x(), plane.origin.y(),
+                               plane.origin.z() } };
+        Eigen::Quaternion<double> q = Eigen::Quaternion<double>::Identity();
+        node.rotation = { { q.x(), q.y(), q.z(), q.w() } };
+
+        Mesh& mesh = model.meshes[mesh_index];
+        mesh.name = plane_name;
+        Primitive& primitive = mesh.primitives.emplace_back();
+        const int vert_accessor_idx =
+            static_cast<int>(4 * num_bodies + 1 + 2 * p);
+        const int face_accessor_idx = vert_accessor_idx + 1;
+        primitive.attributes["POSITION"] = vert_accessor_idx;
+        primitive.indices = face_accessor_idx;
+        primitive.mode = TINYGLTF_MODE_TRIANGLES;
+
+        Accessor* accessor = &model.accessors[vert_accessor_idx];
+        accessor->name = plane_name + "Vertices";
+        accessor->bufferView = 4 * num_bodies + 1 + 2 * p;
+        accessor->componentType = float_component_type;
+        accessor->count = 4;
+        accessor->type = TINYGLTF_TYPE_VEC3;
+
+        accessor = &model.accessors[face_accessor_idx];
+        accessor->name = plane_name + "Faces";
+        accessor->bufferView = 4 * num_bodies + 1 + 2 * p + 1;
+        accessor->componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
+        accessor->count = 6;
+        accessor->type = TINYGLTF_TYPE_SCALAR;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
 
-    model.bufferViews.resize(4 * num_bodies + 1);
+    model.bufferViews.resize(4 * num_bodies + 1 + 2 * num_planes);
     size_t byte_offset = 0;
     for (int i = 0; i < num_bodies; i++) {
         std::string body_name = "Body" + std::to_string(i);
@@ -175,6 +220,24 @@ bool write_gltf(
         buffer_view->name = body_name + "Rotations";
         buffer_view->buffer = 0;
         buffer_view->byteLength = 4 * sizeof(Float) * num_steps;
+        buffer_view->byteOffset = byte_offset;
+        byte_offset += buffer_view->byteLength;
+    }
+
+    // Add bufferViews for analytic planes (each plane: 4 vertices, 2 triangles)
+    for (size_t p = 0; p < num_planes; ++p) {
+        BufferView* buffer_view =
+            &model.bufferViews[4 * num_bodies + 1 + 2 * p];
+        buffer_view->name = "PlaneVertices" + std::to_string(p);
+        buffer_view->buffer = 0;
+        buffer_view->byteLength = sizeof(Float) * 3 * 4; // 4 vertices
+        buffer_view->byteOffset = byte_offset;
+        byte_offset += buffer_view->byteLength;
+
+        buffer_view = &model.bufferViews[4 * num_bodies + 1 + 2 * p + 1];
+        buffer_view->name = "PlaneFaces" + std::to_string(p);
+        buffer_view->buffer = 0;
+        buffer_view->byteLength = sizeof(unsigned int) * 6; // 2 triangles
         buffer_view->byteOffset = byte_offset;
         byte_offset += buffer_view->byteLength;
     }
@@ -230,6 +293,62 @@ bool write_gltf(
                 Float qd = q[d];
                 std::memcpy(&byte_data[byte_i], &qd, sizeof(Float));
                 byte_i += sizeof(Float);
+            }
+        }
+    }
+
+    // Write analytic plane vertex and face data
+    if (num_planes > 0) {
+        // Compute scene bounding box (apply initial rotations to body vertices)
+        Eigen::Vector3d scene_min =
+            Eigen::Vector3d::Constant(std::numeric_limits<double>::infinity());
+        Eigen::Vector3d scene_max =
+            Eigen::Vector3d::Constant(-std::numeric_limits<double>::infinity());
+        for (int i = 0; i < num_bodies; ++i) {
+            Eigen::MatrixXd V =
+                bodies.body_rest_positions(i) * bodies[i].R0().transpose();
+            for (int r = 0; r < V.rows(); ++r) {
+                scene_min = scene_min.cwiseMin(V.row(r).transpose());
+                scene_max = scene_max.cwiseMax(V.row(r).transpose());
+            }
+        }
+        double diag = (scene_max - scene_min).norm();
+        double half_size = std::max(1.0, diag * 2.0);
+
+        for (size_t p = 0; p < num_planes; ++p) {
+            const auto& plane = bodies.planes[p];
+            Eigen::Vector3d n = plane.normal.normalized();
+            Eigen::Vector3d ref = (std::abs(n.x()) < 0.9)
+                ? Eigen::Vector3d::UnitX()
+                : Eigen::Vector3d::UnitY();
+            Eigen::Vector3d u = n.cross(ref).normalized();
+            Eigen::Vector3d v = n.cross(u).normalized();
+
+            // vertices relative to plane origin (so node translation places
+            // them)
+            std::array<Eigen::Vector3d, 4> verts = {
+                plane.origin + (u * half_size + v * half_size),
+                plane.origin + (-u * half_size + v * half_size),
+                plane.origin + (-u * half_size + -v * half_size),
+                plane.origin + (u * half_size + -v * half_size),
+            };
+
+            // write vertex positions as floats (local coordinates = verts -
+            // origin)
+            for (int vi = 0; vi < 4; ++vi) {
+                Eigen::Vector3d local = verts[vi] - plane.origin;
+                for (int d = 0; d < 3; ++d) {
+                    Float vd = static_cast<Float>(local[d]);
+                    std::memcpy(&byte_data[byte_i], &vd, sizeof(Float));
+                    byte_i += sizeof(Float);
+                }
+            }
+
+            unsigned int faces[6] = { 0, 1, 2, 0, 2, 3 };
+            for (int fi = 0; fi < 6; ++fi) {
+                unsigned int f = faces[fi];
+                std::memcpy(&byte_data[byte_i], &f, sizeof(unsigned int));
+                byte_i += sizeof(unsigned int);
             }
         }
     }

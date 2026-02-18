@@ -74,7 +74,7 @@ Eigen::MatrixXd BodyForces::hessian(
 {
     const int ndof = x.size() / bodies.num_bodies();
 
-    Eigen::MatrixXd hess(x.size(), x.size());
+    Eigen::MatrixXd hess = Eigen::MatrixXd::Zero(x.size(), x.size());
     for (size_t i = 0; i < bodies.num_bodies(); ++i) {
         hess.block(i * ndof, i * ndof, ndof, ndof) = hessian(
             bodies[i], x.segment(i * ndof, ndof), forces()[i], torques()[i],

@@ -100,15 +100,6 @@ double OrthogonalityPotential::operator()(const AffineBody& body) const
     const auto& [A, p, volume] = body;
     const auto I = MatrixMax3d::Identity(A.rows(), A.cols());
     return stiffness * volume * (A * A.transpose() - I).squaredNorm();
-
-    // double r = 0;
-    // for (int i = 0; i < A.cols(); i++) {
-    //     for (int j = 0; j < A.cols(); j++) {
-    //         const double dot = A.col(i).dot(A.col(j)) - int(i == j);
-    //         r += dot * dot;
-    //     }
-    // }
-    // return stiffness * volume * r;
 }
 
 VectorMax12d OrthogonalityPotential::gradient(const AffineBody& body) const
@@ -119,14 +110,6 @@ VectorMax12d OrthogonalityPotential::gradient(const AffineBody& body) const
     const auto I = MatrixMax3d::Identity(A.rows(), A.cols());
     const MatrixMax3d G = stiffness * volume * 4 * (A * A.transpose() - I) * A;
     grad.tail(A.size()) = G.reshaped();
-
-    // for (int i = 0; i < A.cols(); i++) {
-    //     auto grad_ai = grad.segment(i * A.rows() + p.size(), A.rows());
-    //     for (int j = 0; j < A.cols(); j++) {
-    //         grad_ai += (A.col(i).dot(A.col(j)) - int(i == j)) * A.col(j);
-    //     }
-    //     grad_ai *= 4 * stiffness * volume;
-    // }
 
     return grad;
 }

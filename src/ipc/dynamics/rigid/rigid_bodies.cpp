@@ -1,6 +1,8 @@
 #include "rigid_bodies.hpp"
 
+#include <ipc/geometry/normal.hpp>
 #include <ipc/utils/logger.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <Eigen/Core>
 
@@ -13,22 +15,78 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
     const std::vector<Eigen::MatrixXi>& edges,
     const std::vector<Eigen::MatrixXi>& faces,
     const std::vector<double>& densities,
-    std::vector<Pose>& initial_poses)
+    std::vector<Pose>& initial_poses,
+    const bool convert_planes)
 {
     assert(rest_positions.size() == edges.size());
     assert(rest_positions.size() == faces.size());
     assert(rest_positions.size() == densities.size());
 
+    if (rest_positions.empty()) {
+        return nullptr;
+    }
+
+    unordered_set<int> plane_bodies;
+    std::vector<Plane> planes;
+    if (convert_planes && rest_positions[0].cols() == 3) {
+        for (size_t i = 0; i < faces.size(); ++i) {
+            // Must have exactly 2 faces and 4 vertices to be considered a plane
+            // body. This is a heuristic to identify bodies that are essentially
+            // flat and can be treated as planes for collision purposes.
+            if (faces[i].rows() != 2 || rest_positions[i].rows() != 4
+                || edges[i].rows() != 5) {
+                continue;
+            }
+
+            // Check if the two faces form a square:
+            std::array<double, 5> edge_lengths;
+            for (size_t j = 0; j < edges[i].rows(); ++j) {
+                const auto& e = edges[i].row(j);
+                edge_lengths[j] =
+                    (rest_positions[i].row(e(0)) - rest_positions[i].row(e(1)))
+                        .norm();
+            }
+            std::sort(edge_lengths.begin(), edge_lengths.end());
+            if (std::abs(edge_lengths[0] - edge_lengths[3]) > 1e-6) {
+                // Not all edges are the same length, so not a square
+                continue;
+            }
+
+            const Eigen::Vector3d n0 = triangle_normal(
+                rest_positions[i].row(faces[i](0, 0)),
+                rest_positions[i].row(faces[i](0, 1)),
+                rest_positions[i].row(faces[i](0, 2)));
+            const Eigen::Vector3d n1 = triangle_normal(
+                rest_positions[i].row(faces[i](1, 0)),
+                rest_positions[i].row(faces[i](1, 1)),
+                rest_positions[i].row(faces[i](1, 2)));
+            if (std::abs(n0.dot(n1)) > 1.0 - 1e-6) {
+                plane_bodies.insert(i);
+                Eigen::Matrix3d R = initial_poses[i].rotation_matrix();
+                planes.emplace_back(
+                    R * rest_positions[i].colwise().mean().transpose()
+                        + initial_poses[i].position,
+                    R * n0);
+            }
+        }
+    }
+    const int num_bodies = rest_positions.size() - plane_bodies.size();
+
     size_t num_vertices = 0, num_edges = 0, num_faces = 0;
-    std::vector<index_t> body_vertex_starts(rest_positions.size() + 1);
-    std::vector<index_t> body_edge_starts(edges.size() + 1);
-    std::vector<index_t> body_face_starts(faces.size() + 1);
+    std::vector<index_t> body_vertex_starts(num_bodies + 1);
+    std::vector<index_t> body_edge_starts(num_bodies + 1);
+    std::vector<index_t> body_face_starts(num_bodies + 1);
     body_vertex_starts[0] = body_edge_starts[0] = body_face_starts[0] = 0;
 
-    for (size_t i = 0; i < rest_positions.size(); ++i) {
-        body_vertex_starts[i + 1] = (num_vertices += rest_positions[i].rows());
-        body_edge_starts[i + 1] = (num_edges += edges[i].rows());
-        body_face_starts[i + 1] = (num_faces += faces[i].rows());
+    for (size_t i = 0, j = 0; i < rest_positions.size(); ++i) {
+        if (plane_bodies.count(i) > 0) {
+            logger().info("Body {} is identified as a plane body", i);
+            continue;
+        }
+        body_vertex_starts[j + 1] = (num_vertices += rest_positions[i].rows());
+        body_edge_starts[j + 1] = (num_edges += edges[i].rows());
+        body_face_starts[j + 1] = (num_faces += faces[i].rows());
+        ++j;
     }
 
     Eigen::MatrixXd concat_rest_positions(
@@ -36,24 +94,40 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
     Eigen::MatrixXi concat_edges(num_edges, 2);
     Eigen::MatrixXi concat_faces(num_faces, 3);
 
-    for (size_t i = 0; i < rest_positions.size(); ++i) {
+    for (size_t i = 0, j = 0; i < rest_positions.size(); ++i) {
         assert(rest_positions[i].size() > 0);
+        if (plane_bodies.count(i) > 0) {
+            continue;
+        }
         concat_rest_positions.middleRows(
-            body_vertex_starts[i], rest_positions[i].rows()) =
+            body_vertex_starts[j], rest_positions[i].rows()) =
             rest_positions[i];
         if (edges[i].size() > 0) {
-            concat_edges.middleRows(body_edge_starts[i], edges[i].rows()) =
-                edges[i].array() + body_vertex_starts[i];
+            concat_edges.middleRows(body_edge_starts[j], edges[i].rows()) =
+                edges[i].array() + body_vertex_starts[j];
         }
         if (faces[i].size() > 0) {
-            concat_faces.middleRows(body_face_starts[i], faces[i].rows()) =
-                faces[i].array() + body_vertex_starts[i];
+            concat_faces.middleRows(body_face_starts[j], faces[i].rows()) =
+                faces[i].array() + body_vertex_starts[j];
         }
+        ++j;
     }
 
-    return std::make_shared<RigidBodies>(
+    {
+        size_t idx = 0;
+        auto new_end = std::remove_if(
+            initial_poses.begin(), initial_poses.end(),
+            [&](const Pose&) { return plane_bodies.count(idx++) > 0; });
+        initial_poses.erase(new_end, initial_poses.end());
+    }
+
+    std::shared_ptr<RigidBodies> bodies = std::make_shared<RigidBodies>(
         concat_rest_positions, concat_edges, concat_faces, body_vertex_starts,
         body_edge_starts, body_face_starts, densities, initial_poses);
+
+    bodies->planes = std::move(planes);
+
+    return bodies;
 }
 
 RigidBodies::RigidBodies(

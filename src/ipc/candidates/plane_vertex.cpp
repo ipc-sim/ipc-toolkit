@@ -5,7 +5,7 @@
 
 namespace ipc {
 
-PlaneVertexNormalCollision::PlaneVertexNormalCollision(
+PlaneVertexCandidate::PlaneVertexCandidate(
     Eigen::ConstRef<VectorMax3d> _plane_origin,
     Eigen::ConstRef<VectorMax3d> _plane_normal,
     const index_t _vertex_id)
@@ -15,28 +15,28 @@ PlaneVertexNormalCollision::PlaneVertexNormalCollision(
 {
 }
 
-double PlaneVertexNormalCollision::compute_distance(
+double PlaneVertexCandidate::compute_distance(
     Eigen::ConstRef<VectorMax12d> point) const
 {
     assert(point.size() == plane_origin.size());
     return point_plane_distance(point, plane_origin, plane_normal);
 }
 
-VectorMax12d PlaneVertexNormalCollision::compute_distance_gradient(
+VectorMax12d PlaneVertexCandidate::compute_distance_gradient(
     Eigen::ConstRef<VectorMax12d> point) const
 {
     assert(point.size() == plane_origin.size());
     return point_plane_distance_gradient(point, plane_origin, plane_normal);
 }
 
-MatrixMax12d PlaneVertexNormalCollision::compute_distance_hessian(
+MatrixMax12d PlaneVertexCandidate::compute_distance_hessian(
     Eigen::ConstRef<VectorMax12d> point) const
 {
     assert(point.size() == plane_origin.size());
     return point_plane_distance_hessian(point, plane_origin, plane_normal);
 }
 
-VectorMax4d PlaneVertexNormalCollision::compute_coefficients(
+VectorMax4d PlaneVertexCandidate::compute_coefficients(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     VectorMax4d coeffs(1);
@@ -44,20 +44,20 @@ VectorMax4d PlaneVertexNormalCollision::compute_coefficients(
     return coeffs;
 }
 
-VectorMax3d PlaneVertexNormalCollision::compute_unnormalized_normal(
+VectorMax3d PlaneVertexCandidate::compute_unnormalized_normal(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     return plane_normal;
 }
 
 MatrixMax<double, 3, 12>
-PlaneVertexNormalCollision::compute_unnormalized_normal_jacobian(
+PlaneVertexCandidate::compute_unnormalized_normal_jacobian(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     return MatrixMax<double, 3, 12>::Zero(positions.size(), positions.size());
 }
 
-bool PlaneVertexNormalCollision::ccd(
+bool PlaneVertexCandidate::ccd(
     Eigen::ConstRef<VectorMax12d> vertices_t0,
     Eigen::ConstRef<VectorMax12d> vertices_t1,
     double& toi,

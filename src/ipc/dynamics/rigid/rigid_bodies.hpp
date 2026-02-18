@@ -10,6 +10,15 @@ class RigidBodies : public CollisionMesh {
     RigidBodies() = delete;
 
 public:
+    /// @brief Construct a RigidBodies object from the given mesh data and rigid body information.
+    /// @param rest_positions A matrix of vertex positions for all rigid bodies concatenated together.
+    /// @param edges A matrix of edge indices for all rigid bodies concatenated together.
+    /// @param faces A matrix of face indices for all rigid bodies concatenated together.
+    /// @param body_vertex_starts A vector of start indices for the vertices of each rigid body in the concatenated rest_positions matrix.
+    /// @param body_edge_starts A vector of start indices for the edges of each rigid body in the concatenated edges matrix.
+    /// @param body_face_starts A vector of start indices for the faces of each rigid body in the concatenated faces matrix.
+    /// @param densities A vector of densities for each rigid body.
+    /// @param initial_poses A vector of initial poses for each rigid body.
     RigidBodies(
         Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
@@ -20,13 +29,25 @@ public:
         const std::vector<double>& densities,
         std::vector<Pose>& initial_poses);
 
+    /// @brief Build a RigidBodies object from a set of meshes, where each mesh corresponds to a rigid body.
+    /// @param rest_positions A vector of vertex positions for each rigid body mesh.
+    /// @param edges A vector of edge indices for each rigid body mesh.
+    /// @param faces A vector of face indices for each rigid body mesh.
+    /// @param densities A vector of densities for each rigid body mesh.
+    /// @param initial_poses A vector of initial poses for each rigid body mesh.
+    /// @param convert_planes If true, any mesh with exactly two coplanar faces will be converted to a plane.
+    /// @return A shared pointer to the constructed RigidBodies object
     static std::shared_ptr<RigidBodies> build_from_meshes(
         const std::vector<Eigen::MatrixXd>& rest_positions,
         const std::vector<Eigen::MatrixXi>& edges,
         const std::vector<Eigen::MatrixXi>& faces,
         const std::vector<double>& densities,
-        std::vector<Pose>& initial_poses);
+        std::vector<Pose>& initial_poses,
+        const bool convert_planes = false);
 
+    /// @brief Get the vertices of the collision mesh given the poses of each rigid body.
+    /// @param poses A vector of poses for each rigid body.
+    /// @return A matrix of vertex positions for the collision mesh.
     Eigen::MatrixXd vertices(const std::vector<Pose>& poses) const
     {
         assert(poses.size() == num_bodies());
@@ -41,6 +62,9 @@ public:
         return V;
     }
 
+    /// @brief Get the vertices of the collision mesh given the full positions or poses.
+    /// @param full_positions_or_poses A matrix of full positions (size: num_vertices() × dim()) or a matrix of full poses (size: num_bodies() × 1).
+    /// @return A matrix of vertex positions for the collision mesh.
     Eigen::MatrixXd vertices(
         Eigen::ConstRef<Eigen::MatrixXd> full_positions_or_poses) const override
     {
