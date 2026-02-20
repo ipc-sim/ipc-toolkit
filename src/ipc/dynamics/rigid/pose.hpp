@@ -2,6 +2,8 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
+#include <igl/PI.h>
+
 namespace ipc::rigid {
 
 /// @brief Convert from a 3D rotation vector to a rotation matrix.
@@ -106,6 +108,34 @@ struct Pose {
         }
         Eigen::Vector3d axis = rotation / angle;
         return Eigen::Quaternion<double>(Eigen::AngleAxis<double>(angle, axis));
+    }
+
+    /// @brief Clamp the rotation angle to the range [-π, π] to prevent numerical issues.
+    /// This is important for optimization to ensure that the rotation does not
+    /// grow unbounded and cause numerical instability.
+    void clamp_rotation_to_pi()
+    {
+        double angle = rotation.norm();
+
+        // 1. Small angle approximation / Zero check
+        if (angle < std::numeric_limits<double>::epsilon()) {
+            return;
+        }
+
+        // 2. Extract unit axis
+        VectorMax3d axis = rotation / angle;
+
+        // 3. Wrap angle to [-π, π] using remainder
+        angle = std::remainder(angle, 2.0 * igl::PI);
+
+        // 4. Canonicalize PI: Ensure -π < angle <= π
+        // This prevents the representation from jumping between PI and -PI
+        if (angle <= -igl::PI) {
+            angle = igl::PI;
+            axis = -axis; // Flip axis to keep angle positive
+        }
+
+        rotation = angle * axis;
     }
 
     /// @brief Transform vertices from local to world coordinates using the pose.

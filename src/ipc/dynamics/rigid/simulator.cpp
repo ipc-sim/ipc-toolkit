@@ -1,10 +1,10 @@
 #include "simulator.hpp"
 
+#include <ipc/ipc.hpp>
 #include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/ccd/additive_ccd.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/dynamics/rigid/body_forces.hpp>
-#include <ipc/dynamics/rigid/ground_contact.hpp>
 #include <ipc/dynamics/rigid/inertial_term.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 #include <ipc/dynamics/rigid/time_integrator.hpp>
@@ -57,13 +57,12 @@ Simulator::Simulator(
     m_body_forces = std::make_unique<BodyForces>(m_time_integrator);
     m_body_forces->set_gravity(Eigen::Vector3d(0, -9.81, 0));
 
-    // Initialize the ground contact handler
-    m_ground_contact = std::make_unique<GroundContact>(0.0);
-    m_ground_contact->set_dhat(0.1);
-
-    const double dhat = 0.1, kappa = 10.0;
+    const double dhat = 0.001, kappa = 1e0;
     m_barrier_potential = std::make_unique<BarrierPotential>(dhat, kappa, true);
     m_normal_collisions = std::make_unique<NormalCollisions>();
+    m_normal_collisions->set_use_area_weighting(true);
+    m_normal_collisions->set_collision_set_type(
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
     m_candidates = std::make_unique<Candidates>();
     m_broad_phase = std::make_unique<LBVH>();
     m_additive_ccd = std::make_unique<AdditiveCCD>();
@@ -101,22 +100,29 @@ void Simulator::initialize_step()
 bool Simulator::step()
 {
     std::vector<Pose> poses = m_pose_history.back();
+    // Clamp the rotation to [-π, π] to improve convergence of the optimization
+    for (auto& pose : poses) {
+        pose.clamp_rotation_to_pi();
+    }
 
     initialize_step();
 
-    Eigen::VectorXd x = Pose::from_poses(m_pose_history.back());
+    Eigen::VectorXd x = Pose::from_poses(poses);
 
     update_collisions(x, true);
 
     double dx, grad_norm;
     int iter = 0;
+    constexpr int max_iters = 100;
     do {
         Eigen::VectorXd grad = gradient(x);
+        assert(grad.allFinite());
         if ((grad_norm = grad.norm()) < 1e-6) {
             break;
         }
         Eigen::MatrixXd hess = hessian(x);
         Eigen::VectorXd step = -hess.llt().solve(grad);
+        assert(step.allFinite());
         if (step.dot(grad) > 0) {
             logger().warn(
                 "not a descent direction: step.dot(grad)={:g} grad.norm()={:g} hess.norm()={:g}",
@@ -137,6 +143,11 @@ bool Simulator::step()
             "initial alpha={:g} energy={:g} num_candidates={}", alpha, Ex,
             m_candidates->size());
         update_collisions(x + alpha * step, false);
+        if (energy(x) != Ex) {
+            logger().error(
+                "energy changed after updating collisions: energy(x)={:g} Ex={:g}",
+                energy(x), Ex);
+        }
         while (energy(x + alpha * step) >= Ex) {
             alpha *= 0.5;
             update_collisions(x + alpha * step, false);
@@ -145,8 +156,8 @@ bool Simulator::step()
                 energy(x + alpha * step), m_normal_collisions->size());
             if (alpha < 1e-12) {
                 logger().error(
-                    "line search failed: alpha={:g} Ex={:g} E(x+alpha*step)={:g}",
-                    alpha, Ex, energy(x + alpha * step));
+                    "line search failed: alpha={:g} Ex={} E(x)={} E(x+αΔx)={}",
+                    alpha, Ex, energy(x), energy(x + alpha * step));
                 return false;
             }
         }
@@ -157,9 +168,9 @@ bool Simulator::step()
             "step: dx={:g} norm(grad)={:g} norm(hess)={:g} alpha={:g} min_distance={:g} num_collisions={}",
             dx, grad_norm, hess.norm(), alpha, min_distance,
             m_normal_collisions->size());
-    } while (dx > m_time_integrator->dt * 1e-3 && ++iter < 100);
+    } while (dx > m_time_integrator->dt * 1e-3 && ++iter < max_iters);
 
-    if (iter == 100) {
+    if (iter == max_iters) {
         logger().warn(
             "failed to converge: iter={} dx={:g} norm(grad)={:g}", iter, dx,
             grad_norm);
@@ -191,14 +202,20 @@ bool Simulator::step()
 
     m_t += m_time_integrator->dt;
 
-    return iter < 100; // Return false if failed to converge, true otherwise
+    // if (has_intersections(
+    //         *m_bodies, m_bodies->vertices(x), m_broad_phase.get())) {
+    //     logger().error("simulation failed: interpenetration detected");
+    //     return false;
+    // }
+
+    // Return false if failed to converge, true otherwise
+    return iter < max_iters;
 }
 
 double Simulator::energy(Eigen::ConstRef<Eigen::VectorXd> x)
 {
     return m_inertial_term->operator()(*m_bodies, x)
         + m_body_forces->operator()(*m_bodies, x)
-        + m_ground_contact->operator()(*m_bodies, x)
         + m_barrier_potential->operator()(
             *m_normal_collisions, *m_bodies, m_bodies->vertices(x));
 }
@@ -208,7 +225,6 @@ Eigen::VectorXd Simulator::gradient(Eigen::ConstRef<Eigen::VectorXd> x)
     const std::vector<Pose> poses = Pose::to_poses(x, m_bodies->dim());
     return m_inertial_term->gradient(*m_bodies, x)
         + m_body_forces->gradient(*m_bodies, x)
-        + m_ground_contact->gradient(*m_bodies, x)
         + m_bodies->to_rigid_dof(
             poses,
             m_barrier_potential->gradient(
@@ -231,7 +247,6 @@ Simulator::hessian(Eigen::ConstRef<Eigen::VectorXd> x, bool project_to_psd)
                *m_bodies, x,
                project_to_psd ? PSDProjectionMethod::ABS
                               : PSDProjectionMethod::NONE)
-        + m_ground_contact->hessian(*m_bodies, x, PSDProjectionMethod::CLAMP)
         + m_body_forces->hessian(
             *m_bodies, x,
             project_to_psd ? PSDProjectionMethod::CLAMP

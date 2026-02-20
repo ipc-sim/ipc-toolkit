@@ -113,6 +113,8 @@ TEST_CASE("Rigid body simulator", "[rigid]")
         std::vector<Eigen::MatrixXi> { E_bunny, E_bunny, E_bowl },
         std::vector<Eigen::MatrixXi> { F_bunny, F_bunny, F_bowl },
         /*densisties=*/ { { 1000.0, 1000.0, 1000.0 } }, initial_poses);
+    bodies->planes.emplace_back(
+        Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 1, 0));
 
     double dt = 0.1;
     double tend = 10.0;
@@ -137,8 +139,8 @@ TEST_CASE("Rigid body simulator", "[rigid]")
 
         REQUIRE(sim.step());
         CHECK(sim.t() == Catch::Approx(dt));
-        REQUIRE(sim.run(tend, callback)); // t = 1.0
-        CHECK(n_calls == n_steps - 1);    // 9 steps from t=0.1 to t=1.0
+        REQUIRE(sim.run(tend, callback));
+        CHECK(n_calls == n_steps - 1);
         CHECK(sim.t() == Catch::Approx(tend));
         CHECK(!sim.run(
             tend)); // Simulation already completed, should return false
