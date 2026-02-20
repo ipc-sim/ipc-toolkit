@@ -262,7 +262,8 @@ static const Eigen::IOFormat OBJ_VERTEX_FORMAT = Eigen::IOFormat(
 #if EIGEN_VERSION_AT_LEAST(3, 4, 90)
 namespace Eigen {
 // Move all back to the root namespace for compatibility with older versions
-static const Eigen::internal::all_t all = indexing::all; // NOLINT
+static const auto all = indexing::all;   // NOLINT
+static const auto last = indexing::last; // NOLINT
 } // namespace Eigen
 #endif
 
