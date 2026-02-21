@@ -327,12 +327,12 @@ bool write_gltf(
             // vertices relative to plane origin (so node translation places
             // them)
             Eigen::Vector3d origin = -plane.offset() * plane.normal();
-            std::array<Eigen::Vector3d, 4> verts = {
+            std::array<Eigen::Vector3d, 4> verts { {
                 origin + (u * half_size + v * half_size),
                 origin + (-u * half_size + v * half_size),
                 origin + (-u * half_size + -v * half_size),
                 origin + (u * half_size + -v * half_size),
-            };
+            } };
 
             // write vertex positions as floats (local coordinates = verts -
             // origin)
