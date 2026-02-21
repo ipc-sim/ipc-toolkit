@@ -17,7 +17,8 @@ TEST_CASE("Read GLTF (5-cubes)", "[io][rigid]")
     std::vector<Pose> initial_poses;
 
     std::tie(bodies, initial_poses) = read_gltf(
-        tests::DATA_DIR / "rigid-ipc/16-unit-tests/5-cubes.glb", true);
+        (tests::DATA_DIR / "rigid-ipc/16-unit-tests/5-cubes.glb").string(),
+        true);
 
     REQUIRE(bodies != nullptr);
 
@@ -35,8 +36,9 @@ TEST_CASE("Read GLTF (incline plane)", "[io][rigid]")
     std::vector<Pose> initial_poses;
 
     std::tie(bodies, initial_poses) = read_gltf(
-        tests::DATA_DIR
-            / "rigid-ipc/18-high-school-physics-friction-test-mu=0.5.glb",
+        (tests::DATA_DIR
+         / "rigid-ipc/18-high-school-physics-friction-test-mu=0.5.glb")
+            .string(),
         true);
 
     REQUIRE(bodies != nullptr);
@@ -59,7 +61,9 @@ TEST_CASE("Read GLTF (card house)", "[io][rigid]")
     std::vector<Pose> initial_poses;
 
     std::tie(bodies, initial_poses) = read_gltf(
-        tests::DATA_DIR / "rigid-ipc/10-codimensional-card-house.glb", true);
+        (tests::DATA_DIR / "rigid-ipc/10-codimensional-card-house.glb")
+            .string(),
+        true);
 
     REQUIRE(bodies != nullptr);
 
