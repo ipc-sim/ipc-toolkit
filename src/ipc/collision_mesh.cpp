@@ -144,10 +144,9 @@ void CollisionMesh::init_edges_to_faces()
                 m_edges_to_faces(m_faces_to_edges(f, le), 1) = f;
             } else {
                 logger().warn(
-                    "Edge {} is non-manifold; face {} adjacent to faces {} and {}.",
-                    m_faces_to_edges(f, le), f,
-                    m_edges_to_faces(m_faces_to_edges(f, le), 0),
-                    m_edges_to_faces(m_faces_to_edges(f, le), 1));
+                    "Edge {} of face {} is shared by more than 2 faces. "
+                    "This may cause issues with the Geometric Contact Potential (smooth contact).",
+                    m_faces_to_edges(f, le), f);
             }
         }
     }
