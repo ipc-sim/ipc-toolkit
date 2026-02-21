@@ -62,7 +62,7 @@ void simulator_test(Simulator& sim)
 
     // --- Check total gradient and hessian ------------------------------------
 
-    const Eigen::Vector g = sim.gradient(x);
+    const Eigen::VectorXd g = sim.gradient(x);
 
     Eigen::VectorXd fd_g;
     fd::finite_gradient(
