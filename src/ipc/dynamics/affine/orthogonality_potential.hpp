@@ -1,31 +1,42 @@
 #pragma once
 
-#include <ipc/dynamics/affine/affine_body.hpp>
+#include <ipc/dynamics/rigid/rigid_bodies.hpp>
 
 namespace ipc::affine {
 
 class OrthogonalityPotential {
 public:
     OrthogonalityPotential(const double stiffness) : stiffness(stiffness) { }
-    virtual ~OrthogonalityPotential() = default;
 
-    // -- Cumulative methods ---------------------------------------------------
+    // ---- Cumulative functions -----------------------------------------------
 
-    double operator()(const std::vector<AffineBody>& bodies) const;
+    double operator()(
+        const rigid::RigidBodies& bodies,
+        Eigen::ConstRef<Eigen::VectorXd> x) const;
 
-    Eigen::VectorXd gradient(const std::vector<AffineBody>& bodies) const;
+    Eigen::VectorXd gradient(
+        const rigid::RigidBodies& bodies,
+        Eigen::ConstRef<Eigen::VectorXd> x) const;
 
     Eigen::SparseMatrix<double> hessian(
-        const std::vector<AffineBody>& bodies,
-        const bool project_hessian_to_psd = false) const;
+        const rigid::RigidBodies& bodies,
+        Eigen::ConstRef<Eigen::VectorXd> x,
+        const PSDProjectionMethod project_hessian_to_psd =
+            PSDProjectionMethod::NONE) const;
 
-    // -- Single body methods ---------------------------------------------
+    // ---- Per-body functions -------------------------------------------------
 
-    double operator()(const AffineBody& body) const;
+    double operator()(
+        const rigid::RigidBody& body, Eigen::ConstRef<VectorMax12d> x) const;
 
-    VectorMax12d gradient(const AffineBody& body) const;
+    VectorMax12d gradient(
+        const rigid::RigidBody& body, Eigen::ConstRef<VectorMax12d> x) const;
 
-    MatrixMax12d hessian(const AffineBody& body) const;
+    MatrixMax12d hessian(
+        const rigid::RigidBody& body,
+        Eigen::ConstRef<VectorMax12d> x,
+        const PSDProjectionMethod project_hessian_to_psd =
+            PSDProjectionMethod::NONE) const;
 
     double stiffness;
 };

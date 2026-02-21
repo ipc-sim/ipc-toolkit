@@ -30,7 +30,9 @@ public:
         Pose& initial_pose);
 
     // ---- Getters ------------------------------------------------------------
+    double volume() const { return m_volume; }
     double mass() const { return m_mass; }
+    double density() const { return m_mass / m_volume; }
     const VectorMax3d& moment_of_inertia() const { return m_moment_of_inertia; }
     // NOLINTNEXTLINE(readability-identifier-naming)
     const Eigen::DiagonalMatrix<double, 3>& J() const { return m_J; }
@@ -52,6 +54,9 @@ public:
     }
 
 private:
+    /// @brief Volume of the rigid body
+    double m_volume;
+
     /// @brief Total mass of the rigid body
     double m_mass;
 

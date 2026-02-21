@@ -1,8 +1,7 @@
 #include "body_forces.hpp"
 
-#include <ipc/dynamics/rigid/rigid_body.hpp>
+#include <ipc/dynamics/rigid/time_integrator.hpp>
 #include <ipc/geometry/normal.hpp>
-#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc::rigid {
 
@@ -39,58 +38,16 @@ void BodyForces::update(const RigidBodies& bodies)
         });
 }
 
-// ---- Cumulative functions ---------------------------------------------------
-
-double BodyForces::operator()(
-    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const
-{
-    const int ndof = x.size() / bodies.num_bodies();
-
-    double energy = 0.0;
-    for (size_t i = 0; i < bodies.num_bodies(); ++i) {
-        energy += operator()(
-            bodies[i], x.segment(i * ndof, ndof), forces()[i], torques()[i]);
-    }
-    return energy;
-}
-
-Eigen::VectorXd BodyForces::gradient(
-    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const
-{
-    const int ndof = x.size() / bodies.num_bodies();
-
-    Eigen::VectorXd grad = Eigen::VectorXd::Zero(x.size());
-    for (size_t i = 0; i < bodies.num_bodies(); ++i) {
-        grad.segment(i * ndof, ndof) = gradient(
-            bodies[i], x.segment(i * ndof, ndof), forces()[i], torques()[i]);
-    }
-    return grad;
-}
-
-Eigen::MatrixXd BodyForces::hessian(
-    const RigidBodies& bodies,
-    Eigen::ConstRef<Eigen::VectorXd> x,
-    const PSDProjectionMethod project_hessian_to_psd) const
-{
-    const int ndof = x.size() / bodies.num_bodies();
-
-    Eigen::MatrixXd hess = Eigen::MatrixXd::Zero(x.size(), x.size());
-    for (size_t i = 0; i < bodies.num_bodies(); ++i) {
-        hess.block(i * ndof, i * ndof, ndof, ndof) = hessian(
-            bodies[i], x.segment(i * ndof, ndof), forces()[i], torques()[i],
-            project_hessian_to_psd);
-    }
-    return hess;
-}
-
 // ---- Per-body functions -----------------------------------------------------
 
 double BodyForces::operator()(
+    const size_t body_id,
     const RigidBody& body,
-    Eigen::ConstRef<VectorMax6d> x,
-    Eigen::ConstRef<VectorMax3d> force,
-    Eigen::ConstRef<MatrixMax3d> torque) const
+    Eigen::ConstRef<VectorMax6d> x) const
 {
+    const auto& force = forces()[body_id];
+    const auto& torque = torques()[body_id];
+
     double energy = 0.0;
 
     // if (!body.is_dof_fixed.head(pose.pos_ndof()).all())
@@ -114,11 +71,13 @@ double BodyForces::operator()(
 }
 
 VectorMax6d BodyForces::gradient(
+    const size_t body_id,
     const RigidBody& body,
-    Eigen::ConstRef<VectorMax6d> x,
-    Eigen::ConstRef<VectorMax3d> force,
-    Eigen::ConstRef<MatrixMax3d> torque) const
+    Eigen::ConstRef<VectorMax6d> x) const
 {
+    const auto& force = forces()[body_id];
+    const auto& torque = torques()[body_id];
+
     VectorMax6d grad = VectorMax6d::Zero(x.size());
 
     // if (!body.is_dof_fixed.head(pose.pos_ndof()).all())
@@ -143,12 +102,13 @@ VectorMax6d BodyForces::gradient(
 }
 
 MatrixMax6d BodyForces::hessian(
+    const size_t body_id,
     const RigidBody& body,
     Eigen::ConstRef<VectorMax6d> x,
-    Eigen::ConstRef<VectorMax3d> force,
-    Eigen::ConstRef<MatrixMax3d> torque,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
+    const auto& torque = torques()[body_id];
+
     MatrixMax6d hess = MatrixMax6d::Zero(x.size(), x.size());
 
     // Rotational energy

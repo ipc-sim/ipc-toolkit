@@ -1,80 +1,117 @@
-#include <tests/utils.hpp>
-
 #include <catch2/catch_test_macros.hpp>
 
-#include <ipc/dynamics/affine/orthogonality_potential.hpp>
+#include <tests/utils.hpp>
 
 #include <finitediff.hpp>
 
-TEST_CASE("Orthogonality potential", "[abd]")
+#include <ipc/dynamics/affine/orthogonality_potential.hpp>
+
+#include <iostream>
+
+using namespace ipc;
+using namespace ipc::rigid;
+using namespace ipc::affine;
+
+// Helper function to generate a RigidBody
+auto rigid_bodies()
 {
-    using namespace ipc;
-    using namespace ipc::affine;
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    REQUIRE(tests::load_mesh("cube.ply", V, E, F));
 
-    AffineBody body(MatrixMax9d::Random(3, 3), VectorMax9d::Random(3), 1);
+    const double L = 0.5, W = 1.0, H = 2.0;
+    V.col(0).array() *= L;
+    V.col(1).array() *= W;
+    V.col(2).array() *= H;
 
-    VectorMax12d dof(12);
-    dof.head(3) = body.p;
-    dof.segment(3, 3) = body.A.col(0);
-    dof.segment(6, 3) = body.A.col(1);
-    dof.segment(9, 3) = body.A.col(2);
+    const double density = GENERATE(1.0, 2.0, 3.0);
+
+    std::vector<Pose> initial_poses;
+    initial_poses.push_back(Pose::Identity(3)); // Initial pose at the origin
+
+    auto bodies = RigidBodies::build_from_meshes(
+        { V }, { E }, { F }, { density }, initial_poses);
+
+    (*bodies)[0].set_external_force(
+        Pose(Eigen::Vector3d::Random(), Eigen::Vector3d::Random()));
+
+    return bodies;
+}
+
+TEST_CASE("Orthogonality potential", "[affine]")
+{
+    auto bodies = rigid_bodies();
 
     OrthogonalityPotential V_perp(1);
 
-    // -------------------------------------------------------------------------
-    // Gradient
-    // -------------------------------------------------------------------------
+    VectorMax12d x = VectorMax12d::Random(12);
 
-    const Eigen::VectorXd grad_V_perp = V_perp.gradient(body);
-    REQUIRE(grad_V_perp.squaredNorm() > 1e-8);
+    double energy = V_perp(*bodies, x);
 
-    // Compute the gradient using finite differences
-    Eigen::VectorXd fgrad_V_perp;
+    // Since we don't have a ground truth, we can only check if the energy is a
+    // valid number
+    CHECK(std::isfinite(energy));
+
+    VectorMax12d analytical_gradient;
+    MatrixMax12d analytical_hessian;
+
     {
-        auto f = [&V_perp, &body](const Eigen::VectorXd& x) {
-            AffineBody fd_body;
-            fd_body.p = x.head(3);
-            fd_body.A.resize(3, 3);
-            fd_body.A.col(0) = x.segment(3, 3);
-            fd_body.A.col(1) = x.segment(6, 3);
-            fd_body.A.col(2) = x.segment(9, 3);
-            fd_body.volume = body.volume;
-            return V_perp(fd_body);
+        analytical_gradient = V_perp.gradient(*bodies, x);
+        REQUIRE(analytical_gradient.squaredNorm() > 1e-8);
+
+        // Compute the gradient using finite differences
+        auto f = [&](const Eigen::VectorXd& x_arg) {
+            return V_perp(*bodies, x_arg);
         };
-        fd::finite_gradient(dof, f, fgrad_V_perp);
+        Eigen::VectorXd numerical_gradient;
+        fd::finite_gradient(x, f, numerical_gradient);
+
+        CHECK(fd::compare_gradient(analytical_gradient, numerical_gradient));
+        if (!fd::compare_gradient(analytical_gradient, numerical_gradient)) {
+            std::cout << "Analytical Gradient:\n"
+                      << analytical_gradient << "\n\n";
+            std::cout << "Numerical Gradient:\n"
+                      << numerical_gradient << "\n\n";
+        }
     }
 
-    CHECK(fd::compare_gradient(grad_V_perp, fgrad_V_perp));
-    if (!fd::compare_gradient(grad_V_perp, fgrad_V_perp)) {
-        logger().error("grad_V_perp:  {}", grad_V_perp);
-        logger().error("fgrad_V_perp: {}", fgrad_V_perp);
-    }
-
-    // -------------------------------------------------------------------------
-    // Hessian
-    // -------------------------------------------------------------------------
-
-    const Eigen::MatrixXd hess_V_perp = V_perp.hessian(body);
-    REQUIRE(hess_V_perp.squaredNorm() > 1e-3);
-
-    // Compute the gradient using finite differences
-    Eigen::MatrixXd fhess_V_perp;
     {
-        auto f = [&](const Eigen::VectorXd& x) {
-            AffineBody fd_body;
-            fd_body.p = x.head(3);
-            fd_body.A.resize(3, 3);
-            fd_body.A.col(0) = x.segment(3, 3);
-            fd_body.A.col(1) = x.segment(6, 3);
-            fd_body.A.col(2) = x.segment(9, 3);
-            fd_body.volume = body.volume;
-            return V_perp.gradient(fd_body);
+        analytical_hessian = V_perp.hessian(*bodies, x);
+
+        // Numerical hessian calculation
+        auto f = [&](const Eigen::VectorXd& x_arg) {
+            return V_perp.gradient(*bodies, x_arg);
         };
-        fd::finite_jacobian(dof, f, fhess_V_perp);
+        Eigen::MatrixXd numerical_hessian;
+        fd::finite_jacobian(x, f, numerical_hessian);
+
+        // Compare analytical and numerical Hessians
+        CHECK(fd::compare_jacobian(analytical_hessian, numerical_hessian));
+        if (!fd::compare_jacobian(analytical_hessian, numerical_hessian)) {
+            std::cout << "Analytical Hessian:\n"
+                      << analytical_hessian << "\n\n";
+            std::cout << "Numerical Hessian:\n" << numerical_hessian << "\n\n";
+        }
     }
 
-    CHECK(fd::compare_hessian(hess_V_perp, fhess_V_perp, 1e-3));
-    if (!fd::compare_hessian(hess_V_perp, fhess_V_perp, 1e-3)) {
-        tests::print_compare_nonzero(hess_V_perp, fhess_V_perp);
+    // Newton direction
+    {
+        Eigen::VectorXd newton_direction =
+            -analytical_hessian.ldlt().solve(analytical_gradient);
+        // std::cout << "Newton Direction:\n" << newton_direction << "\n\n";
+
+        if (newton_direction.dot(analytical_gradient) < 0.0) {
+            CHECK(true);
+        } else {
+            analytical_hessian =
+                V_perp.hessian(*bodies, x, PSDProjectionMethod::ABS);
+
+            newton_direction =
+                -analytical_hessian.ldlt().solve(analytical_gradient);
+
+            // std::cout << "Newton Direction:\n" << newton_direction << "\n\n";
+
+            CHECK(newton_direction.dot(analytical_gradient) < 0.0);
+        }
     }
 }

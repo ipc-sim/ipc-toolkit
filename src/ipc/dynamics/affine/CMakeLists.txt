@@ -1,5 +1,6 @@
 set(SOURCES
-  affine_body.hpp
+  inertial_term.cpp
+  inertial_term.hpp
   orthogonality_potential.cpp
   orthogonality_potential.hpp
 )

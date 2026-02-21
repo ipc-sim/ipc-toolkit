@@ -275,6 +275,56 @@ struct AffinePose {
             rotation = rotation_vector_to_matrix(theta);
         }
     }
+
+    /// @brief Transform vertices from local to world coordinates using the pose.
+    /// @param V The vertices to transform (each row is a vertex)
+    /// @return The transformed vertices
+    Eigen::MatrixXd transform_vertices(Eigen::ConstRef<Eigen::MatrixXd> V) const
+    {
+        // Compute: A x̄ + p
+        // transpose because x is row-ordered
+        return (V * rotation.transpose()).rowwise() + position.transpose();
+    }
+
+    /// @brief Compute the Jacobian of the transformed vertices with respect to the pose.
+    /// @param V The vertices to transform (each row is a vertex)
+    /// @return The Jacobian matrix of size (num_vertices * dim) x ndof
+    Eigen::SparseMatrix<double>
+    transform_vertices_jacobian(Eigen::ConstRef<Eigen::MatrixXd> V) const
+    {
+        return J(V);
+    }
+
+    /// @brief Compute the Jacobian of the transformed vertices with respect to the pose.
+    /// @param V The vertices to transform (each row is a vertex)
+    /// @return The Jacobian matrix of size (num_vertices * dim) x (ndof)
+    static Eigen::SparseMatrix<double>
+    J(Eigen::ConstRef<Eigen::MatrixXd> rest_positions) // NOLINT
+    {
+        std::vector<Eigen::Triplet<double>> triplets;
+
+        for (int i = 0; i < rest_positions.rows(); i++) {
+            for (int j = 0; j < rest_positions.cols(); j++) {
+                triplets.emplace_back(rest_positions.rows() * j + i, j, 1);
+            }
+        }
+
+        // I ⊗ x̄
+        for (int i = 0; i < rest_positions.rows(); i++) {
+            for (int j = 0; j < rest_positions.cols(); j++) {
+                for (int k = 0; k < 3; k++) {
+                    triplets.emplace_back(
+                        i + k * rest_positions.rows(),
+                        j + k * rest_positions.cols() + 3,
+                        rest_positions(i, j));
+                }
+            }
+        }
+
+        Eigen::SparseMatrix<double> J(rest_positions.size(), 12);
+        J.setFromTriplets(triplets.begin(), triplets.end());
+        return J;
+    }
 };
 
 } // namespace ipc::rigid

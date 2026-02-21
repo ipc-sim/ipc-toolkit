@@ -54,16 +54,15 @@ std::shared_ptr<const ImplicitEuler> time_integrator(const RigidBodies& bodies)
 
 TEST_CASE(
     "InertialTerm energy and derivative",
-    "[inertial_term][energy][gradient][hessian]")
+    "[rigid][inertial_term][energy][gradient][hessian]")
 {
     auto bodies = rigid_bodies();
     InertialTerm inertial_term(time_integrator(*bodies));
+    inertial_term.update(*bodies);
 
     VectorMax6d x = VectorMax6d::Random(6);
-    VectorMax3d q_hat = VectorMax3d::Random(3);
-    MatrixMax3d Q_hat = MatrixMax3d::Random(3, 3);
 
-    double energy = inertial_term((*bodies)[0], x, q_hat, Q_hat);
+    double energy = inertial_term(0, (*bodies)[0], x);
 
     // Since we don't have a ground truth, we can only check if the energy is a
     // valid number
@@ -73,14 +72,12 @@ TEST_CASE(
     MatrixMax6d analytical_hessian;
 
     {
-        analytical_gradient =
-            inertial_term.gradient((*bodies)[0], x, q_hat, Q_hat);
+        analytical_gradient = inertial_term.gradient(0, (*bodies)[0], x);
 
         // Numerical gradient calculation
         auto f = [&](const Eigen::VectorXd& x_arg) {
             return inertial_term(
-                (*bodies)[0], x_arg, q_hat,
-                Q_hat); // Capture other variables by value
+                0, (*bodies)[0], x_arg); // Capture other variables by value
         };
         Eigen::VectorXd numerical_gradient;
         fd::finite_gradient(x, f, numerical_gradient);
@@ -95,12 +92,11 @@ TEST_CASE(
     }
 
     {
-        analytical_hessian =
-            inertial_term.hessian((*bodies)[0], x, q_hat, Q_hat);
+        analytical_hessian = inertial_term.hessian(0, (*bodies)[0], x);
 
         // Numerical hessian calculation
         auto f = [&](const Eigen::VectorXd& x_arg) {
-            return inertial_term.gradient((*bodies)[0], x_arg, q_hat, Q_hat);
+            return inertial_term.gradient(0, (*bodies)[0], x_arg);
         };
         Eigen::MatrixXd numerical_hessian;
         fd::finite_jacobian(x, f, numerical_hessian);
@@ -127,7 +123,7 @@ TEST_CASE(
             CHECK(true);
         } else {
             analytical_hessian = inertial_term.hessian(
-                (*bodies)[0], x, q_hat, Q_hat, PSDProjectionMethod::ABS);
+                0, (*bodies)[0], x, PSDProjectionMethod::ABS);
 
             newton_direction =
                 -analytical_hessian.ldlt().solve(analytical_gradient);
@@ -149,23 +145,14 @@ TEST_CASE(
 
     VectorMax6d x = VectorMax6d::Random(6);
 
-    CHECK(
-        inertial_term(*bodies, x)
-        == inertial_term(
-            (*bodies)[0], x, inertial_term.predicted_poses()[0].position,
-            inertial_term.predicted_poses()[0].rotation));
+    CHECK(inertial_term(*bodies, x) == inertial_term(0, (*bodies)[0], x));
 
     CHECK(
         fd::compare_gradient(
             inertial_term.gradient(*bodies, x),
-            inertial_term.gradient(
-                (*bodies)[0], x, inertial_term.predicted_poses()[0].position,
-                inertial_term.predicted_poses()[0].rotation)));
+            inertial_term.gradient(0, (*bodies)[0], x)));
 
     CHECK(
         inertial_term.hessian(*bodies, x, PSDProjectionMethod::ABS)
-        == inertial_term.hessian(
-            (*bodies)[0], x, inertial_term.predicted_poses()[0].position,
-            inertial_term.predicted_poses()[0].rotation,
-            PSDProjectionMethod::ABS));
+        == inertial_term.hessian(0, (*bodies)[0], x, PSDProjectionMethod::ABS));
 }

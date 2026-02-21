@@ -48,9 +48,11 @@ public:
         x_prev = x;
     }
 
+    Eigen::VectorXd x_hat() const { return x_prev + dt * v_prev; }
+
     std::vector<AffinePose> predicted_pose() const
     {
-        const Eigen::VectorXd x_hat = x_prev + dt * v_prev;
+        const Eigen::VectorXd x_hat = this->x_hat();
 
         std::vector<AffinePose> predicted(num_bodies);
         tbb::parallel_for(

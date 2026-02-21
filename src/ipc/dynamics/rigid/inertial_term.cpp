@@ -1,7 +1,6 @@
 #include "inertial_term.hpp"
 
-#include <ipc/dynamics/rigid/rigid_body.hpp>
-#include <ipc/utils/eigen_ext.hpp>
+#include <ipc/dynamics/rigid/time_integrator.hpp>
 
 namespace ipc::rigid {
 
@@ -11,67 +10,15 @@ void InertialTerm::update(const RigidBodies& bodies)
     m_predicted_poses = time_integrator->predicted_pose();
 }
 
-// ---- Cumulative functions ---------------------------------------------------
-
-double InertialTerm::operator()(
-    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const
-{
-    assert(predicted_poses().size() == bodies.num_bodies());
-
-    const int ndof = x.size() / bodies.num_bodies();
-
-    double energy = 0.0;
-    for (size_t i = 0; i < bodies.num_bodies(); ++i) {
-        energy += operator()(
-            bodies[i], x.segment(i * ndof, ndof), predicted_poses()[i].position,
-            predicted_poses()[i].rotation);
-    }
-    return energy;
-}
-
-Eigen::VectorXd InertialTerm::gradient(
-    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const
-{
-    assert(predicted_poses().size() == bodies.num_bodies());
-
-    const int ndof = x.size() / bodies.num_bodies();
-
-    Eigen::VectorXd grad = Eigen::VectorXd::Zero(x.size());
-    for (size_t i = 0; i < bodies.num_bodies(); ++i) {
-        grad.segment(i * ndof, ndof) = gradient(
-            bodies[i], x.segment(i * ndof, ndof), predicted_poses()[i].position,
-            predicted_poses()[i].rotation);
-    }
-    return grad;
-}
-
-Eigen::MatrixXd InertialTerm::hessian(
-    const RigidBodies& bodies,
-    Eigen::ConstRef<Eigen::VectorXd> x,
-    const PSDProjectionMethod project_hessian_to_psd) const
-{
-    assert(predicted_poses().size() == bodies.num_bodies());
-
-    const int ndof = x.size() / bodies.num_bodies();
-
-    Eigen::MatrixXd hess = Eigen::MatrixXd::Zero(x.size(), x.size());
-    for (size_t i = 0; i < bodies.num_bodies(); ++i) {
-        hess.block(i * ndof, i * ndof, ndof, ndof) = hessian(
-            bodies[i], x.segment(i * ndof, ndof), predicted_poses()[i].position,
-            predicted_poses()[i].rotation, project_hessian_to_psd);
-    }
-    assert(hess.allFinite());
-    return hess;
-}
-
 // ---- Per-body functions -----------------------------------------------------
 
 double InertialTerm::operator()(
+    const size_t body_id,
     const RigidBody& body,
-    Eigen::ConstRef<VectorMax6d> x,
-    Eigen::ConstRef<VectorMax3d> q_hat,
-    Eigen::ConstRef<MatrixMax3d> Q_hat) const
+    Eigen::ConstRef<VectorMax6d> x) const
 {
+    const auto& [q_hat, Q_hat] = predicted_poses().at(body_id);
+
     double energy = 0.0;
 
     // Linear inertia
@@ -105,11 +52,12 @@ double InertialTerm::operator()(
 }
 
 VectorMax6d InertialTerm::gradient(
+    const size_t body_id,
     const RigidBody& body,
-    Eigen::ConstRef<VectorMax6d> x,
-    Eigen::ConstRef<VectorMax3d> q_hat,
-    Eigen::ConstRef<MatrixMax3d> Q_hat) const
+    Eigen::ConstRef<VectorMax6d> x) const
 {
+    const auto& [q_hat, Q_hat] = predicted_poses().at(body_id);
+
     VectorMax6d grad = VectorMax6d::Zero(x.size());
 
     // Linear inertia
@@ -144,12 +92,13 @@ VectorMax6d InertialTerm::gradient(
 }
 
 MatrixMax6d InertialTerm::hessian(
+    const size_t body_id,
     const RigidBody& body,
     Eigen::ConstRef<VectorMax6d> x,
-    Eigen::ConstRef<VectorMax3d> q_hat,
-    Eigen::ConstRef<MatrixMax3d> Q_hat,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
+    const auto& [q_hat, Q_hat] = predicted_poses().at(body_id);
+
     MatrixMax6d hess = MatrixMax6d::Zero(x.size(), x.size());
 
     // Linear inertia

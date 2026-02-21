@@ -72,6 +72,7 @@ RigidBody::RigidBody(
     compute_mass_properties(
         vertices, (dim == 2 || faces.size() == 0) ? edges : faces, density,
         m_mass, center_of_mass, inertia_tensor);
+    m_volume = m_mass / density;
 
     // 3. Convert the inertia tensor to the principal axes moments of inertia
     if (dim == 3) {
