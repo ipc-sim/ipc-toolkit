@@ -114,11 +114,10 @@ void Candidates::build(
     }
 
     // Planes to vertices:
-    for (const auto& [origin, normal] : mesh.planes) {
+    for (const auto& plane : mesh.planes) {
         for (index_t vi = 0; vi < mesh.num_vertices(); ++vi) {
-            const double d = normal.dot(vertices.row(vi).transpose() - origin);
-            if (d < inflation_radius) { // Negative values too
-                pv_candidates.emplace_back(origin, normal, vi);
+            if (plane.signedDistance(vertices.row(vi)) < inflation_radius) {
+                pv_candidates.emplace_back(plane, vi);
             }
         }
     }
@@ -208,14 +207,12 @@ void Candidates::build(
     }
 
     // Planes to vertices:
-    for (const auto& [origin, normal] : mesh.planes) {
+    for (const auto& plane : mesh.planes) {
         for (index_t vi = 0; vi < mesh.num_vertices(); ++vi) {
-            const double d_t0 =
-                normal.dot(vertices_t0.row(vi).transpose() - origin);
-            const double d_t1 =
-                normal.dot(vertices_t1.row(vi).transpose() - origin);
+            const double d_t0 = plane.signedDistance(vertices_t0.row(vi));
+            const double d_t1 = plane.signedDistance(vertices_t1.row(vi));
             if (d_t0 < inflation_radius || d_t1 < inflation_radius) {
-                pv_candidates.emplace_back(origin, normal, vi);
+                pv_candidates.emplace_back(plane, vi);
             }
         }
     }

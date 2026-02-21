@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ipc/config.hpp>
-#include <ipc/implicits/plane.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
@@ -331,7 +330,7 @@ public:
     /// @brief Analytic planes in the scene that can be collided with.
     /// This is useful for representing infinite planes (e.g., the ground plane)
     /// or planes that are not part of the collision mesh.
-    std::vector<Plane> planes;
+    std::vector<Eigen::Hyperplane<double, 3>> planes;
 
 protected:
     // -----------------------------------------------------------------------

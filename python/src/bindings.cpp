@@ -99,9 +99,6 @@ PYBIND11_MODULE(ipctk, m)
     define_intersection(m);
     define_normal(m);
 
-    // implicits
-    define_plane_implicit(m);
-
     // math
     define_interval(m);
 

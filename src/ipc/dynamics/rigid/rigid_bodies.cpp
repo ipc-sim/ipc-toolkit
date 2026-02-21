@@ -5,6 +5,7 @@
 #include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include <memory>
 
@@ -27,7 +28,7 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
     }
 
     unordered_set<int> plane_bodies;
-    std::vector<Plane> planes;
+    std::vector<Eigen::Hyperplane<double, 3>> planes;
     if (convert_planes && rest_positions[0].cols() == 3) {
         for (size_t i = 0; i < faces.size(); ++i) {
             // Must have exactly 2 faces and 4 vertices to be considered a plane
@@ -64,9 +65,9 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
                 plane_bodies.insert(i);
                 Eigen::Matrix3d R = initial_poses[i].rotation_matrix();
                 planes.emplace_back(
+                    R * n0,
                     R * rest_positions[i].colwise().mean().transpose()
-                        + initial_poses[i].position,
-                    R * n0);
+                        + initial_poses[i].position);
             }
         }
     }

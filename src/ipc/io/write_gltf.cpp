@@ -144,8 +144,8 @@ bool write_gltf(
         node.mesh = static_cast<int>(mesh_index);
         std::string plane_name = "Plane" + std::to_string(p);
         node.name = plane_name;
-        node.translation = { { plane.origin.x(), plane.origin.y(),
-                               plane.origin.z() } };
+        Eigen::Vector3d origin = -plane.offset() * plane.normal();
+        node.translation = { { origin.x(), origin.y(), origin.z() } };
         Eigen::Quaternion<double> q = Eigen::Quaternion<double>::Identity();
         node.rotation = { { q.x(), q.y(), q.z(), q.w() } };
 
@@ -317,7 +317,7 @@ bool write_gltf(
 
         for (size_t p = 0; p < num_planes; ++p) {
             const auto& plane = bodies.planes[p];
-            Eigen::Vector3d n = plane.normal.normalized();
+            Eigen::Vector3d n = plane.normal().normalized();
             Eigen::Vector3d ref = (std::abs(n.x()) < 0.9)
                 ? Eigen::Vector3d::UnitX()
                 : Eigen::Vector3d::UnitY();
@@ -326,17 +326,18 @@ bool write_gltf(
 
             // vertices relative to plane origin (so node translation places
             // them)
+            Eigen::Vector3d origin = -plane.offset() * plane.normal();
             std::array<Eigen::Vector3d, 4> verts = {
-                plane.origin + (u * half_size + v * half_size),
-                plane.origin + (-u * half_size + v * half_size),
-                plane.origin + (-u * half_size + -v * half_size),
-                plane.origin + (u * half_size + -v * half_size),
+                origin + (u * half_size + v * half_size),
+                origin + (-u * half_size + v * half_size),
+                origin + (-u * half_size + -v * half_size),
+                origin + (u * half_size + -v * half_size),
             };
 
             // write vertex positions as floats (local coordinates = verts -
             // origin)
             for (int vi = 0; vi < 4; ++vi) {
-                Eigen::Vector3d local = verts[vi] - plane.origin;
+                Eigen::Vector3d local = verts[vi] - origin;
                 for (int d = 0; d < 3; ++d) {
                     Float vd = static_cast<Float>(local[d]);
                     std::memcpy(&byte_data[byte_i], &vd, sizeof(Float));

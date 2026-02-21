@@ -145,7 +145,7 @@ TEST_CASE("Plane-vertex collision stencil coeffs.", "[pv][stencil][coeffs]")
 
     Eigen::MatrixXi E, F;
 
-    PlaneVertexNormalCollision pv(o, n, 0);
+    PlaneVertexNormalCollision pv(Eigen::Hyperplane<double, 3>(n, o), 0);
 
     VectorMax4d coeffs = pv.compute_coefficients(V, E, F);
 

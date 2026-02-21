@@ -1,6 +1,7 @@
 // Test the mass utilities.
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 #include <tests/config.hpp>
 
@@ -23,9 +24,9 @@ TEST_CASE("Read GLTF (5-cubes)", "[io][rigid]")
     CHECK(bodies->num_bodies() == 5);
     CHECK(initial_poses.size() == 5);
     CHECK(bodies->planes.size() == 1);
-    CAPTURE(bodies->planes[0].normal, bodies->planes[0].origin);
-    CHECK(bodies->planes[0].origin.isApprox(Eigen::Vector3d(0, -1, 0)));
-    CHECK(bodies->planes[0].normal.isApprox(Eigen::Vector3d(0, 1, 0)));
+    CAPTURE(bodies->planes[0].normal(), bodies->planes[0].offset());
+    CHECK(bodies->planes[0].offset() == Catch::Approx(1));
+    CHECK(bodies->planes[0].normal().isApprox(Eigen::Vector3d(0, 1, 0)));
 }
 
 TEST_CASE("Read GLTF (incline plane)", "[io][rigid]")
@@ -43,13 +44,13 @@ TEST_CASE("Read GLTF (incline plane)", "[io][rigid]")
     CHECK(bodies->num_bodies() == 1);
     CHECK(initial_poses.size() == 1);
     CHECK(bodies->planes.size() == 1);
-    CAPTURE(bodies->planes[0].normal, bodies->planes[0].origin);
-    CHECK(bodies->planes[0].origin.isApprox(Eigen::Vector3d(2, -1.565, 0)));
+    CAPTURE(bodies->planes[0].normal(), bodies->planes[0].offset());
+    CHECK(bodies->planes[0].offset() == Catch::Approx(0.50535359193774421));
 
     const double theta = std::atan(0.5);
     Eigen::Vector3d n(std::sin(theta), std::cos(theta), 0);
     CAPTURE(theta, n);
-    CHECK(bodies->planes[0].normal.isApprox(n, 1e-6));
+    CHECK(bodies->planes[0].normal().isApprox(n, 1e-6));
 }
 
 TEST_CASE("Read GLTF (card house)", "[io][rigid]")
@@ -65,7 +66,7 @@ TEST_CASE("Read GLTF (card house)", "[io][rigid]")
     CHECK(bodies->num_bodies() == 17);
     CHECK(initial_poses.size() == bodies->num_bodies());
     CHECK(bodies->planes.size() == 1);
-    CAPTURE(bodies->planes[0].normal, bodies->planes[0].origin);
-    CHECK(bodies->planes[0].origin.isApprox(Eigen::Vector3d(0, 0, 0)));
-    CHECK(bodies->planes[0].normal.isApprox(Eigen::Vector3d(0, 1, 0)));
+    CAPTURE(bodies->planes[0].normal(), bodies->planes[0].offset());
+    CHECK(bodies->planes[0].offset() == 0);
+    CHECK(bodies->planes[0].normal().isApprox(Eigen::Vector3d(0, 1, 0)));
 }

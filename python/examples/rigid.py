@@ -49,7 +49,7 @@ bodies, initial_poses = ipctk.read_gltf(sys.argv[1], True)
 ps.init()
 
 ps.set_ground_plane_height_mode("manual")
-ps.set_ground_plane_height(bodies.planes[0].origin[1])
+ps.set_ground_plane_height(bodies.planes[0].origin()[1])
 
 ps.set_give_focus_on_show(True)
 

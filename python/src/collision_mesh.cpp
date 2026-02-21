@@ -135,11 +135,22 @@ void define_collision_mesh(py::module_& m)
             )ipc_Qu8mg5v7",
             "i"_a, "j"_a);
 
-    py::class_<Plane>(m, "Plane")
+    py::class_<Eigen::Hyperplane<double, 3>>(m, "Hyperplane")
         .def(py::init<>())
         .def(py::init<Eigen::Vector3d, Eigen::Vector3d>())
-        .def_readwrite("normal", &Plane::normal)
-        .def_readwrite("origin", &Plane::origin);
+        .def(
+            "normal",
+            [](const Eigen::Hyperplane<double, 3>& self) {
+                return self.normal();
+            })
+        .def(
+            "offset",
+            [](const Eigen::Hyperplane<double, 3>& self) {
+                return self.offset();
+            })
+        .def("origin", [](const Eigen::Hyperplane<double, 3>& self) {
+            return -self.offset() * self.normal();
+        });
 
     py::class_<CollisionMesh, std::shared_ptr<CollisionMesh>>(
         m, "CollisionMesh")

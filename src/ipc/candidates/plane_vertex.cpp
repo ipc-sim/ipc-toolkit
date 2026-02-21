@@ -6,11 +6,8 @@
 namespace ipc {
 
 PlaneVertexCandidate::PlaneVertexCandidate(
-    Eigen::ConstRef<VectorMax3d> _plane_origin,
-    Eigen::ConstRef<VectorMax3d> _plane_normal,
-    const index_t _vertex_id)
-    : plane_origin(_plane_origin)
-    , plane_normal(_plane_normal)
+    const Eigen::Hyperplane<double, 3>& _plane, const index_t _vertex_id)
+    : plane(_plane)
     , vertex_id(_vertex_id)
 {
 }
@@ -18,22 +15,25 @@ PlaneVertexCandidate::PlaneVertexCandidate(
 double PlaneVertexCandidate::compute_distance(
     Eigen::ConstRef<VectorMax12d> point) const
 {
-    assert(point.size() == plane_origin.size());
-    return point_plane_distance(point, plane_origin, plane_normal);
+    assert(point.size() == 3);
+    return point_plane_distance(
+        point, -plane.offset() * plane.normal(), plane.normal());
 }
 
 VectorMax12d PlaneVertexCandidate::compute_distance_gradient(
     Eigen::ConstRef<VectorMax12d> point) const
 {
-    assert(point.size() == plane_origin.size());
-    return point_plane_distance_gradient(point, plane_origin, plane_normal);
+    assert(point.size() == 3);
+    return point_plane_distance_gradient(
+        point, -plane.offset() * plane.normal(), plane.normal());
 }
 
 MatrixMax12d PlaneVertexCandidate::compute_distance_hessian(
     Eigen::ConstRef<VectorMax12d> point) const
 {
-    assert(point.size() == plane_origin.size());
-    return point_plane_distance_hessian(point, plane_origin, plane_normal);
+    assert(point.size() == 3);
+    return point_plane_distance_hessian(
+        point, -plane.offset() * plane.normal(), plane.normal());
 }
 
 VectorMax4d PlaneVertexCandidate::compute_coefficients(
@@ -47,7 +47,7 @@ VectorMax4d PlaneVertexCandidate::compute_coefficients(
 VectorMax3d PlaneVertexCandidate::compute_unnormalized_normal(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
-    return plane_normal;
+    return plane.normal();
 }
 
 MatrixMax<double, 3, 12>
@@ -66,8 +66,10 @@ bool PlaneVertexCandidate::ccd(
     const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(min_distance == 0 && "Not implemented");
+    assert(vertices_t0.size() == 3 && vertices_t1.size() == 3);
     return point_static_plane_ccd(
-        vertices_t0, vertices_t1, plane_origin, plane_normal, toi);
+        vertices_t0, vertices_t1, -plane.offset() * plane.normal(),
+        plane.normal(), toi);
 }
 
 } // namespace ipc

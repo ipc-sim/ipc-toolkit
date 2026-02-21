@@ -8,9 +8,7 @@ namespace ipc {
 class PlaneVertexCandidate : virtual public CollisionStencil {
 public:
     PlaneVertexCandidate(
-        Eigen::ConstRef<VectorMax3d> plane_origin,
-        Eigen::ConstRef<VectorMax3d> plane_normal,
-        const index_t vertex_id);
+        const Eigen::Hyperplane<double, 3>& plane, const index_t vertex_id);
 
     int num_vertices() const override { return 1; }
 
@@ -66,11 +64,8 @@ public:
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const override;
 
-    /// @brief The plane's origin.
-    VectorMax3d plane_origin;
-
-    /// @brief The plane's normal.
-    VectorMax3d plane_normal;
+    /// @brief The plane of the candidate.
+    Eigen::Hyperplane<double, 3> plane;
 
     /// @brief The vertex's id.
     index_t vertex_id;

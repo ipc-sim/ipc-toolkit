@@ -146,9 +146,8 @@ void NormalCollisions::build(
 
     NormalCollisionsBuilder::merge(storage, *this);
 
-    for (const auto& [origin, normal, vertex_id] : candidates.pv_candidates) {
-        const double d =
-            normal.dot(vertices.row(vertex_id).transpose() - origin);
+    for (const auto& [plane, vertex_id] : candidates.pv_candidates) {
+        const double d = plane.signedDistance(vertices.row(vertex_id));
         if (d < dhat + dmin) {
             const double weight =
                 use_area_weighting() ? mesh.vertex_area(vertex_id) : 1;
@@ -161,7 +160,7 @@ void NormalCollisions::build(
             }
 
             pv_collisions.emplace_back(
-                origin, normal, vertex_id, weight, weight_gradient);
+                plane, vertex_id, weight, weight_gradient);
         }
     }
 

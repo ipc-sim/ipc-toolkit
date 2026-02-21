@@ -90,7 +90,7 @@ void simulator_test(Simulator& sim)
 }
 } // namespace ipc::tests
 
-TEST_CASE("Rigid body simulator", "[rigid]")
+TEST_CASE("Rigid body simulator", "[.][rigid]")
 {
     Eigen::MatrixXd V_bunny;
     Eigen::MatrixXi E_bunny, F_bunny;
@@ -113,8 +113,7 @@ TEST_CASE("Rigid body simulator", "[rigid]")
         std::vector<Eigen::MatrixXi> { E_bunny, E_bunny, E_bowl },
         std::vector<Eigen::MatrixXi> { F_bunny, F_bunny, F_bowl },
         /*densisties=*/ { { 1000.0, 1000.0, 1000.0 } }, initial_poses);
-    bodies->planes.emplace_back(
-        Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 1, 0));
+    bodies->planes.emplace_back(Eigen::Vector3d(0, 1, 0), 0);
 
     double dt = 0.1;
     double tend = 10.0;

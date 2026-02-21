@@ -39,9 +39,10 @@ MatrixMax<double, 3, 2> PlaneVertexTangentialCollision::compute_tangent_basis(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == ndof());
-    VectorMax3d p0 = plane_origin.head(positions.size());
-    VectorMax3d p1 = p0 + plane_normal.head(positions.size());
-    return point_point_tangent_basis(p0, p1);
+    Eigen::Vector3d p0 = -plane.offset() * plane.normal();
+    Eigen::Vector3d p1 = p0 + plane.normal();
+    return point_point_tangent_basis(
+        p0.head(positions.size()), p1.head(positions.size()));
 }
 
 MatrixMax<double, 6, 12>

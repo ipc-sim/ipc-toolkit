@@ -1,3 +1,4 @@
+#include <Eigen/Geometry>
 #include <common.hpp>
 
 #include <ipc/collisions/normal/plane_vertex.hpp>
@@ -10,8 +11,6 @@ void define_plane_vertex_normal_collision(py::module_& m)
         PlaneVertexNormalCollision, PlaneVertexCandidate, NormalCollision>(
         m, "PlaneVertexNormalCollision")
         .def(
-            py::init<
-                Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>,
-                index_t>(),
-            "plane_origin"_a, "plane_normal"_a, "vertex_id"_a);
+            py::init<Eigen::Hyperplane<double, 3>, index_t>(), "plane"_a,
+            "vertex_id"_a);
 }

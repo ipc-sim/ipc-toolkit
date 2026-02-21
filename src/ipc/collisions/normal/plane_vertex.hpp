@@ -17,12 +17,11 @@ public:
     }
 
     PlaneVertexNormalCollision(
-        Eigen::ConstRef<VectorMax3d> _plane_origin,
-        Eigen::ConstRef<VectorMax3d> _plane_normal,
+        const Eigen::Hyperplane<double, 3>& _plane,
         const index_t _vertex_id,
         const double _weight,
         const Eigen::SparseVector<double>& _weight_gradient)
-        : PlaneVertexCandidate(_plane_origin, _plane_normal, _vertex_id)
+        : PlaneVertexCandidate(_plane, _vertex_id)
         , NormalCollision(_weight, _weight_gradient)
     {
     }
