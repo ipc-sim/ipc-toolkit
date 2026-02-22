@@ -774,4 +774,18 @@ TEST_CASE(
         std::cout << "Analytic Hessian:\n" << analytic_hessian << "\n";
         std::cout << "Finite-difference Hessian:\n" << fd_hessian << "\n";
     }
+
+    // Check gradient = -force
+    const Eigen::MatrixXd lagged_displacements =
+        Eigen::MatrixXd::Zero(vertices.rows(), vertices.cols());
+    const VectorMax12d force = D.force(
+        collision,
+        collision.dof(mesh.rest_positions(), mesh.edges(), mesh.faces()),
+        collision.dof(lagged_displacements, mesh.edges(), mesh.faces()),
+        vel_dof, barrier_potential);
+    CHECK(analytic_grad.isApprox(-force));
+    if (!analytic_grad.isApprox(-force)) {
+        std::cout << "Analytic gradient: " << analytic_grad.transpose() << "\n";
+        std::cout << "Negative force: " << (-force).transpose() << "\n";
+    }
 }
