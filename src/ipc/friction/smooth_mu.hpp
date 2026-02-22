@@ -2,7 +2,7 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
-#include <utility>
+#include <utility> // for std::pair
 
 namespace ipc {
 

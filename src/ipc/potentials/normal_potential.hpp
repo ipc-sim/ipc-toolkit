@@ -77,7 +77,6 @@ public:
     /// @brief Compute the force magnitude for a collision.
     /// @param distance_squared The squared distance between elements.
     /// @param dmin The minimum distance offset to the barrier.
-    /// @param barrier_stiffness The barrier stiffness.
     /// @return The force magnitude.
     virtual double
     force_magnitude(const double distance_squared, const double dmin) const = 0;
@@ -86,7 +85,6 @@ public:
     /// @param distance_squared The squared distance between elements.
     /// @param distance_squared_gradient The gradient of the squared distance.
     /// @param dmin The minimum distance offset to the barrier.
-    /// @param barrier_stiffness The stiffness of the barrier.
     /// @return The gradient of the force.
     virtual VectorMax12d force_magnitude_gradient(
         const double distance_squared,

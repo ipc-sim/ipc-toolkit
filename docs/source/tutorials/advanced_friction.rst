@@ -1,14 +1,18 @@
 Advanced Friction
 =================
 
-This tutorial describes two advanced friction features: coefficients that vary
-over the mesh and separate static and kinetic friction coefficients.
+This tutorial describes three advanced friction features:
+
+- :ref:`coefficients that vary over the mesh <spatially_varying_coefficients>`,
+- :ref:`separate static and kinetic friction coefficients <separate_coefficients>`, and
+- :ref:`anisotropic friction with different coefficients along each tangent direction <anisotropic_friction>`.
 
 .. seealso::
 
     For an introduction to friction modeling and the dissipative potential, see
     `"Getting Started" <getting_started.html#friction>`_.
 
+.. _spatially_varying_coefficients:
 
 Spatially Varying Coefficients of Friction
 ------------------------------------------
@@ -21,6 +25,8 @@ Spatially Varying Coefficients of Friction
 You can specify spatially varying coefficients of friction by passing an ``Eigen::VectorXd`` to ``TangentialCollisions::build``. Each entry is the coefficient of friction for one vertex. You can assign different coefficients to different parts of the mesh (e.g. rubber in one region, plastic in another).
 
 You can also provide an optional ``blend_mu`` parameter to blend the coefficient of friction on either side of the contact. The default behavior is to average the coefficients of friction on both sides, but you can specify a custom blending function if needed (e.g., multiplying them or taking the maximum or minimum).
+
+.. _separate_coefficients:
 
 Separate Coefficients for Static and Kinetic Friction
 -----------------------------------------------------
@@ -158,12 +164,14 @@ While this approach provides a smooth transition between static and kinetic fric
 
 If you have suggestions for improving this approach or alternative methods, please reach out on our `GitHub Discussions <https://github.com/ipc-sim/ipc-toolkit/discussions>`_.
 
+.. _anisotropic_friction:
+
 Anisotropic Friction
 --------------------
 
 .. seealso::
 
-    :doc:`/cpp-api/friction` and :doc:`/python-api/friction` for the anisotropic
+    :doc:`C++ API </cpp-api/friction>` and :doc:`Python API </python-api/friction>` for the anisotropic
     helpers. The ``notebooks/anisotropic_friction_math.ipynb`` notebook has the
     full derivation and plots.
 
@@ -211,7 +219,7 @@ second, both tangent to the surface):
                 tangential_collisions[i].mu_s_aniso = np.array([0.8, 0.4])
                 tangential_collisions[i].mu_k_aniso = np.array([0.6, 0.3])
 
-Anisotropic friction uses an elliptical L2 projection model. For a given
+Anisotropic friction uses an elliptical :math:`L^2` projection model. For a given
 tangential velocity direction :math:`\mathbf{t} =
 \boldsymbol{\tau} / \|\boldsymbol{\tau}\|`, the effective friction coefficient
 is:
@@ -222,9 +230,7 @@ is:
 where :math:`\mu_0` and :math:`\mu_1` are the friction coefficients along the
 two tangent basis directions, and :math:`t_0` and :math:`t_1` are the
 components of the unit direction vector. This formulation matches the matchstick
-(elliptical Coulomb cone) model. See :cite:t:`Erleben2019Matchstick` (Computer
-Graphics Forum, 2019; DOI 10.1111/cgf.13885). Code:
-`erleben/matchstick <https://github.com/erleben/matchstick>`_.
+(elliptical Coulomb cone) model. See :cite:t:`Erleben2019Matchstick`.
 
 Usage
 ~~~~~

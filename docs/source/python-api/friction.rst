@@ -30,7 +30,7 @@ Anisotropic Friction Helpers
 -----------------------------
 
 ``anisotropic_mu_eff_f`` and ``anisotropic_mu_eff_f_dtau`` implement the
-elliptical L2 (matchstick) model (:cite:t:`Erleben2019Matchstick`). The C++
+elliptical :math:`L^2` (matchstick) model (:cite:t:`Erleben2019Matchstick`). The C++
 API provides ``anisotropic_mu_eff_from_tau_aniso``, ``anisotropic_mu_eff_f_grad``,
 and related helpers; the solver uses them when you set anisotropic coefficients
 on tangential collisions.
