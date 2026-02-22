@@ -202,23 +202,30 @@ VectorMax12d TangentialPotential::gradient(
 
     // Apply anisotropic scaling: u_aniso = mu_aniso ⊙ u
     // Handle both 2D tangent space (3D sim) and 1D tangent space (2D sim)
-    const VectorMax2d u_aniso =
-        collision.mu_aniso.head(u.size()).cwiseProduct(u);
-
     const int tangent_dim = u.size();
+    const VectorMax2d u_aniso =
+        collision.mu_aniso.head(tangent_dim).cwiseProduct(u);
+
     double mu_s = collision.mu_s, mu_k = collision.mu_k;
+    VectorMax2d grad_mu_s_wrt_u_aniso = VectorMax2d::Zero(tangent_dim);
+    VectorMax2d grad_mu_k_wrt_u_aniso = VectorMax2d::Zero(tangent_dim);
+
     if (is_anisotropic(collision, tangent_dim)) {
+        // Get effective mu values
         std::tie(mu_s, mu_k) = anisotropic_mu_eff_from_tau_aniso(
             u_aniso, collision.mu_s_aniso, collision.mu_k_aniso, mu_s, mu_k);
+
+        // Get gradients of effective mu w.r.t. u_aniso
+        std::tie(grad_mu_s_wrt_u_aniso, grad_mu_k_wrt_u_aniso) =
+            anisotropic_mu_eff_f_grad(
+                u_aniso, collision.mu_s_aniso, collision.mu_k_aniso,
+                /*mu_s_eff=*/mu_s, /*mu_k_eff=*/mu_k);
     }
 
-    // Compute T = ΓᵀP
+    // Compute T_aniso = Γᵀ P diag(mu_aniso)
     const MatrixMax<double, 12, 2> T =
         collision.relative_velocity_matrix().transpose()
         * collision.tangent_basis;
-
-    // Compute μ(‖u_aniso‖) f₁(‖u_aniso‖)/‖u_aniso‖
-    const double mu_f1_over_norm_u = mu_f1_over_x(u_aniso.norm(), mu_s, mu_k);
 
     // Apply anisotropic scaling to T: T_aniso = T * diag(mu_aniso)
     // This accounts for ∂u_aniso/∂u = diag(mu_aniso) in the chain rule
@@ -228,11 +235,25 @@ VectorMax12d TangentialPotential::gradient(
         T_aniso.col(1) *= collision.mu_aniso[1];
     }
 
-    // μ(‖u_aniso‖) N(xᵗ) f₁(‖u_aniso‖)/‖u_aniso‖ T_aniso(xᵗ) u_aniso
-    return T_aniso
-        * ((collision.weight * collision.normal_force_magnitude
-            * mu_f1_over_norm_u)
-           * u_aniso);
+    // Compute μ(‖u_aniso‖) f₁(‖u_aniso‖)/‖u_aniso‖
+    const double norm_u_aniso = u_aniso.norm();
+
+    // Term 1: partial w.r.t norm (the standard friction gradient)
+    //         mu_f1(‖u_aniso‖, mu_s, mu_k) * (u_aniso / ‖u_aniso‖)
+    VectorMax2d grad_wrt_u_aniso =
+        mu_f1_over_x(norm_u_aniso, mu_s, mu_k) * u_aniso;
+
+    // Term 2: partial w.r.t mu_s and mu_k (the anisotropic "drift" terms)
+    if (is_anisotropic(collision, tangent_dim)) {
+        grad_wrt_u_aniso +=
+            mu_f0_grad_mu_s(norm_u_aniso, mu_s, mu_k) * grad_mu_s_wrt_u_aniso;
+        grad_wrt_u_aniso +=
+            mu_f0_grad_mu_k(norm_u_aniso, mu_s, mu_k) * grad_mu_k_wrt_u_aniso;
+    }
+
+    grad_wrt_u_aniso *= collision.weight * collision.normal_force_magnitude;
+
+    return T_aniso * grad_wrt_u_aniso;
 }
 
 MatrixMax12d TangentialPotential::hessian(

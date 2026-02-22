@@ -11,11 +11,10 @@
 #include <ipc/collision_mesh.hpp>
 
 #include <finitediff.hpp>
-#include <cmath>
+#include <igl/edges.h>
+#include <igl/PI.h>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include <cmath>
 
 using namespace ipc;
 
@@ -34,7 +33,7 @@ TEST_CASE("Anisotropic mu effective computation", "[friction][anisotropic][mu]")
     Eigen::Vector2d mu_k_aniso(mu_k0, mu_k1);
 
     // Test various directions
-    const double angle = GENERATE(range(0.0, 2.0 * M_PI, M_PI / 4.0));
+    const double angle = GENERATE(range(0.0, 2.0 * igl::PI, igl::PI / 4.0));
     Eigen::Vector2d tau_dir(std::cos(angle), std::sin(angle));
 
     CAPTURE(mu_s_aniso, mu_k_aniso, tau_dir);
@@ -129,7 +128,7 @@ TEST_CASE(
 
     // Test various tau values
     const double tau_norm = GENERATE(range(0.01, 1.0, 0.2));
-    const double angle = GENERATE(range(0.0, 2.0 * M_PI, M_PI / 4.0));
+    const double angle = GENERATE(range(0.0, 2.0 * igl::PI, igl::PI / 4.0));
     Eigen::Vector2d tau(tau_norm * std::cos(angle), tau_norm * std::sin(angle));
 
     CAPTURE(mu_aniso, tau);
@@ -196,7 +195,7 @@ TEST_CASE(
     Eigen::Vector2d mu_k_aniso_zero = Eigen::Vector2d::Zero();
 
     // Test with various directions
-    const double angle = GENERATE(range(0.0, 2.0 * M_PI, M_PI / 4.0));
+    const double angle = GENERATE(range(0.0, 2.0 * igl::PI, igl::PI / 4.0));
     Eigen::Vector2d tau_dir(std::cos(angle), std::sin(angle));
 
     // When anisotropic coefficients are zero, the function should handle it
@@ -405,7 +404,7 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
     FrictionPotential friction_potential(1e-4);
 
     // Test with different velocity directions
-    const double angle = GENERATE(range(0.0, 2.0 * M_PI, M_PI / 4.0));
+    const double angle = GENERATE(range(0.0, 2.0 * igl::PI, igl::PI / 4.0));
     const double velocity_magnitude = GENERATE(0.01, 0.1);
 
     Eigen::MatrixXd velocities(2, 3);
@@ -593,7 +592,7 @@ TEST_CASE(
     FrictionPotential friction_potential(1e-4);
 
     // Test various velocity directions
-    const double angle = GENERATE(range(0.0, 2.0 * M_PI, M_PI / 6.0));
+    const double angle = GENERATE(range(0.0, 2.0 * igl::PI, igl::PI / 6.0));
     const double velocity_magnitude = GENERATE(0.01, 0.1, 0.5);
 
     Eigen::MatrixXd velocities(2, 3);
@@ -682,4 +681,97 @@ TEST_CASE(
     // We just verify the forces are computed without error here
     CHECK(mu_aniso_only_force.norm() > 1e-10);
     CHECK(dir_dep_only_force.norm() > 1e-10);
+}
+
+TEST_CASE(
+    "Anisotropic TangentialPotential gradient and Hessian",
+    "[friction][anisotropic][gradient]")
+{
+    // Create a simple 3D mesh: a triangle and a nearby point to force
+    // a face-vertex tangential collision
+    Eigen::MatrixXd vertices(4, 3);
+    vertices << 0.0, 0.0, 0.0, // triangle vertex 0
+        0.1, 0.0, 0.0,         // triangle vertex 1
+        0.0, 0.1, 0.0,         // triangle vertex 2
+        0.02, 0.02, 0.001;     // point (vertex 3) slightly above triangle
+
+    Eigen::MatrixXi faces(1, 3);
+    faces << 0, 1, 2;
+    Eigen::MatrixXi edges;
+    igl::edges(faces, edges);
+    CollisionMesh mesh(vertices, edges, faces);
+    mesh.init_area_jacobians();
+
+    const double dhat = 1e-2;
+    BarrierPotential barrier_potential(dhat, 1e6);
+
+    // Build normal collisions
+    NormalCollisions normal_collisions;
+    normal_collisions.set_use_area_weighting(true);
+    normal_collisions.set_collision_set_type(
+        NormalCollisions::CollisionSetType::IPC);
+    normal_collisions.build(mesh, vertices, dhat);
+
+    REQUIRE(normal_collisions.size() == 1); // should have a collision
+
+    // Build tangential collisions
+    TangentialCollisions tangential_collisions;
+    tangential_collisions.build(
+        mesh, vertices, normal_collisions, barrier_potential, 0.5);
+
+    REQUIRE(tangential_collisions.size() == 1);
+
+    // Use the first tangential collision
+    TangentialCollision& collision = tangential_collisions[0];
+
+    // Set direction-dependent friction coefficients
+    collision.mu_s_aniso = Eigen::Vector2d(0.6, 0.3);
+    collision.mu_k_aniso = Eigen::Vector2d(0.5, 0.25);
+
+    // Keep default mu_aniso scaling
+    collision.mu_aniso = Eigen::Vector2d(1.0, 1.0);
+
+    FrictionPotential D(1e-4);
+
+    // Choose a sample velocity: only the point (vertex 3) moves
+    Eigen::MatrixXd velocities = Eigen::MatrixXd::Random(4, 3);
+
+    // Analytical gradient (local DOF vector)
+    const VectorMax12d vel_dof =
+        collision.dof(velocities, mesh.edges(), mesh.faces());
+    const VectorMax12d analytic_grad = D.gradient(collision, vel_dof);
+    REQUIRE(!analytic_grad.isZero());
+
+    // Finite-difference gradient of the scalar potential w.r.t. velocity DOF
+    auto f = [&](const Eigen::VectorXd& v) -> double {
+        return D(collision, v);
+    };
+
+    Eigen::VectorXd fd_grad;
+    fd::finite_gradient(vel_dof, f, fd_grad);
+
+    CHECK(fd::compare_gradient(analytic_grad, fd_grad));
+    if (!fd::compare_gradient(analytic_grad, fd_grad)) {
+        std::cout << "Analytic gradient: " << analytic_grad.transpose() << "\n";
+        std::cout << "Finite-difference gradient: " << fd_grad.transpose()
+                  << "\n";
+    }
+
+    // Analytical Hessian (local DOF x local DOF)
+    const MatrixMax12d analytic_hessian = D.hessian(collision, vel_dof);
+    REQUIRE(!analytic_hessian.isZero());
+
+    // Finite-difference Hessian: Jacobian of the gradient w.r.t. velocity DOF
+    auto g_jac = [&](const Eigen::VectorXd& v) -> Eigen::VectorXd {
+        return D.gradient(collision, v);
+    };
+
+    Eigen::MatrixXd fd_hessian;
+    fd::finite_jacobian(vel_dof, g_jac, fd_hessian);
+
+    CHECK(fd::compare_jacobian(analytic_hessian, fd_hessian));
+    if (!fd::compare_jacobian(analytic_hessian, fd_hessian)) {
+        std::cout << "Analytic Hessian:\n" << analytic_hessian << "\n";
+        std::cout << "Finite-difference Hessian:\n" << fd_hessian << "\n";
+    }
 }
