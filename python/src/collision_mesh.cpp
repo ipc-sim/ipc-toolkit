@@ -513,6 +513,10 @@ void define_collision_mesh(py::module_& m)
             R"ipc_Qu8mg5v7(
             A vector of planes in the collision mesh.
 
-            Each plane is represented as a Plane object with an origin and a normal vector.
+            Each plane is represented as a `Hyperplane` object (wrapping `Eigen::Hyperplane<double, 3>`).
+            In Python, a `Hyperplane` can be constructed from either:
+                * a normal and a point on the plane: `Hyperplane(normal, point)`, or
+                * a normal and an offset: `Hyperplane(normal, offset)`,
+            where `normal` and `point` are 3D vectors and `offset` is a scalar.
             )ipc_Qu8mg5v7");
 }

@@ -19,7 +19,7 @@ public:
     static constexpr double SMALL_TOI = 1e-6;
 
     /// @brief Construct a new AdditiveCCD object.
-    /// @param conservative_rescaling The conservative rescaling of the time of impact.
+    /// @param conservative_rescaling The conservative rescaling value used to avoid taking steps exactly to impact.
     InexactCCD(
         const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
 
@@ -114,9 +114,6 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0) const override;
-
-    /// @brief Conservative rescaling of the time of impact.
-    double conservative_rescaling;
 
 private:
     /// @brief Computes the time of impact between two points in 3D using continuous collision detection.

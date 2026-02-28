@@ -69,7 +69,27 @@ bool PlaneVertexCandidate::ccd(
     assert(vertices_t0.size() == 3 && vertices_t1.size() == 3);
     return point_static_plane_ccd(
         vertices_t0, vertices_t1, -plane.offset() * plane.normal(),
-        plane.normal(), toi);
+        plane.normal(), toi, narrow_phase_ccd.conservative_rescaling);
+}
+
+bool PlaneVertexCandidate::operator==(const PlaneVertexCandidate& other) const
+{
+    return this->vertex_id == other.vertex_id
+        && this->plane.normal().isApprox(other.plane.normal())
+        && this->plane.offset() == other.plane.offset();
+}
+
+bool PlaneVertexCandidate::operator!=(const PlaneVertexCandidate& other) const
+{
+    return !(*this == other);
+}
+
+bool PlaneVertexCandidate::operator<(const PlaneVertexCandidate& other) const
+{
+    if (this->vertex_id == other.vertex_id) {
+        return this->plane.offset() < other.plane.offset();
+    }
+    return this->vertex_id < other.vertex_id;
 }
 
 } // namespace ipc
