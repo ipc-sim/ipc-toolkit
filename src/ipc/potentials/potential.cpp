@@ -51,7 +51,7 @@ double Potential<TCollisions>::operator()(
             }
             return partial_sum;
         },
-        [](double a, double b) { return a + b; });
+        std::plus<double>());
 }
 
 template <class TCollisions>

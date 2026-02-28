@@ -5,6 +5,7 @@ set(SOURCES
   edge_vertex.cpp
   face_face.cpp
   face_vertex.cpp
+  plane_vertex.cpp
   vertex_vertex.cpp
   candidates.cpp
 )

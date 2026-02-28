@@ -146,6 +146,24 @@ void NormalCollisions::build(
 
     NormalCollisionsBuilder::merge(storage, *this);
 
+    for (const auto& [plane, vertex_id] : candidates.pv_candidates) {
+        const double d = plane.signedDistance(vertices.row(vertex_id));
+        if (d < dhat + dmin) {
+            const double weight =
+                use_area_weighting() ? mesh.vertex_area(vertex_id) : 1;
+
+            Eigen::SparseVector<double> weight_gradient;
+            if (enable_shape_derivatives()) {
+                weight_gradient = use_area_weighting()
+                    ? mesh.vertex_area_gradient(vertex_id)
+                    : Eigen::SparseVector<double>(vertices.size());
+            }
+
+            pv_collisions.emplace_back(
+                plane, vertex_id, weight, weight_gradient);
+        }
+    }
+
     // logger().debug(to_string(mesh, vertices));
 
     for (size_t ci = 0; ci < size(); ci++) {

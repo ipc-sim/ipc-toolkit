@@ -27,7 +27,7 @@ public:
 
     /// @brief Construct a new AdditiveCCD object.
     /// @param max_iterations The maximum number of iterations to use for the CCD algorithm. If set to UNLIMITTED_ITERATIONS, the algorithm will run until it converges.
-    /// @param conservative_rescaling The conservative rescaling of the time of impact.
+    /// @param conservative_rescaling The conservative rescaling value used to avoid taking steps exactly to impact.
     explicit AdditiveCCD(
         const long max_iterations = UNLIMITTED_ITERATIONS,
         const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
@@ -126,9 +126,6 @@ public:
 
     /// @brief Maximum number of iterations.
     long max_iterations;
-
-    /// @brief The conservative rescaling value used to avoid taking steps exactly to impact.
-    double conservative_rescaling;
 
 private:
     /// @brief Computes the time of impact between two objects using additive continuous collision detection.
