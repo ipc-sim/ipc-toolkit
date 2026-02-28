@@ -70,6 +70,15 @@ public:
     /// @brief The vertex's id.
     index_t vertex_id;
 
+    /// @brief Compare two PlaneVertexCandidates for equality.
+    bool operator==(const PlaneVertexCandidate& other) const;
+
+    /// @brief Compare two PlaneVertexCandidates for inequality.
+    bool operator!=(const PlaneVertexCandidate& other) const;
+
+    /// @brief Compare two PlaneVertexCandidates for less than.
+    bool operator<(const PlaneVertexCandidate& other) const;
+
 protected:
     /// @brief Compute the normal vector of the stencil.
     /// @param positions Vertex positions.

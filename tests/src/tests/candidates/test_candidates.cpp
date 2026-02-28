@@ -3,6 +3,7 @@
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/candidates/edge_face.hpp>
 #include <ipc/candidates/face_face.hpp>
+#include <ipc/candidates/plane_vertex.hpp>
 
 using namespace ipc;
 
@@ -13,8 +14,12 @@ TEST_CASE("Candidates", "[candidates]")
     candidates.ev_candidates = { { 3, 4 }, { 5, 6 } };
     candidates.ee_candidates = { { 6, 7 }, { 8, 9 } };
     candidates.fv_candidates = { { 10, 11 }, { 12, 13 } };
+    candidates.pv_candidates.emplace_back(
+        Eigen::Hyperplane<double, 3>(Eigen::Vector3d::UnitY(), 0), 14);
+    candidates.pv_candidates.emplace_back(
+        Eigen::Hyperplane<double, 3>(Eigen::Vector3d::UnitY(), 0), 15);
 
-    CHECK(candidates.size() == 8);
+    CHECK(candidates.size() == 10);
 
     CHECK(
         dynamic_cast<VertexVertexCandidate&>(candidates[0])
@@ -28,11 +33,13 @@ TEST_CASE("Candidates", "[candidates]")
     CHECK(
         dynamic_cast<FaceVertexCandidate&>(candidates[6])
         == candidates.fv_candidates[0]);
+    CHECK(&(candidates[8]) == &(candidates.pv_candidates[0]));
 
     CHECK(&(candidates[0]) == &(candidates.vv_candidates[0]));
     CHECK(&(candidates[2]) == &(candidates.ev_candidates[0]));
     CHECK(&(candidates[4]) == &(candidates.ee_candidates[0]));
     CHECK(&(candidates[6]) == &(candidates.fv_candidates[0]));
+    CHECK(&(candidates[8]) == &(candidates.pv_candidates[0]));
 
     try {
         candidates[candidates.size()];
@@ -46,22 +53,26 @@ TEST_CASE("Candidates", "[candidates]")
 
     const Candidates& const_candidates = candidates;
     CHECK(
-        dynamic_cast<const VertexVertexCandidate&>(const_candidates[0])
+        const_candidates[0].as<VertexVertexCandidate>()
         == candidates.vv_candidates[0]);
     CHECK(
-        dynamic_cast<const EdgeVertexCandidate&>(const_candidates[2])
+        const_candidates[2].as<EdgeVertexCandidate>()
         == candidates.ev_candidates[0]);
     CHECK(
-        dynamic_cast<const EdgeEdgeCandidate&>(const_candidates[4])
+        const_candidates[4].as<EdgeEdgeCandidate>()
         == candidates.ee_candidates[0]);
     CHECK(
-        dynamic_cast<const FaceVertexCandidate&>(const_candidates[6])
+        const_candidates[6].as<FaceVertexCandidate>()
         == candidates.fv_candidates[0]);
+    CHECK(
+        const_candidates[8].as<PlaneVertexCandidate>()
+        == candidates.pv_candidates[0]);
 
     CHECK(&(const_candidates[0]) == &(candidates.vv_candidates[0]));
     CHECK(&(const_candidates[2]) == &(candidates.ev_candidates[0]));
     CHECK(&(const_candidates[4]) == &(candidates.ee_candidates[0]));
     CHECK(&(const_candidates[6]) == &(candidates.fv_candidates[0]));
+    CHECK(&(const_candidates[8]) == &(candidates.pv_candidates[0]));
 
     try {
         const_candidates[candidates.size()];
@@ -138,4 +149,13 @@ TEST_CASE("Face-Face Candidate", "[candidates][face-face]")
     CHECK(FaceFaceCandidate(0, 1) < FaceFaceCandidate(0, 2));
     CHECK(FaceFaceCandidate(0, 1) < FaceFaceCandidate(2, 0));
     CHECK(!(FaceFaceCandidate(1, 1) < FaceFaceCandidate(0, 2)));
+}
+
+TEST_CASE("Plane-Vertex Candidate", "[candidates][plane-vertex]")
+{
+    Eigen::Hyperplane<double, 3> plane(Eigen::Vector3d::UnitY(), 0);
+    CHECK(PlaneVertexCandidate(plane, 1) == PlaneVertexCandidate(plane, 1));
+    CHECK(PlaneVertexCandidate(plane, 1) != PlaneVertexCandidate(plane, 2));
+    CHECK(PlaneVertexCandidate(plane, 1) < PlaneVertexCandidate(plane, 2));
+    CHECK(!(PlaneVertexCandidate(plane, 2) < PlaneVertexCandidate(plane, 1)));
 }

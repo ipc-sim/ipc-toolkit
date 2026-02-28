@@ -72,4 +72,24 @@ bool PlaneVertexCandidate::ccd(
         plane.normal(), toi);
 }
 
+bool PlaneVertexCandidate::operator==(const PlaneVertexCandidate& other) const
+{
+    return this->vertex_id == other.vertex_id
+        && this->plane.normal().isApprox(other.plane.normal())
+        && this->plane.offset() == other.plane.offset();
+}
+
+bool PlaneVertexCandidate::operator!=(const PlaneVertexCandidate& other) const
+{
+    return !(*this == other);
+}
+
+bool PlaneVertexCandidate::operator<(const PlaneVertexCandidate& other) const
+{
+    if (this->vertex_id == other.vertex_id) {
+        return this->plane.offset() < other.plane.offset();
+    }
+    return this->vertex_id < other.vertex_id;
+}
+
 } // namespace ipc
