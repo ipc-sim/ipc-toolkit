@@ -3,6 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
+#include <ipc/config.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
 
@@ -91,8 +92,14 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
         CHECK(barrier_potential(collisions, mesh, vertices) > 0.0);
         const Eigen::VectorXd grad =
             barrier_potential.gradient(collisions, mesh, vertices);
-        for (int i = 0; i < vertices.rows(); i++) {
-            const Eigen::Vector3d f = -grad.segment<3>(3 * i);
+        const int n_verts = vertices.rows();
+        for (int i = 0; i < n_verts; i++) {
+            Eigen::Vector3d f;
+            if constexpr (VERTEX_DERIVATIVE_LAYOUT == Eigen::RowMajor) {
+                f = -grad.segment<3>(3 * i);
+            } else {
+                f << -grad[i], -grad[n_verts + i], -grad[2 * n_verts + i];
+            }
             CHECK(f.normalized().isApprox(
                 vertices.row(i).normalized().transpose()));
         }

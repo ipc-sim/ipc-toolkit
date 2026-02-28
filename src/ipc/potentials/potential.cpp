@@ -134,7 +134,8 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
                     collision.vertex_ids(edges, faces);
 
                 local_hessian_to_global_triplets(
-                    local_hess, vids, dim, *(hess_triplets.cache));
+                    local_hess, vids, dim, *(hess_triplets.cache),
+                    mesh.num_vertices());
             }
         });
 
