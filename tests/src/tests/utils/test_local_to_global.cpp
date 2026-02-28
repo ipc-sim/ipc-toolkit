@@ -402,9 +402,11 @@ TEST_CASE(
     const int lc = n_col_local * dim; // 6
 
     Eigen::MatrixXd J(lr, lc);
-    for (int i = 0; i < lr; ++i)
-        for (int j = 0; j < lc; ++j)
+    for (int i = 0; i < lr; ++i) {
+        for (int j = 0; j < lc; ++j) {
             J(i, j) = 100.0 * (i + 1) + (j + 1);
+        }
+    }
 
     // RowMajor
     std::vector<Eigen::Triplet<double>> trips_row;
