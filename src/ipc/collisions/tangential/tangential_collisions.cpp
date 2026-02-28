@@ -114,8 +114,8 @@ void TangentialCollisions::build(
         FC_pv.emplace_back(
             c_pv, c_pv.dof(vertices, edges, faces), normal_potential);
         const auto& [vi, _0, _1, _2] = FC_pv.back().vertex_ids(edges, faces);
-        FC_fv.back().mu_s = mu_s(vi);
-        FC_fv.back().mu_k = mu_k(vi);
+        FC_pv.back().mu_s = mu_s(vi);
+        FC_pv.back().mu_k = mu_k(vi);
     }
 }
 

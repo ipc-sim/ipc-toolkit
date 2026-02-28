@@ -1,6 +1,5 @@
 set(SOURCES
   autodiff_types.hpp
-  autodiff_types.hpp
   default_init_allocator.hpp
   eigen_ext.hpp
   eigen_ext.tpp
