@@ -322,6 +322,10 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> faces,
         Eigen::ConstRef<Eigen::MatrixXi> edges);
 
+    /// @brief Convert a matrix meant for M_V * vertices to M_dof * x by duplicating the entries dim times.
+    static Eigen::SparseMatrix<double> vertex_matrix_to_dof_matrix(
+        const Eigen::SparseMatrix<double>& M_V, int dim);
+
     /// A function that takes two vertex IDs and returns true if the vertices
     /// (and faces or edges containing the vertices) can collide. By default all
     /// primitives can collide with all other primitives.
@@ -350,10 +354,6 @@ protected:
 
     /// @brief Initialize vertex and edge areas.
     void init_areas();
-
-    /// @brief Convert a matrix meant for M_V * vertices to M_dof * x by duplicating the entries dim times.
-    static Eigen::SparseMatrix<double> vertex_matrix_to_dof_matrix(
-        const Eigen::SparseMatrix<double>& M_V, int dim);
 
     // -----------------------------------------------------------------------
 
