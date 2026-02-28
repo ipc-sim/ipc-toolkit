@@ -384,7 +384,7 @@ Edge3::Edge3(
     const index_t id,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const VectorMax3d& d,
+    Eigen::ConstRef<VectorMax3d> d,
     const SmoothContactParameters& params)
     : Primitive(id, params)
 {

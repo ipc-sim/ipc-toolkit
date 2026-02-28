@@ -42,6 +42,7 @@ else()
     -Werror=nonnull
     -Werror=init-self
     -Werror=main
+    -Werror=extra-semi
     -Werror=missing-braces
     -Werror=sequence-point
     -Werror=return-type

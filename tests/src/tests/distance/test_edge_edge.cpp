@@ -22,7 +22,7 @@ double edge_edge_distance_stacked(const Eigen::VectorXd& x)
     assert(x.size() == 12);
     return edge_edge_distance(
         x.segment<3>(0), x.segment<3>(3), x.segment<3>(6), x.segment<3>(9));
-};
+}
 } // namespace
 
 TEST_CASE("Edge-edge distance", "[distance][edge-edge]")

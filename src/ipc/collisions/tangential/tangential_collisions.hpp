@@ -5,6 +5,7 @@
 #include <ipc/collisions/tangential/edge_edge.hpp>
 #include <ipc/collisions/tangential/edge_vertex.hpp>
 #include <ipc/collisions/tangential/face_vertex.hpp>
+#include <ipc/collisions/tangential/plane_vertex.hpp>
 #include <ipc/collisions/tangential/tangential_collision.hpp>
 #include <ipc/collisions/tangential/vertex_vertex.hpp>
 #include <ipc/smooth_contact/smooth_collisions.hpp>
@@ -136,6 +137,8 @@ public:
     std::vector<EdgeEdgeTangentialCollision> ee_collisions;
     /// @brief Face-vertex tangential collisions.
     std::vector<FaceVertexTangentialCollision> fv_collisions;
+    /// @brief Plane-vertex tangential collisions.
+    std::vector<PlaneVertexTangentialCollision> pv_collisions;
 };
 
 } // namespace ipc
