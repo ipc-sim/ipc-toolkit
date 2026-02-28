@@ -15,7 +15,7 @@ double point_plane_distance_stacked(const Eigen::VectorXd& x)
     assert(x.size() == 12);
     return point_plane_distance(
         x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
-};
+}
 } // namespace
 
 TEST_CASE(

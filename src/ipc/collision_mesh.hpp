@@ -327,6 +327,11 @@ public:
     /// primitives can collide with all other primitives.
     std::function<bool(size_t, size_t)> can_collide = default_can_collide;
 
+    /// @brief Analytic planes in the scene that can be collided with.
+    /// This is useful for representing infinite planes (e.g., the ground plane)
+    /// or planes that are not part of the collision mesh.
+    std::vector<Eigen::Hyperplane<double, 3>> planes;
+
 protected:
     // -----------------------------------------------------------------------
     // Helper initialization functions

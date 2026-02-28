@@ -1,11 +1,14 @@
 set(SOURCES
   autodiff_types.hpp
+  autodiff_types.hpp
   default_init_allocator.hpp
   eigen_ext.hpp
   eigen_ext.tpp
   local_to_global.hpp
   logger.cpp
   logger.hpp
+  matrix_cache.cpp
+  matrix_cache.hpp
   merge_thread_local.hpp
   profiler.cpp
   profiler.hpp
@@ -16,9 +19,6 @@ set(SOURCES
   vertex_to_min_edge.cpp
   vertex_to_min_edge.hpp
   world_bbox_diagonal_length.hpp
-  autodiff_types.hpp
-  matrix_cache.hpp
-  matrix_cache.cpp
 )
 
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

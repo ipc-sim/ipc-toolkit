@@ -363,7 +363,7 @@ TEST_CASE("Plane-vertex collision normal", "[pv][normal]")
 
     Eigen::MatrixXi E, F;
 
-    PlaneVertexNormalCollision pv(o, n, 0);
+    PlaneVertexNormalCollision pv(Eigen::Hyperplane<double, 3>(n, o), 0);
 
     Eigen::Vector3d normal = pv.compute_normal(V, E, F);
     Eigen::MatrixXd jacobian = pv.compute_normal_jacobian(V, E, F);
