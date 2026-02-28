@@ -64,8 +64,8 @@ namespace {
 AdditiveCCD::AdditiveCCD(
     const long _max_iterations, const double _conservative_rescaling)
     : max_iterations(_max_iterations)
-    , conservative_rescaling(_conservative_rescaling)
 {
+    conservative_rescaling = _conservative_rescaling;
 }
 
 bool AdditiveCCD::additive_ccd(

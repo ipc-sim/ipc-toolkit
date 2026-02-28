@@ -3,6 +3,7 @@
 
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/candidates/plane_vertex.hpp>
+#include <ipc/ccd/additive_ccd.hpp>
 #include <ipc/collision_mesh.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/collisions/normal/plane_vertex.hpp>
@@ -63,27 +64,30 @@ TEST_CASE("PlaneVertexCandidate", "[candidates][plane-vertex]")
 
     SECTION("CCD")
     {
+        AdditiveCCD ccd;
+        ccd.conservative_rescaling = 1.0; // No rescaling for testing
+
         // Vertex starts above the plane and moves below
         Eigen::Vector3d v_t0(0, 1, 0);
         Eigen::Vector3d v_t1(0, -1, 0);
         double toi;
-        bool hit = pvc.ccd(v_t0, v_t1, toi, /*min_distance=*/0, /*tmax=*/1.0);
+        bool hit =
+            pvc.ccd(v_t0, v_t1, toi, /*min_distance=*/0, /*tmax=*/1.0, ccd);
         CHECK(hit);
-        CHECK(toi > 0.0);
-        CHECK(toi < 0.5); // conservative rescaling makes toi earlier than exact
+        CHECK(toi == Catch::Approx(0.5));
 
         // Vertex starts and stays above the plane
         Eigen::Vector3d v_t0_above(0, 2, 0);
         Eigen::Vector3d v_t1_above(0, 1, 0);
         bool no_hit = pvc.ccd(
-            v_t0_above, v_t1_above, toi, /*min_distance=*/0, /*tmax=*/1.0);
+            v_t0_above, v_t1_above, toi, /*min_distance=*/0, /*tmax=*/1.0, ccd);
         CHECK_FALSE(no_hit);
 
         // Vertex starts below and moves further below — already past plane
         Eigen::Vector3d v_t0_below(0, -0.5, 0);
         Eigen::Vector3d v_t1_below(0, -2, 0);
         bool below_hit = pvc.ccd(
-            v_t0_below, v_t1_below, toi, /*min_distance=*/0, /*tmax=*/1.0);
+            v_t0_below, v_t1_below, toi, /*min_distance=*/0, /*tmax=*/1.0, ccd);
         CHECK_FALSE(below_hit);
     }
 }

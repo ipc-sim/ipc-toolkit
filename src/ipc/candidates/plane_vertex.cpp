@@ -69,7 +69,7 @@ bool PlaneVertexCandidate::ccd(
     assert(vertices_t0.size() == 3 && vertices_t1.size() == 3);
     return point_static_plane_ccd(
         vertices_t0, vertices_t1, -plane.offset() * plane.normal(),
-        plane.normal(), toi);
+        plane.normal(), toi, narrow_phase_ccd.conservative_rescaling);
 }
 
 bool PlaneVertexCandidate::operator==(const PlaneVertexCandidate& other) const
