@@ -74,7 +74,7 @@ Eigen::Vector2d edge_edge_closest_point(
     const Eigen::Vector3d ea = ea1 - ea0;
     const Eigen::Vector3d eb = eb1 - eb0;
 
-    Eigen::Matrix<double, 2, 2> A;
+    Eigen::Matrix2d A;
     A(0, 0) = ea.squaredNorm();
     A(0, 1) = A(1, 0) = -eb.dot(ea);
     A(1, 1) = eb.squaredNorm();
