@@ -95,7 +95,7 @@ EdgeEdgeTangentialCollision::relative_velocity_jacobian(
     return edge_edge_relative_velocity_jacobian(_closest_point);
 }
 
-MatrixMax<double, 3, 24>
+MatrixMax<double, 36, 2>
 EdgeEdgeTangentialCollision::relative_velocity_dx_dbeta(
     Eigen::ConstRef<VectorMax2d> _closest_point) const
 {

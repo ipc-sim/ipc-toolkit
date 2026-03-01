@@ -39,9 +39,7 @@ Matrix6d point_line_signed_distance_hessian(
     // ---------------------------------------------------------
     // Contract the normal Hessian (2x36) with vector v (2x1).
     // Result is 1x36, mapped to 6x6.
-    for (int i = 0; i < 6; ++i) {
-        hess.row(i) = hess_n.middleRows<2>(2 * i).transpose() * v;
-    }
+    hess = (hess_n.reshaped(2, 36).transpose() * v).reshaped(6, 6);
 
     // ---------------------------------------------------------
     // 2. Add Jacobian Terms (Product Rule Corrections)

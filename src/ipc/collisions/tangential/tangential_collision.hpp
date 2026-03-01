@@ -86,7 +86,7 @@ public:
     /// @brief Construct the Jacobian of the relative velocity premultiplier wrt the closest points.
     /// @param closest_point Barycentric coordinates of the closest point.
     /// @return Jacobian of the relative velocity premultiplier wrt the closest points.
-    virtual MatrixMax<double, 3, 24> relative_velocity_dx_dbeta(
+    virtual MatrixMax<double, 36, 2> relative_velocity_dx_dbeta(
         Eigen::ConstRef<VectorMax2d> closest_point) const = 0;
 
 public:

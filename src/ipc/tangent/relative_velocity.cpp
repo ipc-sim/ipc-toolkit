@@ -19,9 +19,10 @@ MatrixMax<double, 3, 6> point_point_relative_velocity_jacobian(const int dim)
     return J;
 }
 
-MatrixMax<double, 3, 6> point_point_relative_velocity_dx_dbeta(const int dim)
+VectorMax<double, 18> point_point_relative_velocity_dx_dbeta(const int dim)
 {
-    return MatrixMax<double, 3, 6>::Zero(dim, 2 * dim);
+    // Γ is constant (does not depend on β), so the derivative is zero.
+    return VectorMax<double, 18>::Zero(2 * dim * dim);
 }
 
 // ============================================================================
@@ -46,12 +47,23 @@ point_edge_relative_velocity_jacobian(const int dim, const double alpha)
     return J;
 }
 
-MatrixMax<double, 3, 9>
+// Γ(α) = [I, (α-1)I, -αI]  (dim × 3·dim)
+// ∂Γ/∂α = [0, I, -I]
+//
+// Stored as vec(∂Γ/∂α) in column-major order (3rd-order convention).
+// Result is a column vector of size dim × 3·dim = 3·dim².
+// For a (dim × ndof) matrix M, element M(r,c) maps to vec index c·dim + r.
+VectorMax<double, 27>
 point_edge_relative_velocity_dx_dbeta(const int dim, const double alpha)
 {
-    MatrixMax<double, 3, 9> J = MatrixMax<double, 3, 9>::Zero(dim, 3 * dim);
-    J.middleCols(dim, dim).diagonal().setConstant(1);
-    J.rightCols(dim).diagonal().setConstant(-1);
+    const int ndof = 3 * dim;
+    VectorMax<double, 27> J = VectorMax<double, 27>::Zero(dim * ndof);
+    for (int i = 0; i < dim; ++i) {
+        // I block at cols [dim, 2·dim)
+        J[(dim + i) * dim + i] = 1;
+        // -I block at cols [2·dim, 3·dim)
+        J[(2 * dim + i) * dim + i] = -1;
+    }
     return J;
 }
 
@@ -81,16 +93,26 @@ edge_edge_relative_velocity_jacobian(Eigen::ConstRef<Eigen::Vector2d> coords)
     return J;
 }
 
-Eigen::Matrix<double, 3, 24>
+// Γ(β₁,β₂) = [(1-β₁)I, β₁I, (β₂-1)I, -β₂I]  (3 × 12)
+// ∂Γ/∂β₁ = [-I, I, 0, 0]
+// ∂Γ/∂β₂ = [ 0, 0, I,-I]
+//
+// Stored as [vec(∂Γ/∂β₁) | vec(∂Γ/∂β₂)] in column-major order (3rd-order
+// convention). Result shape: (36, 2). For a (3 × 12) matrix M, element M(r,c)
+// maps to vec index c·3 + r.
+Eigen::Matrix<double, 36, 2>
 edge_edge_relative_velocity_dx_dbeta(Eigen::ConstRef<Eigen::Vector2d> coords)
 {
-    Eigen::Matrix<double, 3, 24> J = Eigen::Matrix<double, 3, 24>::Zero();
-    // wrt β₁
-    J.middleCols<3>(0).diagonal().setConstant(-1);
-    J.middleCols<3>(3).diagonal().setConstant(1);
-    // // wrt β₂
-    J.middleCols<3>(18).diagonal().setConstant(1);
-    J.middleCols<3>(21).diagonal().setConstant(-1);
+    constexpr int dim = 3;
+    Eigen::Matrix<double, 36, 2> J = Eigen::Matrix<double, 36, 2>::Zero();
+    for (int i = 0; i < dim; ++i) {
+        // wrt β₁: -I at cols [0,3), I at cols [3,6)
+        J((0 + i) * dim + i, 0) = -1;
+        J((3 + i) * dim + i, 0) = 1;
+        // wrt β₂: I at cols [6,9), -I at cols [9,12)
+        J((6 + i) * dim + i, 1) = 1;
+        J((9 + i) * dim + i, 1) = -1;
+    }
     return J;
 }
 
@@ -120,17 +142,26 @@ Eigen::Matrix<double, 3, 12> point_triangle_relative_velocity_jacobian(
     return J;
 }
 
-Eigen::Matrix<double, 3, 24> point_triangle_relative_velocity_dx_dbeta(
+// Γ(β₁,β₂) = [I, (β₁+β₂-1)I, -β₁I, -β₂I]  (3 × 12)
+// ∂Γ/∂β₁ = [0, I, -I, 0]
+// ∂Γ/∂β₂ = [0, I,  0,-I]
+//
+// Stored as [vec(∂Γ/∂β₁) | vec(∂Γ/∂β₂)] in column-major order (3rd-order
+// convention). Result shape: (36, 2). For a (3 × 12) matrix M, element M(r,c)
+// maps to vec index c·3 + r.
+Eigen::Matrix<double, 36, 2> point_triangle_relative_velocity_dx_dbeta(
     Eigen::ConstRef<Eigen::Vector2d> coords)
 {
-    Eigen::Matrix<double, 3, 24> J = Eigen::Matrix<double, 3, 24>::Zero();
-    // wrt β₁
-    J.middleCols<3>(3).diagonal().setConstant(1);
-    J.middleCols<3>(6).diagonal().setConstant(-1);
-    // wrt β₂
-    J.middleCols<3>(15).diagonal().setConstant(1);
-    J.middleCols<3>(21).diagonal().setConstant(-1);
-
+    constexpr int dim = 3;
+    Eigen::Matrix<double, 36, 2> J = Eigen::Matrix<double, 36, 2>::Zero();
+    for (int i = 0; i < dim; ++i) {
+        // wrt β₁: I at cols [3,6), -I at cols [6,9)
+        J((3 + i) * dim + i, 0) = 1;
+        J((6 + i) * dim + i, 0) = -1;
+        // wrt β₂: I at cols [3,6), -I at cols [9,12)
+        J((3 + i) * dim + i, 1) = 1;
+        J((9 + i) * dim + i, 1) = -1;
+    }
     return J;
 }
 

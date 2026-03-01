@@ -42,9 +42,7 @@ Matrix12d line_line_signed_distance_hessian(
     // Contract the normal Hessian (3x12x12) with vector v (3x1).
     // This computes (v ⋅ d²n/dx²).
     // The result is a 1x12x12 vector, which maps to the 12x12 Hessian matrix.
-    for (int i = 0; i < 12; ++i) {
-        hess.row(i) = hess_n.middleRows<3>(3 * i).transpose() * v;
-    }
+    hess = (hess_n.reshaped(3, 144).transpose() * v).reshaped(12, 12);
 
     // ---------------------------------------------------------
     // 2. Add Jacobian Terms (Product Rule Corrections)

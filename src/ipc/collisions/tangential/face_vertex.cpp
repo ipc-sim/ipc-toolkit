@@ -94,7 +94,7 @@ FaceVertexTangentialCollision::relative_velocity_jacobian(
     return point_triangle_relative_velocity_jacobian(_closest_point);
 }
 
-MatrixMax<double, 3, 24>
+MatrixMax<double, 36, 2>
 FaceVertexTangentialCollision::relative_velocity_dx_dbeta(
     Eigen::ConstRef<VectorMax2d> _closest_point) const
 {

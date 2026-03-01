@@ -44,7 +44,7 @@ protected:
     MatrixMax<double, 3, 12> relative_velocity_jacobian(
         Eigen::ConstRef<VectorMax2d> closest_point) const override;
 
-    MatrixMax<double, 3, 24> relative_velocity_dx_dbeta(
+    MatrixMax<double, 36, 2> relative_velocity_dx_dbeta(
         Eigen::ConstRef<VectorMax2d> closest_point) const override;
 };
 

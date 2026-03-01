@@ -60,10 +60,8 @@ Matrix12d point_plane_signed_distance_hessian(
 
     // A. Contraction of the normal Hessian tensor with vector v
     // hess_n is 3x81. v is 3x1. Result is 1x81, which maps to 9x9.
-    for (int i = 0; i < 9; ++i) {
-        hess.block<1, 9>(i + 3, 3) =
-            hess_n.middleRows<3>(3 * i).transpose() * v;
-    }
+    hess.block<9, 9>(3, 3) =
+        (hess_n.reshaped(3, 81).transpose() * v).reshaped(9, 9);
 
     // B. Subtract first derivative terms (Product Rule corrections)
     // Extract 3x3 Jacobian blocks for t0, t1, t2
