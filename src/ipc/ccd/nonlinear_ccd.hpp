@@ -53,7 +53,7 @@ public:
     /// The default tolerance used with Tight-Inclusion CCD.
     static constexpr double DEFAULT_TOLERANCE = 1e-6;
     /// The default maximum number of iterations used with Tight-Inclusion CCD.
-    static constexpr long DEFAULT_MAX_ITERATIONS = 10'000'000l;
+    static constexpr long DEFAULT_MAX_ITERATIONS = 10'000'000L;
     /// The default conservative rescaling value used to avoid taking steps
     /// exactly to impact.
     static constexpr double DEFAULT_CONSERVATIVE_RESCALING = 0.8;
@@ -123,7 +123,7 @@ public:
     /// @param[in] min_distance Minimum separation distance between the two edges
     /// @param[in] tmax Maximum time to check for collision
     /// @return True if the point and triangle collide, false otherwise.
-    bool point_triangle_ccd(
+    virtual bool point_triangle_ccd(
         const NonlinearTrajectory& p,
         const NonlinearTrajectory& t0,
         const NonlinearTrajectory& t1,
