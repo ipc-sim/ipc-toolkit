@@ -242,6 +242,10 @@ and the Hessian of size :math:`|V|d \times |V|d` with the order
     \frac{\partial^2 B}{\partial z_n^2}
     \end{bmatrix}.
 
+.. note::
+
+    This row-major derivative ordering is the default. If your simulation framework uses a column-major DOF layout, the IPC Toolkit can be configured to use that instead. See :ref:`Vertex Derivative Layout <tutorials/misc:Vertex Derivative Layout>` for details.
+
 Adaptive Barrier Stiffness
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

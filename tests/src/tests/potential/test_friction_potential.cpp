@@ -1,4 +1,5 @@
 #include <tests/config.hpp>
+#include <tests/dof_layout.hpp>
 #include <tests/friction/friction_data_generator.hpp>
 #include <tests/utils.hpp>
 
@@ -36,18 +37,19 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
-        Eigen::MatrixXd fd_U_full = fd::unflatten(x, data.V1.cols()) - data.V0;
+        Eigen::MatrixXd fd_U_full =
+            tests::unflatten(x, data.V1.cols()) - data.V0;
         Eigen::MatrixXd fd_U = fd_U_full.rows() == mesh.num_vertices()
             ? fd_U_full
             : mesh.map_displacements(fd_U_full);
         return D(tangential_collisions, mesh, fd_U);
     };
     Eigen::VectorXd fgrad;
-    fd::finite_gradient(fd::flatten(V1), f, fgrad);
+    fd::finite_gradient(tests::flatten(V1), f, fgrad);
     CHECK(fd::compare_gradient(grad, fgrad));
 
     const Eigen::MatrixXd hess = D.hessian(tangential_collisions, mesh, U);
     Eigen::MatrixXd fhess;
-    fd::finite_hessian(fd::flatten(V1), f, fhess);
+    fd::finite_hessian(tests::flatten(V1), f, fhess);
     CHECK(fd::compare_hessian(hess, fhess, 1e-3));
 }

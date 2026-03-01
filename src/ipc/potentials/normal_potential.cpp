@@ -38,7 +38,8 @@ Eigen::SparseMatrix<double> NormalPotential::shape_derivative(
                 this->shape_derivative(
                     collisions[i], collisions[i].vertex_ids(edges, faces),
                     collisions[i].dof(rest_positions, edges, faces),
-                    collisions[i].dof(vertices, edges, faces), local_triplets);
+                    collisions[i].dof(vertices, edges, faces), local_triplets,
+                    mesh.num_vertices());
             }
         });
 
@@ -150,7 +151,8 @@ void NormalPotential::shape_derivative(
     const std::array<index_t, 4>& vertex_ids,
     Eigen::ConstRef<VectorMax12d> rest_positions, // = x̄
     Eigen::ConstRef<VectorMax12d> positions,      // = x̄ + u
-    std::vector<Eigen::Triplet<double>>& out) const
+    std::vector<Eigen::Triplet<double>>& out,
+    const int n_total_verts) const
 {
     assert(rest_positions.size() == positions.size());
 
@@ -174,11 +176,17 @@ void NormalPotential::shape_derivative(
 
         for (int i = 0; i < collision.num_vertices(); i++) {
             for (int d = 0; d < dim; d++) {
+                int row_idx;
+                if constexpr (VERTEX_DERIVATIVE_LAYOUT == Eigen::RowMajor) {
+                    row_idx = vertex_ids[i] * dim + d;
+                } else {
+                    assert(n_total_verts > 0);
+                    row_idx = n_total_verts * d + vertex_ids[i];
+                }
                 using Itr = Eigen::SparseVector<double>::InnerIterator;
                 for (Itr j(collision.weight_gradient); j; ++j) {
                     out.emplace_back(
-                        vertex_ids[i] * dim + d, j.index(),
-                        grad_f[dim * i + d] * j.value());
+                        row_idx, j.index(), grad_f[dim * i + d] * j.value());
                 }
             }
         }
@@ -231,7 +239,8 @@ void NormalPotential::shape_derivative(
             + gradu_f * gradu_m.transpose() + m * hessu_f;
     }
 
-    local_hessian_to_global_triplets(local_hess, vertex_ids, dim, out);
+    local_hessian_to_global_triplets(
+        local_hess, vertex_ids, dim, out, n_total_verts);
 }
 
 } // namespace ipc

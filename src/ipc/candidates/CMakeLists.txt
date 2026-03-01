@@ -13,8 +13,8 @@ set(SOURCES
   face_face.hpp
   face_vertex.cpp
   face_vertex.hpp
-  # plane_vertex.cpp
-  # plane_vertex.hpp
+  plane_vertex.cpp
+  plane_vertex.hpp
   vertex_vertex.cpp
   vertex_vertex.hpp
 )

@@ -3,6 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
+#include <ipc/config.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
 
@@ -91,8 +92,14 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
         CHECK(barrier_potential(collisions, mesh, vertices) > 0.0);
         const Eigen::VectorXd grad =
             barrier_potential.gradient(collisions, mesh, vertices);
-        for (int i = 0; i < vertices.rows(); i++) {
-            const Eigen::Vector3d f = -grad.segment<3>(3 * i);
+        const int n_verts = vertices.rows();
+        for (int i = 0; i < n_verts; i++) {
+            Eigen::Vector3d f;
+            if constexpr (VERTEX_DERIVATIVE_LAYOUT == Eigen::RowMajor) {
+                f = -grad.segment<3>(3 * i);
+            } else {
+                f << -grad[i], -grad[n_verts + i], -grad[2 * n_verts + i];
+            }
             CHECK(f.normalized().isApprox(
                 vertices.row(i).normalized().transpose()));
         }
@@ -281,13 +288,13 @@ TEST_CASE("Plane-Vertex NormalCollision", "[collision][plane-vertex]")
 {
     Eigen::MatrixXi edges, faces;
     const Eigen::Vector3d n(0, 1, 0), o(0, 0, 0);
-    const PlaneVertexNormalCollision c(o, n, 0);
+    const PlaneVertexNormalCollision c(Eigen::Hyperplane<double, 3>(n, o), 0);
     CHECK(c.num_vertices() == 1);
     CHECK(
         c.vertex_ids(edges, faces)
         == std::array<index_t, 4> { { 0, -1, -1, -1 } });
-    CHECK(c.plane_origin == o);
-    CHECK(c.plane_normal == n);
+    CHECK(-c.plane.offset() * c.plane.normal() == o);
+    CHECK(c.plane.normal() == n);
     CHECK(c.vertex_id == 0);
 
     CHECK(c.compute_distance(Eigen::Vector3d(0, -2, 0)) == 4.0);
@@ -308,7 +315,7 @@ TEST_CASE("NormalCollisions::is_*", "[collisions]")
     collisions.ee_collisions.emplace_back(0, 1, 0.0);
     collisions.fv_collisions.emplace_back(0, 1);
     collisions.pv_collisions.emplace_back(
-        Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 1, 0), 0);
+        Eigen::Hyperplane<double, 3>(Eigen::Vector3d::UnitY(), 0), 0);
 
     for (int i = 0; i < collisions.size(); i++) {
         CHECK(collisions.is_vertex_vertex(i) == (i == 0));
