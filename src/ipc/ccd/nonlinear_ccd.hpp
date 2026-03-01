@@ -123,7 +123,7 @@ public:
     /// @param[in] min_distance Minimum separation distance between the two edges
     /// @param[in] tmax Maximum time to check for collision
     /// @return True if the point and triangle collide, false otherwise.
-    bool point_triangle_ccd(
+    virtual bool point_triangle_ccd(
         const NonlinearTrajectory& p,
         const NonlinearTrajectory& t0,
         const NonlinearTrajectory& t1,
