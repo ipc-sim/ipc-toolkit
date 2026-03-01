@@ -1,4 +1,5 @@
 #include <tests/config.hpp>
+#include <tests/dof_layout.hpp>
 #include <tests/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -241,6 +242,15 @@ TEST_CASE(
     CHECK(potential == Catch::Approx(expected_potential));
 
     Eigen::VectorXd grad = D.gradient(tangential_collisions, mesh, velocity);
+
+    if constexpr (VERTEX_DERIVATIVE_LAYOUT == Eigen::ColMajor) {
+        // The saved expected data is in RowMajor DOF ordering; convert to the
+        // current VERTEX_DERIVATIVE_LAYOUT before comparison.
+        const int n_verts = V_start.rows();
+        const int dim = V_start.cols();
+        expected_grad = tests::reorder_gradient(expected_grad, n_verts, dim);
+        expected_hess = tests::reorder_hessian(expected_hess, n_verts, dim);
+    }
 
     CHECK(grad.isApprox(expected_grad));
 
