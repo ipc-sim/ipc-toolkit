@@ -17,7 +17,6 @@ Eigen::VectorXd TangentialPotential::force(
     Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
     Eigen::ConstRef<Eigen::MatrixXd> velocities,
     const NormalPotential& normal_potential,
-    const double normal_stiffness,
     const double dmin,
     const bool no_mu) const
 {
@@ -43,7 +42,7 @@ Eigen::VectorXd TangentialPotential::force(
                     collision, collision.dof(rest_positions, edges, faces),
                     collision.dof(lagged_displacements, edges, faces),
                     collision.dof(velocities, edges, faces), //
-                    normal_potential, normal_stiffness, dmin, no_mu);
+                    normal_potential, dmin, no_mu);
 
                 const std::array<index_t, 4> vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
@@ -64,7 +63,6 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
     Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
     Eigen::ConstRef<Eigen::MatrixXd> velocities,
     const NormalPotential& normal_potential,
-    const double normal_stiffness,
     const DiffWRT wrt,
     const double dmin) const
 {
@@ -92,13 +90,14 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
                     collision, collision.dof(rest_positions, edges, faces),
                     collision.dof(lagged_displacements, edges, faces),
                     collision.dof(velocities, edges, faces), //
-                    normal_potential, normal_stiffness, wrt, dmin);
+                    normal_potential, wrt, dmin);
 
                 const std::array<index_t, 4> vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_hessian_to_global_triplets(
-                    local_force_jacobian, vis, dim, jac_triplets);
+                    local_force_jacobian, vis, dim, jac_triplets,
+                    mesh.num_vertices());
             }
         });
 
@@ -125,7 +124,7 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
                 collision, collision.dof(rest_positions, edges, faces),
                 collision.dof(lagged_displacements, edges, faces),
                 collision.dof(velocities, edges, faces), //
-                normal_potential, normal_stiffness, dmin);
+                normal_potential, dmin);
             assert(collision.weight != 0);
             local_force /= collision.weight;
 
@@ -280,7 +279,6 @@ VectorMax12d TangentialPotential::force(
     Eigen::ConstRef<VectorMax12d> lagged_displacements, // = u
     Eigen::ConstRef<VectorMax12d> velocities,           // = v
     const NormalPotential& normal_potential,
-    const double normal_stiffness,
     const double dmin,
     const bool no_mu) const
 {
@@ -302,7 +300,7 @@ VectorMax12d TangentialPotential::force(
 
     // Compute N(x + u)
     const double N = normal_potential.force_magnitude(
-        collision.compute_distance(lagged_positions), dmin, normal_stiffness);
+        collision.compute_distance(lagged_positions), dmin);
 
     // Compute P
     const MatrixMax<double, 3, 2> P =
@@ -337,7 +335,6 @@ MatrixMax12d TangentialPotential::force_jacobian(
     Eigen::ConstRef<VectorMax12d> lagged_displacements, // = u
     Eigen::ConstRef<VectorMax12d> velocities,           // = v
     const NormalPotential& normal_potential,
-    const double normal_stiffness,
     const DiffWRT wrt,
     const double dmin) const
 {
@@ -365,7 +362,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
 
     // Compute N
     const double N = normal_potential.force_magnitude(
-        collision.compute_distance(lagged_positions), dmin, normal_stiffness);
+        collision.compute_distance(lagged_positions), dmin);
 
     // Compute ∇N
     VectorMax12d grad_N;
@@ -373,8 +370,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
         // ∇ₓN = ∇ᵤN
         grad_N = normal_potential.force_magnitude_gradient(
             collision.compute_distance(lagged_positions),
-            collision.compute_distance_gradient(lagged_positions), dmin,
-            normal_stiffness);
+            collision.compute_distance_gradient(lagged_positions), dmin);
         assert(grad_N.array().isFinite().all());
     }
 
@@ -589,7 +585,8 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
                     collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_hessian_to_global_triplets(
-                    local_force_jacobian, vis, dim, jac_triplets);
+                    local_force_jacobian, vis, dim, jac_triplets,
+                    mesh.num_vertices());
 
                 if (wrt == DiffWRT::VELOCITIES) {
                     continue;
@@ -616,7 +613,8 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
 
                 local_jacobian_to_global_triplets(
                     local_force * normal_force_grad.transpose(), vis,
-                    cc_vert_ids, dim, jac_triplets);
+                    cc_vert_ids, dim, jac_triplets, mesh.num_vertices(),
+                    mesh.num_vertices());
             }
         });
 
@@ -690,7 +688,7 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
 
     // Compute N(x + u)
     // const double N = collision.compute_normal_force_magnitude(
-    //     lagged_positions, barrier_potential, barrier_stiffness, dmin);
+    //     lagged_positions, barrier_potential, dmin);
     const double N = collision.normal_force_magnitude;
 
     // Compute P

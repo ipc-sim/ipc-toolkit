@@ -672,3 +672,4 @@ python/update_bindings.py
 tests/data
 notebooks/*.png
 CMakeGraphVizOptions.cmake
+.zed/*

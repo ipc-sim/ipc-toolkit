@@ -78,7 +78,7 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
             collisions.build(collision_mesh, vertices, dhat);
 
             // Construct a barrier potential
-            ipc::BarrierPotential B(dhat);
+            ipc::BarrierPotential B(dhat, stiffness);
 
             // Evaluate the potential
             double b = B(collisions, collision_mesh, vertices);
@@ -88,7 +88,7 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
 
             // Construct the set of friction collisions
             ipc::TangentialCollisions tangential_collisions;
-            tangential_collisions.build(collision_mesh, vertices, collisions, B, barrier_stiffness, mu);
+            tangential_collisions.build(collision_mesh, vertices, collisions, B, mu);
 
             // Construct a friction dissipative potential
             ipc::FrictionPotential D(eps_v);
@@ -107,7 +107,7 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
             collisions.build(collision_mesh, vertices, dhat)
 
             # Construct a barrier potential
-            B = ipctk.BarrierPotential(dhat)
+            B = ipctk.BarrierPotential(dhat, stiffness)
 
             # Evaluate the potential
             b = B(collisions, collision_mesh, vertices)
@@ -117,7 +117,7 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
 
             # Construct the set of friction collisions
             tangential_collisions = ipctk.TangentialCollisions()
-            tangential_collisions.build(collision_mesh, vertices, collisions, B, barrier_stiffness, mu)
+            tangential_collisions.build(collision_mesh, vertices, collisions, B, mu)
 
             # Construct a friction dissipative potential
             D = ipctk.FrictionPotential(eps_v)
@@ -132,7 +132,7 @@ When computing the gradient and Hessian of the potentials, the derivatives will 
 
         .. code-block:: c++
 
-            const BarrierPotential B(dhat);
+            const BarrierPotential B(dhat, stiffness);
 
             Eigen::VectorXd grad = B.gradient(collisions, collision_mesh, vertices);
             Eigen::VectorXd grad_full = collision_mesh.to_full_dof(grad);
@@ -144,7 +144,7 @@ When computing the gradient and Hessian of the potentials, the derivatives will 
 
         .. code-block:: python
 
-            B = BarrierPotential(dhat)
+            B = BarrierPotential(dhat, stiffness)
 
             grad = B.gradient(collision, collision_mesh, vertices)
             grad_full = collision_mesh.to_full_dof(grad)

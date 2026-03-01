@@ -411,6 +411,15 @@ namespace {
         do {
             const LBVH::Node& node = lbvh[node_idx];
 
+            if (lbvh.size() == 1) {     // Single node case (only root)
+                assert(node.is_leaf()); // Only one node, so it must be a leaf
+                if (node.intersects(query)) {
+                    attempt_add_candidate<Candidate, swap_order, triangular>(
+                        query, node, can_collide, candidates);
+                }
+                break;
+            }
+
             // Check left and right are valid pointers
             assert(node.is_inner());
 
@@ -506,6 +515,28 @@ namespace {
         int node_idx = 0; // root
         do {
             const LBVH::Node& node = lbvh[node_idx];
+
+            if (lbvh.size() == 1) {     // Single node case (only root)
+                assert(node.is_leaf()); // Only one node, so it must be a leaf
+                // Check intersection with all queries simultaneously
+                const xs::batch_bool<float> intersects =
+                    (node.aabb_min.x() <= q_max_x)
+                    & (node.aabb_min.y() <= q_max_y)
+                    & (node.aabb_min.z() <= q_max_z)
+                    & (q_min_x <= node.aabb_max.x())
+                    & (q_min_y <= node.aabb_max.y())
+                    & (q_min_z <= node.aabb_max.z());
+                if (xs::any(intersects)) {
+                    for (int k = 0; k < n_queries; ++k) {
+                        if (intersects.get(k)) {
+                            attempt_add_candidate<
+                                Candidate, swap_order, triangular>(
+                                queries[k], node, can_collide, candidates);
+                        }
+                    }
+                }
+                break;
+            }
 
             // Check left and right are valid pointers
             assert(node.is_inner());
@@ -662,7 +693,7 @@ void LBVH::detect_candidates(
 void LBVH::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
-    if (!has_vertices()) {
+    if (vertex_bvh.size() <= 1) { // Need at least 2 vertices for a collision
         return;
     }
 
@@ -690,7 +721,7 @@ void LBVH::detect_edge_vertex_candidates(
 void LBVH::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
-    if (!has_edges()) {
+    if (edge_bvh.size() <= 1) { // Need at least 2 edges for a collision
         return;
     }
 
@@ -734,7 +765,7 @@ void LBVH::detect_edge_face_candidates(
 void LBVH::detect_face_face_candidates(
     std::vector<FaceFaceCandidate>& candidates) const
 {
-    if (!has_faces()) {
+    if (face_bvh.size() <= 1) { // Need at least 2 faces for a collision
         return;
     }
 

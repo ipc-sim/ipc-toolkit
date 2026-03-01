@@ -63,11 +63,6 @@ digraph "IPC Toolkit Dependencies" {
     // scalable_ccd -> tbb
     "node5" -> "node7" [color = "#BE6562";];
     // ipc_toolkit -> scalable_ccd
-    "node10" [label = "simple_bvh\n(simple_bvh::simple_bvh)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
-    "node10" -> "node0" [color = "#8FB976";];
-    // simple_bvh -> Eigen3_Eigen
-    "node5" -> "node10" [color = "#BE6562";];
-    // ipc_toolkit -> simple_bvh
     "node5" -> "node8" [color = "#8FB976";];
     // ipc_toolkit -> spdlog
     "node5" -> "node9" [color = "#BE6562";];

@@ -25,7 +25,6 @@ PYBIND11_MODULE(ipctk, m)
     define_aabb(m);
     define_broad_phase(m);
     define_brute_force(m);
-    define_bvh(m);
     define_hash_grid(m);
     define_lbvh(m);
     define_spatial_hash(m);
@@ -41,6 +40,7 @@ PYBIND11_MODULE(ipctk, m)
     define_edge_vertex_candidate(m);
     define_face_face_candidate(m);
     define_face_vertex_candidate(m);
+    define_plane_vertex_candidate(m);
     define_vertex_vertex_candidate(m);
 
     // ccd
@@ -73,6 +73,7 @@ PYBIND11_MODULE(ipctk, m)
     define_edge_edge_tangential_collision(m);
     define_edge_vertex_tangential_collision(m);
     define_face_vertex_tangential_collision(m);
+    define_plane_vertex_tangential_collision(m);
     define_vertex_vertex_tangential_collision(m);
 
     // distance
@@ -97,9 +98,6 @@ PYBIND11_MODULE(ipctk, m)
     define_area(m);
     define_intersection(m);
     define_normal(m);
-
-    // implicits
-    define_plane_implicit(m);
 
     // math
     define_interval(m);

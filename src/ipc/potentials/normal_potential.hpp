@@ -67,22 +67,22 @@ public:
     /// @param[in] rest_positions The collision stencil's rest positions.
     /// @param[in] positions The collision stencil's positions.
     /// @param[in,out] out Store the triplets of the shape derivative here.
+    /// @param[in] n_total_verts The total number of vertices in the mesh, used for computing global indices in the triplets. See also `local_hessian_to_global_triplets`.
     void shape_derivative(
         const NormalCollision& collision,
         const std::array<index_t, 4>& vertex_ids,
         Eigen::ConstRef<VectorMax12d> rest_positions,
         Eigen::ConstRef<VectorMax12d> positions,
-        std::vector<Eigen::Triplet<double>>& out) const;
+        std::vector<Eigen::Triplet<double>>& out,
+        const int n_total_verts = -1) const;
 
     /// @brief Compute the force magnitude for a collision.
     /// @param distance_squared The squared distance between elements.
     /// @param dmin The minimum distance offset to the barrier.
     /// @param barrier_stiffness The barrier stiffness.
     /// @return The force magnitude.
-    virtual double force_magnitude(
-        const double distance_squared,
-        const double dmin,
-        const double barrier_stiffness) const = 0;
+    virtual double
+    force_magnitude(const double distance_squared, const double dmin) const = 0;
 
     /// @brief Compute the gradient of the force magnitude for a collision.
     /// @param distance_squared The squared distance between elements.
@@ -93,8 +93,7 @@ public:
     virtual VectorMax12d force_magnitude_gradient(
         const double distance_squared,
         Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
-        const double dmin,
-        const double barrier_stiffness) const = 0;
+        const double dmin) const = 0;
 
 protected:
     /// @brief Compute the unmollified distance-based potential for a collisions.

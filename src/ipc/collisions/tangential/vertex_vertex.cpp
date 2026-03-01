@@ -27,12 +27,10 @@ VertexVertexTangentialCollision::VertexVertexTangentialCollision(
 VertexVertexTangentialCollision::VertexVertexTangentialCollision(
     const VertexVertexNormalCollision& collision,
     Eigen::ConstRef<VectorMax12d> positions,
-    const NormalPotential& normal_potential,
-    const double normal_stiffness)
+    const NormalPotential& normal_potential)
     : VertexVertexTangentialCollision(collision)
 {
-    TangentialCollision::init(
-        collision, positions, normal_potential, normal_stiffness);
+    TangentialCollision::init(collision, positions, normal_potential);
 }
 
 // ============================================================================

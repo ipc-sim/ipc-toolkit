@@ -188,7 +188,8 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
 }
 
 void SmoothCollisionsBuilder<3>::merge(
-    const ParallelCacheType<SmoothCollisionsBuilder<3>>& local_storage,
+    const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<3>>&
+        local_storage,
     SmoothCollisions& merged_collisions)
 {
     unordered_map<
@@ -248,7 +249,8 @@ void SmoothCollisionsBuilder<3>::merge(
 }
 
 void SmoothCollisionsBuilder<2>::merge(
-    const ParallelCacheType<SmoothCollisionsBuilder<2>>& local_storage,
+    const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<2>>&
+        local_storage,
     SmoothCollisions& merged_collisions)
 {
     unordered_map<

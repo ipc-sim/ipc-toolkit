@@ -18,6 +18,31 @@ public:
 
     virtual ~CollisionStencil() = default;
 
+    /// @brief Get this as a child collision type.
+    /// @tparam CollisionStencilType The child collision type to get this as.
+    /// @return This as the child collision type.
+    /// @throws std::bad_cast if this is not of type CollisionStencilType.
+    template <typename CollisionStencilType> CollisionStencilType& as()
+    {
+        static_assert(
+            std::is_base_of<CollisionStencil, CollisionStencilType>::value,
+            "Template argument CollisionStencilType must inherit from CollisionStencil");
+        return dynamic_cast<CollisionStencilType&>(*this);
+    }
+
+    /// @brief Get this as a child collision type.
+    /// @tparam CollisionStencilType The child collision type to get this as.
+    /// @return This as the child collision type.
+    /// @throws std::bad_cast if this is not of type CollisionStencilType.
+    template <typename CollisionStencilType>
+    const CollisionStencilType& as() const
+    {
+        static_assert(
+            std::is_base_of<CollisionStencil, CollisionStencilType>::value,
+            "Template argument CollisionStencilType must inherit from CollisionStencil");
+        return dynamic_cast<const CollisionStencilType&>(*this);
+    }
+
     /// @brief Get the number of vertices in the collision stencil.
     virtual int num_vertices() const = 0;
 

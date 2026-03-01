@@ -2,6 +2,7 @@
 #include <catch2/catch_approx.hpp>
 
 #include <tests/utils.hpp>
+#include <tests/dof_layout.hpp>
 
 #include <ipc/ipc.hpp>
 #include <ipc/adhesion/adhesion.hpp>
@@ -83,7 +84,7 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
 
     // --- Check the potential gradients ---------------------------------------
 
-    CHECK(BarrierPotential(dhat_a)(collisions, mesh, vertices) > 0);
+    CHECK(BarrierPotential(dhat_a, 1.0)(collisions, mesh, vertices) > 0);
 
     NormalAdhesionPotential potential(dhat_p, dhat_a, Y, eps_c);
     CHECK(potential(collisions, mesh, vertices) < 0);
@@ -93,10 +94,10 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
 
     Eigen::VectorXd fgrad;
     fd::finite_gradient(
-        fd::flatten(vertices),
+        tests::flatten(vertices),
         [&](const Eigen::VectorXd& x) {
             return potential(
-                collisions, mesh, fd::unflatten(x, vertices.cols()));
+                collisions, mesh, tests::unflatten(x, vertices.cols()));
         },
         fgrad);
 
@@ -111,10 +112,10 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
         Eigen::MatrixXd fhess;
 
         fd::finite_jacobian(
-            fd::flatten(vertices),
+            tests::flatten(vertices),
             [&](const Eigen::VectorXd& x) {
                 return potential.gradient(
-                    collisions, mesh, fd::unflatten(x, vertices.cols()));
+                    collisions, mesh, tests::unflatten(x, vertices.cols()));
             },
             fhess);
 
@@ -125,12 +126,12 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
     // --- Maximum normal adhesion force magnitude -----------------------------
 
     CHECK(
-        potential.force_magnitude(1e-3, 0, 1)
+        potential.force_magnitude(1e-3, 0)
         == max_normal_adhesion_force_magnitude(
             dhat_p * dhat_p, dhat_a * dhat_a,
             Y * eps_c / (4 * (dhat_p) * (dhat_p * dhat_p - dhat_a * dhat_a))));
 
-    CHECK(potential.force_magnitude_gradient(1e-3, VectorMax12d::Zero(12), 0, 1)
+    CHECK(potential.force_magnitude_gradient(1e-3, VectorMax12d::Zero(12), 0)
               .isZero());
 }
 

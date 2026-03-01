@@ -9,7 +9,7 @@
 // NOTE: Avoid error about abs casting double to int. Eigen does this
 // internally but seemingly only if EIGEN_DONT_VECTORIZE is not defined.
 // TODO: We should always use std::abs to avoid this issue.
-EIGEN_USING_STD(abs); // using std::abs;
+EIGEN_USING_STD(abs) // using std::abs;
 #endif
 
 namespace Eigen {
@@ -262,7 +262,8 @@ static const Eigen::IOFormat OBJ_VERTEX_FORMAT = Eigen::IOFormat(
 #if EIGEN_VERSION_AT_LEAST(3, 4, 90)
 namespace Eigen {
 // Move all back to the root namespace for compatibility with older versions
-static const Eigen::internal::all_t all = indexing::all; // NOLINT
+static const auto all = indexing::all;   // NOLINT
+static const auto last = indexing::last; // NOLINT
 } // namespace Eigen
 #endif
 

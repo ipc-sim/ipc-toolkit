@@ -16,7 +16,6 @@ void TangentialCollisions::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const NormalCollisions& collisions,
     const NormalPotential& normal_potential,
-    const double normal_stiffness,
     Eigen::ConstRef<Eigen::VectorXd> mu_s,
     Eigen::ConstRef<Eigen::VectorXd> mu_k,
     const std::function<double(double, double)>& blend_mu)
@@ -33,13 +32,13 @@ void TangentialCollisions::build(
     const auto& C_ev = collisions.ev_collisions;
     const auto& C_ee = collisions.ee_collisions;
     const auto& C_fv = collisions.fv_collisions;
-    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
+    const auto& C_pv = collisions.pv_collisions;
+    auto& [FC_vv, FC_ev, FC_ee, FC_fv, FC_pv] = *this;
 
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
         FC_vv.emplace_back(
-            c_vv, c_vv.dof(vertices, edges, faces), normal_potential,
-            normal_stiffness);
+            c_vv, c_vv.dof(vertices, edges, faces), normal_potential);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
 
         FC_vv.back().mu_s = blend_mu(mu_s(v0i), mu_s(v1i));
@@ -49,8 +48,7 @@ void TangentialCollisions::build(
     FC_ev.reserve(C_ev.size());
     for (const auto& c_ev : C_ev) {
         FC_ev.emplace_back(
-            c_ev, c_ev.dof(vertices, edges, faces), normal_potential,
-            normal_stiffness);
+            c_ev, c_ev.dof(vertices, edges, faces), normal_potential);
         const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
 
         const double edge_mu_s =
@@ -75,8 +73,7 @@ void TangentialCollisions::build(
         }
 
         FC_ee.emplace_back(
-            c_ee, c_ee.dof(vertices, edges, faces), normal_potential,
-            normal_stiffness);
+            c_ee, c_ee.dof(vertices, edges, faces), normal_potential);
 
         double ea_mu_s =
             (mu_s(ea1i) - mu_s(ea0i)) * FC_ee.back().closest_point[0]
@@ -98,8 +95,7 @@ void TangentialCollisions::build(
     FC_fv.reserve(C_fv.size());
     for (const auto& c_fv : C_fv) {
         FC_fv.emplace_back(
-            c_fv, c_fv.dof(vertices, edges, faces), normal_potential,
-            normal_stiffness);
+            c_fv, c_fv.dof(vertices, edges, faces), normal_potential);
         const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
 
         double face_mu_s = mu_s(f0i)
@@ -111,6 +107,15 @@ void TangentialCollisions::build(
             + FC_fv.back().closest_point[0] * (mu_k(f1i) - mu_k(f0i))
             + FC_fv.back().closest_point[1] * (mu_k(f2i) - mu_k(f0i));
         FC_fv.back().mu_k = blend_mu(face_mu_k, mu_k(vi));
+    }
+
+    FC_pv.reserve(C_pv.size());
+    for (const auto& c_pv : C_pv) {
+        FC_pv.emplace_back(
+            c_pv, c_pv.dof(vertices, edges, faces), normal_potential);
+        const auto& [vi, _0, _1, _2] = FC_pv.back().vertex_ids(edges, faces);
+        FC_pv.back().mu_s = mu_s(vi);
+        FC_pv.back().mu_k = mu_k(vi);
     }
 }
 
@@ -132,7 +137,7 @@ void TangentialCollisions::build(
 
     clear();
 
-    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
+    auto& [FC_vv, FC_ev, FC_ee, FC_fv, FC_pv] = *this;
 
     // FC_vv.reserve(C_vv.size());
     for (size_t i = 0; i < collisions.size(); i++) {
@@ -306,13 +311,14 @@ void TangentialCollisions::build(
 size_t TangentialCollisions::size() const
 {
     return vv_collisions.size() + ev_collisions.size() + ee_collisions.size()
-        + fv_collisions.size();
+        + fv_collisions.size() + pv_collisions.size();
 }
 
 bool TangentialCollisions::empty() const
 {
     return vv_collisions.empty() && ev_collisions.empty()
-        && ee_collisions.empty() && fv_collisions.empty();
+        && ee_collisions.empty() && fv_collisions.empty()
+        && pv_collisions.empty();
 }
 
 void TangentialCollisions::clear()
@@ -321,6 +327,7 @@ void TangentialCollisions::clear()
     ev_collisions.clear();
     ee_collisions.clear();
     fv_collisions.clear();
+    pv_collisions.clear();
 }
 
 TangentialCollision& TangentialCollisions::operator[](size_t i)
@@ -339,6 +346,10 @@ TangentialCollision& TangentialCollisions::operator[](size_t i)
     i -= ee_collisions.size();
     if (i < fv_collisions.size()) {
         return fv_collisions[i];
+    }
+    i -= fv_collisions.size();
+    if (i < pv_collisions.size()) {
+        return pv_collisions[i];
     }
     throw std::out_of_range("Friction collision index is out of range!");
 }
@@ -359,6 +370,10 @@ const TangentialCollision& TangentialCollisions::operator[](size_t i) const
     i -= ee_collisions.size();
     if (i < fv_collisions.size()) {
         return fv_collisions[i];
+    }
+    i -= fv_collisions.size();
+    if (i < pv_collisions.size()) {
+        return pv_collisions[i];
     }
     throw std::out_of_range("Friction collision index is out of range!");
 }
