@@ -107,8 +107,8 @@ void define_nonlinear_ccd(py::module_& m)
             Parameters:
                 p0: First point's trajectory
                 p1: Second point's trajectory
-                tmax: Maximum time to check for collision
                 min_distance: Minimum separation distance between the two points
+                tmax: Maximum time to check for collision
 
             Returns:
                 Tuple of:
@@ -169,8 +169,8 @@ void define_nonlinear_ccd(py::module_& m)
                 True if the two edges collide, false otherwise.
                 Output time of impact
             )ipc_Qu8mg5v7",
-            "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a, "tmax"_a = 1.0,
-            "min_distance"_a = 0)
+            "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a, "min_distance"_a = 0,
+            "tmax"_a = 1.0)
         .def(
             "point_triangle_ccd",
             [](const NonlinearCCD& self, const NonlinearTrajectory& p,
