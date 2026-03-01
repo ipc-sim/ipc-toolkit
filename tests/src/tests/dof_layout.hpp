@@ -71,6 +71,28 @@ reorder_gradient(const Eigen::VectorXd& g_rowmajor, int n_verts, int dim)
     }
 }
 
+/// Reorder a dense Hessian from RowMajor DOF ordering to
+/// VERTEX_DERIVATIVE_LAYOUT DOF ordering.
+inline auto
+reorder_hessian(const Eigen::MatrixXd& H_rowmajor, int n_verts, int dim)
+{
+    if constexpr (VERTEX_DERIVATIVE_LAYOUT == Eigen::RowMajor) {
+        return H_rowmajor; // Already in the correct order, no copy needed.
+    } else {
+        const int n = n_verts * dim;
+        assert(H_rowmajor.rows() == n && H_rowmajor.cols() == n);
+        Eigen::MatrixXd H(n, n);
+        for (int i = 0; i < n; ++i) {
+            const int pi = (i % dim) * n_verts + i / dim;
+            for (int j = 0; j < n; ++j) {
+                const int pj = (j % dim) * n_verts + j / dim;
+                H(pi, pj) = H_rowmajor(i, j);
+            }
+        }
+        return H;
+    }
+}
+
 /// Reorder a sparse Hessian from RowMajor DOF ordering to
 /// VERTEX_DERIVATIVE_LAYOUT DOF ordering.
 inline auto reorder_hessian(

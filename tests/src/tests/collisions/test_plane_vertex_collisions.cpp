@@ -228,7 +228,7 @@ TEST_CASE(
         VectorMax2d cp; // empty closest point for pv
         PlaneVertexTangentialCollision tc(normal_collision, pos, normal_force);
         TangentialCollision& tc_base = tc;
-        auto mat = tc_base.relative_velocity_matrix(cp);
+        auto mat = tc_base.relative_velocity_jacobian(cp);
         CHECK(mat.isApprox(MatrixMax<double, 3, 12>::Identity(3, 3)));
     }
 
@@ -239,7 +239,7 @@ TEST_CASE(
         VectorMax2d cp; // empty closest point for pv
         PlaneVertexTangentialCollision tc(normal_collision, pos, normal_force);
         TangentialCollision& tc_base = tc;
-        auto jac = tc_base.relative_velocity_matrix_jacobian(cp);
+        auto jac = tc_base.relative_velocity_dx_dbeta(cp);
         CHECK(jac.isZero());
     }
 }

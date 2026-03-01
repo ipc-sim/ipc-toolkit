@@ -45,13 +45,13 @@ MatrixMax<double, 3, 2> PlaneVertexTangentialCollision::compute_tangent_basis(
         p0.head(positions.size()), p1.head(positions.size()));
 }
 
-MatrixMax<double, 36, 2>
+MatrixMax<double, 6, 12>
 PlaneVertexTangentialCollision::compute_tangent_basis_jacobian(
     Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == ndof());
-    return MatrixMax<double, 36, 2>::Zero(
-        ndof() * ndof(), positions.size() == 2 ? 1 : 2);
+    return MatrixMax<double, 6, 12>::Zero(
+        positions.size() == 2 ? 2 : 6, ndof());
 }
 
 // ============================================================================
@@ -79,18 +79,18 @@ VectorMax3d PlaneVertexTangentialCollision::relative_velocity(
 }
 
 MatrixMax<double, 3, 12>
-PlaneVertexTangentialCollision::relative_velocity_matrix(
+PlaneVertexTangentialCollision::relative_velocity_jacobian(
     Eigen::ConstRef<VectorMax2d> _closest_point) const
 {
     return MatrixMax<double, 3, 12>::Identity(ndof(), ndof());
 }
 
-MatrixMax<double, 6, 12>
-PlaneVertexTangentialCollision::relative_velocity_matrix_jacobian(
+MatrixMax<double, 3, 24>
+PlaneVertexTangentialCollision::relative_velocity_dx_dbeta(
     Eigen::ConstRef<VectorMax2d> _closest_point) const
 {
-    return MatrixMax<double, 6, 12>::Zero(
-        _closest_point.size() * ndof(), ndof());
+    return MatrixMax<double, 3, 24>::Zero(
+        dim(), _closest_point.size() * ndof());
 }
 
 } // namespace ipc

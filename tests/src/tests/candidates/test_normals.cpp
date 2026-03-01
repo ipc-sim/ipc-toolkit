@@ -80,8 +80,8 @@ TEST_CASE("Edge-vertex collision normal", "[ev][normal]")
     expected_normal(1) = V(2, 1) < 0 ? -1 : 1;
     CHECK(normal.isApprox(expected_normal));
     if (!normal.isApprox(expected_normal)) {
-        std::cout << "Normal: " << normal.transpose() << std::endl;
-        std::cout << "Expected: " << expected_normal.transpose() << std::endl;
+        std::cout << "Normal: " << normal.transpose() << "\n";
+        std::cout << "Expected: " << expected_normal.transpose() << "\n";
     }
 
     // Check jacobian using finite differences
@@ -93,8 +93,8 @@ TEST_CASE("Edge-vertex collision normal", "[ev][normal]")
         fd_jacobian);
     CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
     if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
-        std::cout << "Jacobian:\n" << jacobian << std::endl;
-        std::cout << "FD Jacobian:\n" << fd_jacobian << std::endl;
+        std::cout << "Jacobian:\n" << jacobian << "\n";
+        std::cout << "FD Jacobian:\n" << fd_jacobian << "\n";
     }
 }
 
@@ -128,8 +128,8 @@ TEST_CASE("Point-line normal hessian", "[pl][normal]")
         fd_hessian);
     CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
     if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
-        std::cout << "Hessian:\n" << hessian << std::endl;
-        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
+        std::cout << "Hessian:\n" << hessian << "\n";
+        std::cout << "FD Hessian:\n" << fd_hessian << "\n";
     }
 
     // Check hessian using finite differences
@@ -144,8 +144,8 @@ TEST_CASE("Point-line normal hessian", "[pl][normal]")
         fd_hessian);
     CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
     if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
-        std::cout << "Hessian:\n" << hessian << std::endl;
-        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
+        std::cout << "Hessian:\n" << hessian << "\n";
+        std::cout << "FD Hessian:\n" << fd_hessian << "\n";
     }
 }
 
@@ -189,8 +189,8 @@ TEST_CASE("Edge-edge collision normal", "[ee][normal]")
         fd_jacobian);
     CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
     if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
-        std::cout << "Jacobian:\n" << jacobian << std::endl;
-        std::cout << "FD Jacobian:\n" << fd_jacobian << std::endl;
+        std::cout << "Jacobian:\n" << jacobian << "\n";
+        std::cout << "FD Jacobian:\n" << fd_jacobian << "\n";
     }
 }
 
@@ -225,8 +225,8 @@ TEST_CASE("Line-line normal hessian", "[ee][normal][hessian]")
         fd_hessian);
     CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
     if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
-        std::cout << "Hessian:\n" << hessian << std::endl;
-        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
+        std::cout << "Hessian:\n" << hessian << "\n";
+        std::cout << "FD Hessian:\n" << fd_hessian << "\n";
     }
 
     // Check hessian using finite differences
@@ -241,8 +241,8 @@ TEST_CASE("Line-line normal hessian", "[ee][normal][hessian]")
         fd_hessian);
     CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
     if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
-        std::cout << "Hessian:\n" << hessian << std::endl;
-        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
+        std::cout << "Hessian:\n" << hessian << "\n";
+        std::cout << "FD Hessian:\n" << fd_hessian << "\n";
     }
 }
 
@@ -289,8 +289,8 @@ TEST_CASE("Face-vertex collision normal", "[fv][normal]")
         fd_jacobian);
     CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
     if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
-        std::cout << "Jacobian:\n" << jacobian << std::endl;
-        std::cout << "FD Jacobian:\n" << fd_jacobian << std::endl;
+        std::cout << "Jacobian:\n" << jacobian << "\n";
+        std::cout << "FD Jacobian:\n" << fd_jacobian << "\n";
     }
 }
 
@@ -319,8 +319,8 @@ TEST_CASE("Triangle normal hessian", "[normal]")
         fd_J_cross);
     CHECK(fd::compare_jacobian(J_cross, fd_J_cross, 1e-6));
     if (!fd::compare_jacobian(J_cross, fd_J_cross, 1e-6)) {
-        std::cout << "Hessian:\n" << J_cross << std::endl;
-        std::cout << "FD Hessian:\n" << fd_J_cross << std::endl;
+        std::cout << "Hessian:\n" << J_cross << "\n";
+        std::cout << "FD Hessian:\n" << fd_J_cross << "\n";
     }
 
     // Check hessian using finite differences
@@ -335,8 +335,8 @@ TEST_CASE("Triangle normal hessian", "[normal]")
         fd_hessian);
     CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
     if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
-        std::cout << "Hessian:\n" << hessian << std::endl;
-        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
+        std::cout << "Hessian:\n" << hessian << "\n";
+        std::cout << "FD Hessian:\n" << fd_hessian << "\n";
     }
 
     // Check hessian using finite differences
@@ -350,8 +350,8 @@ TEST_CASE("Triangle normal hessian", "[normal]")
         fd_hessian);
     CHECK(fd::compare_jacobian(hessian, fd_hessian, 1e-6));
     if (!fd::compare_jacobian(hessian, fd_hessian, 1e-6)) {
-        std::cout << "Hessian:\n" << hessian << std::endl;
-        std::cout << "FD Hessian:\n" << fd_hessian << std::endl;
+        std::cout << "Hessian:\n" << hessian << "\n";
+        std::cout << "FD Hessian:\n" << fd_hessian << "\n";
     }
 }
 
@@ -382,7 +382,7 @@ TEST_CASE("Plane-vertex collision normal", "[pv][normal]")
         fd_jacobian);
     CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
     if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
-        std::cout << "Jacobian:\n" << jacobian << std::endl;
-        std::cout << "FD Jacobian:\n" << fd_jacobian << std::endl;
+        std::cout << "Jacobian:\n" << jacobian << "\n";
+        std::cout << "FD Jacobian:\n" << fd_jacobian << "\n";
     }
 }
