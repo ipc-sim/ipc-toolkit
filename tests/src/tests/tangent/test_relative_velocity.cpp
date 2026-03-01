@@ -100,7 +100,7 @@ TEST_CASE(
 
     Eigen::VectorXd x = Eigen::VectorXd::Zero(1);
     Eigen::MatrixXd J_numerical;
-    fd::finite_jacobian_tensor<4>(
+    fd::finite_jacobian_tensor<3>(
         x,
         [&dim](const Eigen::VectorXd&) -> Eigen::MatrixXd {
             return point_point_relative_velocity_jacobian(dim);
@@ -125,7 +125,7 @@ TEST_CASE(
     auto J_analytical = point_edge_relative_velocity_dx_dbeta(dim, x[0]);
 
     Eigen::MatrixXd J_numerical;
-    fd::finite_jacobian_tensor<4>(
+    fd::finite_jacobian_tensor<3>(
         x,
         [&dim](const Eigen::VectorXd& _x) -> Eigen::MatrixXd {
             return point_edge_relative_velocity_jacobian(dim, _x[0]);
@@ -149,7 +149,7 @@ TEST_CASE(
     auto J_analytical = edge_edge_relative_velocity_dx_dbeta(x);
 
     Eigen::MatrixXd J_numerical;
-    fd::finite_jacobian_tensor<4>(
+    fd::finite_jacobian_tensor<3>(
         x,
         [](const Eigen::VectorXd& _x) -> Eigen::MatrixXd {
             return edge_edge_relative_velocity_jacobian(_x);
@@ -173,7 +173,7 @@ TEST_CASE(
     auto J_analytical = point_triangle_relative_velocity_dx_dbeta(x);
 
     Eigen::MatrixXd J_numerical;
-    fd::finite_jacobian_tensor<4>(
+    fd::finite_jacobian_tensor<3>(
         x,
         [](const Eigen::VectorXd& _x) -> Eigen::MatrixXd {
             return point_triangle_relative_velocity_jacobian(_x);

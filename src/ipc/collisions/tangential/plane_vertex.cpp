@@ -85,12 +85,12 @@ PlaneVertexTangentialCollision::relative_velocity_jacobian(
     return MatrixMax<double, 3, 12>::Identity(ndof(), ndof());
 }
 
-MatrixMax<double, 3, 24>
+MatrixMax<double, 36, 2>
 PlaneVertexTangentialCollision::relative_velocity_dx_dbeta(
     Eigen::ConstRef<VectorMax2d> _closest_point) const
 {
-    return MatrixMax<double, 3, 24>::Zero(
-        dim(), _closest_point.size() * ndof());
+    return MatrixMax<double, 36, 2>::Zero(
+        dim() * ndof(), _closest_point.size());
 }
 
 } // namespace ipc

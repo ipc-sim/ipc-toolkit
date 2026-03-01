@@ -22,7 +22,7 @@ MatrixMax<double, 3, 6> point_point_relative_velocity_jacobian(const int dim);
 /// @brief Compute d²u/dxdβ where u is the relative velocity of two points
 /// @param dim Dimension (2 or 3)
 /// @return The vectorized tensor of d²u/dxdβ
-MatrixMax<double, 3, 6> point_point_relative_velocity_dx_dbeta(const int dim);
+VectorMax<double, 18> point_point_relative_velocity_dx_dbeta(const int dim);
 
 // ============================================================================
 // Point - Edge
@@ -50,7 +50,7 @@ point_edge_relative_velocity_jacobian(const int dim, const double alpha);
 /// @param dim Dimension (2 or 3)
 /// @param alpha Parametric coordinate of the closest point on the edge
 /// @return The vectorized tensor of d²u/dxdα
-MatrixMax<double, 3, 9>
+VectorMax<double, 27>
 point_edge_relative_velocity_dx_dbeta(const int dim, const double alpha);
 
 // ============================================================================
@@ -80,7 +80,7 @@ edge_edge_relative_velocity_jacobian(Eigen::ConstRef<Eigen::Vector2d> coords);
 /// @brief Compute d²u/dxdβ where u is the relative velocity of two edges
 /// @param coords Two parametric coordinates of the closest points on the edges
 /// @return The vectorized tensor of d²u/dxdβ
-Eigen::Matrix<double, 3, 24>
+Eigen::Matrix<double, 36, 2>
 edge_edge_relative_velocity_dx_dbeta(Eigen::ConstRef<Eigen::Vector2d> coords);
 
 // ============================================================================
@@ -109,7 +109,7 @@ Eigen::Matrix<double, 3, 12> point_triangle_relative_velocity_jacobian(
 /// @brief Compute d²u/dxdβ where u is the relative velocity of a point and a triangle
 /// @param coords Baricentric coordinates of the closest point on the triangle
 /// @return The vectorized tensor of d²u/dxdβ
-Eigen::Matrix<double, 3, 24> point_triangle_relative_velocity_dx_dbeta(
+Eigen::Matrix<double, 36, 2> point_triangle_relative_velocity_dx_dbeta(
     Eigen::ConstRef<Eigen::Vector2d> coords);
 
 } // namespace ipc

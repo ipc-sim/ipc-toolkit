@@ -404,14 +404,14 @@ MatrixMax12d TangentialPotential::force_jacobian(
             // Compute: ∇ΓᵀP = (∇ᵦΓ ∇β)ᵀ P
             const MatrixMax<double, 2, 12> dbeta_dx = // ∇β
                 collision.compute_closest_point_jacobian(lagged_positions);
-            const MatrixMax<double, 3, 24> dGamma_dbeta = // ∇ᵦΓ
+            const MatrixMax<double, 36, 2> dGamma_dbeta = // ∇ᵦΓ
                 collision.relative_velocity_dx_dbeta(beta);
 
             // 1. Precompute dT/dβ = [dΓ/dβ]ᵀ P
             MatrixMax<double, 24, 2> dT_dbeta(T.size(), beta.size());
             for (int b = 0; b < beta.size(); ++b) {
                 dT_dbeta.col(b) =
-                    (dGamma_dbeta.middleCols(b * ndof, ndof).transpose() * P)
+                    (dGamma_dbeta.col(b).reshaped(dim, ndof).transpose() * P)
                         .reshaped();
             }
 
@@ -772,7 +772,7 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
             // Compute: ∇ΓᵀP = (∇ᵦΓ ∇β)ᵀ P
             const MatrixMax<double, 2, STENCIL_NDOF> dbeta_dx = // ∇β
                 collision.compute_closest_point_jacobian(lagged_positions);
-            const MatrixMax<double, 3, 2 * STENCIL_NDOF> dGamma_dbeta = // ∇ᵦΓ
+            const MatrixMax<double, 3 * STENCIL_NDOF, 2> dGamma_dbeta = // ∇ᵦΓ
                 collision.relative_velocity_dx_dbeta(beta);
 
             // 1. Precompute dT/dβ = [dΓ/dβ]ᵀ P
@@ -780,7 +780,7 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
                 T.size(), beta.size());
             for (int b = 0; b < beta.size(); ++b) {
                 dT_dbeta.col(b) =
-                    (dGamma_dbeta.middleCols(b * ndof, ndof).transpose() * P)
+                    (dGamma_dbeta.col(b).reshaped(dim, ndof).transpose() * P)
                         .reshaped();
             }
 
