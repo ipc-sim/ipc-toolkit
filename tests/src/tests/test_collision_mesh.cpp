@@ -1,3 +1,4 @@
+#include <tests/dof_layout.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -43,9 +44,11 @@ TEST_CASE("Collision mesh", "[collision_mesh]")
 
     Eigen::VectorXd g(8);
     g << 1, 1, -1, 1, 1, -1, -1, -1;
+    g = tests::reorder_gradient(g, mesh.num_vertices(), V.cols());
     Eigen::VectorXd gf = mesh.to_full_dof(g);
     Eigen::VectorXd expected_gf(6);
     expected_gf << 1, 1, -2, 0, 0, -2;
+    expected_gf = tests::reorder_gradient(expected_gf, U.rows(), U.cols());
     CHECK(gf == expected_gf);
 
     Eigen::MatrixXd H = Eigen::MatrixXd::Identity(8, 8);
@@ -59,6 +62,7 @@ TEST_CASE("Collision mesh", "[collision_mesh]")
         0, 0, 0, 2, 0, 1,            //
         0, 0, 1, 0, 2, 0,            //
         0, 0, 0, 1, 0, 2;            //
+    expected_Hf = tests::reorder_hessian(expected_Hf, U.rows(), U.cols());
 
     CHECK(Hf == expected_Hf);
 }
