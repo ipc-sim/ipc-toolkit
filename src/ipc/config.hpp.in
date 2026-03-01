@@ -39,6 +39,9 @@ using index_t = int32_t;
 // using scalar_t = float;
 // #endif
 
-inline constexpr int VERTEX_DERIVATIVE_LAYOUT = Eigen::RowMajor;
+// clang-format off
+/// @brief The layout of derivatives of vertex positions. The default is `Eigen::RowMajor`.
+inline constexpr int VERTEX_DERIVATIVE_LAYOUT = Eigen::@IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT@;
+// clang-format on
 
 } // namespace ipc
