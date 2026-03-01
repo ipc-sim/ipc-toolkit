@@ -143,3 +143,44 @@ You can also get the current maximum number of threads as follows:
         .. code-block:: python
 
             nthreads = ipctk.get_num_threads()
+
+Vertex Derivative Layout
+------------------------
+
+By default, the IPC Toolkit orders derivative vectors (gradients and Hessians) with respect to vertex DOFs in a **row-major** layout:
+
+.. math::
+
+    \mathbf{x} = [x_0, y_0, z_0, x_1, y_1, z_1, \ldots]
+
+Some simulation frameworks instead use a **column-major** layout, where all coordinates of the same dimension are grouped together:
+
+.. math::
+
+    \mathbf{x} = [x_0, x_1, \ldots, y_0, y_1, \ldots, z_0, z_1, \ldots]
+
+The IPC Toolkit provides a compile-time CMake option to select which layout is used for all gradient and Hessian assembly. This is controlled by the ``IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT`` cache variable, which accepts either ``RowMajor`` (default) or ``ColMajor``.
+
+To build with column-major derivative ordering, pass the option when configuring CMake:
+
+.. code-block:: bash
+
+    cmake -DIPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT=ColMajor -B build -S .
+
+Or to explicitly use the default row-major layout:
+
+.. code-block:: bash
+
+    cmake -DIPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT=RowMajor -B build -S .
+
+.. note::
+
+    This is an advanced option marked as such in CMake. Most users will not need to change it. It is primarily useful when integrating the IPC Toolkit into a simulation framework that stores DOFs in a column-major layout, avoiding the need to permute vectors and matrices at the interface boundary.
+
+This setting affects all functions that assemble local per-element gradients and Hessians into global vectors and matrices, including ``local_gradient_to_global_gradient``, ``local_hessian_to_global_triplets``, and ``local_jacobian_to_global_triplets``. It also affects ``CollisionMesh::vertex_matrix_to_dof_matrix``, which converts vertex-indexed sparse matrices to DOF-indexed sparse matrices.
+
+The chosen layout is stored as the compile-time constant ``ipc::VERTEX_DERIVATIVE_LAYOUT`` (equal to ``Eigen::RowMajor`` or ``Eigen::ColMajor``) in the generated ``config.hpp`` header.
+
+.. warning::
+
+    This feature is experimental. If you encounter any bugs, please report them on `GitHub <https://github.com/ipc-sim/ipc-toolkit/issues>`_.

@@ -67,12 +67,14 @@ public:
     /// @param[in] rest_positions The collision stencil's rest positions.
     /// @param[in] positions The collision stencil's positions.
     /// @param[in,out] out Store the triplets of the shape derivative here.
+    /// @param[in] n_total_verts The total number of vertices in the mesh, used for computing global indices in the triplets. See also `local_hessian_to_global_triplets`.
     void shape_derivative(
         const NormalCollision& collision,
         const std::array<index_t, 4>& vertex_ids,
         Eigen::ConstRef<VectorMax12d> rest_positions,
         Eigen::ConstRef<VectorMax12d> positions,
-        std::vector<Eigen::Triplet<double>>& out) const;
+        std::vector<Eigen::Triplet<double>>& out,
+        const int n_total_verts = -1) const;
 
     /// @brief Compute the force magnitude for a collision.
     /// @param distance_squared The squared distance between elements.

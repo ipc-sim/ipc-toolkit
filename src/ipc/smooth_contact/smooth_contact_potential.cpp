@@ -109,7 +109,7 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
 
                 local_hessian_to_global_triplets(
                     local_hess, collision.vertex_ids(), dim,
-                    *(hess_triplets.cache));
+                    *(hess_triplets.cache), mesh.num_vertices());
             }
         });
 

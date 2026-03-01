@@ -96,7 +96,8 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
                     collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_hessian_to_global_triplets(
-                    local_force_jacobian, vis, dim, jac_triplets);
+                    local_force_jacobian, vis, dim, jac_triplets,
+                    mesh.num_vertices());
             }
         });
 
@@ -587,7 +588,8 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
                     collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_hessian_to_global_triplets(
-                    local_force_jacobian, vis, dim, jac_triplets);
+                    local_force_jacobian, vis, dim, jac_triplets,
+                    mesh.num_vertices());
 
                 if (wrt == DiffWRT::VELOCITIES) {
                     continue;
@@ -614,7 +616,8 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
 
                 local_jacobian_to_global_triplets(
                     local_force * normal_force_grad.transpose(), vis,
-                    cc_vert_ids, dim, jac_triplets);
+                    cc_vert_ids, dim, jac_triplets, mesh.num_vertices(),
+                    mesh.num_vertices());
             }
         });
 

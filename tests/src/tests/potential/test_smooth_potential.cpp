@@ -1,10 +1,12 @@
 #include <tests/config.hpp>
+#include <tests/dof_layout.hpp>
 #include <tests/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 #include <catch2/benchmark/catch_benchmark.hpp>
 
+#include <ipc/ipc.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/smooth_contact/smooth_contact_potential.hpp>
 #include <ipc/distance/line_line.hpp>
@@ -12,7 +14,6 @@
 #include <finitediff.hpp>
 #include <igl/edges.h>
 #include <igl/readCSV.h>
-#include <ipc/ipc.hpp>
 
 using namespace ipc;
 
@@ -65,10 +66,11 @@ TEST_CASE("Smooth barrier potential codim", "[smooth_potential]")
     {
         auto f = [&](const Eigen::VectorXd& x) {
             return potential(
-                collisions, mesh, fd::unflatten(x, vertices.cols()));
+                collisions, mesh, tests::unflatten(x, vertices.cols()));
         };
         fd::finite_gradient(
-            fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
+            tests::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND,
+            1e-8);
     }
 
     // REQUIRE(grad_b.squaredNorm() > 1e-8);
@@ -88,10 +90,11 @@ TEST_CASE("Smooth barrier potential codim", "[smooth_potential]")
     {
         auto f = [&](const Eigen::VectorXd& x) {
             return potential.gradient(
-                collisions, mesh, fd::unflatten(x, vertices.cols()));
+                collisions, mesh, tests::unflatten(x, vertices.cols()));
         };
         fd::finite_jacobian(
-            fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-8);
+            tests::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND,
+            1e-8);
     }
 
     REQUIRE(hess_b.squaredNorm() > 1e-8);
@@ -187,10 +190,11 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
     {
         auto f = [&](const Eigen::VectorXd& x) {
             return potential(
-                collisions, mesh, fd::unflatten(x, vertices.cols()));
+                collisions, mesh, tests::unflatten(x, vertices.cols()));
         };
         fd::finite_gradient(
-            fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
+            tests::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND,
+            1e-8);
     }
 
     // REQUIRE(grad_b.squaredNorm() > 1e-8);
@@ -210,10 +214,11 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
     {
         auto f = [&](const Eigen::VectorXd& x) {
             return potential.gradient(
-                collisions, mesh, fd::unflatten(x, vertices.cols()));
+                collisions, mesh, tests::unflatten(x, vertices.cols()));
         };
         fd::finite_jacobian(
-            fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-8);
+            tests::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND,
+            1e-8);
     }
 
     REQUIRE(hess_b.squaredNorm() > 1e-8);
@@ -279,10 +284,11 @@ TEST_CASE("Smooth barrier potential real sim 2D C^2", "[smooth_potential]")
     {
         auto f = [&](const Eigen::VectorXd& x) {
             return potential(
-                collisions, mesh, fd::unflatten(x, vertices.cols()));
+                collisions, mesh, tests::unflatten(x, vertices.cols()));
         };
         fd::finite_gradient(
-            fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
+            tests::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND,
+            1e-8);
     }
 
     REQUIRE(grad_b.squaredNorm() > 1e-8);
@@ -302,10 +308,11 @@ TEST_CASE("Smooth barrier potential real sim 2D C^2", "[smooth_potential]")
     {
         auto f = [&](const Eigen::VectorXd& x) {
             return potential.gradient(
-                collisions, mesh, fd::unflatten(x, vertices.cols()));
+                collisions, mesh, tests::unflatten(x, vertices.cols()));
         };
         fd::finite_jacobian(
-            fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-8);
+            tests::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND,
+            1e-8);
     }
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);
@@ -368,10 +375,11 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
     {
         auto f = [&](const Eigen::VectorXd& x) {
             return potential(
-                collisions, mesh, fd::unflatten(x, vertices.cols()));
+                collisions, mesh, tests::unflatten(x, vertices.cols()));
         };
         fd::finite_gradient(
-            fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
+            tests::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND,
+            1e-8);
     }
 
     REQUIRE(grad_b.squaredNorm() > 1e-8);

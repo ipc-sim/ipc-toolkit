@@ -212,18 +212,27 @@ void CollisionMesh::init_selection_matrices(const int dim)
 Eigen::SparseMatrix<double> CollisionMesh::vertex_matrix_to_dof_matrix(
     const Eigen::SparseMatrix<double>& M_V, int dim)
 {
+    const int n_rows = M_V.rows();
+    const int n_cols = M_V.cols();
+
     std::vector<Eigen::Triplet<double>> triplets;
     using InnerIterator = Eigen::SparseMatrix<double>::InnerIterator;
     for (int k = 0; k < M_V.outerSize(); ++k) {
         for (InnerIterator it(M_V, k); it; ++it) {
             for (int d = 0; d < dim; d++) {
-                triplets.emplace_back(
-                    dim * it.row() + d, dim * it.col() + d, it.value());
+                if constexpr (VERTEX_DERIVATIVE_LAYOUT == Eigen::RowMajor) {
+                    triplets.emplace_back(
+                        dim * it.row() + d, dim * it.col() + d, it.value());
+                } else {
+                    triplets.emplace_back(
+                        n_rows * d + it.row(), n_cols * d + it.col(),
+                        it.value());
+                }
             }
         }
     }
 
-    Eigen::SparseMatrix<double> M_dof(M_V.rows() * dim, M_V.cols() * dim);
+    Eigen::SparseMatrix<double> M_dof(n_rows * dim, n_cols * dim);
     M_dof.setFromTriplets(triplets.begin(), triplets.end());
     M_dof.makeCompressed();
     return M_dof;

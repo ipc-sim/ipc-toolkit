@@ -1,5 +1,6 @@
 set(SOURCES
   # Tests
+  test_local_to_global.cpp
   test_matrixcache.cpp
   test_sinc.cpp
   test_utils.cpp
