@@ -920,6 +920,16 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#vertex-derivative-layout" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/misc.rst#vertex-derivative-layout (reference label)"><span>Vertex Derivative Layout</span></span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2043,6 +2053,16 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#vertex-derivative-layout" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/misc.rst#vertex-derivative-layout (reference label)"><span>Vertex Derivative Layout</span></span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2198,6 +2218,31 @@ Python</label></div>
 </div>
 </div>
 </div>
+</div><h2 id="vertex-derivative-layout">Vertex Derivative Layout<a class="headerlink" href="#vertex-derivative-layout" title="Link to this heading">¶</a></h2>
+<p>By default, the IPC Toolkit orders derivative vectors (gradients and Hessians) with respect to vertex DOFs in a <strong>row-major</strong> layout:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{x} = [x_0, y_0, z_0, x_1, y_1, z_1, \ldots]\]</div>
+<p>Some simulation frameworks instead use a <strong>column-major</strong> layout, where all coordinates of the same dimension are grouped together:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{x} = [x_0, x_1, \ldots, y_0, y_1, \ldots, z_0, z_1, \ldots]\]</div>
+<p>The IPC Toolkit provides a compile-time CMake option to select which layout is used for all gradient and Hessian assembly. This is controlled by the <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT</span></code> cache variable, which accepts either <code class="docutils literal notranslate"><span class="pre">RowMajor</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">ColMajor</span></code>.</p>
+<p>To build with column-major derivative ordering, pass the option when configuring CMake:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><code>cmake<span class="w"> </span>-DIPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT<span class="o">=</span>ColMajor<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span>-S<span class="w"> </span>.
+</code></pre></div>
+</div>
+<p>Or to explicitly use the default row-major layout:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><code>cmake<span class="w"> </span>-DIPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT<span class="o">=</span>RowMajor<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span>-S<span class="w"> </span>.
+</code></pre></div>
+</div>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>This is an advanced option marked as such in CMake. Most users will not need to change it. It is primarily useful when integrating the IPC Toolkit into a simulation framework that stores DOFs in a column-major layout, avoiding the need to permute vectors and matrices at the interface boundary.</p>
+</div>
+<p>This setting affects all functions that assemble local per-element gradients and Hessians into global vectors and matrices, including <code class="docutils literal notranslate"><span class="pre">local_gradient_to_global_gradient</span></code>, <code class="docutils literal notranslate"><span class="pre">local_hessian_to_global_triplets</span></code>, and <code class="docutils literal notranslate"><span class="pre">local_jacobian_to_global_triplets</span></code>. It also affects <code class="docutils literal notranslate"><span class="pre">CollisionMesh::vertex_matrix_to_dof_matrix</span></code>, which converts vertex-indexed sparse matrices to DOF-indexed sparse matrices.</p>
+<p>The chosen layout is stored as the compile-time constant <code class="docutils literal notranslate"><span class="pre">ipc::VERTEX_DERIVATIVE_LAYOUT</span></code> (equal to <code class="docutils literal notranslate"><span class="pre">Eigen::RowMajor</span></code> or <code class="docutils literal notranslate"><span class="pre">Eigen::ColMajor</span></code>) in the generated <code class="docutils literal notranslate"><span class="pre">config.hpp</span></code> header.</p>
+<div class="warning admonition">
+<p class="admonition-title">Warning</p>
+<p>This feature is experimental. If you encounter any bugs, please report them on <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/issues">GitHub</a>.</p>
 </div>
 
 
@@ -2219,7 +2264,7 @@ Python</label></div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Feb 28, 2026
+    Mar 01, 2026
   </span>
 
     
@@ -2327,6 +2372,8 @@ Python</label></div>
       
         <script src="../_static/sphinx_immaterial_theme.32136f45f91ae6956.min.js?v=a7a9472a"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js"></script>
     
   </body>
 </html>

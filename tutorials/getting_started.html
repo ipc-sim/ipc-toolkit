@@ -2525,6 +2525,10 @@ x_n &amp; y_n &amp; z_n \\
 \frac{\partial^2 B}{\partial z_n \partial y_n} &amp;
 \frac{\partial^2 B}{\partial z_n^2}
 \end{bmatrix}.\end{split}\]</div>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>This row-major derivative ordering is the default. If your simulation framework uses a column-major DOF layout, the IPC Toolkit can be configured to use that instead. See <span class="xref std std-ref">Vertex Derivative Layout</span> for details.</p>
+</div>
 <h3 id="adaptive-barrier-stiffness">Adaptive Barrier Stiffness<a class="headerlink" href="#adaptive-barrier-stiffness" title="Link to this heading">¶</a></h3>
 <p>The last piece of the barrier potential is the barrier stiffness. This is a weight that is multiplied by the barrier potential to better scale it relative to the energy potential. This can be a fixed value or adaptive.</p>
 <p>To compute the adaptive barrier stiffness, we can use two functions: <code class="docutils literal notranslate"><span class="pre">initial_barrier_stiffness</span></code> and <code class="docutils literal notranslate"><span class="pre">update_barrier_stiffness</span></code>. The function <code class="docutils literal notranslate"><span class="pre">initial_barrier_stiffness</span></code> computes the initial value from the current energy and barrier potential gradients. This function also provides a minimum and maximum value for the barrier stiffness. The function <code class="docutils literal notranslate"><span class="pre">update_barrier_stiffness</span></code> updates the barrier stiffness if the minimum distance has become too small.</p>
@@ -2934,7 +2938,7 @@ Python</label></div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Feb 28, 2026
+    Mar 01, 2026
   </span>
 
     
