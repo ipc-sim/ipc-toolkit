@@ -186,7 +186,7 @@ line_line_closest_point_pairs_hessian(
     }
 
     {
-        const auto [Ha, Hb] =
+        const auto& [Ha, Hb] =
             edge_edge_closest_point_hessian(ea0, ea1, eb0, eb1);
 
         for (int d = 0; d < 3; d++) {
