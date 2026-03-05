@@ -1,7 +1,5 @@
 #include "edge_edge.hpp"
 
-#include "autogen.hpp"
-
 #include <ipc/tangent/closest_point.hpp>
 
 #include <unsupported/Eigen/KroneckerProduct>
@@ -188,13 +186,8 @@ line_line_closest_point_pairs_hessian(
     }
 
     {
-        Eigen::Matrix<double, 12, 12> Ha, Hb;
-        autogen::edge_edge_closest_point_hessian_a(
-            ea0.x(), ea0.y(), ea0.z(), ea1.x(), ea1.y(), ea1.z(), eb0.x(),
-            eb0.y(), eb0.z(), eb1.x(), eb1.y(), eb1.z(), Ha.data());
-        autogen::edge_edge_closest_point_hessian_b(
-            ea0.x(), ea0.y(), ea0.z(), ea1.x(), ea1.y(), ea1.z(), eb0.x(),
-            eb0.y(), eb0.z(), eb1.x(), eb1.y(), eb1.z(), Hb.data());
+        const auto [Ha, Hb] =
+            edge_edge_closest_point_hessian(ea0, ea1, eb0, eb1);
 
         for (int d = 0; d < 3; d++) {
             // wrt. uv
