@@ -230,9 +230,7 @@ VectorMax12d NormalPotential::gauss_newton_hessian_diagonal(
     const NormalCollision& collision,
     Eigen::ConstRef<VectorMax12d> positions) const
 {
-    const int n = collision.num_vertices();
     const int d = collision.dim(positions.size());
-    const int ndof = n * d;
 
     // Compute coefficients and distance vector together
     VectorMax4d coeffs;

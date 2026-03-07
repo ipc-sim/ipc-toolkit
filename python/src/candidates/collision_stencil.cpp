@@ -355,19 +355,19 @@ void define_collision_stencil(py::module_& m)
             )ipc_Qu8mg5v7",
             "coeffs"_a, "dim"_a)
         .def_static(
-            "diag_distance_vector_dv_outer",
+            "diag_distance_vector_t_outer",
             &CollisionStencil::diag_distance_vector_t_outer,
             R"ipc_Qu8mg5v7(
-            Compute diag((dt/dx * dv)(dt/dx * dv)^T) efficiently (Eq. 12).
+            Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq. 12).
 
-            Result is element-wise square of [c_0*dv^T, c_1*dv^T, ..., c_n*dv^T].
+            Result is element-wise square of [c_0*t^T, c_1*t^T, ..., c_n*t^T].
 
             Parameters:
                 coeffs: The coefficients c_i.
-                distance_vector: The distance vector dv.
+                distance_vector: The distance vector t.
 
             Returns:
-                The diagonal of (dt/dx*dv)(dt/dx*dv)^T as a vector of size ndof.
+                The diagonal of (dt/dx*t)(dt/dx*t)^T as a vector of size ndof.
             )ipc_Qu8mg5v7",
             "coeffs"_a, "distance_vector"_a)
         .def_static(
