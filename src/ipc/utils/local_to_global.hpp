@@ -33,6 +33,7 @@ void local_gradient_to_global_gradient(
     const int n_total_verts = grad.size() / dim;
     assert(grad.size() % dim == 0); // Ensure grad is properly sized
     for (int i = 0; i < n_verts; i++) {
+        assert(ids[i] >= 0); // Ensure valid vertex id
         if constexpr (GlobalOrder == Eigen::RowMajor) {
             grad.segment(dim * ids[i], dim) += local_grad.segment(dim * i, dim);
         } else {
@@ -65,6 +66,7 @@ void local_gradient_to_global_gradient(
     const int n_total_verts = grad.size() / dim;
     assert(grad.size() % dim == 0); // Ensure grad is properly sized
     for (int i = 0; i < n_verts; i++) {
+        assert(ids[i] >= 0); // Ensure valid vertex id
         for (int d = 0; d < dim; d++) {
             if constexpr (GlobalOrder == Eigen::RowMajor) {
                 grad.coeffRef(dim * ids[i] + d) += local_grad(dim * i + d);
@@ -109,7 +111,9 @@ void local_hessian_to_global_triplets(
         }
     }
     for (int i = 0; i < n_verts; i++) {
+        assert(ids[i] >= 0); // Ensure valid vertex id
         for (int j = 0; j < n_verts; j++) {
+            assert(ids[j] >= 0); // Ensure valid vertex id
             for (int k = 0; k < dim; k++) {
                 for (int l = 0; l < dim; l++) {
                     if constexpr (GlobalOrder == Eigen::RowMajor) {
@@ -174,7 +178,9 @@ void local_jacobian_to_global_triplets(
         }
     }
     for (int i = 0; i < n_rows; i++) {
+        assert(row_ids[i] >= 0); // Ensure valid vertex id
         for (int j = 0; j < n_cols; j++) {
+            assert(col_ids[j] >= 0); // Ensure valid vertex id
             for (int k = 0; k < dim; k++) {
                 for (int l = 0; l < dim; l++) {
                     if constexpr (GlobalOrder == Eigen::RowMajor) {

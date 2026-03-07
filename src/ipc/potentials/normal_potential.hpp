@@ -32,6 +32,46 @@ public:
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
+    /// @brief Compute the diagonal of the cumulative Gauss-Newton Hessian of the potential.
+    ///
+    /// Uses the distance-vector formulation to efficiently compute the
+    /// diagonal of the Gauss-Newton Hessian without forming full local 12×12
+    /// Hessian matrices. This is useful as a Jacobi preconditioner for
+    /// iterative solvers.
+    ///
+    /// @note This is a Gauss-Newton approximation (drops derivatives of closest-point coefficients), not the exact Hessian.
+    /// @note Only supports unmollified collisions (i.e., not edge-edge with nearly parallel edges). Mollified collisions fall back to extracting the diagonal from the full local Hessian.
+    ///
+    /// @param collisions The set of collisions.
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
+    /// @return The diagonal of the Gauss-Newton Hessian as a vector of size vertices.size().
+    Eigen::VectorXd gauss_newton_hessian_diagonal(
+        const NormalCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
+
+    /// @brief Compute the product pᵀHp for the cumulative Gauss-Newton Hessian of the potential.
+    ///
+    /// Uses the distance-vector formulation to efficiently compute the
+    /// quadratic form pᵀHp without forming full local 12×12 Hessian matrices
+    /// nor the global sparse Hessian. This is useful for nonlinear conjugate
+    /// gradient methods.
+    ///
+    /// @note This is a Gauss-Newton approximation (drops derivatives of closest-point coefficients), not the exact Hessian.
+    /// @note Only supports unmollified collisions. Mollified collisions fall back to computing pᵀHp from the full local Hessian.
+    ///
+    /// @param collisions The set of collisions.
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
+    /// @param p The direction vector of size vertices.size().
+    /// @return The scalar value pᵀHp.
+    double gauss_newton_hessian_quadratic_form(
+        const NormalCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::VectorXd> p) const;
+
     // -- Single collision methods ---------------------------------------------
 
     /// @brief Compute the potential for a single collision.
@@ -60,6 +100,42 @@ public:
         Eigen::ConstRef<VectorMax12d> positions,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const override;
+
+    // -- Single collision distance-vector methods -----------------------------
+
+    /// @brief Compute the diagonal of the Gauss-Newton Hessian of the
+    /// potential for a single collision using the distance-vector formulation
+    /// (Eqs. 10-12).
+    ///
+    /// For unmollified collisions:
+    ///   diag(∂²b/∂x²) ≈ w · [4·f"(d²) · diag((∂dv/∂x·dv)(∂dv/∂x·dv)ᵀ)
+    ///                         + 2·f'(d²) · diag((∂dv/∂x)(∂dv/∂x)ᵀ)]
+    ///
+    /// @note This is a Gauss-Newton approximation, not the exact Hessian diagonal. It drops derivatives of the closest-point coefficients.
+    ///
+    /// @param collision The collision.
+    /// @param positions The collision stencil's positions.
+    /// @return The diagonal of the Gauss-Newton Hessian as a vector of size ndof.
+    VectorMax12d gauss_newton_hessian_diagonal(
+        const NormalCollision& collision,
+        Eigen::ConstRef<VectorMax12d> positions) const;
+
+    /// @brief Compute pᵀHp for a single collision using the Gauss-Newton
+    /// Hessian via the distance-vector formulation (Eqs. 10, 13-14).
+    ///
+    /// For unmollified collisions:
+    ///   pᵀHp ≈ w · [4·f"(d²) · (pᵀ·∂dv/∂x·dv)² + 2·f'(d²) · ‖pᵀ·∂dv/∂x‖²]
+    ///
+    /// @note This is a Gauss-Newton approximation, not the exact Hessian quadratic form.
+    ///
+    /// @param collision The collision.
+    /// @param positions The collision stencil's positions.
+    /// @param p The local direction vector (size ndof, i.e., the stencil's DOF slice of the global p).
+    /// @return The scalar value pᵀHp (approximate).
+    double gauss_newton_hessian_quadratic_form(
+        const NormalCollision& collision,
+        Eigen::ConstRef<VectorMax12d> positions,
+        Eigen::ConstRef<VectorMax12d> p) const;
 
     /// @brief Compute the shape derivative of the potential for a single collision.
     /// @param[in] collision The collision.

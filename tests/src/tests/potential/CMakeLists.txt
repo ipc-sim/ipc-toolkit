@@ -4,6 +4,7 @@ set(SOURCES
   test_barrier_potential.cpp
   test_smooth_potential.cpp
   test_friction_potential.cpp
+  test_distance_vector_methods.cpp
 
   # Benchmarks
 

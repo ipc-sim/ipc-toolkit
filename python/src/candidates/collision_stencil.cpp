@@ -255,5 +255,138 @@ void define_collision_stencil(py::module_& m)
                                     vertices_t0: Stencil vertices at the start of the time step.
                     vertices_t1: Stencil vertices at the end of the time step.
                 )ipc_Qu8mg5v7",
-            "vertices_t0"_a, "vertices_t1"_a);
+            "vertices_t0"_a, "vertices_t1"_a)
+        .def(
+            "compute_distance_vector",
+            py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
+                &CollisionStencil::compute_distance_vector, py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the distance vector of the stencil: t = sum(c_i * x_i).
+
+            The distance vector is the vector between the closest points on the
+            collision primitives. Its squared norm equals the squared distance.
+
+            Note:
+                positions can be computed as stencil.dof(vertices, edges, faces)
+
+            Parameters:
+                positions: Stencil's vertex positions.
+
+            Returns:
+                The distance vector (dim-dimensional, i.e., 2D or 3D).
+            )ipc_Qu8mg5v7",
+            "positions"_a)
+        .def(
+            "compute_distance_vector_with_coefficients",
+            [](const CollisionStencil& self,
+               Eigen::ConstRef<VectorMax12d> positions) {
+                VectorMax4d coeffs;
+                VectorMax3d dv =
+                    self.compute_distance_vector(positions, coeffs);
+                return std::make_tuple(dv, coeffs);
+            },
+            R"ipc_Qu8mg5v7(
+            Compute the distance vector and the coefficients together.
+
+            Note:
+                positions can be computed as stencil.dof(vertices, edges, faces)
+
+            Parameters:
+                positions: Stencil's vertex positions.
+
+            Returns:
+                Tuple of:
+                The distance vector (dim-dimensional).
+                The computed coefficients c_i.
+            )ipc_Qu8mg5v7",
+            "positions"_a)
+        .def(
+            "compute_distance_vector",
+            py::overload_cast<
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>>(
+                &CollisionStencil::compute_distance_vector, py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the distance vector of the stencil.
+
+            Parameters:
+                vertices: Collision mesh vertices.
+                edges: Collision mesh edges.
+                faces: Collision mesh faces.
+
+            Returns:
+                The distance vector (dim-dimensional).
+            )ipc_Qu8mg5v7",
+            "vertices"_a, "edges"_a, "faces"_a)
+        .def(
+            "compute_distance_vector_jacobian",
+            &CollisionStencil::compute_distance_vector_jacobian,
+            R"ipc_Qu8mg5v7(
+            Compute the Jacobian of the distance vector w.r.t. positions.
+
+            J = [c_0 I, c_1 I, ..., c_n I]^T where I is the dim x dim identity.
+
+            Note:
+                positions can be computed as stencil.dof(vertices, edges, faces)
+
+            Parameters:
+                positions: Stencil's vertex positions.
+
+            Returns:
+                The Jacobian dt/dx as a matrix of shape (ndof, dim).
+            )ipc_Qu8mg5v7",
+            "positions"_a)
+        .def_static(
+            "diag_distance_vector_outer",
+            &CollisionStencil::diag_distance_vector_outer,
+            R"ipc_Qu8mg5v7(
+            Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq. 11).
+
+            Result is [c_0^2, c_0^2, c_0^2, c_1^2, ...] (each c_i^2 repeated
+            dim times).
+
+            Parameters:
+                coeffs: The coefficients c_i (from compute_coefficients).
+                dim: The spatial dimension (2 or 3).
+
+            Returns:
+                The diagonal of (dt/dx)(dt/dx)^T as a vector of size ndof.
+            )ipc_Qu8mg5v7",
+            "coeffs"_a, "dim"_a)
+        .def_static(
+            "diag_distance_vector_dv_outer",
+            &CollisionStencil::diag_distance_vector_t_outer,
+            R"ipc_Qu8mg5v7(
+            Compute diag((dt/dx * dv)(dt/dx * dv)^T) efficiently (Eq. 12).
+
+            Result is element-wise square of [c_0*dv^T, c_1*dv^T, ..., c_n*dv^T].
+
+            Parameters:
+                coeffs: The coefficients c_i.
+                distance_vector: The distance vector dv.
+
+            Returns:
+                The diagonal of (dt/dx*dv)(dt/dx*dv)^T as a vector of size ndof.
+            )ipc_Qu8mg5v7",
+            "coeffs"_a, "distance_vector"_a)
+        .def_static(
+            "contract_distance_vector_jacobian",
+            &CollisionStencil::contract_distance_vector_jacobian,
+            R"ipc_Qu8mg5v7(
+            Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs. 13-14).
+
+            Given p = [p_0, p_1, ..., p_n]^T where p_i are dim-dimensional,
+            this computes p^T (dt/dx) = sum(c_i * p_i) which is a
+            dim-dimensional vector.
+
+            Parameters:
+                coeffs: The coefficients c_i.
+                p: A vector of size ndof (the direction for the quadratic form).
+                dim: The spatial dimension (2 or 3).
+
+            Returns:
+                p^T (dt/dx) as a dim-dimensional vector.
+            )ipc_Qu8mg5v7",
+            "coeffs"_a, "p"_a, "dim"_a);
 }
