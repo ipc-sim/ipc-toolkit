@@ -32,7 +32,7 @@ using namespace ipc;
 //       d² = tᵀt
 // =============================================================================
 
-static MatrixMax12d build_guass_newton_hessian(
+static MatrixMax12d build_gauss_newton_hessian(
     const NormalCollision& collision,
     Eigen::ConstRef<VectorMax12d> positions,
     const BarrierPotential& barrier_potential)
@@ -352,7 +352,7 @@ TEST_CASE(
 
     // Build the explicit distance-vector Hessian matrix
     MatrixMax12d H_t =
-        build_guass_newton_hessian(*collision, positions, barrier_potential);
+        build_gauss_newton_hessian(*collision, positions, barrier_potential);
     VectorMax12d diag_explicit = H_t.diagonal();
 
     VectorMax12d diag_efficient =
@@ -452,7 +452,7 @@ TEST_CASE(
     VectorMax12d p = VectorMax12d::Random(positions.size());
 
     MatrixMax12d H_t =
-        build_guass_newton_hessian(*collision, positions, barrier_potential);
+        build_gauss_newton_hessian(*collision, positions, barrier_potential);
     double pTHp_explicit = p.dot(H_t * p);
 
     double pTHp_efficient =
@@ -513,8 +513,13 @@ TEST_CASE(
         for (int vi = 0; vi < collision.num_vertices(); vi++) {
             if (vids[vi] >= 0) {
                 for (int d = 0; d < dim; d++) {
-                    diag_reference[vids[vi] * dim + d] +=
-                        local_diag[vi * dim + d];
+                    if constexpr (VERTEX_DERIVATIVE_LAYOUT == Eigen::RowMajor) {
+                        diag_reference[vids[vi] * dim + d] +=
+                            local_diag[vi * dim + d];
+                    } else {
+                        diag_reference[vids[vi] + d * vertices.rows()] +=
+                            local_diag[vi + d * collision.num_vertices()];
+                    }
                 }
             }
         }
