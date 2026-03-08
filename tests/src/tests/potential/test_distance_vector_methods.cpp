@@ -1,4 +1,4 @@
-#include "ipc/config.hpp"
+#include <ipc/config.hpp>
 #include <tests/config.hpp>
 #include <tests/dof_layout.hpp>
 #include <tests/utils.hpp>
