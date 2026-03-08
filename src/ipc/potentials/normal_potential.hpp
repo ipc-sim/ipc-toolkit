@@ -40,7 +40,6 @@ public:
     /// iterative solvers.
     ///
     /// @note This is a Gauss-Newton approximation (drops derivatives of closest-point coefficients), not the exact Hessian.
-    /// @note Only supports unmollified collisions (i.e., not edge-edge with nearly parallel edges). Mollified collisions fall back to extracting the diagonal from the full local Hessian.
     ///
     /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
@@ -59,7 +58,6 @@ public:
     /// gradient methods.
     ///
     /// @note This is a Gauss-Newton approximation (drops derivatives of closest-point coefficients), not the exact Hessian.
-    /// @note Only supports unmollified collisions. Mollified collisions fall back to computing pᵀHp from the full local Hessian.
     ///
     /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
@@ -107,7 +105,6 @@ public:
     /// potential for a single collision using the distance-vector formulation
     /// (Eqs. 10-12).
     ///
-    /// For unmollified collisions:
     ///   diag(∂²b/∂x²) ≈ w · [4·f"(d²) · diag((∂dv/∂x·dv)(∂dv/∂x·dv)ᵀ)
     ///                         + 2·f'(d²) · diag((∂dv/∂x)(∂dv/∂x)ᵀ)]
     ///
@@ -123,10 +120,9 @@ public:
     /// @brief Compute pᵀHp for a single collision using the Gauss-Newton
     /// Hessian via the distance-vector formulation (Eqs. 10, 13-14).
     ///
-    /// For unmollified collisions:
     ///   pᵀHp ≈ w · [4·f"(d²) · (pᵀ·∂dv/∂x·dv)² + 2·f'(d²) · ‖pᵀ·∂dv/∂x‖²]
     ///
-    /// @note This is a Gauss-Newton approximation, not the exact Hessian quadratic form.
+    /// @note This is a Gauss-Newton approximation, not the exact Hessian quadratic form. It drops derivatives of the closest-point coefficients.
     ///
     /// @param collision The collision.
     /// @param positions The collision stencil's positions.
