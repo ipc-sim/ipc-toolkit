@@ -3287,16 +3287,20 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="python-api/potentials.html#ipctk.NormalPotential.gauss_newton_hessian_diagonal">gauss_newton_hessian_diagonal() (ipctk.NormalPotential method)</a>
+</li>
+      <li><a href="python-api/potentials.html#ipctk.NormalPotential.gauss_newton_hessian_quadratic_form">gauss_newton_hessian_quadratic_form() (ipctk.NormalPotential method)</a>
+</li>
       <li><a href="python-api/utils.html#ipctk.get_num_threads">get_num_threads() (in module ipctk)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/potentials.html#ipctk.NormalPotential.gradient">gradient() (ipctk.NormalPotential method)</a>
 
       <ul>
         <li><a href="python-api/potentials.html#ipctk.TangentialPotential.gradient">(ipctk.TangentialPotential method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/utils.html#_CPPv4I_iE12GradientType">GradientType (C++ type)</a>
 </li>
       <li><a href="python-api/broad_phase.html#ipctk.HashGrid.grid_size">grid_size (ipctk.HashGrid property)</a>
@@ -3783,6 +3787,10 @@
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil24compute_distance_hessianEN5Eigen8ConstRefI12VectorMax12dEE">ipc::CollisionStencil::compute_distance_hessian (C++ function)</a>, <a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil24compute_distance_hessianEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE">[1]</a>
 </li>
+      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil23compute_distance_vectorEN5Eigen8ConstRefI12VectorMax12dEE">ipc::CollisionStencil::compute_distance_vector (C++ function)</a>, <a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil23compute_distance_vectorEN5Eigen8ConstRefI12VectorMax12dEER11VectorMax4d">[1]</a>, <a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil23compute_distance_vectorEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE">[2]</a>
+</li>
+      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil32compute_distance_vector_jacobianEN5Eigen8ConstRefI12VectorMax12dEE">ipc::CollisionStencil::compute_distance_vector_jacobian (C++ function)</a>
+</li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil14compute_normalEN5Eigen8ConstRefI12VectorMax12dEEbPd">ipc::CollisionStencil::compute_normal (C++ function)</a>, <a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil14compute_normalEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEKbPd">[1]</a>
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil23compute_normal_jacobianEN5Eigen8ConstRefI12VectorMax12dEEb">ipc::CollisionStencil::compute_normal_jacobian (C++ function)</a>, <a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil23compute_normal_jacobianEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEKb">[1]</a>
@@ -3790,6 +3798,12 @@
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil27compute_unnormalized_normalEN5Eigen8ConstRefI12VectorMax12dEE">ipc::CollisionStencil::compute_unnormalized_normal (C++ function)</a>
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil36compute_unnormalized_normal_jacobianEN5Eigen8ConstRefI12VectorMax12dEE">ipc::CollisionStencil::compute_unnormalized_normal_jacobian (C++ function)</a>
+</li>
+      <li><a href="cpp-api/candidates.html#_CPPv4N3ipc16CollisionStencil33contract_distance_vector_jacobianEN5Eigen8ConstRefI11VectorMax4dEEN5Eigen8ConstRefI12VectorMax12dEEKi">ipc::CollisionStencil::contract_distance_vector_jacobian (C++ function)</a>
+</li>
+      <li><a href="cpp-api/candidates.html#_CPPv4N3ipc16CollisionStencil26diag_distance_vector_outerEN5Eigen8ConstRefI11VectorMax4dEEKi">ipc::CollisionStencil::diag_distance_vector_outer (C++ function)</a>
+</li>
+      <li><a href="cpp-api/candidates.html#_CPPv4N3ipc16CollisionStencil28diag_distance_vector_t_outerEN5Eigen8ConstRefI11VectorMax4dEEN5Eigen8ConstRefI11VectorMax3dEE">ipc::CollisionStencil::diag_distance_vector_t_outer (C++ function)</a>
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc16CollisionStencil3dimEKi">ipc::CollisionStencil::dim (C++ function)</a>
 </li>
@@ -4215,12 +4229,12 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH21can_edge_face_collideE6size_t6size_t">ipc::LBVH::can_edge_face_collide (C++ function)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH23can_edge_vertex_collideE6size_t6size_t">ipc::LBVH::can_edge_vertex_collide (C++ function)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH17can_edges_collideE6size_t6size_t">ipc::LBVH::can_edges_collide (C++ function)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH23can_face_vertex_collideE6size_t6size_t">ipc::LBVH::can_face_vertex_collide (C++ function)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH17can_faces_collideE6size_t6size_t">ipc::LBVH::can_faces_collide (C++ function)</a>
@@ -4506,6 +4520,10 @@
       <li><a href="cpp-api/potentials/NormalPotential.html#_CPPv4NK3ipc15NormalPotential15force_magnitudeEKdKd">ipc::NormalPotential::force_magnitude (C++ function)</a>
 </li>
       <li><a href="cpp-api/potentials/NormalPotential.html#_CPPv4NK3ipc15NormalPotential24force_magnitude_gradientEKdN5Eigen8ConstRefI12VectorMax12dEEKd">ipc::NormalPotential::force_magnitude_gradient (C++ function)</a>
+</li>
+      <li><a href="cpp-api/potentials/NormalPotential.html#_CPPv4NK3ipc15NormalPotential29gauss_newton_hessian_diagonalERK15NormalCollisionN5Eigen8ConstRefI12VectorMax12dEE">ipc::NormalPotential::gauss_newton_hessian_diagonal (C++ function)</a>, <a href="cpp-api/potentials/NormalPotential.html#_CPPv4NK3ipc15NormalPotential29gauss_newton_hessian_diagonalERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE">[1]</a>
+</li>
+      <li><a href="cpp-api/potentials/NormalPotential.html#_CPPv4NK3ipc15NormalPotential35gauss_newton_hessian_quadratic_formERK15NormalCollisionN5Eigen8ConstRefI12VectorMax12dEEN5Eigen8ConstRefI12VectorMax12dEE">ipc::NormalPotential::gauss_newton_hessian_quadratic_form (C++ function)</a>, <a href="cpp-api/potentials/NormalPotential.html#_CPPv4NK3ipc15NormalPotential35gauss_newton_hessian_quadratic_formERK16NormalCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEE">[1]</a>
 </li>
       <li><a href="cpp-api/potentials/NormalPotential.html#_CPPv4NK3ipc15NormalPotential8gradientEKdKd">ipc::NormalPotential::gradient (C++ function)</a>, <a href="cpp-api/potentials/NormalPotential.html#_CPPv4NK3ipc15NormalPotential8gradientERK15NormalCollisionN5Eigen8ConstRefI12VectorMax12dEE">[1]</a>
 </li>
