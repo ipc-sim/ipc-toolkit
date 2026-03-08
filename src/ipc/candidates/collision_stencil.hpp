@@ -160,6 +160,19 @@ public:
         return compute_coefficients(dof(vertices, edges, faces));
     }
 
+    /// @brief Compute the distance vector using the mesh vertices.
+    /// @param vertices Collision mesh vertices.
+    /// @param edges Collision mesh edges.
+    /// @param faces Collision mesh faces.
+    /// @return The distance vector (dim-dimensional).
+    VectorMax3d compute_distance_vector(
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
+    {
+        return compute_distance_vector(dof(vertices, edges, faces));
+    }
+
     /// @brief Compute the normal of the stencil.
     /// @param vertices Collision mesh vertices
     /// @param edges Collision mesh edges
@@ -224,6 +237,89 @@ public:
     /// @return Coefficients of the stencil.
     virtual VectorMax4d
     compute_coefficients(Eigen::ConstRef<VectorMax12d> positions) const = 0;
+
+    // ------------------------------------------------------------------
+    // Efficient distance-vector based methods [Shen et al. 2024]
+    //
+    // The distance vector t = ∑ cᵢ xᵢ is the vector between the
+    // closest points, where cᵢ are the coefficients and xᵢ are vertex
+    // positions. Then d = ‖t‖ and d² = tᵀt.
+    //
+    // ∂t/∂x = [c₀ I, c₁ I, c₂ I, c₃ I]ᵀ ∈ ℝ^{n×dim}
+    // ∂²t/∂x² = 0
+    //
+    // These allow efficient computation of:
+    //   - diag(∂²b/∂x²) without forming the full Hessian
+    //   - pᵀ(∂²b/∂x²)p without forming the full Hessian
+    // ------------------------------------------------------------------
+
+    /// @brief Compute the distance vector of the stencil: t = ∑ cᵢ xᵢ.
+    ///
+    /// The distance vector is the vector between the closest points on the
+    /// collision primitives. Its squared norm equals the squared distance.
+    ///
+    /// @param positions Stencil's vertex positions.
+    /// @note positions can be computed as stencil.dof(vertices, edges, faces)
+    /// @return The distance vector (dim-dimensional, i.e., 2D or 3D).
+    VectorMax3d
+    compute_distance_vector(Eigen::ConstRef<VectorMax12d> positions) const;
+
+    /// @brief Compute the distance vector and the coefficients together.
+    /// @param positions Stencil's vertex positions.
+    /// @param[out] coeffs The computed coefficients cᵢ.
+    /// @return The distance vector.
+    VectorMax3d compute_distance_vector(
+        Eigen::ConstRef<VectorMax12d> positions, VectorMax4d& coeffs) const;
+
+    /// @brief Compute the Jacobian of the distance vector w.r.t. positions: ∂t/∂x = [c₀I c₁I ... cₙI]ᵀ.
+    ///
+    /// Since ∂t/∂x has a very simple structure (block-diagonal with scalar
+    /// coefficients times identity), many operations can be done without
+    /// forming this matrix. This method is provided for completeness and
+    /// verification.
+    ///
+    /// @param positions Stencil's vertex positions.
+    /// @return The Jacobian ∂t/∂x ∈ ℝ^{ndof × dim}.
+    MatrixMax<double, 12, 3> compute_distance_vector_jacobian(
+        Eigen::ConstRef<VectorMax12d> positions) const;
+
+    /// @brief Compute diag((∂t/∂x)(∂t/∂x)ᵀ) efficiently (Eq. 11 of the paper).
+    ///
+    /// Result is [c₀², c₀², c₀², c₁², c₁², c₁², ...] (each cᵢ² repeated dim
+    /// times). This is used for computing diag(∂²b/∂x²) without the full
+    /// Hessian.
+    ///
+    /// @param coeffs The coefficients cᵢ (from compute_coefficients).
+    /// @param d The spatial dimension (2 or 3).
+    /// @return The diagonal of (∂t/∂x)(∂t/∂x)ᵀ as a vector of size ndof.
+    static VectorMax12d diag_distance_vector_outer(
+        Eigen::ConstRef<VectorMax4d> coeffs, const int d);
+
+    /// @brief Compute diag((∂t/∂x · t)(∂t/∂x · t)ᵀ) efficiently (Eq. 12).
+    ///
+    /// Result is element-wise square of [c₀tᵀ, c₁tᵀ, ..., cₙtᵀ].
+    /// This is used for computing diag(∂²b/∂x²) without the full Hessian.
+    ///
+    /// @param coeffs The coefficients cᵢ.
+    /// @param distance_vector The distance vector t.
+    /// @return The diagonal of (∂t/∂x·t)(∂t/∂x·t)ᵀ as a vector of size ndof.
+    static VectorMax12d diag_distance_vector_t_outer(
+        Eigen::ConstRef<VectorMax4d> coeffs,
+        Eigen::ConstRef<VectorMax3d> distance_vector);
+
+    /// @brief Compute pᵀ(∂t/∂x) efficiently as ∑ cᵢ pᵢ (Eqs. 13-14).
+    ///
+    /// Given p = [p₀, p₁, ..., pₙ]ᵀ where pᵢ ∈ ℝ^dim, this computes
+    /// pᵀ(∂t/∂x) = ∑ cᵢ pᵢ which is a dim-dimensional vector.
+    ///
+    /// @param coeffs The coefficients cᵢ.
+    /// @param p A vector of size ndof (the direction for the quadratic form).
+    /// @param d The spatial dimension (2 or 3).
+    /// @return pᵀ(∂t/∂x) as a dim-dimensional vector.
+    static VectorMax3d contract_distance_vector_jacobian(
+        Eigen::ConstRef<VectorMax4d> coeffs,
+        Eigen::ConstRef<VectorMax12d> p,
+        const int d);
 
     /// @brief Compute the normal of the stencil.
     /// @param positions Stencil's vertex positions.
