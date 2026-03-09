@@ -23,6 +23,7 @@ public:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 
+        /// @cond DOXYGEN_SKIP
         // Union to overlap Leaf data and Internal Node data.
         // This compresses the Node size to 32 bytes (2 per cache line),
         // reducing cache misses during traversal.
@@ -45,6 +46,7 @@ public:
                 int32_t is_inner_marker;
             };
         };
+        /// @endcond
 
 #pragma GCC diagnostic pop
 
@@ -153,7 +155,7 @@ protected:
 
     /// @brief Initialize a LBVH from a set of boxes.
     /// @param[in] boxes Set of boxes to initialize the LBVH with.
-    /// @param[out] bvh The LBVH to initialize.
+    /// @param[out] lbvh The LBVH to initialize.
     /// @param[out] rightmost_leaves For each node, the rightmost leaf index reachable. Values are the leaf’s position in the Morton-sorted leaf array from [0, n) where n is the number of primitives.
     void init_bvh(
         const AABBs& boxes,
