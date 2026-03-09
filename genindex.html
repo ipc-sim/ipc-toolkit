@@ -4229,12 +4229,12 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH21can_edge_face_collideE6size_t6size_t">ipc::LBVH::can_edge_face_collide (C++ function)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH23can_edge_vertex_collideE6size_t6size_t">ipc::LBVH::can_edge_vertex_collide (C++ function)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH17can_edges_collideE6size_t6size_t">ipc::LBVH::can_edges_collide (C++ function)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH23can_face_vertex_collideE6size_t6size_t">ipc::LBVH::can_face_vertex_collide (C++ function)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH17can_faces_collideE6size_t6size_t">ipc::LBVH::can_faces_collide (C++ function)</a>
@@ -4249,7 +4249,7 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH17ConstructionInfosE">ipc::LBVH::ConstructionInfos (C++ type)</a>
 </li>
-      <li><a href="cpp-api/broad_phase.html#_CPPv4I0EN3ipc4LBVH17detect_candidatesEvRK5NodesRKNSt8functionIFb6size_t6size_tEEERNSt6vectorI9CandidateEE">ipc::LBVH::detect_candidates (C++ function)</a>, <a href="cpp-api/broad_phase.html#_CPPv4I0_b_bEN3ipc4LBVH17detect_candidatesEvRK5NodesRK5NodesRKNSt8functionIFb6size_t6size_tEEERNSt6vectorI9CandidateEE">[1]</a>
+      <li><a href="cpp-api/broad_phase.html#_CPPv4I0EN3ipc4LBVH17detect_candidatesEvRK5NodesRK15RightmostLeavesRKNSt8functionIFb6size_t6size_tEEERNSt6vectorI9CandidateEE">ipc::LBVH::detect_candidates (C++ function)</a>, <a href="cpp-api/broad_phase.html#_CPPv4I0_b_bEN3ipc4LBVH17detect_candidatesEvRK5NodesRK5NodesRK15RightmostLeavesRKNSt8functionIFb6size_t6size_tEEERNSt6vectorI9CandidateEE">[1]</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH27detect_edge_edge_candidatesERNSt6vectorI17EdgeEdgeCandidateEE">ipc::LBVH::detect_edge_edge_candidates (C++ function)</a>
 </li>
@@ -4267,6 +4267,8 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH10edge_nodesEv">ipc::LBVH::edge_nodes (C++ function)</a>
 </li>
+      <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH21edge_rightmost_leavesE">ipc::LBVH::edge_rightmost_leaves (C++ member)</a>
+</li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH15edge_vertex_idsE">ipc::LBVH::edge_vertex_ids (C++ member)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH11EdgeIndicesE">ipc::LBVH::EdgeIndices (C++ type)</a>
@@ -4274,6 +4276,8 @@
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH8face_bvhE">ipc::LBVH::face_bvh (C++ member)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH10face_nodesEv">ipc::LBVH::face_nodes (C++ function)</a>
+</li>
+      <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH21face_rightmost_leavesE">ipc::LBVH::face_rightmost_leaves (C++ member)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH15face_vertex_idsE">ipc::LBVH::face_vertex_ids (C++ member)</a>
 </li>
@@ -4285,7 +4289,7 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH12has_verticesEv">ipc::LBVH::has_vertices (C++ function)</a>
 </li>
-      <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH8init_bvhERK5AABBsR5Nodes">ipc::LBVH::init_bvh (C++ function)</a>
+      <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH8init_bvhERK5AABBsR5NodesR15RightmostLeaves">ipc::LBVH::init_bvh (C++ function)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH10INVALID_IDE">ipc::LBVH::INVALID_ID (C++ member)</a>
 </li>
@@ -4333,9 +4337,13 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH5NodesE">ipc::LBVH::Nodes (C++ type)</a>
 </li>
+      <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH15RightmostLeavesE">ipc::LBVH::RightmostLeaves (C++ type)</a>
+</li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH10vertex_bvhE">ipc::LBVH::vertex_bvh (C++ member)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH12vertex_nodesEv">ipc::LBVH::vertex_nodes (C++ function)</a>
+</li>
+      <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH23vertex_rightmost_leavesE">ipc::LBVH::vertex_rightmost_leaves (C++ member)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVHD0Ev">ipc::LBVH::~LBVH (C++ function)</a>
 </li>
