@@ -36,13 +36,13 @@ The IPC Toolkit depends on a handful of third-party libraries, which are used to
 
 **All required dependencies are downloaded through CMake** depending on the build options, and are built automatically when you build the IPC Toolkit. You do not need to install them separately.
 
-A full list of dependencies can be found on the [dependencies page](https://ipctk.xyz/build/python.html).
+A full list of dependencies can be found on the [dependencies page](https://ipctk.xyz/about/dependencies.html).
 
 ## Python Bindings
 
 We provide Python bindings for functions in the toolkit using [pybind11](https://github.com/pybind/pybind11).
 
-For more information, see the [Python documentation](https://ipctk.xyz/python.html).
+For more information, see the [Python documentation](https://ipctk.xyz/build/python.html).
 
 ## Quick Start
 
