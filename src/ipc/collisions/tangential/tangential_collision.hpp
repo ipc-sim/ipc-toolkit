@@ -102,6 +102,29 @@ public:
     /// @brief Ratio between normal and kinetic tangential forces (e.g., friction coefficient)
     double mu_k = 0;
 
+    /// @brief Anisotropic static friction coefficients (2D, one per tangent direction).
+    /// @note Zero vector → scalar mu_s (backward compatible). Elliptical model;
+    ///       see ipc::smooth_mu and Erleben et al., CGF 2019,
+    ///       DOI 10.1111/cgf.13885.
+    ///       Components are along the collision's tangent basis (tangent to the
+    ///       mesh at the contact), not world-space directions.
+    Eigen::Vector2d mu_s_aniso = Eigen::Vector2d::Zero();
+
+    /// @brief Anisotropic kinetic friction coefficients (2D, one per tangent direction).
+    /// @note Zero vector → scalar mu_k (backward compatible). Elliptical model;
+    ///       see ipc::smooth_mu and Erleben et al., CGF 2019,
+    ///       DOI 10.1111/cgf.13885.
+    ///       Components are along the collision's tangent basis (tangent to the
+    ///       mesh at the contact), not world-space directions.
+    Eigen::Vector2d mu_k_aniso = Eigen::Vector2d::Zero();
+
+    /// @brief Tangential anisotropy scaling in the collision's tangent basis.
+    /// @note Default (1,1) preserves current isotropic behavior.
+    ///       Requires a_i > 0. Values scale tau before friction evaluation.
+    ///       Used with mu_s_aniso/mu_k_aniso by the elliptical model in
+    ///       ipc::smooth_mu.
+    Eigen::Vector2d mu_aniso = Eigen::Vector2d::Ones();
+
     /// @brief Weight
     double weight = 1;
 
