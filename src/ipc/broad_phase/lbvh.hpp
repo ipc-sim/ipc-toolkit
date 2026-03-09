@@ -80,6 +80,10 @@ public:
     using MortonCodeElements =
         std::vector<MortonCodeElement, DefaultInitAllocator<MortonCodeElement>>;
 
+    /// @brief For each node, the index of the rightmost leaf reachable from it.
+    /// Used to skip subtrees during triangular (self-collision) traversal.
+    using RightmostLeaves = std::vector<int32_t, DefaultInitAllocator<int32_t>>;
+
 private:
     struct ConstructionInfo {
         /// @brief Parent to the parent
@@ -150,14 +154,19 @@ protected:
     /// @brief Initialize a LBVH from a set of boxes.
     /// @param[in] boxes Set of boxes to initialize the LBVH with.
     /// @param[out] bvh The LBVH to initialize.
-    void init_bvh(const AABBs& boxes, Nodes& lbvh) const;
+    /// @param[out] rightmost_leaves For each node, the rightmost leaf index reachable. Values are the leaf’s position in the Morton-sorted leaf array from [0, n) where n is the number of primitives.
+    void init_bvh(
+        const AABBs& boxes,
+        Nodes& lbvh,
+        RightmostLeaves& rightmost_leaves) const;
 
     /// @brief Detect candidate collisions between a LBVH and a sets of boxes.
     /// @tparam Candidate Type of candidate collision.
     /// @tparam swap_order Whether to swap the order of box id with the LBVH id when adding to the candidates.
     /// @tparam triangular Whether to consider (i, j) and (j, i) as the same.
-    /// @param[in] boxes The boxes to detect collisions with.
-    /// @param[in] bvh The LBVH to detect collisions with.
+    /// @param[in] source The LBVH to traverse.
+    /// @param[in] target The LBVH to traverse.
+    /// @param[in] rightmost_leaves The rightmost leaf indices for the target LBVH (used for self-collision skip).
     /// @param[in] can_collide Function to determine if two primitives can collide given their ids.
     /// @param[out] candidates The candidate collisions.
     template <
@@ -167,17 +176,26 @@ protected:
     static void detect_candidates(
         const Nodes& source,
         const Nodes& target,
+        const RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates);
 
+    /// @brief Detect candidate collisions between a single LBVH and itself.
+    /// @tparam Candidate Type of candidate collision.
+    /// @param[in] source_and_target The LBVH to traverse.
+    /// @param[in] rightmost_leaves The rightmost leaf indices for the LBVH (used for self-collision skip).
+    /// @param[in] can_collide Function to determine if two primitives can collide given their ids.
+    /// @param[out] candidates The candidate collisions.
     template <typename Candidate>
     static void detect_candidates(
         const Nodes& source_and_target,
+        const RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates)
     {
         detect_candidates<Candidate, false, true>(
-            source_and_target, source_and_target, can_collide, candidates);
+            source_and_target, source_and_target, rightmost_leaves, can_collide,
+            candidates);
     }
 
     // -------------------------------------------------------------------------
@@ -195,10 +213,22 @@ protected:
 
     /// @brief BVH containing the vertices.
     Nodes vertex_bvh;
+    /// @brief Rightmost leaf indices for vertex BVH (used for self-collision skip).
+    /// Values are from [0, n) where n is the number of primitives.
+    /// Values are the leaf’s position in the Morton-sorted leaf array.
+    RightmostLeaves vertex_rightmost_leaves;
     /// @brief BVH containing the edges.
     Nodes edge_bvh;
+    /// @brief Rightmost leaf indices for edge BVH (used for self-collision skip).
+    /// Values are from [0, n) where n is the number of primitives.
+    /// Values are the leaf’s position in the Morton-sorted leaf array.
+    RightmostLeaves edge_rightmost_leaves;
     /// @brief BVH containing the faces.
     Nodes face_bvh;
+    /// @brief Rightmost leaf indices for face BVH (used for self-collision skip).
+    /// Values are from [0, n) where n is the number of primitives.
+    /// Values are the leaf’s position in the Morton-sorted leaf array.
+    RightmostLeaves face_rightmost_leaves;
 
 private:
     // Vectors with custom allocator to avoid initialization overhead
