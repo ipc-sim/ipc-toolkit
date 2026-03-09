@@ -154,7 +154,7 @@ protected:
     /// @brief Initialize a LBVH from a set of boxes.
     /// @param[in] boxes Set of boxes to initialize the LBVH with.
     /// @param[out] bvh The LBVH to initialize.
-    /// @param[out] rightmost_leaves For each node, the rightmost leaf index reachable.
+    /// @param[out] rightmost_leaves For each node, the rightmost leaf index reachable. Values are the leaf’s position in the Morton-sorted leaf array from [0, n) where n is the number of primitives.
     void init_bvh(
         const AABBs& boxes,
         Nodes& lbvh,
@@ -165,7 +165,7 @@ protected:
     /// @tparam swap_order Whether to swap the order of box id with the LBVH id when adding to the candidates.
     /// @tparam triangular Whether to consider (i, j) and (j, i) as the same.
     /// @param[in] source The LBVH to traverse.
-    /// @param[in] target The LBVH to traverse or the set of boxes to test against if rightmost_leaves is empty.
+    /// @param[in] target The LBVH to traverse.
     /// @param[in] rightmost_leaves The rightmost leaf indices for the target LBVH (used for self-collision skip).
     /// @param[in] can_collide Function to determine if two primitives can collide given their ids.
     /// @param[out] candidates The candidate collisions.
@@ -214,14 +214,20 @@ protected:
     /// @brief BVH containing the vertices.
     Nodes vertex_bvh;
     /// @brief Rightmost leaf indices for vertex BVH (used for self-collision skip).
+    /// Values are from [0, n) where n is the number of primitives.
+    /// Values are the leaf’s position in the Morton-sorted leaf array.
     RightmostLeaves vertex_rightmost_leaves;
     /// @brief BVH containing the edges.
     Nodes edge_bvh;
     /// @brief Rightmost leaf indices for edge BVH (used for self-collision skip).
+    /// Values are from [0, n) where n is the number of primitives.
+    /// Values are the leaf’s position in the Morton-sorted leaf array.
     RightmostLeaves edge_rightmost_leaves;
     /// @brief BVH containing the faces.
     Nodes face_bvh;
     /// @brief Rightmost leaf indices for face BVH (used for self-collision skip).
+    /// Values are from [0, n) where n is the number of primitives.
+    /// Values are the leaf’s position in the Morton-sorted leaf array.
     RightmostLeaves face_rightmost_leaves;
 
 private:

@@ -406,7 +406,7 @@ namespace {
     template <typename Candidate, bool swap_order, bool triangular>
     void traverse_lbvh(
         const LBVH::Node& query,
-        const int query_leaf_idx,
+        const size_t query_leaf_idx,
         const LBVH::Nodes& lbvh,
         const LBVH::RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
@@ -495,8 +495,8 @@ namespace {
     template <typename Candidate, bool swap_order, bool triangular>
     void traverse_lbvh_simd(
         const LBVH::Node* queries,
-        const int first_query_leaf_idx,
-        const int n_queries,
+        const size_t first_query_leaf_idx,
+        const size_t n_queries,
         const LBVH::Nodes& lbvh,
         const LBVH::RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
