@@ -127,7 +127,7 @@ max_step = ipctk.compute_collision_free_stepsize(
     collision_mesh, vertices, next_vertices)
 ```
 
-For more details, see the [tutorials](https://ipctk.xyz/tutorials/getting_started.html) and [API documentation](https://ipctk.xyz/cpp-api/potentials.html).
+For more details, see the [tutorials](https://ipctk.xyz/tutorials/getting_started.html) and [API documentation](https://ipctk.xyz/cpp-api/).
 
 ## Contributing
 
