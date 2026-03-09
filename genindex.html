@@ -2028,6 +2028,8 @@
 </li>
         <li><a href="python-api/ccd.html#ipctk.NarrowPhaseCCD.__annotations__">(ipctk.NarrowPhaseCCD attribute)</a>
 </li>
+        <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.__annotations__">(ipctk.NonlinearCCD attribute)</a>
+</li>
         <li><a href="python-api/ccd.html#ipctk.NonlinearTrajectory.__annotations__">(ipctk.NonlinearTrajectory attribute)</a>
 </li>
         <li><a href="python-api/potentials.html#ipctk.NormalAdhesionPotential.__annotations__">(ipctk.NormalAdhesionPotential attribute)</a>
@@ -2258,6 +2260,8 @@
 </li>
         <li><a href="python-api/ccd.html#ipctk.NarrowPhaseCCD.__init__">(ipctk.NarrowPhaseCCD method)</a>
 </li>
+        <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.__init__">(ipctk.NonlinearCCD method)</a>
+</li>
         <li><a href="python-api/ccd.html#ipctk.NonlinearTrajectory.__init__">(ipctk.NonlinearTrajectory method)</a>
 </li>
         <li><a href="python-api/potentials.html#ipctk.NormalAdhesionPotential.__init__">(ipctk.NormalAdhesionPotential method)</a>
@@ -2427,6 +2431,8 @@
         <li><a href="python-api/utils.html#ipctk.LoggerLevel.__module__">(ipctk.LoggerLevel attribute)</a>
 </li>
         <li><a href="python-api/ccd.html#ipctk.NarrowPhaseCCD.__module__">(ipctk.NarrowPhaseCCD attribute)</a>
+</li>
+        <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.__module__">(ipctk.NonlinearCCD attribute)</a>
 </li>
         <li><a href="python-api/ccd.html#ipctk.NonlinearTrajectory.__module__">(ipctk.NonlinearTrajectory attribute)</a>
 </li>
@@ -2667,6 +2673,8 @@
         <li><a href="python-api/utils.html#ipctk.LoggerLevel._pybind11_conduit_v1_">(ipctk.LoggerLevel method)</a>
 </li>
         <li><a href="python-api/ccd.html#ipctk.NarrowPhaseCCD._pybind11_conduit_v1_">(ipctk.NarrowPhaseCCD method)</a>
+</li>
+        <li><a href="python-api/ccd.html#ipctk.NonlinearCCD._pybind11_conduit_v1_">(ipctk.NonlinearCCD method)</a>
 </li>
         <li><a href="python-api/ccd.html#ipctk.NonlinearTrajectory._pybind11_conduit_v1_">(ipctk.NonlinearTrajectory method)</a>
 </li>
@@ -2933,9 +2941,13 @@
 </li>
       <li><a href="python-api/broad_phase.html#ipctk.AABB.conservative_inflation">conservative_inflation() (ipctk.AABB static method)</a>
 </li>
+      <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.conservative_piecewise_linear_ccd">conservative_piecewise_linear_ccd() (ipctk.NonlinearCCD static method)</a>
+</li>
       <li><a href="python-api/ccd.html#ipctk.AdditiveCCD.conservative_rescaling">conservative_rescaling (ipctk.AdditiveCCD property)</a>
 
       <ul>
+        <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.conservative_rescaling">(ipctk.NonlinearCCD property)</a>
+</li>
         <li><a href="python-api/ccd.html#ipctk.TightInclusionCCD.conservative_rescaling">(ipctk.TightInclusionCCD property)</a>
 </li>
       </ul></li>
@@ -3074,7 +3086,11 @@
       <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.edge_areas">edge_areas() (ipctk.CollisionMesh method)</a>
 </li>
       <li><a href="python-api/ccd.html#ipctk.NarrowPhaseCCD.edge_edge_ccd">edge_edge_ccd() (ipctk.NarrowPhaseCCD method)</a>
+
+      <ul>
+        <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.edge_edge_ccd">(ipctk.NonlinearCCD method)</a>
 </li>
+      </ul></li>
       <li><a href="python-api/tangent.html#ipctk.edge_edge_closest_point">edge_edge_closest_point() (in module ipctk)</a>
 </li>
       <li><a href="python-api/tangent.html#ipctk.edge_edge_closest_point_jacobian">edge_edge_closest_point_jacobian() (in module ipctk)</a>
@@ -3121,10 +3137,10 @@
       </ul></li>
       <li><a href="python-api/broad_phase.html#ipctk.LBVH.edge_nodes">edge_nodes (ipctk.LBVH property)</a>
 </li>
-      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.edge_vertex_adjacencies">edge_vertex_adjacencies (ipctk.CollisionMesh property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.edge_vertex_adjacencies">edge_vertex_adjacencies (ipctk.CollisionMesh property)</a>
+</li>
       <li><a href="python-api/candidates.html#ipctk.Candidates.edge_vertex_to_vertex_vertex">edge_vertex_to_vertex_vertex() (ipctk.Candidates method)</a>
 </li>
       <li><a href="python-api/candidates.html#ipctk.EdgeEdgeCandidate">EdgeEdgeCandidate (class in ipctk)</a>
@@ -4233,8 +4249,6 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH17can_edges_collideE6size_t6size_t">ipc::LBVH::can_edges_collide (C++ function)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH23can_face_vertex_collideE6size_t6size_t">ipc::LBVH::can_face_vertex_collide (C++ function)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH17can_faces_collideE6size_t6size_t">ipc::LBVH::can_faces_collide (C++ function)</a>
@@ -4245,6 +4259,8 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH16ConstructionInfo6parentE">ipc::LBVH::ConstructionInfo::parent (C++ member)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH16ConstructionInfo16visitation_countE">ipc::LBVH::ConstructionInfo::visitation_count (C++ member)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH17ConstructionInfosE">ipc::LBVH::ConstructionInfos (C++ type)</a>
@@ -4323,17 +4339,9 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH4Node8is_innerEv">ipc::LBVH::Node::is_inner (C++ function)</a>
 </li>
-      <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH4Node15is_inner_markerE">ipc::LBVH::Node::is_inner_marker (C++ member)</a>
-</li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH4Node7is_leafEv">ipc::LBVH::Node::is_leaf (C++ function)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH4Node8is_validEv">ipc::LBVH::Node::is_valid (C++ function)</a>
-</li>
-      <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH4Node4leftE">ipc::LBVH::Node::left (C++ member)</a>
-</li>
-      <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH4Node12primitive_idE">ipc::LBVH::Node::primitive_id (C++ member)</a>
-</li>
-      <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH4Node5rightE">ipc::LBVH::Node::right (C++ member)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH5NodesE">ipc::LBVH::Nodes (C++ type)</a>
 </li>
@@ -4378,6 +4386,34 @@
       <li><a href="cpp-api/ccd.html#_CPPv4NK3ipc14NarrowPhaseCCD18point_triangle_ccdEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEERdKdKd">ipc::NarrowPhaseCCD::point_triangle_ccd (C++ function)</a>
 </li>
       <li><a href="cpp-api/ccd.html#_CPPv4N3ipc14NarrowPhaseCCDD0Ev">ipc::NarrowPhaseCCD::~NarrowPhaseCCD (C++ function)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc12NonlinearCCDE">ipc::NonlinearCCD (C++ class)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc12NonlinearCCD33conservative_piecewise_linear_ccdERKNSt8functionIFdKdEEERKNSt8functionIFdKdKdEEERKNSt8functionIFbKdKdKdKbRdEEERdKdKdKd">ipc::NonlinearCCD::conservative_piecewise_linear_ccd (C++ function)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc12NonlinearCCD22conservative_rescalingE">ipc::NonlinearCCD::conservative_rescaling (C++ member)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc12NonlinearCCD30DEFAULT_CONSERVATIVE_RESCALINGE">ipc::NonlinearCCD::DEFAULT_CONSERVATIVE_RESCALING (C++ member)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc12NonlinearCCD22DEFAULT_MAX_ITERATIONSE">ipc::NonlinearCCD::DEFAULT_MAX_ITERATIONS (C++ member)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc12NonlinearCCD17DEFAULT_TOLERANCEE">ipc::NonlinearCCD::DEFAULT_TOLERANCE (C++ member)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4NK3ipc12NonlinearCCD13edge_edge_ccdERK19NonlinearTrajectoryRK19NonlinearTrajectoryRK19NonlinearTrajectoryRK19NonlinearTrajectoryRdKdKd">ipc::NonlinearCCD::edge_edge_ccd (C++ function)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc12NonlinearCCD14max_iterationsE">ipc::NonlinearCCD::max_iterations (C++ member)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc12NonlinearCCD12NonlinearCCDEKdKlKd">ipc::NonlinearCCD::NonlinearCCD (C++ function)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4NK3ipc12NonlinearCCD14point_edge_ccdERK19NonlinearTrajectoryRK19NonlinearTrajectoryRK19NonlinearTrajectoryRdKdKd">ipc::NonlinearCCD::point_edge_ccd (C++ function)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4NK3ipc12NonlinearCCD15point_point_ccdERK19NonlinearTrajectoryRK19NonlinearTrajectoryRdKdKd">ipc::NonlinearCCD::point_point_ccd (C++ function)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4NK3ipc12NonlinearCCD18point_triangle_ccdERK19NonlinearTrajectoryRK19NonlinearTrajectoryRK19NonlinearTrajectoryRK19NonlinearTrajectoryRdKdKd">ipc::NonlinearCCD::point_triangle_ccd (C++ function)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc12NonlinearCCD9toleranceE">ipc::NonlinearCCD::tolerance (C++ member)</a>
+</li>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc12NonlinearCCDD0Ev">ipc::NonlinearCCD::~NonlinearCCD (C++ function)</a>
 </li>
       <li><a href="cpp-api/ccd.html#_CPPv4N3ipc19NonlinearTrajectoryE">ipc::NonlinearTrajectory (C++ class)</a>
 </li>
@@ -5244,18 +5280,22 @@
 </li>
       <li><a href="python-api/broad_phase.html#ipctk.AABB.max">max (ipctk.AABB property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/interval.html#ipctk.filib.max">max() (in module ipctk.filib)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/ccd.html#ipctk.IntervalNonlinearTrajectory.max_distance_from_linear">max_distance_from_linear() (ipctk.IntervalNonlinearTrajectory method)</a>
 
       <ul>
         <li><a href="python-api/ccd.html#ipctk.NonlinearTrajectory.max_distance_from_linear">(ipctk.NonlinearTrajectory method)</a>
 </li>
       </ul></li>
-      <li><a href="python-api/ccd.html#ipctk.TightInclusionCCD.max_iterations">max_iterations (ipctk.TightInclusionCCD property)</a>
+      <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.max_iterations">max_iterations (ipctk.NonlinearCCD property)</a>
+
+      <ul>
+        <li><a href="python-api/ccd.html#ipctk.TightInclusionCCD.max_iterations">(ipctk.TightInclusionCCD property)</a>
 </li>
+      </ul></li>
       <li><a href="cpp-api/adhesion.html#_CPPv435max_normal_adhesion_force_magnitudeKdKdKd">max_normal_adhesion_force_magnitude (C++ function)</a>
 </li>
       <li><a href="python-api/adhesion.html#ipctk.max_normal_adhesion_force_magnitude">max_normal_adhesion_force_magnitude() (in module ipctk)</a>
@@ -5322,6 +5362,8 @@
 </li>
       </ul></li>
       <li><a href="python-api/utils.html#ipctk.PSDProjectionMethod.NONE">NONE (ipctk.PSDProjectionMethod attribute)</a>
+</li>
+      <li><a href="python-api/ccd.html#ipctk.NonlinearCCD">NonlinearCCD (class in ipctk)</a>
 </li>
       <li><a href="python-api/ccd.html#ipctk.NonlinearTrajectory">NonlinearTrajectory (class in ipctk)</a>
 </li>
@@ -5414,7 +5456,11 @@
       <li><a href="python-api/normal_collisions.html#ipctk.PlaneVertexNormalCollision">PlaneVertexNormalCollision (class in ipctk)</a>
 </li>
       <li><a href="python-api/ccd.html#ipctk.NarrowPhaseCCD.point_edge_ccd">point_edge_ccd() (ipctk.NarrowPhaseCCD method)</a>
+
+      <ul>
+        <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.point_edge_ccd">(ipctk.NonlinearCCD method)</a>
 </li>
+      </ul></li>
       <li><a href="python-api/tangent.html#ipctk.point_edge_closest_point">point_edge_closest_point() (in module ipctk)</a>
 </li>
       <li><a href="python-api/tangent.html#ipctk.point_edge_closest_point_jacobian">point_edge_closest_point_jacobian() (in module ipctk)</a>
@@ -5447,12 +5493,16 @@
 </li>
       <li><a href="python-api/distance.html#ipctk.point_plane_distance_gradient">point_plane_distance_gradient() (in module ipctk)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/distance.html#ipctk.point_plane_distance_hessian">point_plane_distance_hessian() (in module ipctk)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/ccd.html#ipctk.NarrowPhaseCCD.point_point_ccd">point_point_ccd() (ipctk.NarrowPhaseCCD method)</a>
+
+      <ul>
+        <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.point_point_ccd">(ipctk.NonlinearCCD method)</a>
 </li>
+      </ul></li>
       <li><a href="python-api/distance.html#ipctk.point_point_distance">point_point_distance() (in module ipctk)</a>
 </li>
       <li><a href="python-api/distance.html#ipctk.point_point_distance_gradient">point_point_distance_gradient() (in module ipctk)</a>
@@ -5472,7 +5522,11 @@
       <li><a href="python-api/ccd.html#ipctk.point_static_plane_ccd">point_static_plane_ccd() (in module ipctk)</a>
 </li>
       <li><a href="python-api/ccd.html#ipctk.NarrowPhaseCCD.point_triangle_ccd">point_triangle_ccd() (ipctk.NarrowPhaseCCD method)</a>
+
+      <ul>
+        <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.point_triangle_ccd">(ipctk.NonlinearCCD method)</a>
 </li>
+      </ul></li>
       <li><a href="python-api/tangent.html#ipctk.point_triangle_closest_point">point_triangle_closest_point() (in module ipctk)</a>
 </li>
       <li><a href="python-api/tangent.html#ipctk.point_triangle_closest_point_jacobian">point_triangle_closest_point_jacobian() (in module ipctk)</a>
@@ -5703,8 +5757,12 @@
 </li>
       <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.to_full_vertex_id">to_full_vertex_id() (ipctk.CollisionMesh method)</a>
 </li>
-      <li><a href="python-api/ccd.html#ipctk.TightInclusionCCD.tolerance">tolerance (ipctk.TightInclusionCCD property)</a>
+      <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.tolerance">tolerance (ipctk.NonlinearCCD property)</a>
+
+      <ul>
+        <li><a href="python-api/ccd.html#ipctk.TightInclusionCCD.tolerance">(ipctk.TightInclusionCCD property)</a>
 </li>
+      </ul></li>
       <li><a href="python-api/utils.html#ipctk.LoggerLevel.trace">trace (ipctk.LoggerLevel attribute)</a>
 </li>
       <li><a href="python-api/barrier.html#ipctk.TwoStageBarrier">TwoStageBarrier (class in ipctk)</a>

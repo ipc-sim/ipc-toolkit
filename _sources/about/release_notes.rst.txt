@@ -23,7 +23,7 @@ New Formulations
 - **Geometric Contact Potential (GCP)** by `@Huangzizhou <https://github.com/Huangzizhou>`_ in `#191 <https://github.com/ipc-sim/ipc-toolkit/pull/191>`_
 
   - The implementation includes the collision and friction potential with gradients and Hessians.
-  - Tutorial available `here <https://ipctk.xyz/tutorials/gcp.html>`_.
+  - Tutorial available `here <https://ipctk.xyz/tutorials/gcp.html>`__.
 
 - **Offset Geometric Contact (OGC)** by `@zfergus <https://github.com/zfergus>`_ in `#192 <https://github.com/ipc-sim/ipc-toolkit/pull/192>`_
 
@@ -42,7 +42,7 @@ New Formulations
     - Integrated feasible region checks into the ``NormalCollisions`` class to filter out invalid collision candidates. Enabled via ``set_collision_set_type(NormalCollisions::CollisionSetType::OGC)``.
 
   - **Step Scaling:** Unlike the original paper's projection method, ``TrustRegion::filter_step`` scales the descent direction $\beta$ to keep vertices on the trust region boundary. This preserves the descent direction, ensuring compatibility with line-search-based solvers.
-  - Tutorial available `here <https://ipctk.xyz/tutorials/ogc.html>`_.
+  - Tutorial available `here <https://ipctk.xyz/tutorials/ogc.html>`__.
 
 Broad Phase
 ~~~~~~~~~~~

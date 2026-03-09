@@ -4637,13 +4637,11 @@ displacement_map: The displacement mapping from displacements on the full mesh t
 <dd><p>A vector of planes in the collision mesh.</p>
 <p>Each plane is represented as a <cite>Hyperplane</cite> object (wrapping <cite>Eigen::Hyperplane&lt;double, 3&gt;</cite>).
 In Python, a <cite>Hyperplane</cite> can be constructed from either:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>a normal and a point on the plane: <cite>Hyperplane(normal, point)</cite>, or</p></li>
-<li><p>a normal and an offset: <cite>Hyperplane(normal, offset)</cite>,</p></li>
+<ul class="simple">
+<li><p>a normal and a point on the plane: <code class="docutils literal notranslate"><span class="pre">Hyperplane(normal,</span> <span class="pre">point)</span></code>, or</p></li>
+<li><p>a normal and an offset: <code class="docutils literal notranslate"><span class="pre">Hyperplane(normal,</span> <span class="pre">offset)</span></code>,</p></li>
 </ul>
-</div></blockquote>
-<p>where <cite>normal</cite> and <cite>point</cite> are 3D vectors and <cite>offset</cite> is a scalar.</p>
+<p>where <code class="docutils literal notranslate"><span class="pre">normal</span></code> and <code class="docutils literal notranslate"><span class="pre">point</span></code> are 3D vectors and <code class="docutils literal notranslate"><span class="pre">offset</span></code> is a scalar.</p>
 </dd></dl>
 
 <dl class="py property objdesc">

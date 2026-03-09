@@ -124,11 +124,11 @@ This is not a full simulation library. As such it does not include any physics o
 
 **Usage**
 
-See the `tutorials <https://ipctk.xyz/tutorials/getting_started.html>`_ for a quick introduction to the toolkit, or the `documentation <https://ipctk.xyz/cpp.html>`_ for a full reference.
+See the `tutorials <https://ipctk.xyz/tutorials/getting_started.html>`_ for a quick introduction to the toolkit, or the `documentation <https://ipctk.xyz/cpp-api/index.html>`_ for a full reference.
 
 **Python Bindings**
 
-We provide Python bindings for functions in the toolkit using `pybind11 <https://github.com/pybind/pybind11>`_. For more information see the `Python documentation <https://ipctk.xyz/python.html>`_.
+We provide Python bindings for functions in the toolkit using `pybind11 <https://github.com/pybind/pybind11>`_. For more information see the `Python documentation <https://ipctk.xyz/build/python.html>`_.
 
 **Contributing**
 
