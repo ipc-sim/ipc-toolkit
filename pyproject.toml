@@ -31,5 +31,5 @@ keywords = ["IPC", "simulation", "physics", "science", "research"]
 "Bug Tracker" = "https://github.com/ipc-sim/ipc-toolkit/issues"
 "Source Code" = "https://github.com/ipc-sim/ipc-toolkit"
 
-[tools.cibuildwheel]
+[tool.cibuildwheel]
 build-frontend = "build"
