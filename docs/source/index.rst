@@ -3,6 +3,7 @@
     :hidden:
 
     Home <self>
+    about/gallery.rst
     about/release_notes.rst
     about/license.rst
     about/dependencies.rst
