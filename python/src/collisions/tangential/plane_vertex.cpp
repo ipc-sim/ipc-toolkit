@@ -1,6 +1,6 @@
-#include <ipc/collisions/tangential/plane_vertex.hpp>
-
 #include <common.hpp>
+
+#include <ipc/collisions/tangential/plane_vertex.hpp>
 
 using namespace ipc;
 

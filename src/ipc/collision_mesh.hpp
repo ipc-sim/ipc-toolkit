@@ -12,6 +12,9 @@ public:
     /// Collision Mesh objects are immutable, so use the other constructors.
     CollisionMesh() = default;
 
+    /// @brief Virtual destructor for the Collision Mesh class.
+    virtual ~CollisionMesh() = default;
+
     /// @brief Construct a new Collision Mesh object directly from the collision mesh vertices.
     /// @param rest_positions The vertices of the collision mesh at rest (|V| × dim).
     /// @param edges The edges of the collision mesh (|E| × 2).
@@ -63,9 +66,6 @@ public:
 
     /// @brief Initialize vertex and edge areas.
     void init_area_jacobians();
-
-    /// @brief Destroy the Collision Mesh object
-    ~CollisionMesh() = default;
 
     /// @brief Get the number of vertices in the collision mesh.
     size_t num_vertices() const { return m_vertex_to_full_vertex.size(); }
@@ -150,7 +150,7 @@ public:
     /// @brief Compute the vertex positions from the positions of the full mesh.
     /// @param full_positions The vertex positions of the full mesh (|FV| × dim).
     /// @return The vertex positions of the collision mesh (|V| × dim).
-    Eigen::MatrixXd
+    virtual Eigen::MatrixXd
     vertices(Eigen::ConstRef<Eigen::MatrixXd> full_positions) const;
 
     /// @brief Compute the vertex positions from vertex displacements on the full mesh.
