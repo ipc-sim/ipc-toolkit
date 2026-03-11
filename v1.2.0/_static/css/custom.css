@@ -142,12 +142,6 @@ table.autosummary {
     cursor: default;
 }
 
-/* Iframe-only card: clip the embed's internal bottom padding */
-.gallery-card.gallery-card--iframe {
-    max-height: 470px;
-    overflow: hidden;
-}
-
 .gallery-card.gallery-card--iframe iframe {
     width: 100%;
     height: 550px;
