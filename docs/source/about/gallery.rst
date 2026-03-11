@@ -20,7 +20,7 @@ Simulation Frameworks
      - Simple Finite Elements in Python — a software for solving systems of coupled partial differential equations by the finite element method in 1D, 2D, and 3D. It can be used both as a black-box PDE solver and as a Python package for building custom applications.
 
    * - `FEDOO <https://3mah.github.io/fedoo-docs>`_
-     - A free open-source Python finite element library mainly dedicated to mechanical problems, including support for finite strain, composites, elasto-plastic laws, homogenization, and 2D/3D contact with self-contact.
+     - A free open-source Python finite element library mainly dedicated to mechanical problems, including support for finite strain, composites, elasto-plastic laws, homogenization, and 2D/3D contact with self-contact. (See: `Announcement <https://www.linkedin.com/posts/yves-chemisky-b9437910a_we-are-currently-implementing-ipc-toolkit-activity-7427631655470903297-KDN1?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEQPAekBzjyqhNXdQ2S7VGnIFAzab7DESTE>`_)
 
    * - `Rigid IPC <https://github.com/ipc-sim/rigid-ipc>`_
      - Robust, intersection-free simulations of rigid bodies. This is the reference implementation of the SIGGRAPH 2021 paper *Intersection-free Rigid Body Dynamics*, and uses the IPC Toolkit for common IPC functions.
