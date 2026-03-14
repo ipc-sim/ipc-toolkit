@@ -2,7 +2,6 @@
 
 #include <ipc/config.hpp>
 #include <ipc/geometry/normal.hpp>
-#include <ipc/smooth_contact/primitives/autogen.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
 namespace ipc {
