@@ -951,12 +951,20 @@ TEST_CASE(
     const double alpha_n = 0.85, beta_n = 0.2;
     SmoothContactParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
 
+    // dn is the raw direction from the edge to the outside point (d).
+    // The normal-term functions expect direction = -d.normalized(), so we
+    // pass neg_dn = -dn below.
     Eigen::Vector3d e0(0, 0, 0), e1(1, 0, 0), dn(0, 0, 1);
+    Eigen::Vector3d neg_dn = -dn; // direction = -d.normalized()
 
-    // Small positive z for both face-opposite vertices to produce normals
-    // that are not perfectly aligned with dn (likely VARIANT).
-    Eigen::Vector3d f0(0.4, 0.3, GENERATE(take(5, random(0.01, 0.08))));
-    Eigen::Vector3d f1(0.6, -0.2, GENERATE(take(5, random(0.01, 0.08))));
+    // Face normals for the fixture winding are:
+    //   face 0 (faces=[0,1,2]): n = (0, -fz0, fy0), so dn·n_hat = fy0/|n|
+    //   face 1 (faces=[1,0,3]): n = (0, fz1, -fy1), so dn·n_hat = -fy1/|n|
+    // To get VARIANT types (dn·n_hat ∈ (-0.85, 0.2)) with normal_sum < 1,
+    // use f0 with negative y and f1 with positive y, and large enough z to
+    // push the dot products well into the transition region.
+    Eigen::Vector3d f0(0.4, -0.3, GENERATE(take(5, random(0.4, 0.8))));
+    Eigen::Vector3d f1(0.6, 0.3, GENERATE(take(5, random(0.4, 0.8))));
 
     Eigen::MatrixX3d fv(2, 3);
     fv.row(0) = f0.transpose();
@@ -974,16 +982,20 @@ TEST_CASE(
 
     Eigen::MatrixX3d X = fix.build_X(V);
 
-    // Flatten [dn, X] into a single vector for FD
-    Eigen::VectorXd x = Edge3TestFixture::flatten_with_dir(dn, X);
+    // Flatten [neg_dn, X] into a single vector for FD
+    Eigen::VectorXd x = Edge3TestFixture::flatten_with_dir(neg_dn, X);
 
-    // Evaluate analytic hessian via Edge3
+    // Evaluate analytic hessian via Edge3 (direction = -d.normalized() =
+    // neg_dn)
     const auto [val, grad, hess] =
-        fix.edge3->smooth_edge3_normal_term_hessian(dn, X, alpha_n, beta_n);
+        fix.edge3->smooth_edge3_normal_term_hessian(neg_dn, X, alpha_n, beta_n);
 
     // Basic sanity: value should be finite and between 0 and 1.
     CHECK(val >= 0.0);
     CHECK(val <= 1.0);
+
+    REQUIRE(grad.isZero() == false);
+    REQUIRE(hess.isZero() == false);
 
     // Finite-difference gradient
     Eigen::VectorXd fgrad;
