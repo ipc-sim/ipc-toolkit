@@ -5,6 +5,7 @@
 #include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
+#include <ipc/collision_mesh.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/smooth_contact/primitives/edge3.hpp>
@@ -13,6 +14,7 @@
 
 #include <finitediff.hpp>
 #include <igl/PI.h>
+#include <igl/edges.h>
 
 using namespace ipc;
 
@@ -422,8 +424,6 @@ TEST_CASE(
 
 TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
 {
-    OrientationTypes otypes;
-    otypes.set_size(2);
     const double alpha = 0.85;
     const double beta = 0.2;
     SmoothContactParameters params { 1e-3, 1, 0, alpha, beta, 2 };
@@ -435,19 +435,67 @@ TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
     f0 << 0.4, 0.3, GENERATE(take(10, random(-0.2, 0.2)));
     f1 << 0.6, -0.2, GENERATE(take(10, random(-0.2, 0.2)));
 
-    ipc::Vector15d x;
-    x << dn, e0, e1, f0, f1;
+    // Build a minimal mesh: edge (0,1) with two adjacent faces sharing it.
+    // Vertices: 0=e0, 1=e1, 2=f0, 3=f1
+    Eigen::MatrixXd V(4, 3);
+    V.row(0) = e0.transpose();
+    V.row(1) = e1.transpose();
+    V.row(2) = f0.transpose();
+    V.row(3) = f1.transpose();
 
-    const auto [val, grad, hess] = smooth_edge3_normal_term_hessian(
-        dn, e0, e1, f0, f1, alpha, beta, otypes);
+    // Two faces sharing edge (0,1), wound so the edge is traversed in
+    // opposite directions (proper orientation).
+    Eigen::MatrixXi F(2, 3);
+    F << 2, 0, 1, 3, 1, 0;
+
+    Eigen::MatrixXi E;
+    igl::edges(F, E);
+
+    // Find the edge index for the edge (0,1)
+    int edge_id = -1;
+    for (int i = 0; i < E.rows(); i++) {
+        if ((E(i, 0) == 0 && E(i, 1) == 1) || (E(i, 0) == 1 && E(i, 1) == 0)) {
+            edge_id = i;
+            break;
+        }
+    }
+    REQUIRE(edge_id >= 0);
+
+    // Construct CollisionMesh with all vertices marked as orientable
+    std::vector<bool> include_vertex(4, true);
+    std::vector<bool> orient_vertex(4, true);
+    CollisionMesh mesh(include_vertex, orient_vertex, V, E, F);
+
+    // Construct Edge3 from the mesh (this sets otypes, faces, etc.)
+    auto edge3 = std::make_unique<Edge3>(edge_id, mesh, V, dn, params);
+
+    // X layout for the member functions: rows are [e0, e1, f0, f1]
+    // matching m_vertex_ids order from the Edge3 constructor.
+    Eigen::MatrixX3d X(4, 3);
+    // The Edge3 constructor orders face-opposite vertices by adjacency order.
+    // We reconstruct X from the Edge3's vertex_ids to match internal ordering.
+    const auto& vids = edge3->vertex_ids();
+    for (int i = 0; i < 4; i++) {
+        X.row(i) = V.row(vids[i]);
+    }
+
+    // Flatten [dn, X] into a single vector for finite differences
+    Eigen::VectorXd x(3 + 4 * 3);
+    x.head<3>() = dn;
+    for (int i = 0; i < 4; i++) {
+        x.segment<3>(3 + i * 3) = X.row(i);
+    }
+
+    const auto [val, grad, hess] =
+        edge3->smooth_edge3_normal_term_hessian(dn, X, alpha, beta);
 
     Eigen::VectorXd fgrad;
     fd::finite_gradient(
         x,
         [&](const Eigen::VectorXd& y) {
-            return smooth_edge3_normal_term(
-                y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3),
-                y.segment(12, 3), alpha, beta, otypes);
+            Eigen::MatrixX3d Y = fd::unflatten(y.tail(12), 3);
+            return std::get<0>(edge3->smooth_edge3_normal_term_gradient(
+                y.head(3), Y, alpha, beta));
         },
         fgrad, fd::AccuracyOrder::FOURTH, 1e-5);
 
@@ -456,10 +504,10 @@ TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
     Eigen::MatrixXd fhess;
     fd::finite_jacobian(
         x,
-        [&](const Eigen::VectorXd& y) {
-            return std::get<1>(smooth_edge3_normal_term_gradient(
-                y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3),
-                y.segment(12, 3), alpha, beta, otypes));
+        [&](const Eigen::VectorXd& y) -> Eigen::VectorXd {
+            Eigen::MatrixX3d Y = fd::unflatten(y.tail(12), 3);
+            return std::get<1>(edge3->smooth_edge3_normal_term_gradient(
+                y.head(3), Y, alpha, beta));
         },
         fhess, fd::AccuracyOrder::SECOND, 1e-7);
 
