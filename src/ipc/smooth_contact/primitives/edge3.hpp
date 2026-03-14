@@ -100,7 +100,8 @@ public:
 
     /// @brief Gradient of the normal term with respect to the edge vertices and face-opposite vertices, as well as the closest direction d.
     /// @param direction The normalized closest direction from the point outside of the edge to the edge
-    ///        (i.e., direction = -d.normalized(), where d is the vector from the edge to the outside point)
+    ///        (i.e., direction = -d.normalized(), where d is the vector from
+    ///        the edge to the outside point)
     /// @param X The positions of the edge vertices and face-opposite vertices, in the order [e0(3), e1(3), f0(3), f1(3), ...]
     /// @param alpha The alpha parameter for the normal term heaviside function
     /// @param beta The beta parameter for the normal term heaviside function
@@ -113,7 +114,8 @@ public:
 
     /// @brief Hessian of the normal term with respect to the edge vertices and face-opposite vertices, as well as the closest direction d.
     /// @param direction The normalized closest direction from the point outside of the edge to the edge
-    ///        (i.e., direction = -d.normalized(), where d is the vector from the edge to the outside point)
+    ///        (i.e., direction = -d.normalized(), where d is the vector from
+    ///        the edge to the outside point)
     /// @param X The positions of the edge vertices and face-opposite vertices, in the order [e0(3), e1(3), f0(3), f1(3), ...]
     /// @param alpha The alpha parameter for the normal term heaviside function
     /// @param beta The beta parameter for the normal term heaviside function
@@ -154,7 +156,8 @@ private:
     /// @brief Check if the smooth edge3 term is active (i.e., if the tangent and normal terms are not trivially 1)
     /// @param X The positions of the edge vertices and face-opposite vertices, in the order [e0(3), e1(3), f0(3), f1(3), ...]
     /// @param direction The closest direction from the point outside of the edge to the edge
-    ///        (i.e., direction = -d.normalized(), where d is the vector from the edge to the outside point)
+    ///        (i.e., direction = -d.normalized(), where d is the vector from
+    ///        the edge to the outside point)
     /// @return True if the smooth edge3 term is active, false if it is trivially 1
     bool smooth_edge3_term_type(
         Eigen::ConstRef<Eigen::MatrixX3d> X,
