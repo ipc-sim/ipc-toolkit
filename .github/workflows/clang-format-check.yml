@@ -25,9 +25,9 @@ jobs:
           - 'tests/src'
           - 'python/src'
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: clang-format style check
-      uses: jidicula/clang-format-action@v4.15.0
+      uses: jidicula/clang-format-action@v4
       with:
         clang-format-version: '20'
         check-path: ${{ matrix.path }}
