@@ -99,11 +99,12 @@ public:
         Eigen::ConstRef<Eigen::MatrixX3d> X) const;
 
     /// @brief Gradient of the normal term with respect to the edge vertices and face-opposite vertices, as well as the closest direction d.
-    /// @param direction The normalized closest direction from the edge to the point outside of the edge
+    /// @param direction The normalized closest direction from the point outside of the edge to the edge
+    ///        (i.e., direction = -d.normalized(), where d is the vector from the edge to the outside point)
     /// @param X The positions of the edge vertices and face-opposite vertices, in the order [e0(3), e1(3), f0(3), f1(3), ...]
     /// @param alpha The alpha parameter for the normal term heaviside function
     /// @param beta The beta parameter for the normal term heaviside function
-    /// @return The gradient of the normal term with respect to [d, e0, e1, f0, f1, ...]
+    /// @return The gradient of the normal term with respect to [d, e0, e1, f0, f1, ...], where d is defined as above
     GradientType<Eigen::Dynamic> smooth_edge3_normal_term_gradient(
         Eigen::ConstRef<Eigen::RowVector3d> direction,
         Eigen::ConstRef<Eigen::MatrixX3d> X,
@@ -111,11 +112,12 @@ public:
         const double beta) const;
 
     /// @brief Hessian of the normal term with respect to the edge vertices and face-opposite vertices, as well as the closest direction d.
-    /// @param direction The normalized closest direction from the edge to the point outside of the edge
+    /// @param direction The normalized closest direction from the point outside of the edge to the edge
+    ///        (i.e., direction = -d.normalized(), where d is the vector from the edge to the outside point)
     /// @param X The positions of the edge vertices and face-opposite vertices, in the order [e0(3), e1(3), f0(3), f1(3), ...]
     /// @param alpha The alpha parameter for the normal term heaviside function
     /// @param beta The beta parameter for the normal term heaviside function
-    /// @return The Hessian of the normal term with respect to [d, e0, e1, f0, f1, ...]
+    /// @return The Hessian of the normal term with respect to [d, e0, e1, f0, f1, ...], where d is defined as above
     HessianType<Eigen::Dynamic> smooth_edge3_normal_term_hessian(
         Eigen::ConstRef<Eigen::RowVector3d> direction,
         Eigen::ConstRef<Eigen::MatrixX3d> X,
@@ -125,7 +127,7 @@ public:
     /// @brief Gradient of the tangent term with respect to the edge vertices and face-opposite vertices, as well as the closest direction d.
     /// The order of DOFs in the output is [d(3), e0(3), e1(3), f0(3), f1(3),
     /// ...] where fi are the opposite vertices of the face neighbors.
-    /// @param dn The normalized closest direction from the edge to the point outside of the edge
+    /// @param dn The normalized, already-negated closest direction (from the point outside of the edge to the edge), i.e., -d / ||d||, matching the -dn·t/|t| convention.
     /// @param tangents The tangent directions for each face neighbor, computed as point_line_closest_point_direction(fi, e0, e1) for each face neighbor. The order of rows is the same as the order of face neighbors in faces.
     /// @param alpha The alpha parameter for the tangent term heaviside function
     /// @param beta The beta parameter for the tangent term heaviside function
@@ -137,7 +139,7 @@ public:
         const double beta) const;
 
     /// @brief Hessian of the tangent term with respect to the edge vertices and face-opposite vertices, as well as the closest direction d.
-    /// @param dn The normalized closest direction from the edge to the point outside of the edge
+    /// @param dn The normalized, already-negated closest direction (from the point outside of the edge to the edge), i.e., -d / ||d||, matching the -dn·t/|t| convention.
     /// @param tangents The tangent directions for each face neighbor, computed as point_line_closest_point_direction(fi, e0, e1) for each face neighbor. The order of rows is the same as the order of face neighbors in faces.
     /// @param alpha The alpha parameter for the tangent term heaviside function
     /// @param beta The beta parameter for the tangent term heaviside function
@@ -151,7 +153,8 @@ public:
 private:
     /// @brief Check if the smooth edge3 term is active (i.e., if the tangent and normal terms are not trivially 1)
     /// @param X The positions of the edge vertices and face-opposite vertices, in the order [e0(3), e1(3), f0(3), f1(3), ...]
-    /// @param direction The closest direction from the edge to the point outside of the edge
+    /// @param direction The closest direction from the point outside of the edge to the edge
+    ///        (i.e., direction = -d.normalized(), where d is the vector from the edge to the outside point)
     /// @return True if the smooth edge3 term is active, false if it is trivially 1
     bool smooth_edge3_term_type(
         Eigen::ConstRef<Eigen::MatrixX3d> X,

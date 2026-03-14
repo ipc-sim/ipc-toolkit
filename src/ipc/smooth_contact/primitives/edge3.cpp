@@ -84,8 +84,11 @@ Edge3::Edge3(
 
     if (m_vertex_ids.size() > N_EDGE_NEIGHBORS_3D) {
         logger().error(
-            "Too many face neighbors for edge3 primitive! {} > {}! Increase N_EDGE_NEIGHBORS_3D in common.hpp",
+            "Too many vertex neighbors for edge3 primitive! vertex count {} exceeds N_EDGE_NEIGHBORS_3D {}. "
+            "Increase N_EDGE_NEIGHBORS_3D in common.hpp or reduce mesh valence. Marking primitive inactive.",
             m_vertex_ids.size(), N_EDGE_NEIGHBORS_3D);
+        m_is_active = false;
+        return;
     }
 
     m_is_active = smooth_edge3_term_type(vertices(m_vertex_ids, Eigen::all), d);
