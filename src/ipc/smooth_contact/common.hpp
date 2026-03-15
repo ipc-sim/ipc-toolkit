@@ -10,7 +10,7 @@ static constexpr int N_EDGE_NEIGHBORS_2D = 2;
 static constexpr int MAX_VERT_2D =
     2 * std::max(N_VERT_NEIGHBORS_2D, N_EDGE_NEIGHBORS_2D);
 static constexpr int N_VERT_NEIGHBORS_3D = 20; // increase me if needed
-static constexpr int N_EDGE_NEIGHBORS_3D = 4;
+static constexpr int N_EDGE_NEIGHBORS_3D = 6;  // increase me if needed
 static constexpr int N_FACE_NEIGHBORS_3D = 3;
 static constexpr int MAX_VERT_3D = N_VERT_NEIGHBORS_3D * 2;
 

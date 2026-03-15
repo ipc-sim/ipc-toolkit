@@ -135,19 +135,10 @@ void CollisionMesh::init_edges_to_faces()
         return;
     }
 
-    m_edges_to_faces.setConstant(num_edges(), 2, -1);
+    m_edges_to_faces.resize(num_edges());
     for (int f = 0; f < m_faces_to_edges.rows(); f++) {
         for (int le = 0; le < 3; le++) {
-            if (m_edges_to_faces(m_faces_to_edges(f, le), 0) < 0) {
-                m_edges_to_faces(m_faces_to_edges(f, le), 0) = f;
-            } else if (m_edges_to_faces(m_faces_to_edges(f, le), 1) < 0) {
-                m_edges_to_faces(m_faces_to_edges(f, le), 1) = f;
-            } else {
-                logger().warn(
-                    "Edge {} of face {} is shared by more than 2 faces. "
-                    "This may cause issues with the Geometric Contact Potential (smooth contact).",
-                    m_faces_to_edges(f, le), f);
-            }
+            m_edges_to_faces[m_faces_to_edges(f, le)].push_back(f);
         }
     }
 }
