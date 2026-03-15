@@ -1650,6 +1650,22 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="edges_to_faces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4NK3ipc13CollisionMesh14edges_to_facesEv-returns" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span>Returns</span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -4302,6 +4318,22 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="edges_to_faces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4NK3ipc13CollisionMesh14edges_to_facesEv-returns" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span>Returns</span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -5877,8 +5909,13 @@
 
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4NK3ipc13CollisionMesh14edges_to_facesEv">
-<span class="k">inline</span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="w">&amp;&nbsp;</span><span class="sig-name descname"><span class="n">edges_to_faces</span></span><span class="p">(</span><span class="p">)</span><span class="w">&nbsp;</span><span class="k">const;</span><a class="headerlink" href="#_CPPv4NK3ipc13CollisionMesh14edges_to_facesEv" title="Link to this definition">¶</a></dt>
-<dd><p>Get the mapping from edges to faces of the collision mesh (|E| × 2). </p>
+<span class="k">inline</span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="p">&lt;</span><span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="p">&lt;</span><span class="n">index_t</span><span class="p">&gt;</span><span class="p">&gt;</span><span class="p">&amp;<br></span><span class="sig-name descname"><span class="n">edges_to_faces</span></span><span class="p">(</span><span class="p">)</span><span class="w">&nbsp;</span><span class="k">const;</span><a class="headerlink" href="#_CPPv4NK3ipc13CollisionMesh14edges_to_facesEv" title="Link to this definition">¶</a></dt>
+<dd><p>Get the mapping from edges to faces of the collision mesh. </p>
+<dl class="field-list simple">
+<dt class="field-odd" id="_CPPv4NK3ipc13CollisionMesh14edges_to_facesEv-returns">Returns<span class="colon">:</span><a class="headerlink" href="#_CPPv4NK3ipc13CollisionMesh14edges_to_facesEv-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><p>A vector of size |E|, where each entry is a vector of face indices adjacent to that edge. </p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="cpp function objdesc">
@@ -6222,7 +6259,7 @@
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh19init_edges_to_facesEv">
 <span class="kt">void</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">init_edges_to_faces</span></span><span class="p">(</span><span class="p">);</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh19init_edges_to_facesEv" title="Link to this definition">¶</a></dt>
-<dd><p>Initialize map from edges to adjacent faces (|E| × 2). </p>
+<dd><p>Initialize map from edges to adjacent faces. </p>
 </dd></dl>
 
 <dl class="cpp function objdesc">
@@ -6314,8 +6351,8 @@
 
 <dl class="cpp var objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh16m_edges_to_facesE">
-<span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">m_edges_to_faces;</span></span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh16m_edges_to_facesE" title="Link to this definition">¶</a></dt>
-<dd><p>Map from edges to adjacent faces (|E| × 2). </p>
+<span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="p">&lt;</span><span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="p">&lt;</span><span class="n">index_t</span><span class="p">&gt;</span><span class="p">&gt;</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">m_edges_to_faces;</span></span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh16m_edges_to_facesE" title="Link to this definition">¶</a></dt>
+<dd><p>Map from edges to adjacent faces (|E| entries, variable length). </p>
 </dd></dl>
 
 <dl class="cpp var objdesc">
@@ -6463,7 +6500,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Mar 14, 2026
+    Mar 15, 2026
   </span>
 
     
