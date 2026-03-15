@@ -45,7 +45,7 @@
         <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.74c816e3f9967dd6e.min.css?v=6cfe2491" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=aec82df8" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=0c1e08d4" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#technical-details" class="md-skip">
+        <a href="#motivation" class="md-skip">
           Skip to content
         </a>
       
@@ -795,10 +795,126 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#technical-details" class="md-nav__link">
+  <a href="#motivation" class="md-nav__link">
     
     <span class="md-ellipsis">
-      <span title="/tutorials/gcp.rst#technical-details (reference label)"><span>Technical Details</span></span>
+      <span title="/tutorials/gcp.rst#motivation (reference label)"><span>Motivation</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#requirements (reference label)"><span>Requirements</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formulation" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#formulation (reference label)"><span>Formulation</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Formulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#barrier-function" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#barrier-function (reference label)"><span>Barrier Function</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-sets" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#interaction-sets (reference label)"><span>Interaction Sets</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#piecewise-smooth-surfaces" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#piecewise-smooth-surfaces (reference label)"><span>Piecewise Smooth Surfaces</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#directional-factor-gamma" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#directional-factor-gamma (reference label)"><span>Directional Factor \gamma</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smooth-heaviside-function" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#smooth-heaviside-function (reference label)"><span>Smooth Heaviside Function</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adaptive-barrier-localization" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#adaptive-barrier-localization (reference label)"><span>Adaptive Barrier Localization</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#discretization" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#discretization (reference label)"><span>Discretization</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distance-mollification" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#distance-mollification (reference label)"><span>Distance Mollification</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#usage (reference label)"><span>Usage</span></span>
     </span>
   </a>
   
@@ -808,7 +924,7 @@
   <a href="#parameter-choices" class="md-nav__link">
     
     <span class="md-ellipsis">
-      <span title="/tutorials/gcp.rst#parameter-choices (reference label)"><span>Parameter choices</span></span>
+      <span title="/tutorials/gcp.rst#parameter-choices (reference label)"><span>Parameter Choices</span></span>
     </span>
   </a>
   
@@ -819,6 +935,16 @@
     
     <span class="md-ellipsis">
       <span title="/tutorials/gcp.rst#friction (reference label)"><span>Friction</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-with-ipc" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#comparison-with-ipc (reference label)"><span>Comparison with IPC</span></span>
     </span>
   </a>
   
@@ -2038,10 +2164,126 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#technical-details" class="md-nav__link">
+  <a href="#motivation" class="md-nav__link">
     
     <span class="md-ellipsis">
-      <span title="/tutorials/gcp.rst#technical-details (reference label)"><span>Technical Details</span></span>
+      <span title="/tutorials/gcp.rst#motivation (reference label)"><span>Motivation</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#requirements (reference label)"><span>Requirements</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formulation" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#formulation (reference label)"><span>Formulation</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Formulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#barrier-function" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#barrier-function (reference label)"><span>Barrier Function</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-sets" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#interaction-sets (reference label)"><span>Interaction Sets</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#piecewise-smooth-surfaces" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#piecewise-smooth-surfaces (reference label)"><span>Piecewise Smooth Surfaces</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#directional-factor-gamma" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#directional-factor-gamma (reference label)"><span>Directional Factor \gamma</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smooth-heaviside-function" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#smooth-heaviside-function (reference label)"><span>Smooth Heaviside Function</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adaptive-barrier-localization" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#adaptive-barrier-localization (reference label)"><span>Adaptive Barrier Localization</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#discretization" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#discretization (reference label)"><span>Discretization</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distance-mollification" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#distance-mollification (reference label)"><span>Distance Mollification</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#usage (reference label)"><span>Usage</span></span>
     </span>
   </a>
   
@@ -2051,7 +2293,7 @@
   <a href="#parameter-choices" class="md-nav__link">
     
     <span class="md-ellipsis">
-      <span title="/tutorials/gcp.rst#parameter-choices (reference label)"><span>Parameter choices</span></span>
+      <span title="/tutorials/gcp.rst#parameter-choices (reference label)"><span>Parameter Choices</span></span>
     </span>
   </a>
   
@@ -2062,6 +2304,16 @@
     
     <span class="md-ellipsis">
       <span title="/tutorials/gcp.rst#friction (reference label)"><span>Friction</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-with-ipc" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/gcp.rst#comparison-with-ipc (reference label)"><span>Comparison with IPC</span></span>
     </span>
   </a>
   
@@ -2085,45 +2337,359 @@
 
 <h1 id="geometric-contact-potential"><span id="geometric-contact-potential-formulation"></span>Geometric Contact Potential<a class="headerlink" href="#geometric-contact-potential" title="Link to this heading">¶</a></h1>
 <p>In addition to the original implementation of <span id="id1">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>, we also implement the Geometric Contact Potential (GCP) from <span id="id2">Huang <em>et al.</em> [<a class="reference internal" href="references.html#id14" title="Zizhou Huang, Maxwell Paik, Zachary Ferguson, Daniele Panozzo, and Denis Zorin. Geometric contact potential. ACM Transactions on Graphics, August 2025. doi:10.1145/3731142.">2025</a>]</span>.</p>
+<h2 id="motivation">Motivation<a class="headerlink" href="#motivation" title="Link to this heading">¶</a></h2>
+<p>A representative frictionless contact problem can be viewed as a geometrically constrained optimization:</p>
+<div class="math notranslate nohighlight">
+\[\min_u E(u), \quad \text{subject to } g(u) \geq 0,\]</div>
+<p>where <span class="math notranslate nohighlight">\(u\)</span> is a deformation and <span class="math notranslate nohighlight">\(g\)</span> measures the <em>distance to contact</em>. Barrier-based solvers replace this with an unconstrained problem:</p>
+<div class="math notranslate nohighlight">
+\[\min_u E(u) + b(u),\]</div>
+<p>where <span class="math notranslate nohighlight">\(b(u)\)</span> is a barrier potential that increases to infinity as the configuration approaches contact.</p>
+<p>All existing contact barrier potentials are defined by aggregating repulsion terms between pairs of points or elements. The key question is how to choose the strength of repulsion so that it is high when two points are close to contact, vanishes when they are far, and satisfies a number of desirable properties. In particular, one important difficulty is distinguishing <em>true contact</em> — arising from different objects or parts of the same surface moving toward each other — from points that remain close simply because they are neighbors on the undeformed rest shape.</p>
+<figure class="align-center" id="id6">
+<a class="figure-on-light reference internal image-reference" href="../_images/nearby-points.svg"><img alt="../_images/nearby-points.svg" class="figure-on-light" src="../_images/nearby-points.svg" style="width: 200px;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+Contact potentials must distinguish points nearing contact (A and B) from nearby non-contacting points (A and C).</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<p>The IPC barrier potential <span id="id3">[<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">Li <em>et al.</em>, 2020</a>]</span> uses a purely distance-based criterion, which can produce <em>spurious repulsive forces</em> between nearby surface points that are not actually in contact. This is especially problematic when the barrier activation distance <span class="math notranslate nohighlight">\(\hat{d}\)</span> is relatively large compared to mesh features. GCP addresses this by introducing geometric criteria — the <em>local minimum constraint</em> and the <em>exterior direction constraint</em> — that identify true contact candidates, eliminating spurious forces and decoupling <span class="math notranslate nohighlight">\(\hat{d}\)</span> from the discretization.</p>
+<h2 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Link to this heading">¶</a></h2>
+<p>GCP is designed to satisfy the following requirements simultaneously. No prior potential in the literature satisfies all of them:</p>
+<ol class="arabic simple">
+<li><p><strong>Finiteness</strong>: The total contact potential integral is finite for any piecewise-smooth surface not in contact.</p></li>
+<li><p><strong>Barrier</strong>: The potential grows to infinity as the distance to contact approaches zero, guaranteeing that all configurations remain contact-free (when combined with CCD).</p></li>
+<li><p><strong>No spurious forces</strong>: In the undeformed (rest) configuration, both the potential and its gradient are zero, so no artificial forces arise.</p></li>
+<li><p><strong>Localization</strong>: The potential has a locality parameter <span class="math notranslate nohighlight">\(\hat{d}\)</span> and vanishes if the distance to contact exceeds <span class="math notranslate nohighlight">\(\hat{d}\)</span>.</p></li>
+<li><p><strong>Differentiability</strong>: The potential depends differentiably (and piecewise twice differentiably) on mesh vertex positions, enabling second-order solvers.</p></li>
+<li><p><strong>Discretization</strong>: The discrete version of the potential satisfies all of the above requirements exactly, not just in the limit of refinement.</p></li>
+</ol>
+<h2 id="formulation">Formulation<a class="headerlink" href="#formulation" title="Link to this heading">¶</a></h2>
+<p>The GCP pointwise potential takes the general form:</p>
+<div class="math notranslate nohighlight">
+\[\psi_\epsilon(x, y; f) := \gamma(x, y) \, p_{\epsilon(x)}(\|f(y) - f(x)\|),\]</div>
+<p>where <span class="math notranslate nohighlight">\(f\)</span> is the deformation map, <span class="math notranslate nohighlight">\(p_{\epsilon}\)</span> is a barrier function that diverges as its argument approaches zero and vanishes for distances exceeding <span class="math notranslate nohighlight">\(\epsilon(x)\)</span>, and <span class="math notranslate nohighlight">\(\gamma(x, y)\)</span> is a <em>directional factor</em> that restricts the potential to a geometrically meaningful <em>interaction set</em> <span class="math notranslate nohighlight">\(C(x, f)\)</span>.</p>
+<p>The total potential is obtained by integrating (or in the discrete case, summing) over all pairs of surface points.</p>
+<p>The formulation involves four main components:</p>
+<ol class="arabic simple">
+<li><p><strong>Interaction sets</strong> <span class="math notranslate nohighlight">\(C(x, f)\)</span>: the set of points that are close to being in true contact with <span class="math notranslate nohighlight">\(x\)</span>.</p></li>
+<li><p><strong>Adaptive locality</strong> <span class="math notranslate nohighlight">\(\epsilon(x)\)</span>: a per-point barrier extent.</p></li>
+<li><p><strong>Barrier function</strong> <span class="math notranslate nohighlight">\(p_\epsilon\)</span>: the distance-based barrier.</p></li>
+<li><p><strong>Directional factor</strong> <span class="math notranslate nohighlight">\(\gamma(x, y)\)</span>: a smooth factor supported on <span class="math notranslate nohighlight">\(C(x, f)\)</span>.</p></li>
+</ol>
+<h3 id="barrier-function">Barrier Function<a class="headerlink" href="#barrier-function" title="Link to this heading">¶</a></h3>
+<p>The barrier function is:</p>
+<div class="math notranslate nohighlight">
+\[p_\epsilon(z) := h_\epsilon(z) \, z^{-r},\]</div>
+<p>where <span class="math notranslate nohighlight">\(r = n - 1\)</span> (<span class="math notranslate nohighlight">\(n \in \{2, 3\}\)</span> is the dimension of the scene), and <span class="math notranslate nohighlight">\(h_\epsilon(z) := \tfrac{3}{2} B^3(2z/\epsilon)\)</span> is a cubic <span class="math notranslate nohighlight">\(C^2\)</span> spline with support <span class="math notranslate nohighlight">\(|z| \leq \epsilon\)</span>. Here <span class="math notranslate nohighlight">\(B^3\)</span> is the cubic B-spline basis function:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}B^3(v) = \begin{cases}
+\tfrac{2}{3} - v^2 + \tfrac{1}{2}|v|^3, &amp; |v| &lt; 1, \\
+\tfrac{1}{6}(2 - |v|)^3, &amp; 1 \leq |v| &lt; 2, \\
+0, &amp; 2 \leq |v|.
+\end{cases}\end{split}\]</div>
+<p>Because <span class="math notranslate nohighlight">\(h_\epsilon\)</span> vanishes for <span class="math notranslate nohighlight">\(z \geq \epsilon\)</span> and <span class="math notranslate nohighlight">\(z^{-r}\)</span> diverges as <span class="math notranslate nohighlight">\(z \to 0\)</span>, the barrier satisfies both the localization and barrier requirements.</p>
+<figure class="align-center" id="id7">
+<a class="figure-on-light reference internal image-reference" href="../_images/barriers.svg"><img alt="../_images/barriers.svg" class="figure-on-light" src="../_images/barriers.svg" style="width: 300px;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+The cubic spline <span class="math notranslate nohighlight">\(h_\epsilon(z)\)</span> (dashed) and the GCP barrier <span class="math notranslate nohighlight">\(p_\epsilon(z) = h_\epsilon(z)/z^{n-1}\)</span> (blue) for <span class="math notranslate nohighlight">\(\epsilon = 1\)</span>. The IPC log barrier <span class="math notranslate nohighlight">\(p^{\text{IPC}}\)</span> (orange) is shown for comparison.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<h3 id="interaction-sets">Interaction Sets<a class="headerlink" href="#interaction-sets" title="Link to this heading">¶</a></h3>
+<p>The key insight of GCP is defining interaction sets based on a geometric characterization of contact: <em>points that are close to being local minima of the distance function and for which the displacement vector points toward the surface exterior</em>.</p>
+<p>For smooth surfaces, two points <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> on the boundary are in contact if (a) they coincide in space, <span class="math notranslate nohighlight">\(f(x) = f(y)\)</span>, and (b) their normals have opposite orientation, <span class="math notranslate nohighlight">\(n(x) = -n(y)\)</span>. The interaction set captures points <em>close</em> to satisfying both conditions, via two constraints:</p>
+<p><strong>Local minimum constraint.</strong> A point <span class="math notranslate nohighlight">\(y\)</span> is near a local minimum of the distance from <span class="math notranslate nohighlight">\(f(x)\)</span> if:</p>
+<div class="math notranslate nohighlight">
+\[\Phi^m(x, y) := \|(f(y) - f(x))_+ \times n(y)\| \leq \alpha,\]</div>
+<p>where <span class="math notranslate nohighlight">\((\cdot)_+\)</span> denotes normalization to a unit vector and <span class="math notranslate nohighlight">\(0 &lt; \alpha &lt; 1\)</span>. This condition checks whether the distance direction is nearly aligned with the surface normal at <span class="math notranslate nohighlight">\(y\)</span> — equivalently, whether <span class="math notranslate nohighlight">\(y\)</span> is near a closest point on the surface to <span class="math notranslate nohighlight">\(f(x)\)</span>.</p>
+<p><strong>Exterior direction constraint.</strong> The displacement vector <span class="math notranslate nohighlight">\(f(y) - f(x)\)</span> should point toward the surface exterior at <span class="math notranslate nohighlight">\(y\)</span> (i.e., <span class="math notranslate nohighlight">\(f(x)\)</span> is on the outward-normal side of <span class="math notranslate nohighlight">\(f(y)\)</span>):</p>
+<div class="math notranslate nohighlight">
+\[\Phi^e(x, y) := -n(y) \cdot (f(y) - f(x))_+ \geq -\alpha.\]</div>
+<p>This eliminates interactions between opposite sides of a thin volumetric shell.</p>
+<p>The interaction set for smooth surfaces is then:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}C(x, f) := \left\{ y \in \partial\Omega \;\middle|\;
+\begin{array}{l}
+\Phi^m(x, y) \leq \alpha, \quad \Phi^e(x, y) \geq -\alpha, \\
+\Phi^m(y, x) \leq \alpha, \quad \Phi^e(y, x) \geq -\alpha
+\end{array}
+\right\}.\end{split}\]</div>
+<p>Note that both constraints are applied symmetrically: <span class="math notranslate nohighlight">\(y\)</span> must be near a local minimum as seen from <span class="math notranslate nohighlight">\(x\)</span>, <em>and</em> <span class="math notranslate nohighlight">\(x\)</span> must be near a local minimum as seen from <span class="math notranslate nohighlight">\(y\)</span>.</p>
+<figure class="align-center" id="id8">
+<a class="figure-on-light reference internal image-reference" href="../_images/demo-force.png"><img alt="../_images/demo-force.png" class="figure-on-light" src="../_images/demo-force.png" style="width: 600px;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+Contact forces (arrows) and potential distribution on a 2D object surface with respect to the red dot. <strong>(A)</strong> The IPC potential distributes spherically regardless of surface shape. <strong>(B)</strong> With the local minimum constraint, only surfaces near local minima/maxima of distance have high potential. <strong>(C)</strong> With both local minimum and exterior direction constraints, only the closer side of the volumetric object has nonzero potential.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<h3 id="piecewise-smooth-surfaces">Piecewise Smooth Surfaces<a class="headerlink" href="#piecewise-smooth-surfaces" title="Link to this heading">¶</a></h3>
+<p>Smooth surfaces are typically approximated by piecewise-linear meshes in practice. On piecewise-smooth surfaces (including triangle meshes), normals are not uniquely defined at edges and vertices, so the constraints must be generalized.</p>
+<p><strong>Local minimum constraint (generalized).</strong> For a point <span class="math notranslate nohighlight">\(y\)</span> on a piecewise-smooth surface, let <span class="math notranslate nohighlight">\(I\)</span> be the set of indices of patches containing <span class="math notranslate nohighlight">\(y\)</span>. For each patch <span class="math notranslate nohighlight">\(\partial\Omega_i\)</span>, define tangent vectors <span class="math notranslate nohighlight">\(t^k_i(y)\)</span> for <span class="math notranslate nohighlight">\(k = 1, 2, 3\)</span> (two edge tangents and their angle bisector, see figure below). The local minimum condition becomes:</p>
+<div class="math notranslate nohighlight">
+\[\Phi^m_{ik}(x, y) := {t^k_i(y)}^\top (f(y) - f(x))_+ \geq -\alpha_t, \quad \forall\, i \in I,\; k = 1, 2, 3,\]</div>
+<p>where <span class="math notranslate nohighlight">\(\alpha_t\)</span> is the tangent-direction smoothing parameter.</p>
+<figure class="align-center" id="id9">
+<a class="figure-on-light reference internal image-reference" href="../_images/tangent-notation.svg"><img alt="../_images/tangent-notation.svg" class="figure-on-light" src="../_images/tangent-notation.svg" style="width: 600px;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+Tangent directions at a point <span class="math notranslate nohighlight">\(f(y)\)</span> on a face <span class="math notranslate nohighlight">\(\partial\Omega_i\)</span> in 3D. <span class="math notranslate nohighlight">\(t_1\)</span> and <span class="math notranslate nohighlight">\(t_2\)</span> are the two tangent vectors along the edge curves of the face at <span class="math notranslate nohighlight">\(f(y)\)</span>, and <span class="math notranslate nohighlight">\(t_3\)</span> is their angle bisector. The face is viewed from the normal direction.</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<p><strong>Exterior direction constraint (generalized).</strong> At an edge point, the constraint is evaluated by projecting onto the plane perpendicular to the edge and applying a 2D inside-cone test. At a vertex, where multiple face normals <span class="math notranslate nohighlight">\(n_i(y)\)</span> are available, a conservative smooth formulation is used. The per-face exterior constraint is:</p>
+<div class="math notranslate nohighlight">
+\[\Phi^e_i(x, y) := -n_i(y)^\top (f(y) - f(x))_+,\]</div>
+<p>and the mollified constraint ensures that <span class="math notranslate nohighlight">\(\Phi^e_i(x, y) \geq 0\)</span> for <em>at least one</em> incident face <span class="math notranslate nohighlight">\(i\)</span>.</p>
+<figure class="align-center" id="id10">
+<a class="figure-on-light reference internal image-reference" href="../_images/normal-demo.png"><img alt="../_images/normal-demo.png" class="figure-on-light" src="../_images/normal-demo.png" style="width: 600px;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+2D (top) and 3D (bottom) normal directions for contact points. The displacement <span class="math notranslate nohighlight">\(f(y) - f(x)\)</span> is shown in yellow; face normals <span class="math notranslate nohighlight">\(n_i(y)\)</span> are shown in red when the exterior constraint is satisfied, and green otherwise. In simple cases such as (A) and (D), all normals satisfy the constraint, but in general only some do.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<figure class="align-center" id="id11">
+<a class="figure-on-light reference internal image-reference" href="../_images/cone-filter-edge.svg"><img alt="../_images/cone-filter-edge.svg" class="figure-on-light" src="../_images/cone-filter-edge.svg" style="width: 600px;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+3D (left) and 2D (right) views of the exterior direction test for an edge point. The 2D view is the projection onto the plane perpendicular to edge <span class="math notranslate nohighlight">\(e_j\)</span>. Deciding if <span class="math notranslate nohighlight">\(v\)</span> points inside the cone in 3D reduces to checking if <span class="math notranslate nohighlight">\(\tilde{v}\)</span> is inside the sector bounded by <span class="math notranslate nohighlight">\(\tilde{e}_1\)</span> and <span class="math notranslate nohighlight">\(\tilde{e}_2\)</span> in 2D.</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<p><strong>Contact between different element types.</strong> On piecewise-smooth surfaces, contact can occur between any pair of element types: Face–Face, Face–Edge, Face–Vertex, Edge–Edge, Edge–Vertex, and Vertex–Vertex. Since edge and vertex contact sets have zero measure, directly integrating the potential over the surface would yield zero. GCP addresses this by treating low-dimensional elements separately with an element-measure weighting parameter <span class="math notranslate nohighlight">\(L\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\Psi(f) = \sum_{(g, h)} \sum_{\substack{i \in I_g,\, j \in I_h \\ G_i \cap H_j = \varnothing}} L^{4 - \dim g - \dim h} \int_{G_i} \int_{H_j} P(x, y;\, G_i, H_j) \,\mathrm{d}x\,\mathrm{d}y,\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(g, h \in \{\text{Face}, \text{Edge}, \text{Vertex}\}\)</span>, and the integrals are area, line, or point evaluations depending on the element dimension.</p>
+<h3 id="directional-factor-gamma">Directional Factor <span class="math notranslate nohighlight">\(\gamma\)</span><a class="headerlink" href="#directional-factor-gamma" title="Link to this heading">¶</a></h3>
+<p>To keep the potential differentiable while restricting it to the interaction set, GCP uses smooth mollification. The directional factor is built from two components:</p>
+<p><strong>Local minimum factor</strong> (using the smoothed Heaviside function <span class="math notranslate nohighlight">\(H^\alpha\)</span>):</p>
+<div class="math notranslate nohighlight">
+\[g^m(x, y) := \prod_{i \in I} \prod_{k=1}^{3} H^{\alpha_t}(\Phi^m_{ik}(x, y)).\]</div>
+<p>This equals 1 when all tangent-direction constraints are satisfied, and vanishes smoothly as any constraint is violated.</p>
+<p><strong>Exterior direction factor</strong> (for vertices with multiple normals):</p>
+<div class="math notranslate nohighlight">
+\[g^e(x, y) := H^1\!\left(-1 + \sum_{i \in I} H^{\beta_n}(\Phi^e_i(x, y))\right),\]</div>
+<p>which equals 1 when at least one face normal satisfies the exterior constraint, and vanishes when none do. For edge points, a simpler form using the 2D cone test is used.</p>
+<p>The combined factor is:</p>
+<div class="math notranslate nohighlight">
+\[\gamma(x, y) := g^m(x, y)\, g^e(x, y)\, g^m(y, x)\, g^e(y, x).\]</div>
+<p>The symmetry ensures that both points in a pair must satisfy the geometric criteria.</p>
+<h3 id="smooth-heaviside-function">Smooth Heaviside Function<a class="headerlink" href="#smooth-heaviside-function" title="Link to this heading">¶</a></h3>
+<figure class="align-center" id="id12">
+<a class="figure-on-light reference internal image-reference" href="../_images/heaviside.svg"><img alt="../_images/heaviside.svg" class="figure-on-light" src="../_images/heaviside.svg" style="width: 300px;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+The smooth Heaviside function <span class="math notranslate nohighlight">\(H^\alpha(z)\)</span> with <span class="math notranslate nohighlight">\(\alpha = \tfrac{1}{2}\)</span>.</span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<p>The smooth Heaviside function <span class="math notranslate nohighlight">\(H(z; \alpha, \beta) \in C^1(\mathbb{R})\)</span> used throughout the construction satisfies:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}H(z; \alpha, \beta) = 0, \quad \forall\, z &lt; -\alpha, \\
+H(z; \alpha, \beta) = 1, \quad \forall\, z &gt; \beta, \\
+H'(z; \alpha, \beta) \geq 0, \quad \forall\, z.\end{split}\]</div>
+<p>The parameters <span class="math notranslate nohighlight">\(\alpha\)</span> and <span class="math notranslate nohighlight">\(\beta\)</span> control the transition region. Since the inputs to <span class="math notranslate nohighlight">\(H\)</span> are dot and cross products of unit vectors, we have <span class="math notranslate nohighlight">\(-1 \leq z \leq 1\)</span>, and the basic requirement is:</p>
+<div class="math notranslate nohighlight">
+\[0 \leq -\beta &lt; \alpha \leq 1.\]</div>
+<h3 id="adaptive-barrier-localization">Adaptive Barrier Localization<a class="headerlink" href="#adaptive-barrier-localization" title="Link to this heading">¶</a></h3>
+<p>To satisfy the <em>no spurious forces</em> requirement, the per-point barrier extent <span class="math notranslate nohighlight">\(\epsilon(x)\)</span> is set adaptively:</p>
+<div class="math notranslate nohighlight">
+\[\epsilon(x) := \min\!\left(\frac{d_c(x, f_0)}{2},\; \hat{d}\right),\]</div>
+<p>where <span class="math notranslate nohighlight">\(d_c(x, f_0)\)</span> is the distance to the interaction set in the rest configuration and <span class="math notranslate nohighlight">\(\hat{d}\)</span> is the global maximum activation distance. This ensures that the potential is exactly zero in the rest pose, eliminating spurious forces by construction.</p>
+<h3 id="discretization">Discretization<a class="headerlink" href="#discretization" title="Link to this heading">¶</a></h3>
+<p>For the barrier property to hold exactly in the discrete setting, GCP uses <em>closest points on element pairs as quadrature points</em> (rather than standard quadrature). This may reduce integration precision, but guarantees the barrier property at the discrete level. The discrete potential is:</p>
+<div class="math notranslate nohighlight">
+\[\Psi^D(f) = \sum_{(g, h)} \sum_{(i, j)} L^{4 - \dim g - \dim h}\, P(x_i, y_j;\, G_i, H_j)\, A(G_i)\, A(H_j),\]</div>
+<p>where <span class="math notranslate nohighlight">\((x_i, y_j)\)</span> is a pair of closest points on elements <span class="math notranslate nohighlight">\(G_i\)</span> and <span class="math notranslate nohighlight">\(H_j\)</span>, and <span class="math notranslate nohighlight">\(A(\cdot)\)</span> denotes the element measure (area for faces, length for edges, 1 for vertices).</p>
+<h3 id="distance-mollification">Distance Mollification<a class="headerlink" href="#distance-mollification" title="Link to this heading">¶</a></h3>
+<p>Since closest points may not depend smoothly on vertex positions (e.g., when a closest point moves from the interior of a face to its boundary), GCP introduces mollification factors <span class="math notranslate nohighlight">\(M(x, y)\)</span> that smoothly vanish near these non-smooth transitions.</p>
+<figure class="align-center" id="id13">
+<a class="figure-on-light reference internal image-reference" href="../_images/smoothness-demo.svg"><img alt="../_images/smoothness-demo.svg" class="figure-on-light" src="../_images/smoothness-demo.svg" style="width: 600px;" />
+</a>
+<figcaption>
+<p><span class="caption-text"><span class="caption-text">
+Non-smoothness of the closest point position. As the query point <span class="math notranslate nohighlight">\(P\)</span> moves, the closest point <span class="math notranslate nohighlight">\(Q\)</span> on an edge or face transitions from the interior to the boundary. The coordinate of <span class="math notranslate nohighlight">\(Q\)</span> does not depend smoothly on <span class="math notranslate nohighlight">\(P\)</span> at the boundary, motivating the mollification.</span><a class="headerlink" href="#id13" title="Permalink to this image">¶</a></figcaption>
+</figure>
+<p>For <strong>Edge–Vertex</strong> contact with <span class="math notranslate nohighlight">\(Q\)</span> on edge <span class="math notranslate nohighlight">\(AB\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[M(x, y) := h_c\!\left(\frac{d(A, P)}{d(P, AB)}\right) h_c\!\left(\frac{d(B, P)}{d(P, AB)}\right),\]</div>
+<p>which vanishes as the closest point approaches either endpoint of the edge.</p>
+<p>For <strong>Face–Vertex</strong> contact with face <span class="math notranslate nohighlight">\(ABC\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[M(x, y) := h_c\!\left(\frac{d(P, AB)}{d(P, ABC)}\right) h_c\!\left(\frac{d(P, AC)}{d(P, ABC)}\right) h_c\!\left(\frac{d(P, BC)}{d(P, ABC)}\right),\]</div>
+<p>which vanishes as the closest point approaches the boundary of the triangle.</p>
+<p>For <strong>Edge–Edge</strong> contact between edges <span class="math notranslate nohighlight">\(AB\)</span> and <span class="math notranslate nohighlight">\(CD\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[M(x, y) := h_c\!\left(\frac{d(B, CD)}{d(AB, CD)}\right) h_c\!\left(\frac{d(A, CD)}{d(AB, CD)}\right) h_c\!\left(\frac{d(C, AB)}{d(AB, CD)}\right) h_c\!\left(\frac{d(D, AB)}{d(AB, CD)}\right).\]</div>
+<p>Here <span class="math notranslate nohighlight">\(h_c(s) = h((s-1)/c)\)</span> with <span class="math notranslate nohighlight">\(h(z) = z(2-z)\)</span> for <span class="math notranslate nohighlight">\(0 \leq z &lt; 1\)</span> and <span class="math notranslate nohighlight">\(h(z) = 1\)</span> for <span class="math notranslate nohighlight">\(z \geq 1\)</span>. These mollifications are <span class="math notranslate nohighlight">\(C^1\)</span> smooth and ensure that when one contact type vanishes due to mollification, another contact type becomes active, preserving the barrier property.</p>
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
 <p>GCP is implemented as separate collision and potential classes. A basic example of computing the GCP potential is as follows.</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipc</span><span class="o">::</span><span class="n">SmoothCollisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2">
+<input checked type="radio" id="__tabbed_1_1" name="__tabbed_1"><input type="radio" id="__tabbed_1_2" name="__tabbed_1"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_1_1">
+C++</label><label class="tabbed-label" for="__tabbed_1_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/ipc.hpp&gt;</span>
+
+<span class="c1">// Set up parameters</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">dhat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-3</span><span class="p">;</span><span class="w">     </span><span class="c1">// barrier activation distance</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">alpha_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span><span class="w">   </span><span class="c1">// local minimum constraint support</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">beta_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w">    </span><span class="c1">// local minimum constraint offset</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">alpha_n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.1</span><span class="p">;</span><span class="w">   </span><span class="c1">// exterior direction constraint support</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">beta_n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w">    </span><span class="c1">// exterior direction constraint offset</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">              </span><span class="c1">// barrier exponent (dimension - 1)</span>
+
+<span class="n">ipc</span><span class="o">::</span><span class="n">SmoothContactParameters</span><span class="w"> </span><span class="nf">params</span><span class="p">(</span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">alpha_t</span><span class="p">,</span><span class="w"> </span><span class="n">beta_t</span><span class="p">,</span><span class="w"> </span><span class="n">alpha_n</span><span class="p">,</span><span class="w"> </span><span class="n">beta_n</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+
+<span class="c1">// Build collision set</span>
+<span class="kt">bool</span><span class="w"> </span><span class="n">use_adaptive_dhat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">SmoothCollisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
 <span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">use_adaptive_dhat</span><span class="p">)</span>
 <span class="w">    </span><span class="n">collisions</span><span class="p">.</span><span class="n">compute_adaptive_dhat</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">params</span><span class="p">);</span>
 <span class="n">collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">params</span><span class="p">,</span><span class="w"> </span><span class="n">use_adaptive_dhat</span><span class="p">);</span>
 
-<span class="n">ipc</span><span class="o">::</span><span class="n">SmoothContactPotential</span><span class="w"> </span><span class="n">barrier_potential</span><span class="p">;</span>
-<span class="kt">double</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">barrier_potential</span><span class="p">(</span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">);</span>
+<span class="c1">// Compute potential</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">SmoothContactPotential</span><span class="w"> </span><span class="nf">barrier_potential</span><span class="p">(</span><span class="n">params</span><span class="p">);</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">barrier_potential</span><span class="p">(</span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">);</span>
+
+<span class="c1">// Compute gradient</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">grad</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">barrier_potential</span><span class="p">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">);</span>
+
+<span class="c1">// Compute Hessian</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">hess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">barrier_potential</span><span class="p">.</span><span class="n">hessian</span><span class="p">(</span>
+<span class="w">    </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">);</span>
 </code></pre></div>
 </div>
-<div class="important tip admonition">
-<p class="admonition-title">Important</p>
-<p>If <cite>use_adaptive_dhat</cite> is true, make sure to call <cite>SmoothCollisions::compute_adaptive_dhat()</cite> before <cite>SmoothCollisions::build()</cite>.</p>
 </div>
-<h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Link to this heading">¶</a></h2>
-<p>Similar to IPC, GCP potential has a distance barrier that converges to infinity as the distance converges to zero.</p>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ipctk</span>
+
+<span class="c1"># Set up parameters</span>
+<span class="n">dhat</span> <span class="o">=</span> <span class="mf">1e-3</span>       <span class="c1"># barrier activation distance</span>
+<span class="n">alpha_t</span> <span class="o">=</span> <span class="mf">0.5</span>     <span class="c1"># local minimum constraint support</span>
+<span class="n">beta_t</span> <span class="o">=</span> <span class="mf">0.0</span>      <span class="c1"># local minimum constraint offset</span>
+<span class="n">alpha_n</span> <span class="o">=</span> <span class="mf">0.1</span>     <span class="c1"># exterior direction constraint support</span>
+<span class="n">beta_n</span> <span class="o">=</span> <span class="mf">0.0</span>      <span class="c1"># exterior direction constraint offset</span>
+<span class="n">r</span> <span class="o">=</span> <span class="mi">2</span>             <span class="c1"># barrier exponent (dimension - 1)</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">SmoothContactParameters</span><span class="p">(</span><span class="n">dhat</span><span class="p">,</span> <span class="n">alpha_t</span><span class="p">,</span> <span class="n">beta_t</span><span class="p">,</span> <span class="n">alpha_n</span><span class="p">,</span> <span class="n">beta_n</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+<span class="c1"># Build collision set</span>
+<span class="n">use_adaptive_dhat</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">SmoothCollisions</span><span class="p">()</span>
+<span class="k">if</span> <span class="n">use_adaptive_dhat</span><span class="p">:</span>
+    <span class="n">collisions</span><span class="o">.</span><span class="n">compute_adaptive_dhat</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+<span class="n">collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">use_adaptive_dhat</span><span class="p">)</span>
+
+<span class="c1"># Compute potential</span>
+<span class="n">barrier_potential</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">SmoothContactPotential</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">barrier_potential</span><span class="p">(</span><span class="n">collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
+
+<span class="c1"># Compute gradient</span>
+<span class="n">grad</span> <span class="o">=</span> <span class="n">barrier_potential</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
+
+<span class="c1"># Compute Hessian</span>
+<span class="n">hess</span> <span class="o">=</span> <span class="n">barrier_potential</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><div class="important tip admonition">
+<p class="admonition-title">Important</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">use_adaptive_dhat</span></code> is true, make sure to call <code class="docutils literal notranslate"><span class="pre">SmoothCollisions::compute_adaptive_dhat()</span></code> <strong>before</strong> <code class="docutils literal notranslate"><span class="pre">SmoothCollisions::build()</span></code>. Adaptive <span class="math notranslate nohighlight">\(\hat{d}\)</span> computes per-element barrier extents based on the rest configuration to guarantee zero potential (and zero forces) in the undeformed state.</p>
+</div>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>Unlike <code class="docutils literal notranslate"><span class="pre">NormalCollisions</span></code> in IPC, <code class="docutils literal notranslate"><span class="pre">SmoothCollisions</span></code> must be rebuilt whenever vertex positions change, because the interaction set depends on the current geometry (normals, tangents, and distances).</p>
+</div>
+<h2 id="parameter-choices">Parameter Choices<a class="headerlink" href="#parameter-choices" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">SmoothContactParameters</span></code> structure contains the following parameters:</p>
+<table class="docutils data align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dhat</span></code> (<span class="math notranslate nohighlight">\(\hat{d}\)</span>)</p></td>
+<td><p>Global maximum barrier activation distance. The potential vanishes for distances exceeding <span class="math notranslate nohighlight">\(\hat{d}\)</span>. Unlike IPC, this can be chosen independently of the mesh resolution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">alpha_t</span></code> (<span class="math notranslate nohighlight">\(\alpha_t\)</span>)</p></td>
+<td><p>Controls the support of the smooth Heaviside for the local minimum constraint. Larger values include more points in the interaction set and produce smoother potentials; smaller values are more selective but less smooth.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">beta_t</span></code> (<span class="math notranslate nohighlight">\(\beta_t\)</span>)</p></td>
+<td><p>Controls the offset of the smooth Heaviside for the local minimum constraint.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">alpha_n</span></code> (<span class="math notranslate nohighlight">\(\alpha_n\)</span>)</p></td>
+<td><p>Controls the support of the smooth Heaviside for the exterior direction constraint.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">beta_n</span></code> (<span class="math notranslate nohighlight">\(\beta_n\)</span>)</p></td>
+<td><p>Controls the offset of the smooth Heaviside for the exterior direction constraint.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">r</span></code></p></td>
+<td><p>The barrier exponent. Should be <span class="math notranslate nohighlight">\(n - 1\)</span> where <span class="math notranslate nohighlight">\(n\)</span> is the scene dimension (so <span class="math notranslate nohighlight">\(r = 1\)</span> for 2D and <span class="math notranslate nohighlight">\(r = 2\)</span> for 3D).</p></td>
+</tr>
+</tbody>
+</table>
+<p>The <span class="math notranslate nohighlight">\(\alpha\)</span> and <span class="math notranslate nohighlight">\(\beta\)</span> parameters for each constraint must satisfy:</p>
 <div class="math notranslate nohighlight">
-\[B(d; \hat{d}, p) := \frac{3}{2} B^3(\frac{2d}{\hat{d}}) d^{-p}\]</div>
-<p>where <span class="math notranslate nohighlight">\(\hat{d}\)</span> is the support size of the barrier function, <span class="math notranslate nohighlight">\(p=d-1\)</span>, where <span class="math notranslate nohighlight">\(d\)</span> is the dimension of the physics scene (2 or 3).</p>
-<p>The main motivation of developing GCP is to eliminate the spurious collision forces in IPC when <span class="math notranslate nohighlight">\(\hat{d}\)</span> is relatively large. The two important components to achieve this are <em>local minimum constraint</em> and <em>exterior direction constraint</em>. Please check out <span id="id3">Huang <em>et al.</em> [<a class="reference internal" href="references.html#id14" title="Zizhou Huang, Maxwell Paik, Zachary Ferguson, Daniele Panozzo, and Denis Zorin. Geometric contact potential. ACM Transactions on Graphics, August 2025. doi:10.1145/3731142.">2025</a>]</span> for more details, here we only give a high level idea.</p>
-<p>The local minimum constraint is by noticing that the barrier potential is only necessary when the two primitives in a collision pair are the “distance local minima” on each surface they live. To achieve this, we consider the gradient of distance function along the tangent directions on the surface, and smoothly clamp the barrier to zero if the gradient of distance is positive along the tangent directions, since it suggests that there already exists a closer point on the surface that can trigger the barrier.</p>
-<p>The exterior direction constraint is by noticing that, for a thin volumetric shell, the barrier potential is not needed for points on the opposite sides of the shell. To achieve this, we smoothly clamp the barrier based on the normal directions of two primitives in a collision pair. If the normal direction points to the opposite direction of the distance direction, we can skip this collision pair.</p>
-<p>Both constraints not only reduces the number of collision pairs, but also increases the accuracy of collision handling by eliminating spurious forces that are non-physical, allowing wider range of <span class="math notranslate nohighlight">\(\hat{d}\)</span> to be used in the simulation.</p>
-<h2 id="parameter-choices">Parameter choices<a class="headerlink" href="#parameter-choices" title="Link to this heading">¶</a></h2>
-<p>Besides <span class="math notranslate nohighlight">\(\hat{d}\)</span>, GCP also has other parameters to control the smoothness of local minimum and exterior direction constraints. For each constraint, there are <span class="math notranslate nohighlight">\(\alpha\)</span> and <span class="math notranslate nohighlight">\(\beta\)</span> to control the support region of the smooth Heaviside function (<span class="math notranslate nohighlight">\(\alpha_t,\ \beta_t\)</span> for local minimum constraint, and <span class="math notranslate nohighlight">\(\alpha_n,\ \beta_n\)</span> for exterior direction constraint). The smooth Heaviside function <span class="math notranslate nohighlight">\(H(z;\alpha,\beta)\in C^1(\mathbb{R})\)</span> satisfies that</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}H(z;\alpha,\beta) = 0,\ \forall z &lt; -\alpha \\
-H(z;\alpha,\beta) = 1,\ \forall z &gt; \beta \\
-H'(z;\alpha,\beta) \geq 0,\ \forall z\end{split}\]</div>
-<p>Since <span class="math notranslate nohighlight">\(H(z;\alpha,\beta)\)</span> takes the dot and cross products of unit vectors as inputs, we have <span class="math notranslate nohighlight">\(-1\leq z\leq 1\)</span>. Thus, the basic requirement for parameters is:</p>
-<div class="math notranslate nohighlight">
-\[0 \leq -\beta &lt; \alpha \leq 1.\]</div>
-<p>As <span class="math notranslate nohighlight">\(\alpha + \beta\)</span> decreases, the support size of the Heaviside function reduces and the function becomes less smooth, thus, the overall potential becomes harder to optimize.</p>
+\[0 \leq -\beta &lt; \alpha \leq 1, \quad \alpha + \beta &gt; 0.\]</div>
+<p>As <span class="math notranslate nohighlight">\(\alpha + \beta\)</span> decreases, the support of the Heaviside function shrinks and the function becomes less smooth, making the potential harder to optimize.</p>
 <div class="tip admonition">
 <p class="admonition-title">Tip</p>
-<p>For simplicity, we recommend to just use <span class="math notranslate nohighlight">\(\beta_n = \beta_t = 0\)</span>. To make sure the potential landscape is smooth, the recommended parameter choices are <span class="math notranslate nohighlight">\(\alpha_t\in [0.2, 0.9]\)</span>, <span class="math notranslate nohighlight">\(\alpha_n = 0.1\)</span>.</p>
+<p>For simplicity, we recommend setting <span class="math notranslate nohighlight">\(\beta_n = \beta_t = 0\)</span>. The recommended parameter choices are <span class="math notranslate nohighlight">\(\alpha_t \in [0.2, 0.9]\)</span> and <span class="math notranslate nohighlight">\(\alpha_n = 0.1\)</span>. The barrier property is satisfied for any <span class="math notranslate nohighlight">\(\alpha &gt; 0\)</span>, so the choice only affects smoothness and performance.</p>
 </div>
+<p>Additional internal parameters that may affect behavior:</p>
+<ul class="simple">
+<li><p><strong>Adaptive dhat ratio</strong> (default <code class="docutils literal notranslate"><span class="pre">0.5</span></code>): Controls the ratio <span class="math notranslate nohighlight">\(\epsilon(x) / d_c(x, f_0)\)</span> in the adaptive barrier localization. Can be set via <code class="docutils literal notranslate"><span class="pre">SmoothContactParameters::set_adaptive_dhat_ratio()</span></code>.</p></li>
+<li><p><strong>Element measure</strong> <span class="math notranslate nohighlight">\(L\)</span>: For vertices, this is set to the average edge length around the vertex; for edges, to the edge length; for faces, <span class="math notranslate nohighlight">\(L\)</span> is not needed. This determines the strength of the potential for low-dimensional contact (edge–edge, edge–vertex, vertex–vertex).</p></li>
+</ul>
 <h2 id="friction">Friction<a class="headerlink" href="#friction" title="Link to this heading">¶</a></h2>
-<p>We implement the original friction formulation of <span id="id4">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span> following the same style, details are covered in the paper <span id="id5">Huang <em>et al.</em> [<a class="reference internal" href="references.html#id14" title="Zizhou Huang, Maxwell Paik, Zachary Ferguson, Daniele Panozzo, and Denis Zorin. Geometric contact potential. ACM Transactions on Graphics, August 2025. doi:10.1145/3731142.">2025</a>]</span>.</p>
+<p>We implement the original friction formulation of <span id="id4">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span> following the same style as GCP. Details are covered in the paper <span id="id5">Huang <em>et al.</em> [<a class="reference internal" href="references.html#id14" title="Zizhou Huang, Maxwell Paik, Zachary Ferguson, Daniele Panozzo, and Denis Zorin. Geometric contact potential. ACM Transactions on Graphics, August 2025. doi:10.1145/3731142.">2025</a>]</span>.</p>
+<h2 id="comparison-with-ipc">Comparison with IPC<a class="headerlink" href="#comparison-with-ipc" title="Link to this heading">¶</a></h2>
+<p>The following summarizes the key differences between GCP and the original IPC barrier:</p>
+<table class="docutils data align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 35.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>IPC</p></th>
+<th class="head"><p>GCP</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Distance criterion</p></td>
+<td><p>Pure Euclidean distance</p></td>
+<td><p>Distance + geometric interaction set</p></td>
+</tr>
+<tr class="row-odd"><td><p>Spurious forces at rest</p></td>
+<td><p>Can occur when <span class="math notranslate nohighlight">\(\hat{d}\)</span> is large</p></td>
+<td><p>Zero by construction (adaptive <span class="math notranslate nohighlight">\(\epsilon\)</span>)</p></td>
+</tr>
+<tr class="row-even"><td><p>Thin shell handling</p></td>
+<td><p>May repel opposite sides</p></td>
+<td><p>Exterior direction constraint eliminates this</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\hat{d}\)</span> dependence on mesh</p></td>
+<td><p>Must be small relative to mesh features</p></td>
+<td><p>Independent of discretization</p></td>
+</tr>
+<tr class="row-even"><td><p>Smoothness</p></td>
+<td><p><span class="math notranslate nohighlight">\(C^2\)</span> in distance</p></td>
+<td><p><span class="math notranslate nohighlight">\(C^1\)</span> overall (piecewise <span class="math notranslate nohighlight">\(C^2\)</span>)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Collision rebuild</p></td>
+<td><p>Not needed per step</p></td>
+<td><p>Required each time vertices change</p></td>
+</tr>
+</tbody>
+</table>
 
 
 

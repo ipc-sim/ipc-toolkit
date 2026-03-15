@@ -2,6 +2,13 @@
     --md-default-bg-color: #2e303e;
 }
 
+.figure-on-light img,
+.figure-on-light .image-wrapper img {
+    padding: 0.5rem;
+    border-radius: 0.4rem;
+    background: #ffffff;
+}
+
 /* justify and slightly decrease spacing */
 p,
 ul,
