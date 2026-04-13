@@ -135,7 +135,25 @@ void define_collision_mesh(py::module_& m)
             )ipc_Qu8mg5v7",
             "i"_a, "j"_a);
 
-    py::class_<CollisionMesh>(m, "CollisionMesh")
+    py::class_<Eigen::Hyperplane<double, 3>>(m, "Hyperplane")
+        .def(py::init<>())
+        .def(py::init<Eigen::Vector3d, Eigen::Vector3d>())
+        .def(
+            "normal",
+            [](const Eigen::Hyperplane<double, 3>& self) {
+                return self.normal();
+            })
+        .def(
+            "offset",
+            [](const Eigen::Hyperplane<double, 3>& self) {
+                return self.offset();
+            })
+        .def("origin", [](const Eigen::Hyperplane<double, 3>& self) {
+            return -self.offset() * self.normal();
+        });
+
+    py::class_<CollisionMesh, std::shared_ptr<CollisionMesh>>(
+        m, "CollisionMesh")
         .def(
             py::init<
                 Eigen::ConstRef<Eigen::MatrixXd>,
@@ -489,5 +507,16 @@ void define_collision_mesh(py::module_& m)
             A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide.
 
             By default all primitives can collide with all other primitives.
+            )ipc_Qu8mg5v7")
+        .def_readwrite(
+            "planes", &CollisionMesh::planes,
+            R"ipc_Qu8mg5v7(
+            A vector of planes in the collision mesh.
+
+            Each plane is represented as a `Hyperplane` object (wrapping `Eigen::Hyperplane<double, 3>`).
+            In Python, a `Hyperplane` can be constructed from either:
+                * a normal and a point on the plane: `Hyperplane(normal, point)`, or
+                * a normal and an offset: `Hyperplane(normal, offset)`,
+            where `normal` and `point` are 3D vectors and `offset` is a scalar.
             )ipc_Qu8mg5v7");
 }

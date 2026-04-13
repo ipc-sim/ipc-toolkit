@@ -1,4 +1,6 @@
+#include <Eigen/Core>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/catch_approx.hpp>
 
@@ -70,4 +72,21 @@ TEST_CASE("Dihedral angle and gradient", "[angle][dihedral]")
         std::cout << "   Gradient:\n" << grad.transpose() << std::endl;
         std::cout << "FD Gradient:\n" << fd_grad.transpose() << std::endl;
     }
+}
+
+TEST_CASE(
+    "Benchmark dihedral angle and gradient", "[!benchmark][angle][dihedral]")
+{
+    Eigen::Vector3d x0, x1, x2, x3;
+    x0 << -0.015247385606936873, 1.1187166216183693, -0.09508569727171673;
+    x1 << -0.017971426013627917, 1.1229485012592226, -0.0934495693604115;
+    x2 << -0.021023579437439658, 1.1190719774332136, -0.09490934871219975;
+    x3 << -0.014473605843359506, 1.1216871870663812, -0.09395608203835042;
+
+    BENCHMARK("Dihedral angle") { return dihedral_angle(x0, x1, x2, x3); };
+
+    BENCHMARK("Dihedral angle gradient")
+    {
+        return dihedral_angle_gradient(x0, x1, x2, x3);
+    };
 }

@@ -2,6 +2,7 @@
 #include <catch2/catch_approx.hpp>
 
 #include <tests/utils.hpp>
+#include <tests/dof_layout.hpp>
 
 #include <ipc/ipc.hpp>
 #include <ipc/adhesion/adhesion.hpp>
@@ -93,10 +94,10 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
 
     Eigen::VectorXd fgrad;
     fd::finite_gradient(
-        fd::flatten(vertices),
+        tests::flatten(vertices),
         [&](const Eigen::VectorXd& x) {
             return potential(
-                collisions, mesh, fd::unflatten(x, vertices.cols()));
+                collisions, mesh, tests::unflatten(x, vertices.cols()));
         },
         fgrad);
 
@@ -111,10 +112,10 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
         Eigen::MatrixXd fhess;
 
         fd::finite_jacobian(
-            fd::flatten(vertices),
+            tests::flatten(vertices),
             [&](const Eigen::VectorXd& x) {
                 return potential.gradient(
-                    collisions, mesh, fd::unflatten(x, vertices.cols()));
+                    collisions, mesh, tests::unflatten(x, vertices.cols()));
             },
             fhess);
 

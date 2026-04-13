@@ -10,4 +10,5 @@ void define_edge_face_candidate(py::module_& m);
 void define_edge_vertex_candidate(py::module_& m);
 void define_face_face_candidate(py::module_& m);
 void define_face_vertex_candidate(py::module_& m);
+void define_plane_vertex_candidate(py::module_& m);
 void define_vertex_vertex_candidate(py::module_& m);

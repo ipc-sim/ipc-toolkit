@@ -85,8 +85,11 @@ option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"     
 
 # Advanced options
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
-
 mark_as_advanced(IPC_TOOLKIT_WITH_CODE_COVERAGE) # This is used in GitHub Actions
+
+set(IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT "RowMajor" CACHE STRING "Layout of the vertex derivatives")
+set_property(CACHE IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT PROPERTY STRINGS "ColMajor" "RowMajor")
+mark_as_advanced(IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT) # This is an advanced option that most users won't care about.
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
@@ -265,7 +268,8 @@ if(IPC_TOOLKIT_WITH_SIMD)
   target_link_libraries(ipc_toolkit PRIVATE xsimd::xsimd)
 
   # Disable vectorization in Eigen since I've found it to have alignment issues.
-  target_compile_definitions(Eigen3_Eigen INTERFACE EIGEN_DONT_VECTORIZE=1)
+  # NOTE: I don't know why this needs to be public, but it crashes if I make it private.
+  target_compile_definitions(ipc_toolkit PUBLIC EIGEN_DONT_VECTORIZE=1)
 endif()
 
 # For MSVC, do not use the min and max macros.

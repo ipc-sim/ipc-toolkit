@@ -26,8 +26,8 @@ TightInclusionCCD::TightInclusionCCD(
     const double _conservative_rescaling)
     : tolerance(_tolerance)
     , max_iterations(_max_iterations)
-    , conservative_rescaling(_conservative_rescaling)
 {
+    conservative_rescaling = _conservative_rescaling;
 }
 
 bool TightInclusionCCD::ccd_strategy(

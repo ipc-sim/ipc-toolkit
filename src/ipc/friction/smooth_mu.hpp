@@ -2,7 +2,7 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
-#include <utility>
+#include <utility> // for std::pair
 
 namespace ipc {
 
@@ -160,7 +160,7 @@ anisotropic_x_from_tau_aniso(Eigen::ConstRef<Eigen::Vector2d> tau_aniso);
     Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso,
     const double mu_s_isotropic,
     const double mu_k_isotropic,
-    const bool no_mu);
+    const bool no_mu = false);
 
 /// @brief Compute gradients of effective friction coefficients with respect
 ///        to tau_aniso for anisotropic friction.
