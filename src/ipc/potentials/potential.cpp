@@ -3,7 +3,6 @@
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/utils/local_to_global.hpp>
-#include <ipc/utils/maybe_parallel_for.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/combinable.h>
@@ -114,13 +113,17 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
     constexpr int MAX_TRIPLETS_SIZE = 10'000'000;
     const int buffer_size = std::min(MAX_TRIPLETS_SIZE, ndof);
-    auto storage =
-        create_thread_storage(LocalThreadMatStorage(buffer_size, ndof, ndof));
-    maybe_parallel_for(
-        collisions.size(), [&](int start, int end, int thread_id) {
-            auto& hess_triplets = get_local_thread_storage(storage, thread_id);
 
-            for (size_t i = start; i < end; i++) {
+    tbb::enumerable_thread_specific<LocalThreadMatStorage> storage(
+        LocalThreadMatStorage(buffer_size, ndof, ndof));
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, collisions.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            auto& hess_triplets = storage.local();
+
+            for (size_t i = r.begin(); i < r.end(); i++) {
+
                 const TCollision& collision = collisions[i];
 
                 const MatrixMaxNd local_hess = this->hessian(

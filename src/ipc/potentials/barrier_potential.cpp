@@ -6,31 +6,35 @@
 namespace ipc {
 
 BarrierPotential::BarrierPotential(
-    const double dhat, const bool use_physical_barrier)
+    const double dhat, const double stiffness, const bool use_physical_barrier)
     : BarrierPotential(
-          std::make_shared<ClampedLogBarrier>(), dhat, use_physical_barrier)
+          std::make_shared<ClampedLogBarrier>(),
+          dhat,
+          stiffness,
+          use_physical_barrier)
 {
 }
 
 BarrierPotential::BarrierPotential(
     std::shared_ptr<Barrier> barrier,
     const double dhat,
+    const double stiffness,
     const bool use_physical_barrier)
     : m_barrier(std::move(barrier))
     , m_dhat(dhat)
+    , m_stiffness(stiffness)
     , m_use_physical_barrier(use_physical_barrier)
 {
     assert(dhat > 0);
+    assert(stiffness > 0);
     assert(m_barrier != nullptr);
 }
 
 double BarrierPotential::force_magnitude(
-    const double distance_squared,
-    const double dmin,
-    const double barrier_stiffness) const
+    const double distance_squared, const double dmin) const
 {
     double N = barrier_force_magnitude(
-        distance_squared, barrier(), dhat(), barrier_stiffness, dmin);
+        distance_squared, barrier(), dhat(), stiffness(), dmin);
 
     if (use_physical_barrier()) {
         N *= dhat() / barrier().units((2 * dmin + dhat()) * dhat());
@@ -42,12 +46,11 @@ double BarrierPotential::force_magnitude(
 VectorMax12d BarrierPotential::force_magnitude_gradient(
     const double distance_squared,
     Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
-    const double dmin,
-    const double barrier_stiffness) const
+    const double dmin) const
 {
     VectorMax12d grad_N = barrier_force_magnitude_gradient(
         distance_squared, distance_squared_gradient, barrier(), dhat(),
-        barrier_stiffness, dmin);
+        stiffness(), dmin);
 
     if (use_physical_barrier()) {
         grad_N *= dhat() / barrier().units((2 * dmin + dhat()) * dhat());
@@ -66,7 +69,7 @@ double BarrierPotential::operator()(
         b *= dhat() / barrier().units((2 * dmin + dhat()) * dhat());
     }
 
-    return b;
+    return stiffness() * b;
 }
 
 double BarrierPotential::gradient(
@@ -79,7 +82,7 @@ double BarrierPotential::gradient(
         db *= dhat() / barrier().units((2 * dmin + dhat()) * dhat());
     }
 
-    return db;
+    return stiffness() * db;
 }
 
 double BarrierPotential::hessian(
@@ -92,7 +95,7 @@ double BarrierPotential::hessian(
         d2b *= dhat() / barrier().units((2 * dmin + dhat()) * dhat());
     }
 
-    return d2b;
+    return stiffness() * d2b;
 }
 
 } // namespace ipc

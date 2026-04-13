@@ -27,7 +27,7 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
 
     TangentialCollisions tangential_collisions;
     tangential_collisions.build(
-        mesh, V0, collisions, BarrierPotential(dhat), barrier_stiffness, mu);
+        mesh, V0, collisions, BarrierPotential(dhat, barrier_stiffness), mu);
 
     const FrictionPotential D(epsv_times_h);
 

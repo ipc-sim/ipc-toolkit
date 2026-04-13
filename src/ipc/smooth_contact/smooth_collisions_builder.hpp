@@ -7,10 +7,10 @@
 
 #include <ipc/collision_mesh.hpp>
 #include <ipc/smooth_contact/smooth_collisions.hpp>
-#include <ipc/utils/maybe_parallel_for.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <Eigen/Core>
+#include <tbb/enumerable_thread_specific.h>
 
 namespace ipc {
 
@@ -33,7 +33,8 @@ public:
     // -------------------------------------------------------------------------
 
     static void merge(
-        const ParallelCacheType<SmoothCollisionsBuilder<2>>& local_storage,
+        const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<2>>&
+            local_storage,
         SmoothCollisions& merged_collisions);
 
     // Constructed collisions
@@ -80,7 +81,8 @@ public:
     // -------------------------------------------------------------------------
 
     static void merge(
-        const ParallelCacheType<SmoothCollisionsBuilder<3>>& local_storage,
+        const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<3>>&
+            local_storage,
         SmoothCollisions& merged_collisions);
 
     // Constructed collisions
