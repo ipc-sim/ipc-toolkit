@@ -179,8 +179,7 @@ void check_friction_force_jacobian(
             fd_friction_collisions = tangential_collisions;
         }
 
-        return D.force(
-            fd_friction_collisions, mesh, X, fd_Ut, velocities, B);
+        return D.force(fd_friction_collisions, mesh, X, fd_Ut, velocities, B);
     };
     Eigen::MatrixXd fd_JF_wrt_Ut;
     fd::finite_jacobian(tests::flatten(Ut_mesh), F_Ut, fd_JF_wrt_Ut);
@@ -691,7 +690,7 @@ void check_smooth_friction_force_jacobian(
         CHECK(
             (JF_wrt_V_aniso.norm() == 0
              || (fd_JF_wrt_V_aniso - JF_wrt_V_aniso).norm()
-                    <= 1e-7 * JF_wrt_V_aniso.norm()));
+                 <= 1e-7 * JF_wrt_V_aniso.norm()));
     }
 }
 

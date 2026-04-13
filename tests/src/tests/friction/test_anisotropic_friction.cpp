@@ -707,8 +707,7 @@ TEST_CASE(
     const VectorMax12d force = friction_potential.force(
         collision, collision.dof(vertices, edges, faces),
         collision.dof(Eigen::MatrixXd::Zero(2, 3), edges, faces),
-        collision.dof(velocities, edges, faces), barrier_potential, 0.0,
-        false);
+        collision.dof(velocities, edges, faces), barrier_potential, 0.0, false);
 
     const VectorMax12d grad = friction_potential.gradient(
         collision, collision.dof(velocities, edges, faces));
