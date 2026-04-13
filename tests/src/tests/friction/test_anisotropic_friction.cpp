@@ -116,79 +116,6 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Anisotropic mu effective derivative",
-    "[friction][anisotropic][derivative]")
-{
-    static constexpr double EPSILON = 1e-4;
-    static constexpr double MARGIN = 1e-6;
-    static constexpr double H = 1e-8;
-
-    const double mu0 = GENERATE(range(0.1, 1.0, 0.3));
-    const double mu1 = GENERATE(range(0.1, 1.0, 0.3));
-    Eigen::Vector2d mu_aniso(mu0, mu1);
-
-    // Test various tau values
-    const double tau_norm = GENERATE(range(0.01, 1.0, 0.2));
-    const double angle = GENERATE(range(0.0, 2.0 * igl::PI, igl::PI / 4.0));
-    Eigen::Vector2d tau(tau_norm * std::cos(angle), tau_norm * std::sin(angle));
-
-    CAPTURE(mu_aniso, tau);
-
-    // Compute mu_eff
-    constexpr double tiny = 1e-10;
-    Eigen::Vector2d tau_dir;
-    if (tau.norm() < tiny) {
-        tau_dir = Eigen::Vector2d(1.0, 0.0);
-    } else {
-        tau_dir = tau / tau.norm();
-    }
-    const auto [mu_s_eff, mu_k_eff] =
-        anisotropic_mu_eff_f(tau_dir, mu_aniso, mu_aniso);
-    const double mu_eff = mu_s_eff; // Same for this test
-
-    // Compute analytical derivative
-    const Eigen::Vector2d dmu_eff_dtau =
-        anisotropic_mu_eff_f_dtau(tau, mu_aniso, mu_eff);
-
-    // Compare with finite differences
-    Eigen::Matrix<double, 2, 1> Tau;
-    Tau << tau[0], tau[1];
-
-    Eigen::VectorXd fd_dmu_eff_dtau(2);
-    fd::finite_gradient(
-        Tau,
-        [&](const Eigen::VectorXd& _Tau) {
-            Eigen::Vector2d _tau(_Tau[0], _Tau[1]);
-            Eigen::Vector2d _tau_dir;
-            if (_tau.norm() < tiny) {
-                _tau_dir = Eigen::Vector2d(1.0, 0.0);
-            } else {
-                _tau_dir = _tau / _tau.norm();
-            }
-            const auto [_mu_s_eff, _mu_k_eff] =
-                anisotropic_mu_eff_f(_tau_dir, mu_aniso, mu_aniso);
-            return _mu_s_eff;
-        },
-        fd_dmu_eff_dtau, fd::AccuracyOrder::SECOND, H);
-
-    CHECK(
-        dmu_eff_dtau[0]
-        == Catch::Approx(fd_dmu_eff_dtau[0]).margin(MARGIN).epsilon(EPSILON));
-    CHECK(
-        dmu_eff_dtau[1]
-        == Catch::Approx(fd_dmu_eff_dtau[1]).margin(MARGIN).epsilon(EPSILON));
-
-    // Test edge case: ||tau|| ≈ 0
-    Eigen::Vector2d tau_zero(1e-12, 1e-12);
-    Eigen::Vector2d tau_dir_zero = tau_zero / tau_zero.norm();
-    const auto [mu_s_eff_zero, mu_k_eff_zero] =
-        anisotropic_mu_eff_f(tau_dir_zero, mu_aniso, mu_aniso);
-    const Eigen::Vector2d dmu_eff_dtau_zero =
-        anisotropic_mu_eff_f_dtau(tau_zero, mu_aniso, mu_s_eff_zero);
-    CHECK(dmu_eff_dtau_zero.norm() < 1e-6); // Should be approximately zero
-}
-
-TEST_CASE(
     "Anisotropic friction isotropic", "[friction][anisotropic][isotropic]")
 {
     // When mu_s_aniso and mu_k_aniso are zero, should use scalar mu_s and mu_k
@@ -206,24 +133,6 @@ TEST_CASE(
 
     CHECK(mu_s_eff == Catch::Approx(0.0).margin(1e-10));
     CHECK(mu_k_eff == Catch::Approx(0.0).margin(1e-10));
-}
-
-TEST_CASE(
-    "anisotropic_mu_eff_f_dtau edge cases",
-    "[friction][anisotropic][smooth-mu-edge]")
-{
-    static constexpr double MARGIN = 1e-8;
-
-    // Early return when mu_eff < eps: result should be zero
-    Eigen::Vector2d tau(0.5, 0.3);
-    Eigen::Vector2d mu_aniso(0.5, 0.8);
-    const Eigen::Vector2d dtau_zero_mu_eff =
-        anisotropic_mu_eff_f_dtau(tau, mu_aniso, 0.0);
-    CHECK(dtau_zero_mu_eff.norm() < MARGIN);
-
-    const Eigen::Vector2d dtau_tiny_mu_eff =
-        anisotropic_mu_eff_f_dtau(tau, mu_aniso, 1e-12);
-    CHECK(dtau_tiny_mu_eff.norm() < MARGIN);
 }
 
 TEST_CASE(
@@ -339,6 +248,53 @@ TEST_CASE(
 
         CHECK(tangential_collisions[i].mu_s_aniso == mu_s_aniso);
         CHECK(tangential_collisions[i].mu_k_aniso == mu_k_aniso);
+    }
+}
+
+TEST_CASE(
+    "Isotropic friction lagged mu matches scalar mu_s mu_k",
+    "[friction][anisotropic][isotropic][lagged]")
+{
+    static constexpr double MARGIN = 1e-12;
+
+    const double dhat = 1e-2;
+    Eigen::MatrixXd vertices(2, 3);
+    vertices << 0.0, 0.0, 0.0, dhat * 0.5, 0.0, 0.0;
+
+    Eigen::MatrixXi edges, faces;
+    CollisionMesh mesh(vertices, edges, faces);
+
+    NormalCollisions normal_collisions;
+    normal_collisions.build(mesh, vertices, dhat);
+    REQUIRE(!normal_collisions.empty());
+
+    const double mu_s = 0.5;
+    const double mu_k = 0.3;
+    TangentialCollisions tangential_collisions;
+    BarrierPotential barrier_potential(dhat, 1.0);
+    tangential_collisions.build(
+        mesh, vertices, normal_collisions, barrier_potential, mu_s, mu_k);
+    REQUIRE(!tangential_collisions.empty());
+
+    Eigen::MatrixXd velocities(2, 3);
+    velocities << 0.1, 0.0, 0.0, 0.0, 0.0, 0.0;
+
+    tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, vertices, Eigen::MatrixXd::Zero(vertices.rows(), vertices.cols()),
+        velocities);
+
+    for (size_t i = 0; i < tangential_collisions.size(); ++i) {
+        const auto& c = tangential_collisions[i];
+        CHECK(c.mu_s_aniso.squaredNorm() == Catch::Approx(0.0).margin(MARGIN));
+        CHECK(c.mu_k_aniso.squaredNorm() == Catch::Approx(0.0).margin(MARGIN));
+        CHECK(c.mu_aniso[0] == Catch::Approx(1.0).margin(MARGIN));
+        CHECK(c.mu_aniso[1] == Catch::Approx(1.0).margin(MARGIN));
+        CHECK(
+            c.mu_s_effective_lagged
+            == Catch::Approx(c.mu_s).margin(MARGIN).epsilon(1e-14));
+        CHECK(
+            c.mu_k_effective_lagged
+            == Catch::Approx(c.mu_k).margin(MARGIN).epsilon(1e-14));
     }
 }
 

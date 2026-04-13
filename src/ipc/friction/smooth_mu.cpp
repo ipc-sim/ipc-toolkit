@@ -124,28 +124,6 @@ std::pair<double, double> anisotropic_mu_eff_f(
     return std::make_pair(mu_s_eff, mu_k_eff);
 }
 
-Eigen::Vector2d anisotropic_mu_eff_f_dtau(
-    Eigen::ConstRef<Eigen::Vector2d> tau,
-    Eigen::ConstRef<Eigen::Vector2d> mu_aniso,
-    const double mu_eff)
-{
-    constexpr double EPS = 1e-10;
-    const double tau_norm_sq = tau.squaredNorm();
-
-    // Edge cases: return zero vector if ||tau|| ~ 0 or mu_eff ~ 0
-    if (tau_norm_sq < EPS * EPS || mu_eff < EPS) {
-        return Eigen::Vector2d::Zero();
-    }
-
-    // dμ_eff/dτᵢ = τᵢ * (μᵢ² - μ_eff²) / (μ_eff ‖τ‖²)
-    const double mu_eff_sq = mu_eff * mu_eff;
-    Eigen::Vector2d result = tau.array()
-        * (mu_aniso.array().square() - mu_eff_sq) / (mu_eff * tau_norm_sq);
-
-    // Ensure result is finite (handle numerical edge cases)
-    return result.allFinite() ? result : Eigen::Vector2d::Zero();
-}
-
 Eigen::Vector2d
 anisotropic_x_from_tau_aniso(Eigen::ConstRef<Eigen::Vector2d> tau_aniso)
 {

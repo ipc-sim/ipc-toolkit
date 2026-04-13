@@ -10,17 +10,14 @@ namespace ipc {
 
 namespace {
 
-    bool use_directional_anisotropic_mu(
-        const TangentialCollision& collision, const int tangent_dim)
-    {
-        return tangent_dim > 1 && collision.mu_s_aniso.squaredNorm() > 0;
-    }
-
-    /// Scalar μ for dissipative potential / force when directional anisotropy
-    /// is lagged.
+    /// Scalar μ for dissipative potential / force. Always uses
+    /// mu_s_effective_lagged / mu_k_effective_lagged (isotropic scalars are
+    /// copied there by
+    /// TangentialCollisions::reset_lagged_anisotropic_friction_coefficients
+    /// after build; matchstick values by
+    /// update_lagged_anisotropic_friction_coefficients).
     void friction_mu_for_evaluation(
         const TangentialCollision& collision,
-        const int tangent_dim,
         const bool no_mu,
         double& mu_s_out,
         double& mu_k_out)
@@ -28,9 +25,6 @@ namespace {
         if (no_mu) {
             mu_s_out = 1.0;
             mu_k_out = 1.0;
-        } else if (!use_directional_anisotropic_mu(collision, tangent_dim)) {
-            mu_s_out = collision.mu_s;
-            mu_k_out = collision.mu_k;
         } else {
             mu_s_out = collision.mu_s_effective_lagged;
             mu_k_out = collision.mu_k_effective_lagged;
@@ -195,7 +189,7 @@ double TangentialPotential::operator()(
 
     const int tangent_dim = u.size();
     double mu_s, mu_k;
-    friction_mu_for_evaluation(collision, tangent_dim, false, mu_s, mu_k);
+    friction_mu_for_evaluation(collision, false, mu_s, mu_k);
 
     return collision.weight * collision.normal_force_magnitude
         * mu_f0(u_aniso.norm(), mu_s, mu_k);
@@ -229,7 +223,7 @@ VectorMax12d TangentialPotential::gradient(
         * collision.tangent_basis;
 
     double mu_s, mu_k;
-    friction_mu_for_evaluation(collision, tangent_dim, false, mu_s, mu_k);
+    friction_mu_for_evaluation(collision, false, mu_s, mu_k);
 
     // Apply anisotropic scaling to T: T_aniso = T * diag(mu_aniso)
     // This accounts for ∂u_aniso/∂u = diag(mu_aniso) in the chain rule
@@ -293,7 +287,7 @@ MatrixMax12d TangentialPotential::hessian(
     const double norm_u = u_aniso.norm();
 
     double mu_s, mu_k;
-    friction_mu_for_evaluation(collision, tangent_dim, false, mu_s, mu_k);
+    friction_mu_for_evaluation(collision, false, mu_s, mu_k);
 
     // Compute μ(‖u_aniso‖) f₁(‖u_aniso‖)/‖u_aniso‖
     const double mu_f1_over_norm_u = mu_f1_over_x(norm_u, mu_s, mu_k);
@@ -368,13 +362,11 @@ VectorMax12d TangentialPotential::force(
     //
     // Combined anisotropic friction model:
     //   1. mu_aniso velocity scaling: τ_aniso = diag(mu_aniso) · τ
-    //   2. Direction-dependent (matchstick) coefficients: scalar μ_s, μ_k in
-    //   the
-    //      formulas below are the lagged effective values on the collision
-    //      (refreshed by TangentialCollisions::update_lagged_anisotropic_…
-    //      from slip at that refresh). ‖τ_aniso‖ and T τ_aniso still use the
-    //      current velocity here.
-    //   3. Isotropic path (when mu_s_aniso is zero): uses scalar mu_s/mu_k
+    //   2. Scalar μ_s, μ_k in the formulas below are always
+    //      mu_s_effective_lagged / mu_k_effective_lagged (isotropic scalars are
+    //      copied there on build; matchstick values from
+    //      TangentialCollisions::update_lagged_anisotropic_friction_coefficients).
+    //      ‖τ_aniso‖ and T τ_aniso use the current velocity here.
     assert(rest_positions.size() == lagged_displacements.size());
     assert(rest_positions.size() == velocities.size());
 
@@ -415,7 +407,7 @@ VectorMax12d TangentialPotential::force(
         collision.mu_aniso.head(tangent_dim).cwiseProduct(tau);
 
     double mu_s, mu_k;
-    friction_mu_for_evaluation(collision, tangent_dim, no_mu, mu_s, mu_k);
+    friction_mu_for_evaluation(collision, no_mu, mu_s, mu_k);
 
     // Compute μ(‖τ_aniso‖) f₁(‖τ_aniso‖)/‖τ_aniso‖
     const double tau_aniso_norm = tau_aniso.norm();
@@ -555,7 +547,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
     }
 
     double mu_s, mu_k;
-    friction_mu_for_evaluation(collision, tangent_dim, false, mu_s, mu_k);
+    friction_mu_for_evaluation(collision, false, mu_s, mu_k);
 
     // Compute μ f₁(‖τ_aniso‖)/‖τ_aniso‖
     const double tau_aniso_norm = tau_aniso.norm();
@@ -697,11 +689,6 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
                         collision,
                         collision.dof(lagged_positions, edges, faces),
                         collision.dof(velocities, edges, faces), wrt, false);
-                // smooth_contact_force_jacobian(
-                //     collision, collision.dof(rest_positions, edges, faces),
-                //     collision.dof(lagged_displacements, edges, faces),
-                //     collision.dof(velocities, edges, faces), //
-                //     wrt);
 
                 const auto vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
@@ -748,38 +735,6 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
             local_jac_triplets.begin(), local_jac_triplets.end());
         jacobian += local_jacobian;
     }
-
-    // This term is zero!
-    // if wrt == X then compute ∇ₓ w(x)
-    // if (wrt == DiffWRT::REST_POSITIONS) {
-    //     for (int i = 0; i < collisions.size(); i++) {
-    //         const FrictionCollision& collision = collisions[i];
-    //         assert(collision.weight_gradient.size() ==
-    //         rest_positions.size()); if (collision.weight_gradient.size() !=
-    //         rest_positions.size()) {
-    //             throw std::runtime_error(
-    //                 "Shape derivative is not computed for friction
-    //                 collision!");
-    //         }
-
-    //         VectorMaxNd local_force
-    //         =
-    //             smooth_contact_force(
-    //                 collision, collision.dof(rest_positions, edges, faces),
-    //                 collision.dof(lagged_displacements, edges, faces),
-    //                 collision.dof(velocities, edges, faces), //
-    //                 dmin);
-    //         assert(collision.weight != 0);
-    //         local_force /= collision.weight;
-
-    //         Eigen::SparseVector<double> force(rest_positions.size());
-    //         force.reserve(local_force.size());
-    //         local_gradient_to_global_gradient(
-    //             local_force, collision.vertex_ids(edges, faces), dim, force);
-
-    //         jacobian += force * collision.weight_gradient.transpose();
-    //     }
-    // }
 
     return jacobian;
 }
@@ -839,7 +794,7 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
     const int tangent_dim = tau.size();
 
     double mu_s, mu_k;
-    friction_mu_for_evaluation(collision, tangent_dim, no_mu, mu_s, mu_k);
+    friction_mu_for_evaluation(collision, no_mu, mu_s, mu_k);
 
     const double mu_f1_over_norm_tau =
         mu_f1_over_x(tau_aniso.norm(), mu_s, mu_k);
@@ -951,7 +906,7 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
 
     const double tau_norm = tau_aniso.norm();
     double mu_s, mu_k;
-    friction_mu_for_evaluation(collision, tangent_dim, no_mu, mu_s, mu_k);
+    friction_mu_for_evaluation(collision, no_mu, mu_s, mu_k);
     const double f1_over_norm_tau = mu_f1_over_x(tau_norm, mu_s, mu_k);
 
     // Compute ∇(f₁(‖tau_aniso‖)/‖tau_aniso‖)

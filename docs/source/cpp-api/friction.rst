@@ -44,6 +44,5 @@ with :math:`t = \tau / \|\tau\|`.
 See :cite:t:`Erleben2019Matchstick` for the Matchstick model; code: `erleben/matchstick <https://github.com/erleben/matchstick>`_.
 
 .. doxygenfunction:: anisotropic_mu_eff_f
-.. doxygenfunction:: anisotropic_mu_eff_f_dtau
 .. doxygenfunction:: anisotropic_x_from_tau_aniso
 .. doxygenfunction:: anisotropic_mu_eff_from_tau_aniso

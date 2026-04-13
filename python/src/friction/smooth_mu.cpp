@@ -142,20 +142,4 @@ void define_smooth_mu(py::module_& m)
             (isotropic fallback).
         )ipc_Qu8mg5v7",
         "tau_dir"_a, "mu_s_aniso"_a, "mu_k_aniso"_a);
-
-    m.def(
-        "anisotropic_mu_eff_f_dtau", &anisotropic_mu_eff_f_dtau,
-        R"ipc_Qu8mg5v7(
-        ∂μ_eff/∂τ for the elliptical model (friction force Jacobians).
-        Matchstick model: Erleben et al., CGF 2019, DOI 10.1111/cgf.13885.
-
-        Parameters:
-            tau: Tangential velocity (2D) in the tangent plane.
-            mu_aniso: Ellipse axes (2D).
-            mu_eff: Effective μ from anisotropic_mu_eff_f (avoids recomputation).
-
-        Returns:
-            ∂μ_eff/∂τ as 2D vector. Zero if ||tau|| ≈ 0 or mu_eff ≈ 0.
-        )ipc_Qu8mg5v7",
-        "tau"_a, "mu_aniso"_a, "mu_eff"_a);
 }

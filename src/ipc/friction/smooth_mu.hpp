@@ -72,8 +72,7 @@ double smooth_mu_f2_x_minus_mu_f1_over_x3(
     const double y, const double mu_s, const double mu_k, const double eps_v);
 
 /// Elliptical L2 (matchstick cone) anisotropic friction. Call
-/// anisotropic_x_from_tau_aniso, then anisotropic_mu_eff_f; use
-/// anisotropic_mu_eff_f_dtau for gradients.
+/// anisotropic_x_from_tau_aniso, then anisotropic_mu_eff_f.
 /// @see Erleben et al., CGF 2019, DOI 10.1111/cgf.13885;
 ///      https://github.com/erleben/matchstick
 
@@ -99,36 +98,11 @@ double smooth_mu_f2_x_minus_mu_f1_over_x3(
 ///         kinetic friction coefficients along the direction tau_dir.
 /// @note If mu_s_aniso and mu_k_aniso are zero vectors, the function returns
 ///       (0, 0), which triggers compatible isotropic behavior.
-/// @see anisotropic_x_from_tau_aniso, anisotropic_mu_eff_f_dtau,
-///      anisotropic_mu_eff_from_tau_aniso
+/// @see anisotropic_x_from_tau_aniso, anisotropic_mu_eff_from_tau_aniso
 [[nodiscard]] std::pair<double, double> anisotropic_mu_eff_f(
     Eigen::ConstRef<Eigen::Vector2d> tau_dir,
     Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
     Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso);
-
-/// @brief Compute ∂μ_eff/∂τᵢ = τᵢ·(μᵢ² - μ_eff²)/(μ_eff·||τ||²).
-/// @details This function computes \f$\frac{\partial \mu_{\text{eff}}}{\partial
-///          \tau}\f$ for the elliptical anisotropy model. IPC's tangential
-///          friction uses lagged matchstick coefficients when ellipse axes are
-///          set, so the built-in force and Jacobian paths treat μ as constant
-///          for that step and do not apply ∂μ_eff/∂τ. This helper remains
-///          available for custom models or analysis outside those paths.
-/// @param tau Tangential velocity (2D vector). The velocity vector in the
-///            tangent plane.
-/// @param mu_aniso Ellipse axes (2D vector). The anisotropic friction
-///                 coefficients along each tangent direction.
-/// @param mu_eff Effective friction coefficient computed from
-///                anisotropic_mu_eff_f(). This is passed to avoid
-///                recomputation.
-/// @return The derivative \f$\frac{\partial \mu_{\text{eff}}}{\partial \tau}\f$
-///         as a 2D vector.
-/// @note Returns zero vector if ||tau|| ≈ 0 or mu_eff ≈ 0 to handle edge
-///       cases gracefully.
-/// @see anisotropic_mu_eff_f
-[[nodiscard]] Eigen::Vector2d anisotropic_mu_eff_f_dtau(
-    Eigen::ConstRef<Eigen::Vector2d> tau,
-    Eigen::ConstRef<Eigen::Vector2d> mu_aniso,
-    const double mu_eff);
 
 /// @brief Compute unit direction \f$x = \tau_{\text{aniso}} / \|\tau_{\text{aniso}}\|\f$ from tau_aniso, handling edge cases.
 /// @param tau_aniso Anisotropically-scaled tangential velocity (2D vector).

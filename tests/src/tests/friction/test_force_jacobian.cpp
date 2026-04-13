@@ -16,6 +16,10 @@
 
 using namespace ipc;
 
+/// How tangential collisions get scalar μ before update_lagged_* (isotropic
+/// uses build defaults; matchstick sets ellipse axes then lagged refresh).
+enum class FrictionJacobianMuSetup { Isotropic, MatchstickAxes };
+
 void check_friction_force_jacobian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& Ut,
@@ -27,7 +31,7 @@ void check_friction_force_jacobian(
     const double dhat,
     const double barrier_stiffness,
     const bool recompute_collisions,
-    const bool lagged_matchstick_mu = false)
+    const FrictionJacobianMuSetup mu_setup = FrictionJacobianMuSetup::Isotropic)
 {
     REQUIRE(collisions.enable_shape_derivatives());
 
@@ -61,14 +65,14 @@ void check_friction_force_jacobian(
     tangential_collisions.build(mesh, X + Ut_mesh, collisions, B, mu_s, mu_k);
     CHECK(!tangential_collisions.empty());
 
-    if (lagged_matchstick_mu) {
+    if (mu_setup == FrictionJacobianMuSetup::MatchstickAxes) {
         for (size_t i = 0; i < tangential_collisions.size(); ++i) {
             tangential_collisions[i].mu_s_aniso = Eigen::Vector2d(0.75, 0.35);
             tangential_collisions[i].mu_k_aniso = Eigen::Vector2d(0.55, 0.28);
         }
-        tangential_collisions.update_lagged_anisotropic_friction_coefficients(
-            mesh, X, Ut_mesh, velocities);
     }
+    tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, X, Ut_mesh, velocities);
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -140,6 +144,9 @@ void check_friction_force_jacobian(
 
             fd_friction_collisions.build(
                 fd_mesh, fd_X + Ut_mesh, fd_collisions, B, mu_s, mu_k);
+            fd_friction_collisions
+                .update_lagged_anisotropic_friction_coefficients(
+                    fd_mesh, fd_X, Ut_mesh, velocities);
         } else {
             fd_friction_collisions = tangential_collisions;
         }
@@ -175,6 +182,9 @@ void check_friction_force_jacobian(
 
             fd_friction_collisions.build(
                 mesh, X + fd_Ut, fd_collisions, B, mu_s, mu_k);
+            fd_friction_collisions
+                .update_lagged_anisotropic_friction_coefficients(
+                    mesh, X, fd_Ut, velocities);
         } else {
             fd_friction_collisions = tangential_collisions;
         }
@@ -299,7 +309,7 @@ TEST_CASE(
 
     check_friction_force_jacobian(
         mesh, Ut, U, collisions, 0.5 * mu, mu, epsv_times_h, dhat,
-        barrier_stiffness, false, true);
+        barrier_stiffness, false, FrictionJacobianMuSetup::MatchstickAxes);
 }
 
 TEST_CASE(
@@ -408,8 +418,7 @@ void check_smooth_friction_force_jacobian(
     const double epsv_times_h,
     const SmoothContactParameters& params,
     const double barrier_stiffness,
-    const bool recompute_collisions,
-    const bool test_anisotropic_velocity_jacobian = false)
+    const bool recompute_collisions)
 {
     const int dim = mesh.dim();
     const double dhat = params.dhat;
@@ -438,6 +447,8 @@ void check_smooth_friction_force_jacobian(
         Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
         Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
     CHECK(!friction_collisions.empty());
+    friction_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, X, Ut_mesh, velocities);
 
     const FrictionPotential D(epsv_times_h);
 
@@ -598,6 +609,8 @@ void check_smooth_friction_force_jacobian(
             barrier_stiffness,
             Eigen::VectorXd::Ones(fd_mesh.num_vertices()) * mu,
             Eigen::VectorXd::Ones(fd_mesh.num_vertices()) * mu);
+        fd_friction_collisions.update_lagged_anisotropic_friction_coefficients(
+            fd_mesh, fd_X, Ut_mesh, velocities);
 
         return D.smooth_contact_force(
             fd_friction_collisions, fd_mesh, fd_X, Ut_mesh, velocities);
@@ -631,6 +644,8 @@ void check_smooth_friction_force_jacobian(
             mesh, fd_lagged_positions, fd_collisions, params, barrier_stiffness,
             Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
             Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
+        fd_friction_collisions.update_lagged_anisotropic_friction_coefficients(
+            mesh, X, fd_Ut, velocities);
 
         return D.smooth_contact_force(
             fd_friction_collisions, mesh, X, fd_Ut, velocities);
@@ -666,7 +681,7 @@ void check_smooth_friction_force_jacobian(
         (JF_wrt_V.norm() == 0
          || (fd_JF_wrt_V - JF_wrt_V).norm() <= 1e-7 * JF_wrt_V.norm()));
 
-    if (test_anisotropic_velocity_jacobian && mesh.dim() == 3) {
+    if (mesh.dim() == 3) {
         for (size_t i = 0; i < friction_collisions.size(); ++i) {
             friction_collisions[i].mu_s_aniso = Eigen::Vector2d(0.8, 0.45);
             friction_collisions[i].mu_k_aniso = Eigen::Vector2d(0.65, 0.32);
@@ -745,6 +760,9 @@ TEST_CASE(
     }
 
     Eigen::MatrixXd velocities = U - Ut;
+    friction_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, X, Ut, velocities);
+
     const FrictionPotential D(epsv_times_h);
 
     // Batch smooth_contact_force with no_mu=false then no_mu=true
@@ -810,5 +828,5 @@ TEST_CASE(
 
     check_smooth_friction_force_jacobian(
         mesh, Ut, U, collisions, mu, epsv_times_h, params, barrier_stiffness,
-        false, true);
+        false);
 }
