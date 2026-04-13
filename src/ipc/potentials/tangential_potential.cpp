@@ -367,9 +367,11 @@ VectorMax12d TangentialPotential::force(
     //
     // Combined anisotropic friction model:
     //   1. mu_aniso velocity scaling: τ_aniso = diag(mu_aniso) · τ
-    //   2. Direction-dependent coefficients:
-    //      - Direction computed from τ_aniso: τ_dir = τ_aniso / ‖τ_aniso‖
-    //      - Effective mu from ellipse: μ_eff = ‖diag(μ_aniso) · τ_dir‖
+    //   2. Direction-dependent (matchstick) coefficients: scalar μ_s, μ_k in the
+    //      formulas below are the lagged effective values on the collision
+    //      (refreshed by TangentialCollisions::update_lagged_anisotropic_…
+    //      from slip at that refresh). ‖τ_aniso‖ and T τ_aniso still use the
+    //      current velocity here.
     //   3. Isotropic path (when mu_s_aniso is zero): uses scalar mu_s/mu_k
     assert(rest_positions.size() == lagged_displacements.size());
     assert(rest_positions.size() == velocities.size());

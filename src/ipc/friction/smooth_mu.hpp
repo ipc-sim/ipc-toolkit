@@ -73,7 +73,7 @@ double smooth_mu_f2_x_minus_mu_f1_over_x3(
 
 /// Elliptical L2 (matchstick cone) anisotropic friction. Call
 /// anisotropic_x_from_tau_aniso, then anisotropic_mu_eff_f; use
-/// anisotropic_mu_eff_f_dtau or anisotropic_mu_eff_f_grad for gradients.
+/// anisotropic_mu_eff_f_dtau for gradients.
 /// @see Erleben et al., CGF 2019, DOI 10.1111/cgf.13885;
 ///      https://github.com/erleben/matchstick
 
@@ -100,7 +100,7 @@ double smooth_mu_f2_x_minus_mu_f1_over_x3(
 /// @note If mu_s_aniso and mu_k_aniso are zero vectors, the function returns
 ///       (0, 0), which triggers compatible isotropic behavior.
 /// @see anisotropic_x_from_tau_aniso, anisotropic_mu_eff_f_dtau,
-///      anisotropic_mu_eff_f_grad, anisotropic_mu_eff_from_tau_aniso
+///      anisotropic_mu_eff_from_tau_aniso
 [[nodiscard]] std::pair<double, double> anisotropic_mu_eff_f(
     Eigen::ConstRef<Eigen::Vector2d> tau_dir,
     Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
@@ -108,9 +108,11 @@ double smooth_mu_f2_x_minus_mu_f1_over_x3(
 
 /// @brief Compute ∂μ_eff/∂τᵢ = τᵢ·(μᵢ² - μ_eff²)/(μ_eff·||τ||²).
 /// @details This function computes \f$\frac{\partial \mu_{\text{eff}}}{\partial
-///          \tau}\f$ for the elliptical anisotropy model. The derivative is
-///          needed for computing the Jacobian of friction forces when
-///          anisotropic friction is enabled.
+///          \tau}\f$ for the elliptical anisotropy model. IPC's tangential
+///          friction uses lagged matchstick coefficients when ellipse axes are
+///          set, so the built-in force and Jacobian paths treat μ as constant
+///          for that step and do not apply ∂μ_eff/∂τ. This helper remains
+///          available for custom models or analysis outside those paths.
 /// @param tau Tangential velocity (2D vector). The velocity vector in the
 ///            tangent plane.
 /// @param mu_aniso Ellipse axes (2D vector). The anisotropic friction
@@ -122,7 +124,7 @@ double smooth_mu_f2_x_minus_mu_f1_over_x3(
 ///         as a 2D vector.
 /// @note Returns zero vector if ||tau|| ≈ 0 or mu_eff ≈ 0 to handle edge
 ///       cases gracefully.
-/// @see anisotropic_mu_eff_f (for mu_eff), anisotropic_mu_eff_f_grad
+/// @see anisotropic_mu_eff_f
 [[nodiscard]] Eigen::Vector2d anisotropic_mu_eff_f_dtau(
     Eigen::ConstRef<Eigen::Vector2d> tau,
     Eigen::ConstRef<Eigen::Vector2d> mu_aniso,
@@ -161,28 +163,5 @@ anisotropic_x_from_tau_aniso(Eigen::ConstRef<Eigen::Vector2d> tau_aniso);
     const double mu_s_isotropic,
     const double mu_k_isotropic,
     const bool no_mu = false);
-
-/// @brief Compute gradients of effective friction coefficients with respect
-///        to tau_aniso for anisotropic friction.
-/// @details This function computes the gradients needed for the Jacobian
-///          calculation when anisotropic friction is enabled. It computes both
-///          \f$\nabla_{\tau_{\text{aniso}}} \mu_{s,\text{eff}}\f$ and
-///          \f$\nabla_{\tau_{\text{aniso}}} \mu_{k,\text{eff}}\f$.
-/// @param tau_aniso Anisotropically-scaled tangential velocity (2D vector).
-/// @param mu_s_aniso Static friction ellipse axes (2D vector).
-/// @param mu_k_aniso Kinetic friction ellipse axes (2D vector).
-/// @param mu_s_eff Effective static friction coefficient (precomputed).
-/// @param mu_k_eff Effective kinetic friction coefficient (precomputed).
-/// @return A pair containing (g_s, g_k) where g_s = ∇_τ_aniso μ_s_eff and
-///         g_k = ∇_τ_aniso μ_k_eff.
-/// @see anisotropic_mu_eff_f (for mu_s_eff, mu_k_eff),
-///      anisotropic_mu_eff_f_dtau
-[[nodiscard]] std::pair<Eigen::Vector2d, Eigen::Vector2d>
-anisotropic_mu_eff_f_grad(
-    Eigen::ConstRef<Eigen::Vector2d> tau_aniso,
-    Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
-    Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso,
-    const double mu_s_eff,
-    const double mu_k_eff);
 
 } // namespace ipc

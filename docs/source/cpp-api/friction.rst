@@ -47,4 +47,3 @@ See :cite:t:`Erleben2019Matchstick` for the Matchstick model; code: `erleben/mat
 .. doxygenfunction:: anisotropic_mu_eff_f_dtau
 .. doxygenfunction:: anisotropic_x_from_tau_aniso
 .. doxygenfunction:: anisotropic_mu_eff_from_tau_aniso
-.. doxygenfunction:: anisotropic_mu_eff_f_grad

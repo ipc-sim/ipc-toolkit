@@ -308,35 +308,6 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "anisotropic_mu_eff_f_grad edge cases",
-    "[friction][anisotropic][smooth-mu-edge]")
-{
-    // Call with zero/near-zero mu_eff so that anisotropic_mu_eff_f_dtau
-    // returns zero (and potentially triggers finite fallback in grad).
-    Eigen::Vector2d tau_aniso(0.5, 0.3);
-    Eigen::Vector2d mu_s_aniso(0.5, 0.8);
-    Eigen::Vector2d mu_k_aniso(0.4, 0.7);
-    const auto [mu_s_eff, mu_k_eff] = anisotropic_mu_eff_f(
-        anisotropic_x_from_tau_aniso(tau_aniso), mu_s_aniso, mu_k_aniso);
-
-    const auto [g_s, g_k] = anisotropic_mu_eff_f_grad(
-        tau_aniso, mu_s_aniso, mu_k_aniso, mu_s_eff, mu_k_eff);
-
-    CHECK((std::isfinite(g_s[0]) && std::isfinite(g_s[1])));
-    CHECK((std::isfinite(g_k[0]) && std::isfinite(g_k[1])));
-
-    // With near-zero mu_eff, gradients may be zero (safe fallback)
-    Eigen::Vector2d tau_near_zero(1e-12, 1e-12);
-    Eigen::Vector2d x_near = anisotropic_x_from_tau_aniso(tau_near_zero);
-    const auto [mu_s_z, mu_k_z] =
-        anisotropic_mu_eff_f(x_near, mu_s_aniso, mu_k_aniso);
-    const auto [g_s_z, g_k_z] = anisotropic_mu_eff_f_grad(
-        tau_near_zero, mu_s_aniso, mu_k_aniso, mu_s_z, mu_k_z);
-    CHECK(g_s_z.norm() < 1e-6);
-    CHECK(g_k_z.norm() < 1e-6);
-}
-
-TEST_CASE(
     "Anisotropic friction per-pair assignment",
     "[friction][anisotropic][per-pair]")
 {
@@ -456,9 +427,7 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
 TEST_CASE(
     "Anisotropic friction force jacobian", "[friction][anisotropic][jacobian]")
 {
-    static constexpr double EPSILON = 1e-3;
-    static constexpr double MARGIN = 1e-5;
-    static constexpr double H = 1e-6;
+    static constexpr double H = 1e-8;
 
     // Create a simple mesh with two vertices
     Eigen::MatrixXd vertices(2, 3);
@@ -534,15 +503,11 @@ TEST_CASE(
     };
 
     Eigen::MatrixXd fd_jacobian;
-    fd::finite_jacobian(V_flat, F_V, fd_jacobian, fd::AccuracyOrder::SECOND, H);
+    fd::finite_jacobian(V_flat, F_V, fd_jacobian, fd::AccuracyOrder::FOURTH, H);
 
-    // Compare analytical and finite difference jacobians
-    CHECKED_ELSE(fd::compare_jacobian(jacobian, fd_jacobian, EPSILON))
-    {
-        // If comparison fails, check if they're at least close
-        Eigen::MatrixXd diff = jacobian - fd_jacobian;
-        double max_diff = diff.cwiseAbs().maxCoeff();
-        CHECK(max_diff < MARGIN);
+    CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
+    if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
+        tests::print_compare_nonzero(jacobian, fd_jacobian);
     }
 }
 
@@ -550,7 +515,7 @@ TEST_CASE(
     "Combined mu_aniso and mu_s_aniso/mu_k_aniso friction",
     "[friction][anisotropic][combined]")
 {
-    static constexpr double H = 1e-6;
+    static constexpr double H = 1e-8;
 
     // Test that both mechanisms work together:
     // 1. mu_aniso: velocity scaling (tau_aniso = mu_aniso ⊙ tau)
@@ -652,15 +617,11 @@ TEST_CASE(
     };
 
     Eigen::MatrixXd fd_jacobian;
-    fd::finite_jacobian(V_flat, F_V, fd_jacobian, fd::AccuracyOrder::SECOND, H);
+    fd::finite_jacobian(V_flat, F_V, fd_jacobian, fd::AccuracyOrder::FOURTH, H);
 
-    static constexpr double EPSILON = 1e-3;
-    static constexpr double MARGIN = 1e-5;
-    CHECKED_ELSE(fd::compare_jacobian(jacobian, fd_jacobian, EPSILON))
-    {
-        Eigen::MatrixXd diff = jacobian - fd_jacobian;
-        double max_diff = diff.cwiseAbs().maxCoeff();
-        CHECK(max_diff < MARGIN);
+    CHECK(fd::compare_jacobian(jacobian, fd_jacobian));
+    if (!fd::compare_jacobian(jacobian, fd_jacobian)) {
+        tests::print_compare_nonzero(jacobian, fd_jacobian);
     }
 
     // Verify that combined mechanism produces different results than either
@@ -731,6 +692,8 @@ TEST_CASE(
     TangentialCollision& collision = tangential_collisions[0];
     collision.mu_s_aniso = Eigen::Vector2d(0.75, 0.42);
     collision.mu_k_aniso = Eigen::Vector2d(0.58, 0.29);
+    // Nontrivial velocity scaling together with ellipse axes (lagged μ path).
+    collision.mu_aniso = Eigen::Vector2d(0.9, 1.1);
 
     Eigen::MatrixXd velocities(2, 3);
     velocities << 0.12, 0.07, 0.0, 0.0, 0.0, 0.0;

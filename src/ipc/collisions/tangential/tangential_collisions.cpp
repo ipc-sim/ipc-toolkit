@@ -34,7 +34,7 @@ void update_lagged_mu_collision(
         collision.compute_tangent_basis(lagged_pos);
     const VectorMax2d beta = collision.compute_closest_point(lagged_pos);
     const MatrixMax<double, 3, 12> Gamma =
-        collision.relative_velocity_matrix(beta);
+        collision.relative_velocity_jacobian(beta);
     const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
     const VectorMax2d tau = T.transpose() * vel_dof;
 

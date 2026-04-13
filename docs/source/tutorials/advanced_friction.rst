@@ -292,6 +292,13 @@ is analogous to lagging the tangent frame and normal data in IPC, and it
 keeps the friction dissipative potential consistent with the friction force for
 that step (a path-dependent μ that updates every iteration would not admit an
 exact incremental potential).
+Friction Jacobians in the toolkit omit :math:`\partial \mu / \partial \tau` for
+this direction-dependent case because :math:`\mu_{\text{eff}}` is held fixed
+after the lag update.
+For discussion of the curl / non-conservative-field issue and the lagged-μ
+recommendation in IPC, see the maintainer notes linked from
+`PR #210 <https://github.com/ipc-sim/ipc-toolkit/pull/210>`_ (and
+:cite:t:`Erleben2019Matchstick` for the matchstick cone).
 
 Relationship with Other Anisotropy Mechanisms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -305,8 +312,9 @@ Two mechanisms are available:
 2. **Ellipse coefficients** (``mu_s_aniso``, ``mu_k_aniso``): different
    :math:`\mu` along each tangent direction.
 
-Use one or both. When both are set, velocity scaling is applied first, then
-direction-dependent :math:`\mu` from the scaled velocity direction.
+Use one or both. When both are set, velocity scaling is applied first; the
+ellipse effective :math:`\mu` is then chosen from the direction of that scaled
+slip when you call ``update_lagged_anisotropic_friction_coefficients``.
 
 Backward Compatibility
 ~~~~~~~~~~~~~~~~~~~~~~~

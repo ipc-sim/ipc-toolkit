@@ -191,29 +191,4 @@ std::pair<double, double> anisotropic_mu_eff_from_tau_aniso(
     return mu_eff;
 }
 
-std::pair<Eigen::Vector2d, Eigen::Vector2d> anisotropic_mu_eff_f_grad(
-    Eigen::ConstRef<Eigen::Vector2d> tau_aniso,
-    Eigen::ConstRef<Eigen::Vector2d> mu_s_aniso,
-    Eigen::ConstRef<Eigen::Vector2d> mu_k_aniso,
-    const double mu_s_eff,
-    const double mu_k_eff)
-{
-    // Compute gradients of effective mu w.r.t. tau_aniso: g_s = ∇_τ_aniso
-    // μ_s_eff, g_k = ∇_τ_aniso μ_k_eff
-    Eigen::Vector2d g_s =
-        anisotropic_mu_eff_f_dtau(tau_aniso, mu_s_aniso, mu_s_eff);
-    Eigen::Vector2d g_k =
-        anisotropic_mu_eff_f_dtau(tau_aniso, mu_k_aniso, mu_k_eff);
-
-    // Ensure both gradients are finite before returning
-    if (!g_s.allFinite()) {
-        g_s.setZero();
-    }
-    if (!g_k.allFinite()) {
-        g_k.setZero();
-    }
-
-    return std::make_pair(g_s, g_k);
-}
-
 } // namespace ipc

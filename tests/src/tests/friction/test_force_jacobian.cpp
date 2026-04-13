@@ -26,7 +26,8 @@ void check_friction_force_jacobian(
     const double epsv_times_h,
     const double dhat,
     const double barrier_stiffness,
-    const bool recompute_collisions)
+    const bool recompute_collisions,
+    const bool lagged_matchstick_mu = false)
 {
     REQUIRE(collisions.enable_shape_derivatives());
 
@@ -59,6 +60,15 @@ void check_friction_force_jacobian(
     TangentialCollisions tangential_collisions;
     tangential_collisions.build(mesh, X + Ut_mesh, collisions, B, mu_s, mu_k);
     CHECK(!tangential_collisions.empty());
+
+    if (lagged_matchstick_mu) {
+        for (size_t i = 0; i < tangential_collisions.size(); ++i) {
+            tangential_collisions[i].mu_s_aniso = Eigen::Vector2d(0.75, 0.35);
+            tangential_collisions[i].mu_k_aniso = Eigen::Vector2d(0.55, 0.28);
+        }
+        tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+            mesh, X, Ut_mesh, velocities);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -260,6 +270,37 @@ TEST_CASE("Friction force jacobian", "[friction][force-jacobian]")
     check_friction_force_jacobian(
         mesh, Ut, U, collisions, 0.5 * mu, mu, epsv_times_h, dhat,
         barrier_stiffness, false);
+}
+
+TEST_CASE(
+    "Friction force jacobian lagged matchstick mu",
+    "[friction][force-jacobian][anisotropic]")
+{
+    const int x_case = GENERATE(0, 1);
+    FrictionData data = friction_data_generator();
+    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
+        data;
+    REQUIRE(collisions.enable_shape_derivatives());
+
+    Eigen::MatrixXd X, Ut, U;
+    switch (x_case) {
+    case 0:
+        X = V0;
+        break;
+    case 1:
+    default:
+        X = V0 - (V1 - V0);
+        break;
+    }
+    Ut = V0 - X;
+    U = V1 - X;
+
+    CollisionMesh mesh(X, E, F);
+    mesh.init_area_jacobians();
+
+    check_friction_force_jacobian(
+        mesh, Ut, U, collisions, 0.5 * mu, mu, epsv_times_h, dhat,
+        barrier_stiffness, false, true);
 }
 
 TEST_CASE(
