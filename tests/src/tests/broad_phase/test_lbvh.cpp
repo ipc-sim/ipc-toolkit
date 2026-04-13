@@ -10,6 +10,7 @@
 #include <tbb/parallel_sort.h>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <iostream>
 
@@ -281,4 +282,65 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     ipc::profiler().print();
     ipc::profiler().clear();
 #endif
+}
+
+TEST_CASE(
+    "Benchmark LBVH::detect_edge_edge_candidates",
+    "[!benchmark][broad_phase][lbvh]")
+{
+    constexpr double inflation_radius = 0;
+
+    std::string mesh_t0, mesh_t1;
+    SECTION("Two cubes")
+    {
+        mesh_t0 = "two-cubes-far.ply";
+        mesh_t1 = "two-cubes-intersecting.ply";
+    }
+    SECTION("Cloth-Ball")
+    {
+        mesh_t0 = "cloth_ball92.ply";
+        mesh_t1 = "cloth_ball93.ply";
+    }
+#ifdef NDEBUG
+    SECTION("Armadillo-Rollers")
+    {
+        mesh_t0 = "armadillo-rollers/326.ply";
+        mesh_t1 = "armadillo-rollers/327.ply";
+    }
+    SECTION("Cloth-Funnel")
+    {
+        mesh_t0 = "cloth-funnel/227.ply";
+        mesh_t1 = "cloth-funnel/228.ply";
+    }
+    SECTION("N-Body-Simulation")
+    {
+        mesh_t0 = "n-body-simulation/balls16_18.ply";
+        mesh_t1 = "n-body-simulation/balls16_19.ply";
+    }
+    SECTION("Rod-Twist")
+    {
+        mesh_t0 = "rod-twist/3036.ply";
+        mesh_t1 = "rod-twist/3037.ply";
+    }
+#endif
+    SECTION("Puffer-Ball")
+    {
+        mesh_t0 = "puffer-ball/20.ply";
+        mesh_t1 = "puffer-ball/21.ply";
+    }
+
+    Eigen::MatrixXd vertices_t0, vertices_t1;
+    Eigen::MatrixXi edges, faces;
+    REQUIRE(tests::load_mesh(mesh_t0, vertices_t0, edges, faces));
+    REQUIRE(tests::load_mesh(mesh_t1, vertices_t1, edges, faces));
+
+    const std::shared_ptr<LBVH> lbvh = std::make_shared<LBVH>();
+    lbvh->build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
+
+    BENCHMARK("LBVH::detect_edge_edge_candidates")
+    {
+        std::vector<EdgeEdgeCandidate> ee_candidates;
+        lbvh->detect_edge_edge_candidates(ee_candidates);
+        return ee_candidates.size();
+    };
 }

@@ -2,12 +2,90 @@
 
 #include <ipc/utils/local_to_global.hpp>
 
+#include <tbb/blocked_range.h>
+#include <tbb/combinable.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
+#include <tbb/parallel_reduce.h>
 
 namespace ipc {
 
 // -- Cumulative methods -------------------------------------------------------
+
+Eigen::VectorXd NormalPotential::gauss_newton_hessian_diagonal(
+    const NormalCollisions& collisions,
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices) const
+{
+    assert(vertices.rows() == mesh.num_vertices());
+
+    if (collisions.empty()) {
+        return Eigen::VectorXd::Zero(vertices.size());
+    }
+
+    const Eigen::MatrixXi& edges = mesh.edges();
+    const Eigen::MatrixXi& faces = mesh.faces();
+    const int dim = vertices.cols();
+
+    tbb::combinable<Eigen::VectorXd> diag_storage(
+        Eigen::VectorXd::Zero(vertices.size()));
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                const NormalCollision& collision = collisions[i];
+
+                const VectorMax12d local_diag =
+                    this->gauss_newton_hessian_diagonal(
+                        collision, collision.dof(vertices, edges, faces));
+
+                const auto vids = collision.vertex_ids(edges, faces);
+
+                // Don't be confused by the "gradient" in the name -- this just
+                // scatters a local vector into a global vector.
+                local_gradient_to_global_gradient(
+                    local_diag, vids, dim, diag_storage.local());
+            }
+        });
+
+    return diag_storage.combine([](const Eigen::VectorXd& a,
+                                   const Eigen::VectorXd& b) { return a + b; });
+}
+
+double NormalPotential::gauss_newton_hessian_quadratic_form(
+    const NormalCollisions& collisions,
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::VectorXd> p) const
+{
+    assert(vertices.rows() == mesh.num_vertices());
+    assert(p.size() == vertices.size());
+
+    if (collisions.empty()) {
+        return 0.0;
+    }
+
+    const Eigen::MatrixXi& edges = mesh.edges();
+    const Eigen::MatrixXi& faces = mesh.faces();
+    const int dim = vertices.cols();
+
+    // Reshape p into a matrix for convenient DOF extraction
+    const auto p_mat =
+        p.reshaped<VERTEX_DERIVATIVE_LAYOUT>(vertices.rows(), dim);
+
+    return tbb::parallel_reduce(
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()), 0.0,
+        [&](const tbb::blocked_range<size_t>& r, double partial_sum) {
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                partial_sum += this->gauss_newton_hessian_quadratic_form(
+                    collisions[i], collisions[i].dof(vertices, edges, faces),
+                    collisions[i].dof(p_mat, edges, faces));
+            }
+            return partial_sum;
+        },
+        std::plus<double>());
+}
 
 Eigen::SparseMatrix<double> NormalPotential::shape_derivative(
     const NormalCollisions& collisions,
@@ -144,6 +222,82 @@ MatrixMax12d NormalPotential::hessian(
 
     // Need to project entire hessian because w can be negative
     return project_to_psd(hess, project_hessian_to_psd);
+}
+
+// -- Single collision distance-vector methods ---------------------------------
+
+VectorMax12d NormalPotential::gauss_newton_hessian_diagonal(
+    const NormalCollision& collision,
+    Eigen::ConstRef<VectorMax12d> positions) const
+{
+    const int d = collision.dim(positions.size());
+
+    // Compute coefficients and distance vector together
+    VectorMax4d coeffs;
+    const VectorMax3d t = collision.compute_distance_vector(positions, coeffs);
+
+    // d² = tᵀt
+    const double d_sqr = t.squaredNorm();
+    // f'(d²)
+    const double grad_f = gradient(d_sqr, collision.dmin);
+    // f''(d²)
+    const double hess_f = hessian(d_sqr, collision.dmin);
+
+    // diag(∂²b/∂x²) ≈ w · [4·f"(d²)·diag((∂t/∂x·t)(∂t/∂x·t)ᵀ)
+    //                       + 2·f'(d²)·diag((∂t/∂x)(∂t/∂x)ᵀ)]
+    //
+    // From Eq. 11: diag((∂t/∂x)(∂t/∂x)ᵀ) = [c₀²,...,c₀²,c₁²,...,cₙ²]
+    //   (each cᵢ² repeated dim times)
+    // From Eq. 12: diag((∂t/∂x·t)(∂t/∂x·t)ᵀ) = [c₀t, c₁t, ..., cₙt]^∘2
+    //   (element-wise square)
+
+    const VectorMax12d diag_JtJ =
+        CollisionStencil::diag_distance_vector_outer(coeffs, d);
+    const VectorMax12d diag_JtttJt =
+        CollisionStencil::diag_distance_vector_t_outer(coeffs, t);
+
+    const double s1 = collision.weight * 4.0 * hess_f;
+    const double s2 = collision.weight * 2.0 * grad_f;
+
+    return s1 * diag_JtttJt + s2 * diag_JtJ;
+}
+
+double NormalPotential::gauss_newton_hessian_quadratic_form(
+    const NormalCollision& collision,
+    Eigen::ConstRef<VectorMax12d> positions,
+    Eigen::ConstRef<VectorMax12d> p) const
+{
+    const int d = collision.dim(positions.size());
+
+    // Compute coefficients and distance vector together
+    VectorMax4d coeffs;
+    const VectorMax3d t = collision.compute_distance_vector(positions, coeffs);
+
+    // d² = tᵀt
+    const double d_sqr = t.squaredNorm();
+    // f'(d²)
+    const double grad_f = gradient(d_sqr, collision.dmin);
+    // f''(d²)
+    const double hess_f = hessian(d_sqr, collision.dmin);
+
+    // pᵀHp ≈ w · [4·f"(d²)·(pᵀ·(∂t/∂x)·t)² + 2·f'(d²)·‖pᵀ·(∂t/∂x)‖²]
+    //
+    // From Eq. 13: pᵀ(∂t/∂x·t)(∂t/∂x·t)ᵀp = (pᵀ·∂t/∂x·t)²
+    // From Eq. 14: pᵀ(∂t/∂x)(∂t/∂x)ᵀp = ‖pᵀ·∂t/∂x‖²
+    //
+    // pᵀ·∂t/∂x = ∑ cᵢ pᵢ  (a dim-dimensional vector)
+
+    const VectorMax3d pT_J =
+        CollisionStencil::contract_distance_vector_jacobian(coeffs, p, d);
+
+    // (pᵀ·∂t/∂x·t)² = (pT_J · t)²
+    const double pTJt = pT_J.dot(t);
+    const double term1 = pTJt * pTJt;
+
+    // ‖pᵀ·∂t/∂x‖² = ‖pT_J‖²
+    const double term2 = pT_J.squaredNorm();
+
+    return collision.weight * (4.0 * hess_f * term1 + 2.0 * grad_f * term2);
 }
 
 void NormalPotential::shape_derivative(

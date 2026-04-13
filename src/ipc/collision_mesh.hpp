@@ -142,8 +142,13 @@ public:
         return m_vertices_to_faces;
     }
 
-    /// @brief Get the mapping from edges to faces of the collision mesh (|E| × 2).
-    const Eigen::MatrixXi& edges_to_faces() const { return m_edges_to_faces; }
+    /// @brief Get the mapping from edges to faces of the collision mesh.
+    /// @return A vector of size |E|, where each entry is a vector of face
+    /// indices adjacent to that edge.
+    const std::vector<std::vector<index_t>>& edges_to_faces() const
+    {
+        return m_edges_to_faces;
+    }
 
     // -----------------------------------------------------------------------
 
@@ -340,7 +345,7 @@ protected:
     // -----------------------------------------------------------------------
     // Helper initialization functions
 
-    /// @brief Initialize map from edges to adjacent faces (|E| × 2).
+    /// @brief Initialize map from edges to adjacent faces.
     void init_edges_to_faces();
 
     /// @brief Initialize the codimensional vertices.
@@ -377,8 +382,8 @@ protected:
     Eigen::MatrixXi m_faces;
     /// @brief Map from faces edges to rows of edges (|F| × 3).
     Eigen::MatrixXi m_faces_to_edges;
-    /// @brief Map from edges to adjacent faces (|E| × 2).
-    Eigen::MatrixXi m_edges_to_faces;
+    /// @brief Map from edges to adjacent faces (|E| entries, variable length).
+    std::vector<std::vector<index_t>> m_edges_to_faces;
 
     /// @brief Map from full vertices to collision vertices.
     /// @note Negative values indicate full vertex is dropped.

@@ -106,7 +106,7 @@
   volume  = 43,
   number  = 2,
   pages   = {1--18},
-  note    = {\url{https://dl.acm.org/doi/10.1145/3643028}}
+  doi     = {10.1145/3643028}
 }
 @article{Chen2025Offset,
   title   = {Offset {Geometric} {Contact}},
@@ -126,7 +126,7 @@
   journal = {ACM Transactions on Graphics},
   volume  = 44,
   number  = 4,
-  note    = {\url{https://doi.org/10.1145/3731142}}
+  doi     = {10.1145/3731142}
 }
 @inproceedings{Karras2012HPG,
   author    = {Karras, Tero},
@@ -137,7 +137,7 @@
   pages     = {33--37},
   publisher = {Eurographics Association},
   address   = {Goslar, Germany},
-  note      = {\url{https://doi.org/10.2312/EGGH/HPG12/033-037}}
+  doi       = {10.2312/EGGH/HPG12/033-037}
 }
 @phdthesis{Baraff1992PhD,
   author  = {Baraff, David},
@@ -156,7 +156,7 @@
   pages     = {189--196},
   publisher = {ACM},
   address   = {New York, NY, USA},
-  note      = {\url{https://doi.org/10.1145/199404.199437}}
+  doi       = {10.1145/199404.199437}
 }
 @article{Erleben2019Matchstick,
   title   = {The Matchstick Model for Anisotropic Friction Cones},
@@ -168,4 +168,122 @@
   pages   = {1--12},
   doi     = {10.1111/cgf.13885},
   note    = {\url{https://github.com/erleben/matchstick}}
+}
+@inproceedings{Andrus2025Adopting,
+  author = {Andrus, Curtis},
+  title = {Adopting Research in Production at Netflix Animation Studios},
+  year = {2025},
+  isbn = {9798400720086},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  doi = {10.1145/3744199.3744631},
+  booktitle = {Proceedings of the Digital Production Symposium},
+  articleno = {12},
+  numpages = {6},
+  keywords = {research, artist tools, innovation},
+  series = {DigiPro '25}
+}
+
+@article{Huang2024Differentiable,
+  author = {Huang, Zizhou and Tozoni, Davi Colli and Gjoka, Arvi and Ferguson, Zachary and Schneider, Teseo and Panozzo, Daniele and Zorin, Denis},
+  title = {Differentiable solver for time-dependent deformation problems with contact},
+  year = {2024},
+  issue_date = {June 2024},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {43},
+  number = {3},
+  issn = {0730-0301},
+  doi = {10.1145/3657648},
+  journal = {{ACM} Transactions on Graphics},
+  month = {may},
+  articleno = {31},
+  numpages = {30}
+}
+@article{Martin2024SystematicComparison,
+  title = {A systematic comparison between FEBio and PolyFEM for biomechanical systems},
+  journal = {Computer Methods and Programs in Biomedicine},
+  volume = {244},
+  pages = {107938},
+  year = {2024},
+  issn = {0169-2607},
+  doi = {10.1016/j.cmpb.2023.107938},
+  author = {Liam Martin and Pranav Jain and Zachary Ferguson and Torkan Gholamalizadeh and Faezeh Moshfeghifar and Kenny Erleben and Daniele Panozzo and Steven Abramowitch and Teseo Schneider}
+}
+@article{Ferguson2023ITR,
+  author = {Ferguson, Zachary and Schneider, Teseo and Kaufman, Danny and Panozzo, Daniele},
+  title = {In-Timestep Remeshing for Contacting Elastodynamics},
+  year = {2023},
+  issue_date = {August 2023},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {42},
+  number = {4},
+  issn = {0730-0301},
+  url = {https://doi.org/10.1145/3592428},
+  doi = {10.1145/3592428},
+  abstract = {We propose In-Timestep Remeshing, a fully coupled, adaptive meshing algorithm for contacting elastodynamics where remeshing steps are tightly integrated, implicitly, within the timestep solve. Our algorithm refines and coarsens the domain automatically by measuring physical energy changes within each ongoing timestep solve. This provides consistent, degree-of-freedom-efficient, productive remeshing that, by construction, is physics-aware and so avoids the errors, over-refinements, artifacts, per-example hand-tuning, and instabilities commonly encountered when remeshing with timestepping methods. Our in-timestep computation then ensures that each simulation step's output is both a converged stable solution on the updated mesh and a temporally consistent trajectory with respect to the model and solution of the last timestep. At the same time, the output is guaranteed safe (intersection- and inversion-free) across all operations. We demonstrate applications across a wide range of extreme stress tests with challenging contacts, sharp geometries, extreme compressions, large timesteps, and wide material stiffness ranges - all scenarios well-appreciated to challenge existing remeshing methods.},
+  journal = {{ACM} Transactions on Graphics ({SIGGRAPH})},
+  month = jul,
+  articleno = {145},
+  numpages = {15}
+}
+@article{Vidulis2023MultistableElasticKnots,
+  author = {Vidulis, Michele and Ren, Yingying and Panetta, Julian and Grinspun, Eitan and Pauly, Mark},
+  title = {Computational Exploration of Multistable Elastic Knots},
+  year = {2023},
+  issue_date = {August 2023},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {42},
+  number = {4},
+  issn = {0730-0301},
+  doi = {10.1145/3592399},
+  journal = {{ACM} Transactions on Graphics},
+  month = jul,
+  articleno = {73},
+  numpages = {16},
+}
+@article{Chen2025ANIMERod,
+  author = {Chen, Huanyu and Wen, Jiahao and Barbi\v{c}, Jernej},
+  title = {ANIME-Rod: Adjustable Nonlinear Isotropic Materials for Elastic Rods},
+  year = {2025},
+  issue_date = {August 2025},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {44},
+  number = {4},
+  issn = {0730-0301},
+  doi = {10.1145/3731208},
+  journal = {ACM Transactions on Graphics},
+  month = jul,
+  articleno = {87},
+  numpages = {23},
+}
+@inproceedings{Li2023ActuatedFaceSimulation,
+  author = {Li, Bo and Yang, Lingchen and Solenthaler, Barbara},
+  title = {Efficient Incremental Potential Contact for Actuated Face Simulation},
+  year = {2023},
+  isbn = {9798400703140},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  doi = {10.1145/3610543.3626161},
+  booktitle = {SIGGRAPH Asia 2023 Technical Communications},
+  articleno = {16},
+  numpages = {4},
+  location = {Sydney, NSW, Australia},
+  series = {SA '23}
+}
+@inproceedings{Huang2025Garment,
+  author = {Huang, Zizhou and Ara\'{u}jo, Chrystiano and Kunz, Andrew and Zorin, Denis and Panozzo, Daniele and Zordan, Victor},
+  title = {Intersection-Free Garment Retargeting},
+  year = {2025},
+  isbn = {9798400715402},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  doi = {10.1145/3721238.3730590},
+  booktitle = {Proceedings of the Special Interest Group on Computer Graphics and Interactive Techniques Conference Conference Papers},
+  articleno = {44},
+  numpages = {12},
+  series = {SIGGRAPH Conference Papers '25}
 }

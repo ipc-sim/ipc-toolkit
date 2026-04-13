@@ -5,14 +5,17 @@
 #include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
+#include <ipc/collision_mesh.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/smooth_contact/primitives/edge3.hpp>
 #include <ipc/smooth_contact/distance/primitive_distance.hpp>
+#include <ipc/smooth_contact/distance/point_edge.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <finitediff.hpp>
 #include <igl/PI.h>
+#include <igl/edges.h>
 
 using namespace ipc;
 
@@ -420,34 +423,145 @@ TEST_CASE(
     }
 }
 
-TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
+// =============================================================================
+// Helper: build a mesh with an edge having the given number of face neighbors,
+// construct an Edge3, and return the edge3, mesh, edge_id, and vertex-id map.
+// =============================================================================
+namespace {
+struct Edge3TestFixture {
+    std::unique_ptr<Edge3> edge3;
+    CollisionMesh mesh;
+    int edge_id;
+
+    /// Build a fixture for an edge along the x-axis with nf face neighbors.
+    /// orient: if true, vertices are marked orientable (normal term active).
+    /// Vertices: 0=e0=(0,0,0), 1=e1=(1,0,0), 2..2+nf-1 = opposite vertices.
+    /// Faces wound so the shared edge is traversed in opposite directions in
+    /// adjacent faces: face a = (2+a, a%2==0 ? 0 : 1, a%2==0 ? 1 : 0).
+    static Edge3TestFixture build(
+        const Eigen::Vector3d& e0,
+        const Eigen::Vector3d& e1,
+        const Eigen::MatrixX3d& face_verts, // nf x 3
+        const Eigen::Vector3d& dn,
+        const SmoothContactParameters& params,
+        bool orient)
+    {
+        const int nf = static_cast<int>(face_verts.rows());
+        const int nv = 2 + nf;
+
+        Eigen::MatrixXd V(nv, 3);
+        V.row(0) = e0.transpose();
+        V.row(1) = e1.transpose();
+        for (int a = 0; a < nf; a++) {
+            V.row(2 + a) = face_verts.row(a);
+        }
+
+        // Wind faces so edge 0-1 appears in alternating directions.
+        Eigen::MatrixXi F(nf, 3);
+        for (int a = 0; a < nf; a++) {
+            if (a % 2 == 0) {
+                F.row(a) << 2 + a, 0, 1;
+            } else {
+                F.row(a) << 2 + a, 1, 0;
+            }
+        }
+
+        Eigen::MatrixXi E;
+        igl::edges(F, E);
+
+        int eid = -1;
+        for (int i = 0; i < E.rows(); i++) {
+            if ((E(i, 0) == 0 && E(i, 1) == 1)
+                || (E(i, 0) == 1 && E(i, 1) == 0)) {
+                eid = i;
+                break;
+            }
+        }
+
+        std::vector<bool> include_vertex(nv, true);
+        std::vector<bool> orient_vertex(nv, orient);
+        CollisionMesh m(include_vertex, orient_vertex, V, E, F);
+
+        auto e3 = std::make_unique<Edge3>(eid, m, V, dn, params);
+
+        return { std::move(e3), std::move(m), eid };
+    }
+
+    /// Build the V matrix from edge endpoints and face vertices.
+    static Eigen::MatrixXd build_V(
+        const Eigen::Vector3d& e0,
+        const Eigen::Vector3d& e1,
+        const Eigen::MatrixX3d& face_verts)
+    {
+        const int nf = static_cast<int>(face_verts.rows());
+        Eigen::MatrixXd V(2 + nf, 3);
+        V.row(0) = e0.transpose();
+        V.row(1) = e1.transpose();
+        for (int a = 0; a < nf; a++) {
+            V.row(2 + a) = face_verts.row(a);
+        }
+        return V;
+    }
+
+    /// Assemble X matrix from the Edge3's vertex_ids and given vertex
+    /// positions.
+    Eigen::MatrixX3d build_X(const Eigen::MatrixXd& V) const
+    {
+        const auto& vids = edge3->vertex_ids();
+        Eigen::MatrixX3d X(static_cast<int>(vids.size()), 3);
+        for (int i = 0; i < static_cast<int>(vids.size()); i++) {
+            X.row(i) = V.row(vids[i]);
+        }
+        return X;
+    }
+
+    /// Assemble tangent directions from X (for tangent term tests).
+    Eigen::MatrixX3d build_tangents(const Eigen::MatrixX3d& X) const
+    {
+        const int nn = edge3->n_face_neighbors();
+        Eigen::MatrixX3d tangents(nn, 3);
+        for (int a = 0; a < nn; a++) {
+            tangents.row(a) = PointEdgeDistance<double, 3>::
+                point_line_closest_point_direction(
+                    X.row(2 + a), X.row(0), X.row(1));
+        }
+        return tangents;
+    }
+
+    /// Flatten [dn, M] into a single FD vector.
+    static Eigen::VectorXd
+    flatten_with_dir(const Eigen::Vector3d& dn, const Eigen::MatrixX3d& M)
+    {
+        const int rows = static_cast<int>(M.rows());
+        Eigen::VectorXd x(3 + rows * 3);
+        x.head<3>() = dn;
+        for (int i = 0; i < rows; i++) {
+            x.segment<3>(3 + i * 3) = M.row(i);
+        }
+        return x;
+    }
+};
+
+/// Check the normal term gradient and hessian against finite differences.
+void check_normal_term_fd(
+    const Edge3TestFixture& fix,
+    const Eigen::Vector3d& dn,
+    const Eigen::MatrixX3d& X,
+    double alpha_n,
+    double beta_n)
 {
-    OrientationTypes otypes;
-    otypes.set_size(2);
-    const double alpha = 0.85;
-    const double beta = 0.2;
-    SmoothContactParameters params { 1e-3, 1, 0, alpha, beta, 2 };
+    const auto [val, grad, hess] =
+        fix.edge3->smooth_edge3_normal_term_hessian(dn, X, alpha_n, beta_n);
 
-    Eigen::Vector3d dn, e0, e1, f0, f1;
-    e0 << 0, 0, 0;
-    e1 << 1, 0, 0;
-    dn << 0, 0, 1;
-    f0 << 0.4, 0.3, GENERATE(take(10, random(-0.2, 0.2)));
-    f1 << 0.6, -0.2, GENERATE(take(10, random(-0.2, 0.2)));
-
-    ipc::Vector15d x;
-    x << dn, e0, e1, f0, f1;
-
-    const auto [val, grad, hess] = smooth_edge3_normal_term_hessian(
-        dn, e0, e1, f0, f1, alpha, beta, otypes);
+    Eigen::VectorXd x = Edge3TestFixture::flatten_with_dir(dn, X);
 
     Eigen::VectorXd fgrad;
     fd::finite_gradient(
         x,
         [&](const Eigen::VectorXd& y) {
-            return smooth_edge3_normal_term(
-                y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3),
-                y.segment(12, 3), alpha, beta, otypes);
+            Eigen::MatrixX3d Y = fd::unflatten(y.tail(y.size() - 3), 3);
+            return std::get<0>(fix.edge3->smooth_edge3_normal_term_gradient(
+                y.head(3), Y, alpha_n, beta_n));
         },
         fgrad, fd::AccuracyOrder::FOURTH, 1e-5);
 
@@ -456,14 +570,274 @@ TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
     Eigen::MatrixXd fhess;
     fd::finite_jacobian(
         x,
-        [&](const Eigen::VectorXd& y) {
-            return std::get<1>(smooth_edge3_normal_term_gradient(
-                y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3),
-                y.segment(12, 3), alpha, beta, otypes));
+        [&](const Eigen::VectorXd& y) -> Eigen::VectorXd {
+            Eigen::MatrixX3d Y = fd::unflatten(y.tail(y.size() - 3), 3);
+            return std::get<1>(fix.edge3->smooth_edge3_normal_term_gradient(
+                y.head(3), Y, alpha_n, beta_n));
         },
         fhess, fd::AccuracyOrder::SECOND, 1e-7);
 
     CHECK((fhess - hess).norm() / 1e-6 <= hess.norm());
+}
+
+/// Check the tangent term gradient and hessian against finite differences.
+void check_tangent_term_fd(
+    const Edge3TestFixture& fix,
+    const Eigen::Vector3d& dn,
+    const Eigen::MatrixX3d& tangents,
+    double alpha_t,
+    double beta_t)
+{
+    const auto [val, grad, hess] = fix.edge3->smooth_edge3_tangent_term_hessian(
+        dn, tangents, alpha_t, beta_t);
+
+    Eigen::VectorXd x = Edge3TestFixture::flatten_with_dir(dn, tangents);
+
+    Eigen::VectorXd fgrad;
+    fd::finite_gradient(
+        x,
+        [&](const Eigen::VectorXd& y) {
+            Eigen::MatrixX3d T = fd::unflatten(y.tail(y.size() - 3), 3);
+            return std::get<0>(fix.edge3->smooth_edge3_tangent_term_gradient(
+                y.head(3), T, alpha_t, beta_t));
+        },
+        fgrad, fd::AccuracyOrder::FOURTH, 1e-5);
+
+    CHECK((fgrad - grad).norm() / 1e-8 <= grad.norm());
+
+    Eigen::MatrixXd fhess;
+    fd::finite_jacobian(
+        x,
+        [&](const Eigen::VectorXd& y) -> Eigen::VectorXd {
+            Eigen::MatrixX3d T = fd::unflatten(y.tail(y.size() - 3), 3);
+            return std::get<1>(fix.edge3->smooth_edge3_tangent_term_gradient(
+                y.head(3), T, alpha_t, beta_t));
+        },
+        fhess, fd::AccuracyOrder::SECOND, 1e-7);
+
+    CHECK((fhess - hess).norm() / 1e-6 <= hess.norm());
+}
+
+/// Check the normal term returns trivially 1 with zero derivatives.
+void check_normal_term_trivial(
+    const Edge3TestFixture& fix,
+    const Eigen::Vector3d& dn,
+    const Eigen::MatrixX3d& X,
+    double alpha_n,
+    double beta_n)
+{
+    const auto [val, grad, hess] =
+        fix.edge3->smooth_edge3_normal_term_hessian(dn, X, alpha_n, beta_n);
+
+    CHECK(val == Catch::Approx(1.0));
+    CHECK(grad.norm() == Catch::Approx(0.0).margin(1e-15));
+    CHECK(hess.norm() == Catch::Approx(0.0).margin(1e-15));
+}
+} // namespace
+
+// =============================================================================
+// Normal term hessian — finite-difference checks for various configurations
+// =============================================================================
+TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
+{
+    const Eigen::Vector3d e0(0, 0, 0), e1(1, 0, 0), dn(0, 0, 1);
+
+    SECTION("2 neighbors, VARIANT")
+    {
+        const double alpha_n = 0.85, beta_n = 0.2;
+        SmoothContactParameters params { 1e-3, 1, 0, alpha_n, beta_n, 2 };
+
+        Eigen::Vector3d f0(0.4, 0.3, GENERATE(take(10, random(-0.2, 0.2))));
+        Eigen::Vector3d f1(0.6, -0.2, GENERATE(take(10, random(-0.2, 0.2))));
+
+        Eigen::MatrixX3d fv(2, 3);
+        fv.row(0) = f0.transpose();
+        fv.row(1) = f1.transpose();
+
+        auto fix = Edge3TestFixture::build(e0, e1, fv, dn, params, true);
+        REQUIRE(fix.edge3->n_face_neighbors() == 2);
+
+        Eigen::MatrixXd V = Edge3TestFixture::build_V(e0, e1, fv);
+        Eigen::MatrixX3d X = fix.build_X(V);
+
+        check_normal_term_fd(fix, dn, X, alpha_n, beta_n);
+    }
+
+    SECTION("1 neighbor, VARIANT")
+    {
+        const double alpha_n = 0.85, beta_n = 0.2;
+        SmoothContactParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
+
+        Eigen::Vector3d f0(0.4, 0.3, GENERATE(take(5, random(-0.2, 0.2))));
+
+        Eigen::MatrixX3d fv(1, 3);
+        fv.row(0) = f0.transpose();
+
+        auto fix = Edge3TestFixture::build(e0, e1, fv, dn, params, true);
+        REQUIRE(fix.edge3->n_face_neighbors() == 1);
+
+        Eigen::MatrixXd V = Edge3TestFixture::build_V(e0, e1, fv);
+        Eigen::MatrixX3d X = fix.build_X(V);
+
+        check_normal_term_fd(fix, dn, X, alpha_n, beta_n);
+    }
+
+    SECTION("2 VARIANT neighbors with negated direction")
+    {
+        // The normal-term functions expect direction = -d.normalized(), so we
+        // pass neg_dn = -dn below.
+        const double alpha_n = 0.85, beta_n = 0.2;
+        SmoothContactParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
+        Eigen::Vector3d neg_dn = -dn;
+
+        // Face normals for the fixture winding are:
+        //   face 0: n = (0, -fz0, fy0), so dn·n_hat = fy0/|n|
+        //   face 1: n = (0, fz1, -fy1), so dn·n_hat = -fy1/|n|
+        // Use f0 with negative y and f1 with positive y, with large enough z
+        // to push the dot products well into the transition region.
+        Eigen::Vector3d f0(0.4, -0.3, GENERATE(take(5, random(0.4, 0.8))));
+        Eigen::Vector3d f1(0.6, 0.3, GENERATE(take(5, random(0.4, 0.8))));
+
+        Eigen::MatrixX3d fv(2, 3);
+        fv.row(0) = f0.transpose();
+        fv.row(1) = f1.transpose();
+
+        auto fix = Edge3TestFixture::build(e0, e1, fv, dn, params, true);
+        REQUIRE(fix.edge3->n_face_neighbors() == 2);
+
+        Eigen::MatrixXd V = Edge3TestFixture::build_V(e0, e1, fv);
+        Eigen::MatrixX3d X = fix.build_X(V);
+
+        const auto [val, grad, hess] =
+            fix.edge3->smooth_edge3_normal_term_hessian(
+                neg_dn, X, alpha_n, beta_n);
+
+        // Basic sanity: value should be finite and between 0 and 1.
+        CHECK(val >= 0.0);
+        CHECK(val <= 1.0);
+        REQUIRE(grad.isZero() == false);
+        REQUIRE(hess.isZero() == false);
+
+        check_normal_term_fd(fix, neg_dn, X, alpha_n, beta_n);
+    }
+
+    SECTION("non-orientable edge (early-return path)")
+    {
+        const double alpha_n = 0.85, beta_n = 0.2;
+        SmoothContactParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
+
+        Eigen::Vector3d f0(0.4, 0.3, 0.1), f1(0.6, -0.2, 0.1);
+
+        Eigen::MatrixX3d fv(2, 3);
+        fv.row(0) = f0.transpose();
+        fv.row(1) = f1.transpose();
+
+        // orient=false ⇒ orientable will be false inside Edge3
+        auto fix = Edge3TestFixture::build(e0, e1, fv, dn, params, false);
+        REQUIRE(fix.edge3->n_face_neighbors() == 2);
+
+        Eigen::MatrixXd V = Edge3TestFixture::build_V(e0, e1, fv);
+        Eigen::MatrixX3d X = fix.build_X(V);
+
+        check_normal_term_trivial(fix, dn, X, alpha_n, beta_n);
+    }
+
+    SECTION("all normal types ONE (early-return path)")
+    {
+        // Choose alpha_n, beta_n so that dn clearly aligns with face normals
+        // and normal_sum >= 1 at construction, forcing all normal types to
+        // ONE.
+        const double alpha_n = 0.5, beta_n = 0.1;
+        SmoothContactParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
+
+        // Place face vertices far from z=0 in the +y direction, so that the
+        // face normals point nearly purely in +z (aligned with dn).
+        Eigen::Vector3d f0(0.4, 0.5, 0.0), f1(0.6, -0.5, 0.0);
+
+        Eigen::MatrixX3d fv(2, 3);
+        fv.row(0) = f0.transpose();
+        fv.row(1) = f1.transpose();
+
+        auto fix = Edge3TestFixture::build(e0, e1, fv, dn, params, true);
+        REQUIRE(fix.edge3->n_face_neighbors() == 2);
+
+        Eigen::MatrixXd V = Edge3TestFixture::build_V(e0, e1, fv);
+        Eigen::MatrixX3d X = fix.build_X(V);
+
+        check_normal_term_trivial(fix, dn, X, alpha_n, beta_n);
+    }
+}
+
+// =============================================================================
+// Tangent term hessian — finite-difference checks for various configurations
+// =============================================================================
+TEST_CASE("Edge tangent term", "[distance][edge-edge][gradient]")
+{
+    // alpha_t=1, beta_t=0 ⇒ VARIANT when tangent check val ∈ (-1, 0),
+    // i.e. dn·t / |t| ∈ (0, 1).
+    // With dn=(0,0,1), t=(0, y, z), we need z/|t| ∈ (0, 1) ⇒ z > 0.
+    // ONE when dn·t/|t| <= 0 ⇒ z <= 0.
+    const double alpha_t = 1.0, beta_t = 0.0;
+    SmoothContactParameters params(1e-3, alpha_t, beta_t, 0.85, 0.2, 2);
+
+    const Eigen::Vector3d e0(0, 0, 0), e1(1, 0, 0), dn(0, 0, 1);
+
+    SECTION("2 neighbors, both VARIANT")
+    {
+        // Both f0, f1 above the edge so tangent z > 0 ⇒ VARIANT.
+        Eigen::Vector3d f0(0.4, 0.3, GENERATE(take(5, random(0.02, 0.15))));
+        Eigen::Vector3d f1(0.6, -0.2, GENERATE(take(5, random(0.02, 0.15))));
+
+        Eigen::MatrixX3d fv(2, 3);
+        fv.row(0) = f0.transpose();
+        fv.row(1) = f1.transpose();
+
+        auto fix = Edge3TestFixture::build(e0, e1, fv, dn, params, true);
+        REQUIRE(fix.edge3->n_face_neighbors() == 2);
+
+        Eigen::MatrixXd V = Edge3TestFixture::build_V(e0, e1, fv);
+        Eigen::MatrixX3d X = fix.build_X(V);
+        Eigen::MatrixX3d tangents = fix.build_tangents(X);
+
+        check_tangent_term_fd(fix, dn, tangents, alpha_t, beta_t);
+    }
+
+    SECTION("1 neighbor (boundary edge)")
+    {
+        Eigen::Vector3d f0(0.5, 0.4, GENERATE(take(5, random(0.02, 0.15))));
+
+        Eigen::MatrixX3d fv(1, 3);
+        fv.row(0) = f0.transpose();
+
+        auto fix = Edge3TestFixture::build(e0, e1, fv, dn, params, true);
+        REQUIRE(fix.edge3->n_face_neighbors() == 1);
+
+        Eigen::MatrixXd V = Edge3TestFixture::build_V(e0, e1, fv);
+        Eigen::MatrixX3d X = fix.build_X(V);
+        Eigen::MatrixX3d tangents = fix.build_tangents(X);
+
+        check_tangent_term_fd(fix, dn, tangents, alpha_t, beta_t);
+    }
+
+    SECTION("mixed types (ONE + VARIANT among neighbors)")
+    {
+        // Place f0 with z > 0 (VARIANT) and f1 with z < 0 (ONE).
+        Eigen::Vector3d f0(0.4, 0.3, GENERATE(take(5, random(0.02, 0.15))));
+        Eigen::Vector3d f1(0.6, -0.3, GENERATE(take(5, random(-0.5, -0.1))));
+
+        Eigen::MatrixX3d fv(2, 3);
+        fv.row(0) = f0.transpose();
+        fv.row(1) = f1.transpose();
+
+        auto fix = Edge3TestFixture::build(e0, e1, fv, dn, params, true);
+        REQUIRE(fix.edge3->n_face_neighbors() == 2);
+
+        Eigen::MatrixXd V = Edge3TestFixture::build_V(e0, e1, fv);
+        Eigen::MatrixX3d X = fix.build_X(V);
+        Eigen::MatrixX3d tangents = fix.build_tangents(X);
+
+        check_tangent_term_fd(fix, dn, tangents, alpha_t, beta_t);
+    }
 }
 
 TEMPLATE_TEST_CASE_SIG(

@@ -1,6 +1,4 @@
 set(SOURCES
-  autogen.hpp
-  autogen.cpp
   mollifier.cpp
   mollifier.hpp
   mollifier.tpp

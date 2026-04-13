@@ -2,6 +2,13 @@
     --md-default-bg-color: #2e303e;
 }
 
+.figure-on-light img,
+.figure-on-light .image-wrapper img {
+    padding: 0.5rem;
+    border-radius: 0.4rem;
+    background: #ffffff;
+}
+
 /* justify and slightly decrease spacing */
 p,
 ul,
@@ -30,41 +37,223 @@ dl.py.objdesc {
     overflow: hidden;
 }
 
-dl.cpp.objdesc>dt,
-dl.py.objdesc>dt {
+dl.cpp.objdesc > dt,
+dl.py.objdesc > dt {
     font-size: 0.64rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
 }
 
-dl.cpp.objdesc>dd,
-dl.py.objdesc>dd {
+dl.cpp.objdesc > dd,
+dl.py.objdesc > dd {
     margin: 0 1.875em;
 }
 
-dl.py.objdesc>dd>details.toggle-details {
+dl.py.objdesc > dd > details.toggle-details {
     border: 0.05rem solid var(--md-primary-fg-color);
     box-shadow: var(--md-shadow-z1);
     border-radius: 0.4rem;
     overflow: hidden;
 }
 
-dl.py.objdesc>dd>details.toggle-details>summary {
+dl.py.objdesc > dd > details.toggle-details > summary {
     border: 0;
     font-size: 0.8rem;
 }
 
-dl.py.objdesc>dd>details.toggle-details>summary::before,
-dl.py.objdesc>dd>details.toggle-details>summary::after {
+dl.py.objdesc > dd > details.toggle-details > summary::before,
+dl.py.objdesc > dd > details.toggle-details > summary::after {
     background-color: var(--md-primary-fg-color--light);
     /* background-color: currentcolor; */
     top: auto;
 }
 
-dl.py.objdesc>dd>details.toggle-details>summary>svg.tb-icon {
+dl.py.objdesc > dd > details.toggle-details > summary > svg.tb-icon {
     display: none;
 }
 
 table.autosummary {
     font-size: 0.75rem !important;
+}
+
+/* ── Gallery Grid ── */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.gallery-card {
+    background: var(--md-code-bg-color, #f5f5f5);
+    border: 1px solid var(--md-default-fg-color--lightest, #e0e0e0);
+    border-radius: 0.6rem;
+    overflow: hidden;
+    box-shadow: var(--md-shadow-z1);
+    transition:
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.gallery-card .gallery-media {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    cursor: zoom-in;
+    position: relative;
+}
+
+/* Expand icon hint on hover */
+.gallery-card .gallery-media[data-lightbox]::after {
+    content: "\2922"; /* ⤢ expand icon */
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0.3rem 0.45rem;
+    border-radius: 0.3rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.gallery-card .gallery-media[data-lightbox]:hover::after {
+    opacity: 1;
+}
+
+.gallery-card .gallery-media img,
+.gallery-card .gallery-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.gallery-card .gallery-media iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Iframe media containers are not clickable-to-enlarge */
+.gallery-card .gallery-media.gallery-media--iframe {
+    cursor: default;
+}
+
+.gallery-card.gallery-card--iframe iframe {
+    width: 100%;
+    height: 550px;
+    border: 0;
+    display: block;
+    margin-bottom: -80px; /* trim LinkedIn's empty bottom area */
+}
+
+.gallery-card .gallery-caption {
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.gallery-card .gallery-caption strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+}
+
+/* Wide card variant — spans two columns for embeds / iframes */
+.gallery-card.gallery-wide {
+    grid-column: span 2;
+}
+
+@media (max-width: 720px) {
+    .gallery-grid {
+        grid-template-columns: 1fr;
+    }
+    .gallery-card.gallery-wide {
+        grid-column: span 1;
+    }
+}
+
+/* ── Gallery Lightbox ── */
+.gallery-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    cursor: zoom-out;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.25s ease,
+        visibility 0.25s ease;
+}
+
+.gallery-lightbox.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.gallery-lightbox img,
+.gallery-lightbox video {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 0.4rem;
+    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.6);
+    cursor: default;
+    transform: scale(0.95);
+    transition: transform 0.25s ease;
+}
+
+.gallery-lightbox.active img,
+.gallery-lightbox.active video {
+    transform: scale(1);
+}
+
+.gallery-lightbox .gallery-lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    z-index: 1;
+}
+
+.gallery-lightbox .gallery-lightbox-close:hover {
+    opacity: 1;
+}
+
+.gallery-lightbox .gallery-lightbox-caption {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.55);
+    padding: 0.4rem 1rem;
+    border-radius: 0.3rem;
+    max-width: 80vw;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
