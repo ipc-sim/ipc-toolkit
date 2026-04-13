@@ -10,31 +10,32 @@ namespace ipc {
 
 namespace {
 
-bool use_directional_anisotropic_mu(
-    const TangentialCollision& collision, const int tangent_dim)
-{
-    return tangent_dim > 1 && collision.mu_s_aniso.squaredNorm() > 0;
-}
-
-/// Scalar μ for dissipative potential / force when directional anisotropy is lagged.
-void friction_mu_for_evaluation(
-    const TangentialCollision& collision,
-    const int tangent_dim,
-    const bool no_mu,
-    double& mu_s_out,
-    double& mu_k_out)
-{
-    if (no_mu) {
-        mu_s_out = 1.0;
-        mu_k_out = 1.0;
-    } else if (!use_directional_anisotropic_mu(collision, tangent_dim)) {
-        mu_s_out = collision.mu_s;
-        mu_k_out = collision.mu_k;
-    } else {
-        mu_s_out = collision.mu_s_effective_lagged;
-        mu_k_out = collision.mu_k_effective_lagged;
+    bool use_directional_anisotropic_mu(
+        const TangentialCollision& collision, const int tangent_dim)
+    {
+        return tangent_dim > 1 && collision.mu_s_aniso.squaredNorm() > 0;
     }
-}
+
+    /// Scalar μ for dissipative potential / force when directional anisotropy
+    /// is lagged.
+    void friction_mu_for_evaluation(
+        const TangentialCollision& collision,
+        const int tangent_dim,
+        const bool no_mu,
+        double& mu_s_out,
+        double& mu_k_out)
+    {
+        if (no_mu) {
+            mu_s_out = 1.0;
+            mu_k_out = 1.0;
+        } else if (!use_directional_anisotropic_mu(collision, tangent_dim)) {
+            mu_s_out = collision.mu_s;
+            mu_k_out = collision.mu_k;
+        } else {
+            mu_s_out = collision.mu_s_effective_lagged;
+            mu_k_out = collision.mu_k_effective_lagged;
+        }
+    }
 
 } // namespace
 
@@ -367,7 +368,8 @@ VectorMax12d TangentialPotential::force(
     //
     // Combined anisotropic friction model:
     //   1. mu_aniso velocity scaling: τ_aniso = diag(mu_aniso) · τ
-    //   2. Direction-dependent (matchstick) coefficients: scalar μ_s, μ_k in the
+    //   2. Direction-dependent (matchstick) coefficients: scalar μ_s, μ_k in
+    //   the
     //      formulas below are the lagged effective values on the collision
     //      (refreshed by TangentialCollisions::update_lagged_anisotropic_…
     //      from slip at that refresh). ‖τ_aniso‖ and T τ_aniso still use the
@@ -559,7 +561,8 @@ MatrixMax12d TangentialPotential::force_jacobian(
     const double tau_aniso_norm = tau_aniso.norm();
     const double mu_f1_over_norm_tau = mu_f1_over_x(tau_aniso_norm, mu_s, mu_k);
 
-    // ∇(μ f₁/‖τ‖) with μ lagged w.r.t. velocity (no ∂μ/∂τ in Jacobian w.r.t. v).
+    // ∇(μ f₁/‖τ‖) with μ lagged w.r.t. velocity (no ∂μ/∂τ in Jacobian w.r.t.
+    // v).
     VectorMax12d grad_mu_f1_over_norm_tau;
     if (tau_aniso_norm == 0) {
         // lim_{x→0} f₂(x)x² = 0
@@ -568,8 +571,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
         const double f2 =
             mu_f2_x_minus_mu_f1_over_x3(tau_aniso_norm, mu_s, mu_k);
         assert(std::isfinite(f2));
-        grad_mu_f1_over_norm_tau =
-            f2 * tau_aniso.transpose() * jac_tau_aniso;
+        grad_mu_f1_over_norm_tau = f2 * tau_aniso.transpose() * jac_tau_aniso;
     }
 
     // Premultiplied values

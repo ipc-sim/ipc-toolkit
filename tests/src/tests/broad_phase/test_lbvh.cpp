@@ -18,7 +18,10 @@ using namespace ipc;
 
 namespace {
 
-bool is_aabb_union(LBVH::Node parent, LBVH::Node childA, LBVH::Node childB)
+bool is_aabb_union(
+    const LBVH::Node& parent,
+    const LBVH::Node& childA,
+    const LBVH::Node& childB)
 {
     AABB children;
     children.min = childA.aabb_min.min(childB.aabb_min).cast<double>();

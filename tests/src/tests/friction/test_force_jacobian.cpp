@@ -689,9 +689,10 @@ void check_smooth_friction_force_jacobian(
             fd::AccuracyOrder::FOURTH, 1e-6 * dhat);
         const double fd_err_V_aniso =
             (fd_JF_wrt_V_aniso - JF_wrt_V_aniso).norm();
-        CHECK(
-            JF_wrt_V_aniso.norm() == 0
-            || fd_err_V_aniso <= 1e-7 * JF_wrt_V_aniso.norm());
+        const bool aniso_jacobian_fd_ok =
+            (JF_wrt_V_aniso.norm() == 0.0
+             || fd_err_V_aniso <= 1e-7 * JF_wrt_V_aniso.norm());
+        CHECK(aniso_jacobian_fd_ok);
     }
 }
 

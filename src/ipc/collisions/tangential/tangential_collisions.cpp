@@ -15,45 +15,46 @@ namespace ipc {
 
 namespace {
 
-void update_lagged_mu_collision(
-    TangentialCollision& collision,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
-    Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
-    Eigen::ConstRef<Eigen::MatrixXd> velocities)
-{
-    const VectorMax12d rest_dof =
-        collision.dof(rest_positions, edges, faces);
-    const VectorMax12d lag_dof =
-        collision.dof(lagged_displacements, edges, faces);
-    const VectorMax12d vel_dof = collision.dof(velocities, edges, faces);
-    const VectorMax12d lagged_pos = rest_dof + lag_dof;
+    void update_lagged_mu_collision(
+        TangentialCollision& collision,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+        Eigen::ConstRef<Eigen::MatrixXd> velocities)
+    {
+        const VectorMax12d rest_dof =
+            collision.dof(rest_positions, edges, faces);
+        const VectorMax12d lag_dof =
+            collision.dof(lagged_displacements, edges, faces);
+        const VectorMax12d vel_dof = collision.dof(velocities, edges, faces);
+        const VectorMax12d lagged_pos = rest_dof + lag_dof;
 
-    const MatrixMax<double, 3, 2> P =
-        collision.compute_tangent_basis(lagged_pos);
-    const VectorMax2d beta = collision.compute_closest_point(lagged_pos);
-    const MatrixMax<double, 3, 12> Gamma =
-        collision.relative_velocity_jacobian(beta);
-    const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
-    const VectorMax2d tau = T.transpose() * vel_dof;
+        const MatrixMax<double, 3, 2> P =
+            collision.compute_tangent_basis(lagged_pos);
+        const VectorMax2d beta = collision.compute_closest_point(lagged_pos);
+        const MatrixMax<double, 3, 12> Gamma =
+            collision.relative_velocity_jacobian(beta);
+        const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
+        const VectorMax2d tau = T.transpose() * vel_dof;
 
-    const int tangent_dim = tau.size();
-    const VectorMax2d tau_aniso =
-        collision.mu_aniso.head(tangent_dim).cwiseProduct(tau);
+        const int tangent_dim = tau.size();
+        const VectorMax2d tau_aniso =
+            collision.mu_aniso.head(tangent_dim).cwiseProduct(tau);
 
-    if (tangent_dim <= 1 || collision.mu_s_aniso.squaredNorm() == 0) {
-        collision.mu_s_effective_lagged = collision.mu_s;
-        collision.mu_k_effective_lagged = collision.mu_k;
-        return;
+        if (tangent_dim <= 1 || collision.mu_s_aniso.squaredNorm() == 0) {
+            collision.mu_s_effective_lagged = collision.mu_s;
+            collision.mu_k_effective_lagged = collision.mu_k;
+            return;
+        }
+
+        const Eigen::Vector2d tau_aniso_2d = tau_aniso;
+        std::tie(
+            collision.mu_s_effective_lagged, collision.mu_k_effective_lagged) =
+            anisotropic_mu_eff_from_tau_aniso(
+                tau_aniso_2d, collision.mu_s_aniso, collision.mu_k_aniso,
+                collision.mu_s, collision.mu_k, false);
     }
-
-    const Eigen::Vector2d tau_aniso_2d = tau_aniso;
-    std::tie(collision.mu_s_effective_lagged, collision.mu_k_effective_lagged) =
-        anisotropic_mu_eff_from_tau_aniso(
-            tau_aniso_2d, collision.mu_s_aniso, collision.mu_k_aniso,
-            collision.mu_s, collision.mu_k, false);
-}
 
 } // namespace
 
