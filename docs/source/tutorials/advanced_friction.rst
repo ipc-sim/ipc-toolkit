@@ -46,19 +46,19 @@ To use separate static and kinetic friction coefficients, you can pass them as p
 
         .. code-block:: c++
 
+            ipc::BarrierPotential B(dhat, barrier_stiffness);
             ipc::TangentialCollisions tangential_collisions;
             tangential_collisions.build(
-                collision_mesh, vertices, collisions, B, barrier_stiffness,
-                mu_s, mu_k);
+                collision_mesh, vertices, collisions, B, mu_s, mu_k);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
+            B = ipctk.BarrierPotential(dhat, barrier_stiffness)
             tangential_collisions = ipctk.TangentialCollisions()
             tangential_collisions.build(
-                collision_mesh, vertices, collisions, B, barrier_stiffness,
-                mu_s, mu_k)
+                collision_mesh, vertices, collisions, B, mu_s, mu_k)
 
 How It Works
 ~~~~~~~~~~~~
@@ -203,10 +203,10 @@ to each tangential collision after building the collisions:
 
         .. code-block:: c++
 
+            ipc::BarrierPotential B(dhat, barrier_stiffness);
             ipc::TangentialCollisions tangential_collisions;
             tangential_collisions.build(
-                collision_mesh, vertices, collisions, B, barrier_stiffness,
-                mu_s, mu_k);
+                collision_mesh, vertices, collisions, B, mu_s, mu_k);
 
             // Assign anisotropic friction coefficients per collision
             for (size_t i = 0; i < tangential_collisions.size(); ++i) {
@@ -215,20 +215,42 @@ to each tangential collision after building the collisions:
                 tangential_collisions[i].mu_k_aniso = Eigen::Vector2d(0.6, 0.3);
             }
 
+            // Refresh lagged matchstick μ from lagged geometry and slip (e.g. each Newton iteration)
+            tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+                collision_mesh, rest_positions, lagged_displacements, velocities);
+
     .. md-tab-item:: Python
 
         .. code-block:: python
 
+            B = ipctk.BarrierPotential(dhat, barrier_stiffness)
             tangential_collisions = ipctk.TangentialCollisions()
             tangential_collisions.build(
-                collision_mesh, vertices, collisions, B, barrier_stiffness,
-                mu_s, mu_k)
+                collision_mesh, vertices, collisions, B, mu_s, mu_k)
 
             # Assign anisotropic friction coefficients per collision
             for i in range(tangential_collisions.size()):
                 # Higher friction in first tangent direction, lower in second
                 tangential_collisions[i].mu_s_aniso = np.array([0.8, 0.4])
                 tangential_collisions[i].mu_k_aniso = np.array([0.6, 0.3])
+
+            tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+                collision_mesh, rest_positions, lagged_displacements, velocities)
+
+Lagged effective μ (direction-dependent coefficients)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When ``mu_s_aniso`` / ``mu_k_aniso`` are nonzero, the toolkit **lags** the
+matchstick effective coefficients for the current nonlinear step (stored in
+``mu_s_effective_lagged`` and ``mu_k_effective_lagged`` on each
+``TangentialCollision``). Call
+``TangentialCollisions::update_lagged_anisotropic_friction_coefficients`` with
+rest positions, lagged displacements, and velocities whenever those change
+(e.g. each Newton iteration), after assigning per-collision ellipse axes. This
+is analogous to lagging the tangent frame and normal data in IPC, and it
+keeps the friction dissipative potential consistent with the friction force for
+that step (a path-dependent μ that updates every iteration would not admit an
+exact incremental potential).
 
 Relationship with Other Anisotropy Mechanisms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

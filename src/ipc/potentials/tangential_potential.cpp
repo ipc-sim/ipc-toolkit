@@ -1,6 +1,5 @@
 #include "friction_potential.hpp"
 
-#include <ipc/friction/smooth_mu.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
 #include <tbb/combinable.h>
@@ -8,6 +7,36 @@
 #include <tbb/parallel_for.h>
 
 namespace ipc {
+
+namespace {
+
+bool use_directional_anisotropic_mu(
+    const TangentialCollision& collision, const int tangent_dim)
+{
+    return tangent_dim > 1 && collision.mu_s_aniso.squaredNorm() > 0;
+}
+
+/// Scalar μ for dissipative potential / force when directional anisotropy is lagged.
+void friction_mu_for_evaluation(
+    const TangentialCollision& collision,
+    const int tangent_dim,
+    const bool no_mu,
+    double& mu_s_out,
+    double& mu_k_out)
+{
+    if (no_mu) {
+        mu_s_out = 1.0;
+        mu_k_out = 1.0;
+    } else if (!use_directional_anisotropic_mu(collision, tangent_dim)) {
+        mu_s_out = collision.mu_s;
+        mu_k_out = collision.mu_k;
+    } else {
+        mu_s_out = collision.mu_s_effective_lagged;
+        mu_k_out = collision.mu_k_effective_lagged;
+    }
+}
+
+} // namespace
 
 // -- Cumulative methods -------------------------------------------------------
 
@@ -162,8 +191,12 @@ double TangentialPotential::operator()(
     const VectorMax2d u_aniso =
         collision.mu_aniso.head(u.size()).cwiseProduct(u);
 
+    const int tangent_dim = u.size();
+    double mu_s, mu_k;
+    friction_mu_for_evaluation(collision, tangent_dim, false, mu_s, mu_k);
+
     return collision.weight * collision.normal_force_magnitude
-        * mu_f0(u_aniso.norm(), collision.mu_s, collision.mu_k);
+        * mu_f0(u_aniso.norm(), mu_s, mu_k);
 }
 
 VectorMax12d TangentialPotential::gradient(
@@ -192,13 +225,15 @@ VectorMax12d TangentialPotential::gradient(
         collision.relative_velocity_matrix().transpose()
         * collision.tangent_basis;
 
+    const int tangent_dim = u.size();
+    double mu_s, mu_k;
+    friction_mu_for_evaluation(collision, tangent_dim, false, mu_s, mu_k);
+
     // Compute μ(‖u_aniso‖) f₁(‖u_aniso‖)/‖u_aniso‖
-    const double mu_f1_over_norm_u =
-        mu_f1_over_x(u_aniso.norm(), collision.mu_s, collision.mu_k);
+    const double mu_f1_over_norm_u = mu_f1_over_x(u_aniso.norm(), mu_s, mu_k);
 
     // Apply anisotropic scaling to T: T_aniso = T * diag(mu_aniso)
     // This accounts for ∂u_aniso/∂u = diag(mu_aniso) in the chain rule
-    const int tangent_dim = u.size();
     MatrixMax<double, 12, 2> T_aniso = T;
     T_aniso.col(0) *= collision.mu_aniso[0];
     if (tangent_dim > 1) {
@@ -247,9 +282,11 @@ MatrixMax12d TangentialPotential::hessian(
     // Compute ‖u_aniso‖
     const double norm_u = u_aniso.norm();
 
+    double mu_s, mu_k;
+    friction_mu_for_evaluation(collision, tangent_dim, false, mu_s, mu_k);
+
     // Compute μ(‖u_aniso‖) f₁(‖u_aniso‖)/‖u_aniso‖
-    const double mu_f1_over_norm_u =
-        mu_f1_over_x(norm_u, collision.mu_s, collision.mu_k);
+    const double mu_f1_over_norm_u = mu_f1_over_x(norm_u, mu_s, mu_k);
 
     // Compute N(xᵗ)
     const double scale = collision.weight * collision.normal_force_magnitude;
@@ -301,8 +338,7 @@ MatrixMax12d TangentialPotential::hessian(
         // ∇²D(v) = μ N T [f₂(‖u_aniso‖) u_aniso u_anisoᵀ +
         // f₁(‖u_aniso‖)/‖u_aniso‖ I] Tᵀ
         //  ⟹ only need to project the inner 2x2 matrix to PSD
-        const double f2 =
-            mu_f2_x_minus_mu_f1_over_x3(norm_u, collision.mu_s, collision.mu_k);
+        const double f2 = mu_f2_x_minus_mu_f1_over_x3(norm_u, mu_s, mu_k);
 
         MatrixMax2d inner_hess = f2 * u_aniso * u_aniso.transpose();
         inner_hess.diagonal().array() += mu_f1_over_norm_u;
@@ -385,21 +421,8 @@ VectorMax12d TangentialPotential::force(
     const VectorMax2d tau_aniso =
         collision.mu_aniso.head(tangent_dim).cwiseProduct(tau);
 
-    // Compute effective mu (handles both anisotropic and isotropic cases)
-    // NOTE: Direction-dependent anisotropic friction only makes sense in 3D
-    // (2D tangent space). For 2D simulations (1D tangent space), use isotropic.
     double mu_s, mu_k;
-    if (tangent_dim > 1) {
-        // For 3D simulations with 2D tangent space, pad to Vector2d
-        const Eigen::Vector2d tau_aniso_2d = tau_aniso;
-        std::tie(mu_s, mu_k) = anisotropic_mu_eff_from_tau_aniso(
-            tau_aniso_2d, collision.mu_s_aniso, collision.mu_k_aniso,
-            collision.mu_s, collision.mu_k, no_mu);
-    } else {
-        // For 2D simulations, use isotropic friction
-        mu_s = no_mu ? 1.0 : collision.mu_s;
-        mu_k = no_mu ? 1.0 : collision.mu_k;
-    }
+    friction_mu_for_evaluation(collision, tangent_dim, no_mu, mu_s, mu_k);
 
     // Compute μ(‖τ_aniso‖) f₁(‖τ_aniso‖)/‖τ_aniso‖
     const double tau_aniso_norm = tau_aniso.norm();
@@ -407,9 +430,9 @@ VectorMax12d TangentialPotential::force(
 
     // F = -μ N f₁(‖τ_aniso‖)/‖τ_aniso‖ T τ_aniso
     // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
-    // NOTE: Force always uses tau_aniso (with mu_aniso scaling applied).
-    //       When anisotropic friction is enabled, mu_eff is computed from
-    //       the direction of tau_aniso.
+    // NOTE: Direction-dependent (matchstick) μ uses lagged scalars on the
+    //       collision; refresh with TangentialCollisions::
+    //       update_lagged_anisotropic_friction_coefficients.
     return -collision.weight * N * mu_f1_over_norm_tau * T * tau_aniso;
 }
 
@@ -540,87 +563,23 @@ MatrixMax12d TangentialPotential::force_jacobian(
         jac_tau_aniso.row(1) *= collision.mu_aniso[1];
     }
 
-    // Check if direction-dependent anisotropic friction is enabled
-    // NOTE: Direction-dependent anisotropic friction only makes sense in 3D
-    // (2D tangent space). For 2D simulations (1D tangent space), disable.
-    const bool is_anisotropic =
-        tangent_dim > 1 && collision.mu_s_aniso.squaredNorm() > 0;
-
-    // Compute effective mu (handles both anisotropic and isotropic cases)
     double mu_s, mu_k;
-    if (tangent_dim > 1) {
-        // For 3D simulations with 2D tangent space, pad to Vector2d
-        const Eigen::Vector2d tau_aniso_2d = tau_aniso;
-        std::tie(mu_s, mu_k) = anisotropic_mu_eff_from_tau_aniso(
-            tau_aniso_2d, collision.mu_s_aniso, collision.mu_k_aniso,
-            collision.mu_s, collision.mu_k, false);
-    } else {
-        // For 2D simulations, use isotropic friction
-        mu_s = collision.mu_s;
-        mu_k = collision.mu_k;
-    }
+    friction_mu_for_evaluation(collision, tangent_dim, false, mu_s, mu_k);
 
     // Compute μ f₁(‖τ_aniso‖)/‖τ_aniso‖
     const double tau_aniso_norm = tau_aniso.norm();
     const double mu_f1_over_norm_tau = mu_f1_over_x(tau_aniso_norm, mu_s, mu_k);
 
-    // Compute ∇(μ f₁(‖τ_aniso‖)/‖τ_aniso‖)
+    // ∇(μ f₁/‖τ‖) with μ lagged w.r.t. velocity (no ∂μ/∂τ in Jacobian w.r.t. v).
     VectorMax12d grad_mu_f1_over_norm_tau;
     if (tau_aniso_norm == 0) {
-        // lim_{x→0} f₂(x)x² = 0
         grad_mu_f1_over_norm_tau.setZero(n);
     } else {
-        if (is_anisotropic) {
-            // For direction-dependent anisotropic friction, we need to include
-            // d(mu_eff)/d(tau_aniso) term. The combined model computes
-            // direction from tau_aniso.
-
-            // Main term: (f₂(‖τ_aniso‖)‖τ_aniso‖ - f₁(‖τ_aniso‖)) /
-            // ‖τ_aniso‖³ τ_anisoᵀ ∇τ_aniso. This treats mu_eff as constant
-            // (evaluated at current tau_aniso direction).
-            double f2 = mu_f2_x_minus_mu_f1_over_x3(tau_aniso_norm, mu_s, mu_k);
-            assert(std::isfinite(f2));
-            grad_mu_f1_over_norm_tau =
-                f2 * tau_aniso.transpose() * jac_tau_aniso;
-
-            // Additional term: ∇_τ_aniso μ_eff contribution.
-            // For the combined model, the gradient is computed with respect
-            // to tau_aniso (the scaled velocity), not raw tau.
-            const auto [g_s, g_k] = anisotropic_mu_eff_f_grad(
-                tau_aniso, collision.mu_s_aniso, collision.mu_k_aniso, mu_s,
-                mu_k);
-
-            // Approximate the contribution: ∂(μ f₁/‖τ‖)/∂μ_eff * ∇_τ_aniso
-            // μ_eff
-            // * ∇τ. We use the average of static and kinetic gradients as an
-            // approximation.
-            Eigen::Vector2d g_avg = (g_s + g_k) * 0.5;
-
-            // Ensure the average is finite before using in matrix operations
-            if (!std::isfinite(g_avg[0])
-                || (tangent_dim > 1 && !std::isfinite(g_avg[1]))) {
-                // Skip anisotropic contribution if gradients are not finite
-                g_avg.setZero();
-            }
-
-            // The derivative of mu_f1_over_x with respect to mu_eff is
-            // approximately smooth_mu_f1_over_x evaluated at the current
-            // point. We multiply by the change in mu_eff per unit change in
-            // tau_aniso direction.
-            // Handle both 1D and 2D tangent spaces
-            VectorMax12d dmu_eff_contribution =
-                g_avg.head(tangent_dim).transpose() * jac_tau_aniso;
-            // Scale by the sensitivity of mu_f1_over_x to changes in mu
-            grad_mu_f1_over_norm_tau +=
-                0.1 * mu_f1_over_norm_tau * dmu_eff_contribution;
-        } else {
-            // Isotropic: ∇ (f₁(‖tau_aniso‖)/‖tau_aniso‖) = (f₂‖τ‖ - f₁) / ‖τ‖³
-            // τ_anisoᵀ ∇tau_aniso
-            double f2 = mu_f2_x_minus_mu_f1_over_x3(tau_aniso_norm, mu_s, mu_k);
-            assert(std::isfinite(f2));
-            grad_mu_f1_over_norm_tau =
-                f2 * tau_aniso.transpose() * jac_tau_aniso;
-        }
+        const double f2 =
+            mu_f2_x_minus_mu_f1_over_x3(tau_aniso_norm, mu_s, mu_k);
+        assert(std::isfinite(f2));
+        grad_mu_f1_over_norm_tau =
+            f2 * tau_aniso.transpose() * jac_tau_aniso;
     }
 
     // Premultiplied values
@@ -885,17 +844,8 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
     // Get tangent space dimension (1 for 2D sim, 2 for 3D sim)
     const int tangent_dim = tau.size();
 
-    // Compute effective mu (handles both anisotropic and isotropic cases)
     double mu_s, mu_k;
-    if (tangent_dim > 1) {
-        const Eigen::Vector2d tau_aniso_2d = tau_aniso;
-        std::tie(mu_s, mu_k) = anisotropic_mu_eff_from_tau_aniso(
-            tau_aniso_2d, collision.mu_s_aniso, collision.mu_k_aniso,
-            collision.mu_s, collision.mu_k, no_mu);
-    } else {
-        mu_s = no_mu ? 1.0 : collision.mu_s;
-        mu_k = no_mu ? 1.0 : collision.mu_k;
-    }
+    friction_mu_for_evaluation(collision, tangent_dim, no_mu, mu_s, mu_k);
 
     const double mu_f1_over_norm_tau =
         mu_f1_over_x(tau_aniso.norm(), mu_s, mu_k);
@@ -1005,10 +955,9 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
         jac_tau_aniso.row(1) *= collision.mu_aniso[1];
     }
 
-    // Compute f₁(‖tau_aniso‖)/‖tau_aniso‖
     const double tau_norm = tau_aniso.norm();
-    const double mu_s = no_mu ? 1.0 : collision.mu_s;
-    const double mu_k = no_mu ? 1.0 : collision.mu_k;
+    double mu_s, mu_k;
+    friction_mu_for_evaluation(collision, tangent_dim, no_mu, mu_s, mu_k);
     const double f1_over_norm_tau = mu_f1_over_x(tau_norm, mu_s, mu_k);
 
     // Compute ∇(f₁(‖tau_aniso‖)/‖tau_aniso‖)

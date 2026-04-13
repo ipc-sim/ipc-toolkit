@@ -124,6 +124,16 @@ public:
     ///       ipc::friction::smooth_mu.
     Eigen::Vector2d mu_aniso = Eigen::Vector2d::Ones();
 
+    /// @brief Directional (matchstick) effective static μ lagged for the current solve.
+    /// @note When mu_s_aniso is nonzero, call
+    ///       TangentialCollisions::update_lagged_anisotropic_friction_coefficients
+    ///       after build and when lagged positions or velocities change (e.g. each
+    ///       Newton iteration) so dissipative potential gradients match friction force.
+    double mu_s_effective_lagged = 0;
+
+    /// @brief Directional (matchstick) effective kinetic μ lagged for the current solve.
+    double mu_k_effective_lagged = 0;
+
     /// @brief Gradient of weight with respect to all DOF
     Eigen::SparseVector<double> weight_gradient;
 

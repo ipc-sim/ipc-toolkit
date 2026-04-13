@@ -1,6 +1,7 @@
 #include "tangential_collisions.hpp"
 
 #include <ipc/distance/edge_edge_mollifier.hpp>
+#include <ipc/friction/smooth_mu.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
 #include <tbb/blocked_range.h>
@@ -8,8 +9,53 @@
 #include <tbb/parallel_for.h>
 
 #include <stdexcept> // std::out_of_range
+#include <tuple>
 
 namespace ipc {
+
+namespace {
+
+void update_lagged_mu_collision(
+    TangentialCollision& collision,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+    Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+    Eigen::ConstRef<Eigen::MatrixXd> velocities)
+{
+    const VectorMax12d rest_dof =
+        collision.dof(rest_positions, edges, faces);
+    const VectorMax12d lag_dof =
+        collision.dof(lagged_displacements, edges, faces);
+    const VectorMax12d vel_dof = collision.dof(velocities, edges, faces);
+    const VectorMax12d lagged_pos = rest_dof + lag_dof;
+
+    const MatrixMax<double, 3, 2> P =
+        collision.compute_tangent_basis(lagged_pos);
+    const VectorMax2d beta = collision.compute_closest_point(lagged_pos);
+    const MatrixMax<double, 3, 12> Gamma =
+        collision.relative_velocity_matrix(beta);
+    const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
+    const VectorMax2d tau = T.transpose() * vel_dof;
+
+    const int tangent_dim = tau.size();
+    const VectorMax2d tau_aniso =
+        collision.mu_aniso.head(tangent_dim).cwiseProduct(tau);
+
+    if (tangent_dim <= 1 || collision.mu_s_aniso.squaredNorm() == 0) {
+        collision.mu_s_effective_lagged = collision.mu_s;
+        collision.mu_k_effective_lagged = collision.mu_k;
+        return;
+    }
+
+    const Eigen::Vector2d tau_aniso_2d = tau_aniso;
+    std::tie(collision.mu_s_effective_lagged, collision.mu_k_effective_lagged) =
+        anisotropic_mu_eff_from_tau_aniso(
+            tau_aniso_2d, collision.mu_s_aniso, collision.mu_k_aniso,
+            collision.mu_s, collision.mu_k, false);
+}
+
+} // namespace
 
 void TangentialCollisions::build(
     const CollisionMesh& mesh,
@@ -107,6 +153,8 @@ void TangentialCollisions::build(
             + FC_fv.back().closest_point[1] * (mu_k(f2i) - mu_k(f0i));
         FC_fv.back().mu_k = blend_mu(face_mu_k, mu_k(vi));
     }
+
+    reset_lagged_anisotropic_friction_coefficients();
 }
 
 void TangentialCollisions::build(
@@ -293,6 +341,60 @@ void TangentialCollisions::build(
                 ptr->smooth_collision = collisions.collisions[i];
             }
         }
+    }
+
+    reset_lagged_anisotropic_friction_coefficients();
+}
+
+void TangentialCollisions::reset_lagged_anisotropic_friction_coefficients()
+{
+    for (auto& c : vv_collisions) {
+        c.mu_s_effective_lagged = c.mu_s;
+        c.mu_k_effective_lagged = c.mu_k;
+    }
+    for (auto& c : ev_collisions) {
+        c.mu_s_effective_lagged = c.mu_s;
+        c.mu_k_effective_lagged = c.mu_k;
+    }
+    for (auto& c : ee_collisions) {
+        c.mu_s_effective_lagged = c.mu_s;
+        c.mu_k_effective_lagged = c.mu_k;
+    }
+    for (auto& c : fv_collisions) {
+        c.mu_s_effective_lagged = c.mu_s;
+        c.mu_k_effective_lagged = c.mu_k;
+    }
+}
+
+void TangentialCollisions::update_lagged_anisotropic_friction_coefficients(
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+    Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+    Eigen::ConstRef<Eigen::MatrixXd> velocities)
+{
+    assert(rest_positions.rows() == lagged_displacements.rows());
+    assert(rest_positions.rows() == velocities.rows());
+    assert(rest_positions.cols() == lagged_displacements.cols());
+    assert(rest_positions.cols() == velocities.cols());
+
+    const Eigen::MatrixXi& edges = mesh.edges();
+    const Eigen::MatrixXi& faces = mesh.faces();
+
+    for (auto& c : vv_collisions) {
+        update_lagged_mu_collision(
+            c, edges, faces, rest_positions, lagged_displacements, velocities);
+    }
+    for (auto& c : ev_collisions) {
+        update_lagged_mu_collision(
+            c, edges, faces, rest_positions, lagged_displacements, velocities);
+    }
+    for (auto& c : ee_collisions) {
+        update_lagged_mu_collision(
+            c, edges, faces, rest_positions, lagged_displacements, velocities);
+    }
+    for (auto& c : fv_collisions) {
+        update_lagged_mu_collision(
+            c, edges, faces, rest_positions, lagged_displacements, velocities);
     }
 }
 

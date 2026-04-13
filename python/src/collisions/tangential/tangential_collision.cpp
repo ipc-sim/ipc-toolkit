@@ -137,6 +137,15 @@ void define_tangential_collision(py::module_& m)
         .def_readwrite(
             "mu_k_aniso", &TangentialCollision::mu_k_aniso,
             "Kinetic friction ellipse axes (2D, one per tangent). Zero → scalar mu_k. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885).")
+        .def_readwrite(
+            "mu_s_effective_lagged",
+            &TangentialCollision::mu_s_effective_lagged,
+            "Lagged matchstick effective static μ (refresh via "
+            "TangentialCollisions.update_lagged_anisotropic_friction_coefficients).")
+        .def_readwrite(
+            "mu_k_effective_lagged",
+            &TangentialCollision::mu_k_effective_lagged,
+            "Lagged matchstick effective kinetic μ.")
         .def_readwrite("weight", &TangentialCollision::weight, "Weight")
         .def_property(
             "weight_gradient",

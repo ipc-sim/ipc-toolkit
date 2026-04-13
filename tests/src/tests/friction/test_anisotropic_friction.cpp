@@ -11,6 +11,8 @@
 #include <ipc/collision_mesh.hpp>
 
 #include <finitediff.hpp>
+#include <tests/utils.hpp>
+
 #include <cmath>
 
 #ifndef M_PI
@@ -329,11 +331,11 @@ TEST_CASE(
     // coefficients to tangential collisions after they're built
 
     TangentialCollisions tangential_collisions;
-    BarrierPotential barrier_potential(1e-3);
+    BarrierPotential barrier_potential(1e-3, 1.0);
 
     // Build with default (isotropic) friction
     tangential_collisions.build(
-        mesh, vertices, normal_collisions, barrier_potential, 1.0, 0.5, 0.3);
+        mesh, vertices, normal_collisions, barrier_potential, 0.5, 0.3);
 
     if (tangential_collisions.size() > 0) {
         // Assign different anisotropic coefficients to different collisions
@@ -374,11 +376,10 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
 
     // Build tangential collisions
     TangentialCollisions tangential_collisions;
-    BarrierPotential barrier_potential(dhat);
     const double barrier_stiffness = 1.0;
+    BarrierPotential barrier_potential(dhat, barrier_stiffness);
     tangential_collisions.build(
-        mesh, vertices, normal_collisions, barrier_potential, barrier_stiffness,
-        0.5, 0.3);
+        mesh, vertices, normal_collisions, barrier_potential, 0.5, 0.3);
 
     if (tangential_collisions.empty()) {
         return; // Skip if no tangential collisions
@@ -405,12 +406,16 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
 
     CAPTURE(angle, velocity_magnitude, mu_s_aniso, mu_k_aniso);
 
+    tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, vertices, Eigen::MatrixXd::Zero(vertices.rows(), vertices.cols()),
+        velocities);
+
     // Compute force for this single collision
     VectorMax12d force = friction_potential.force(
         collision, collision.dof(vertices, edges, faces),
         collision.dof(Eigen::MatrixXd::Zero(2, 3), edges, faces),
-        collision.dof(velocities, edges, faces), barrier_potential,
-        barrier_stiffness, 0.0, false);
+        collision.dof(velocities, edges, faces), barrier_potential, 0.0,
+        false);
 
     // Verify force is non-zero (unless velocity is zero)
     if (velocity_magnitude > 1e-10) {
@@ -460,11 +465,10 @@ TEST_CASE(
 
     // Build tangential collisions
     TangentialCollisions tangential_collisions;
-    BarrierPotential barrier_potential(dhat);
     const double barrier_stiffness = 1.0;
+    BarrierPotential barrier_potential(dhat, barrier_stiffness);
     tangential_collisions.build(
-        mesh, vertices, normal_collisions, barrier_potential, barrier_stiffness,
-        0.5, 0.3);
+        mesh, vertices, normal_collisions, barrier_potential, 0.5, 0.3);
 
     if (tangential_collisions.empty()) {
         return; // Skip if no tangential collisions
@@ -486,12 +490,16 @@ TEST_CASE(
 
     CAPTURE(mu_s_aniso, mu_k_aniso);
 
+    tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, vertices, Eigen::MatrixXd::Zero(vertices.rows(), vertices.cols()),
+        velocities);
+
     // Compute force jacobian w.r.t. velocities
     MatrixMax12d jacobian = friction_potential.force_jacobian(
         collision, collision.dof(vertices, edges, faces),
         collision.dof(Eigen::MatrixXd::Zero(2, 3), edges, faces),
         collision.dof(velocities, edges, faces), barrier_potential,
-        barrier_stiffness, FrictionPotential::DiffWRT::VELOCITIES, 0.0);
+        FrictionPotential::DiffWRT::VELOCITIES, 0.0);
 
     // Verify jacobian is non-zero
     CHECK(jacobian.norm() > 1e-10);
@@ -507,8 +515,7 @@ TEST_CASE(
         return friction_potential.force(
             collision, collision.dof(vertices, edges, faces),
             collision.dof(Eigen::MatrixXd::Zero(2, 3), edges, faces),
-            collision.dof(v_mat, edges, faces), barrier_potential,
-            barrier_stiffness, 0.0, false);
+            collision.dof(v_mat, edges, faces), barrier_potential, 0.0, false);
     };
 
     Eigen::MatrixXd fd_jacobian;
@@ -553,11 +560,10 @@ TEST_CASE(
 
     // Build tangential collisions
     TangentialCollisions tangential_collisions;
-    BarrierPotential barrier_potential(dhat);
     const double barrier_stiffness = 1.0;
+    BarrierPotential barrier_potential(dhat, barrier_stiffness);
     tangential_collisions.build(
-        mesh, vertices, normal_collisions, barrier_potential, barrier_stiffness,
-        0.5, 0.3);
+        mesh, vertices, normal_collisions, barrier_potential, 0.5, 0.3);
 
     if (tangential_collisions.empty()) {
         return; // Skip if no tangential collisions
@@ -592,12 +598,16 @@ TEST_CASE(
 
     CAPTURE(mu_aniso, mu_s_aniso, mu_k_aniso, angle, velocity_magnitude);
 
+    tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, vertices, Eigen::MatrixXd::Zero(vertices.rows(), vertices.cols()),
+        velocities);
+
     // Compute force
     VectorMax12d force = friction_potential.force(
         collision, collision.dof(vertices, edges, faces),
         collision.dof(Eigen::MatrixXd::Zero(2, 3), edges, faces),
-        collision.dof(velocities, edges, faces), barrier_potential,
-        barrier_stiffness, 0.0, false);
+        collision.dof(velocities, edges, faces), barrier_potential, 0.0,
+        false);
 
     // Verify force is non-zero
     CHECK(force.norm() > 1e-10);
@@ -607,7 +617,7 @@ TEST_CASE(
         collision, collision.dof(vertices, edges, faces),
         collision.dof(Eigen::MatrixXd::Zero(2, 3), edges, faces),
         collision.dof(velocities, edges, faces), barrier_potential,
-        barrier_stiffness, FrictionPotential::DiffWRT::VELOCITIES, 0.0);
+        FrictionPotential::DiffWRT::VELOCITIES, 0.0);
 
     // Verify jacobian is non-zero
     CHECK(jacobian.norm() > 1e-10);
@@ -623,24 +633,19 @@ TEST_CASE(
         return friction_potential.force(
             collision, collision.dof(vertices, edges, faces),
             collision.dof(Eigen::MatrixXd::Zero(2, 3), edges, faces),
-            collision.dof(v_mat, edges, faces), barrier_potential,
-            barrier_stiffness, 0.0, false);
+            collision.dof(v_mat, edges, faces), barrier_potential, 0.0, false);
     };
 
     Eigen::MatrixXd fd_jacobian;
     fd::finite_jacobian(V_flat, F_V, fd_jacobian, fd::AccuracyOrder::SECOND, H);
 
-    // Compare analytical and finite difference jacobians
-    // Use a larger tolerance because the jacobian includes approximations
-    // for the d(mu_eff)/d(tau) term
-    CHECKED_ELSE(fd::compare_jacobian(jacobian, fd_jacobian, 0.05))
+    static constexpr double EPSILON = 1e-3;
+    static constexpr double MARGIN = 1e-5;
+    CHECKED_ELSE(fd::compare_jacobian(jacobian, fd_jacobian, EPSILON))
     {
-        // If comparison fails, check max difference
         Eigen::MatrixXd diff = jacobian - fd_jacobian;
         double max_diff = diff.cwiseAbs().maxCoeff();
-        double rel_diff = max_diff / std::max(fd_jacobian.norm(), 1e-10);
-        CAPTURE(max_diff, rel_diff);
-        CHECK(rel_diff < 0.1);
+        CHECK(max_diff < MARGIN);
     }
 
     // Verify that combined mechanism produces different results than either
@@ -651,27 +656,86 @@ TEST_CASE(
     // mu_s_aniso to zero)
     collision.mu_s_aniso = Eigen::Vector2d::Zero();
     collision.mu_k_aniso = Eigen::Vector2d::Zero();
+    tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, vertices, Eigen::MatrixXd::Zero(vertices.rows(), vertices.cols()),
+        velocities);
 
     VectorMax12d mu_aniso_only_force = friction_potential.force(
         collision, collision.dof(vertices, edges, faces),
         collision.dof(Eigen::MatrixXd::Zero(2, 3), edges, faces),
-        collision.dof(velocities, edges, faces), barrier_potential,
-        barrier_stiffness, 0.0, false);
+        collision.dof(velocities, edges, faces), barrier_potential, 0.0,
+        false);
 
     // Test with direction-dependent only (set mu_aniso to identity)
     collision.mu_aniso = Eigen::Vector2d(1.0, 1.0);
     collision.mu_s_aniso = mu_s_aniso;
     collision.mu_k_aniso = mu_k_aniso;
+    tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, vertices, Eigen::MatrixXd::Zero(vertices.rows(), vertices.cols()),
+        velocities);
 
     VectorMax12d dir_dep_only_force = friction_potential.force(
         collision, collision.dof(vertices, edges, faces),
         collision.dof(Eigen::MatrixXd::Zero(2, 3), edges, faces),
-        collision.dof(velocities, edges, faces), barrier_potential,
-        barrier_stiffness, 0.0, false);
+        collision.dof(velocities, edges, faces), barrier_potential, 0.0,
+        false);
 
     // Combined force should generally differ from either mechanism alone
     // (unless in special cases like aligned with principal axes)
     // We just verify the forces are computed without error here
     CHECK(mu_aniso_only_force.norm() > 1e-10);
     CHECK(dir_dep_only_force.norm() > 1e-10);
+}
+
+TEST_CASE(
+    "Anisotropic friction dissipative gradient matches minus force",
+    "[friction][anisotropic][potential-force]")
+{
+    Eigen::MatrixXd vertices(2, 3);
+    vertices << 0.0, 0.0, 0.0, 0.05, 0.0, 0.0;
+
+    Eigen::MatrixXi edges, faces;
+    CollisionMesh mesh(vertices, edges, faces);
+
+    NormalCollisions normal_collisions;
+    const double dhat = 1e-2;
+    normal_collisions.build(mesh, vertices, dhat);
+
+    if (normal_collisions.empty()) {
+        return;
+    }
+
+    const double barrier_stiffness = 1.0;
+    BarrierPotential barrier_potential(dhat, barrier_stiffness);
+    TangentialCollisions tangential_collisions;
+    tangential_collisions.build(
+        mesh, vertices, normal_collisions, barrier_potential, 0.5, 0.3);
+
+    if (tangential_collisions.empty()) {
+        return;
+    }
+
+    TangentialCollision& collision = tangential_collisions[0];
+    collision.mu_s_aniso = Eigen::Vector2d(0.75, 0.42);
+    collision.mu_k_aniso = Eigen::Vector2d(0.58, 0.29);
+
+    Eigen::MatrixXd velocities(2, 3);
+    velocities << 0.12, 0.07, 0.0, 0.0, 0.0, 0.0;
+
+    tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, vertices, Eigen::MatrixXd::Zero(vertices.rows(), vertices.cols()),
+        velocities);
+
+    FrictionPotential friction_potential(1e-4);
+
+    const VectorMax12d force = friction_potential.force(
+        collision, collision.dof(vertices, edges, faces),
+        collision.dof(Eigen::MatrixXd::Zero(2, 3), edges, faces),
+        collision.dof(velocities, edges, faces), barrier_potential, 0.0,
+        false);
+
+    const VectorMax12d grad = friction_potential.gradient(
+        collision, collision.dof(velocities, edges, faces));
+
+    CHECK(fd::compare_gradient(-force, grad));
 }

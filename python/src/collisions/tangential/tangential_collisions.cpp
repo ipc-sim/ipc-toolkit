@@ -58,6 +58,16 @@ void define_tangential_collisions(py::module_& m)
             "clear", &TangentialCollisions::clear,
             "Clear the friction collisions.")
         .def(
+            "reset_lagged_anisotropic_friction_coefficients",
+            &TangentialCollisions::reset_lagged_anisotropic_friction_coefficients,
+            "Set lagged effective μ to scalar mu_s/mu_k on each collision (done automatically after build).")
+        .def(
+            "update_lagged_anisotropic_friction_coefficients",
+            &TangentialCollisions::update_lagged_anisotropic_friction_coefficients,
+            "mesh"_a, "rest_positions"_a, "lagged_displacements"_a, "velocities"_a,
+            "Refresh matchstick effective μ from lagged geometry and slip. "
+            "Call when mu_s_aniso is nonzero (e.g. each Newton iteration).")
+        .def(
             "__getitem__",
             [](TangentialCollisions& self, size_t i) -> TangentialCollision& {
                 return self[i];

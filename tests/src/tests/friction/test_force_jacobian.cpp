@@ -376,7 +376,8 @@ void check_smooth_friction_force_jacobian(
     const double epsv_times_h,
     const SmoothContactParameters& params,
     const double barrier_stiffness,
-    const bool recompute_collisions)
+    const bool recompute_collisions,
+    const bool test_anisotropic_velocity_jacobian = false)
 {
     const int dim = mesh.dim();
     const double dhat = params.dhat;
@@ -632,6 +633,33 @@ void check_smooth_friction_force_jacobian(
     CHECK(
         (JF_wrt_V.norm() == 0
          || (fd_JF_wrt_V - JF_wrt_V).norm() <= 1e-7 * JF_wrt_V.norm()));
+
+    if (test_anisotropic_velocity_jacobian && mesh.dim() == 3) {
+        for (size_t i = 0; i < friction_collisions.size(); ++i) {
+            friction_collisions[i].mu_s_aniso = Eigen::Vector2d(0.8, 0.45);
+            friction_collisions[i].mu_k_aniso = Eigen::Vector2d(0.65, 0.32);
+        }
+        friction_collisions.update_lagged_anisotropic_friction_coefficients(
+            mesh, X, Ut_mesh, velocities);
+
+        Eigen::MatrixXd JF_wrt_V_aniso = D.smooth_contact_force_jacobian(
+            friction_collisions, mesh, X, Ut_mesh, velocities, params,
+            FrictionPotential::DiffWRT::VELOCITIES, 0.0, false);
+
+        auto F_V_aniso = [&](const Eigen::VectorXd& v) {
+            return D.smooth_contact_force(
+                friction_collisions, mesh, X, Ut_mesh,
+                fd::unflatten(v, velocities.cols()), 0.0, false);
+        };
+        Eigen::MatrixXd fd_JF_wrt_V_aniso;
+        fd::finite_jacobian(
+            fd::flatten(velocities), F_V_aniso, fd_JF_wrt_V_aniso,
+            fd::AccuracyOrder::FOURTH, 1e-6 * dhat);
+        CHECK(
+            (JF_wrt_V_aniso.norm() == 0
+             || (fd_JF_wrt_V_aniso - JF_wrt_V_aniso).norm()
+                    <= 1e-7 * JF_wrt_V_aniso.norm()));
+    }
 }
 
 TEST_CASE(
@@ -742,5 +770,5 @@ TEST_CASE(
 
     check_smooth_friction_force_jacobian(
         mesh, Ut, U, collisions, mu, epsv_times_h, params, barrier_stiffness,
-        false);
+        false, true);
 }
