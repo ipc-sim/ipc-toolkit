@@ -15,6 +15,7 @@
 #include <igl/edges.h>
 #include <igl/PI.h>
 
+#include <algorithm>
 #include <cmath>
 
 using namespace ipc;
@@ -304,7 +305,7 @@ TEST_CASE(
 {
     const double dhat = 1e-2;
     Eigen::MatrixXd vertices(2, 3);
-    vertices << 0.0, 0.0, 0.0, 0.05, 0.0, 0.0;
+    vertices << 0.0, 0.0, 0.0, dhat * 0.5, 0.0, 0.0;
 
     Eigen::MatrixXi edges, faces;
     CollisionMesh mesh(vertices, edges, faces);
@@ -350,20 +351,28 @@ TEST_CASE(
     const Eigen::VectorXd force_disabled = friction_potential.force(
         disabled_aniso_collisions, mesh, vertices, lagged_displacements,
         velocities, barrier_potential, 0.0, false);
-    CHECK(fd::compare_gradient(force_baseline, force_disabled));
+    const double force_diff_norm = (force_baseline - force_disabled).norm();
+    const double force_ref_norm = std::max(force_baseline.norm(), 1.0);
+    CHECK(force_diff_norm <= 1e-12 * force_ref_norm);
 
     const Eigen::VectorXd grad_baseline =
         friction_potential.gradient(baseline_collisions, mesh, velocities);
     const Eigen::VectorXd grad_disabled = friction_potential.gradient(
         disabled_aniso_collisions, mesh, velocities);
-    CHECK(fd::compare_gradient(grad_baseline, grad_disabled));
+    const double grad_diff_norm = (grad_baseline - grad_disabled).norm();
+    const double grad_ref_norm = std::max(grad_baseline.norm(), 1.0);
+    CHECK(grad_diff_norm <= 1e-12 * grad_ref_norm);
 
     const Eigen::SparseMatrix<double> hess_baseline =
         friction_potential.hessian(baseline_collisions, mesh, velocities);
     const Eigen::SparseMatrix<double> hess_disabled =
         friction_potential.hessian(disabled_aniso_collisions, mesh, velocities);
-    CHECK(fd::compare_jacobian(
-        Eigen::MatrixXd(hess_baseline), Eigen::MatrixXd(hess_disabled)));
+    const Eigen::MatrixXd hess_baseline_dense = Eigen::MatrixXd(hess_baseline);
+    const Eigen::MatrixXd hess_disabled_dense = Eigen::MatrixXd(hess_disabled);
+    const double hess_diff_norm =
+        (hess_baseline_dense - hess_disabled_dense).norm();
+    const double hess_ref_norm = std::max(hess_baseline_dense.norm(), 1.0);
+    CHECK(hess_diff_norm <= 1e-12 * hess_ref_norm);
 }
 
 TEST_CASE(
