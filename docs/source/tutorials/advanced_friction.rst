@@ -295,6 +295,10 @@ exact incremental potential).
 Friction Jacobians in the toolkit omit :math:`\partial \mu / \partial \tau` for
 this direction-dependent case because :math:`\mu_{\text{eff}}` is held fixed
 after the lag update.
+Directional lagged-:math:`\mu` refresh is currently activated when
+``mu_s_aniso`` is nonzero in a 2D tangent space. If only
+``mu_k_aniso`` is nonzero, the current gate keeps isotropic lagged
+coefficients.
 For discussion of the curl / non-conservative-field issue and the lagged-μ
 recommendation in IPC, see the maintainer notes linked from
 `PR #210 <https://github.com/ipc-sim/ipc-toolkit/pull/210>`_ (and
@@ -316,11 +320,6 @@ Use one or both. When both are set, velocity scaling is applied first; the
 ellipse effective :math:`\mu` is then chosen from the direction of that scaled
 slip when you call ``update_lagged_anisotropic_friction_coefficients``.
 
-Backward Compatibility
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Default zero ``mu_s_aniso`` and ``mu_k_aniso`` means the solver uses the scalar
-``mu_s`` and ``mu_k`` values, so existing setups keep working.
 
 Future Directions
 -----------------

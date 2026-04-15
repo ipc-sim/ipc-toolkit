@@ -298,6 +298,162 @@ TEST_CASE(
     }
 }
 
+TEST_CASE(
+    "Anisotropy disabled matches isotropic baseline",
+    "[friction][anisotropic][isotropic][parity]")
+{
+    const double dhat = 1e-2;
+    Eigen::MatrixXd vertices(2, 3);
+    vertices << 0.0, 0.0, 0.0, 0.05, 0.0, 0.0;
+
+    Eigen::MatrixXi edges, faces;
+    CollisionMesh mesh(vertices, edges, faces);
+
+    NormalCollisions normal_collisions;
+    normal_collisions.build(mesh, vertices, dhat);
+    REQUIRE(!normal_collisions.empty());
+
+    const double barrier_stiffness = 1.0;
+    BarrierPotential barrier_potential(dhat, barrier_stiffness);
+    FrictionPotential friction_potential(1e-4);
+
+    TangentialCollisions baseline_collisions;
+    baseline_collisions.build(
+        mesh, vertices, normal_collisions, barrier_potential, 0.5, 0.3);
+    REQUIRE(!baseline_collisions.empty());
+
+    TangentialCollisions disabled_aniso_collisions;
+    disabled_aniso_collisions.build(
+        mesh, vertices, normal_collisions, barrier_potential, 0.5, 0.3);
+    REQUIRE(!disabled_aniso_collisions.empty());
+
+    Eigen::MatrixXd velocities(2, 3);
+    velocities << 0.1, 0.05, 0.0, 0.0, 0.0, 0.0;
+    const Eigen::MatrixXd lagged_displacements =
+        Eigen::MatrixXd::Zero(vertices.rows(), vertices.cols());
+
+    // Keep anisotropy disabled explicitly (same as default behavior).
+    for (size_t i = 0; i < disabled_aniso_collisions.size(); ++i) {
+        disabled_aniso_collisions[i].mu_s_aniso = Eigen::Vector2d::Zero();
+        disabled_aniso_collisions[i].mu_k_aniso = Eigen::Vector2d::Zero();
+        disabled_aniso_collisions[i].mu_aniso = Eigen::Vector2d::Ones();
+    }
+
+    baseline_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, vertices, lagged_displacements, velocities);
+    disabled_aniso_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, vertices, lagged_displacements, velocities);
+
+    const Eigen::VectorXd force_baseline = friction_potential.force(
+        baseline_collisions, mesh, vertices, lagged_displacements, velocities,
+        barrier_potential, 0.0, false);
+    const Eigen::VectorXd force_disabled = friction_potential.force(
+        disabled_aniso_collisions, mesh, vertices, lagged_displacements,
+        velocities, barrier_potential, 0.0, false);
+    CHECK(fd::compare_gradient(force_baseline, force_disabled));
+
+    const Eigen::VectorXd grad_baseline =
+        friction_potential.gradient(baseline_collisions, mesh, velocities);
+    const Eigen::VectorXd grad_disabled = friction_potential.gradient(
+        disabled_aniso_collisions, mesh, velocities);
+    CHECK(fd::compare_gradient(grad_baseline, grad_disabled));
+
+    const Eigen::SparseMatrix<double> hess_baseline =
+        friction_potential.hessian(baseline_collisions, mesh, velocities);
+    const Eigen::SparseMatrix<double> hess_disabled =
+        friction_potential.hessian(disabled_aniso_collisions, mesh, velocities);
+    CHECK(fd::compare_jacobian(
+        Eigen::MatrixXd(hess_baseline), Eigen::MatrixXd(hess_disabled)));
+}
+
+TEST_CASE(
+    "Lagged anisotropic mu refresh contract",
+    "[friction][anisotropic][lagged][refresh]")
+{
+    static constexpr double MARGIN = 1e-12;
+
+    const double dhat = 1e-2;
+    Eigen::MatrixXd vertices(2, 3);
+    vertices << 0.0, 0.0, 0.0, dhat * 0.5, 0.0, 0.0;
+
+    Eigen::MatrixXi edges, faces;
+    CollisionMesh mesh(vertices, edges, faces);
+
+    NormalCollisions normal_collisions;
+    normal_collisions.build(mesh, vertices, dhat);
+    REQUIRE(!normal_collisions.empty());
+
+    TangentialCollisions tangential_collisions;
+    BarrierPotential barrier_potential(dhat, 1.0);
+    tangential_collisions.build(
+        mesh, vertices, normal_collisions, barrier_potential, 0.5, 0.3);
+    REQUIRE(!tangential_collisions.empty());
+
+    TangentialCollision& collision = tangential_collisions[0];
+    collision.mu_s_aniso = Eigen::Vector2d(0.9, 0.2);
+    collision.mu_k_aniso = Eigen::Vector2d(0.6, 0.15);
+
+    const Eigen::MatrixXd lagged_displacements =
+        Eigen::MatrixXd::Zero(vertices.rows(), vertices.cols());
+    auto expected_lagged_mu =
+        [&](const Eigen::MatrixXd& velocities) -> std::pair<double, double> {
+        const VectorMax12d rest_dof = collision.dof(vertices, edges, faces);
+        const VectorMax12d lag_dof =
+            collision.dof(lagged_displacements, edges, faces);
+        const VectorMax12d vel_dof = collision.dof(velocities, edges, faces);
+        const VectorMax12d lagged_pos = rest_dof + lag_dof;
+
+        const MatrixMax<double, 3, 2> P =
+            collision.compute_tangent_basis(lagged_pos);
+        const VectorMax2d beta = collision.compute_closest_point(lagged_pos);
+        const MatrixMax<double, 3, 12> Gamma =
+            collision.relative_velocity_jacobian(beta);
+        const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
+        const VectorMax2d tau = T.transpose() * vel_dof;
+        const VectorMax2d tau_aniso =
+            collision.mu_aniso.head(tau.size()).cwiseProduct(tau);
+
+        return anisotropic_mu_eff_from_tau_aniso(
+            tau_aniso, collision.mu_s_aniso, collision.mu_k_aniso,
+            collision.mu_s, collision.mu_k, false);
+    };
+
+    Eigen::MatrixXd velocities_1 = Eigen::MatrixXd::Zero(2, 3);
+    velocities_1.row(0) << 0.0, 1.0, 0.0;
+    const auto [mu_s_expected_1, mu_k_expected_1] =
+        expected_lagged_mu(velocities_1);
+    tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, vertices, lagged_displacements, velocities_1);
+    CHECK(
+        collision.mu_s_effective_lagged
+        == Catch::Approx(mu_s_expected_1).margin(MARGIN));
+    CHECK(
+        collision.mu_k_effective_lagged
+        == Catch::Approx(mu_k_expected_1).margin(MARGIN));
+
+    // Change slip kinematics but do not refresh: lagged coefficients must stay
+    // fixed for evaluation.
+    Eigen::MatrixXd velocities_2 = Eigen::MatrixXd::Zero(2, 3);
+    velocities_2.row(0) << 0.0, 0.37, 0.91;
+    const auto [mu_s_expected_2, mu_k_expected_2] =
+        expected_lagged_mu(velocities_2);
+    CHECK(
+        collision.mu_s_effective_lagged
+        == Catch::Approx(mu_s_expected_1).margin(MARGIN));
+    CHECK(
+        collision.mu_k_effective_lagged
+        == Catch::Approx(mu_k_expected_1).margin(MARGIN));
+
+    tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, vertices, lagged_displacements, velocities_2);
+    CHECK(
+        collision.mu_s_effective_lagged
+        == Catch::Approx(mu_s_expected_2).margin(MARGIN));
+    CHECK(
+        collision.mu_k_effective_lagged
+        == Catch::Approx(mu_k_expected_2).margin(MARGIN));
+}
+
 TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
 {
     static constexpr double MARGIN = 1e-6;

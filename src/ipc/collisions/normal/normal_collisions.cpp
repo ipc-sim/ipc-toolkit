@@ -175,9 +175,8 @@ void NormalCollisions::build(
 void NormalCollisions::set_use_area_weighting(const bool use_area_weighting)
 {
     if (!empty() && use_area_weighting != m_use_area_weighting) {
-        logger().warn(
-            "Setting use_area_weighting after building collisions. "
-            "Re-build collisions for this to have an effect.");
+        logger().warn("Setting use_area_weighting after building collisions. "
+                      "Re-build collisions for this to have an effect.");
     }
 
     if (!use_area_weighting
@@ -192,9 +191,8 @@ void NormalCollisions::set_use_area_weighting(const bool use_area_weighting)
 void NormalCollisions::set_collision_set_type(const CollisionSetType type)
 {
     if (!empty() && type != m_collision_set_type) {
-        logger().warn(
-            "Setting collision_set_type after building collisions. "
-            "Re-build collisions for this to have an effect.");
+        logger().warn("Setting collision_set_type after building collisions. "
+                      "Re-build collisions for this to have an effect.");
     }
 
     if (!use_area_weighting()

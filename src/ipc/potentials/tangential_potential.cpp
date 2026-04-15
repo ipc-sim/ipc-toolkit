@@ -10,7 +10,9 @@ namespace ipc {
 
 namespace {
 
-    /// Scalar μ for dissipative potential / force. Always uses
+    /// Scalar μ for dissipative potential / force. Semi-implicit lagged
+    /// anisotropy uses cached effective coefficients for one evaluation.
+    /// Always uses
     /// mu_s_effective_lagged / mu_k_effective_lagged (isotropic scalars are
     /// copied there by
     /// TangentialCollisions::reset_lagged_anisotropic_friction_coefficients
@@ -234,7 +236,8 @@ VectorMax12d TangentialPotential::gradient(
     }
 
     const double norm_u_aniso = u_aniso.norm();
-    // Matchstick / lagged μ: no ∂μ_eff/∂u_aniso (μ fixed for this evaluation).
+    // Semi-implicit lagged anisotropy: no ∂μ_eff/∂u_aniso (μ fixed for this
+    // evaluation).
     VectorMax2d grad_wrt_u_aniso =
         mu_f1_over_x(norm_u_aniso, mu_s, mu_k) * u_aniso;
 

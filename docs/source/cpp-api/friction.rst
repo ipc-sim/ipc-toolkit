@@ -41,6 +41,14 @@ with :math:`t = \tau / \|\tau\|`.
 - use ``anisotropic_mu_eff_f`` when you have the unit direction.
 - Zero ``mu_s_aniso`` and ``mu_k_aniso`` falls back to scalar :math:`\mu_s`, :math:`\mu_k`.
 
+For tangential collision evaluation, effective directional coefficients are used
+as lagged scalars (stored on each collision), i.e., no in-evaluation
+:math:`\partial \mu_{\text{eff}} / \partial \tau` terms are taken in the force
+or Jacobian/Hessian paths. Call
+``TangentialCollisions::update_lagged_anisotropic_friction_coefficients(...)``
+after ``build(...)`` and whenever lagged geometry/velocities used for slip are
+updated (typically each Newton iteration).
+
 See :cite:t:`Erleben2019Matchstick` for the Matchstick model; code: `erleben/matchstick <https://github.com/erleben/matchstick>`_.
 
 .. doxygenfunction:: anisotropic_mu_eff_f

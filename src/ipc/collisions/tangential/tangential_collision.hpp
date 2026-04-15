@@ -130,7 +130,8 @@ public:
     ///       TangentialCollisions::update_lagged_anisotropic_friction_coefficients
     ///       after build and when lagged positions or velocities change (e.g.
     ///       each Newton iteration) so dissipative potential gradients match
-    ///       friction force.
+    ///       friction force for this lagged update. During a single evaluation,
+    ///       μ_eff is held fixed (no in-evaluation ∂μ_eff/∂τ terms).
     double mu_s_effective_lagged = 0;
 
     /// @brief Directional (matchstick) effective kinetic μ lagged for the current solve.
