@@ -96,8 +96,9 @@ double smooth_mu_f2_x_minus_mu_f1_over_x3(
 ///                   corresponding tangent basis direction.
 /// @return A pair containing (mu_s_eff, mu_k_eff), the effective static and
 ///         kinetic friction coefficients along the direction tau_dir.
-/// @note If mu_s_aniso and mu_k_aniso are zero vectors, the function returns
-///       (0, 0), which triggers compatible isotropic behavior.
+/// @note If mu_s_aniso and mu_k_aniso are zero vectors, this function returns
+///       (0, 0) as the direct ellipse-formula result. Isotropic behavior is
+///       handled by anisotropic_mu_eff_from_tau_aniso.
 /// @see anisotropic_x_from_tau_aniso, anisotropic_mu_eff_from_tau_aniso
 [[nodiscard]] std::pair<double, double> anisotropic_mu_eff_f(
     Eigen::ConstRef<Eigen::Vector2d> tau_dir,

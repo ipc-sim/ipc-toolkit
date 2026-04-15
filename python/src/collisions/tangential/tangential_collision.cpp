@@ -130,7 +130,9 @@ void define_tangential_collision(py::module_& m)
         .def_readwrite(
             "mu_aniso", &TangentialCollision::mu_aniso,
             "Tangential anisotropy scaling in the collision's tangent basis. "
-            "(1,1) = isotropic (default). Scales tau before evaluating friction.")
+            "(1,1) = isotropic (default). Positive entries are recommended for "
+            "physically meaningful anisotropic scaling. Scales tau before "
+            "evaluating friction.")
         .def_readwrite(
             "mu_s_aniso", &TangentialCollision::mu_s_aniso,
             "Static friction ellipse axes (2D, one per tangent). Zero → scalar mu_s. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885).")

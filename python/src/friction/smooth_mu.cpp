@@ -138,8 +138,10 @@ void define_smooth_mu(py::module_& m)
             mu_k_aniso: Kinetic friction ellipse axes (2D).
 
         Returns:
-            (mu_s_eff, mu_k_eff) along tau_dir. (0, 0) if inputs are zero
-            (isotropic fallback).
+            (mu_s_eff, mu_k_eff) along tau_dir. If anisotropic axes are
+            zero, returns (0, 0) as the direct ellipse-formula result.
+            Isotropic fallback is handled by higher-level anisotropic
+            friction routines.
         )ipc_Qu8mg5v7",
         "tau_dir"_a, "mu_s_aniso"_a, "mu_k_aniso"_a);
 }

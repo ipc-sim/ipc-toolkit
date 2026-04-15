@@ -594,6 +594,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
     }
 
     // + -μ N f₁(‖τ_aniso‖)/‖τ_aniso‖ T [∇τ_aniso]
+    // (jac_tau_aniso already carries diag(mu_aniso) from the chain rule.)
     J += N * mu_f1_over_norm_tau * T * jac_tau_aniso;
 
     // NOTE: ∇ₓw(x) is not local to the collision pair (i.e., it involves more
@@ -803,6 +804,7 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
         mu_f1_over_x(tau_aniso.norm(), mu_s, mu_k);
 
     // F = -μ N f₁(‖tau_aniso‖)/‖tau_aniso‖ T tau_aniso
+    // (Do not use T_aniso here: tau_aniso already includes diag(mu_aniso).)
     // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
     return -collision.weight * (no_contact_force_multiplier ? 1.0 : N)
         * mu_f1_over_norm_tau * T * tau_aniso;
@@ -945,6 +947,7 @@ TangentialPotential::smooth_contact_force_jacobian_unit(
     }
 
     // + -μ N f₁(‖tau_aniso‖)/‖tau_aniso‖ T [∇tau_aniso]
+    // (jac_tau_aniso already carries diag(mu_aniso) from the chain rule.)
     J += f1_over_norm_tau * T * jac_tau_aniso;
 
     // NOTE: ∇ₓw(x) is not local to the collision pair (i.e., it involves more
