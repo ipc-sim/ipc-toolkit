@@ -2139,6 +2139,12 @@
 <p>This document provides a guide to the style used in this project.</p>
 <h2 id="code-formatting">Code Formatting<a class="headerlink" href="#code-formatting" title="Link to this heading">¶</a></h2>
 <p>We utilize <a class="reference external" href="https://clang.llvm.org/docs/ClangFormat.html">ClangFormat</a> to automate code formatting. Please format your code before pushing and/or creating a pull request.</p>
+<ul class="simple">
+<li><p>The project uses the root <code class="docutils literal notranslate"><span class="pre">.clang-format</span></code> (80 columns, WebKit-based).</p></li>
+<li><p>Under <code class="docutils literal notranslate"><span class="pre">tests/</span></code>, <code class="docutils literal notranslate"><span class="pre">tests/.clang-format</span></code> inherits that style and sets <code class="docutils literal notranslate"><span class="pre">SortIncludes:</span> <span class="pre">false</span></code>.</p></li>
+<li><p>CI runs ClangFormat version 20; format with the same version locally to avoid formatting check failures (e.g. <code class="docutils literal notranslate"><span class="pre">clang-format</span> <span class="pre">-i</span></code> using version 20, or use the pre-commit hook from <a class="reference internal" href="tools.html"><span class="doc">Tools for Developers</span></a>).</p></li>
+<li><p>clang-tidy uses the same style via <code class="docutils literal notranslate"><span class="pre">FormatStyle:</span> <span class="pre">file</span></code> (see <code class="docutils literal notranslate"><span class="pre">.clang-tidy</span></code>).</p></li>
+</ul>
 <p>Additionally, ensure that your code adheres to the project’s linting rules. Use the provided linting tools to check for any issues before committing your changes.</p>
 <h2 id="naming-conventions">Naming conventions<a class="headerlink" href="#naming-conventions" title="Link to this heading">¶</a></h2>
 <h3 id="general">General<a class="headerlink" href="#general" title="Link to this heading">¶</a></h3>
@@ -2187,7 +2193,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Mar 18, 2026
+    Apr 16, 2026
   </span>
 
     

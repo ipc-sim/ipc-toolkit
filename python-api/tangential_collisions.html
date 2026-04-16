@@ -2014,6 +2014,30 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollisions.reset_lagged_anisotropic_friction_coefficients" class="md-nav__link">
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollisions.reset_lagged_anisotropic_friction_coefficients (Python method) — Set lagged effective μ to scalar mu_s/mu_k on each collision (done automatically after build)."><span>reset_<wbr>lagged_<wbr>anisotropic_<wbr>friction_<wbr>coefficients</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients" class="md-nav__link">
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients (Python method) — Refresh matchstick effective μ from lagged geometry and slip. Call when mu_s_aniso is nonzero (e.g. each Newton iteration)."><span>update_<wbr>lagged_<wbr>anisotropic_<wbr>friction_<wbr>coefficients</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipctk.TangentialCollisions.vv_collisions" class="md-nav__link">
     
       <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
@@ -2351,6 +2375,18 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollision.mu_aniso" class="md-nav__link">
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollision.mu_aniso (Python property) — Tangential anisotropy scaling in the collision&#39;s tangent basis. (1,1) = isotropic (default). Positive entries are recommended for physically meaningful anisotropic scaling. Scales tau before evaluating friction."><span>mu_<wbr>aniso</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipctk.TangentialCollision.mu_k" class="md-nav__link">
     
       <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
@@ -2363,12 +2399,60 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollision.mu_k_aniso" class="md-nav__link">
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollision.mu_k_aniso (Python property) — Kinetic friction ellipse axes (2D, one per tangent). Zero → scalar mu_k. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><span>mu_<wbr>k_<wbr>aniso</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollision.mu_k_effective_lagged" class="md-nav__link">
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollision.mu_k_effective_lagged (Python property) — Lagged matchstick effective kinetic μ."><span>mu_<wbr>k_<wbr>effective_<wbr>lagged</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipctk.TangentialCollision.mu_s" class="md-nav__link">
     
       <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
     
     <span class="md-ellipsis">
       <span title="ipctk.TangentialCollision.mu_s (Python property) — Ratio between normal and static tangential forces (e.g., friction coefficient)"><span>mu_<wbr>s</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollision.mu_s_aniso" class="md-nav__link">
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollision.mu_s_aniso (Python property) — Static friction ellipse axes (2D, one per tangent). Zero → scalar mu_s. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><span>mu_<wbr>s_<wbr>aniso</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollision.mu_s_effective_lagged" class="md-nav__link">
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollision.mu_s_effective_lagged (Python property) — Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients)."><span>mu_<wbr>s_<wbr>effective_<wbr>lagged</span></span>
     </span>
   </a>
   
@@ -3317,6 +3401,30 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollisions.reset_lagged_anisotropic_friction_coefficients" class="md-nav__link">
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollisions.reset_lagged_anisotropic_friction_coefficients (Python method) — Set lagged effective μ to scalar mu_s/mu_k on each collision (done automatically after build)."><span>reset_<wbr>lagged_<wbr>anisotropic_<wbr>friction_<wbr>coefficients</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients" class="md-nav__link">
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients (Python method) — Refresh matchstick effective μ from lagged geometry and slip. Call when mu_s_aniso is nonzero (e.g. each Newton iteration)."><span>update_<wbr>lagged_<wbr>anisotropic_<wbr>friction_<wbr>coefficients</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipctk.TangentialCollisions.vv_collisions" class="md-nav__link">
     
       <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
@@ -3654,6 +3762,18 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollision.mu_aniso" class="md-nav__link">
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollision.mu_aniso (Python property) — Tangential anisotropy scaling in the collision&#39;s tangent basis. (1,1) = isotropic (default). Positive entries are recommended for physically meaningful anisotropic scaling. Scales tau before evaluating friction."><span>mu_<wbr>aniso</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipctk.TangentialCollision.mu_k" class="md-nav__link">
     
       <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
@@ -3666,12 +3786,60 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollision.mu_k_aniso" class="md-nav__link">
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollision.mu_k_aniso (Python property) — Kinetic friction ellipse axes (2D, one per tangent). Zero → scalar mu_k. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><span>mu_<wbr>k_<wbr>aniso</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollision.mu_k_effective_lagged" class="md-nav__link">
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollision.mu_k_effective_lagged (Python property) — Lagged matchstick effective kinetic μ."><span>mu_<wbr>k_<wbr>effective_<wbr>lagged</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipctk.TangentialCollision.mu_s" class="md-nav__link">
     
       <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
     
     <span class="md-ellipsis">
       <span title="ipctk.TangentialCollision.mu_s (Python property) — Ratio between normal and static tangential forces (e.g., friction coefficient)"><span>mu_<wbr>s</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollision.mu_s_aniso" class="md-nav__link">
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollision.mu_s_aniso (Python property) — Static friction ellipse axes (2D, one per tangent). Zero → scalar mu_s. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><span>mu_<wbr>s_<wbr>aniso</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.TangentialCollision.mu_s_effective_lagged" class="md-nav__link">
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.TangentialCollision.mu_s_effective_lagged (Python property) — Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients)."><span>mu_<wbr>s_<wbr>effective_<wbr>lagged</span></span>
     </span>
   </a>
   
@@ -4258,6 +4426,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollisions.clear" title="ipctk.TangentialCollisions.clear (Python method) — Clear the friction collisions."><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a>(self)</p></td>
 <td><p>Clear the friction collisions.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollisions.reset_lagged_anisotropic_friction_coefficients" title="ipctk.TangentialCollisions.reset_lagged_anisotropic_friction_coefficients (Python method) — Set lagged effective μ to scalar mu_s/mu_k on each collision (done automatically after build)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_lagged_anisotropic_friction_coefficients</span></code></a>(self)</p></td>
+<td><p>Set lagged effective μ to scalar mu_s/mu_k on each collision (done automatically after build).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients" title="ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients (Python method) — Refresh matchstick effective μ from lagged geometry and slip. Call when mu_s_aniso is nonzero (e.g. each Newton iteration)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_lagged_anisotropic_friction_coefficients</span></code></a>(...)</p></td>
+<td><p>Refresh matchstick effective μ from lagged geometry and slip.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollisions.__getitem__" title="ipctk.TangentialCollisions.__getitem__ (Python method) — Get a reference to collision at index i."><code class="xref py py-obj docutils literal notranslate"><span class="pre">__getitem__</span></code></a>(self, i)</p></td>
 <td><p>Get a reference to collision at index i.</p></td>
 </tr>
@@ -4369,6 +4543,18 @@
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fv_collisions</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[ipc::FaceVertexTangentialCollision]</span></span><a class="headerlink" href="#ipctk.TangentialCollisions.fv_collisions" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.TangentialCollisions.reset_lagged_anisotropic_friction_coefficients">
+<span class="sig-name descname"><span class="pre">reset_lagged_anisotropic_friction_coefficients</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.TangentialCollisions.reset_lagged_anisotropic_friction_coefficients" title="ipctk.TangentialCollisions.reset_lagged_anisotropic_friction_coefficients.self (Python parameter)"><span class="n"><span class="pre">self</span></span></a></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.TangentialCollisions.reset_lagged_anisotropic_friction_coefficients" title="Link to this definition">¶</a></dt>
+<dd><p>Set lagged effective μ to scalar mu_s/mu_k on each collision (done automatically after build).</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients">
+<span class="sig-name descname"><span class="pre">update_lagged_anisotropic_friction_coefficients</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.TangentialCollisions,</span> <span class="pre">mesh:</span> <span class="pre">ipc::CollisionMesh,</span> <span class="pre">rest_positions:</span> <span class="pre">typing.Annotated[numpy.typing.NDArray[numpy.float64],</span> <span class="pre">&quot;[m,</span> <span class="pre">n]&quot;,</span> <span class="pre">&quot;flags.f_contiguous&quot;],</span> <span class="pre">lagged_displacements:</span> <span class="pre">typing.Annotated[numpy.typing.NDArray[numpy.float64],</span> <span class="pre">&quot;[m,</span> <span class="pre">n]&quot;,</span> <span class="pre">&quot;flags.f_contiguous&quot;],</span> <span class="pre">velocities:</span> <span class="pre">typing.Annotated[numpy.typing.NDArray[numpy.float64],</span> <span class="pre">&quot;[m,</span> <span class="pre">n]&quot;,</span> <span class="pre">&quot;flags.f_contiguous&quot;]</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients" title="Link to this definition">¶</a></dt>
+<dd><p>Refresh matchstick effective μ from lagged geometry and slip. Call when mu_s_aniso is nonzero (e.g. each Newton iteration).</p>
+</dd></dl>
+
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.TangentialCollisions.vv_collisions">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vv_collisions</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[ipc::VertexVertexTangentialCollision]</span></span><a class="headerlink" href="#ipctk.TangentialCollisions.vv_collisions" title="Link to this definition">¶</a></dt>
@@ -4400,16 +4586,31 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k" title="ipctk.TangentialCollision.mu_k (Python property) — Ratio between normal and kinetic tangential forces (e.g., friction coefficient)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k</span></code></a></p></td>
 <td><p>Ratio between normal and kinetic tangential forces (e.g., friction coefficient)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight" title="ipctk.TangentialCollision.weight (Python property) — Weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_aniso" title="ipctk.TangentialCollision.mu_aniso (Python property) — Tangential anisotropy scaling in the collision's tangent basis. (1,1) = isotropic (default). Positive entries are recommended for physically meaningful anisotropic scaling. Scales tau before evaluating friction."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_aniso</span></code></a></p></td>
+<td><p>Tangential anisotropy scaling in the collision's tangent basis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_s_aniso" title="ipctk.TangentialCollision.mu_s_aniso (Python property) — Static friction ellipse axes (2D, one per tangent). Zero → scalar mu_s. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_s_aniso</span></code></a></p></td>
+<td><p>Static friction ellipse axes (2D, one per tangent).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k_aniso" title="ipctk.TangentialCollision.mu_k_aniso (Python property) — Kinetic friction ellipse axes (2D, one per tangent). Zero → scalar mu_k. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k_aniso</span></code></a></p></td>
+<td><p>Kinetic friction ellipse axes (2D, one per tangent).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_s_effective_lagged" title="ipctk.TangentialCollision.mu_s_effective_lagged (Python property) — Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_s_effective_lagged</span></code></a></p></td>
+<td><p>Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k_effective_lagged" title="ipctk.TangentialCollision.mu_k_effective_lagged (Python property) — Lagged matchstick effective kinetic μ."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k_effective_lagged</span></code></a></p></td>
+<td><p>Lagged matchstick effective kinetic μ.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight" title="ipctk.TangentialCollision.weight (Python property) — Weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight</span></code></a></p></td>
 <td><p>Weight</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight_gradient" title="ipctk.TangentialCollision.weight_gradient (Python property) — Gradient of weight with respect to all DOF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_gradient</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight_gradient" title="ipctk.TangentialCollision.weight_gradient (Python property) — Gradient of weight with respect to all DOF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_gradient</span></code></a></p></td>
 <td><p>Gradient of weight with respect to all DOF</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.closest_point" title="ipctk.TangentialCollision.closest_point (Python property) — Barycentric coordinates of the closest point(s)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">closest_point</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.closest_point" title="ipctk.TangentialCollision.closest_point (Python property) — Barycentric coordinates of the closest point(s)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">closest_point</span></code></a></p></td>
 <td><p>Barycentric coordinates of the closest point(s)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.tangent_basis" title="ipctk.TangentialCollision.tangent_basis (Python property) — Tangent basis of the collision (max size 3×2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangent_basis</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.tangent_basis" title="ipctk.TangentialCollision.tangent_basis (Python property) — Tangent basis of the collision (max size 3×2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangent_basis</span></code></a></p></td>
 <td><p>Tangent basis of the collision (max size 3×2)</p></td>
 </tr>
 </tbody>
@@ -4627,15 +4828,45 @@
 </dd></dl>
 
 <dl class="py property objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.TangentialCollision.mu_aniso">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mu_aniso</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'[2,</span> <span class="pre">1]'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.TangentialCollision.mu_aniso" title="Link to this definition">¶</a></dt>
+<dd><p>Tangential anisotropy scaling in the collision’s tangent basis. (1,1) = isotropic (default). Positive entries are recommended for physically meaningful anisotropic scaling. Scales tau before evaluating friction.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.TangentialCollision.mu_k">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mu_k</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">float</span></span><a class="headerlink" href="#ipctk.TangentialCollision.mu_k" title="Link to this definition">¶</a></dt>
 <dd><p>Ratio between normal and kinetic tangential forces (e.g., friction coefficient)</p>
 </dd></dl>
 
 <dl class="py property objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.TangentialCollision.mu_k_aniso">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mu_k_aniso</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'[2,</span> <span class="pre">1]'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.TangentialCollision.mu_k_aniso" title="Link to this definition">¶</a></dt>
+<dd><p>Kinetic friction ellipse axes (2D, one per tangent). Zero → scalar mu_k. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885).</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.TangentialCollision.mu_k_effective_lagged">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mu_k_effective_lagged</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">float</span></span><a class="headerlink" href="#ipctk.TangentialCollision.mu_k_effective_lagged" title="Link to this definition">¶</a></dt>
+<dd><p>Lagged matchstick effective kinetic μ.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.TangentialCollision.mu_s">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mu_s</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">float</span></span><a class="headerlink" href="#ipctk.TangentialCollision.mu_s" title="Link to this definition">¶</a></dt>
 <dd><p>Ratio between normal and static tangential forces (e.g., friction coefficient)</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.TangentialCollision.mu_s_aniso">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mu_s_aniso</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'[2,</span> <span class="pre">1]'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.TangentialCollision.mu_s_aniso" title="Link to this definition">¶</a></dt>
+<dd><p>Static friction ellipse axes (2D, one per tangent). Zero → scalar mu_s. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885).</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.TangentialCollision.mu_s_effective_lagged">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mu_s_effective_lagged</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">float</span></span><a class="headerlink" href="#ipctk.TangentialCollision.mu_s_effective_lagged" title="Link to this definition">¶</a></dt>
+<dd><p>Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients).</p>
 </dd></dl>
 
 <dl class="py property objdesc">
@@ -4768,16 +4999,31 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k" title="ipctk.TangentialCollision.mu_k (Python property) — Ratio between normal and kinetic tangential forces (e.g., friction coefficient)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k</span></code></a></p></td>
 <td><p>Ratio between normal and kinetic tangential forces (e.g., friction coefficient)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight" title="ipctk.TangentialCollision.weight (Python property) — Weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_aniso" title="ipctk.TangentialCollision.mu_aniso (Python property) — Tangential anisotropy scaling in the collision's tangent basis. (1,1) = isotropic (default). Positive entries are recommended for physically meaningful anisotropic scaling. Scales tau before evaluating friction."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_aniso</span></code></a></p></td>
+<td><p>Tangential anisotropy scaling in the collision's tangent basis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_s_aniso" title="ipctk.TangentialCollision.mu_s_aniso (Python property) — Static friction ellipse axes (2D, one per tangent). Zero → scalar mu_s. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_s_aniso</span></code></a></p></td>
+<td><p>Static friction ellipse axes (2D, one per tangent).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k_aniso" title="ipctk.TangentialCollision.mu_k_aniso (Python property) — Kinetic friction ellipse axes (2D, one per tangent). Zero → scalar mu_k. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k_aniso</span></code></a></p></td>
+<td><p>Kinetic friction ellipse axes (2D, one per tangent).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_s_effective_lagged" title="ipctk.TangentialCollision.mu_s_effective_lagged (Python property) — Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_s_effective_lagged</span></code></a></p></td>
+<td><p>Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k_effective_lagged" title="ipctk.TangentialCollision.mu_k_effective_lagged (Python property) — Lagged matchstick effective kinetic μ."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k_effective_lagged</span></code></a></p></td>
+<td><p>Lagged matchstick effective kinetic μ.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight" title="ipctk.TangentialCollision.weight (Python property) — Weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight</span></code></a></p></td>
 <td><p>Weight</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight_gradient" title="ipctk.TangentialCollision.weight_gradient (Python property) — Gradient of weight with respect to all DOF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_gradient</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight_gradient" title="ipctk.TangentialCollision.weight_gradient (Python property) — Gradient of weight with respect to all DOF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_gradient</span></code></a></p></td>
 <td><p>Gradient of weight with respect to all DOF</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.closest_point" title="ipctk.TangentialCollision.closest_point (Python property) — Barycentric coordinates of the closest point(s)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">closest_point</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.closest_point" title="ipctk.TangentialCollision.closest_point (Python property) — Barycentric coordinates of the closest point(s)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">closest_point</span></code></a></p></td>
 <td><p>Barycentric coordinates of the closest point(s)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.tangent_basis" title="ipctk.TangentialCollision.tangent_basis (Python property) — Tangent basis of the collision (max size 3×2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangent_basis</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.tangent_basis" title="ipctk.TangentialCollision.tangent_basis (Python property) — Tangent basis of the collision (max size 3×2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangent_basis</span></code></a></p></td>
 <td><p>Tangent basis of the collision (max size 3×2)</p></td>
 </tr>
 </tbody>
@@ -4998,16 +5244,31 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k" title="ipctk.TangentialCollision.mu_k (Python property) — Ratio between normal and kinetic tangential forces (e.g., friction coefficient)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k</span></code></a></p></td>
 <td><p>Ratio between normal and kinetic tangential forces (e.g., friction coefficient)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight" title="ipctk.TangentialCollision.weight (Python property) — Weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_aniso" title="ipctk.TangentialCollision.mu_aniso (Python property) — Tangential anisotropy scaling in the collision's tangent basis. (1,1) = isotropic (default). Positive entries are recommended for physically meaningful anisotropic scaling. Scales tau before evaluating friction."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_aniso</span></code></a></p></td>
+<td><p>Tangential anisotropy scaling in the collision's tangent basis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_s_aniso" title="ipctk.TangentialCollision.mu_s_aniso (Python property) — Static friction ellipse axes (2D, one per tangent). Zero → scalar mu_s. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_s_aniso</span></code></a></p></td>
+<td><p>Static friction ellipse axes (2D, one per tangent).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k_aniso" title="ipctk.TangentialCollision.mu_k_aniso (Python property) — Kinetic friction ellipse axes (2D, one per tangent). Zero → scalar mu_k. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k_aniso</span></code></a></p></td>
+<td><p>Kinetic friction ellipse axes (2D, one per tangent).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_s_effective_lagged" title="ipctk.TangentialCollision.mu_s_effective_lagged (Python property) — Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_s_effective_lagged</span></code></a></p></td>
+<td><p>Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k_effective_lagged" title="ipctk.TangentialCollision.mu_k_effective_lagged (Python property) — Lagged matchstick effective kinetic μ."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k_effective_lagged</span></code></a></p></td>
+<td><p>Lagged matchstick effective kinetic μ.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight" title="ipctk.TangentialCollision.weight (Python property) — Weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight</span></code></a></p></td>
 <td><p>Weight</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight_gradient" title="ipctk.TangentialCollision.weight_gradient (Python property) — Gradient of weight with respect to all DOF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_gradient</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight_gradient" title="ipctk.TangentialCollision.weight_gradient (Python property) — Gradient of weight with respect to all DOF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_gradient</span></code></a></p></td>
 <td><p>Gradient of weight with respect to all DOF</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.closest_point" title="ipctk.TangentialCollision.closest_point (Python property) — Barycentric coordinates of the closest point(s)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">closest_point</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.closest_point" title="ipctk.TangentialCollision.closest_point (Python property) — Barycentric coordinates of the closest point(s)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">closest_point</span></code></a></p></td>
 <td><p>Barycentric coordinates of the closest point(s)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.tangent_basis" title="ipctk.TangentialCollision.tangent_basis (Python property) — Tangent basis of the collision (max size 3×2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangent_basis</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.tangent_basis" title="ipctk.TangentialCollision.tangent_basis (Python property) — Tangent basis of the collision (max size 3×2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangent_basis</span></code></a></p></td>
 <td><p>Tangent basis of the collision (max size 3×2)</p></td>
 </tr>
 </tbody>
@@ -5231,16 +5492,31 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k" title="ipctk.TangentialCollision.mu_k (Python property) — Ratio between normal and kinetic tangential forces (e.g., friction coefficient)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k</span></code></a></p></td>
 <td><p>Ratio between normal and kinetic tangential forces (e.g., friction coefficient)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight" title="ipctk.TangentialCollision.weight (Python property) — Weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_aniso" title="ipctk.TangentialCollision.mu_aniso (Python property) — Tangential anisotropy scaling in the collision's tangent basis. (1,1) = isotropic (default). Positive entries are recommended for physically meaningful anisotropic scaling. Scales tau before evaluating friction."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_aniso</span></code></a></p></td>
+<td><p>Tangential anisotropy scaling in the collision's tangent basis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_s_aniso" title="ipctk.TangentialCollision.mu_s_aniso (Python property) — Static friction ellipse axes (2D, one per tangent). Zero → scalar mu_s. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_s_aniso</span></code></a></p></td>
+<td><p>Static friction ellipse axes (2D, one per tangent).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k_aniso" title="ipctk.TangentialCollision.mu_k_aniso (Python property) — Kinetic friction ellipse axes (2D, one per tangent). Zero → scalar mu_k. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k_aniso</span></code></a></p></td>
+<td><p>Kinetic friction ellipse axes (2D, one per tangent).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_s_effective_lagged" title="ipctk.TangentialCollision.mu_s_effective_lagged (Python property) — Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_s_effective_lagged</span></code></a></p></td>
+<td><p>Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k_effective_lagged" title="ipctk.TangentialCollision.mu_k_effective_lagged (Python property) — Lagged matchstick effective kinetic μ."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k_effective_lagged</span></code></a></p></td>
+<td><p>Lagged matchstick effective kinetic μ.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight" title="ipctk.TangentialCollision.weight (Python property) — Weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight</span></code></a></p></td>
 <td><p>Weight</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight_gradient" title="ipctk.TangentialCollision.weight_gradient (Python property) — Gradient of weight with respect to all DOF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_gradient</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight_gradient" title="ipctk.TangentialCollision.weight_gradient (Python property) — Gradient of weight with respect to all DOF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_gradient</span></code></a></p></td>
 <td><p>Gradient of weight with respect to all DOF</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.closest_point" title="ipctk.TangentialCollision.closest_point (Python property) — Barycentric coordinates of the closest point(s)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">closest_point</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.closest_point" title="ipctk.TangentialCollision.closest_point (Python property) — Barycentric coordinates of the closest point(s)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">closest_point</span></code></a></p></td>
 <td><p>Barycentric coordinates of the closest point(s)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.tangent_basis" title="ipctk.TangentialCollision.tangent_basis (Python property) — Tangent basis of the collision (max size 3×2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangent_basis</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.tangent_basis" title="ipctk.TangentialCollision.tangent_basis (Python property) — Tangent basis of the collision (max size 3×2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangent_basis</span></code></a></p></td>
 <td><p>Tangent basis of the collision (max size 3×2)</p></td>
 </tr>
 </tbody>
@@ -5464,16 +5740,31 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k" title="ipctk.TangentialCollision.mu_k (Python property) — Ratio between normal and kinetic tangential forces (e.g., friction coefficient)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k</span></code></a></p></td>
 <td><p>Ratio between normal and kinetic tangential forces (e.g., friction coefficient)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight" title="ipctk.TangentialCollision.weight (Python property) — Weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_aniso" title="ipctk.TangentialCollision.mu_aniso (Python property) — Tangential anisotropy scaling in the collision's tangent basis. (1,1) = isotropic (default). Positive entries are recommended for physically meaningful anisotropic scaling. Scales tau before evaluating friction."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_aniso</span></code></a></p></td>
+<td><p>Tangential anisotropy scaling in the collision's tangent basis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_s_aniso" title="ipctk.TangentialCollision.mu_s_aniso (Python property) — Static friction ellipse axes (2D, one per tangent). Zero → scalar mu_s. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_s_aniso</span></code></a></p></td>
+<td><p>Static friction ellipse axes (2D, one per tangent).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k_aniso" title="ipctk.TangentialCollision.mu_k_aniso (Python property) — Kinetic friction ellipse axes (2D, one per tangent). Zero → scalar mu_k. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k_aniso</span></code></a></p></td>
+<td><p>Kinetic friction ellipse axes (2D, one per tangent).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_s_effective_lagged" title="ipctk.TangentialCollision.mu_s_effective_lagged (Python property) — Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_s_effective_lagged</span></code></a></p></td>
+<td><p>Lagged matchstick effective static μ (refresh via TangentialCollisions.update_lagged_anisotropic_friction_coefficients).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.mu_k_effective_lagged" title="ipctk.TangentialCollision.mu_k_effective_lagged (Python property) — Lagged matchstick effective kinetic μ."><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu_k_effective_lagged</span></code></a></p></td>
+<td><p>Lagged matchstick effective kinetic μ.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight" title="ipctk.TangentialCollision.weight (Python property) — Weight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight</span></code></a></p></td>
 <td><p>Weight</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight_gradient" title="ipctk.TangentialCollision.weight_gradient (Python property) — Gradient of weight with respect to all DOF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_gradient</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.weight_gradient" title="ipctk.TangentialCollision.weight_gradient (Python property) — Gradient of weight with respect to all DOF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weight_gradient</span></code></a></p></td>
 <td><p>Gradient of weight with respect to all DOF</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.closest_point" title="ipctk.TangentialCollision.closest_point (Python property) — Barycentric coordinates of the closest point(s)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">closest_point</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.closest_point" title="ipctk.TangentialCollision.closest_point (Python property) — Barycentric coordinates of the closest point(s)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">closest_point</span></code></a></p></td>
 <td><p>Barycentric coordinates of the closest point(s)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.tangent_basis" title="ipctk.TangentialCollision.tangent_basis (Python property) — Tangent basis of the collision (max size 3×2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangent_basis</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.TangentialCollision.tangent_basis" title="ipctk.TangentialCollision.tangent_basis (Python property) — Tangent basis of the collision (max size 3×2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tangent_basis</span></code></a></p></td>
 <td><p>Tangent basis of the collision (max size 3×2)</p></td>
 </tr>
 </tbody>
@@ -5682,7 +5973,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Mar 18, 2026
+    Apr 16, 2026
   </span>
 
     

@@ -839,6 +839,62 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#anisotropic-friction" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="anisotropic_friction (reference label)"><span>Anisotropic Friction</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Anisotropic Friction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#directions-tangent-to-the-mesh" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/advanced_friction.rst#directions-tangent-to-the-mesh (reference label)"><span>Directions tangent to the mesh</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id3" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/advanced_friction.rst#id3 (reference label)"><span>Usage</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lagged-effective-direction-dependent-coefficients" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/advanced_friction.rst#lagged-effective-direction-dependent-coefficients (reference label)"><span>Lagged effective μ <wbr>(direction-<wbr>dependent coefficients)</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relationship-with-other-anisotropy-mechanisms" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/advanced_friction.rst#relationship-with-other-anisotropy-mechanisms (reference label)"><span>Relationship with Other Anisotropy Mechanisms</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#future-directions" class="md-nav__link">
     
     <span class="md-ellipsis">
@@ -2202,6 +2258,62 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#anisotropic-friction" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="anisotropic_friction (reference label)"><span>Anisotropic Friction</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Anisotropic Friction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#directions-tangent-to-the-mesh" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/advanced_friction.rst#directions-tangent-to-the-mesh (reference label)"><span>Directions tangent to the mesh</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#id3" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/advanced_friction.rst#id3 (reference label)"><span>Usage</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lagged-effective-direction-dependent-coefficients" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/advanced_friction.rst#lagged-effective-direction-dependent-coefficients (reference label)"><span>Lagged effective μ <wbr>(direction-<wbr>dependent coefficients)</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relationship-with-other-anisotropy-mechanisms" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/advanced_friction.rst#relationship-with-other-anisotropy-mechanisms (reference label)"><span>Relationship with Other Anisotropy Mechanisms</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#future-directions" class="md-nav__link">
     
     <span class="md-ellipsis">
@@ -2228,21 +2340,25 @@
 
 
 <h1 id="advanced-friction">Advanced Friction<a class="headerlink" href="#advanced-friction" title="Link to this heading">¶</a></h1>
-<p>This tutorial covers some advanced features of friction in the IPC Toolkit, including
-spatially varying coefficients of friction and separate coefficients of friction for static and kinetic (dynamic) friction.</p>
+<p>This tutorial describes three advanced friction features:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#spatially-varying-coefficients"><span class="std std-ref">coefficients that vary over the mesh</span></a>,</p></li>
+<li><p><a class="reference internal" href="#separate-coefficients"><span class="std std-ref">separate static and kinetic friction coefficients</span></a>, and</p></li>
+<li><p><a class="reference internal" href="#anisotropic-friction"><span class="std std-ref">anisotropic friction with different coefficients along each tangent direction</span></a>.</p></li>
+</ul>
 <div class="seealso admonition">
 <p class="admonition-title">See also</p>
 <p>For an introduction to friction modeling and the dissipative potential, see
 <a class="reference external" href="getting_started.html#friction">“Getting Started”</a>.</p>
 </div>
-<h2 id="spatially-varying-coefficients-of-friction">Spatially Varying Coefficients of Friction<a class="headerlink" href="#spatially-varying-coefficients-of-friction" title="Link to this heading">¶</a></h2>
+<h2 id="spatially-varying-coefficients-of-friction"><span id="spatially-varying-coefficients"></span>Spatially Varying Coefficients of Friction<a class="headerlink" href="#spatially-varying-coefficients-of-friction" title="Link to this heading">¶</a></h2>
 <div class="warning admonition">
 <p class="admonition-title">Deprecated</p>
 <p>Spatially varying coefficient of friction is achieved by assigning coefficients to each vertex in the mesh. However, friction coefficients are not a material property and should instead be assigned to the contact pair. This feature will be replaced with a per-pair friction coefficient in a future release.</p>
 </div>
-<p>You can specify spatially varying coefficients of friction by passing an <code class="docutils literal notranslate"><span class="pre">Eigen::VectorXd</span></code> to <code class="docutils literal notranslate"><span class="pre">TangentialCollisions::build</span></code>. Each entry in the vector corresponds to the coefficient of friction for a specific vertex in the mesh. This allows you to assign different friction coefficients to different parts of the mesh, enabling more realistic simulations of complex materials and surfaces.</p>
+<p>You can specify spatially varying coefficients of friction by passing an <code class="docutils literal notranslate"><span class="pre">Eigen::VectorXd</span></code> to <code class="docutils literal notranslate"><span class="pre">TangentialCollisions::build</span></code>. Each entry is the coefficient of friction for one vertex. You can assign different coefficients to different parts of the mesh (e.g. rubber in one region, plastic in another).</p>
 <p>You can also provide an optional <code class="docutils literal notranslate"><span class="pre">blend_mu</span></code> parameter to blend the coefficient of friction on either side of the contact. The default behavior is to average the coefficients of friction on both sides, but you can specify a custom blending function if needed (e.g., multiplying them or taking the maximum or minimum).</p>
-<h2 id="separate-coefficients-for-static-and-kinetic-friction">Separate Coefficients for Static and Kinetic Friction<a class="headerlink" href="#separate-coefficients-for-static-and-kinetic-friction" title="Link to this heading">¶</a></h2>
+<h2 id="separate-coefficients-for-static-and-kinetic-friction"><span id="separate-coefficients"></span>Separate Coefficients for Static and Kinetic Friction<a class="headerlink" href="#separate-coefficients-for-static-and-kinetic-friction" title="Link to this heading">¶</a></h2>
 <div class="tip admonition">
 <p class="admonition-title">Experimental Feature</p>
 <p>The support for separate static and kinetic friction coefficients is an experimental feature introduced in v1.4.0. The behavior may be improved in future releases.</p>
@@ -2261,18 +2377,18 @@ C++</label><label class="tabbed-label" for="__tabbed_1_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipc</span><span class="o">::</span><span class="n">TangentialCollisions</span><span class="w"> </span><span class="n">tangential_collisions</span><span class="p">;</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipc</span><span class="o">::</span><span class="n">BarrierPotential</span><span class="w"> </span><span class="nf">B</span><span class="p">(</span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">);</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">TangentialCollisions</span><span class="w"> </span><span class="n">tangential_collisions</span><span class="p">;</span>
 <span class="n">tangential_collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span>
-<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span>
-<span class="w">    </span><span class="n">mu_s</span><span class="p">,</span><span class="w"> </span><span class="n">mu_k</span><span class="p">);</span>
+<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">mu_s</span><span class="p">,</span><span class="w"> </span><span class="n">mu_k</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">tangential_collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">TangentialCollisions</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">B</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">BarrierPotential</span><span class="p">(</span><span class="n">dhat</span><span class="p">,</span> <span class="n">barrier_stiffness</span><span class="p">)</span>
+<span class="n">tangential_collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">TangentialCollisions</span><span class="p">()</span>
 <span class="n">tangential_collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
-    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">barrier_stiffness</span><span class="p">,</span>
-    <span class="n">mu_s</span><span class="p">,</span> <span class="n">mu_k</span><span class="p">)</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">mu_s</span><span class="p">,</span> <span class="n">mu_k</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -2288,12 +2404,12 @@ Python</label></div>
      -\frac{y^2}{\epsilon_v^2}+\frac{2 y}{\epsilon_v} &amp; \text{for}\: 0 \leq y \leq \epsilon_v \\
      1 &amp; \text{otherwise}
  \end{cases}\end{split}\]</div>
-<p>where <span class="math notranslate nohighlight">\(\epsilon_v\)</span> is a small constant (e.g., <code class="docutils literal notranslate"><span class="pre">0.001</span></code>). The following plot show the behavior of the function <span class="math notranslate nohighlight">\(f_1\)</span>:</p>
-<figure class="align-center" id="id1">
+<p>where <span class="math notranslate nohighlight">\(\epsilon_v\)</span> is a small constant (e.g., <code class="docutils literal notranslate"><span class="pre">0.001</span></code>). The following plot shows the behavior of the function <span class="math notranslate nohighlight">\(f_1\)</span>:</p>
+<figure class="align-center" id="id5">
 <img alt="../_images/f1.png" src="../_images/f1.png" />
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
-Smooth mollifier <span class="math notranslate nohighlight">\(f_1(\|\mathbf{u}\|)\)</span> where <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></figcaption>
+Smooth mollifier <span class="math notranslate nohighlight">\(f_1(\|\mathbf{u}\|)\)</span> where <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></figcaption>
 </figure>
 <p>To create a dissipative potential we integrate <span class="math notranslate nohighlight">\(f_1\)</span> to obtain a smooth mollifier <span class="math notranslate nohighlight">\(f_0\)</span>:</p>
 <div class="math notranslate nohighlight">
@@ -2301,15 +2417,15 @@ Smooth mollifier <span class="math notranslate nohighlight">\(f_1(\|\mathbf{u}\|
     \frac{\epsilon_{v}}{3} + \frac{y^{2}}{\epsilon_{v}} - \frac{y^{3}}{3 \epsilon_{v}^{2}} &amp; \text{for}\: 0 \leq y \leq \epsilon_{v} \\
     y &amp; \text{otherwise} \\
 \end{cases}\end{split}\]</div>
-<p>The following plot show the behavior of the function <span class="math notranslate nohighlight">\(f_0\)</span>:</p>
-<figure class="align-center" id="id2">
+<p>The following plot shows the behavior of the function <span class="math notranslate nohighlight">\(f_0\)</span>:</p>
+<figure class="align-center" id="id6">
 <img alt="../_images/f0.png" src="../_images/f0.png" />
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
-Integrated mollifier <span class="math notranslate nohighlight">\(f_0(\|\mathbf{u}\|)\)</span> where <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></figcaption>
+Integrated mollifier <span class="math notranslate nohighlight">\(f_0(\|\mathbf{u}\|)\)</span> where <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></figcaption>
 </figure>
 <h4 id="smooth-mu">Smooth <span class="math notranslate nohighlight">\(\mu\)</span><a class="headerlink" href="#smooth-mu" title="Link to this heading">¶</a></h4>
-<p>When adding separate coefficients for static and kinetic friction, we need to maintain the <span class="math notranslate nohighlight">\(C^1\)</span> continuity of the friction force. This lead us to define a smooth coefficient of friction <span class="math notranslate nohighlight">\(\mu(y)\)</span> that transitions between the static and kinetic coefficients based on the magnitude of the relative velocity <span class="math notranslate nohighlight">\(y = \|\mathbf{u}\|\)</span>. The smooth coefficient of friction is defined as</p>
+<p>When adding separate coefficients for static and kinetic friction, we need to maintain the <span class="math notranslate nohighlight">\(C^1\)</span> continuity of the friction force. This leads us to define a smooth coefficient of friction <span class="math notranslate nohighlight">\(\mu(y)\)</span> that transitions between the static and kinetic coefficients based on the magnitude of the relative velocity <span class="math notranslate nohighlight">\(y = \|\mathbf{u}\|\)</span>. The smooth coefficient of friction is defined as</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\mu(y) = \begin{cases}
     2(\mu_{k} - \mu_{s})\frac{y^{2}}{\epsilon_{v}^{2}} + \mu_{s} &amp; \text{for}\: y \leq \frac{\epsilon_{v}}{2} \\
@@ -2317,19 +2433,19 @@ Integrated mollifier <span class="math notranslate nohighlight">\(f_0(\|\mathbf{
     \mu_{k} &amp; \text{for}\: y &gt; \epsilon_{v}
 \end{cases}\end{split}\]</div>
 <p>We plot the smooth coefficient of friction <span class="math notranslate nohighlight">\(\mu(y)\)</span> below:</p>
-<figure class="align-center" id="id3">
+<figure class="align-center" id="id7">
 <img alt="../_images/mu.png" src="../_images/mu.png" />
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
-Smooth coefficient of friction <span class="math notranslate nohighlight">\(\mu(\|\mathbf{u}\|)\)</span> where <span class="math notranslate nohighlight">\(\mu_s = 1\)</span>, <span class="math notranslate nohighlight">\(\mu_k = 0.1\)</span>, and <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></figcaption>
+Smooth coefficient of friction <span class="math notranslate nohighlight">\(\mu(\|\mathbf{u}\|)\)</span> where <span class="math notranslate nohighlight">\(\mu_s = 1\)</span>, <span class="math notranslate nohighlight">\(\mu_k = 0.1\)</span>, and <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></figcaption>
 </figure>
 <h4 id="smooth-mu-mollifier">Smooth <span class="math notranslate nohighlight">\(\mu\)</span> Mollifier<a class="headerlink" href="#smooth-mu-mollifier" title="Link to this heading">¶</a></h4>
-<p>Replacing the constant coefficient of friction <span class="math notranslate nohighlight">\(\mu\)</span> with a smooth function <span class="math notranslate nohighlight">\(\mu(\|\mathbf{u}\|)\)</span> allows us to smoothly transition between static and kinetic friction. The function <span class="math notranslate nohighlight">\(\mu(\|\mathbf{u}\|) f_1(\|\mathbf{u}\|)\)</span> is plotted below:</p>
-<figure class="align-center" id="id4">
+<p>Using a smooth function <span class="math notranslate nohighlight">\(\mu(\|\mathbf{u}\|)\)</span> instead of a constant <span class="math notranslate nohighlight">\(\mu\)</span> gives a smooth transition between static and kinetic friction. The function <span class="math notranslate nohighlight">\(\mu(\|\mathbf{u}\|) f_1(\|\mathbf{u}\|)\)</span> is plotted below:</p>
+<figure class="align-center" id="id8">
 <img alt="../_images/mu_f1.png" src="../_images/mu_f1.png" />
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
-Smooth coefficient of friction multiplied by the friction mollifier <span class="math notranslate nohighlight">\(\mu(\|\mathbf{u}\|) f_1(\|\mathbf{u}\|)\)</span> where <span class="math notranslate nohighlight">\(\mu_s = 1\)</span>, <span class="math notranslate nohighlight">\(\mu_k = 0.1\)</span>, and <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></figcaption>
+Smooth coefficient of friction multiplied by the friction mollifier <span class="math notranslate nohighlight">\(\mu(\|\mathbf{u}\|) f_1(\|\mathbf{u}\|)\)</span> where <span class="math notranslate nohighlight">\(\mu_s = 1\)</span>, <span class="math notranslate nohighlight">\(\mu_k = 0.1\)</span>, and <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></figcaption>
 </figure>
 <p>However, <span class="math notranslate nohighlight">\(\frac{\mathrm{d}}{\mathrm{d}y} \mu(y) f_0(y) \neq \mu(y) f_1(y)\)</span>, so we need to adjust the integrated mollifier by integrating the product of the smooth coefficient of friction and the mollifier:</p>
 <div class="math notranslate nohighlight">
@@ -2337,11 +2453,11 @@ Smooth coefficient of friction multiplied by the friction mollifier <span class=
 \frac{\epsilon_{v}^{5} \left(9 \mu_{k} - 4 \mu_{s}\right) + 15 \epsilon_{v}^{3} y^{2} \left(- \mu_{k} + 2 \mu_{s}\right) + 5 \epsilon_{v}^{2} y^{3} \left(9 \mu_{k} - 10 \mu_{s}\right) - 30 \epsilon_{v} y^{4} \left(\mu_{k} - \mu_{s}\right) + 6 y^{5} \left(\mu_{k} - \mu_{s}\right)}{15 \epsilon_{v}^{4}} &amp; \text{for}\: y \leq \epsilon_{v} \\
 \mu_{k} y &amp; \text{for}\: y &gt; \epsilon_v \end{cases}\end{split}\]</div>
 <p>The following plot shows the behavior of the integrated mollifier multiplied by the smooth coefficient of friction:</p>
-<figure class="align-center" id="id5">
+<figure class="align-center" id="id9">
 <img alt="../_images/int_mu_f1_dx.png" src="../_images/int_mu_f1_dx.png" />
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
-Integrated mollifier <span class="math notranslate nohighlight">\(\int \mu(y) f_1(y) \mathrm{d} y\)</span> where <span class="math notranslate nohighlight">\(\mu_s = 1\)</span>, <span class="math notranslate nohighlight">\(\mu_k = 0.1\)</span>, and <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></figcaption>
+Integrated mollifier <span class="math notranslate nohighlight">\(\int \mu(y) f_1(y) \mathrm{d} y\)</span> where <span class="math notranslate nohighlight">\(\mu_s = 1\)</span>, <span class="math notranslate nohighlight">\(\mu_k = 0.1\)</span>, and <span class="math notranslate nohighlight">\(\epsilon_v = 0.001\)</span>.</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></figcaption>
 </figure>
 <h4 id="discussion">Discussion<a class="headerlink" href="#discussion" title="Link to this heading">¶</a></h4>
 <p>While this approach provides a smooth transition between static and kinetic friction, there are some considerations:</p>
@@ -2363,14 +2479,148 @@ Integrated mollifier <span class="math notranslate nohighlight">\(\int \mu(y) f_
 </li>
 </ol>
 <p>If you have suggestions for improving this approach or alternative methods, please reach out on our <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/discussions">GitHub Discussions</a>.</p>
+<h2 id="anisotropic-friction"><span id="id1"></span>Anisotropic Friction<a class="headerlink" href="#anisotropic-friction" title="Link to this heading">¶</a></h2>
+<div class="seealso admonition">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../cpp-api/friction.html"><span class="doc">C++ API</span></a> and <a class="reference internal" href="../python-api/friction.html"><span class="doc">Python API</span></a> for the anisotropic
+helpers. The <code class="docutils literal notranslate"><span class="pre">notebooks/anisotropic_friction_math.ipynb</span></code> notebook has the
+full derivation and plots.</p>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">New Feature</p>
+<p>Anisotropic friction uses direction-dependent coefficients (e.g. wood grain,
+brushed surfaces).</p>
+</div>
+<p>You can set different friction coefficients along each tangent direction.
+Wood (along vs. across the grain) and brushed metal are typical cases.</p>
+<h3 id="directions-tangent-to-the-mesh">Directions tangent to the mesh<a class="headerlink" href="#directions-tangent-to-the-mesh" title="Link to this heading">¶</a></h3>
+<p>The two anisotropy axes are the contact’s tangent basis. They lie in the
+plane tangent to the contact and are computed from the collision geometry.
+You do not pass a custom 3D direction (e.g. a world-space “grain” vector).
+You pass coefficients only: <code class="docutils literal notranslate"><span class="pre">mu_s_aniso</span></code> and <code class="docutils literal notranslate"><span class="pre">mu_k_aniso</span></code> are 2D vectors
+whose first component is along the first tangent direction and second along
+the second. So anisotropy is always along the mesh tangent directions at
+each contact.</p>
+<p>Setting coefficients (component 0 = first tangent direction, component 1 =
+second, both tangent to the surface):</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2">
+<input checked type="radio" id="__tabbed_2_1" name="__tabbed_2"><input type="radio" id="__tabbed_2_2" name="__tabbed_2"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_2_1">
+C++</label><label class="tabbed-label" for="__tabbed_2_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">tangential_collisions</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Component 0 = first tangent dir, 1 = second (tangent to surface)</span>
+<span class="w">    </span><span class="n">tangential_collisions</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">mu_s_aniso</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="w"> </span><span class="mf">0.4</span><span class="p">);</span>
+<span class="w">    </span><span class="n">tangential_collisions</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">mu_k_aniso</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">)):</span>
+    <span class="c1"># Component 0 = first tangent dir, 1 = second (tangent to surface)</span>
+    <span class="n">tangential_collisions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mu_s_aniso</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
+    <span class="n">tangential_collisions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mu_k_aniso</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><p>Anisotropic friction uses an elliptical <span class="math notranslate nohighlight">\(L^2\)</span> projection model. For a given
+tangential velocity direction <span class="math notranslate nohighlight">\(\mathbf{t} =
+\boldsymbol{\tau} / \|\boldsymbol{\tau}\|\)</span>, the effective friction coefficient
+is:</p>
+<div class="math notranslate nohighlight">
+\[\mu_{\text{eff}} = \sqrt{(\mu_0 t_0)^2 + (\mu_1 t_1)^2}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mu_0\)</span> and <span class="math notranslate nohighlight">\(\mu_1\)</span> are the friction coefficients along the
+two tangent basis directions, and <span class="math notranslate nohighlight">\(t_0\)</span> and <span class="math notranslate nohighlight">\(t_1\)</span> are the
+components of the unit direction vector. This formulation matches the matchstick
+(elliptical Coulomb cone) model. See <span id="id2">Erleben <em>et al.</em> [<a class="reference internal" href="references.html#id18" title="K. Erleben, M. Macklin, S. Andrews, and P. G. Kry. The matchstick model for anisotropic friction cones. Computer Graphics Forum, 38(8):1–12, 2019. https://github.com/erleben/matchstick. doi:10.1111/cgf.13885.">2019</a>]</span>.</p>
+<h3 id="id3">Usage<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<p>To use anisotropic friction, you can assign anisotropic friction coefficients
+to each tangential collision after building the collisions:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2">
+<input checked type="radio" id="__tabbed_3_1" name="__tabbed_3"><input type="radio" id="__tabbed_3_2" name="__tabbed_3"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_3_1">
+C++</label><label class="tabbed-label" for="__tabbed_3_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipc</span><span class="o">::</span><span class="n">BarrierPotential</span><span class="w"> </span><span class="nf">B</span><span class="p">(</span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">);</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">TangentialCollisions</span><span class="w"> </span><span class="n">tangential_collisions</span><span class="p">;</span>
+<span class="n">tangential_collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span>
+<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">mu_s</span><span class="p">,</span><span class="w"> </span><span class="n">mu_k</span><span class="p">);</span>
+
+<span class="c1">// Assign anisotropic friction coefficients per collision</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">tangential_collisions</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Components 0 and 1 = contact&#39;s two tangent dirs (tangent to surface)</span>
+<span class="w">    </span><span class="n">tangential_collisions</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">mu_s_aniso</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="w"> </span><span class="mf">0.4</span><span class="p">);</span>
+<span class="w">    </span><span class="n">tangential_collisions</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">mu_k_aniso</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Refresh lagged matchstick μ from lagged geometry and slip (e.g. each Newton iteration)</span>
+<span class="n">tangential_collisions</span><span class="p">.</span><span class="n">update_lagged_anisotropic_friction_coefficients</span><span class="p">(</span>
+<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">lagged_displacements</span><span class="p">,</span><span class="w"> </span><span class="n">velocities</span><span class="p">);</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">B</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">BarrierPotential</span><span class="p">(</span><span class="n">dhat</span><span class="p">,</span> <span class="n">barrier_stiffness</span><span class="p">)</span>
+<span class="n">tangential_collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">TangentialCollisions</span><span class="p">()</span>
+<span class="n">tangential_collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">mu_s</span><span class="p">,</span> <span class="n">mu_k</span><span class="p">)</span>
+
+<span class="c1"># Assign anisotropic friction coefficients per collision</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">)):</span>
+    <span class="c1"># Components 0 and 1 = contact&#39;s two tangent dirs (tangent to surface)</span>
+    <span class="n">tangential_collisions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mu_s_aniso</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
+    <span class="n">tangential_collisions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mu_k_aniso</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
+
+<span class="n">tangential_collisions</span><span class="o">.</span><span class="n">update_lagged_anisotropic_friction_coefficients</span><span class="p">(</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">rest_positions</span><span class="p">,</span> <span class="n">lagged_displacements</span><span class="p">,</span> <span class="n">velocities</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><h3 id="lagged-effective-direction-dependent-coefficients">Lagged effective μ (direction-dependent coefficients)<a class="headerlink" href="#lagged-effective-direction-dependent-coefficients" title="Link to this heading">¶</a></h3>
+<p>When <code class="docutils literal notranslate"><span class="pre">mu_s_aniso</span></code> / <code class="docutils literal notranslate"><span class="pre">mu_k_aniso</span></code> are nonzero, the toolkit <strong>lags</strong> the
+matchstick effective coefficients for the current nonlinear step (stored in
+<code class="docutils literal notranslate"><span class="pre">mu_s_effective_lagged</span></code> and <code class="docutils literal notranslate"><span class="pre">mu_k_effective_lagged</span></code> on each
+<code class="docutils literal notranslate"><span class="pre">TangentialCollision</span></code>). Call
+<code class="docutils literal notranslate"><span class="pre">TangentialCollisions::update_lagged_anisotropic_friction_coefficients</span></code> with
+rest positions, lagged displacements, and velocities whenever those change
+(e.g. each Newton iteration), after assigning per-collision ellipse axes. This
+is analogous to lagging the tangent frame and normal data in IPC, and it
+keeps the friction dissipative potential consistent with the friction force for
+that step (a path-dependent μ that updates every iteration would not admit an
+exact incremental potential).
+Friction Jacobians in the toolkit omit <span class="math notranslate nohighlight">\(\partial \mu / \partial \tau\)</span> for
+this direction-dependent case because <span class="math notranslate nohighlight">\(\mu_{\text{eff}}\)</span> is held fixed
+after the lag update.
+Directional lagged-<span class="math notranslate nohighlight">\(\mu\)</span> refresh is currently activated when
+<code class="docutils literal notranslate"><span class="pre">mu_s_aniso</span></code> is nonzero in a 2D tangent space. If only
+<code class="docutils literal notranslate"><span class="pre">mu_k_aniso</span></code> is nonzero, the current gate keeps isotropic lagged
+coefficients.
+For discussion of the curl / non-conservative-field issue and the lagged-μ
+recommendation in IPC, see the maintainer notes linked from
+<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/210">PR #210</a> (and
+<span id="id4">Erleben <em>et al.</em> [<a class="reference internal" href="references.html#id18" title="K. Erleben, M. Macklin, S. Andrews, and P. G. Kry. The matchstick model for anisotropic friction cones. Computer Graphics Forum, 38(8):1–12, 2019. https://github.com/erleben/matchstick. doi:10.1111/cgf.13885.">2019</a>]</span> for the matchstick cone).</p>
+<h3 id="relationship-with-other-anisotropy-mechanisms">Relationship with Other Anisotropy Mechanisms<a class="headerlink" href="#relationship-with-other-anisotropy-mechanisms" title="Link to this heading">¶</a></h3>
+<p>Two mechanisms are available:</p>
+<ol class="arabic simple">
+<li><p><strong>Velocity scaling</strong> (<code class="docutils literal notranslate"><span class="pre">mu_aniso</span></code>): component-wise scaling of the
+tangential velocity before friction; changes the effective speed in the
+friction law.</p></li>
+<li><p><strong>Ellipse coefficients</strong> (<code class="docutils literal notranslate"><span class="pre">mu_s_aniso</span></code>, <code class="docutils literal notranslate"><span class="pre">mu_k_aniso</span></code>): different
+<span class="math notranslate nohighlight">\(\mu\)</span> along each tangent direction.</p></li>
+</ol>
+<p>Use one or both. When both are set, velocity scaling is applied first; the
+ellipse effective <span class="math notranslate nohighlight">\(\mu\)</span> is then chosen from the direction of that scaled
+slip when you call <code class="docutils literal notranslate"><span class="pre">update_lagged_anisotropic_friction_coefficients</span></code>.</p>
 <h2 id="future-directions">Future Directions<a class="headerlink" href="#future-directions" title="Link to this heading">¶</a></h2>
-<p>The IPC Toolkit is continuously evolving, and future releases may include:</p>
-<ul class="simple">
-<li><p>Anisotropic friction models that account for direction-dependent friction.</p></li>
-<li><p>Velocity-dependent friction models that adjust friction coefficients based on relative velocity magnitude.</p></li>
-<li><p>Rolling coefficients of friction for scenarios involving rolling contacts.</p></li>
-</ul>
-<p>We encourage community contributions to expand these advanced friction models. Feel free to submit pull requests with your improvements or open a discussion on GitHub to propose new features.</p>
+<p>Planned or under discussion: velocity-dependent friction and rolling friction.
+See the project’s GitHub for current status or to contribute.</p>
 
 
 
@@ -2391,7 +2641,7 @@ Integrated mollifier <span class="math notranslate nohighlight">\(\int \mu(y) f_
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Mar 18, 2026
+    Apr 16, 2026
   </span>
 
     

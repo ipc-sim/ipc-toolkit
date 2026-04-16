@@ -2783,6 +2783,8 @@
       </ul></li>
       <li><a href="python-api/ccd.html#ipctk.AdditiveCCD">AdditiveCCD (class in ipctk)</a>
 </li>
+      <li><a href="python-api/friction.html#ipctk.anisotropic_mu_eff_f">anisotropic_mu_eff_f() (in module ipctk)</a>
+</li>
       <li><a href="python-api/interval.html#ipctk.filib.Interval.arccos">arccos() (ipctk.filib.Interval method)</a>
 </li>
       <li><a href="python-api/interval.html#ipctk.filib.Interval.arccosh">arccosh() (ipctk.filib.Interval method)</a>
@@ -3438,6 +3440,12 @@
       <li><a href="cpp-api/ccd.html#_CPPv4NK3ipc11AdditiveCCD18point_triangle_ccdEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEERdKdKd">ipc::AdditiveCCD::point_triangle_ccd (C++ function)</a>
 </li>
       <li><a href="cpp-api/ccd.html#_CPPv4N3ipc11AdditiveCCD21UNLIMITTED_ITERATIONSE">ipc::AdditiveCCD::UNLIMITTED_ITERATIONS (C++ member)</a>
+</li>
+      <li><a href="cpp-api/friction.html#_CPPv4N3ipc20anisotropic_mu_eff_fEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEE">ipc::anisotropic_mu_eff_f (C++ function)</a>
+</li>
+      <li><a href="cpp-api/friction.html#_CPPv4N3ipc33anisotropic_mu_eff_from_tau_anisoEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEEKdKdKb">ipc::anisotropic_mu_eff_from_tau_aniso (C++ function)</a>
+</li>
+      <li><a href="cpp-api/friction.html#_CPPv4N3ipc28anisotropic_x_from_tau_anisoEN5Eigen8ConstRefIN5Eigen8Vector2dEEE">ipc::anisotropic_x_from_tau_aniso (C++ function)</a>
 </li>
       <li><a href="cpp-api/barrier/Barrier.html#_CPPv4N3ipc7BarrierE">ipc::Barrier (C++ class)</a>
 </li>
@@ -4283,14 +4291,14 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH16ConstructionInfo6parentE">ipc::LBVH::ConstructionInfo::parent (C++ member)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH16ConstructionInfo16visitation_countE">ipc::LBVH::ConstructionInfo::visitation_count (C++ member)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH17ConstructionInfosE">ipc::LBVH::ConstructionInfos (C++ type)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4I0EN3ipc4LBVH17detect_candidatesEvRK5NodesRK15RightmostLeavesRKNSt8functionIFb6size_t6size_tEEERNSt6vectorI9CandidateEE">ipc::LBVH::detect_candidates (C++ function)</a>, <a href="cpp-api/broad_phase.html#_CPPv4I0_b_bEN3ipc4LBVH17detect_candidatesEvRK5NodesRK5NodesRK15RightmostLeavesRKNSt8functionIFb6size_t6size_tEEERNSt6vectorI9CandidateEE">[1]</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH27detect_edge_edge_candidatesERNSt6vectorI17EdgeEdgeCandidateEE">ipc::LBVH::detect_edge_edge_candidates (C++ function)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH27detect_edge_face_candidatesERNSt6vectorI17EdgeFaceCandidateEE">ipc::LBVH::detect_edge_face_candidates (C++ function)</a>
@@ -4963,9 +4971,19 @@
 </li>
       <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision4initERK15NormalCollisionN5Eigen8ConstRefI12VectorMax12dEEKd">ipc::TangentialCollision::init (C++ function)</a>, <a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision4initERK15NormalCollisionN5Eigen8ConstRefI12VectorMax12dEERK15NormalPotential">[1]</a>
 </li>
+      <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision8mu_anisoE">ipc::TangentialCollision::mu_aniso (C++ member)</a>
+</li>
       <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision4mu_kE">ipc::TangentialCollision::mu_k (C++ member)</a>
 </li>
+      <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision10mu_k_anisoE">ipc::TangentialCollision::mu_k_aniso (C++ member)</a>
+</li>
+      <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision21mu_k_effective_laggedE">ipc::TangentialCollision::mu_k_effective_lagged (C++ member)</a>
+</li>
       <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision4mu_sE">ipc::TangentialCollision::mu_s (C++ member)</a>
+</li>
+      <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision10mu_s_anisoE">ipc::TangentialCollision::mu_s_aniso (C++ member)</a>
+</li>
+      <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision21mu_s_effective_laggedE">ipc::TangentialCollision::mu_s_effective_lagged (C++ member)</a>
 </li>
       <li><a href="cpp-api/tangential_collisions.html#_CPPv4NK3ipc19TangentialCollision4ndofEv">ipc::TangentialCollision::ndof (C++ function)</a>
 </li>
@@ -5007,9 +5025,13 @@
 </li>
       <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc20TangentialCollisions13pv_collisionsE">ipc::TangentialCollisions::pv_collisions (C++ member)</a>
 </li>
+      <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc20TangentialCollisions46reset_lagged_anisotropic_friction_coefficientsEv">ipc::TangentialCollisions::reset_lagged_anisotropic_friction_coefficients (C++ function)</a>
+</li>
       <li><a href="cpp-api/tangential_collisions.html#_CPPv4NK3ipc20TangentialCollisions4sizeEv">ipc::TangentialCollisions::size (C++ function)</a>
 </li>
       <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc20TangentialCollisions20TangentialCollisionsEv">ipc::TangentialCollisions::TangentialCollisions (C++ function)</a>
+</li>
+      <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc20TangentialCollisions47update_lagged_anisotropic_friction_coefficientsERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEE">ipc::TangentialCollisions::update_lagged_anisotropic_friction_coefficients (C++ function)</a>
 </li>
       <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc20TangentialCollisions10value_typeE">ipc::TangentialCollisions::value_type (C++ type)</a>
 </li>
@@ -5038,6 +5060,10 @@
       <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4N3ipc19TangentialPotential11MatrixMaxNdE">ipc::TangentialPotential::MatrixMaxNd (C++ type)</a>
 </li>
       <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential5mu_f0EKdKdKd">ipc::TangentialPotential::mu_f0 (C++ function)</a>
+</li>
+      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential15mu_f0_grad_mu_kEKdKdKd">ipc::TangentialPotential::mu_f0_grad_mu_k (C++ function)</a>
+</li>
+      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential15mu_f0_grad_mu_sEKdKdKd">ipc::TangentialPotential::mu_f0_grad_mu_s (C++ function)</a>
 </li>
       <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential12mu_f1_over_xEKdKdKd">ipc::TangentialPotential::mu_f1_over_x (C++ function)</a>
 </li>
@@ -5306,14 +5332,14 @@
 </li>
       <li><a href="python-api/interval.html#ipctk.filib.max">max() (in module ipctk.filib)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/ccd.html#ipctk.IntervalNonlinearTrajectory.max_distance_from_linear">max_distance_from_linear() (ipctk.IntervalNonlinearTrajectory method)</a>
 
       <ul>
         <li><a href="python-api/ccd.html#ipctk.NonlinearTrajectory.max_distance_from_linear">(ipctk.NonlinearTrajectory method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/ccd.html#ipctk.NonlinearCCD.max_iterations">max_iterations (ipctk.NonlinearCCD property)</a>
 
       <ul>
@@ -5349,9 +5375,19 @@
 </li>
       <li><a href="python-api/normal_collisions.html#ipctk.NormalCollision.mollifier_threshold">mollifier_threshold() (ipctk.NormalCollision method)</a>
 </li>
+      <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollision.mu_aniso">mu_aniso (ipctk.TangentialCollision property)</a>
+</li>
       <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollision.mu_k">mu_k (ipctk.TangentialCollision property)</a>
 </li>
+      <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollision.mu_k_aniso">mu_k_aniso (ipctk.TangentialCollision property)</a>
+</li>
+      <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollision.mu_k_effective_lagged">mu_k_effective_lagged (ipctk.TangentialCollision property)</a>
+</li>
       <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollision.mu_s">mu_s (ipctk.TangentialCollision property)</a>
+</li>
+      <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollision.mu_s_aniso">mu_s_aniso (ipctk.TangentialCollision property)</a>
+</li>
+      <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollision.mu_s_effective_lagged">mu_s_effective_lagged (ipctk.TangentialCollision property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -5599,6 +5635,8 @@
 </li>
       <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollision.relative_velocity_jacobian">relative_velocity_jacobian() (ipctk.TangentialCollision method)</a>
 </li>
+      <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollisions.reset_lagged_anisotropic_friction_coefficients">reset_lagged_anisotropic_friction_coefficients() (ipctk.TangentialCollisions method)</a>
+</li>
       <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.rest_positions">rest_positions (ipctk.CollisionMesh property)</a>
 </li>
       <li><a href="python-api/potentials.html#ipctk.TangentialPotential.REST_POSITIONS">REST_POSITIONS (ipctk.TangentialPotential attribute)</a>
@@ -5607,10 +5645,10 @@
         <li><a href="python-api/potentials.html#ipctk.TangentialPotential.DiffWRT.REST_POSITIONS">(ipctk.TangentialPotential.DiffWRT attribute)</a>
 </li>
       </ul></li>
-      <li><a href="cpp-api/utils.html#_CPPv4I0_iE12RowVectorMax">RowVectorMax (C++ type)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="cpp-api/utils.html#_CPPv4I0_iE12RowVectorMax">RowVectorMax (C++ type)</a>
+</li>
       <li><a href="cpp-api/utils.html#_CPPv415RowVectorMax12d">RowVectorMax12d (C++ type)</a>
 </li>
       <li><a href="cpp-api/utils.html#_CPPv4I0E13RowVectorMax2">RowVectorMax2 (C++ type)</a>
@@ -5799,9 +5837,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/barrier.html#ipctk.Barrier.units">units() (ipctk.Barrier method)</a>
 </li>
+      <li><a href="python-api/barrier.html#ipctk.update_barrier_stiffness">update_barrier_stiffness() (in module ipctk)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="python-api/barrier.html#ipctk.update_barrier_stiffness">update_barrier_stiffness() (in module ipctk)</a>
+      <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients">update_lagged_anisotropic_friction_coefficients() (ipctk.TangentialCollisions method)</a>
 </li>
       <li><a href="python-api/normal_collisions.html#ipctk.NormalCollisions.use_area_weighting">use_area_weighting (ipctk.NormalCollisions property)</a>
 </li>
