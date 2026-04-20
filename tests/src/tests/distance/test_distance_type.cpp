@@ -6,6 +6,7 @@
 #include <catch2/generators/catch_generators_random.hpp>
 
 #include <ipc/distance/distance_type.hpp>
+#include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
 using namespace ipc;
@@ -419,5 +420,91 @@ TEST_CASE(
         CHECK(
             (dtype == EdgeEdgeDistanceType::EA_EB0
              || dtype == EdgeEdgeDistanceType::EA1_EB));
+    }
+}
+
+// Regression test for a bug where two coplanar nearly-collinear non-overlapping
+// edges were assigned EdgeEdgeDistanceType::EA_EB by edge_edge_distance_type().
+// EA_EB delegates to line_line_distance(), whose formula
+//   d² = ((eb0−ea0)·(u×v))² / |u×v|²
+// returns exactly 0 for coplanar edges (the vector eb0−ea0 lies in the same
+// plane as u and v, so it is perpendicular to the cross product). This caused
+// the IPC barrier gradient to assert-fail on isfinite(f'(0)).
+//
+// The correct type for non-overlapping parallel/collinear segments is an
+// endpoint–endpoint type (here EA1_EB0), which gives a positive distance equal
+// to point_point_distance(ea1, eb0).
+TEST_CASE(
+    "Edge-edge coplanar near-collinear non-overlapping distance type",
+    "[distance][distance-type][edge-edge][regression]")
+{
+    // Exact vertex coordinates captured from the cloth-ball crash.
+    // All four vertices share the same x-coordinate, making the two edges
+    // coplanar in the plane x = -0.81818…. Their directions are nearly
+    // identical (differ only by ~3 nm in y), so |u×v|² ≈ 1.63e-19, far below
+    // the old PARALLEL_THRESHOLD * max(1, a*c) = 1e-20 threshold (since
+    // a*c ≈ 0.001 < 1) but above it when the correct relative formula
+    // PARALLEL_THRESHOLD * a*c is used with PARALLEL_THRESHOLD = 1e-7.
+    SECTION("exact crash coordinates")
+    {
+        const Eigen::Vector3d ea0(
+            -0.81818181276321411, 0.073941159961546266, 0.090909108519554152);
+        const Eigen::Vector3d ea1(
+            -0.81818181276321411, 0.073941161500775773, 0.272727280855178830);
+        const Eigen::Vector3d eb0(
+            -0.81818181276321411, 0.073941163540152718, 0.454545468091964780);
+        const Eigen::Vector3d eb1(
+            -0.81818181276321411, 0.073941167300585323, 0.636363625526428220);
+
+        const EdgeEdgeDistanceType dtype =
+            edge_edge_distance_type(ea0, ea1, eb0, eb1);
+
+        // Must not be EA_EB — that would give line_line_distance = 0.
+        CHECK(dtype != EdgeEdgeDistanceType::EA_EB);
+
+        // The correct type for non-overlapping collinear segments separated
+        // along their shared direction is EA1_EB0 (closest endpoints facing
+        // each other).
+        CHECK(dtype == EdgeEdgeDistanceType::EA1_EB0);
+
+        // Distance must be strictly positive.
+        const double dist = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
+        CHECK(dist > 0);
+        CHECK(std::isfinite(dist));
+    }
+
+    // Parametric version: build two parallel segments in the same plane
+    // (x = 0) with a variable z-gap between them, separated by a small
+    // in-plane perpendicular offset dy. The closest features are always the
+    // facing endpoints ea1 and eb0.
+    SECTION("parametric coplanar parallel non-overlapping")
+    {
+        // Length of each segment (same for both)
+        const double L = GENERATE(0.1, 0.5, 1.0, 2.0);
+        // Gap between ea1.z and eb0.z
+        const double gap = GENERATE(0.05, 0.1, 0.2, 0.5);
+        // Tiny in-plane y-offset (mimics the ~3 nm offset in the crash case)
+        const double dy = GENERATE(0.0, 1e-9, 1e-6);
+
+        const Eigen::Vector3d ea0(0.0, 0.0, 0.0);
+        const Eigen::Vector3d ea1(0.0, dy, L);
+        const Eigen::Vector3d eb0(0.0, 2.0 * dy, L + gap);
+        const Eigen::Vector3d eb1(0.0, 3.0 * dy, L + gap + L);
+
+        CAPTURE(L, gap, dy);
+
+        const EdgeEdgeDistanceType dtype =
+            edge_edge_distance_type(ea0, ea1, eb0, eb1);
+
+        CHECK(dtype != EdgeEdgeDistanceType::EA_EB);
+
+        const double dist = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
+        CHECK(dist > 0);
+        CHECK(std::isfinite(dist));
+
+        // The distance must equal point_point_distance(ea1, eb0) since those
+        // are the closest points.
+        const double expected = (ea1 - eb0).squaredNorm();
+        CHECK(dist == Catch::Approx(expected).margin(1e-10));
     }
 }

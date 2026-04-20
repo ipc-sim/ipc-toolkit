@@ -673,3 +673,5 @@ tests/data
 notebooks/*.png
 CMakeGraphVizOptions.cmake
 .zed/*
+
+CLAUDE.md
