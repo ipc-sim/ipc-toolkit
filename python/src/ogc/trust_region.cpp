@@ -81,6 +81,33 @@ void define_trust_region(py::module_& m)
                 Sets should_update_trust_region to true if the trust region should be updated on the next iteration.
             )ipc_Qu8mg5v7",
             "mesh"_a, "x"_a, "dx"_a)
+        .def(
+            "planar_filter_step", &ogc::TrustRegion::planar_filter_step,
+            R"ipc_Qu8mg5v7(
+            Filter the optimization step dx using Planar-DAT (Divide and Truncate).
+
+            For each collision pair, computes a direction-aware division plane
+            and truncates only the component of displacement toward that plane.
+            This eliminates the artificial damping and deadlock of the isotropic
+            ``filter_step`` while retaining the penetration-free guarantee.
+
+            See "Divide and Truncate: A Penetration and Inversion Free Framework
+            for Coupled Multi-physics Systems" [ACM SIGGRAPH 2026].
+
+            Parameters:
+                mesh: The collision mesh.
+                x: Current vertex positions.
+                dx: Proposed vertex displacements (modified in-place).
+                collisions: Active collision pairs (e.g. from ``update()``).
+                query_radius: Radius used for collision detection; displacements
+                    beyond ``0.5 * relaxation_ratio * query_radius`` are capped
+                    isotropically as a fallback.
+                relaxation_ratio: Safety margin :math:`\gamma_r \in (0, 1)`;
+                    the displacement is stopped at this fraction of the crossing
+                    time (default 0.9).
+            )ipc_Qu8mg5v7",
+            "mesh"_a, "x"_a, "dx"_a, "collisions"_a, "query_radius"_a,
+            "relaxation_ratio"_a = 0.9)
         .def_readwrite(
             "trust_region_centers", &ogc::TrustRegion::trust_region_centers,
             "Centers of the trust regions for each vertex.")

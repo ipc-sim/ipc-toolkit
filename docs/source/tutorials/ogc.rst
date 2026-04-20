@@ -384,3 +384,141 @@ The ``warm_start_time_step`` function includes an adaptive heuristic. During the
 3.  **Crucially**, if the number of vertices hitting the boundary exceeds ``update_threshold`` immediately during this warm start, it triggers a second ``update()`` call.
 
 This prevents the solver from starting with a trust region that is already too restrictive for the bulk of the mesh, potentially saving solver iterations later.
+
+Planar-DAT (Divide and Truncate)
+---------------------------------
+
+The isotropic ``filter_step`` clips every vertex displacement to a sphere, which restricts motion in *all* directions — even tangential sliding or outward motion away from a contact. In dense or cluttered contact scenarios this causes **artificial damping** and **deadlock**: vertices cannot slide past each other even when no penetration would occur.
+
+**Planar-DAT** :cite:`Chen2026DivideAndTruncate` replaces the sphere with a *direction-aware division plane* computed per collision pair. Only the displacement component that crosses the plane (i.e., moves toward the opposing primitive) is truncated; tangential and separating motion passes through unconstrained. This typically allows steps 2× larger or more, eliminating damping artifacts.
+
+How the Division Plane is Computed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For each active collision pair the algorithm:
+
+1. Finds the closest points between the two primitives.
+2. Constructs a unit normal :math:`\mathbf{n}` pointing from one primitive toward the other.
+3. Distributes the available gap between the two primitives in proportion to their approach speeds, yielding a **division point** :math:`\mathbf{p}` on the segment connecting the closest points.
+4. For every vertex of both primitives, finds the ray–plane intersection time :math:`t_i` such that :math:`\mathbf{x}_u + t_i \, \delta\mathbf{x}_u` lies on the plane through :math:`\mathbf{p}` with normal :math:`\mathbf{n}`. If :math:`t_i \in [0, 1/\gamma_r)`, the vertex is truncated to :math:`\gamma_r \, t_i`; otherwise it is left unchanged.
+
+An isotropic fallback cap of :math:`0.5 \, \gamma_r \, r_q` (where :math:`r_q` is the query radius) is applied to all vertices as a safety net for primitives that were not captured in the active collision set.
+
+Using ``planar_filter_step``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``planar_filter_step`` is a *drop-in replacement* for ``filter_step`` inside the solver loop. It requires the active collision set (from ``update`` or ``update_if_needed``) and the query radius used when that set was built.
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            // Inside the solver loop, replace:
+            //   trust_region.filter_step(mesh, x, dx);
+            // with:
+            trust_region.planar_filter_step(
+                mesh, x, dx, collisions, /*query_radius=*/dhat);
+
+            // Optionally tune the relaxation ratio (default 0.9):
+            // trust_region.planar_filter_step(
+            //     mesh, x, dx, collisions, dhat, /*relaxation_ratio=*/0.9);
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            # Inside the solver loop, replace:
+            #   trust_region.filter_step(mesh, x, dx)
+            # with:
+            trust_region.planar_filter_step(
+                mesh, x, dx, collisions, query_radius=dhat)
+
+            # Optionally tune the relaxation ratio (default 0.9):
+            # trust_region.planar_filter_step(
+            #     mesh, x, dx, collisions, dhat, relaxation_ratio=0.9)
+
+Full Optimization Loop with Planar-DAT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            // 1. Initial setup (same as isotropic OGC)
+            ipc::NormalCollisions collisions;
+            collisions.set_collision_set_type(ipc::NormalCollisions::CollisionSetType::OGC);
+            ipc::ogc::TrustRegion trust_region(dhat);
+
+            // 2. Warm start (Predict & Initialize)
+            trust_region.warm_start_time_step(
+                mesh, x, pred_x, collisions, dhat);
+
+            // 3. Solver Loop
+            for (int i = 0; i < max_iterations; ++i) {
+                // Update trust region centers/radii if needed
+                trust_region.update_if_needed(mesh, x, collisions, dhat);
+
+                // Compute search direction (Solver specific)
+                Eigen::MatrixXd dx = compute_search_direction(x, ...);
+
+                // Filter step using Planar-DAT (direction-aware truncation)
+                trust_region.planar_filter_step(mesh, x, dx, collisions, dhat);
+
+                // Update positions
+                x += dx;
+
+                // Check convergence...
+            }
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            # 1. Initial setup (same as isotropic OGC)
+            collisions = ipctk.NormalCollisions()
+            collisions.collision_set_type = ipctk.NormalCollisions.CollisionSetType.OGC
+            trust_region = ipctk.ogc.TrustRegion(dhat)
+
+            # 2. Warm start (Predict & Initialize)
+            trust_region.warm_start_time_step(
+                mesh, x, pred_x, collisions, dhat)
+
+            # 3. Solver Loop
+            for i in range(max_iterations):
+                # Update trust region centers/radii if needed
+                trust_region.update_if_needed(mesh, x, collisions, dhat)
+
+                # Compute search direction (Solver specific)
+                dx = compute_search_direction(x, ...)
+
+                # Filter step using Planar-DAT (direction-aware truncation)
+                trust_region.planar_filter_step(mesh, x, dx, collisions, dhat)
+
+                # Update positions
+                x += dx
+
+                # Check convergence...
+
+.. note::
+    ``planar_filter_step`` does **not** set ``should_update_trust_region``. Unlike
+    the isotropic ``filter_step``, Planar-DAT is not paired with a per-vertex
+    trust region radius; ``update_if_needed`` should still be called at the top
+    of each solver iteration to refresh the collision set when needed.
+
+When to Use Planar-DAT vs. Isotropic
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
++-----------------------------------+-----------------------------------------------+
+| Use ``filter_step`` (isotropic)   | Use ``planar_filter_step`` (Planar-DAT)       |
++===================================+===============================================+
+| Simple scenes, sparse contact     | Dense contact, many simultaneous constraints  |
++-----------------------------------+-----------------------------------------------+
+| Stepping-stone implementation     | Coupled multi-physics simulations             |
++-----------------------------------+-----------------------------------------------+
+| When implementation simplicity    | When artificial damping or deadlock           |
+| is preferred                      | is observed with isotropic filtering          |
++-----------------------------------+-----------------------------------------------+

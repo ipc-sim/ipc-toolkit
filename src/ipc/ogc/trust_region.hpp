@@ -97,6 +97,34 @@ struct TrustRegion {
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> x,
         Eigen::Ref<Eigen::MatrixXd> dx);
+
+    /// @brief Filter the optimization step dx using Planar-DAT (Divide and Truncate).
+    ///
+    /// For each collision pair, computes a direction-aware division plane and
+    /// truncates only the component of displacement toward that plane. This
+    /// eliminates the artificial damping and deadlock of the isotropic filter_step
+    /// while retaining the penetration-free guarantee.
+    ///
+    /// @see "Divide and Truncate: A Penetration and Inversion Free Framework
+    ///      for Coupled Multi-physics Systems" [ACM SIGGRAPH 2026]
+    ///
+    /// @param mesh The collision mesh.
+    /// @param x Current vertex positions.
+    /// @param dx Proposed vertex displacements (modified in-place).
+    /// @param collisions Active collision pairs (e.g. from update()).
+    /// @param query_radius Radius used for collision detection; displacements
+    ///        beyond 0.5 * relaxation_ratio * query_radius are capped
+    ///        isotropically as a fallback.
+    /// @param relaxation_ratio Safety margin \f$\gamma_r \in (0,1)\f$; the
+    ///        displacement is stopped at this fraction of the crossing time
+    ///        (default 0.9).
+    void planar_filter_step(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> x,
+        Eigen::Ref<Eigen::MatrixXd> dx,
+        const NormalCollisions& collisions,
+        double query_radius,
+        double relaxation_ratio = 0.9) const;
 };
 
 } // namespace ipc::ogc
