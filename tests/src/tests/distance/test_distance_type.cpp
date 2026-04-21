@@ -441,10 +441,11 @@ TEST_CASE(
     // Exact vertex coordinates captured from the cloth-ball crash.
     // All four vertices share the same x-coordinate, making the two edges
     // coplanar in the plane x = -0.81818…. Their directions are nearly
-    // identical (differ only by ~3 nm in y), so |u×v|² ≈ 1.63e-19, far below
-    // the old PARALLEL_THRESHOLD * max(1, a*c) = 1e-20 threshold (since
-    // a*c ≈ 0.001 < 1) but above it when the correct relative formula
-    // PARALLEL_THRESHOLD * a*c is used with PARALLEL_THRESHOLD = 1e-7.
+    // identical (differ only by ~3 nm in y), so |u×v|² ≈ 1.63e-19. In the
+    // current edge_edge_distance_type() implementation, parallelism is tested
+    // against the relative threshold PARALLEL_THRESHOLD * a * c with
+    // PARALLEL_THRESHOLD = 2.5e-16; here a*c ≈ 0.001, so the effective
+    // threshold is ≈ 2.7e-19, which is slightly larger than |u×v|².
     SECTION("exact crash coordinates")
     {
         const Eigen::Vector3d ea0(

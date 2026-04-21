@@ -148,19 +148,15 @@ VectorMax12d NormalPotential::gradient(
     const NormalCollision& collision,
     Eigen::ConstRef<VectorMax12d> positions) const
 {
-    // d(x)
-    const double d = collision.compute_distance(positions);
-
-    // Defensive guard: for mollified collisions (e.g. edge-edge near-parallel),
-    // d=0 means the mollifier m=0 and ∇m=0, so the full gradient
-    // f(d)·∇m + m·f'(d)·∇d = 0·∇m + 0·f'(0)·∇d = 0 regardless of f'(0).
-    // Evaluating f'(0) directly would assert-fail inside BarrierPotential, so
-    // we short-circuit here. d=0 should never occur after the
-    // PARALLEL_THRESHOLD fix in edge_edge_distance_type, but this guards
-    // against future regressions.
-    if (collision.is_mollified() && d <= 0) {
+    // When m=0 the mollifier also satisfies ∇m=0, so the full gradient
+    // f(d)·∇m + m·f'(d)·∇d = 0 without needing to evaluate f'(d).
+    const double m = collision.mollifier(positions); // m(x)
+    if (m <= 0) {
         return VectorMax12d::Zero(positions.size());
     }
+
+    // d(x)
+    const double d = collision.compute_distance(positions);
 
     // ∇d(x)
     const VectorMax12d grad_d = collision.compute_distance_gradient(positions);
@@ -175,7 +171,7 @@ VectorMax12d NormalPotential::gradient(
         return (collision.weight * grad_f) * grad_d;
     }
 
-    const double m = collision.mollifier(positions); // m(x)
+    // Mollified (edge-edge) path: need to apply product rule to m(x) * f(d(x)).
     const VectorMax12d grad_m =
         collision.mollifier_gradient(positions); // ∇m(x)
 
@@ -189,15 +185,15 @@ MatrixMax12d NormalPotential::hessian(
     Eigen::ConstRef<VectorMax12d> positions,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
-    // d(x)
-    const double d = collision.compute_distance(positions);
-
-    // Defensive guard: same reasoning as in gradient() — for mollified
-    // collisions at d=0, every term contains a factor of m=0 or ∇m=0, so the
-    // full hessian is zero. Evaluating f'(0) or f''(0) would crash.
-    if (collision.is_mollified() && d <= 0) {
+    // Mollified (edge-edge) path: same reasoning as gradient() — check
+    // m(x) before evaluating barrier derivatives.
+    const double m = collision.mollifier(positions); // m(x)
+    if (m <= 0) {
         return MatrixMax12d::Zero(positions.size(), positions.size());
     }
+
+    // d(x)
+    const double d = collision.compute_distance(positions);
 
     // ∇d(x)
     const VectorMax12d grad_d = collision.compute_distance_gradient(positions);
@@ -218,8 +214,6 @@ MatrixMax12d NormalPotential::hessian(
     } else {
         const double f = (*this)(d, collision.dmin); // f(d(x))
 
-        // m(x)
-        const double m = collision.mollifier(positions);
         // ∇ m(x)
         const VectorMax12d grad_m = collision.mollifier_gradient(positions);
         // ∇² m(x)
