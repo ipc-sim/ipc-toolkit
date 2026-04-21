@@ -85,5 +85,8 @@ jobs:
 
       - name: Tests
         run: |
+          # Reinstall numpy from source (no-binary) so it compiles for the runner's CPU
+          pip uninstall -y numpy
+          pip install --no-binary numpy numpy
           pip install -r python/tests/requirements.txt
           nose2 -v --pretty-assert -s python/tests
