@@ -85,8 +85,17 @@ jobs:
 
       - name: Tests
         run: |
-          # Reinstall numpy from source (no-binary) so it compiles for the runner's CPU
-          pip uninstall -y numpy
+          # 1. Create a clean virtual environment
+          python -m venv venv
+          source venv/bin/activate
+
+          # 2. Install NumPy from source WITHIN the venv
+          # Use --force-reinstall to ensure we aren't pulling from the global cache
           pip install --no-binary numpy numpy
+
+          # 3. Install your project and test requirements
+          pip install .
           pip install -r python/tests/requirements.txt
+
+          # 4. Run tests using the venv's nose2
           nose2 -v --pretty-assert -s python/tests
