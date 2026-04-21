@@ -90,10 +90,9 @@ jobs:
           source venv/bin/activate
 
           # 2. Install NumPy from source WITHIN the venv
-          # Use --force-reinstall to ensure we aren't pulling from the global cache
-          pip install --no-binary numpy numpy
-
-          # 3. Install your project and test requirements
+          pip install --no-binary numpy,scipy numpy scipy
+          
+          # 3. Install the project and test requirements
           pip install .
           pip install -r python/tests/requirements.txt
 
