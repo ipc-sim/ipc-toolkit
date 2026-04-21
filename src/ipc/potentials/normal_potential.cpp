@@ -185,15 +185,17 @@ MatrixMax12d NormalPotential::hessian(
     Eigen::ConstRef<VectorMax12d> positions,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
+    // d(x)
+    const double d = collision.compute_distance(positions);
+
     // Mollified (edge-edge) path: same reasoning as gradient() — check
     // m(x) before evaluating barrier derivatives.
     const double m = collision.mollifier(positions); // m(x)
-    if (m <= 0) {
-        return MatrixMax12d::Zero(positions.size(), positions.size());
+    if (collision.is_mollified() && m <= 0) {
+        const double f = (*this)(d, collision.dmin);
+        const MatrixMax12d hess_m = collision.mollifier_hessian(positions);
+        return (collision.weight * f) * hess_m;
     }
-
-    // d(x)
-    const double d = collision.compute_distance(positions);
 
     // ∇d(x)
     const VectorMax12d grad_d = collision.compute_distance_gradient(positions);
