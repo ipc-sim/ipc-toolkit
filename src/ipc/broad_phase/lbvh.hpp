@@ -3,8 +3,6 @@
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/utils/default_init_allocator.hpp>
 
-#include <memory>
-
 namespace ipc {
 
 /// @brief Linear Bounding Volume Hierarchy (LBVH) broad phase collision detection.

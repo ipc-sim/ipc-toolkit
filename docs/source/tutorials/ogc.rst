@@ -402,12 +402,12 @@ For each active collision pair the algorithm:
 3. Distributes the available gap between the two primitives in proportion to their approach speeds, yielding a **division point** :math:`\mathbf{p}` on the segment connecting the closest points.
 4. For every vertex of both primitives, finds the ray–plane intersection time :math:`t_i` such that :math:`\mathbf{x}_u + t_i \, \delta\mathbf{x}_u` lies on the plane through :math:`\mathbf{p}` with normal :math:`\mathbf{n}`. If :math:`t_i \in [0, 1/\gamma_r)`, the vertex is truncated to :math:`\gamma_r \, t_i`; otherwise it is left unchanged.
 
-An isotropic fallback cap of :math:`0.5 \, \gamma_r \, r_q` (where :math:`r_q` is the query radius) is applied to all vertices as a safety net for primitives that were not captured in the active collision set.
+For vertices not covered by an active collision pair, an isotropic fallback applies the same trust-region sphere used by ``filter_step`` — centered at ``trust_region_centers`` with radius ``trust_region_inflation_radius`` — so that no uncovered vertex can escape the safe zone.
 
 Using ``planar_filter_step``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``planar_filter_step`` is a *drop-in replacement* for ``filter_step`` inside the solver loop. It requires the active collision set (from ``update`` or ``update_if_needed``) and the query radius used when that set was built.
+``planar_filter_step`` is a *drop-in replacement* for ``filter_step`` inside the solver loop. It requires the active collision set (from ``update`` or ``update_if_needed``). The relaxation ratio is controlled via the ``relaxed_radius_scaling`` member of the ``TrustRegion`` object (default 0.9).
 
 .. md-tab-set::
 
@@ -418,12 +418,10 @@ Using ``planar_filter_step``
             // Inside the solver loop, replace:
             //   trust_region.filter_step(mesh, x, dx);
             // with:
-            trust_region.planar_filter_step(
-                mesh, x, dx, collisions, /*query_radius=*/dhat);
+            trust_region.planar_filter_step(mesh, x, dx, collisions);
 
-            // Optionally tune the relaxation ratio (default 0.9):
-            // trust_region.planar_filter_step(
-            //     mesh, x, dx, collisions, dhat, /*relaxation_ratio=*/0.9);
+            // Optionally tune the relaxation ratio via the struct member:
+            // trust_region.relaxed_radius_scaling = 0.9; // default
 
     .. md-tab-item:: Python
 
@@ -432,12 +430,10 @@ Using ``planar_filter_step``
             # Inside the solver loop, replace:
             #   trust_region.filter_step(mesh, x, dx)
             # with:
-            trust_region.planar_filter_step(
-                mesh, x, dx, collisions, query_radius=dhat)
+            trust_region.planar_filter_step(mesh, x, dx, collisions)
 
-            # Optionally tune the relaxation ratio (default 0.9):
-            # trust_region.planar_filter_step(
-            #     mesh, x, dx, collisions, dhat, relaxation_ratio=0.9)
+            # Optionally tune the relaxation ratio via the struct member:
+            # trust_region.relaxed_radius_scaling = 0.9  # default
 
 Full Optimization Loop with Planar-DAT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -466,7 +462,7 @@ Full Optimization Loop with Planar-DAT
                 Eigen::MatrixXd dx = compute_search_direction(x, ...);
 
                 // Filter step using Planar-DAT (direction-aware truncation)
-                trust_region.planar_filter_step(mesh, x, dx, collisions, dhat);
+                trust_region.planar_filter_step(mesh, x, dx, collisions);
 
                 // Update positions
                 x += dx;
@@ -496,7 +492,7 @@ Full Optimization Loop with Planar-DAT
                 dx = compute_search_direction(x, ...)
 
                 # Filter step using Planar-DAT (direction-aware truncation)
-                trust_region.planar_filter_step(mesh, x, dx, collisions, dhat)
+                trust_region.planar_filter_step(mesh, x, dx, collisions)
 
                 # Update positions
                 x += dx
@@ -504,10 +500,10 @@ Full Optimization Loop with Planar-DAT
                 # Check convergence...
 
 .. note::
-    ``planar_filter_step`` does **not** set ``should_update_trust_region``. Unlike
-    the isotropic ``filter_step``, Planar-DAT is not paired with a per-vertex
-    trust region radius; ``update_if_needed`` should still be called at the top
-    of each solver iteration to refresh the collision set when needed.
+    Like ``filter_step``, ``planar_filter_step`` also sets
+    ``should_update_trust_region`` when a critical mass of vertices are
+    restricted by the trust region. Call ``update_if_needed`` at the top of
+    each solver iteration to refresh the collision set when needed.
 
 When to Use Planar-DAT vs. Isotropic
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

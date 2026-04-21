@@ -102,8 +102,8 @@ struct TrustRegion {
     ///
     /// For each collision pair, computes a direction-aware division plane and
     /// truncates only the component of displacement toward that plane. This
-    /// eliminates the artificial damping and deadlock of the isotropic filter_step
-    /// while retaining the penetration-free guarantee.
+    /// eliminates the artificial damping and deadlock of the isotropic
+    /// filter_step while retaining the penetration-free guarantee.
     ///
     /// @see "Divide and Truncate: A Penetration and Inversion Free Framework
     ///      for Coupled Multi-physics Systems" [ACM SIGGRAPH 2026]
@@ -122,9 +122,26 @@ struct TrustRegion {
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> x,
         Eigen::Ref<Eigen::MatrixXd> dx,
-        const NormalCollisions& collisions,
-        double query_radius,
-        double relaxation_ratio = 0.9) const;
+        const NormalCollisions& collisions);
+
+private:
+    /// @brief Compute the truncation ratio for a vertex given a division plane.
+    ///
+    /// Finds the parameter t_i such that x_u + t_i * dx_u lies on the plane
+    /// (n, p). If the crossing is in the future and within one step, returns
+    /// relaxation_ratio * t_i; otherwise returns 1 (no truncation).
+    ///
+    /// @param x_u Current position of vertex u.
+    /// @param dx_u Proposed displacement of vertex u.
+    /// @param n Division plane normal (unit vector).
+    /// @param p A point on the division plane.
+    /// @param relaxation_ratio Safety margin γ_r ∈ (0,1).
+    /// @return Truncation ratio in (0, 1].
+    double planar_truncation_ratio(
+        const Eigen::Vector3d& x_u,
+        const Eigen::Vector3d& dx_u,
+        const Eigen::Vector3d& n,
+        const Eigen::Vector3d& p) const;
 };
 
 } // namespace ipc::ogc

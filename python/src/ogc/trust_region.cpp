@@ -106,8 +106,7 @@ void define_trust_region(py::module_& m)
                     the displacement is stopped at this fraction of the crossing
                     time (default 0.9).
             )ipc_Qu8mg5v7",
-            "mesh"_a, "x"_a, "dx"_a, "collisions"_a, "query_radius"_a,
-            "relaxation_ratio"_a = 0.9)
+            "mesh"_a, "x"_a, "dx"_a, "collisions"_a)
         .def_readwrite(
             "trust_region_centers", &ogc::TrustRegion::trust_region_centers,
             "Centers of the trust regions for each vertex.")

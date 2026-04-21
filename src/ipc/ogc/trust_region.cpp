@@ -1,7 +1,7 @@
 #include "trust_region.hpp"
 
-#include <ipc/tangent/closest_point.hpp>
 #include <ipc/distance/distance_type.hpp>
+#include <ipc/tangent/closest_point.hpp>
 
 namespace ipc::ogc {
 
@@ -119,6 +119,56 @@ namespace {
     {
         return std::abs(a - b) <= tol;
     }
+
+    /// @brief Compute the trust-region truncation ratio for a single vertex.
+    ///
+    /// Returns the largest β ∈ (0, 1] such that ‖xi + β·dxi − ci‖ ≤ ri.
+    /// If xi + dxi is already inside the trust region, returns 1.0.
+    ///
+    /// @param xi  Current position of the vertex.
+    /// @param dxi Proposed displacement of the vertex.
+    /// @param ci  Center of the trust region.
+    /// @param ri  Radius of the trust region.
+    /// @return Truncation ratio β in (0, 1].
+    inline double compute_trust_region_beta(
+        const VectorMax3d& xi,
+        const VectorMax3d& dxi,
+        const VectorMax3d& ci,
+        double ri)
+    {
+        if ((xi + dxi - ci).norm() <= ri) {
+            return 1.0; // Already inside, no truncation needed
+        }
+
+        const double a = dxi.squaredNorm();
+        if (a == 0) {
+            return 1.0; // Zero displacement
+        }
+
+        // Solve ‖x + βΔx - c‖² = r² for β:
+        // (x + βΔx - c)ᵀ(x + βΔx - c) - r²
+        //  = ‖Δx‖² β² + 2(Δxᵀ(x - c)) β + ‖x - c‖² - r²
+        //    { a }      {     b     }     {     c     }
+        const double b = 2 * dxi.dot(xi - ci);
+        const double c = (xi - ci).squaredNorm() - ri * ri;
+        assert(c <= 0);                 // Inside the trust region, so c <= 0
+        assert(b * b - 4 * a * c >= 0); // Roots must be real
+
+        const double sign_b = (b >= 0) ? 1.0 : -1.0;
+        const double sqrt_d = sqrt(b * b - 4 * a * c);
+
+        // β = (-b + √(b² - 4ac)) / 2a, using a numerically stable form
+        double beta;
+        if (sign_b > 0) {
+            beta = -2 * c / (b + sqrt_d);
+        } else {
+            beta = (-b + sqrt_d) / (2 * a);
+        }
+        // β should be the positive root
+        assert(beta > 0);
+
+        return beta;
+    }
 } // namespace
 
 void TrustRegion::filter_step(
@@ -137,39 +187,9 @@ void TrustRegion::filter_step(
         // Check that the current position is within the trust region.
         assert((xi - ci).norm() <= trust_region_radii(i) + 1e-9);
 
-        const double alpha = (xi + dxi - ci).norm();
-        if (alpha > trust_region_radii(i)) {
-            // Solve ‖x + βΔx - c‖² = r² for β:
-            // (x + βΔx - c)ᵀ(x + βΔx - c) - r²
-            //  = ‖Δx‖² β² + 2(Δxᵀ(x - c)) β + ‖x - c‖² - r²
-            //    { a }      {     b     }     {     c     }
-
-            const double a = dxi.squaredNorm();
-            assert(a > 0); // Δx should not be zero
-
-            // b can be positive or negative
-            const double b = 2 * dxi.dot(xi - ci);
-
-            const double c = (xi - ci).squaredNorm()
-                - trust_region_radii(i) * trust_region_radii(i);
-            assert(c <= 0); // Inside the trust region, so c <= 0
-
-            // Roots must be real
-            assert(b * b - 4 * a * c >= 0);
-
-            const double sign_b = (b >= 0) ? 1.0 : -1.0;
-            const double sqrt_d = sqrt(b * b - 4 * a * c);
-
-            // β = (-b + √(b² - 4ac)) / 2a, but we use a more stable form below
-            double beta;
-            if (sign_b > 0) {
-                beta = -2 * c / (b + sqrt_d);
-            } else {
-                beta = (-b + sqrt_d) / (2 * a);
-            }
-            // β should be the positive root
-            assert(beta > 0);
-
+        const double beta =
+            compute_trust_region_beta(xi, dxi, ci, trust_region_radii(i));
+        if (beta < 1.0) {
             dx.row(i).array() *= beta;
             assert(approx(
                 (xi + dx.row(i).transpose() - ci).norm(),
@@ -190,38 +210,6 @@ void TrustRegion::filter_step(
 }
 
 namespace {
-    /// @brief Compute the truncation ratio for a vertex given a division plane.
-    ///
-    /// Finds the parameter t_i such that x_u + t_i * dx_u lies on the plane
-    /// (n, p). If the crossing is in the future and within one step, returns
-    /// relaxation_ratio * t_i; otherwise returns 1 (no truncation).
-    ///
-    /// @param x_u Current position of vertex u.
-    /// @param dx_u Proposed displacement of vertex u.
-    /// @param n Division plane normal (unit vector).
-    /// @param p A point on the division plane.
-    /// @param relaxation_ratio Safety margin γ_r ∈ (0,1).
-    /// @return Truncation ratio in (0, 1].
-    double planar_truncation_ratio(
-        const Eigen::Vector3d& x_u,
-        const Eigen::Vector3d& dx_u,
-        const Eigen::Vector3d& n,
-        const Eigen::Vector3d& p,
-        const double relaxation_ratio)
-    {
-        const double denom = dx_u.dot(n);
-        if (std::abs(denom) < 1e-15) {
-            return 1.0; // dx parallel to plane → no crossing
-        }
-        // Ray-plane intersection: x_u + t_i * dx_u is on plane when
-        // (x_u + t_i * dx_u - p) · n = 0  →  t_i = -(x_u - p) · n / denom
-        const double t_i = -(x_u - p).dot(n) / denom;
-        // Only constrain if crossing is in the future and within one step
-        if (t_i < 0.0 || t_i >= 1.0 / relaxation_ratio) {
-            return 1.0;
-        }
-        return relaxation_ratio * t_i;
-    }
 
     /// @brief Compute the closest points between two edges given their distance type.
     /// @return Pair (c_e, c_e') of closest points on ea and eb respectively.
@@ -243,26 +231,26 @@ namespace {
             return { ea1, eb1 };
         case ipc::EdgeEdgeDistanceType::EA_EB0: {
             const double alpha = ipc::point_edge_closest_point(eb0, ea0, ea1);
-            return { (1 - alpha) * ea0 + alpha * ea1, eb0 };
+            return { alpha * (ea1 - ea0) + ea0, eb0 };
         }
         case ipc::EdgeEdgeDistanceType::EA_EB1: {
             const double alpha = ipc::point_edge_closest_point(eb1, ea0, ea1);
-            return { (1 - alpha) * ea0 + alpha * ea1, eb1 };
+            return { alpha * (ea1 - ea0) + ea0, eb1 };
         }
         case ipc::EdgeEdgeDistanceType::EA0_EB: {
             const double beta = ipc::point_edge_closest_point(ea0, eb0, eb1);
-            return { ea0, (1 - beta) * eb0 + beta * eb1 };
+            return { ea0, beta * (eb1 - eb0) + eb0 };
         }
         case ipc::EdgeEdgeDistanceType::EA1_EB: {
             const double beta = ipc::point_edge_closest_point(ea1, eb0, eb1);
-            return { ea1, (1 - beta) * eb0 + beta * eb1 };
+            return { ea1, beta * (eb1 - eb0) + eb0 };
         }
         default: { // EA_EB (interior) or AUTO
             const Eigen::Vector2d params =
                 ipc::edge_edge_closest_point(ea0, ea1, eb0, eb1);
             return {
-                (1 - params[0]) * ea0 + params[0] * ea1,
-                (1 - params[1]) * eb0 + params[1] * eb1,
+                params[0] * (ea1 - ea0) + ea0,
+                params[1] * (eb1 - eb0) + eb0,
             };
         }
         }
@@ -273,22 +261,25 @@ void TrustRegion::planar_filter_step(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> x,
     Eigen::Ref<Eigen::MatrixXd> dx,
-    const NormalCollisions& collisions,
-    const double query_radius,
-    const double relaxation_ratio) const
+    const NormalCollisions& collisions)
 {
     assert(x.rows() == dx.rows() && x.cols() == dx.cols());
-    assert(relaxation_ratio > 0 && relaxation_ratio < 1);
+    assert(relaxed_radius_scaling > 0 && relaxed_radius_scaling < 1);
 
     // Collision mesh vertex positions (may differ from x if hidden DOFs exist)
     const bool has_hidden_dofs = x.rows() != mesh.num_vertices();
-    const Eigen::MatrixXd vertices =
-        has_hidden_dofs ? mesh.vertices(x) : x;
+    Eigen::MatrixXd vertices;
+    if (has_hidden_dofs) {
+        vertices = mesh.vertices(x);
+    } else {
+        vertices = x;
+    }
 
     // Map collision-mesh vertex index → full-mesh row index in x/dx
     const Eigen::VectorXi& full_id_map = mesh.to_full_vertex_id();
     auto to_full = [&](const index_t coll_id) -> int {
-        return has_hidden_dofs ? full_id_map(coll_id) : (int)coll_id;
+        return has_hidden_dofs ? full_id_map(coll_id)
+                               : static_cast<int>(coll_id);
     };
 
     // Per-vertex truncation ratios (1 = no truncation)
@@ -307,11 +298,12 @@ void TrustRegion::planar_filter_step(
         const Eigen::Vector3d x_c = vertices.row(ids[3]);
 
         // Closest point on triangle (t0=x_a, t1=x_b, t2=x_c) to vertex x_v.
-        // Returns barycentric (u, v); reconstruct as (1-u-v)*x_a + u*x_b + v*x_c.
+        // Returns barycentric (u, v); reconstruct as (1-u-v)*x_a + u*x_b +
+        // v*x_c.
         const Eigen::Vector2d uv =
             point_triangle_closest_point(x_v, x_a, x_b, x_c);
         const Eigen::Vector3d c_vt =
-            (1 - uv[0] - uv[1]) * x_a + uv[0] * x_b + uv[1] * x_c;
+            x_a + uv[0] * (x_b - x_a) + uv[1] * (x_c - x_a);
 
         // Normal pointing from triangle toward vertex
         const Eigen::Vector3d diff = x_v - c_vt;
@@ -334,7 +326,8 @@ void TrustRegion::planar_filter_step(
 
         // Approach speeds (Eq. 9–10 in DAT paper)
         // δ_v: how fast vertex is approaching triangle (negative n-component)
-        // δ_t: how fast any triangle vertex is approaching vertex (positive n-component)
+        // δ_t: how fast any triangle vertex is approaching vertex (positive
+        // n-component)
         const double delta_v = std::max(-dx_v.dot(n), 0.0);
         const double delta_t =
             std::max({ dx_a.dot(n), dx_b.dot(n), dx_c.dot(n), 0.0 });
@@ -348,14 +341,14 @@ void TrustRegion::planar_filter_step(
         const Eigen::Vector3d p = c_vt + lambda * diff;
 
         // Truncate all four vertices using this division plane
-        t_v[fid_v] = std::min(t_v[fid_v],
-            planar_truncation_ratio(x_v, dx_v, n, p, relaxation_ratio));
-        t_v[fid_a] = std::min(t_v[fid_a],
-            planar_truncation_ratio(x_a, dx_a, n, p, relaxation_ratio));
-        t_v[fid_b] = std::min(t_v[fid_b],
-            planar_truncation_ratio(x_b, dx_b, n, p, relaxation_ratio));
-        t_v[fid_c] = std::min(t_v[fid_c],
-            planar_truncation_ratio(x_c, dx_c, n, p, relaxation_ratio));
+        t_v[fid_v] =
+            std::min(t_v[fid_v], planar_truncation_ratio(x_v, dx_v, n, p));
+        t_v[fid_a] =
+            std::min(t_v[fid_a], planar_truncation_ratio(x_a, dx_a, n, p));
+        t_v[fid_b] =
+            std::min(t_v[fid_b], planar_truncation_ratio(x_b, dx_b, n, p));
+        t_v[fid_c] =
+            std::min(t_v[fid_c], planar_truncation_ratio(x_c, dx_c, n, p));
     }
 
     // ---- Edge-Edge Collisions ------------------------------------------
@@ -392,8 +385,7 @@ void TrustRegion::planar_filter_step(
 
         // δ_e: max approach of ea toward eb (in +n direction)
         // δ_e': max approach of eb toward ea (in −n direction)
-        const double delta_e =
-            std::max({ dx_ea0.dot(n), dx_ea1.dot(n), 0.0 });
+        const double delta_e = std::max({ dx_ea0.dot(n), dx_ea1.dot(n), 0.0 });
         const double delta_ep =
             std::max({ -dx_eb0.dot(n), -dx_eb1.dot(n), 0.0 });
 
@@ -406,33 +398,70 @@ void TrustRegion::planar_filter_step(
         const Eigen::Vector3d p = c_e + lambda * diff;
 
         // Truncate all four edge vertices
-        t_v[fid_ea0] = std::min(t_v[fid_ea0],
-            planar_truncation_ratio(ea0, dx_ea0, n, p, relaxation_ratio));
-        t_v[fid_ea1] = std::min(t_v[fid_ea1],
-            planar_truncation_ratio(ea1, dx_ea1, n, p, relaxation_ratio));
-        t_v[fid_eb0] = std::min(t_v[fid_eb0],
-            planar_truncation_ratio(eb0, dx_eb0, n, p, relaxation_ratio));
-        t_v[fid_eb1] = std::min(t_v[fid_eb1],
-            planar_truncation_ratio(eb1, dx_eb1, n, p, relaxation_ratio));
+        t_v[fid_ea0] =
+            std::min(t_v[fid_ea0], planar_truncation_ratio(ea0, dx_ea0, n, p));
+        t_v[fid_ea1] =
+            std::min(t_v[fid_ea1], planar_truncation_ratio(ea1, dx_ea1, n, p));
+        t_v[fid_eb0] =
+            std::min(t_v[fid_eb0], planar_truncation_ratio(eb0, dx_eb0, n, p));
+        t_v[fid_eb1] =
+            std::min(t_v[fid_eb1], planar_truncation_ratio(eb1, dx_eb1, n, p));
     }
 
     // ---- Isotropic Fallback --------------------------------------------
-    // For primitives beyond the query radius, apply an isotropic cap so
-    // that no vertex moves more than 0.5 * γ_r * r_q (Sec. 4 in DAT paper).
-    const double iso_cap = 0.5 * relaxation_ratio * query_radius;
-    for (int v = 0; v < (int)x.rows(); v++) {
-        const double dx_norm = dx.row(v).norm();
-        if (dx_norm > 0 && t_v[v] * dx_norm > iso_cap) {
-            t_v[v] = std::min(t_v[v], iso_cap / dx_norm);
-        }
+    // For primitives beyond the query radius, fall back to isotropic
+    // trust-region clamping (same as filter_step) to prevent penetration.
+    for (int i = 0; i < x.rows(); i++) {
+        const VectorMax3d xi = x.row(i);
+        const VectorMax3d dxi = dx.row(i);
+        const VectorMax3d ci = trust_region_centers.row(i);
+        // Use trust_region_inflation_radius instead of trust_region_radii(v).
+        // This is the key difference between Planar-DAT and Isotropic-DAT.
+        // This allows us to preserve more motion for vertices that are near the
+        // boundary of the trust region, rather than restricting them to a
+        // smaller trust region radius.
+        const double beta = compute_trust_region_beta(
+            xi, dxi, ci, trust_region_inflation_radius);
+        t_v[i] = std::min(t_v[i], beta);
     }
 
     // ---- Apply Truncations ---------------------------------------------
-    for (int v = 0; v < (int)x.rows(); v++) {
+    int num_updates = 0;
+    for (int v = 0; v < x.rows(); v++) {
         if (t_v[v] < 1.0) {
             dx.row(v) *= t_v[v];
+            num_updates++;
         }
     }
+
+    // Mirror filter_step: if a critical mass of vertices are restricted,
+    // flag the trust region for re-centering on the next iteration.
+    if (num_updates > update_threshold * mesh.num_vertices()) {
+        logger().trace(
+            "{:.1f}% of vertices restricted by planar trust region. Updating trust region.",
+            100.0 * num_updates / mesh.num_vertices());
+        should_update_trust_region = true;
+    }
+}
+
+double TrustRegion::planar_truncation_ratio(
+    const Eigen::Vector3d& x_u,
+    const Eigen::Vector3d& dx_u,
+    const Eigen::Vector3d& n,
+    const Eigen::Vector3d& p) const
+{
+    const double denom = dx_u.dot(n);
+    if (std::abs(denom) < 1e-15) {
+        return 1.0; // dx parallel to plane → no crossing
+    }
+    // Ray-plane intersection: x_u + t_i * dx_u is on plane when
+    // (x_u + t_i * dx_u - p) · n = 0  →  t_i = -(x_u - p) · n / denom
+    const double t_i = -(x_u - p).dot(n) / denom;
+    // Only constrain if crossing is in the future and within one step
+    if (t_i < 0.0 || t_i >= 1.0 / relaxed_radius_scaling) {
+        return 1.0;
+    }
+    return relaxed_radius_scaling * t_i;
 }
 
 } // namespace ipc::ogc

@@ -19,8 +19,7 @@ using namespace ipc;
 //   V[3] = (1, gap, 1)    <- vertex directly above triangle centroid
 //
 // Returned mesh has one face [0,1,2] and three boundary edges.
-static std::pair<CollisionMesh, Eigen::MatrixXd>
-make_fv_mesh(double gap)
+static std::pair<CollisionMesh, Eigen::MatrixXd> make_fv_mesh(double gap)
 {
     Eigen::MatrixXd V(4, 3);
     // clang-format off
@@ -42,8 +41,7 @@ make_fv_mesh(double gap)
 // Helper: build a mesh with two perpendicular edges separated by a gap.
 //   Edge A: (0, 0, 0) → (1, 0, 0)     (along x)
 //   Edge B: (0.5, gap, -0.5) → (0.5, gap, 0.5)  (along z, above A's midpoint)
-static std::pair<CollisionMesh, Eigen::MatrixXd>
-make_ee_mesh(double gap)
+static std::pair<CollisionMesh, Eigen::MatrixXd> make_ee_mesh(double gap)
 {
     Eigen::MatrixXd V(4, 3);
     // clang-format off
@@ -192,9 +190,14 @@ TEST_CASE(
 // Planar-DAT (planar_filter_step) tests
 // ============================================================================
 
-TEST_CASE("planar_filter_step: separating vertex is not truncated", "[ogc][planar_dat]")
+TEST_CASE(
+    "planar_filter_step: separating vertex is capped by trust region",
+    "[ogc][planar_dat]")
 {
-    // Vertex moving AWAY from triangle → should not be restricted at all.
+    // Vertex moving AWAY from the triangle is not restricted by the planar
+    // constraint, but the trust-region fallback (same as filter_step) still
+    // applies to prevent penetration with undetected geometry beyond the
+    // query radius.
     const double gap = 0.5;
     const double dhat = 0.6; // dhat > gap so the FV pair is active
     auto [mesh, V] = make_fv_mesh(gap);
@@ -203,28 +206,41 @@ TEST_CASE("planar_filter_step: separating vertex is not truncated", "[ogc][plana
     ipc::NormalCollisions collisions;
     collisions.set_collision_set_type(
         ipc::NormalCollisions::CollisionSetType::OGC);
-    const auto vertices = mesh.vertices(V);
-    collisions.build(mesh, vertices, dhat);
+    tr.update(mesh, V, collisions);
 
     REQUIRE(!collisions.empty());
 
     Eigen::MatrixXd x = V;
     Eigen::MatrixXd dx = Eigen::MatrixXd::Zero(V.rows(), 3);
-    // Vertex 3 moves upward (away from triangle)
-    dx.row(3) << 0.0, 0.4, 0.0;
+    // Vertex 3 moves upward (away from triangle) with a large step that
+    // exceeds the trust region inflation radius (2 * dhat = 1.2).
+    dx.row(3) << 0.0, 2.0, 0.0;
 
-    tr.planar_filter_step(mesh, x, dx, collisions, /*query_radius=*/dhat);
+    tr.planar_filter_step(mesh, x, dx, collisions);
 
-    // No truncation: separating motion must be fully preserved
+    // The planar constraint leaves the step alone (moving away), but the
+    // isotropic trust-region fallback clamps the displacement to the
+    // trust region inflation radius.
     CHECK(dx(3, 0) == Catch::Approx(0.0));
-    CHECK(dx(3, 1) == Catch::Approx(0.4));
     CHECK(dx(3, 2) == Catch::Approx(0.0));
+    // Displacement was reduced and is still in the correct direction
+    CHECK(dx(3, 1) > 0.0);
+    CHECK(dx(3, 1) < 2.0);
+    // Final position must lie on the inflation-radius sphere boundary
+    const double dist_from_center =
+        (x.row(3) + dx.row(3) - tr.trust_region_centers.row(3)).norm();
+    CHECK(
+        dist_from_center
+        == Catch::Approx(tr.trust_region_inflation_radius).epsilon(1e-6));
 }
 
-TEST_CASE("planar_filter_step: tangential vertex is not truncated", "[ogc][planar_dat]")
+TEST_CASE(
+    "planar_filter_step: tangential vertex is not truncated by planar DAT",
+    "[ogc][planar_dat]")
 {
-    // Vertex sliding sideways (perpendicular to contact normal) should be
-    // fully preserved; Planar-DAT only restricts motion toward the surface.
+    // Vertex sliding sideways (perpendicular to contact normal) should not
+    // be restricted by Planar-DAT, but the trust-region fallback still
+    // applies.
     const double gap = 0.5;
     const double dhat = 0.6;
     auto [mesh, V] = make_fv_mesh(gap);
@@ -233,27 +249,36 @@ TEST_CASE("planar_filter_step: tangential vertex is not truncated", "[ogc][plana
     ipc::NormalCollisions collisions;
     collisions.set_collision_set_type(
         ipc::NormalCollisions::CollisionSetType::OGC);
-    const auto vertices = mesh.vertices(V);
-    collisions.build(mesh, vertices, dhat);
+    tr.update(mesh, V, collisions);
 
     REQUIRE(!collisions.empty());
 
     Eigen::MatrixXd x = V;
     Eigen::MatrixXd dx = Eigen::MatrixXd::Zero(V.rows(), 3);
     // Vertex 3 moves sideways (contact normal is (0,1,0), dx is in xz-plane)
-    dx.row(3) << 0.3, 0.0, 0.0;
+    // with a large step that exceeds the trust region inflation radius
+    // (2 * dhat = 1.2).
+    dx.row(3) << 2.0, 0.0, 0.0;
 
-    tr.planar_filter_step(mesh, x, dx, collisions, /*query_radius=*/dhat);
+    tr.planar_filter_step(mesh, x, dx, collisions);
 
-    // Tangential motion: no truncation (only isotropic cap applies, which is
-    // 0.5 * 0.9 * dhat = 0.27; 0.3 > 0.27 so it IS capped slightly)
-    const double iso_cap = 0.5 * 0.9 * dhat;
-    // The displacement magnitude after truncation should equal iso_cap
-    // because 0.3 > iso_cap = 0.27
-    CHECK(dx.row(3).norm() == Catch::Approx(iso_cap).epsilon(1e-6));
+    // Tangential motion: Planar-DAT does not truncate, but the isotropic
+    // trust-region fallback caps the displacement to the inflation radius.
+    CHECK(dx(3, 1) == Catch::Approx(0.0));
+    CHECK(dx(3, 2) == Catch::Approx(0.0));
+    // Displacement was reduced and is still in the correct direction
+    CHECK(dx(3, 0) > 0.0);
+    CHECK(dx(3, 0) < 2.0);
+    // Final position must lie on the inflation-radius sphere boundary
+    const double dist_from_center =
+        (x.row(3) + dx.row(3) - tr.trust_region_centers.row(3)).norm();
+    CHECK(
+        dist_from_center
+        == Catch::Approx(tr.trust_region_inflation_radius).epsilon(1e-6));
 }
 
-TEST_CASE("planar_filter_step: approaching vertex is truncated", "[ogc][planar_dat]")
+TEST_CASE(
+    "planar_filter_step: approaching vertex is truncated", "[ogc][planar_dat]")
 {
     // Vertex moving directly toward the triangle should be stopped before
     // penetration. With gap=0.5 and dx_v=(0,-0.6,0), the vertex would
@@ -266,8 +291,7 @@ TEST_CASE("planar_filter_step: approaching vertex is truncated", "[ogc][planar_d
     ipc::NormalCollisions collisions;
     collisions.set_collision_set_type(
         ipc::NormalCollisions::CollisionSetType::OGC);
-    const auto vertices = mesh.vertices(V);
-    collisions.build(mesh, vertices, dhat);
+    tr.update(mesh, V, collisions);
 
     REQUIRE(!collisions.empty());
 
@@ -276,12 +300,13 @@ TEST_CASE("planar_filter_step: approaching vertex is truncated", "[ogc][planar_d
     // Vertex 3 approaches the triangle (would overshoot if not truncated)
     dx.row(3) << 0.0, -0.6, 0.0;
 
-    tr.planar_filter_step(mesh, x, dx, collisions, /*query_radius=*/dhat);
+    tr.planar_filter_step(mesh, x, dx, collisions);
 
     // After truncation the vertex must still be above y=0 (no penetration)
     const double final_y = x(3, 1) + dx(3, 1);
     CHECK(final_y > 0.0);
-    // The vertex must have been restricted (dx_y must be less in magnitude than 0.6)
+    // The vertex must have been restricted (dx_y must be less in magnitude than
+    // 0.6)
     CHECK(std::abs(dx(3, 1)) < 0.6);
     // And it must be moving in the correct direction (still downward)
     CHECK(dx(3, 1) < 0.0);
@@ -293,7 +318,8 @@ TEST_CASE(
     "[ogc][planar_dat]")
 {
     // When the vertex moves AWAY, planar_filter_step should preserve the full
-    // step, while filter_step (isotropic) would cap it to the trust region radius.
+    // step, while filter_step (isotropic) would cap it to the trust region
+    // radius.
     const double gap = 0.5;
     const double dhat = 0.6;
     auto [mesh, V] = make_fv_mesh(gap);
@@ -314,11 +340,11 @@ TEST_CASE(
     tr.filter_step(mesh, x, dx_iso);
     const double iso_preserved = dx_iso.row(3).norm();
 
-    // Planar: same step should not be truncated at all (moving away)
+    // Planar: trust-region fallback applies (same as filter_step), so
+    // planar should preserve at least as much motion as isotropic.
     Eigen::MatrixXd dx_planar = Eigen::MatrixXd::Zero(V.rows(), 3);
     dx_planar.row(3) << 0.0, 1.0, 0.0;
-    tr.planar_filter_step(
-        mesh, x, dx_planar, collisions, /*query_radius=*/dhat);
+    tr.planar_filter_step(mesh, x, dx_planar, collisions);
     const double planar_preserved = dx_planar.row(3).norm();
 
     // Planar-DAT should preserve strictly more (or equal) motion
@@ -338,8 +364,7 @@ TEST_CASE(
     ipc::NormalCollisions collisions;
     collisions.set_collision_set_type(
         ipc::NormalCollisions::CollisionSetType::OGC);
-    const auto vertices = mesh.vertices(V);
-    collisions.build(mesh, vertices, dhat);
+    tr.update(mesh, V, collisions);
 
     REQUIRE(!collisions.empty());
 
@@ -351,12 +376,12 @@ TEST_CASE(
     dx.row(2) << 0.0, -0.4, 0.0;
     dx.row(3) << 0.0, -0.4, 0.0;
 
-    tr.planar_filter_step(mesh, x, dx, collisions, /*query_radius=*/dhat);
+    tr.planar_filter_step(mesh, x, dx, collisions);
 
     // After truncation, no penetration: gap between edges must remain > 0
     const double ea_y = x(0, 1) + dx(0, 1); // both ea vertices move same
     const double eb_y = x(2, 1) + dx(2, 1); // both eb vertices move same
-    CHECK(eb_y - ea_y > 0.0); // eb must stay above ea
+    CHECK(eb_y - ea_y > 0.0);               // eb must stay above ea
     // Both edges must have been restricted
     CHECK(std::abs(dx(0, 1)) < 0.4);
     CHECK(std::abs(dx(2, 1)) < 0.4);
