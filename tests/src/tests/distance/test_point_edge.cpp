@@ -252,12 +252,12 @@ TEMPLATE_TEST_CASE_SIG(
         Eigen::MatrixXd fgrad;
         fd::finite_jacobian(
             x,
-            [](const Eigen::VectorXd& x) {
-                Eigen::Vector<double, dim> p = x.segment<dim>(0);
-                Eigen::Vector<double, dim> e0 = x.segment<dim>(dim);
-                Eigen::Vector<double, dim> e1 = x.segment<dim>(2 * dim);
-                return PointEdgeDistance<
-                    double, dim>::point_edge_closest_point_direction(p, e0, e1);
+            [](const Eigen::VectorXd& x_fd) {
+                Eigen::Vector<double, dim> p_fd = x_fd.segment<dim>(0);
+                Eigen::Vector<double, dim> e0_fd = x_fd.segment<dim>(dim);
+                Eigen::Vector<double, dim> e1_fd = x_fd.segment<dim>(2 * dim);
+                return PointEdgeDistance<double, dim>::
+                    point_edge_closest_point_direction(p_fd, e0_fd, e1_fd);
             },
             fgrad);
 
@@ -284,12 +284,12 @@ TEMPLATE_TEST_CASE_SIG(
         Eigen::VectorXd fgrad;
         fd::finite_gradient(
             x,
-            [](const Eigen::VectorXd& x) {
-                Eigen::Vector<double, dim> e0 = x.segment<dim>(0);
-                Eigen::Vector<double, dim> e1 = x.segment<dim>(dim);
-                Eigen::Vector<double, dim> p = x.segment<dim>(2 * dim);
+            [](const Eigen::VectorXd& x_fd) {
+                Eigen::Vector<double, dim> e0_fd = x_fd.segment<dim>(0);
+                Eigen::Vector<double, dim> e1_fd = x_fd.segment<dim>(dim);
+                Eigen::Vector<double, dim> p_fd = x_fd.segment<dim>(2 * dim);
                 return PointEdgeDistance<double, dim>::point_edge_sqr_distance(
-                    p, e0, e1);
+                    p_fd, e0_fd, e1_fd);
             },
             fgrad);
 
@@ -307,12 +307,14 @@ TEMPLATE_TEST_CASE_SIG(
             Eigen::MatrixXd fhess;
             fd::finite_hessian(
                 x,
-                [i, dtype](const Eigen::VectorXd& x) {
-                    Eigen::Vector<double, dim> p = x.segment<dim>(0);
-                    Eigen::Vector<double, dim> e0 = x.segment<dim>(dim);
-                    Eigen::Vector<double, dim> e1 = x.segment<dim>(2 * dim);
+                [i, dtype](const Eigen::VectorXd& x_fd) {
+                    Eigen::Vector<double, dim> p_fd = x_fd.segment<dim>(0);
+                    Eigen::Vector<double, dim> e0_fd = x_fd.segment<dim>(dim);
+                    Eigen::Vector<double, dim> e1_fd =
+                        x_fd.segment<dim>(2 * dim);
                     return PointEdgeDistance<double, dim>::
-                        point_edge_closest_point_direction(p, e0, e1, dtype)(i);
+                        point_edge_closest_point_direction(
+                            p_fd, e0_fd, e1_fd, dtype)(i);
                 },
                 fhess);
             CHECK(fd::compare_hessian(hess[i], fhess, 1e-4));
