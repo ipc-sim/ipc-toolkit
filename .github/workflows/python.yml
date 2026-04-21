@@ -23,6 +23,8 @@ jobs:
   Build:
     name: ${{ matrix.name }} Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
+    env:
+      NPY_DISABLE_CPU_FEATURES: "AVX512F,AVX512_SKX,SSE4_2"
     strategy:
       fail-fast: false
       matrix:
