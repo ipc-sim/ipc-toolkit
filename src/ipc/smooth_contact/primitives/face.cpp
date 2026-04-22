@@ -30,6 +30,14 @@ Face::Face(
 {
     m_vertex_ids = { { mesh.faces()(id, 0), mesh.faces()(id, 1),
                        mesh.faces()(id, 2) } };
+
+    // Rest-shape area: computed from rest positions — constant quadrature weight
+    const Eigen::MatrixXd& rp = mesh.rest_positions();
+    Eigen::Vector3d ra = rp.row(m_vertex_ids[1]) - rp.row(m_vertex_ids[0]);
+    Eigen::Vector3d rb = rp.row(m_vertex_ids[2]) - rp.row(m_vertex_ids[0]);
+    m_rest_area = 0.5 * ra.cross(rb).norm();
+
+    // Active check uses deformed positions / direction
     Eigen::Vector3d a =
         vertices.row(m_vertex_ids[1]) - vertices.row(m_vertex_ids[0]);
     Eigen::Vector3d b =
@@ -41,31 +49,42 @@ Face::Face(
     m_is_active = !orientable || a.cross(b).dot(d) > 0;
 }
 int Face::n_vertices() const { return N_FACE_NEIGHBORS_3D; }
-double
-Face::potential(Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x)
+double Face::potential(
+    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const
 {
-    return smooth_face_term<double>(x.head<3>(), x.segment<3>(3), x.tail<3>());
+    if (!m_params.use_rest_shape_measure) {
+        return smooth_face_term<double>(x.head<3>(), x.segment<3>(3), x.tail<3>());
+    }
+    // Return the rest-shape area — constant quadrature weight per the paper (Eq. 13)
+    return m_rest_area;
 }
-Vector12d
-Face::grad(Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x)
+Vector12d Face::grad(
+    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const
 {
-    Vector12d g;
-    g.setZero();
-    ScalarBase::setVariableCount(9);
-    auto X = slice_positions<ADGrad<9>, 3, 3>(x);
-    g.tail<9>() =
-        smooth_face_term<ADGrad<9>>(X.row(0), X.row(1), X.row(2)).grad;
-    return g;
+    if (!m_params.use_rest_shape_measure) {
+        Vector12d g;
+        g.setZero();
+        ScalarBase::setVariableCount(9);
+        auto X = slice_positions<ADGrad<9>, 3, 3>(x);
+        g.tail<9>() =
+            smooth_face_term<ADGrad<9>>(X.row(0), X.row(1), X.row(2)).grad;
+        return g;
+    }
+    // Rest area is constant — no gradient contribution from this primitive
+    return Vector12d::Zero();
 }
-Matrix12d
-Face::hessian(Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x)
+Matrix12d Face::hessian(
+    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const
 {
-    Matrix12d h;
-    h.setZero();
-    ScalarBase::setVariableCount(9);
-    auto X = slice_positions<ADHessian<9>, 3, 3>(x);
-    h.bottomRightCorner<9, 9>() =
-        smooth_face_term<ADHessian<9>>(X.row(0), X.row(1), X.row(2)).Hess;
-    return h;
+    if (!m_params.use_rest_shape_measure) {
+        Matrix12d h;
+        h.setZero();
+        ScalarBase::setVariableCount(9);
+        auto X = slice_positions<ADHessian<9>, 3, 3>(x);
+        h.bottomRightCorner<9, 9>() =
+            smooth_face_term<ADHessian<9>>(X.row(0), X.row(1), X.row(2)).Hess;
+        return h;
+    }
+    return Matrix12d::Zero();
 }
 } // namespace ipc

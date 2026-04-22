@@ -61,6 +61,20 @@ Point3::Point3(
     n_neighbors = local_to_global_vids.size() - 1;
     m_vertex_ids = local_to_global_vids;
 
+    if (m_params.use_rest_shape_measure) {
+        // Rest-shape vertex area measure: sum of squared rest 1-ring edge lengths / 3
+        // Constant quadrature weight per the paper (Eq. 13), never differentiated through
+        const Eigen::MatrixXd& rp = mesh.rest_positions();
+        m_rest_weight = 0.0;
+        for (int a = 0; a < edges.rows(); a++) {
+            const Eigen::RowVector3d t =
+                rp.row(local_to_global_vids[edges(a, 1)])
+                - rp.row(local_to_global_vids[edges(a, 0)]);
+            m_rest_weight += t.squaredNorm();
+        }
+        m_rest_weight /= 3.0;
+    }
+
     if (m_vertex_ids.size() > N_VERT_NEIGHBORS_3D) {
         logger().error(
             "Too many neighbors for point3 primitive! {} > {}! Increase N_VERT_NEIGHBORS_3D in common.hpp",
@@ -433,10 +447,11 @@ GradientType<-1> Point3::smooth_point3_term_gradient(
     Eigen::VectorXd grad_tmp =
         tangent_grad * normal_term + normal_grad * tangent_term;
 
-    const double weight = tangents.squaredNorm() / 3.;
+    const double weight = m_params.use_rest_shape_measure ? m_rest_weight : tangents.squaredNorm() / 3.;
     grad_tmp *= weight;
-    grad_tmp.tail(n_neighbor_dofs) += (2. / 3. * val) * tangents_vec;
-
+    if (!m_params.use_rest_shape_measure) {
+        grad_tmp.tail(n_neighbor_dofs) += (2. / 3. * val) * tangents_vec;
+    }
     val *= weight;
 
     // gradient wrt. [direc, v, neighbors]
@@ -489,19 +504,21 @@ HessianType<-1> Point3::smooth_point3_term_hessian(
         + normal_hess * tangent_term + tangent_grad * normal_grad.transpose()
         + normal_grad * tangent_grad.transpose();
 
-    const double weight = tangents.squaredNorm() / 3.;
+    const double weight = m_params.use_rest_shape_measure ? m_rest_weight : tangents.squaredNorm() / 3.;
     hess_tmp *= weight;
-    hess_tmp.bottomRightCorner(n_neighbor_dofs, n_neighbor_dofs)
-        .diagonal()
-        .array() += 2. / 3. * val;
-    hess_tmp.bottomRows(n_neighbor_dofs) +=
-        2. / 3. * tangents_vec * grad_tmp.transpose();
-    hess_tmp.rightCols(n_neighbor_dofs) +=
-        2. / 3. * grad_tmp * tangents_vec.transpose();
-
+    if (!m_params.use_rest_shape_measure) {
+        hess_tmp.bottomRightCorner(n_neighbor_dofs, n_neighbor_dofs)
+            .diagonal()
+            .array() += 2. / 3. * val;
+        hess_tmp.bottomRows(n_neighbor_dofs) +=
+            2. / 3. * tangents_vec * grad_tmp.transpose();
+        hess_tmp.rightCols(n_neighbor_dofs) +=
+            2. / 3. * grad_tmp * tangents_vec.transpose();
+    }
     grad_tmp *= weight;
-    grad_tmp.tail(n_neighbor_dofs) += (2. / 3. * val) * tangents_vec;
-
+    if (!m_params.use_rest_shape_measure) {
+        grad_tmp.tail(n_neighbor_dofs) += (2. / 3. * val) * tangents_vec;
+    }
     val *= weight;
 
     // gradient wrt. [direc, v, neighbors]
@@ -560,9 +577,12 @@ scalar Point3::smooth_point3_term(
                     -dn.dot(t) / t.norm(), m_params.alpha_t, m_params.beta_t);
         }
 
-        weight = weight + t.squaredNorm();
+        if (!m_params.use_rest_shape_measure) {
+            weight = weight + t.squaredNorm();
+        }
     }
-    weight /= 3.;
+
+    weight = m_params.use_rest_shape_measure ? scalar(m_rest_weight) : weight / 3.;
 
     if (!orientable || otypes.normal_type(0) == HeavisideType::ONE) {
         normal_term = scalar(1.);
