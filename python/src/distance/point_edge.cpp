@@ -8,7 +8,7 @@ using namespace ipc;
 void define_point_edge_distance(py::module_& m)
 {
     m.def(
-        "point_edge_distance", &point_edge_distance,
+        "point_edge_distance", &point_edge_distance<double>,
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and edge in 2D or 3D.
 
@@ -27,7 +27,7 @@ void define_point_edge_distance(py::module_& m)
         "p"_a, "e0"_a, "e1"_a, "dtype"_a = PointEdgeDistanceType::AUTO);
 
     m.def(
-        "point_edge_distance_gradient", &point_edge_distance_gradient,
+        "point_edge_distance_gradient", &point_edge_distance_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and edge.
 
@@ -46,7 +46,7 @@ void define_point_edge_distance(py::module_& m)
         "p"_a, "e0"_a, "e1"_a, "dtype"_a = PointEdgeDistanceType::AUTO);
 
     m.def(
-        "point_edge_distance_hessian", &point_edge_distance_hessian,
+        "point_edge_distance_hessian", &point_edge_distance_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and edge.
 

@@ -7,7 +7,7 @@ using namespace ipc;
 void define_point_line_distance(py::module_& m)
 {
     m.def(
-        "point_line_distance", &point_line_distance,
+        "point_line_distance", &point_line_distance<double>,
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and line in 2D or 3D.
 
@@ -25,7 +25,7 @@ void define_point_line_distance(py::module_& m)
         "p"_a, "e0"_a, "e1"_a);
 
     m.def(
-        "point_line_distance_gradient", &point_line_distance_gradient,
+        "point_line_distance_gradient", &point_line_distance_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and line.
 
@@ -43,7 +43,7 @@ void define_point_line_distance(py::module_& m)
         "p"_a, "e0"_a, "e1"_a);
 
     m.def(
-        "point_line_distance_hessian", &point_line_distance_hessian,
+        "point_line_distance_hessian", &point_line_distance_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and line.
 

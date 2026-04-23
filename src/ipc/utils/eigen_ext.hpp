@@ -4,6 +4,7 @@
 #include <Eigen/Sparse>
 
 #include <cassert>
+#include <concepts>
 
 #ifdef EIGEN_DONT_VECTORIZE
 // NOTE: Avoid error about abs casting double to int. Eigen does this
@@ -50,22 +51,40 @@ using RowVectorMax =
     Eigen::Matrix<T, 1, Eigen::Dynamic, Eigen::RowMajor, 1, max_dim>;
 
 /// @brief A static size matrix of size of 1×1
+using Vector1f = Eigen::Vector<float, 1>;
+/// @brief A static size matrix of size of 1×1
 using Vector1d = Eigen::Vector<double, 1>;
+/// @brief A static size matrix of size of 6×1
+using Vector6f = Eigen::Vector<float, 6>;
 /// @brief A static size matrix of size of 6×1
 using Vector6d = Eigen::Vector<double, 6>;
 /// @brief A static size matrix of size of 9×1
+using Vector9f = Eigen::Vector<float, 9>;
+/// @brief A static size matrix of size of 9×1
 using Vector9d = Eigen::Vector<double, 9>;
 /// @brief A static size matrix of size of 12×1
+using Vector12f = Eigen::Vector<float, 12>;
+/// @brief A static size matrix of size of 12×1
 using Vector12d = Eigen::Vector<double, 12>;
+/// @brief A static size matrix of size of 15×1
+using Vector15f = Eigen::Vector<float, 15>;
 /// @brief A static size matrix of size of 15×1
 using Vector15d = Eigen::Vector<double, 15>;
 
 /// @brief A static size matrix of size of 6×6
+using Matrix6f = Eigen::Matrix<float, 6, 6>;
+/// @brief A static size matrix of size of 6×6
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
+/// @brief A static size matrix of size of 9×9
+using Matrix9f = Eigen::Matrix<float, 9, 9>;
 /// @brief A static size matrix of size of 9×9
 using Matrix9d = Eigen::Matrix<double, 9, 9>;
 /// @brief A static size matrix of size of 12×12
+using Matrix12f = Eigen::Matrix<float, 12, 12>;
+/// @brief A static size matrix of size of 12×12
 using Matrix12d = Eigen::Matrix<double, 12, 12>;
+/// @brief A static size matrix of size of 15×15
+using Matrix15f = Eigen::Matrix<float, 15, 15>;
 /// @brief A static size matrix of size of 15×15
 using Matrix15d = Eigen::Matrix<double, 15, 15>;
 
@@ -83,21 +102,33 @@ template <typename T> using VectorMax9 = VectorMax<T, 9>;
 template <typename T> using VectorMax12 = VectorMax<T, 12>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 2×1
+using VectorMax2f = VectorMax2<float>;
+/// @brief A dynamic size matrix with a fixed maximum size of 2×1
 using VectorMax2d = VectorMax2<double>;
+/// @brief A dynamic size matrix with a fixed maximum size of 3×1
+using VectorMax3f = VectorMax3<float>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1
 using VectorMax3d = VectorMax3<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1
 using VectorMax3i = VectorMax3<int>;
 /// @brief A dynamic size matrix with a fixed maximum size of 4×1
+using VectorMax4f = VectorMax4<float>;
+/// @brief A dynamic size matrix with a fixed maximum size of 4×1
 using VectorMax4d = VectorMax4<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 4×1
 using VectorMax4i = VectorMax4<int>;
+/// @brief A dynamic size matrix with a fixed maximum size of 6×1
+using VectorMax6f = VectorMax6<float>;
 /// @brief A dynamic size matrix with a fixed maximum size of 6×1
 using VectorMax6d = VectorMax6<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 6×1
 using VectorMax6b = VectorMax6<bool>;
 /// @brief A dynamic size matrix with a fixed maximum size of 9×1
+using VectorMax9f = VectorMax9<float>;
+/// @brief A dynamic size matrix with a fixed maximum size of 9×1
 using VectorMax9d = VectorMax9<double>;
+/// @brief A dynamic size matrix with a fixed maximum size of 12×1
+using VectorMax12f = VectorMax12<float>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12×1
 using VectorMax12d = VectorMax12<double>;
 
@@ -138,13 +169,23 @@ template <typename T> using MatrixMax9 = MatrixMax<T, 9, 9>;
 template <typename T> using MatrixMax12 = MatrixMax<T, 12, 12>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 3×3
+using MatrixMax2f = MatrixMax2<float>;
+/// @brief A dynamic size matrix with a fixed maximum size of 3×3
 using MatrixMax2d = MatrixMax2<double>;
+/// @brief A dynamic size matrix with a fixed maximum size of 3×3
+using MatrixMax3f = MatrixMax3<float>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3×3
 using MatrixMax3d = MatrixMax3<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 6×6
+using MatrixMax6f = MatrixMax6<float>;
+/// @brief A dynamic size matrix with a fixed maximum size of 6×6
 using MatrixMax6d = MatrixMax6<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12×12
+using MatrixMax9f = MatrixMax9<float>;
+/// @brief A dynamic size matrix with a fixed maximum size of 12×12
 using MatrixMax9d = MatrixMax9<double>;
+/// @brief A dynamic size matrix with a fixed maximum size of 12×12
+using MatrixMax12f = MatrixMax12<float>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12×12
 using MatrixMax12d = MatrixMax12<double>;
 
@@ -181,6 +222,23 @@ using HessianType = std::
     tuple<double, Eigen::Vector<double, dim>, Eigen::Matrix<double, dim, dim>>;
 
 /**@}*/
+
+/// @brief Matches any Eigen expression — stored types, blocks, maps, lazy
+/// expressions. Layer 1 wrappers accept any MatrixBase-derived type, deduce T,
+/// and forward as Eigen::ConstRef (zero-copy for blocks/stored types; evaluates
+/// lazy expressions once). Layer 1 always calls Layer 2 with explicit <T> to
+/// prevent infinite recursion (Layer 2's first template param is T, Layer 1's
+/// is DerivedXxx, so explicit-T calls unambiguously route to Layer 2).
+///
+/// Pure requires-expression: checks only members of T itself, so the compiler
+/// never attempts to form Eigen::MatrixBase<double> (which is ill-formed when T
+/// is a scalar type like double).
+template <typename T>
+concept EigenExpression = requires(T& t) {
+    typename T::Scalar;
+    { t.rows() } -> std::convertible_to<Eigen::Index>;
+    { t.cols() } -> std::convertible_to<Eigen::Index>;
+};
 
 /// @brief Matrix projection onto positive definite cone
 /// @param A Symmetric matrix to project

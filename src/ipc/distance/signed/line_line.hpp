@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/geometry/normal.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
@@ -23,11 +24,12 @@ namespace ipc {
 /// @note The points may be any two distinct points on each line (they need not
 /// represent segment endpoints). Behavior is undefined if ea0 == ea1 or eb0 ==
 /// eb1.
-inline double line_line_signed_distance(
-    Eigen::ConstRef<Eigen::Vector3d> ea0,
-    Eigen::ConstRef<Eigen::Vector3d> ea1,
-    Eigen::ConstRef<Eigen::Vector3d> eb0,
-    Eigen::ConstRef<Eigen::Vector3d> eb1)
+template <typename T>
+inline T line_line_signed_distance(
+    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb1)
 {
     return line_line_normal(ea0, ea1, eb0, eb1).dot(ea0 - eb0);
 }
@@ -50,11 +52,21 @@ inline double line_line_signed_distance(
 /// @pre ea0 != ea1 and eb0 != eb1. For near-parallel lines, results may be unstable.
 ///
 /// @see line_line_signed_distance, line_line_normal
-Vector12d line_line_signed_distance_gradient(
-    Eigen::ConstRef<Eigen::Vector3d> ea0,
-    Eigen::ConstRef<Eigen::Vector3d> ea1,
-    Eigen::ConstRef<Eigen::Vector3d> eb0,
-    Eigen::ConstRef<Eigen::Vector3d> eb1);
+template <typename T>
+inline Eigen::Vector<T, 12> line_line_signed_distance_gradient(
+    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb1)
+{
+    const Eigen::Vector3<T> n = line_line_normal(ea0, ea1, eb0, eb1);
+    const Eigen::Matrix<T, 3, 12> jac_n =
+        line_line_normal_jacobian(ea0, ea1, eb0, eb1);
+    Eigen::Vector<T, 12> grad = jac_n.transpose() * (ea0 - eb0);
+    grad.template segment<3>(0) += n;
+    grad.template segment<3>(6) -= n;
+    return grad;
+}
 
 /// Compute the Hessian (second derivative) of the signed line-line distance
 /// with respect to the four 3D input points: ea0, ea1, eb0, eb1.
@@ -75,10 +87,72 @@ Vector12d line_line_signed_distance_gradient(
 /// @pre ea0 != ea1 and eb0 != eb1. Results may be invalid for parallel lines.
 ///
 /// @see line_line_signed_distance, line_line_signed_distance_gradient
-Matrix12d line_line_signed_distance_hessian(
-    Eigen::ConstRef<Eigen::Vector3d> ea0,
-    Eigen::ConstRef<Eigen::Vector3d> ea1,
-    Eigen::ConstRef<Eigen::Vector3d> eb0,
-    Eigen::ConstRef<Eigen::Vector3d> eb1);
+template <typename T>
+Eigen::Matrix<T, 12, 12> line_line_signed_distance_hessian(
+    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb1);
+
+// --- EigenExpression wrappers ---
+
+template <
+    EigenExpression DerivedEA0,
+    EigenExpression DerivedEA1,
+    EigenExpression DerivedEB0,
+    EigenExpression DerivedEB1>
+inline auto line_line_signed_distance(
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1) -> typename DerivedEA0::Scalar
+{
+    using T = typename DerivedEA0::Scalar;
+    return line_line_signed_distance(
+        Eigen::Ref<const Eigen::Vector3<T>>(ea0),
+        Eigen::Ref<const Eigen::Vector3<T>>(ea1),
+        Eigen::Ref<const Eigen::Vector3<T>>(eb0),
+        Eigen::Ref<const Eigen::Vector3<T>>(eb1));
+}
+
+template <
+    EigenExpression DerivedEA0,
+    EigenExpression DerivedEA1,
+    EigenExpression DerivedEB0,
+    EigenExpression DerivedEB1>
+inline auto line_line_signed_distance_gradient(
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
+    -> Eigen::Vector<typename DerivedEA0::Scalar, 12>
+{
+    using T = typename DerivedEA0::Scalar;
+    return line_line_signed_distance_gradient(
+        Eigen::Ref<const Eigen::Vector3<T>>(ea0),
+        Eigen::Ref<const Eigen::Vector3<T>>(ea1),
+        Eigen::Ref<const Eigen::Vector3<T>>(eb0),
+        Eigen::Ref<const Eigen::Vector3<T>>(eb1));
+}
+
+template <
+    EigenExpression DerivedEA0,
+    EigenExpression DerivedEA1,
+    EigenExpression DerivedEB0,
+    EigenExpression DerivedEB1>
+inline auto line_line_signed_distance_hessian(
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
+    -> Eigen::Matrix<typename DerivedEA0::Scalar, 12, 12>
+{
+    using T = typename DerivedEA0::Scalar;
+    return line_line_signed_distance_hessian(
+        Eigen::Ref<const Eigen::Vector3<T>>(ea0),
+        Eigen::Ref<const Eigen::Vector3<T>>(ea1),
+        Eigen::Ref<const Eigen::Vector3<T>>(eb0),
+        Eigen::Ref<const Eigen::Vector3<T>>(eb1));
+}
 
 } // namespace ipc

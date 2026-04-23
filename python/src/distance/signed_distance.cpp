@@ -10,7 +10,7 @@ void define_signed_distance(py::module_& m)
 {
     // Point-line (2D) signed distance
     m.def(
-        "point_line_signed_distance", point_line_signed_distance,
+        "point_line_signed_distance", point_line_signed_distance<double>,
         R"ipc_Qu8mg5v7(
         Compute the signed distance from a point to a directed line segment (2D).
 
@@ -26,7 +26,7 @@ void define_signed_distance(py::module_& m)
 
     m.def(
         "point_line_signed_distance_gradient",
-        point_line_signed_distance_gradient,
+        point_line_signed_distance_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the signed point-to-line distance (2D).
 
@@ -36,7 +36,7 @@ void define_signed_distance(py::module_& m)
 
     m.def(
         "point_line_signed_distance_hessian",
-        point_line_signed_distance_hessian,
+        point_line_signed_distance_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the Hessian of the signed point-to-line distance (2D).
 
@@ -46,7 +46,7 @@ void define_signed_distance(py::module_& m)
 
     // Point-plane (3D) signed distance
     m.def(
-        "point_plane_signed_distance", point_plane_signed_distance,
+        "point_plane_signed_distance", point_plane_signed_distance<double>,
         R"ipc_Qu8mg5v7(
         Compute the signed distance from a point to the plane of a triangle (3D).
 
@@ -63,7 +63,7 @@ void define_signed_distance(py::module_& m)
 
     m.def(
         "point_plane_signed_distance_gradient",
-        point_plane_signed_distance_gradient,
+        point_plane_signed_distance_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the signed point-to-plane distance (3D).
 
@@ -73,7 +73,7 @@ void define_signed_distance(py::module_& m)
 
     m.def(
         "point_plane_signed_distance_hessian",
-        point_plane_signed_distance_hessian,
+        point_plane_signed_distance_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the Hessian of the signed point-to-plane distance (3D).
 
@@ -83,7 +83,7 @@ void define_signed_distance(py::module_& m)
 
     // Line-line (3D) signed distance
     m.def(
-        "line_line_signed_distance", line_line_signed_distance,
+        "line_line_signed_distance", line_line_signed_distance<double>,
         R"ipc_Qu8mg5v7(
         Compute the signed distance between two lines in 3D.
 
@@ -98,7 +98,7 @@ void define_signed_distance(py::module_& m)
 
     m.def(
         "line_line_signed_distance_gradient",
-        line_line_signed_distance_gradient,
+        line_line_signed_distance_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the signed line-line distance (3D).
 
@@ -107,7 +107,8 @@ void define_signed_distance(py::module_& m)
         "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
-        "line_line_signed_distance_hessian", line_line_signed_distance_hessian,
+        "line_line_signed_distance_hessian",
+        line_line_signed_distance_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the Hessian of the signed line-line distance (3D).
 

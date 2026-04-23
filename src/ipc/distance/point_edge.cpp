@@ -7,10 +7,11 @@
 
 namespace ipc {
 
-double point_edge_distance(
-    Eigen::ConstRef<VectorMax3d> p,
-    Eigen::ConstRef<VectorMax3d> e0,
-    Eigen::ConstRef<VectorMax3d> e1,
+template <typename T>
+T point_edge_distance(
+    Eigen::ConstRef<VectorMax3<T>> p,
+    Eigen::ConstRef<VectorMax3<T>> e0,
+    Eigen::ConstRef<VectorMax3<T>> e1,
     PointEdgeDistanceType dtype)
 {
     assert(p.size() == 2 || p.size() == 3);
@@ -37,10 +38,11 @@ double point_edge_distance(
     }
 }
 
-VectorMax9d point_edge_distance_gradient(
-    Eigen::ConstRef<VectorMax3d> p,
-    Eigen::ConstRef<VectorMax3d> e0,
-    Eigen::ConstRef<VectorMax3d> e1,
+template <typename T>
+VectorMax9<T> point_edge_distance_gradient(
+    Eigen::ConstRef<VectorMax3<T>> p,
+    Eigen::ConstRef<VectorMax3<T>> e0,
+    Eigen::ConstRef<VectorMax3<T>> e1,
     PointEdgeDistanceType dtype)
 {
     const int dim = p.size();
@@ -51,7 +53,7 @@ VectorMax9d point_edge_distance_gradient(
         dtype = point_edge_distance_type(p, e0, e1);
     }
 
-    VectorMax9d grad = VectorMax9d::Zero(3 * dim);
+    VectorMax9<T> grad = VectorMax9<T>::Zero(3 * dim);
 
     switch (dtype) {
     case PointEdgeDistanceType::P_E0:
@@ -59,7 +61,7 @@ VectorMax9d point_edge_distance_gradient(
         break;
 
     case PointEdgeDistanceType::P_E1: {
-        const VectorMax6d local_grad = point_point_distance_gradient(p, e1);
+        const VectorMax6<T> local_grad = point_point_distance_gradient(p, e1);
         grad.head(dim) = local_grad.head(dim);
         grad.tail(dim) = local_grad.tail(dim);
         break;
@@ -77,10 +79,11 @@ VectorMax9d point_edge_distance_gradient(
     return grad;
 }
 
-MatrixMax9d point_edge_distance_hessian(
-    Eigen::ConstRef<VectorMax3d> p,
-    Eigen::ConstRef<VectorMax3d> e0,
-    Eigen::ConstRef<VectorMax3d> e1,
+template <typename T>
+MatrixMax9<T> point_edge_distance_hessian(
+    Eigen::ConstRef<VectorMax3<T>> p,
+    Eigen::ConstRef<VectorMax3<T>> e0,
+    Eigen::ConstRef<VectorMax3<T>> e1,
     PointEdgeDistanceType dtype)
 {
     const int dim = p.size();
@@ -91,7 +94,7 @@ MatrixMax9d point_edge_distance_hessian(
         dtype = point_edge_distance_type(p, e0, e1);
     }
 
-    MatrixMax9d hess = MatrixMax9d::Zero(3 * dim, 3 * dim);
+    MatrixMax9<T> hess = MatrixMax9<T>::Zero(3 * dim, 3 * dim);
 
     switch (dtype) {
     case PointEdgeDistanceType::P_E0:
@@ -100,7 +103,7 @@ MatrixMax9d point_edge_distance_hessian(
         break;
 
     case PointEdgeDistanceType::P_E1: {
-        const MatrixMax6d local_hess = point_point_distance_hessian(p, e1);
+        const MatrixMax6<T> local_hess = point_point_distance_hessian(p, e1);
         hess.topLeftCorner(dim, dim) = local_hess.topLeftCorner(dim, dim);
         hess.topRightCorner(dim, dim) = local_hess.topRightCorner(dim, dim);
         hess.bottomLeftCorner(dim, dim) = local_hess.bottomLeftCorner(dim, dim);
@@ -120,5 +123,14 @@ MatrixMax9d point_edge_distance_hessian(
 
     return hess;
 }
+
+// clang-format off
+template float point_edge_distance<float>(Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, PointEdgeDistanceType);
+template double point_edge_distance<double>(Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, PointEdgeDistanceType);
+template VectorMax9<float> point_edge_distance_gradient<float>(Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, PointEdgeDistanceType);
+template VectorMax9<double> point_edge_distance_gradient<double>(Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, PointEdgeDistanceType);
+template MatrixMax9<float> point_edge_distance_hessian<float>(Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, PointEdgeDistanceType);
+template MatrixMax9<double> point_edge_distance_hessian<double>(Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, PointEdgeDistanceType);
+// clang-format on
 
 } // namespace ipc

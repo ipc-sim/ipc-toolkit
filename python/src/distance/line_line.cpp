@@ -7,7 +7,7 @@ using namespace ipc;
 void define_line_line_distance(py::module_& m)
 {
     m.def(
-        "line_line_distance", &line_line_distance,
+        "line_line_distance", &line_line_distance<double>,
         R"ipc_Qu8mg5v7(
         Compute the distance between a two infinite lines in 3D.
 
@@ -29,7 +29,7 @@ void define_line_line_distance(py::module_& m)
         "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
-        "line_line_distance_gradient", &line_line_distance_gradient,
+        "line_line_distance_gradient", &line_line_distance_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a two lines in 3D.
 
@@ -51,7 +51,7 @@ void define_line_line_distance(py::module_& m)
         "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
-        "line_line_distance_hessian", &line_line_distance_hessian,
+        "line_line_distance_hessian", &line_line_distance_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a two lines in 3D.
 

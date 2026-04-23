@@ -7,23 +7,24 @@
 
 namespace ipc {
 
+template <typename T>
 PointEdgeDistanceType point_edge_distance_type(
-    Eigen::ConstRef<VectorMax3d> p,
-    Eigen::ConstRef<VectorMax3d> e0,
-    Eigen::ConstRef<VectorMax3d> e1)
+    Eigen::ConstRef<VectorMax3<T>> p,
+    Eigen::ConstRef<VectorMax3<T>> e0,
+    Eigen::ConstRef<VectorMax3<T>> e1)
 {
     assert(p.size() == 2 || p.size() == 3);
     assert(e0.size() == 2 || e0.size() == 3);
     assert(e1.size() == 2 || e1.size() == 3);
 
-    const VectorMax3d e = e1 - e0;
-    const double e_length_sqr = e.squaredNorm();
+    const VectorMax3<T> e = e1 - e0;
+    const T e_length_sqr = e.squaredNorm();
     if (e_length_sqr == 0) {
         logger().warn("Degenerate edge in point_edge_distance_type!");
         return PointEdgeDistanceType::P_E0; // WARNING: use arbitrary end-point
     }
 
-    const double ratio = e.dot(p - e0) / e_length_sqr;
+    const T ratio = e.dot(p - e0) / e_length_sqr;
     if (ratio < 0) {
         return PointEdgeDistanceType::P_E0; // PP (p-e0)
     } else if (ratio > 1) {
@@ -33,15 +34,16 @@ PointEdgeDistanceType point_edge_distance_type(
     }
 }
 
+template <typename T>
 PointTriangleDistanceType point_triangle_distance_type(
-    Eigen::ConstRef<Eigen::Vector3d> p,
-    Eigen::ConstRef<Eigen::Vector3d> t0,
-    Eigen::ConstRef<Eigen::Vector3d> t1,
-    Eigen::ConstRef<Eigen::Vector3d> t2)
+    Eigen::ConstRef<Eigen::Vector3<T>> p,
+    Eigen::ConstRef<Eigen::Vector3<T>> t0,
+    Eigen::ConstRef<Eigen::Vector3<T>> t1,
+    Eigen::ConstRef<Eigen::Vector3<T>> t2)
 {
-    const Eigen::Vector3d normal = (t1 - t0).cross(t2 - t0);
+    const Eigen::Vector3<T> normal = (t1 - t0).cross(t2 - t0);
 
-    Eigen::Matrix<double, 2, 3> basis, param;
+    Eigen::Matrix<T, 2, 3> basis, param;
 
     basis.row(0) = t1 - t0;
     basis.row(1) = basis.row(0).cross(normal);
@@ -65,25 +67,23 @@ PointTriangleDistanceType point_triangle_distance_type(
     }
 
     if (param(0, 0) <= 0.0 && param(0, 2) >= 1.0) {
-        // vertex 0 is the closest
-        return PointTriangleDistanceType::P_T0;
+        return PointTriangleDistanceType::P_T0; // vertex 0 is the closest
     } else if (param(0, 1) <= 0.0 && param(0, 0) >= 1.0) {
-        // vertex 1 is the closest
-        return PointTriangleDistanceType::P_T1;
+        return PointTriangleDistanceType::P_T1; // vertex 1 is the closest
     } else if (param(0, 2) <= 0.0 && param(0, 1) >= 1.0) {
-        // vertex 2 is the closest
-        return PointTriangleDistanceType::P_T2;
+        return PointTriangleDistanceType::P_T2; // vertex 2 is the closest
     } else {
         return PointTriangleDistanceType::P_T;
     }
 }
 
 // A more robust implementation of http://geomalgorithms.com/a07-_distance.html
+template <typename T>
 EdgeEdgeDistanceType edge_edge_distance_type(
-    Eigen::ConstRef<Eigen::Vector3d> ea0,
-    Eigen::ConstRef<Eigen::Vector3d> ea1,
-    Eigen::ConstRef<Eigen::Vector3d> eb0,
-    Eigen::ConstRef<Eigen::Vector3d> eb1)
+    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb1)
 {
     // Relative sin² threshold for parallelism: treat edges as parallel when
     // sin²(θ) < PARALLEL_THRESHOLD, scaled by a*c. This avoids misclassifying
@@ -92,16 +92,16 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     // edge_edge_parallel_distance_type.
     constexpr double PARALLEL_THRESHOLD = 2.5e-16;
 
-    const Eigen::Vector3d u = ea1 - ea0;
-    const Eigen::Vector3d v = eb1 - eb0;
-    const Eigen::Vector3d w = ea0 - eb0;
+    const Eigen::Vector3<T> u = ea1 - ea0;
+    const Eigen::Vector3<T> v = eb1 - eb0;
+    const Eigen::Vector3<T> w = ea0 - eb0;
 
-    const double a = u.squaredNorm(); // always ≥ 0
-    const double b = u.dot(v);
-    const double c = v.squaredNorm(); // always ≥ 0
-    const double d = u.dot(w);
-    const double e = v.dot(w);
-    const double D = a * c - b * b; // always ≥ 0
+    const T a = u.squaredNorm(); // always ≥ 0
+    const T b = u.dot(v);
+    const T c = v.squaredNorm(); // always ≥ 0
+    const T d = u.dot(w);
+    const T e = v.dot(w);
+    const T D = a * c - b * b; // always ≥ 0
 
     // Degenerate cases should not happen in practice, but we handle them
     if (a == 0.0 && c == 0.0) {
@@ -121,8 +121,8 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     EdgeEdgeDistanceType default_case = EdgeEdgeDistanceType::EA_EB;
 
     // compute the line parameters of the two closest points
-    const double sN = (b * e - c * d);
-    double tN, tD;   // tc = tN / tD
+    const T sN = (b * e - c * d);
+    T tN, tD;        // tc = tN / tD
     if (sN <= 0.0) { // sc < 0 ⟹ the s=0 edge is visible
         tN = e;
         tD = c;
@@ -173,15 +173,16 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     return default_case;
 }
 
+template <typename T>
 EdgeEdgeDistanceType edge_edge_parallel_distance_type(
-    Eigen::ConstRef<Eigen::Vector3d> ea0,
-    Eigen::ConstRef<Eigen::Vector3d> ea1,
-    Eigen::ConstRef<Eigen::Vector3d> eb0,
-    Eigen::ConstRef<Eigen::Vector3d> eb1)
+    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb1)
 {
-    const Eigen::Vector3d ea = ea1 - ea0;
-    const double alpha = (eb0 - ea0).dot(ea) / ea.squaredNorm();
-    const double beta = (eb1 - ea0).dot(ea) / ea.squaredNorm();
+    const Eigen::Vector3<T> ea = ea1 - ea0;
+    const T alpha = (eb0 - ea0).dot(ea) / ea.squaredNorm();
+    const T beta = (eb1 - ea0).dot(ea) / ea.squaredNorm();
 
     uint8_t eac; // 0: EA0, 1: EA1, 2: EA
     uint8_t ebc; // 0: EB0, 1: EB1, 2: EB
@@ -209,5 +210,16 @@ EdgeEdgeDistanceType edge_edge_parallel_distance_type(
     assert(eac != 2 || ebc != 2); // This case results in a degenerate line-line
     return EdgeEdgeDistanceType(ebc < 2 ? (eac << 1 | ebc) : (6 + eac));
 }
+
+// clang-format off
+template PointEdgeDistanceType point_edge_distance_type<float>(Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>);
+template PointEdgeDistanceType point_edge_distance_type<double>(Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>);
+template PointTriangleDistanceType point_triangle_distance_type<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
+template PointTriangleDistanceType point_triangle_distance_type<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
+template EdgeEdgeDistanceType edge_edge_distance_type<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
+template EdgeEdgeDistanceType edge_edge_distance_type<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
+template EdgeEdgeDistanceType edge_edge_parallel_distance_type<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
+template EdgeEdgeDistanceType edge_edge_parallel_distance_type<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
+// clang-format on
 
 } // namespace ipc

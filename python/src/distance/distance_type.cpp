@@ -86,7 +86,7 @@ void define_distance_type(py::module_& m)
         .export_values();
 
     m.def(
-        "point_edge_distance_type", &point_edge_distance_type,
+        "point_edge_distance_type", &point_edge_distance_type<double>,
         R"ipc_Qu8mg5v7(
         Determine the closest pair between a point and edge.
 
@@ -101,7 +101,7 @@ void define_distance_type(py::module_& m)
         "p"_a, "e0"_a, "e1"_a);
 
     m.def(
-        "point_triangle_distance_type", &point_triangle_distance_type,
+        "point_triangle_distance_type", &point_triangle_distance_type<double>,
         R"ipc_Qu8mg5v7(
         Determine the closest pair between a point and triangle.
 
@@ -117,7 +117,7 @@ void define_distance_type(py::module_& m)
         "p"_a, "t0"_a, "t1"_a, "t2"_a);
 
     m.def(
-        "edge_edge_distance_type", &edge_edge_distance_type,
+        "edge_edge_distance_type", &edge_edge_distance_type<double>,
         R"ipc_Qu8mg5v7(
         Determine the closest pair between two edges.
 
@@ -133,7 +133,8 @@ void define_distance_type(py::module_& m)
         "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
-        "edge_edge_parallel_distance_type", &edge_edge_parallel_distance_type,
+        "edge_edge_parallel_distance_type",
+        &edge_edge_parallel_distance_type<double>,
         R"ipc_Qu8mg5v7(
         Determine the closest pair between two parallel edges.
 

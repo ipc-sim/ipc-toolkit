@@ -8,11 +8,12 @@
 
 namespace ipc {
 
-double point_triangle_distance(
-    Eigen::ConstRef<Eigen::Vector3d> p,
-    Eigen::ConstRef<Eigen::Vector3d> t0,
-    Eigen::ConstRef<Eigen::Vector3d> t1,
-    Eigen::ConstRef<Eigen::Vector3d> t2,
+template <typename T>
+T point_triangle_distance(
+    Eigen::ConstRef<Eigen::Vector3<T>> p,
+    Eigen::ConstRef<Eigen::Vector3<T>> t0,
+    Eigen::ConstRef<Eigen::Vector3<T>> t1,
+    Eigen::ConstRef<Eigen::Vector3<T>> t2,
     PointTriangleDistanceType dtype)
 {
     if (dtype == PointTriangleDistanceType::AUTO) {
@@ -47,54 +48,59 @@ double point_triangle_distance(
     }
 }
 
-Vector12d point_triangle_distance_gradient(
-    Eigen::ConstRef<Eigen::Vector3d> p,
-    Eigen::ConstRef<Eigen::Vector3d> t0,
-    Eigen::ConstRef<Eigen::Vector3d> t1,
-    Eigen::ConstRef<Eigen::Vector3d> t2,
+template <typename T>
+Eigen::Vector<T, 12> point_triangle_distance_gradient(
+    Eigen::ConstRef<Eigen::Vector3<T>> p,
+    Eigen::ConstRef<Eigen::Vector3<T>> t0,
+    Eigen::ConstRef<Eigen::Vector3<T>> t1,
+    Eigen::ConstRef<Eigen::Vector3<T>> t2,
     PointTriangleDistanceType dtype)
 {
     if (dtype == PointTriangleDistanceType::AUTO) {
         dtype = point_triangle_distance_type(p, t0, t1, t2);
     }
 
-    Vector12d grad = Vector12d::Zero();
+    Eigen::Vector<T, 12> grad = Eigen::Vector<T, 12>::Zero();
 
     switch (dtype) {
     case PointTriangleDistanceType::P_T0:
-        grad.head<6>() = point_point_distance_gradient(p, t0);
+        grad.template head<6>() = point_point_distance_gradient(p, t0);
         break;
 
     case PointTriangleDistanceType::P_T1: {
-        const Vector6d local_grad = point_point_distance_gradient(p, t1);
-        grad.head<3>() = local_grad.head<3>();
-        grad.segment<3>(6) = local_grad.tail<3>();
+        const Eigen::Vector<T, 6> local_grad =
+            point_point_distance_gradient(p, t1);
+        grad.template head<3>() = local_grad.template head<3>();
+        grad.template segment<3>(6) = local_grad.template tail<3>();
         break;
     }
 
     case PointTriangleDistanceType::P_T2: {
-        const Vector6d local_grad = point_point_distance_gradient(p, t2);
-        grad.head<3>() = local_grad.head<3>();
-        grad.tail<3>() = local_grad.tail<3>();
+        const Eigen::Vector<T, 6> local_grad =
+            point_point_distance_gradient(p, t2);
+        grad.template head<3>() = local_grad.template head<3>();
+        grad.template tail<3>() = local_grad.template tail<3>();
         break;
     }
 
     case PointTriangleDistanceType::P_E0:
-        grad.head<9>() = point_line_distance_gradient(p, t0, t1);
+        grad.template head<9>() = point_line_distance_gradient(p, t0, t1);
         break;
 
     case PointTriangleDistanceType::P_E1: {
-        const Vector9d local_grad = point_line_distance_gradient(p, t1, t2);
-        grad.head<3>() = local_grad.head<3>();
-        grad.tail<6>() = local_grad.tail<6>();
+        const Eigen::Vector<T, 9> local_grad =
+            point_line_distance_gradient(p, t1, t2);
+        grad.template head<3>() = local_grad.template head<3>();
+        grad.template tail<6>() = local_grad.template tail<6>();
         break;
     }
 
     case PointTriangleDistanceType::P_E2: {
-        const Vector9d local_grad = point_line_distance_gradient(p, t2, t0);
-        grad.head<3>() = local_grad.head<3>();     // ∇_p
-        grad.segment<3>(3) = local_grad.tail<3>(); // ∇_{t0}
-        grad.tail<3>() = local_grad.segment<3>(3); // ∇_{t2}
+        const Eigen::Vector<T, 9> local_grad =
+            point_line_distance_gradient(p, t2, t0);
+        grad.template head<3>() = local_grad.template head<3>();     // ∇_p
+        grad.template segment<3>(3) = local_grad.template tail<3>(); // ∇_{t0}
+        grad.template tail<3>() = local_grad.template segment<3>(3); // ∇_{t2}
         break;
     }
 
@@ -110,66 +116,92 @@ Vector12d point_triangle_distance_gradient(
     return grad;
 }
 
-Matrix12d point_triangle_distance_hessian(
-    Eigen::ConstRef<Eigen::Vector3d> p,
-    Eigen::ConstRef<Eigen::Vector3d> t0,
-    Eigen::ConstRef<Eigen::Vector3d> t1,
-    Eigen::ConstRef<Eigen::Vector3d> t2,
+template <typename T>
+Eigen::Matrix<T, 12, 12> point_triangle_distance_hessian(
+    Eigen::ConstRef<Eigen::Vector3<T>> p,
+    Eigen::ConstRef<Eigen::Vector3<T>> t0,
+    Eigen::ConstRef<Eigen::Vector3<T>> t1,
+    Eigen::ConstRef<Eigen::Vector3<T>> t2,
     PointTriangleDistanceType dtype)
 {
     if (dtype == PointTriangleDistanceType::AUTO) {
         dtype = point_triangle_distance_type(p, t0, t1, t2);
     }
 
-    Matrix12d hess = Matrix12d::Zero();
+    Eigen::Matrix<T, 12, 12> hess = Eigen::Matrix<T, 12, 12>::Zero();
 
     switch (dtype) {
     case PointTriangleDistanceType::P_T0:
-        hess.topLeftCorner<6, 6>() = point_point_distance_hessian(p, t0);
+        hess.template topLeftCorner<6, 6>() =
+            point_point_distance_hessian(p, t0);
         break;
 
     case PointTriangleDistanceType::P_T1: {
-        const Matrix6d local_hess = point_point_distance_hessian(p, t1);
-        hess.topLeftCorner<3, 3>() = local_hess.topLeftCorner<3, 3>();
-        hess.block<3, 3>(0, 6) = local_hess.topRightCorner<3, 3>();
-        hess.block<3, 3>(6, 0) = local_hess.bottomLeftCorner<3, 3>();
-        hess.block<3, 3>(6, 6) = local_hess.bottomRightCorner<3, 3>();
+        const Eigen::Matrix<T, 6, 6> local_hess =
+            point_point_distance_hessian(p, t1);
+        hess.template topLeftCorner<3, 3>() =
+            local_hess.template topLeftCorner<3, 3>();
+        hess.template block<3, 3>(0, 6) =
+            local_hess.template topRightCorner<3, 3>();
+        hess.template block<3, 3>(6, 0) =
+            local_hess.template bottomLeftCorner<3, 3>();
+        hess.template block<3, 3>(6, 6) =
+            local_hess.template bottomRightCorner<3, 3>();
         break;
     }
 
     case PointTriangleDistanceType::P_T2: {
-        const Matrix6d local_hess = point_point_distance_hessian(p, t2);
-        hess.topLeftCorner<3, 3>() = local_hess.topLeftCorner<3, 3>();
-        hess.topRightCorner<3, 3>() = local_hess.topRightCorner<3, 3>();
-        hess.bottomLeftCorner<3, 3>() = local_hess.bottomLeftCorner<3, 3>();
-        hess.bottomRightCorner<3, 3>() = local_hess.bottomRightCorner<3, 3>();
+        const Eigen::Matrix<T, 6, 6> local_hess =
+            point_point_distance_hessian(p, t2);
+        hess.template topLeftCorner<3, 3>() =
+            local_hess.template topLeftCorner<3, 3>();
+        hess.template topRightCorner<3, 3>() =
+            local_hess.template topRightCorner<3, 3>();
+        hess.template bottomLeftCorner<3, 3>() =
+            local_hess.template bottomLeftCorner<3, 3>();
+        hess.template bottomRightCorner<3, 3>() =
+            local_hess.template bottomRightCorner<3, 3>();
         break;
     }
 
     case PointTriangleDistanceType::P_E0:
-        hess.topLeftCorner<9, 9>() = point_line_distance_hessian(p, t0, t1);
+        hess.template topLeftCorner<9, 9>() =
+            point_line_distance_hessian(p, t0, t1);
         break;
 
     case PointTriangleDistanceType::P_E1: {
-        const Matrix9d local_hess = point_line_distance_hessian(p, t1, t2);
-        hess.topLeftCorner<3, 3>() = local_hess.topLeftCorner<3, 3>();
-        hess.topRightCorner<3, 6>() = local_hess.topRightCorner<3, 6>();
-        hess.bottomLeftCorner<6, 3>() = local_hess.bottomLeftCorner<6, 3>();
-        hess.bottomRightCorner<6, 6>() = local_hess.bottomRightCorner<6, 6>();
+        const Eigen::Matrix<T, 9, 9> local_hess =
+            point_line_distance_hessian(p, t1, t2);
+        hess.template topLeftCorner<3, 3>() =
+            local_hess.template topLeftCorner<3, 3>();
+        hess.template topRightCorner<3, 6>() =
+            local_hess.template topRightCorner<3, 6>();
+        hess.template bottomLeftCorner<6, 3>() =
+            local_hess.template bottomLeftCorner<6, 3>();
+        hess.template bottomRightCorner<6, 6>() =
+            local_hess.template bottomRightCorner<6, 6>();
         break;
     }
 
     case PointTriangleDistanceType::P_E2: {
-        const Matrix9d local_hess = point_line_distance_hessian(p, t2, t0);
-        hess.topLeftCorner<3, 3>() = local_hess.topLeftCorner<3, 3>();
-        hess.block<3, 3>(0, 3) = local_hess.topRightCorner<3, 3>();
-        hess.topRightCorner<3, 3>() = local_hess.block<3, 3>(0, 3);
-        hess.block<3, 3>(3, 0) = local_hess.bottomLeftCorner<3, 3>();
-        hess.block<3, 3>(3, 3) = local_hess.bottomRightCorner<3, 3>();
-        hess.block<3, 3>(3, 9) = local_hess.block<3, 3>(6, 3);
-        hess.bottomLeftCorner<3, 3>() = local_hess.block<3, 3>(3, 0);
-        hess.block<3, 3>(9, 3) = local_hess.block<3, 3>(3, 6);
-        hess.bottomRightCorner<3, 3>() = local_hess.block<3, 3>(3, 3);
+        const Eigen::Matrix<T, 9, 9> local_hess =
+            point_line_distance_hessian(p, t2, t0);
+        hess.template topLeftCorner<3, 3>() =
+            local_hess.template topLeftCorner<3, 3>();
+        hess.template block<3, 3>(0, 3) =
+            local_hess.template topRightCorner<3, 3>();
+        hess.template topRightCorner<3, 3>() =
+            local_hess.template block<3, 3>(0, 3);
+        hess.template block<3, 3>(3, 0) =
+            local_hess.template bottomLeftCorner<3, 3>();
+        hess.template block<3, 3>(3, 3) =
+            local_hess.template bottomRightCorner<3, 3>();
+        hess.template block<3, 3>(3, 9) = local_hess.template block<3, 3>(6, 3);
+        hess.template bottomLeftCorner<3, 3>() =
+            local_hess.template block<3, 3>(3, 0);
+        hess.template block<3, 3>(9, 3) = local_hess.template block<3, 3>(3, 6);
+        hess.template bottomRightCorner<3, 3>() =
+            local_hess.template block<3, 3>(3, 3);
         break;
     }
 
@@ -184,5 +216,14 @@ Matrix12d point_triangle_distance_hessian(
 
     return hess;
 }
+
+// clang-format off
+template float point_triangle_distance<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, PointTriangleDistanceType);
+template double point_triangle_distance<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, PointTriangleDistanceType);
+template Vector12f point_triangle_distance_gradient<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, PointTriangleDistanceType);
+template Vector12d point_triangle_distance_gradient<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, PointTriangleDistanceType);
+template Matrix12f point_triangle_distance_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, PointTriangleDistanceType);
+template Matrix12d point_triangle_distance_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, PointTriangleDistanceType);
+// clang-format on
 
 } // namespace ipc

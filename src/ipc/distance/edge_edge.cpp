@@ -1,5 +1,3 @@
-
-
 #include "edge_edge.hpp"
 
 #include <ipc/distance/line_line.hpp>
@@ -10,11 +8,12 @@
 
 namespace ipc {
 
-double edge_edge_distance(
-    Eigen::ConstRef<Eigen::Vector3d> ea0,
-    Eigen::ConstRef<Eigen::Vector3d> ea1,
-    Eigen::ConstRef<Eigen::Vector3d> eb0,
-    Eigen::ConstRef<Eigen::Vector3d> eb1,
+template <typename T>
+T edge_edge_distance(
+    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb1,
     EdgeEdgeDistanceType dtype)
 {
     if (dtype == EdgeEdgeDistanceType::AUTO) {
@@ -55,68 +54,73 @@ double edge_edge_distance(
     }
 }
 
-Vector12d edge_edge_distance_gradient(
-    Eigen::ConstRef<Eigen::Vector3d> ea0,
-    Eigen::ConstRef<Eigen::Vector3d> ea1,
-    Eigen::ConstRef<Eigen::Vector3d> eb0,
-    Eigen::ConstRef<Eigen::Vector3d> eb1,
+template <typename T>
+Eigen::Vector<T, 12> edge_edge_distance_gradient(
+    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb1,
     EdgeEdgeDistanceType dtype)
 {
+    using Vector6T = Eigen::Vector<T, 12>;
+    using Vector9T = Eigen::Vector<T, 9>;
+    using Vector12T = Eigen::Vector<T, 12>;
+
     if (dtype == EdgeEdgeDistanceType::AUTO) {
         dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
     }
 
-    Vector12d grad = Vector12d::Zero();
+    Vector12T grad = Vector12T::Zero();
 
     switch (dtype) {
     case EdgeEdgeDistanceType::EA0_EB0: {
-        const Vector6d local_grad = point_point_distance_gradient(ea0, eb0);
-        grad.head<3>() = local_grad.head<3>();
-        grad.segment<3>(6) = local_grad.tail<3>();
+        const Vector6T local_grad = point_point_distance_gradient(ea0, eb0);
+        grad.template head<3>() = local_grad.template head<3>();
+        grad.template segment<3>(6) = local_grad.template tail<3>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA0_EB1: {
-        const Vector6d local_grad = point_point_distance_gradient(ea0, eb1);
-        grad.head<3>() = local_grad.head<3>();
-        grad.tail<3>() = local_grad.tail<3>();
+        const Vector6T local_grad = point_point_distance_gradient(ea0, eb1);
+        grad.template head<3>() = local_grad.template head<3>();
+        grad.template tail<3>() = local_grad.template tail<3>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA1_EB0:
-        grad.segment<6>(3) = point_point_distance_gradient(ea1, eb0);
+        grad.template segment<6>(3) = point_point_distance_gradient(ea1, eb0);
         break;
 
     case EdgeEdgeDistanceType::EA1_EB1: {
-        const Vector6d local_grad = point_point_distance_gradient(ea1, eb1);
-        grad.segment<3>(3) = local_grad.head<3>();
-        grad.tail<3>() = local_grad.tail<3>();
+        const Vector6T local_grad = point_point_distance_gradient(ea1, eb1);
+        grad.template segment<3>(3) = local_grad.template head<3>();
+        grad.template tail<3>() = local_grad.template tail<3>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA_EB0: {
-        const Vector9d local_grad = point_line_distance_gradient(eb0, ea0, ea1);
-        grad.head<6>() = local_grad.tail<6>();
-        grad.segment<3>(6) = local_grad.head<3>();
+        const Vector9T local_grad = point_line_distance_gradient(eb0, ea0, ea1);
+        grad.template head<6>() = local_grad.template tail<6>();
+        grad.template segment<3>(6) = local_grad.template head<3>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA_EB1: {
-        const Vector9d local_grad = point_line_distance_gradient(eb1, ea0, ea1);
-        grad.head<6>() = local_grad.tail<6>();
-        grad.tail<3>() = local_grad.head<3>();
+        const Vector9T local_grad = point_line_distance_gradient(eb1, ea0, ea1);
+        grad.template head<6>() = local_grad.template tail<6>();
+        grad.template tail<3>() = local_grad.template head<3>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA0_EB: {
-        const Vector9d local_grad = point_line_distance_gradient(ea0, eb0, eb1);
-        grad.head<3>() = local_grad.head<3>();
-        grad.tail<6>() = local_grad.tail<6>();
+        const Vector9T local_grad = point_line_distance_gradient(ea0, eb0, eb1);
+        grad.template head<3>() = local_grad.template head<3>();
+        grad.template tail<6>() = local_grad.template tail<6>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA1_EB:
-        grad.tail<9>() = point_line_distance_gradient(ea1, eb0, eb1);
+        grad.template tail<9>() = point_line_distance_gradient(ea1, eb0, eb1);
         break;
 
     case EdgeEdgeDistanceType::EA_EB:
@@ -131,80 +135,110 @@ Vector12d edge_edge_distance_gradient(
     return grad;
 }
 
-Matrix12d edge_edge_distance_hessian(
-    Eigen::ConstRef<Eigen::Vector3d> ea0,
-    Eigen::ConstRef<Eigen::Vector3d> ea1,
-    Eigen::ConstRef<Eigen::Vector3d> eb0,
-    Eigen::ConstRef<Eigen::Vector3d> eb1,
+template <typename T>
+Eigen::Matrix<T, 12, 12> edge_edge_distance_hessian(
+    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb1,
     EdgeEdgeDistanceType dtype)
 {
+    using Matrix6T = Eigen::Matrix<T, 6, 6>;
+    using Matrix9T = Eigen::Matrix<T, 9, 9>;
+    using Matrix12T = Eigen::Matrix<T, 12, 12>;
+
     if (dtype == EdgeEdgeDistanceType::AUTO) {
         dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
     }
 
-    Matrix12d hess = Matrix12d::Zero();
+    Matrix12T hess = Matrix12T::Zero();
 
     switch (dtype) {
     case EdgeEdgeDistanceType::EA0_EB0: {
-        const Matrix6d local_hess = point_point_distance_hessian(ea0, eb0);
-        hess.topLeftCorner<3, 3>() = local_hess.topLeftCorner<3, 3>();
-        hess.block<3, 3>(0, 6) = local_hess.topRightCorner<3, 3>();
-        hess.block<3, 3>(6, 0) = local_hess.bottomLeftCorner<3, 3>();
-        hess.block<3, 3>(6, 6) = local_hess.bottomRightCorner<3, 3>();
+        const Matrix6T local_hess = point_point_distance_hessian(ea0, eb0);
+        hess.template topLeftCorner<3, 3>() =
+            local_hess.template topLeftCorner<3, 3>();
+        hess.template block<3, 3>(0, 6) =
+            local_hess.template topRightCorner<3, 3>();
+        hess.template block<3, 3>(6, 0) =
+            local_hess.template bottomLeftCorner<3, 3>();
+        hess.template block<3, 3>(6, 6) =
+            local_hess.template bottomRightCorner<3, 3>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA0_EB1: {
-        const Matrix6d local_hess = point_point_distance_hessian(ea0, eb1);
-        hess.topLeftCorner<3, 3>() = local_hess.topLeftCorner<3, 3>();
-        hess.topRightCorner<3, 3>() = local_hess.topRightCorner<3, 3>();
-        hess.bottomLeftCorner<3, 3>() = local_hess.bottomLeftCorner<3, 3>();
-        hess.bottomRightCorner<3, 3>() = local_hess.bottomRightCorner<3, 3>();
+        const Matrix6T local_hess = point_point_distance_hessian(ea0, eb1);
+        hess.template topLeftCorner<3, 3>() =
+            local_hess.template topLeftCorner<3, 3>();
+        hess.template topRightCorner<3, 3>() =
+            local_hess.template topRightCorner<3, 3>();
+        hess.template bottomLeftCorner<3, 3>() =
+            local_hess.template bottomLeftCorner<3, 3>();
+        hess.template bottomRightCorner<3, 3>() =
+            local_hess.template bottomRightCorner<3, 3>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA1_EB0:
-        hess.block<6, 6>(3, 3) = point_point_distance_hessian(ea1, eb0);
+        hess.template block<6, 6>(3, 3) =
+            point_point_distance_hessian(ea1, eb0);
         break;
 
     case EdgeEdgeDistanceType::EA1_EB1: {
-        const Matrix6d local_hess = point_point_distance_hessian(ea1, eb1);
-        hess.block<3, 3>(3, 3) = local_hess.topLeftCorner<3, 3>();
-        hess.block<3, 3>(3, 9) = local_hess.topRightCorner<3, 3>();
-        hess.block<3, 3>(9, 3) = local_hess.bottomLeftCorner<3, 3>();
-        hess.bottomRightCorner<3, 3>() = local_hess.bottomRightCorner<3, 3>();
+        const Matrix6T local_hess = point_point_distance_hessian(ea1, eb1);
+        hess.template block<3, 3>(3, 3) =
+            local_hess.template topLeftCorner<3, 3>();
+        hess.template block<3, 3>(3, 9) =
+            local_hess.template topRightCorner<3, 3>();
+        hess.template block<3, 3>(9, 3) =
+            local_hess.template bottomLeftCorner<3, 3>();
+        hess.template bottomRightCorner<3, 3>() =
+            local_hess.template bottomRightCorner<3, 3>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA_EB0: {
-        const Matrix9d local_hess = point_line_distance_hessian(eb0, ea0, ea1);
-        hess.topLeftCorner<6, 6>() = local_hess.bottomRightCorner<6, 6>();
-        hess.block<3, 6>(6, 0) = local_hess.topRightCorner<3, 6>();
-        hess.block<6, 3>(0, 6) = local_hess.bottomLeftCorner<6, 3>();
-        hess.block<3, 3>(6, 6) = local_hess.topLeftCorner<3, 3>();
+        const Matrix9T local_hess = point_line_distance_hessian(eb0, ea0, ea1);
+        hess.template topLeftCorner<6, 6>() =
+            local_hess.template bottomRightCorner<6, 6>();
+        hess.template block<3, 6>(6, 0) =
+            local_hess.template topRightCorner<3, 6>();
+        hess.template block<6, 3>(0, 6) =
+            local_hess.template bottomLeftCorner<6, 3>();
+        hess.template block<3, 3>(6, 6) =
+            local_hess.template topLeftCorner<3, 3>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA_EB1: {
-        const Matrix9d local_hess = point_line_distance_hessian(eb1, ea0, ea1);
-        hess.topLeftCorner<6, 6>() = local_hess.bottomRightCorner<6, 6>();
-        hess.topRightCorner<6, 3>() = local_hess.bottomLeftCorner<6, 3>();
-        hess.bottomLeftCorner<3, 6>() = local_hess.topRightCorner<3, 6>();
-        hess.bottomRightCorner<3, 3>() = local_hess.topLeftCorner<3, 3>();
+        const Matrix9T local_hess = point_line_distance_hessian(eb1, ea0, ea1);
+        hess.template topLeftCorner<6, 6>() =
+            local_hess.template bottomRightCorner<6, 6>();
+        hess.template topRightCorner<6, 3>() =
+            local_hess.template bottomLeftCorner<6, 3>();
+        hess.template bottomLeftCorner<3, 6>() =
+            local_hess.template topRightCorner<3, 6>();
+        hess.template bottomRightCorner<3, 3>() =
+            local_hess.template topLeftCorner<3, 3>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA0_EB: {
-        const Matrix9d local_hess = point_line_distance_hessian(ea0, eb0, eb1);
-        hess.topLeftCorner<3, 3>() = local_hess.topLeftCorner<3, 3>();
-        hess.topRightCorner<3, 6>() = local_hess.topRightCorner<3, 6>();
-        hess.bottomLeftCorner<6, 3>() = local_hess.bottomLeftCorner<6, 3>();
-        hess.bottomRightCorner<6, 6>() = local_hess.bottomRightCorner<6, 6>();
+        const Matrix9T local_hess = point_line_distance_hessian(ea0, eb0, eb1);
+        hess.template topLeftCorner<3, 3>() =
+            local_hess.template topLeftCorner<3, 3>();
+        hess.template topRightCorner<3, 6>() =
+            local_hess.template topRightCorner<3, 6>();
+        hess.template bottomLeftCorner<6, 3>() =
+            local_hess.template bottomLeftCorner<6, 3>();
+        hess.template bottomRightCorner<6, 6>() =
+            local_hess.template bottomRightCorner<6, 6>();
         break;
     }
 
     case EdgeEdgeDistanceType::EA1_EB:
-        hess.bottomRightCorner<9, 9>() =
+        hess.template bottomRightCorner<9, 9>() =
             point_line_distance_hessian(ea1, eb0, eb1);
         break;
 
@@ -219,5 +253,14 @@ Matrix12d edge_edge_distance_hessian(
 
     return hess;
 }
+
+// clang-format off
+template float edge_edge_distance<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, EdgeEdgeDistanceType);
+template double edge_edge_distance<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, EdgeEdgeDistanceType);
+template Vector12f edge_edge_distance_gradient<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, EdgeEdgeDistanceType);
+template Vector12d edge_edge_distance_gradient<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, EdgeEdgeDistanceType);
+template Matrix12f edge_edge_distance_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, EdgeEdgeDistanceType);
+template Matrix12d edge_edge_distance_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, EdgeEdgeDistanceType);
+// clang-format on
 
 } // namespace ipc

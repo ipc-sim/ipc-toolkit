@@ -93,7 +93,7 @@ mark_as_advanced(IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT) # This is an advanced opt
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif()

@@ -311,7 +311,7 @@ TEST_CASE("Triangle normal hessian", "[normal]")
     x << a, b, c;
 
     // Cross product matrix jacobian
-    Eigen::MatrixXd J_cross = cross_product_matrix_jacobian();
+    Eigen::MatrixXd J_cross = cross_product_matrix_jacobian<double>();
     Eigen::MatrixXd fd_J_cross;
     fd::finite_jacobian_tensor<3>(
         a,
