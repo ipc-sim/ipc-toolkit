@@ -18,11 +18,13 @@ Edge2::Edge2(
     m_rest_length =
         (rp.row(m_vertex_ids[1]) - rp.row(m_vertex_ids[0])).norm();
 
-    m_is_active = (mesh.is_orient_vertex(m_vertex_ids[0])
-                   && mesh.is_orient_vertex(m_vertex_ids[1]))
-        && Math<double>::cross2(
-               d, vertices.row(m_vertex_ids[1]) - vertices.row(m_vertex_ids[0]))
-            > 0;
+    if (mesh.is_orient_vertex(m_vertex_ids[0])
+        && mesh.is_orient_vertex(m_vertex_ids[1])) {
+        m_is_active = Math<double>::cross2(
+            d, vertices.row(m_vertex_ids[1]) - vertices.row(m_vertex_ids[0])) > 0;
+    } else {
+        m_is_active = true;
+    }
 }
 
 int Edge2::n_vertices() const { return N_EDGE_NEIGHBORS_2D; }
