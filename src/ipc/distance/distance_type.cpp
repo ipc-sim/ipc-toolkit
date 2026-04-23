@@ -48,29 +48,29 @@ PointTriangleDistanceType point_triangle_distance_type(
     basis.row(0) = t1 - t0;
     basis.row(1) = basis.row(0).cross(normal);
     param.col(0) = (basis * basis.transpose()).ldlt().solve(basis * (p - t0));
-    if (param(0, 0) > 0.0 && param(0, 0) < 1.0 && param(1, 0) >= 0.0) {
+    if (param(0, 0) > 0 && param(0, 0) < 1 && param(1, 0) >= 0) {
         return PointTriangleDistanceType::P_E0; // edge 0 is the closest
     }
 
     basis.row(0) = t2 - t1;
     basis.row(1) = basis.row(0).cross(normal);
     param.col(1) = (basis * basis.transpose()).ldlt().solve(basis * (p - t1));
-    if (param(0, 1) > 0.0 && param(0, 1) < 1.0 && param(1, 1) >= 0.0) {
+    if (param(0, 1) > 0 && param(0, 1) < 1 && param(1, 1) >= 0) {
         return PointTriangleDistanceType::P_E1; // edge 1 is the closest
     }
 
     basis.row(0) = t0 - t2;
     basis.row(1) = basis.row(0).cross(normal);
     param.col(2) = (basis * basis.transpose()).ldlt().solve(basis * (p - t2));
-    if (param(0, 2) > 0.0 && param(0, 2) < 1.0 && param(1, 2) >= 0.0) {
+    if (param(0, 2) > 0 && param(0, 2) < 1 && param(1, 2) >= 0) {
         return PointTriangleDistanceType::P_E2; // edge 2 is the closest
     }
 
-    if (param(0, 0) <= 0.0 && param(0, 2) >= 1.0) {
+    if (param(0, 0) <= 0 && param(0, 2) >= 1) {
         return PointTriangleDistanceType::P_T0; // vertex 0 is the closest
-    } else if (param(0, 1) <= 0.0 && param(0, 0) >= 1.0) {
+    } else if (param(0, 1) <= 0 && param(0, 0) >= 1) {
         return PointTriangleDistanceType::P_T1; // vertex 1 is the closest
-    } else if (param(0, 2) <= 0.0 && param(0, 1) >= 1.0) {
+    } else if (param(0, 2) <= 0 && param(0, 1) >= 1) {
         return PointTriangleDistanceType::P_T2; // vertex 2 is the closest
     } else {
         return PointTriangleDistanceType::P_T;
@@ -104,11 +104,11 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     const T D = a * c - b * b; // always ≥ 0
 
     // Degenerate cases should not happen in practice, but we handle them
-    if (a == 0.0 && c == 0.0) {
+    if (a == 0 && c == 0) {
         return EdgeEdgeDistanceType::EA0_EB0;
-    } else if (a == 0.0) {
+    } else if (a == 0) {
         return EdgeEdgeDistanceType::EA0_EB;
-    } else if (c == 0.0) {
+    } else if (c == 0) {
         return EdgeEdgeDistanceType::EA_EB0;
     }
 
@@ -122,8 +122,8 @@ EdgeEdgeDistanceType edge_edge_distance_type(
 
     // compute the line parameters of the two closest points
     const T sN = (b * e - c * d);
-    T tN, tD;        // tc = tN / tD
-    if (sN <= 0.0) { // sc < 0 ⟹ the s=0 edge is visible
+    T tN, tD;      // tc = tN / tD
+    if (sN <= 0) { // sc < 0 ⟹ the s=0 edge is visible
         tN = e;
         tD = c;
         default_case = EdgeEdgeDistanceType::EA0_EB;
@@ -134,7 +134,7 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     } else {
         tN = (a * e - b * d);
         tD = D; // default tD = D ≥ 0
-        if (tN > 0.0 && tN < tD
+        if (tN > 0 && tN < tD
             && u.cross(v).squaredNorm() < parallel_tolerance) {
             // avoid coplanar or nearly parallel EE
             if (sN < D / 2) {
@@ -150,9 +150,9 @@ EdgeEdgeDistanceType edge_edge_distance_type(
         // else default_case stays EdgeEdgeDistanceType::EA_EB
     }
 
-    if (tN <= 0.0) { // tc < 0 ⟹ the t=0 edge is visible
+    if (tN <= 0) { // tc < 0 ⟹ the t=0 edge is visible
         // recompute sc for this edge
-        if (-d <= 0.0) {
+        if (-d <= 0) {
             return EdgeEdgeDistanceType::EA0_EB0;
         } else if (-d >= a) {
             return EdgeEdgeDistanceType::EA1_EB0;
@@ -161,7 +161,7 @@ EdgeEdgeDistanceType edge_edge_distance_type(
         }
     } else if (tN >= tD) { // tc > 1 ⟹ the t=1 edge is visible
         // recompute sc for this edge
-        if ((-d + b) <= 0.0) {
+        if ((-d + b) <= 0) {
             return EdgeEdgeDistanceType::EA0_EB1;
         } else if ((-d + b) >= a) {
             return EdgeEdgeDistanceType::EA1_EB1;

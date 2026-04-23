@@ -65,7 +65,7 @@ inline Eigen::Vector3<T> point_plane_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3<T>> origin,
     Eigen::ConstRef<Eigen::Vector3<T>> normal)
 {
-    return (2.0 / normal.squaredNorm()) * (p - origin).dot(normal) * normal;
+    return (T(2) / normal.squaredNorm()) * (p - origin).dot(normal) * normal;
 }
 
 /// @brief Compute the gradient of the distance between a point and a plane.
@@ -101,7 +101,7 @@ inline Eigen::Matrix3<T> point_plane_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3<T>> origin,
     Eigen::ConstRef<Eigen::Vector3<T>> normal)
 {
-    return ((2.0 / normal.squaredNorm()) * normal) * normal.transpose();
+    return ((T(2) / normal.squaredNorm()) * normal) * normal.transpose();
 }
 
 /// @brief Compute the hessian of the distance between a point and a plane.
