@@ -3,6 +3,7 @@
 #include <ipc/distance/line_line.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
+#include <ipc/utils/autodiff_types.hpp>
 
 #include <stdexcept> // std::invalid_argument
 
@@ -16,8 +17,10 @@ T edge_edge_distance(
     Eigen::ConstRef<Eigen::Vector3<T>> eb1,
     EdgeEdgeDistanceType dtype)
 {
-    if (dtype == EdgeEdgeDistanceType::AUTO) {
-        dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    if constexpr (std::is_same_v<T, double> || std::is_same_v<T, float>) {
+        if (dtype == EdgeEdgeDistanceType::AUTO) {
+            dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+        }
     }
 
     switch (dtype) {
@@ -62,7 +65,7 @@ Eigen::Vector<T, 12> edge_edge_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3<T>> eb1,
     EdgeEdgeDistanceType dtype)
 {
-    using Vector6T = Eigen::Vector<T, 12>;
+    using Vector6T = Eigen::Vector<T, 6>;
     using Vector9T = Eigen::Vector<T, 9>;
     using Vector12T = Eigen::Vector<T, 12>;
 
@@ -257,6 +260,12 @@ Eigen::Matrix<T, 12, 12> edge_edge_distance_hessian(
 // clang-format off
 template float edge_edge_distance<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, EdgeEdgeDistanceType);
 template double edge_edge_distance<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, EdgeEdgeDistanceType);
+template ADGrad<9> edge_edge_distance<ADGrad<9>>(Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>>, EdgeEdgeDistanceType);
+template ADHessian<9> edge_edge_distance<ADHessian<9>>(Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>>, EdgeEdgeDistanceType);
+template ADGrad<12> edge_edge_distance<ADGrad<12>>(Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, EdgeEdgeDistanceType);
+template ADHessian<12> edge_edge_distance<ADHessian<12>>(Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, EdgeEdgeDistanceType);
+template ADGrad<13> edge_edge_distance<ADGrad<13>>(Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, EdgeEdgeDistanceType);
+template ADHessian<13> edge_edge_distance<ADHessian<13>>(Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, EdgeEdgeDistanceType);
 template Vector12f edge_edge_distance_gradient<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, EdgeEdgeDistanceType);
 template Vector12d edge_edge_distance_gradient<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, EdgeEdgeDistanceType);
 template Matrix12f edge_edge_distance_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, EdgeEdgeDistanceType);

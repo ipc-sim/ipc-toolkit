@@ -2,11 +2,11 @@
 
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_line.hpp>
+#include <ipc/distance/point_point.hpp>
 #include <ipc/math/math.hpp>
 #include <ipc/smooth_contact/common.hpp>
 #include <ipc/utils/autodiff_types.hpp>
-
-#include <iostream>
 
 namespace ipc {
 template <typename T, int dim> class PointEdgeDistance {
@@ -16,14 +16,6 @@ public:
     PointEdgeDistance() = delete;
     PointEdgeDistance(const PointEdgeDistance&) = delete;
     PointEdgeDistance& operator=(const PointEdgeDistance&) = delete;
-
-    static T point_point_sqr_distance(
-        Eigen::ConstRef<VectorNT> a, Eigen::ConstRef<VectorNT> b);
-
-    static T point_line_sqr_distance(
-        Eigen::ConstRef<VectorNT> p,
-        Eigen::ConstRef<VectorNT> e0,
-        Eigen::ConstRef<VectorNT> e1);
 
     static T point_edge_sqr_distance(
         Eigen::ConstRef<VectorNT> p,

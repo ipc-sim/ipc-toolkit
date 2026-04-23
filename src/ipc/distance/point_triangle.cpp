@@ -3,6 +3,7 @@
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_plane.hpp>
 #include <ipc/distance/point_point.hpp>
+#include <ipc/utils/autodiff_types.hpp>
 
 #include <stdexcept> // std::invalid_argument
 
@@ -16,8 +17,10 @@ T point_triangle_distance(
     Eigen::ConstRef<Eigen::Vector3<T>> t2,
     PointTriangleDistanceType dtype)
 {
-    if (dtype == PointTriangleDistanceType::AUTO) {
-        dtype = point_triangle_distance_type(p, t0, t1, t2);
+    if constexpr (std::is_same_v<T, double> || std::is_same_v<T, float>) {
+        if (dtype == PointTriangleDistanceType::AUTO) {
+            dtype = point_triangle_distance_type(p, t0, t1, t2);
+        }
     }
 
     switch (dtype) {
@@ -220,6 +223,10 @@ Eigen::Matrix<T, 12, 12> point_triangle_distance_hessian(
 // clang-format off
 template float point_triangle_distance<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, PointTriangleDistanceType);
 template double point_triangle_distance<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, PointTriangleDistanceType);
+template ADGrad<12> point_triangle_distance<ADGrad<12>>(Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, PointTriangleDistanceType);
+template ADHessian<12> point_triangle_distance<ADHessian<12>>(Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, PointTriangleDistanceType);
+template ADGrad<13> point_triangle_distance<ADGrad<13>>(Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, PointTriangleDistanceType);
+template ADHessian<13> point_triangle_distance<ADHessian<13>>(Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, PointTriangleDistanceType);
 template Vector12f point_triangle_distance_gradient<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, PointTriangleDistanceType);
 template Vector12d point_triangle_distance_gradient<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, PointTriangleDistanceType);
 template Matrix12f point_triangle_distance_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, PointTriangleDistanceType);

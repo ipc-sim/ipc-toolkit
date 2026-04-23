@@ -189,7 +189,6 @@ double TangentialPotential::operator()(
     const VectorMax2d u_aniso =
         collision.mu_aniso.head(u.size()).cwiseProduct(u);
 
-    const int tangent_dim = u.size();
     double mu_s, mu_k;
     friction_mu_for_evaluation(collision, false, mu_s, mu_k);
 
@@ -793,9 +792,6 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
     // Handle both 2D tangent space (3D sim) and 1D tangent space (2D sim)
     const VectorMax2d tau_aniso =
         collision.mu_aniso.head(tau.size()).cwiseProduct(tau);
-
-    // Get tangent space dimension (1 for 2D sim, 2 for 3D sim)
-    const int tangent_dim = tau.size();
 
     double mu_s, mu_k;
     friction_mu_for_evaluation(collision, no_mu, mu_s, mu_k);

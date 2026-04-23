@@ -18,8 +18,10 @@ T point_edge_distance(
     assert(e0.size() == 2 || e0.size() == 3);
     assert(e1.size() == 2 || e1.size() == 3);
 
-    if (dtype == PointEdgeDistanceType::AUTO) {
-        dtype = point_edge_distance_type(p, e0, e1);
+    if constexpr (std::is_same_v<T, double> || std::is_same_v<T, float>) {
+        if (dtype == PointEdgeDistanceType::AUTO) {
+            dtype = point_edge_distance_type(p, e0, e1);
+        }
     }
 
     switch (dtype) {
