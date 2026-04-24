@@ -131,10 +131,10 @@ private:
     /// @param p A point on the division plane.
     /// @return Truncation ratio in (0, 1].
     double planar_truncation_ratio(
-        const Eigen::Vector3d& x_u,
-        const Eigen::Vector3d& dx_u,
-        const Eigen::Vector3d& n,
-        const Eigen::Vector3d& p) const;
+        Eigen::ConstRef<VectorMax3d> x_u,
+        Eigen::ConstRef<VectorMax3d> dx_u,
+        Eigen::ConstRef<VectorMax3d> n,
+        Eigen::ConstRef<VectorMax3d> p) const;
 };
 
 } // namespace ipc::ogc

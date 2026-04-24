@@ -317,9 +317,14 @@ TEST_CASE(
     "separating pair",
     "[ogc][planar_dat]")
 {
-    // When the vertex moves AWAY, planar_filter_step should preserve the full
-    // step, while filter_step (isotropic) would cap it to the trust region
-    // radius.
+    // When the vertex moves AWAY with a step that exceeds trust_region_radii
+    // (tight, per-vertex) but stays within trust_region_inflation_radius
+    // (loose), planar_filter_step passes the full step while filter_step
+    // clips it to trust_region_radii.
+    //
+    // For gap=0.5, dhat=0.6: inflation_radius = 1.2,
+    // trust_region_radii(3) ≈ gap * relaxed_radius_scaling / 2 ≈ 0.225.
+    // A separating step of 0.3 sits between those two values.
     const double gap = 0.5;
     const double dhat = 0.6;
     auto [mesh, V] = make_fv_mesh(gap);
@@ -332,23 +337,71 @@ TEST_CASE(
 
     REQUIRE(!collisions.empty());
 
+    // Guard: per-vertex radius must be < 0.3 for the test to be meaningful
+    REQUIRE(tr.trust_region_radii(3) < 0.3);
+
     Eigen::MatrixXd x = V;
 
-    // Isotropic: large outward step gets capped to trust region radius
-    Eigen::MatrixXd dx_iso = Eigen::MatrixXd::Zero(V.rows(), 3);
-    dx_iso.row(3) << 0.0, 1.0, 0.0; // large step upward
-    tr.filter_step(mesh, x, dx_iso);
-    const double iso_preserved = dx_iso.row(3).norm();
-
-    // Planar: trust-region fallback applies (same as filter_step), so
-    // planar should preserve at least as much motion as isotropic.
+    // Planar-DAT: separating step (t_i < 0 — no plane crossing) and within
+    // inflation radius → full step preserved
     Eigen::MatrixXd dx_planar = Eigen::MatrixXd::Zero(V.rows(), 3);
-    dx_planar.row(3) << 0.0, 1.0, 0.0;
+    dx_planar.row(3) << 0.0, 0.3, 0.0;
     tr.planar_filter_step(mesh, x, dx_planar, collisions);
-    const double planar_preserved = dx_planar.row(3).norm();
+    CHECK(dx_planar(3, 1) == Catch::Approx(0.3));
 
-    // Planar-DAT should preserve strictly more (or equal) motion
-    CHECK(planar_preserved >= iso_preserved - 1e-10);
+    // Isotropic: clips to trust_region_radii(3) < 0.3
+    Eigen::MatrixXd dx_iso = Eigen::MatrixXd::Zero(V.rows(), 3);
+    dx_iso.row(3) << 0.0, 0.3, 0.0;
+    tr.filter_step(mesh, x, dx_iso);
+    CHECK(dx_iso(3, 1) < 0.3 - 1e-10);
+}
+
+// Helper: two vertices with no edges/faces, separated by gap along y.
+//   V[0] = (0, 0,   0)
+//   V[1] = (0, gap, 0)
+static std::pair<CollisionMesh, Eigen::MatrixXd> make_vv_mesh(double gap)
+{
+    Eigen::MatrixXd V(2, 3);
+    V << 0.0, 0.0, 0.0, /**/ 0.0, gap, 0.0;
+    Eigen::MatrixXi E(0, 2);
+    Eigen::MatrixXi F(0, 3);
+    return { CollisionMesh(V, E, F), V };
+}
+
+// Helper: one edge along x with a vertex above its midpoint, gap along y.
+//   V[0] = (0,   0, 0)  edge e0
+//   V[1] = (1,   0, 0)  edge e1
+//   V[2] = (0.5, gap, 0)  vertex above midpoint
+static std::pair<CollisionMesh, Eigen::MatrixXd> make_ev_mesh(double gap)
+{
+    Eigen::MatrixXd V(3, 3);
+    // clang-format off
+    V << 0.0,   0,   0.0,
+         1.0,   0,   0.0,
+         0.5, gap,   0.0;
+    // clang-format on
+    Eigen::MatrixXi E(1, 2);
+    E << 0, 1;
+    Eigen::MatrixXi F(0, 3);
+    return { CollisionMesh(V, E, F), V };
+}
+
+// Helper: 2-D edge (x-axis) with a vertex above midpoint, using 2D positions.
+//   V[0] = (0,   0)  edge e0
+//   V[1] = (1,   0)  edge e1
+//   V[2] = (0.5, gap)  vertex above midpoint
+static std::pair<CollisionMesh, Eigen::MatrixXd> make_ev_mesh_2d(double gap)
+{
+    Eigen::MatrixXd V(3, 2);
+    // clang-format off
+    V << 0.0,   0,
+         1.0,   0,
+         0.5, gap;
+    // clang-format on
+    Eigen::MatrixXi E(1, 2);
+    E << 0, 1;
+    Eigen::MatrixXi F(0, 3);
+    return { CollisionMesh(V, E, F), V };
 }
 
 TEST_CASE(
@@ -385,4 +438,155 @@ TEST_CASE(
     // Both edges must have been restricted
     CHECK(std::abs(dx(0, 1)) < 0.4);
     CHECK(std::abs(dx(2, 1)) < 0.4);
+}
+
+TEST_CASE(
+    "planar_filter_step: vertex-vertex approaching pair is truncated",
+    "[ogc][planar_dat]")
+{
+    const double gap = 0.5;
+    const double dhat = 0.6;
+    auto [mesh, V] = make_vv_mesh(gap);
+
+    ipc::ogc::TrustRegion tr(dhat);
+    ipc::NormalCollisions collisions;
+    collisions.set_collision_set_type(
+        ipc::NormalCollisions::CollisionSetType::OGC);
+    tr.update(mesh, V, collisions);
+
+    REQUIRE(!collisions.vv_collisions.empty());
+
+    Eigen::MatrixXd x = V;
+    Eigen::MatrixXd dx = Eigen::MatrixXd::Zero(V.rows(), 3);
+    // v0 approaches v1 (upward), v1 approaches v0 (downward)
+    dx.row(0) << 0.0, 0.4, 0.0;
+    dx.row(1) << 0.0, -0.4, 0.0;
+
+    tr.planar_filter_step(mesh, x, dx, collisions);
+
+    // After truncation gap must remain positive
+    const double final_gap = (x(1, 1) + dx(1, 1)) - (x(0, 1) + dx(0, 1));
+    CHECK(final_gap > 0.0);
+    // Both vertices must have been restricted
+    CHECK(std::abs(dx(0, 1)) < 0.4);
+    CHECK(std::abs(dx(1, 1)) < 0.4);
+}
+
+TEST_CASE(
+    "planar_filter_step: edge-vertex approaching pair is truncated",
+    "[ogc][planar_dat]")
+{
+    const double gap = 0.5;
+    const double dhat = 0.6;
+    auto [mesh, V] = make_ev_mesh(gap);
+
+    ipc::ogc::TrustRegion tr(dhat);
+    ipc::NormalCollisions collisions;
+    collisions.set_collision_set_type(
+        ipc::NormalCollisions::CollisionSetType::OGC);
+    tr.update(mesh, V, collisions);
+
+    REQUIRE(!collisions.ev_collisions.empty());
+
+    Eigen::MatrixXd x = V;
+    Eigen::MatrixXd dx = Eigen::MatrixXd::Zero(V.rows(), 3);
+    // Vertex approaches edge (downward), edge stationary
+    dx.row(2) << 0.0, -0.6, 0.0;
+
+    tr.planar_filter_step(mesh, x, dx, collisions);
+
+    // After truncation vertex must remain above edge (y > 0)
+    const double final_y = x(2, 1) + dx(2, 1);
+    CHECK(final_y > 0.0);
+    CHECK(std::abs(dx(2, 1)) < 0.6);
+    CHECK(dx(2, 1) < 0.0); // still moving downward
+
+    // Tangential motion of the vertex is not truncated by the planar
+    // constraint (only the isotropic fallback applies if needed)
+    Eigen::MatrixXd dx_tan = Eigen::MatrixXd::Zero(V.rows(), 3);
+    dx_tan.row(2) << 0.3, 0.0, 0.0; // tangential (within inflation radius)
+    tr.planar_filter_step(mesh, x, dx_tan, collisions);
+    CHECK(dx_tan(2, 0) == Catch::Approx(0.3)); // not truncated
+}
+
+TEST_CASE(
+    "planar_filter_step: approaching vertex, retreating triangle — only "
+    "vertex is truncated",
+    "[ogc][planar_dat]")
+{
+    // This tests the image scenario: P approaches triangle ABC while
+    // A, B, C move away from P.
+    //
+    // With delta_t = 0 (triangle not closing), λ = 0 and the division
+    // plane is placed at the triangle surface (c_vt). The planar constraint
+    // truncates only P; A, B, C have t_i < 0 (moving away from the plane)
+    // so their displacements are left untouched.
+    const double gap = 0.5;
+    const double dhat = 0.6;
+    auto [mesh, V] = make_fv_mesh(gap);
+
+    ipc::ogc::TrustRegion tr(dhat);
+    ipc::NormalCollisions collisions;
+    collisions.set_collision_set_type(
+        ipc::NormalCollisions::CollisionSetType::OGC);
+    tr.update(mesh, V, collisions);
+
+    REQUIRE(!collisions.fv_collisions.empty());
+
+    Eigen::MatrixXd x = V;
+    Eigen::MatrixXd dx = Eigen::MatrixXd::Zero(V.rows(), 3);
+
+    // Triangle (A=0, B=1, C=2) moves away from P (downward, −y).
+    // P (vertex 3) approaches the triangle (would overshoot gap=0.5).
+    const double retreat = 0.3;
+    const double approach = 0.6;
+    dx.row(0) << 0.0, -retreat, 0.0;
+    dx.row(1) << 0.0, -retreat, 0.0;
+    dx.row(2) << 0.0, -retreat, 0.0;
+    dx.row(3) << 0.0, -approach, 0.0; // P towards triangle
+
+    tr.planar_filter_step(mesh, x, dx, collisions);
+
+    // A, B, C move away from the division plane (t_i < 0) → no truncation.
+    CHECK(dx(0, 1) == Catch::Approx(-retreat));
+    CHECK(dx(1, 1) == Catch::Approx(-retreat));
+    CHECK(dx(2, 1) == Catch::Approx(-retreat));
+
+    // P must be truncated: less displacement in magnitude, still downward.
+    CHECK(dx(3, 1) > -approach + 1e-10);
+    CHECK(dx(3, 1) < 0.0);
+
+    // P must not penetrate the triangle (final P.y > final triangle.y).
+    const double final_tri_y = x(0, 1) + dx(0, 1); // all triangle verts same
+    const double final_p_y = x(3, 1) + dx(3, 1);
+    CHECK(final_p_y > final_tri_y);
+}
+
+TEST_CASE(
+    "planar_filter_step: works on 2D mesh (edge-vertex)",
+    "[ogc][planar_dat]")
+{
+    const double gap = 0.5;
+    const double dhat = 0.6;
+    auto [mesh, V] = make_ev_mesh_2d(gap);
+
+    ipc::ogc::TrustRegion tr(dhat);
+    ipc::NormalCollisions collisions;
+    collisions.set_collision_set_type(
+        ipc::NormalCollisions::CollisionSetType::OGC);
+    tr.update(mesh, V, collisions);
+
+    REQUIRE(!collisions.ev_collisions.empty());
+
+    Eigen::MatrixXd x = V;
+    Eigen::MatrixXd dx = Eigen::MatrixXd::Zero(V.rows(), 2);
+    // Vertex approaches edge (downward)
+    dx.row(2) << 0.0, -0.6;
+
+    // Must not crash and must truncate the approaching vertex
+    tr.planar_filter_step(mesh, x, dx, collisions);
+
+    const double final_y = x(2, 1) + dx(2, 1);
+    CHECK(final_y > 0.0);
+    CHECK(std::abs(dx(2, 1)) < 0.6);
 }
