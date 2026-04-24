@@ -112,12 +112,6 @@ struct TrustRegion {
     /// @param x Current vertex positions.
     /// @param dx Proposed vertex displacements (modified in-place).
     /// @param collisions Active collision pairs (e.g. from update()).
-    /// @param query_radius Radius used for collision detection; displacements
-    ///        beyond 0.5 * relaxation_ratio * query_radius are capped
-    ///        isotropically as a fallback.
-    /// @param relaxation_ratio Safety margin \f$\gamma_r \in (0,1)\f$; the
-    ///        displacement is stopped at this fraction of the crossing time
-    ///        (default 0.9).
     void planar_filter_step(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> x,
@@ -135,7 +129,6 @@ private:
     /// @param dx_u Proposed displacement of vertex u.
     /// @param n Division plane normal (unit vector).
     /// @param p A point on the division plane.
-    /// @param relaxation_ratio Safety margin γ_r ∈ (0,1).
     /// @return Truncation ratio in (0, 1].
     double planar_truncation_ratio(
         const Eigen::Vector3d& x_u,

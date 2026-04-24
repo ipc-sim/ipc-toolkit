@@ -402,7 +402,7 @@ For each active collision pair the algorithm:
 3. Distributes the available gap between the two primitives in proportion to their approach speeds, yielding a **division point** :math:`\mathbf{p}` on the segment connecting the closest points.
 4. For every vertex of both primitives, finds the ray–plane intersection time :math:`t_i` such that :math:`\mathbf{x}_u + t_i \, \delta\mathbf{x}_u` lies on the plane through :math:`\mathbf{p}` with normal :math:`\mathbf{n}`. If :math:`t_i \in [0, 1/\gamma_r)`, the vertex is truncated to :math:`\gamma_r \, t_i`; otherwise it is left unchanged.
 
-For vertices not covered by an active collision pair, an isotropic fallback applies the same trust-region sphere used by ``filter_step`` — centered at ``trust_region_centers`` with radius ``trust_region_inflation_radius`` — so that no uncovered vertex can escape the safe zone.
+For vertices not covered by an active collision pair, an isotropic fallback clamps motion to a safe-zone sphere centered at ``trust_region_centers`` with radius ``trust_region_inflation_radius``. This fallback is distinct from the isotropic clamp in ``filter_step``, which uses the per-vertex radii ``trust_region_radii(i)``, but it serves the same purpose of ensuring that no uncovered vertex can escape the safe zone.
 
 Using ``planar_filter_step``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

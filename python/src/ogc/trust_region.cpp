@@ -99,12 +99,6 @@ void define_trust_region(py::module_& m)
                 x: Current vertex positions.
                 dx: Proposed vertex displacements (modified in-place).
                 collisions: Active collision pairs (e.g. from ``update()``).
-                query_radius: Radius used for collision detection; displacements
-                    beyond ``0.5 * relaxation_ratio * query_radius`` are capped
-                    isotropically as a fallback.
-                relaxation_ratio: Safety margin :math:`\gamma_r \in (0, 1)`;
-                    the displacement is stopped at this fraction of the crossing
-                    time (default 0.9).
             )ipc_Qu8mg5v7",
             "mesh"_a, "x"_a, "dx"_a, "collisions"_a)
         .def_readwrite(
