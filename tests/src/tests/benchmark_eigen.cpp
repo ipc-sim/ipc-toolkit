@@ -4,6 +4,7 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/line_line.hpp>
 #include <ipc/distance/point_triangle.hpp>
+#include <ipc/barrier/barrier.hpp>
 #include <ipc/distance/edge_edge.hpp>
 
 #include <Eigen/Geometry>
@@ -318,34 +319,84 @@ TEST_CASE("Return type", "[!benchmark][eigen][return]")
 
 TEST_CASE("Float vs Double: Distance", "[!benchmark][eigen][float]")
 {
-    const Eigen::MatrixXf Vf = Eigen::MatrixXf::Random(100, 3);
+    constexpr int N = 100, M = 1000;
+    const Eigen::MatrixXf Vf = Eigen::MatrixXf::Random(N, 3);
     const Eigen::MatrixXd Vd = Vf.cast<double>();
 
     BENCHMARK("float")
     {
-        return edge_edge_distance<float>(
-            Vf.row(0), Vf.row(50), Vf.row(75), Vf.row(99));
+        float sum = 0.0;
+        for (int i = 0; i < M; ++i) {
+            sum += barrier(
+                edge_edge_distance<float>(
+                    Vf.row(i % N), Vf.row((50 + i) % N), Vf.row((75 + i) % N),
+                    Vf.row((99 + i) % N)),
+                1.0f);
+        }
+        return sum;
     };
     BENCHMARK("double")
     {
-        return edge_edge_distance<double>(
-            Vd.row(0), Vd.row(50), Vd.row(75), Vd.row(99));
+        double sum = 0.0;
+        for (int i = 0; i < M; ++i) {
+            sum += barrier(
+                edge_edge_distance<double>(
+                    Vd.row(i % N), Vd.row((50 + i) % N), Vd.row((75 + i) % N),
+                    Vd.row((99 + i) % N)),
+                1.0);
+        }
+        return sum;
     };
 }
 
 TEST_CASE("Float vs Double: Hessian", "[!benchmark][eigen][float]")
 {
-    const Eigen::MatrixXf Vf = Eigen::MatrixXf::Random(100, 3);
+    constexpr int N = 100, M = 1000;
+    const Eigen::MatrixXf Vf = Eigen::MatrixXf::Random(N, 3);
     const Eigen::MatrixXd Vd = Vf.cast<double>();
 
     BENCHMARK("float")
     {
-        return edge_edge_distance_hessian<float>(
-            Vf.row(0), Vf.row(50), Vf.row(75), Vf.row(99));
+        Eigen::Matrix<float, 12, 12> hess =
+            Eigen::Matrix<float, 12, 12>::Zero();
+        for (int i = 0; i < M; ++i) {
+            auto d = edge_edge_distance<float>(
+                Vf.row(i % N), Vf.row((50 + i) % N), Vf.row((75 + i) % N),
+                Vf.row((99 + i) % N));
+            auto grad_d = edge_edge_distance_gradient<float>(
+                Vf.row(i % N), Vf.row((50 + i) % N), Vf.row((75 + i) % N),
+                Vf.row((99 + i) % N));
+            auto hess_d = edge_edge_distance_hessian<float>(
+                Vf.row(i % N), Vf.row((50 + i) % N), Vf.row((75 + i) % N),
+                Vf.row((99 + i) % N));
+
+            auto db = barrier_first_derivative<float>(d, 1.0f);
+            auto d2b = barrier_second_derivative<float>(d, 1.0f);
+
+            hess += db * hess_d + (d2b * grad_d) * grad_d.transpose();
+        }
+        return hess;
     };
     BENCHMARK("double")
     {
-        return edge_edge_distance_hessian<double>(
-            Vd.row(0), Vd.row(50), Vd.row(75), Vd.row(99));
+        Eigen::Matrix<double, 12, 12> hess =
+            Eigen::Matrix<double, 12, 12>::Zero();
+        for (int i = 0; i < M; ++i) {
+            auto d = edge_edge_distance<double>(
+                Vd.row(i % N), Vd.row((50 + i) % N), Vd.row((75 + i) % N),
+                Vd.row((99 + i) % N));
+            auto grad_d = edge_edge_distance_gradient<double>(
+                Vd.row(i % N), Vd.row((50 + i) % N), Vd.row((75 + i) % N),
+                Vd.row((99 + i) % N));
+            auto hess_d = edge_edge_distance_hessian<double>(
+                Vd.row(i % N), Vd.row((50 + i) % N), Vd.row((75 + i) % N),
+                Vd.row((99 + i) % N));
+
+            auto db = barrier_first_derivative<double>(d, 1.0);
+            auto d2b = barrier_second_derivative<double>(d, 1.0);
+
+            hess += db * hess_d + (d2b * grad_d) * grad_d.transpose();
+        }
+        return hess;
     };
 }
