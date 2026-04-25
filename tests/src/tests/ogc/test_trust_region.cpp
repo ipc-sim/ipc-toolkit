@@ -510,12 +510,11 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "planar_filter_step: approaching vertex, retreating triangle — only "
+    "planar_filter_step: approaching vertex, retreating triangle - only "
     "vertex is truncated",
     "[ogc][planar_dat]")
 {
-    // This tests the image scenario: P approaches triangle ABC while
-    // A, B, C move away from P.
+    // Tests the scenario: P approaches triangle ABC while A, B, C move away.
     //
     // With delta_t = 0 (triangle not closing), λ = 0 and the division
     // plane is placed at the triangle surface (c_vt). The planar constraint
