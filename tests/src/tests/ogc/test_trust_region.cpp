@@ -563,8 +563,7 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "planar_filter_step: works on 2D mesh (edge-vertex)",
-    "[ogc][planar_dat]")
+    "planar_filter_step: works on 2D mesh (edge-vertex)", "[ogc][planar_dat]")
 {
     const double gap = 0.5;
     const double dhat = 0.6;
