@@ -407,7 +407,7 @@ For vertices not covered by an active collision pair, an isotropic fallback clam
 Using ``planar_filter_step``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``planar_filter_step`` is a *drop-in replacement* for ``filter_step`` inside the solver loop. It requires the active collision set (from ``update`` or ``update_if_needed``). The relaxation ratio is controlled via the ``relaxed_radius_scaling`` member of the ``TrustRegion`` object (default 0.9).
+``planar_filter_step`` is a *drop-in replacement* for ``filter_step`` inside the solver loop. It uses the collision candidates stored in ``trust_region.candidates`` by the last call to ``update`` or ``update_if_needed``. The relaxation ratio is controlled via the ``relaxed_radius_scaling`` member of the ``TrustRegion`` object (default 0.9).
 
 .. md-tab-set::
 
@@ -418,7 +418,7 @@ Using ``planar_filter_step``
             // Inside the solver loop, replace:
             //   trust_region.filter_step(mesh, x, dx);
             // with:
-            trust_region.planar_filter_step(mesh, x, dx, collisions);
+            trust_region.planar_filter_step(mesh, x, dx);
 
             // Optionally tune the relaxation ratio via the struct member:
             // trust_region.relaxed_radius_scaling = 0.9; // default
@@ -430,7 +430,7 @@ Using ``planar_filter_step``
             # Inside the solver loop, replace:
             #   trust_region.filter_step(mesh, x, dx)
             # with:
-            trust_region.planar_filter_step(mesh, x, dx, collisions)
+            trust_region.planar_filter_step(mesh, x, dx)
 
             # Optionally tune the relaxation ratio via the struct member:
             # trust_region.relaxed_radius_scaling = 0.9  # default
@@ -462,7 +462,7 @@ Full Optimization Loop with Planar-DAT
                 Eigen::MatrixXd dx = compute_search_direction(x, ...);
 
                 // Filter step using Planar-DAT (direction-aware truncation)
-                trust_region.planar_filter_step(mesh, x, dx, collisions);
+                trust_region.planar_filter_step(mesh, x, dx);
 
                 // Update positions
                 x += dx;
@@ -492,7 +492,7 @@ Full Optimization Loop with Planar-DAT
                 dx = compute_search_direction(x, ...)
 
                 # Filter step using Planar-DAT (direction-aware truncation)
-                trust_region.planar_filter_step(mesh, x, dx, collisions)
+                trust_region.planar_filter_step(mesh, x, dx)
 
                 # Update positions
                 x += dx

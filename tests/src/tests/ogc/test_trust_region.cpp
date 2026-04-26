@@ -216,7 +216,7 @@ TEST_CASE(
     // exceeds the trust region inflation radius (2 * dhat = 1.2).
     dx.row(3) << 0.0, 2.0, 0.0;
 
-    tr.planar_filter_step(mesh, x, dx, collisions);
+    tr.planar_filter_step(mesh, x, dx);
 
     // The planar constraint leaves the step alone (moving away), but the
     // isotropic trust-region fallback clamps the displacement to the
@@ -260,7 +260,7 @@ TEST_CASE(
     // (2 * dhat = 1.2).
     dx.row(3) << 2.0, 0.0, 0.0;
 
-    tr.planar_filter_step(mesh, x, dx, collisions);
+    tr.planar_filter_step(mesh, x, dx);
 
     // Tangential motion: Planar-DAT does not truncate, but the isotropic
     // trust-region fallback caps the displacement to the inflation radius.
@@ -300,7 +300,7 @@ TEST_CASE(
     // Vertex 3 approaches the triangle (would overshoot if not truncated)
     dx.row(3) << 0.0, -0.6, 0.0;
 
-    tr.planar_filter_step(mesh, x, dx, collisions);
+    tr.planar_filter_step(mesh, x, dx);
 
     // After truncation the vertex must still be above y=0 (no penetration)
     const double final_y = x(3, 1) + dx(3, 1);
@@ -346,7 +346,7 @@ TEST_CASE(
     // inflation radius → full step preserved
     Eigen::MatrixXd dx_planar = Eigen::MatrixXd::Zero(V.rows(), 3);
     dx_planar.row(3) << 0.0, 0.3, 0.0;
-    tr.planar_filter_step(mesh, x, dx_planar, collisions);
+    tr.planar_filter_step(mesh, x, dx_planar);
     CHECK(dx_planar(3, 1) == Catch::Approx(0.3));
 
     // Isotropic: clips to trust_region_radii(3) < 0.3
@@ -429,7 +429,7 @@ TEST_CASE(
     dx.row(2) << 0.0, -0.4, 0.0;
     dx.row(3) << 0.0, -0.4, 0.0;
 
-    tr.planar_filter_step(mesh, x, dx, collisions);
+    tr.planar_filter_step(mesh, x, dx);
 
     // After truncation, no penetration: gap between edges must remain > 0
     const double ea_y = x(0, 1) + dx(0, 1); // both ea vertices move same
@@ -454,7 +454,7 @@ TEST_CASE(
         ipc::NormalCollisions::CollisionSetType::OGC);
     tr.update(mesh, V, collisions);
 
-    REQUIRE(!collisions.vv_collisions.empty());
+    REQUIRE(!tr.candidates.vv_candidates.empty());
 
     Eigen::MatrixXd x = V;
     Eigen::MatrixXd dx = Eigen::MatrixXd::Zero(V.rows(), 3);
@@ -462,7 +462,7 @@ TEST_CASE(
     dx.row(0) << 0.0, 0.4, 0.0;
     dx.row(1) << 0.0, -0.4, 0.0;
 
-    tr.planar_filter_step(mesh, x, dx, collisions);
+    tr.planar_filter_step(mesh, x, dx);
 
     // After truncation gap must remain positive
     const double final_gap = (x(1, 1) + dx(1, 1)) - (x(0, 1) + dx(0, 1));
@@ -486,14 +486,14 @@ TEST_CASE(
         ipc::NormalCollisions::CollisionSetType::OGC);
     tr.update(mesh, V, collisions);
 
-    REQUIRE(!collisions.ev_collisions.empty());
+    REQUIRE(!tr.candidates.ev_candidates.empty());
 
     Eigen::MatrixXd x = V;
     Eigen::MatrixXd dx = Eigen::MatrixXd::Zero(V.rows(), 3);
     // Vertex approaches edge (downward), edge stationary
     dx.row(2) << 0.0, -0.6, 0.0;
 
-    tr.planar_filter_step(mesh, x, dx, collisions);
+    tr.planar_filter_step(mesh, x, dx);
 
     // After truncation vertex must remain above edge (y > 0)
     const double final_y = x(2, 1) + dx(2, 1);
@@ -505,7 +505,7 @@ TEST_CASE(
     // constraint (only the isotropic fallback applies if needed)
     Eigen::MatrixXd dx_tan = Eigen::MatrixXd::Zero(V.rows(), 3);
     dx_tan.row(2) << 0.3, 0.0, 0.0; // tangential (within inflation radius)
-    tr.planar_filter_step(mesh, x, dx_tan, collisions);
+    tr.planar_filter_step(mesh, x, dx_tan);
     CHECK(dx_tan(2, 0) == Catch::Approx(0.3)); // not truncated
 }
 
@@ -530,7 +530,7 @@ TEST_CASE(
         ipc::NormalCollisions::CollisionSetType::OGC);
     tr.update(mesh, V, collisions);
 
-    REQUIRE(!collisions.fv_collisions.empty());
+    REQUIRE(!tr.candidates.fv_candidates.empty());
 
     Eigen::MatrixXd x = V;
     Eigen::MatrixXd dx = Eigen::MatrixXd::Zero(V.rows(), 3);
@@ -544,7 +544,7 @@ TEST_CASE(
     dx.row(2) << 0.0, -retreat, 0.0;
     dx.row(3) << 0.0, -approach, 0.0; // P towards triangle
 
-    tr.planar_filter_step(mesh, x, dx, collisions);
+    tr.planar_filter_step(mesh, x, dx);
 
     // A, B, C move away from the division plane (t_i < 0) → no truncation.
     CHECK(dx(0, 1) == Catch::Approx(-retreat));
@@ -574,7 +574,7 @@ TEST_CASE(
         ipc::NormalCollisions::CollisionSetType::OGC);
     tr.update(mesh, V, collisions);
 
-    REQUIRE(!collisions.ev_collisions.empty());
+    REQUIRE(!tr.candidates.ev_candidates.empty());
 
     Eigen::MatrixXd x = V;
     Eigen::MatrixXd dx = Eigen::MatrixXd::Zero(V.rows(), 2);
@@ -582,7 +582,7 @@ TEST_CASE(
     dx.row(2) << 0.0, -0.6;
 
     // Must not crash and must truncate the approaching vertex
-    tr.planar_filter_step(mesh, x, dx, collisions);
+    tr.planar_filter_step(mesh, x, dx);
 
     const double final_y = x(2, 1) + dx(2, 1);
     CHECK(final_y > 0.0);

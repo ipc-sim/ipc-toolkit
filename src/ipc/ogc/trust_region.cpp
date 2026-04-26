@@ -1,8 +1,5 @@
 #include "trust_region.hpp"
 
-#include <ipc/distance/distance_type.hpp>
-#include <ipc/tangent/closest_point.hpp>
-
 namespace ipc::ogc {
 
 TrustRegion::TrustRegion(double dhat) : trust_region_inflation_radius(2 * dhat)
@@ -81,15 +78,14 @@ void TrustRegion::update(
         vertices = mesh.vertices(x);
     }
 
-    Candidates trust_region_candidates;
-    trust_region_candidates.build(
+    candidates.build(
         mesh, vertices, trust_region_inflation_radius + min_distance,
         broad_phase);
 
     // Compute the trust region distances for the reduced set of collision
     // vertices.
     Eigen::VectorXd reduced_trust_region_radii =
-        trust_region_candidates.compute_per_vertex_safe_distances(
+        candidates.compute_per_vertex_safe_distances(
             mesh, vertices, trust_region_inflation_radius, min_distance);
 
     // Use < half the safe distance to account for double sided contact
@@ -110,7 +106,7 @@ void TrustRegion::update(
     // NOTE: Use the trust_region_inflation_radius to ensure that the
     // collisions include all pairs until this function is called again.
     collisions.build(
-        trust_region_candidates, mesh, vertices, trust_region_inflation_radius,
+        candidates, mesh, vertices, trust_region_inflation_radius,
         min_distance);
 }
 
@@ -209,65 +205,15 @@ void TrustRegion::filter_step(
     }
 }
 
-namespace {
-
-    /// @brief Compute the closest points between two edges given their distance type.
-    /// @return Pair (c_e, c_e') of closest points on ea and eb respectively.
-    std::pair<VectorMax3d, VectorMax3d> edge_edge_closest_points(
-        const VectorMax3d& ea0,
-        const VectorMax3d& ea1,
-        const VectorMax3d& eb0,
-        const VectorMax3d& eb1,
-        const ipc::EdgeEdgeDistanceType dtype)
-    {
-        switch (dtype) {
-        case ipc::EdgeEdgeDistanceType::EA0_EB0:
-            return { ea0, eb0 };
-        case ipc::EdgeEdgeDistanceType::EA0_EB1:
-            return { ea0, eb1 };
-        case ipc::EdgeEdgeDistanceType::EA1_EB0:
-            return { ea1, eb0 };
-        case ipc::EdgeEdgeDistanceType::EA1_EB1:
-            return { ea1, eb1 };
-        case ipc::EdgeEdgeDistanceType::EA_EB0: {
-            const double alpha = ipc::point_edge_closest_point(eb0, ea0, ea1);
-            return { alpha * (ea1 - ea0) + ea0, eb0 };
-        }
-        case ipc::EdgeEdgeDistanceType::EA_EB1: {
-            const double alpha = ipc::point_edge_closest_point(eb1, ea0, ea1);
-            return { alpha * (ea1 - ea0) + ea0, eb1 };
-        }
-        case ipc::EdgeEdgeDistanceType::EA0_EB: {
-            const double beta = ipc::point_edge_closest_point(ea0, eb0, eb1);
-            return { ea0, beta * (eb1 - eb0) + eb0 };
-        }
-        case ipc::EdgeEdgeDistanceType::EA1_EB: {
-            const double beta = ipc::point_edge_closest_point(ea1, eb0, eb1);
-            return { ea1, beta * (eb1 - eb0) + eb0 };
-        }
-        case ipc::EdgeEdgeDistanceType::EA_EB: {
-            const Eigen::Vector2d params =
-                ipc::edge_edge_closest_point(ea0, ea1, eb0, eb1);
-            return {
-                params[0] * (ea1 - ea0) + ea0,
-                params[1] * (eb1 - eb0) + eb0,
-            };
-        }
-        default:
-            assert(false && "unexpected EdgeEdgeDistanceType");
-            return { ea0, eb0 }; // unreachable
-        }
-    }
-} // anonymous namespace
-
 void TrustRegion::planar_filter_step(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> x,
-    Eigen::Ref<Eigen::MatrixXd> dx,
-    const NormalCollisions& collisions)
+    Eigen::Ref<Eigen::MatrixXd> dx)
 {
     assert(x.rows() == dx.rows() && x.cols() == dx.cols());
     assert(relaxed_radius_scaling > 0 && relaxed_radius_scaling < 1);
+
+    const int d = x.cols();
 
     // Collision mesh vertex positions (may differ from x if hidden DOFs exist)
     const bool has_hidden_dofs = x.rows() != mesh.num_vertices();
@@ -288,212 +234,57 @@ void TrustRegion::planar_filter_step(
     // Per-vertex truncation ratios (1 = no truncation)
     Eigen::VectorXd t_v = Eigen::VectorXd::Ones(x.rows());
 
-    // ---- Face-Vertex Collisions ----------------------------------------
-    // FaceVertexNormalCollision always has known_dtype() == P_T (interior),
-    // guaranteed by the OGC feasible region filter during build().
-    for (const auto& fv : collisions.fv_collisions) {
-        const auto ids = fv.vertex_ids(mesh.edges(), mesh.faces());
-        // ids = [vi, f0i, f1i, f2i] — collision mesh indices
+    for (size_t i = 0; i < candidates.size(); ++i) {
+        const CollisionStencil& c = candidates[i];
+        const auto ids = c.vertex_ids(mesh.edges(), mesh.faces());
+        const int nv = c.num_vertices();
+        const VectorMax12d pos = c.dof(vertices, mesh.edges(), mesh.faces());
 
-        const Eigen::Vector3d x_v = vertices.row(ids[0]);
-        const Eigen::Vector3d x_a = vertices.row(ids[1]);
-        const Eigen::Vector3d x_b = vertices.row(ids[2]);
-        const Eigen::Vector3d x_c = vertices.row(ids[3]);
-
-        // Closest point on triangle (t0=x_a, t1=x_b, t2=x_c) to vertex x_v.
-        // Returns barycentric (u, v); reconstruct as (1-u-v)*x_a + u*x_b +
-        // v*x_c.
-        const Eigen::Vector2d uv =
-            point_triangle_closest_point(x_v, x_a, x_b, x_c);
-        const Eigen::Vector3d c_vt =
-            x_a + uv[0] * (x_b - x_a) + uv[1] * (x_c - x_a);
-
-        // Normal pointing from triangle toward vertex
-        const Eigen::Vector3d diff = x_v - c_vt;
-        const double dist = diff.norm();
+        // dv = c_first − c_second; positive coeffs → first primitive
+        VectorMax4d coeffs;
+        const VectorMax3d dv = c.compute_distance_vector(pos, coeffs);
+        const double dist = dv.norm();
         if (dist < 1e-10) {
-            continue; // Degenerate (primitives coincident) — skip pair
+            continue;
         }
-        const Eigen::Vector3d n = diff / dist;
 
-        // Full-mesh IDs for indexing into dx
-        const int fid_v = to_full(ids[0]);
-        const int fid_a = to_full(ids[1]);
-        const int fid_b = to_full(ids[2]);
-        const int fid_c = to_full(ids[3]);
+        const VectorMax3d n = dv / dist;
 
-        const Eigen::Vector3d dx_v = dx.row(fid_v);
-        const Eigen::Vector3d dx_a = dx.row(fid_a);
-        const Eigen::Vector3d dx_b = dx.row(fid_b);
-        const Eigen::Vector3d dx_c = dx.row(fid_c);
+        VectorMax3d c_first = VectorMax3d::Zero(d);
+        VectorMax3d c_second = VectorMax3d::Zero(d);
+        double delta_first = 0, delta_second = 0;
 
-        // Approach speeds (Eq. 9–10 in DAT paper)
-        // δ_v: how fast vertex is approaching triangle (negative n-component)
-        const double delta_v = std::max(-dx_v.dot(n), 0.0);
-        // δ_t: max approach speed of any triangle vertex toward vertex (Eq. 10)
-        const double delta_t =
-            std::max({ dx_a.dot(n), dx_b.dot(n), dx_c.dot(n), 0.0 });
-
-        // Adaptive λ: allocate gap proportional to approach speeds (Eq. 11)
-        const double lambda = (delta_v == 0.0 && delta_t == 0.0)
-            ? 0.5
-            : delta_t / (delta_t + delta_v);
-
-        // Division plane point: interpolated between c_vt and x_v
-        const Eigen::Vector3d p = c_vt + lambda * diff;
-
-        // Truncate all four vertices using this division plane
-        t_v[fid_v] =
-            std::min(t_v[fid_v], planar_truncation_ratio(x_v, dx_v, n, p));
-        t_v[fid_a] =
-            std::min(t_v[fid_a], planar_truncation_ratio(x_a, dx_a, n, p));
-        t_v[fid_b] =
-            std::min(t_v[fid_b], planar_truncation_ratio(x_b, dx_b, n, p));
-        t_v[fid_c] =
-            std::min(t_v[fid_c], planar_truncation_ratio(x_c, dx_c, n, p));
-    }
-
-    // ---- Edge-Edge Collisions ------------------------------------------
-    for (const auto& ee : collisions.ee_collisions) {
-        const auto ids = ee.vertex_ids(mesh.edges(), mesh.faces());
-        // ids = [ea0i, ea1i, eb0i, eb1i] — collision mesh indices
-
-        const Eigen::Vector3d ea0 = vertices.row(ids[0]);
-        const Eigen::Vector3d ea1 = vertices.row(ids[1]);
-        const Eigen::Vector3d eb0 = vertices.row(ids[2]);
-        const Eigen::Vector3d eb1 = vertices.row(ids[3]);
-
-        // Closest points on each edge (dispatch on stored distance type)
-        const auto [c_e, c_ep] =
-            edge_edge_closest_points(ea0, ea1, eb0, eb1, ee.known_dtype());
-
-        // Normal pointing from ea toward eb
-        const Eigen::Vector3d diff = c_ep - c_e;
-        const double dist = diff.norm();
-        if (dist < 1e-10) {
-            continue; // Degenerate — skip pair
+        for (int j = 0; j < nv; ++j) {
+            const int fid = to_full(ids[j]);
+            const VectorMax3d xj = pos.segment(j * d, d);
+            const VectorMax3d dxj = dx.row(fid);
+            if (coeffs[j] > 0) {
+                c_first += coeffs[j] * xj;
+                delta_first = std::max(delta_first, -dxj.dot(n));
+            } else if (coeffs[j] < 0) {
+                c_second -= coeffs[j] * xj;
+                delta_second = std::max(delta_second, dxj.dot(n));
+            }
         }
-        const Eigen::Vector3d n = diff / dist;
+        delta_first = std::max(delta_first, 0.0);
+        delta_second = std::max(delta_second, 0.0);
 
-        const int fid_ea0 = to_full(ids[0]);
-        const int fid_ea1 = to_full(ids[1]);
-        const int fid_eb0 = to_full(ids[2]);
-        const int fid_eb1 = to_full(ids[3]);
-
-        const Eigen::Vector3d dx_ea0 = dx.row(fid_ea0);
-        const Eigen::Vector3d dx_ea1 = dx.row(fid_ea1);
-        const Eigen::Vector3d dx_eb0 = dx.row(fid_eb0);
-        const Eigen::Vector3d dx_eb1 = dx.row(fid_eb1);
-
-        // δ_e: max approach speed of ea toward eb in +n direction (Eq. 12)
-        const double delta_e = std::max({ dx_ea0.dot(n), dx_ea1.dot(n), 0.0 });
-        // δ_e': max approach speed of eb toward ea in −n direction (Eq. 12)
-        const double delta_ep =
-            std::max({ -dx_eb0.dot(n), -dx_eb1.dot(n), 0.0 });
-
-        // Adaptive λ (Eq. 12 in DAT paper)
-        const double lambda = (delta_e == 0.0 && delta_ep == 0.0)
+        const double lambda = (delta_first == 0 && delta_second == 0)
             ? 0.5
-            : delta_ep / (delta_e + delta_ep);
+            : delta_second / (delta_first + delta_second);
 
-        // Division plane point: interpolated between c_e and c_ep
-        const Eigen::Vector3d p = c_e + lambda * diff;
+        // Division plane: p = c_second + λ·dv  (λ=0 → plane at second prim,
+        // λ=1 → plane at first prim).
+        const VectorMax3d p = c_second + lambda * dv;
 
-        // Truncate all four edge vertices
-        t_v[fid_ea0] =
-            std::min(t_v[fid_ea0], planar_truncation_ratio(ea0, dx_ea0, n, p));
-        t_v[fid_ea1] =
-            std::min(t_v[fid_ea1], planar_truncation_ratio(ea1, dx_ea1, n, p));
-        t_v[fid_eb0] =
-            std::min(t_v[fid_eb0], planar_truncation_ratio(eb0, dx_eb0, n, p));
-        t_v[fid_eb1] =
-            std::min(t_v[fid_eb1], planar_truncation_ratio(eb1, dx_eb1, n, p));
-    }
-
-    // ---- Edge-Vertex Collisions ----------------------------------------
-    // ids = [vi, e0i, e1i, -1] — collision mesh indices
-    for (const auto& ev : collisions.ev_collisions) {
-        const auto ids = ev.vertex_ids(mesh.edges(), mesh.faces());
-
-        const VectorMax3d x_v = vertices.row(ids[0]);
-        const VectorMax3d x_e0 = vertices.row(ids[1]);
-        const VectorMax3d x_e1 = vertices.row(ids[2]);
-
-        const double alpha = point_edge_closest_point(x_v, x_e0, x_e1);
-        assert(-1e-8 <= alpha && alpha <= (1 + 1e-8));
-        const VectorMax3d c_e = x_e0 + alpha * (x_e1 - x_e0);
-
-        // Normal pointing from edge toward vertex
-        const VectorMax3d diff = x_v - c_e;
-        const double dist = diff.norm();
-        if (dist < 1e-10) {
-            continue; // Degenerate — skip pair
+        for (int j = 0; j < nv; ++j) {
+            assert(ids[j] >= 0); // All candidates should be valid vertices
+            const int fid = to_full(ids[j]);
+            const VectorMax3d xj = pos.segment(j * d, d);
+            const VectorMax3d dxj = dx.row(fid);
+            t_v[fid] =
+                std::min(t_v[fid], planar_truncation_ratio(xj, dxj, n, p));
         }
-        const VectorMax3d n = diff / dist;
-
-        const int fid_v = to_full(ids[0]);
-        const int fid_e0 = to_full(ids[1]);
-        const int fid_e1 = to_full(ids[2]);
-
-        const VectorMax3d dx_v = dx.row(fid_v);
-        const VectorMax3d dx_e0 = dx.row(fid_e0);
-        const VectorMax3d dx_e1 = dx.row(fid_e1);
-
-        // δ_v: vertex approaching edge (moving in −n direction)
-        const double delta_v = std::max(-dx_v.dot(n), 0.0);
-        // δ_e: max approach speed of any edge vertex toward vertex (in +n)
-        const double delta_e = std::max({ dx_e0.dot(n), dx_e1.dot(n), 0.0 });
-
-        const double lambda = (delta_v == 0.0 && delta_e == 0.0)
-            ? 0.5
-            : delta_e / (delta_e + delta_v);
-
-        const VectorMax3d p = c_e + lambda * diff;
-
-        t_v[fid_v] =
-            std::min(t_v[fid_v], planar_truncation_ratio(x_v, dx_v, n, p));
-        t_v[fid_e0] =
-            std::min(t_v[fid_e0], planar_truncation_ratio(x_e0, dx_e0, n, p));
-        t_v[fid_e1] =
-            std::min(t_v[fid_e1], planar_truncation_ratio(x_e1, dx_e1, n, p));
-    }
-
-    // ---- Vertex-Vertex Collisions --------------------------------------
-    // ids = [v0i, v1i, -1, -1] — collision mesh indices
-    for (const auto& vv : collisions.vv_collisions) {
-        const auto ids = vv.vertex_ids(mesh.edges(), mesh.faces());
-
-        const VectorMax3d x_a = vertices.row(ids[0]);
-        const VectorMax3d x_b = vertices.row(ids[1]);
-
-        // Normal pointing from v0 toward v1
-        const VectorMax3d diff = x_b - x_a;
-        const double dist = diff.norm();
-        if (dist < 1e-10) {
-            continue; // Degenerate — skip pair
-        }
-        const VectorMax3d n = diff / dist;
-
-        const int fid_a = to_full(ids[0]);
-        const int fid_b = to_full(ids[1]);
-
-        const VectorMax3d dx_a = dx.row(fid_a);
-        const VectorMax3d dx_b = dx.row(fid_b);
-
-        // δ_a: v0 approaching v1 (moving in +n); δ_b: v1 approaching v0 (-n)
-        const double delta_a = std::max(dx_a.dot(n), 0.0);
-        const double delta_b = std::max(-dx_b.dot(n), 0.0);
-
-        const double lambda = (delta_a == 0.0 && delta_b == 0.0)
-            ? 0.5
-            : delta_b / (delta_a + delta_b);
-
-        const VectorMax3d p = x_a + lambda * diff;
-
-        t_v[fid_a] =
-            std::min(t_v[fid_a], planar_truncation_ratio(x_a, dx_a, n, p));
-        t_v[fid_b] =
-            std::min(t_v[fid_b], planar_truncation_ratio(x_b, dx_b, n, p));
     }
 
     // ---- Isotropic Fallback --------------------------------------------

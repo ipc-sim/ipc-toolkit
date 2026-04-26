@@ -86,8 +86,9 @@ void define_trust_region(py::module_& m)
             R"ipc_Qu8mg5v7(
             Filter the optimization step dx using Planar-DAT (Divide and Truncate).
 
-            For each collision pair, computes a direction-aware division plane
-            and truncates only the component of displacement toward that plane.
+            For each collision candidate (stored in ``candidates`` by the last
+            call to ``update``), computes a direction-aware division plane and
+            truncates only the component of displacement toward that plane.
             This eliminates the artificial damping and deadlock of the isotropic
             ``filter_step`` while retaining the penetration-free guarantee.
 
@@ -98,9 +99,8 @@ void define_trust_region(py::module_& m)
                 mesh: The collision mesh.
                 x: Current vertex positions.
                 dx: Proposed vertex displacements (modified in-place).
-                collisions: Active collision pairs (e.g. from ``update()``).
             )ipc_Qu8mg5v7",
-            "mesh"_a, "x"_a, "dx"_a, "collisions"_a)
+            "mesh"_a, "x"_a, "dx"_a)
         .def_readwrite(
             "trust_region_centers", &ogc::TrustRegion::trust_region_centers,
             "Centers of the trust regions for each vertex.")
@@ -138,5 +138,8 @@ void define_trust_region(py::module_& m)
         .def_readwrite(
             "should_update_trust_region",
             &ogc::TrustRegion::should_update_trust_region,
-            "If true, the trust region will be updated on the next call to ``update_if_needed``.");
+            "If true, the trust region will be updated on the next call to ``update_if_needed``.")
+        .def_readwrite(
+            "candidates", &ogc::TrustRegion::candidates,
+            "Collision candidates used for Planar-DAT. Updated by ``update()``.");
 }

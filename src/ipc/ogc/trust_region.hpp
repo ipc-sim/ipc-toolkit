@@ -14,6 +14,10 @@ struct TrustRegion {
     /// @brief Trust region radii for each vertex.
     Eigen::VectorXd trust_region_radii;
 
+    /// @brief Collision candidates used for Planar-DAT.
+    /// Updated by update(); passed to planar_filter_step().
+    Candidates candidates;
+
     /// @brief Scaling factor for relaxing the trust region radii.
     /// @note This should be in (0, 1).
     /// @note This is referred to as \f\(2\gamma_p\f\) in the paper.
@@ -100,10 +104,14 @@ struct TrustRegion {
 
     /// @brief Filter the optimization step dx using Planar-DAT (Divide and Truncate).
     ///
-    /// For each collision pair, computes a direction-aware division plane and
-    /// truncates only the component of displacement toward that plane. This
+    /// For each collision candidate, computes a direction-aware division plane
+    /// and truncates only the component of displacement toward that plane. This
     /// eliminates the artificial damping and deadlock of the isotropic
     /// filter_step while retaining the penetration-free guarantee.
+    ///
+    /// Uses CollisionStencil::compute_distance_vector() to obtain the contact
+    /// normal and closest-point coefficients in a single polymorphic call,
+    /// avoiding stale distance-type decompositions from NormalCollisions.
     ///
     /// @see "Divide and Truncate: A Penetration and Inversion Free Framework
     ///      for Coupled Multi-physics Systems" [ACM SIGGRAPH 2026]
@@ -111,12 +119,10 @@ struct TrustRegion {
     /// @param mesh The collision mesh.
     /// @param x Current vertex positions.
     /// @param dx Proposed vertex displacements (modified in-place).
-    /// @param collisions Active collision pairs (e.g. from update()).
     void planar_filter_step(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> x,
-        Eigen::Ref<Eigen::MatrixXd> dx,
-        const NormalCollisions& collisions);
+        Eigen::Ref<Eigen::MatrixXd> dx);
 
 private:
     /// @brief Compute the truncation ratio for a vertex given a division plane.
