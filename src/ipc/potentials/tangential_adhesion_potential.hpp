@@ -24,6 +24,11 @@ public:
         m_eps_a = eps_a;
     }
 
+    std::string name() const override
+    {
+        return "TangentialAdhesionPotential";
+    }
+
 protected:
     /// @brief Compute the value of the ∫ μ(y) f₁(y) dy, where f₁ is the first derivative of the smooth mollifier.
     /// @param x The tangential relative speed.

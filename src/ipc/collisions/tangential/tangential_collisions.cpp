@@ -8,6 +8,8 @@
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 
+#include <ipc/utils/profiler.hpp>
+
 #include <stdexcept> // std::out_of_range
 #include <tuple>
 
@@ -69,6 +71,7 @@ void TangentialCollisions::build(
 {
     assert(mu_s.size() == vertices.rows());
     assert(mu_k.size() == vertices.rows());
+    IPC_TOOLKIT_PROFILE_BLOCK("TangentialCollisions::build");
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
@@ -180,6 +183,7 @@ void TangentialCollisions::build(
 {
     assert(mu_k.size() == vertices.rows());
     assert(mu_s.size() == vertices.rows());
+    IPC_TOOLKIT_PROFILE_BLOCK("TangentialCollisions::build(smooth)");
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();

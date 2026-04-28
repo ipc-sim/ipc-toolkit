@@ -1,6 +1,17 @@
-#include <ipc/utils/profiler.hpp>
+#include <tests/config.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_PROFILER
+
+#include <ipc/ipc.hpp>
+#include <ipc/ccd/additive_ccd.hpp>
+#include <ipc/collisions/normal/normal_collisions.hpp>
+#include <ipc/collisions/tangential/tangential_collisions.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/potentials/friction_potential.hpp>
+#include <ipc/utils/profiler.hpp>
+
+#include <igl/edges.h>
+#include <igl/read_triangle_mesh.h>
 
 #include <catch2/catch_all.hpp>
 #include <tbb/parallel_for.h>
@@ -83,6 +94,73 @@ TEST_CASE("Profiler", "[profiler]")
     nlohmann::json block4 = block3.at("Block 4");
     CHECK(block4.size() == 3); // count, time_ms
     CHECK(block4["count"].get<int>() == num_threads);
+}
+
+TEST_CASE("Profile full pipeline", "[!benchmark][profiler]")
+{
+    // const std::string mesh_t0 = "cloth_ball92.ply";
+    // const std::string mesh_t1 = "cloth_ball93.ply";
+    const std::string mesh_t0 = "rod-twist/3036.ply";
+    const std::string mesh_t1 = "rod-twist/3037.ply";
+
+    Eigen::MatrixXd V0_full, V1_full;
+    Eigen::MatrixXi F0, F1;
+
+    const bool loaded_t0 = igl::read_triangle_mesh(
+        (ipc::tests::DATA_DIR / mesh_t0).string(), V0_full, F0);
+    const bool loaded_t1 = igl::read_triangle_mesh(
+        (ipc::tests::DATA_DIR / mesh_t1).string(), V1_full, F1);
+
+    if (!loaded_t0 || !loaded_t1) {
+        WARN("Skipping profiler test: puffer-ball data not found");
+        return;
+    }
+
+    REQUIRE(F0.rows() == F1.rows());
+    REQUIRE(V0_full.rows() == V1_full.rows());
+
+    Eigen::MatrixXi E;
+    igl::edges(F0, E);
+
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0_full, E, F0);
+    Eigen::MatrixXd V0 = mesh.vertices(V0_full);
+    Eigen::MatrixXd V1 = mesh.vertices(V1_full);
+
+    profiler().reset();
+
+    const double dhat = 1e-3;
+    const double mu = 0.3;
+    const double eps_v = 1e-3;
+
+    // CCD step size
+    const double step = compute_collision_free_stepsize(
+        mesh, V0, V1, 0.0, nullptr, AdditiveCCD());
+
+    // Normal collisions and barrier potential
+    NormalCollisions collisions;
+    collisions.build(mesh, V0, dhat);
+
+    BarrierPotential bp(dhat, /*stiffness=*/1e4);
+    bp(collisions, mesh, V0);
+    bp.gradient(collisions, mesh, V0);
+    bp.hessian(collisions, mesh, V0);
+
+    // Tangential (friction) collisions and friction potential
+    TangentialCollisions tangential;
+    tangential.build(mesh, V0, collisions, bp, mu);
+
+    FrictionPotential fp(eps_v);
+    fp(tangential, mesh, V0);
+    fp.gradient(tangential, mesh, V0);
+    fp.hessian(tangential, mesh, V0);
+
+    const std::string output = "profiler_output.csv";
+    profiler().write_csv(output);
+
+    logger().info(
+        "Profiler output written to: {}\n"
+        "  vertices: {}, faces: {}, collisions: {}, step_size: {:.6g}\n",
+        output, V0.rows(), F0.rows(), collisions.size(), step);
 }
 
 #endif

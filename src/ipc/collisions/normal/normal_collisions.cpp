@@ -3,6 +3,8 @@
 #include <ipc/collisions/normal/normal_collisions_builder.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
+#include <ipc/utils/profiler.hpp>
+
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
@@ -24,6 +26,7 @@ void NormalCollisions::build(
     BroadPhase* broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
+    IPC_TOOLKIT_PROFILE_BLOCK("NormalCollisions::build");
 
     const double inflation_radius = 0.5 * (dhat + dmin);
 
@@ -41,6 +44,7 @@ void NormalCollisions::build(
     const double dmin)
 {
     assert(vertices.rows() == mesh.num_vertices());
+    IPC_TOOLKIT_PROFILE_BLOCK("NormalCollisions::build(candidates)");
 
     clear();
 
