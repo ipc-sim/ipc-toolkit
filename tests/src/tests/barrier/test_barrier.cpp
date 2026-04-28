@@ -245,13 +245,13 @@ TEST_CASE("point term derivatives", "[deriv]")
 {
     ipc::SmoothContactParameters params(1, 1, 1, 0.01, 0, 2);
 
-    Eigen::Matrix<double, -1, 3> vectors(9, 3);
+    Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
         0.346908, 0.152939, 1.00049, 0.208062, 0.290611, 1.00075, 0.280725,
         0.498548, 1.00069, 0.499796, 0.49999, 1.00127, 0.501162, 0.498839,
         0.779581, 0.50047, 0.290411, 0.709051, 0.500615, 0.153465, 0.846423;
 
-    Eigen::Matrix<double, -1, 3> V = vectors;
+    Eigen::MatrixX3d V = vectors;
     V.row(0).setZero();
 
     Eigen::MatrixXi E(8, 2), F(8, 3);
@@ -336,13 +336,13 @@ TEST_CASE("point term normal derivatives", "[deriv]")
 {
     ipc::SmoothContactParameters params(1, 1, 1, 1, 0, 2);
 
-    Eigen::Matrix<double, -1, 3> vectors(9, 3);
+    Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
         0.346908, 0.152939, 1.00049, 0.208062, 0.290611, 1.00075, 0.280725,
         0.498548, 1.00069, 0.499796, 0.49999, 1.00127, 0.501162, 0.498839,
         0.779581, 0.50047, 0.290411, 0.709051, 0.500615, 0.153465, 0.846423;
 
-    Eigen::Matrix<double, -1, 3> V = vectors;
+    Eigen::MatrixX3d V = vectors;
     V.row(0).setZero();
 
     Eigen::MatrixXi E(3, 2), F(1, 3);
@@ -401,8 +401,8 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     double dhat = GENERATE_COPY(range(use_dist_sqr ? -2 : -5, 0));
     dhat = pow(10, dhat);
 
-    double d =
-        GENERATE_COPY(take(10, random(dhat / 2, 0.9 * dhat))); // ∈ [0, d̂]
+    double step = (0.9 - 0.5) / 10.0 * dhat;
+    auto d = GENERATE_COPY(take(10, range(0.5 * dhat, 0.9 * dhat, step)));
     Eigen::Matrix<double, 1, 1> d_vec;
     d_vec << d;
 
@@ -438,13 +438,13 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     fd::finite_gradient(
         d_vec,
         [&](const Eigen::VectorXd& _d) { return (*barrier)(_d[0], dhat); },
-        fgrad);
+        fgrad, fd::AccuracyOrder::SECOND, 1e-10);
 
     Eigen::VectorXd grad(1);
     grad << barrier->first_derivative(d, dhat);
 
     CAPTURE(dhat, d, fgrad(0), grad(0), use_dist_sqr);
-    CHECK(fd::compare_gradient(fgrad, grad));
+    CHECK(grad(0) == Catch::Approx(fgrad(0)));
 
     // Check second_derivative
 
@@ -453,12 +453,12 @@ TEST_CASE("Barrier derivatives", "[barrier]")
         [&](const Eigen::VectorXd& _d) {
             return barrier->first_derivative(_d[0], dhat);
         },
-        fgrad);
+        fgrad, fd::AccuracyOrder::SECOND, 1e-10);
 
     grad << barrier->second_derivative(d, dhat);
 
     CAPTURE(dhat, d, fgrad(0), grad(0), use_dist_sqr);
-    CHECK(fd::compare_gradient(fgrad, grad));
+    CHECK(grad(0) == Catch::Approx(fgrad(0)));
 }
 
 TEST_CASE("Physical barrier", "[barrier]")

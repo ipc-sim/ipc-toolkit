@@ -85,7 +85,12 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     Eigen::ConstRef<Eigen::Vector3d> eb0,
     Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
-    constexpr double PARALLEL_THRESHOLD = 1.0e-20;
+    // Relative sin² threshold for parallelism: treat edges as parallel when
+    // sin²(θ) < PARALLEL_THRESHOLD, scaled by a*c. This avoids misclassifying
+    // short nearly-collinear coplanar segments (which the old absolute
+    // threshold could not handle) and routes such cases to
+    // edge_edge_parallel_distance_type.
+    constexpr double PARALLEL_THRESHOLD = 2.5e-16;
 
     const Eigen::Vector3d u = ea1 - ea0;
     const Eigen::Vector3d v = eb1 - eb0;
@@ -108,7 +113,7 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     }
 
     // Special handling for parallel edges
-    const double parallel_tolerance = PARALLEL_THRESHOLD * std::max(1.0, a * c);
+    const double parallel_tolerance = PARALLEL_THRESHOLD * a * c;
     if (u.cross(v).squaredNorm() < parallel_tolerance) {
         return edge_edge_parallel_distance_type(ea0, ea1, eb0, eb1);
     }

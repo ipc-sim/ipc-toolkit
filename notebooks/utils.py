@@ -18,9 +18,9 @@ def normalize(x):
 
 
 def jacobian(F, x):
-    J = np.empty((x.size * F.shape[0], F.shape[1]), dtype=object)
+    """Compute the Jacobian of a matrix-valued function F with respect to vector x."""
+    J = np.empty((F.size, x.size), dtype=object)
     for xi in range(x.size):
-        for Fi in range(F.shape[0]):
-            for Fj in range(F.shape[1]):
-                J[xi * F.shape[0] + Fi, Fj] = F[Fi, Fj].diff(x[xi])
+        # Flatten column-major order
+        J[:, xi] = np.array(sympy.Matrix(F).diff(x[xi])).reshape(F.size, order="F")
     return J

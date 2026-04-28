@@ -5,6 +5,8 @@ set(SOURCES
   edge_vertex.hpp
   face_vertex.cpp
   face_vertex.hpp
+  plane_vertex.cpp
+  plane_vertex.hpp
   tangential_collision.cpp
   tangential_collision.hpp
   tangential_collisions.cpp

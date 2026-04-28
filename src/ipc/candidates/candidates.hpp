@@ -4,6 +4,7 @@
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/face_vertex.hpp>
+#include <ipc/candidates/plane_vertex.hpp>
 #include <ipc/candidates/vertex_vertex.hpp>
 
 #include <Eigen/Core>
@@ -215,6 +216,7 @@ public:
     std::vector<EdgeVertexCandidate> ev_candidates;
     std::vector<EdgeEdgeCandidate> ee_candidates;
     std::vector<FaceVertexCandidate> fv_candidates;
+    std::vector<PlaneVertexCandidate> pv_candidates;
 
 private:
     static bool default_is_active(double candidate) { return true; }

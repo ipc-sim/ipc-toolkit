@@ -5,7 +5,6 @@
 
 #include <ipc/broad_phase/sweep_and_prune.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
-#include <ipc/broad_phase/bvh.hpp>
 
 using namespace ipc;
 

@@ -199,13 +199,13 @@ The following code snippet shows an example of how to use interval arithmetic to
 
         .. code-block:: cpp
 
-            #include <ipc/utils/interval.hpp>
+            #include <ipc/math/interval.hpp>
 
             using namespace ipc;
 
             Vector2I position(
-                const VectorMax3d& center,
-                const VectorMax3d& point,
+                Eigen::ConstRef<VectorMax3d> center,
+                Eigen::ConstRef<VectorMax3d> point,
                 const double omega,
                 const Interval& t)
             {

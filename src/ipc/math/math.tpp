@@ -76,28 +76,6 @@ namespace {
     }
 } // namespace
 
-template <typename T> double Math<T>::sign(const double x)
-{
-    if (x > 0) {
-        return 1.;
-    } else {
-        return -1.;
-    }
-}
-
-template <typename T> T Math<T>::abs(const T& x)
-{
-    if (x >= 0) {
-        return x;
-    } else {
-        return -x;
-    }
-}
-
-template <typename T> T Math<T>::sqr(const T& x) { return x * x; }
-
-template <typename T> T Math<T>::cubic(const T& x) { return x * x * x; }
-
 template <typename T> T Math<T>::cubic_spline(const T& x)
 {
     if (abs(x) >= 1) {
@@ -256,13 +234,6 @@ template <typename T> T Math<T>::l_ns(const T& x)
         return T(1.);
     }
     return x;
-}
-
-template <typename T>
-T Math<T>::cross2(
-    Eigen::ConstRef<Eigen::Vector2<T>> a, Eigen::ConstRef<Eigen::Vector2<T>> b)
-{
-    return a[0] * b[1] - a[1] * b[0];
 }
 
 } // namespace ipc

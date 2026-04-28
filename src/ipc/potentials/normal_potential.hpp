@@ -32,6 +32,44 @@ public:
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
+    /// @brief Compute the diagonal of the cumulative Gauss-Newton Hessian of the potential.
+    ///
+    /// Uses the distance-vector formulation to efficiently compute the
+    /// diagonal of the Gauss-Newton Hessian without forming full local 12×12
+    /// Hessian matrices. This is useful as a Jacobi preconditioner for
+    /// iterative solvers.
+    ///
+    /// @note This is a Gauss-Newton approximation (drops derivatives of closest-point coefficients), not the exact Hessian.
+    ///
+    /// @param collisions The set of collisions.
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
+    /// @return The diagonal of the Gauss-Newton Hessian as a vector of size vertices.size().
+    Eigen::VectorXd gauss_newton_hessian_diagonal(
+        const NormalCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
+
+    /// @brief Compute the product pᵀHp for the cumulative Gauss-Newton Hessian of the potential.
+    ///
+    /// Uses the distance-vector formulation to efficiently compute the
+    /// quadratic form pᵀHp without forming full local 12×12 Hessian matrices
+    /// nor the global sparse Hessian. This is useful for nonlinear conjugate
+    /// gradient methods.
+    ///
+    /// @note This is a Gauss-Newton approximation (drops derivatives of closest-point coefficients), not the exact Hessian.
+    ///
+    /// @param collisions The set of collisions.
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
+    /// @param p The direction vector of size vertices.size().
+    /// @return The scalar value pᵀHp.
+    double gauss_newton_hessian_quadratic_form(
+        const NormalCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::VectorXd> p) const;
+
     // -- Single collision methods ---------------------------------------------
 
     /// @brief Compute the potential for a single collision.
@@ -61,40 +99,71 @@ public:
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const override;
 
+    // -- Single collision distance-vector methods -----------------------------
+
+    /// @brief Compute the diagonal of the Gauss-Newton Hessian of the
+    /// potential for a single collision using the distance-vector formulation
+    /// (Eqs. 10-12).
+    ///
+    ///   diag(∂²b/∂x²) ≈ w · [4·f"(d²) · diag((∂dv/∂x·dv)(∂dv/∂x·dv)ᵀ)
+    ///                         + 2·f'(d²) · diag((∂dv/∂x)(∂dv/∂x)ᵀ)]
+    ///
+    /// @note This is a Gauss-Newton approximation, not the exact Hessian diagonal. It drops derivatives of the closest-point coefficients.
+    ///
+    /// @param collision The collision.
+    /// @param positions The collision stencil's positions.
+    /// @return The diagonal of the Gauss-Newton Hessian as a vector of size ndof.
+    VectorMax12d gauss_newton_hessian_diagonal(
+        const NormalCollision& collision,
+        Eigen::ConstRef<VectorMax12d> positions) const;
+
+    /// @brief Compute pᵀHp for a single collision using the Gauss-Newton
+    /// Hessian via the distance-vector formulation (Eqs. 10, 13-14).
+    ///
+    ///   pᵀHp ≈ w · [4·f"(d²) · (pᵀ·∂dv/∂x·dv)² + 2·f'(d²) · ‖pᵀ·∂dv/∂x‖²]
+    ///
+    /// @note This is a Gauss-Newton approximation, not the exact Hessian quadratic form. It drops derivatives of the closest-point coefficients.
+    ///
+    /// @param collision The collision.
+    /// @param positions The collision stencil's positions.
+    /// @param p The local direction vector (size ndof, i.e., the stencil's DOF slice of the global p).
+    /// @return The scalar value pᵀHp (approximate).
+    double gauss_newton_hessian_quadratic_form(
+        const NormalCollision& collision,
+        Eigen::ConstRef<VectorMax12d> positions,
+        Eigen::ConstRef<VectorMax12d> p) const;
+
     /// @brief Compute the shape derivative of the potential for a single collision.
     /// @param[in] collision The collision.
     /// @param[in] vertex_ids The collision stencil's vertex ids.
     /// @param[in] rest_positions The collision stencil's rest positions.
     /// @param[in] positions The collision stencil's positions.
     /// @param[in,out] out Store the triplets of the shape derivative here.
+    /// @param[in] n_total_verts The total number of vertices in the mesh, used for computing global indices in the triplets. See also `local_hessian_to_global_triplets`.
     void shape_derivative(
         const NormalCollision& collision,
         const std::array<index_t, 4>& vertex_ids,
         Eigen::ConstRef<VectorMax12d> rest_positions,
         Eigen::ConstRef<VectorMax12d> positions,
-        std::vector<Eigen::Triplet<double>>& out) const;
+        std::vector<Eigen::Triplet<double>>& out,
+        const int n_total_verts = -1) const;
 
     /// @brief Compute the force magnitude for a collision.
     /// @param distance_squared The squared distance between elements.
     /// @param dmin The minimum distance offset to the barrier.
-    /// @param barrier_stiffness The barrier stiffness.
     /// @return The force magnitude.
-    virtual double force_magnitude(
-        const double distance_squared,
-        const double dmin,
-        const double barrier_stiffness) const = 0;
+    virtual double
+    force_magnitude(const double distance_squared, const double dmin) const = 0;
 
     /// @brief Compute the gradient of the force magnitude for a collision.
     /// @param distance_squared The squared distance between elements.
     /// @param distance_squared_gradient The gradient of the squared distance.
     /// @param dmin The minimum distance offset to the barrier.
-    /// @param barrier_stiffness The stiffness of the barrier.
     /// @return The gradient of the force.
     virtual VectorMax12d force_magnitude_gradient(
         const double distance_squared,
         Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
-        const double dmin,
-        const double barrier_stiffness) const = 0;
+        const double dmin) const = 0;
 
 protected:
     /// @brief Compute the unmollified distance-based potential for a collisions.

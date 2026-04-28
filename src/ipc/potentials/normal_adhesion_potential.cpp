@@ -17,9 +17,7 @@ NormalAdhesionPotential::NormalAdhesionPotential(
 }
 
 double NormalAdhesionPotential::force_magnitude(
-    const double /*distance_squared*/,
-    const double dmin,
-    const double /*barrier_stiffness*/) const
+    const double /*distance_squared*/, const double dmin) const
 {
     const auto [arg_dhat_p, arg_dhat_a, a2] =
         normal_adhesion_potential_args(dmin);
@@ -29,8 +27,7 @@ double NormalAdhesionPotential::force_magnitude(
 VectorMax12d NormalAdhesionPotential::force_magnitude_gradient(
     const double /*distance_squared*/,
     Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
-    const double /*dmin*/,
-    const double /*barrier_stiffness*/) const
+    const double /*dmin*/) const
 {
     // The force magnitude is constant wrt positions, so the gradient is zero.
     return VectorMax12d::Zero(distance_squared_gradient.size());

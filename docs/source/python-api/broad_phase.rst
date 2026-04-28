@@ -29,13 +29,6 @@ Spatial Hash
 
     .. autoclasstoc::
 
-BVH
----
-
-.. autoclass:: ipctk.BVH
-
-    .. autoclasstoc::
-
 LBVH
 ----
 

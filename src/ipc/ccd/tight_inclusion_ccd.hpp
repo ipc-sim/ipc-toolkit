@@ -21,7 +21,7 @@ public:
     /// @brief Construct a new AdditiveCCD object.
     /// @param tolerance The tolerance used for the CCD algorithm.
     /// @param max_iterations The maximum number of iterations for the CCD algorithm.
-    /// @param conservative_rescaling The conservative rescaling of the time of impact.
+    /// @param conservative_rescaling The conservative rescaling value used to avoid taking steps exactly to impact.
     explicit TightInclusionCCD(
         const double tolerance = DEFAULT_TOLERANCE,
         const long max_iterations = DEFAULT_MAX_ITERATIONS,
@@ -124,9 +124,6 @@ public:
 
     /// @brief Maximum number of iterations.
     long max_iterations;
-
-    /// @brief Conservative rescaling of the time of impact.
-    double conservative_rescaling;
 
 private:
     /// @brief Computes the time of impact between two points in 3D using continuous collision detection.

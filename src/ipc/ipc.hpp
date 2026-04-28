@@ -32,6 +32,9 @@ bool is_step_collision_free(
 
 /// @brief Computes a maximal step size that is collision free.
 /// @note Assumes the trajectory is linear.
+/// @note When using SweepAndTiniestQueue broad phase, tolerance and
+///       max_iterations are extracted from TightInclusionCCD if provided,
+///       otherwise defaults are used.
 /// @param mesh The collision mesh.
 /// @param vertices_t0 Vertex vertices at start as rows of a matrix. Assumes vertices_t0 is intersection free.
 /// @param vertices_t1 Surface vertex vertices at end as rows of a matrix.

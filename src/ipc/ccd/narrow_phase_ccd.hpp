@@ -102,6 +102,21 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0) const = 0;
+
+    /// @brief The conservative rescaling value used to avoid taking steps exactly to impact.
+    ///
+    /// This is used to creat a effective minimum distance between objects,
+    /// which can help prevent numerical issues when objects are very close to
+    /// each other.
+    ///
+    /// I.e., min_effective_distance = (1.0 - conservative_rescaling) *
+    /// (initial_distance - min_distance)
+    ///
+    /// If the time of impact is small (e.g. 1e-6), then the CCD will be rerun
+    /// without a effective minimum distance to try to get a more accurate time
+    /// of impact. In this case, the conservative rescaling will be used to
+    /// scale the time of impact to avoid taking steps exactly to impact.
+    double conservative_rescaling;
 };
 
 } // namespace ipc

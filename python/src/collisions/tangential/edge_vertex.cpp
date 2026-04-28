@@ -13,7 +13,6 @@ void define_edge_vertex_tangential_collision(py::module_& m)
         .def(
             py::init<
                 const EdgeVertexNormalCollision&, Eigen::ConstRef<VectorMax12d>,
-                const NormalPotential&, const double>(),
-            "collision"_a, "positions"_a, "normal_potential"_a,
-            "normal_stiffness"_a);
+                const NormalPotential&>(),
+            "collision"_a, "positions"_a, "normal_potential"_a);
 }

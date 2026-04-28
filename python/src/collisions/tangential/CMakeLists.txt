@@ -2,6 +2,7 @@ set(SOURCES
   edge_edge.cpp
   edge_vertex.cpp
   face_vertex.cpp
+  plane_vertex.cpp
   tangential_collision.cpp
   tangential_collisions.cpp
   vertex_vertex.cpp

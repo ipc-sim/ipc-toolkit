@@ -37,7 +37,6 @@ public:
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
     /// @param normal_potential Normal potential (used for normal force magnitude).
-    /// @param normal_stiffness Normal stiffness (used for normal force magnitude).
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @param no_mu whether to not multiply by mu
     /// @return The friction force.
@@ -48,7 +47,6 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
         Eigen::ConstRef<Eigen::MatrixXd> velocities,
         const NormalPotential& normal_potential,
-        const double normal_stiffness,
         const double dmin = 0,
         const bool no_mu = false) const;
 
@@ -59,7 +57,6 @@ public:
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
     /// @param normal_potential Normal potential (used for normal force magnitude).
-    /// @param normal_stiffness Normal stiffness (used for normal force magnitude).
     /// @param wrt The variable to take the derivative with respect to.
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return The Jacobian of the friction force wrt the velocities.
@@ -70,7 +67,6 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
         Eigen::ConstRef<Eigen::MatrixXd> velocities,
         const NormalPotential& normal_potential,
-        const double normal_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
 
@@ -129,7 +125,6 @@ public:
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
     /// @param normal_potential Normal potential (used for normal force magnitude).
-    /// @param normal_stiffness Normal stiffness (used for normal force magnitude).
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
@@ -139,7 +134,6 @@ public:
         Eigen::ConstRef<VectorMax12d> lagged_displacements,
         Eigen::ConstRef<VectorMax12d> velocities,
         const NormalPotential& normal_potential,
-        const double normal_stiffness,
         const double dmin = 0,
         const bool no_mu = false) const; //< whether to not multiply by mu
 
@@ -149,7 +143,6 @@ public:
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
     /// @param normal_potential Normal potential (used for normal force magnitude).
-    /// @param normal_stiffness Noraml stiffness (used for normal force magnitude).
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return Friction force Jacobian
@@ -159,7 +152,6 @@ public:
         Eigen::ConstRef<VectorMax12d> lagged_displacements,
         Eigen::ConstRef<VectorMax12d> velocities,
         const NormalPotential& normal_potential,
-        const double normal_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
 
@@ -209,6 +201,24 @@ protected:
     /// @return The value of the product at x.
     virtual double mu_f1_over_x(
         const double x, const double mu_s, const double mu_k) const = 0;
+
+    virtual double
+    mu_f0_grad_mu_s(const double x, const double mu_s, const double mu_k) const
+    {
+        // TODO: Replace this finite difference approximation with an analytical
+        // expression for the gradient of the integral with respect to mu_s.
+        constexpr double h = 1e-8;
+        return (mu_f0(x, mu_s + h, mu_k) - mu_f0(x, mu_s - h, mu_k)) / (2 * h);
+    }
+
+    virtual double
+    mu_f0_grad_mu_k(const double x, const double mu_s, const double mu_k) const
+    {
+        // TODO: Replace this finite difference approximation with an analytical
+        // expression for the gradient of the integral with respect to mu_k.
+        constexpr double h = 1e-8;
+        return (mu_f0(x, mu_s, mu_k + h) - mu_f0(x, mu_s, mu_k - h)) / (2 * h);
+    }
 
     /// @brief Compute the value of [(d/dx (μ(y) f₁(y))) x - μ(y) f₁(y)] / x³, where f₁ is the first derivative of the smooth mollifier.
     /// @param x The tangential relative speed.

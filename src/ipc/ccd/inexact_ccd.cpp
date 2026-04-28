@@ -12,9 +12,9 @@
 
 namespace ipc {
 
-InexactCCD::InexactCCD(const double conservative_rescaling)
-    : conservative_rescaling(conservative_rescaling)
+InexactCCD::InexactCCD(const double _conservative_rescaling)
 {
+    conservative_rescaling = _conservative_rescaling;
 }
 
 bool InexactCCD::ccd_strategy(

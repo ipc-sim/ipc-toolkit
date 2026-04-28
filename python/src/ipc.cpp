@@ -41,6 +41,9 @@ void define_ipc(py::module_& m)
 
         Note:
             Assumes the trajectory is linear.
+            When using SweepAndTiniestQueue broad phase, tolerance and
+            max_iterations are extracted from TightInclusionCCD if provided,
+            otherwise defaults are used.
 
         Parameters:
             mesh: The collision mesh.

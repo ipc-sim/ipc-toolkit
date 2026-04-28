@@ -17,7 +17,7 @@ public:
     // ------------------------------------------------------------------------
     // CollisionStencil
 
-    int num_vertices() const override { return 4; };
+    int num_vertices() const override { return 4; }
 
     /// @brief Get the vertex IDs for the face-vertex pair
     /// @param edges The edge connectivity matrix

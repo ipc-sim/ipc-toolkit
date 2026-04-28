@@ -2,7 +2,6 @@ set(SOURCES
   aabb.cpp
   broad_phase.cpp
   brute_force.cpp
-  bvh.cpp
   hash_grid.cpp
   lbvh.cpp
   spatial_hash.cpp

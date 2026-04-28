@@ -3,7 +3,7 @@
 #include <ipc/config.hpp> // define IPC_TOOLKIT_DEBUG_AUTODIFF
 #include <ipc/utils/eigen_ext.hpp>
 
-#include <TinyAD/ScalarFunction.hh>
+#include <TinyAD/Scalar.hh>
 
 namespace ipc {
 

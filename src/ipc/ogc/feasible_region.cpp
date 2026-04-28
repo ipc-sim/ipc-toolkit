@@ -127,7 +127,7 @@ bool is_edge_edge_feasible(
         const Eigen::Vector3d xc =
             (vertices.row(ea1i) - vertices.row(ea0i)) * alpha
             + vertices.row(ea0i);
-        return ogc::check_vertex_feasible_region(mesh, vertices, xc, eb1i);
+        return ogc::check_vertex_feasible_region(mesh, vertices, xc, eb0i);
     }
 
     case EdgeEdgeDistanceType::EA_EB1: {
@@ -141,7 +141,7 @@ bool is_edge_edge_feasible(
 
     case EdgeEdgeDistanceType::EA0_EB: {
         const double alpha = point_edge_closest_point(
-            vertices.row(eb0i), vertices.row(ea0i), vertices.row(ea1i));
+            vertices.row(ea0i), vertices.row(eb0i), vertices.row(eb1i));
         const Eigen::Vector3d xc =
             (vertices.row(eb1i) - vertices.row(eb0i)) * alpha
             + vertices.row(eb0i);
@@ -150,7 +150,7 @@ bool is_edge_edge_feasible(
 
     case EdgeEdgeDistanceType::EA1_EB: {
         const double alpha = point_edge_closest_point(
-            vertices.row(eb1i), vertices.row(ea0i), vertices.row(ea1i));
+            vertices.row(ea1i), vertices.row(eb0i), vertices.row(eb1i));
         const Eigen::Vector3d xc =
             (vertices.row(eb1i) - vertices.row(eb0i)) * alpha
             + vertices.row(eb0i);

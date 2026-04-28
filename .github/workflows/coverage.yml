@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.0.0
+        uses: actions/checkout@v6
         with:
           fetch-depth: 10
 
@@ -34,12 +34,12 @@ jobs:
           echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
 
       - name: Get number of CPU cores
-        uses: SimenB/github-actions-cpu-cores@v2.0.0
+        uses: SimenB/github-actions-cpu-cores@v2
         id: cpu-cores
 
       - name: Cache Build
         id: cache-build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.CACHE_PATH }}
           key: coverage-cache
@@ -72,7 +72,7 @@ jobs:
           lcov --remove coverage.info --ignore-errors unused '/usr/*' "$HOME/.cache/*" "*tests/*" --output-file coverage.info
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5.5.1
+        uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
           files: build/coverage.info

@@ -4,11 +4,11 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import subprocess
 import pathlib
+import subprocess
+import sys
 
 # -- Path setup --------------------------------------------------------------
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -16,18 +16,14 @@ import pathlib
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
-
-
 # -- Project information -----------------------------------------------------
-
 from datetime import datetime
 
-import sys
 sys.path.append(str(pathlib.Path(__file__).parents[2] / "python"))
 from _find_ipctk import ipctk  # noqa
 
 project = "IPC Toolkit"
-copyright = f'2020-{datetime.now().year}, IPC-Sim Organization; MIT License'
+copyright = f"2020-{datetime.now().year}, IPC-Sim Organization; MIT License"
 author = "Zachary Ferguson"
 version = ipctk.__version__
 
@@ -35,7 +31,7 @@ version = ipctk.__version__
 
 # Doxygen
 pathlib.Path("../build/doxyoutput").mkdir(parents=True, exist_ok=True)
-if (not subprocess.run(["doxygen", "Doxyfile"])):
+if not subprocess.run(["doxygen", "Doxyfile"]):
     print("Doxygen failed! Exiting")
     exit(1)
 
@@ -67,9 +63,9 @@ extensions = [
     "sphinx_last_updated_by_git",
 ]
 
-bibtex_bibfiles = ['references.bib']
-bibtex_reference_style = 'author_year'
-bibtex_default_style = 'plain'
+bibtex_bibfiles = ["references.bib"]
+bibtex_reference_style = "author_year"
+bibtex_default_style = "plain"
 
 myst_enable_extensions = [
     "dollarmath",
@@ -80,19 +76,17 @@ object_description_options = [
 ]
 
 source_suffix = {
-    '.rst': 'restructuredtext',
-    '.txt': 'markdown',
-    '.md': 'markdown',
+    ".rst": "restructuredtext",
+    ".txt": "markdown",
+    ".md": "markdown",
 }
 
 root_doc = "index"
 
-suppress_warnings = ["myst.header"]
+suppress_warnings = ["myst.header", "autodoc.import_object", "autosummary"]
 
 # Setup the breathe extension
-breathe_projects = {
-    project: "../build/doxyoutput/xml"
-}
+breathe_projects = {project: "../build/doxyoutput/xml"}
 breathe_default_project = project
 breathe_default_members = (
     "members",
@@ -107,15 +101,19 @@ autodoc_default_options = {
     "members": True,
     "undoc-members": True,
     "private-members": True,
-    'special-members': True,
-    'show-inheritance': True,
+    "special-members": True,
+    "show-inheritance": True,
 }
 
 # -- GraphViz configuration ----------------------------------
-graphviz_output_format = 'svg'
+graphviz_output_format = "svg"
 
-graphviz_dot_args = ["-Ecolor=#CE93D8", "-Kdot",
-                     "-Gbgcolor=transparent", "-Nfontname=Menlo"]
+graphviz_dot_args = [
+    "-Ecolor=#CE93D8",
+    "-Kdot",
+    "-Gbgcolor=transparent",
+    "-Nfontname=Menlo",
+]
 
 # python_apigen_modules = {
 #     "ipctk": "",
@@ -149,33 +147,33 @@ html_theme = "sphinx_immaterial"
 
 # Material theme options
 html_theme_options = {
-    "palette": [{
-        "media": "(prefers-color-scheme: light)",
-        "scheme": "default",
-        "primary": "deep-purple",
-        "accent": "deep-purple",
-        "toggle": {
-            "icon": "material/brightness-7",
-            "name": "Switch to dark mode",
-        }
-    }, {
-        "media": "(prefers-color-scheme: dark)",
-        "scheme": "slate",
-        "primary": "deep-purple",
-        "accent": "deep-purple",
-        "toggle": {
-            "icon": "material/brightness-4",
-            "name": "Switch to light mode",
-        }
-    }],
-
+    "palette": [
+        {
+            "media": "(prefers-color-scheme: light)",
+            "scheme": "default",
+            "primary": "deep-purple",
+            "accent": "deep-purple",
+            "toggle": {
+                "icon": "material/brightness-7",
+                "name": "Switch to dark mode",
+            },
+        },
+        {
+            "media": "(prefers-color-scheme: dark)",
+            "scheme": "slate",
+            "primary": "deep-purple",
+            "accent": "deep-purple",
+            "toggle": {
+                "icon": "material/brightness-4",
+                "name": "Switch to light mode",
+            },
+        },
+    ],
     "site_url": "https://ipctk.xyz",
-
     # Set the repo location to get a badge with stats
     "repo_url": "https://github.com/ipc-sim/ipc-toolkit",
     "repo_name": "ipc-sim/ipc-toolkit",
     "icon": {"repo": "fontawesome/brands/github"},
-
     "features": [
         "content.tabs.link",
         "navigation.footer",
@@ -186,12 +184,10 @@ html_theme_options = {
         "search.share",
         "toc.follow",
     ],
-
     "font": {
         "text": "Roboto",  # used for all the pages' text
-        "code": "Roboto Mono"  # used for literal code blocks
+        "code": "Roboto Mono",  # used for literal code blocks
     },
-
     "version_dropdown": True,
     "version_json": "https://ipctk.xyz/versions.json",
 }

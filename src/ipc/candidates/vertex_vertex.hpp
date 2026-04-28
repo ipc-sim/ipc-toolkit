@@ -17,7 +17,7 @@ public:
     // ------------------------------------------------------------------------
     // CollisionStencil
 
-    int num_vertices() const override { return 2; };
+    int num_vertices() const override { return 2; }
 
     /// @brief Get the indices of the vertices
     /// @param edges edge matrix of mesh

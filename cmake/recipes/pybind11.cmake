@@ -20,4 +20,4 @@ if (NOT DEFINED Python_FIND_FRAMEWORK)
 endif ()
 
 include(CPM)
-CPMAddPackage("gh:pybind/pybind11@2.13.1")
+CPMAddPackage("gh:pybind/pybind11@3.0.1")

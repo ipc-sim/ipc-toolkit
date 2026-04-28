@@ -44,16 +44,8 @@ Nonlinear CCD
 .. doxygenclass:: ipc::IntervalNonlinearTrajectory
     :allow-dot-graphs:
 
-
-.. doxygenfunction:: ipc::point_point_nonlinear_ccd
-.. doxygenfunction:: ipc::point_edge_nonlinear_ccd
-.. doxygenfunction:: ipc::edge_edge_nonlinear_ccd
-.. doxygenfunction:: ipc::point_triangle_nonlinear_ccd
-
-Generic Interface
-^^^^^^^^^^^^^^^^^
-
-.. doxygenfunction:: ipc::conservative_piecewise_linear_ccd
+.. doxygenclass:: ipc::NonlinearCCD
+    :allow-dot-graphs:
 
 Miscellaneous
 -------------

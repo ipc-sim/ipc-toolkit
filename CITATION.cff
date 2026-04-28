@@ -1,0 +1,50 @@
+cff-version: 1.2.0
+title: IPC Toolkit
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Zachary
+    family-names: Ferguson
+    email: zy.fergus@gmail.com
+  - name: others
+repository-code: https://github.com/ipc-sim/ipc-toolkit
+url: https://ipctk.xyz
+license: MIT
+year-original: 2020
+keywords:
+  - IPC
+  - simulation
+  - physics
+  - collision detection
+  - contact mechanics
+  - friction
+  - scientific computing
+references:
+  - type: article
+    title: >-
+      Incremental Potential Contact: Intersection- and
+      Inversion-free Large Deformation Dynamics
+    authors:
+      - given-names: Minchen
+        family-names: Li
+      - given-names: Zachary
+        family-names: Ferguson
+      - given-names: Teseo
+        family-names: Schneider
+      - given-names: Timothy
+        family-names: Langlois
+      - given-names: Denis
+        family-names: Zorin
+      - given-names: Daniele
+        family-names: Panozzo
+      - given-names: Chenfanfu
+        family-names: Jiang
+      - given-names: Danny M.
+        family-names: Kaufman
+    journal: ACM Transactions on Graphics (SIGGRAPH)
+    volume: 39
+    issue: 4
+    article-no: 49
+    year: 2020

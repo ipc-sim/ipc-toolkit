@@ -12,44 +12,42 @@ void define_tangential_collisions(py::module_& m)
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
-                const NormalCollisions&, const NormalPotential&, double,
-                double>(&TangentialCollisions::build),
+                const NormalCollisions&, const NormalPotential&, double>(
+                &TangentialCollisions::build),
             "mesh"_a, "vertices"_a, "collisions"_a, "normal_potential"_a,
-            "normal_stiffness"_a, "mu"_a)
+            "mu"_a)
         .def(
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
-                const NormalCollisions&, const NormalPotential&, double, double,
+                const NormalCollisions&, const NormalPotential&, double,
                 double>(&TangentialCollisions::build),
             "mesh"_a, "vertices"_a, "collisions"_a, "normal_potential"_a,
-            "normal_stiffness"_a, "mu_s"_a, "mu_k"_a)
+            "mu_s"_a, "mu_k"_a)
         .def(
             "build",
             [](TangentialCollisions& self, const CollisionMesh& mesh,
                Eigen::ConstRef<Eigen::MatrixXd> vertices,
                const NormalCollisions& collisions,
                const NormalPotential& normal_potential,
-               const double normal_stiffness,
                Eigen::ConstRef<Eigen::VectorXd> mu_s,
                Eigen::ConstRef<Eigen::VectorXd> mu_k) {
                 self.build(
-                    mesh, vertices, collisions, normal_potential,
-                    normal_stiffness, mu_s, mu_k);
+                    mesh, vertices, collisions, normal_potential, mu_s, mu_k);
             },
             "mesh"_a, "vertices"_a, "collisions"_a, "normal_potential"_a,
-            "normal_stiffness"_a, "mu_s"_a, "mu_k"_a)
+            "mu_s"_a, "mu_k"_a)
         .def(
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
-                const NormalCollisions&, const NormalPotential&, const double,
+                const NormalCollisions&, const NormalPotential&,
                 Eigen::ConstRef<Eigen::VectorXd>,
                 Eigen::ConstRef<Eigen::VectorXd>,
                 const std::function<double(double, double)>&>(
                 &TangentialCollisions::build),
             "mesh"_a, "vertices"_a, "collisions"_a, "normal_potential"_a,
-            "normal_stiffness"_a, "mu_s"_a, "mu_k"_a, "blend_mu"_a)
+            "mu_s"_a, "mu_k"_a, "blend_mu"_a)
         .def(
             "__len__", &TangentialCollisions::size,
             "Get the number of friction collisions.")
@@ -59,6 +57,19 @@ void define_tangential_collisions(py::module_& m)
         .def(
             "clear", &TangentialCollisions::clear,
             "Clear the friction collisions.")
+        .def(
+            "reset_lagged_anisotropic_friction_coefficients",
+            &TangentialCollisions::
+                reset_lagged_anisotropic_friction_coefficients,
+            "Set lagged effective μ to scalar mu_s/mu_k on each collision (done automatically after build).")
+        .def(
+            "update_lagged_anisotropic_friction_coefficients",
+            &TangentialCollisions::
+                update_lagged_anisotropic_friction_coefficients,
+            "mesh"_a, "rest_positions"_a, "lagged_displacements"_a,
+            "velocities"_a,
+            "Refresh matchstick effective μ from lagged geometry and slip. "
+            "Call when mu_s_aniso is nonzero (e.g. each Newton iteration).")
         .def(
             "__getitem__",
             [](TangentialCollisions& self, size_t i) -> TangentialCollision& {

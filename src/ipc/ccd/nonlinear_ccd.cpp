@@ -51,7 +51,17 @@ double IntervalNonlinearTrajectory::max_distance_from_linear(
 
 // ============================================================================
 
-bool conservative_piecewise_linear_ccd(
+NonlinearCCD::NonlinearCCD(
+    const double _tolerance,
+    const long _max_iterations,
+    const double _conservative_rescaling)
+    : tolerance(_tolerance)
+    , max_iterations(_max_iterations)
+    , conservative_rescaling(_conservative_rescaling)
+{
+}
+
+bool NonlinearCCD::conservative_piecewise_linear_ccd(
     const std::function<double(const double)>& distance,
     const std::function<double(const double, const double)>&
         max_distance_from_linear,
@@ -62,15 +72,15 @@ bool conservative_piecewise_linear_ccd(
         const bool /*no_zero_toi*/,
         double& /*toi*/)>& linear_ccd,
     double& toi,
+    const double min_distance,
     const double tmax,
-    const double min_sep_distance,
     const double conservative_rescaling)
 {
     const double distance_t0 = distance(0);
-    if (check_initial_distance(distance_t0, min_sep_distance, toi)) {
+    if (check_initial_distance(distance_t0, min_distance, toi)) {
         return true;
     }
-    assert(distance_t0 > min_sep_distance);
+    assert(distance_t0 > min_distance);
 
     double ti0 = 0;
     std::stack<double> ts;
@@ -102,38 +112,38 @@ bool conservative_piecewise_linear_ccd(
             return true;
         }
 
-        double min_distance = max_distance_from_linear(ti0, ti1);
+        double min_distance_linear = max_distance_from_linear(ti0, ti1);
 
 #ifndef USE_FIXED_PIECES
         // Check if the minimum distance is too large and we need to subdivide
         // (Large distances cause the slow CCD)
-        if ((min_distance
+        if ((min_distance_linear
              >= std::min((1 - conservative_rescaling) * distance_ti0, 0.01))
             && (num_subdivisions < MAX_NUM_SUBDIVISIONS || ti0 == 0)) {
             logger().trace(
                 "Subdividing at ti=[{:g}, {:g}] min_distance={:g} distance_ti0={:g}",
-                ti0, ti1, min_distance, distance_ti0);
+                ti0, ti1, min_distance_linear, distance_ti0);
             ts.push((ti1 + ti0) / 2);
             num_subdivisions++;
             continue;
         }
 #endif
 
-        min_distance += min_sep_distance;
+        min_distance_linear += min_distance;
 
-        const bool is_impacting =
-            linear_ccd(ti0, ti1, min_distance, /*no_zero_toi=*/ti0 == 0, toi);
+        const bool is_impacting = linear_ccd(
+            ti0, ti1, min_distance_linear, /*no_zero_toi=*/ti0 == 0, toi);
 
         logger().trace(
             "Evaluated at ti=[{:g}, {:g}] min_distance={:g} distance_ti0={:g}; result={}{}",
-            ti0, ti1, min_distance, distance_ti0, is_impacting,
+            ti0, ti1, min_distance_linear, distance_ti0, is_impacting,
             is_impacting ? fmt::format(" toi={:g}", (ti1 - ti0) * toi + ti0)
                          : "");
 
         if (is_impacting) {
             toi = (ti1 - ti0) * toi + ti0;
             if (toi == 0) {
-                // This is impossible because distance_t0 > min_sep_distance
+                // This is impossible because distance_t0 > min_distance
                 ts.push((ti1 + ti0) / 2);
                 num_subdivisions++;
                 continue;
@@ -150,15 +160,12 @@ bool conservative_piecewise_linear_ccd(
 
 // ============================================================================
 
-bool point_point_nonlinear_ccd(
+bool NonlinearCCD::point_point_ccd(
     const NonlinearTrajectory& p0,
     const NonlinearTrajectory& p1,
     double& toi,
-    const double tmax,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     return conservative_piecewise_linear_ccd(
         [&](const double t) {
@@ -184,19 +191,16 @@ bool point_point_nonlinear_ccd(
                 output_tolerance,             // delta_actual
                 no_zero_toi);                 // no zero toi
         },
-        toi, tmax, min_distance, conservative_rescaling);
+        toi, min_distance, tmax, conservative_rescaling);
 }
 
-bool point_edge_nonlinear_ccd(
+bool NonlinearCCD::point_edge_ccd(
     const NonlinearTrajectory& p,
     const NonlinearTrajectory& e0,
     const NonlinearTrajectory& e1,
     double& toi,
-    const double tmax,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     return conservative_piecewise_linear_ccd(
         [&](const double t) {
@@ -223,20 +227,17 @@ bool point_edge_nonlinear_ccd(
                 output_tolerance,             // delta_actual
                 no_zero_toi);                 // no zero toi
         },
-        toi, tmax, min_distance, conservative_rescaling);
+        toi, min_distance, tmax, conservative_rescaling);
 }
 
-bool edge_edge_nonlinear_ccd(
+bool NonlinearCCD::edge_edge_ccd(
     const NonlinearTrajectory& ea0,
     const NonlinearTrajectory& ea1,
     const NonlinearTrajectory& eb0,
     const NonlinearTrajectory& eb1,
     double& toi,
-    const double tmax,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     return conservative_piecewise_linear_ccd(
         [&](const double t) {
@@ -265,20 +266,17 @@ bool edge_edge_nonlinear_ccd(
                 output_tolerance,             // delta_actual
                 no_zero_toi);                 // no zero toi
         },
-        toi, tmax, min_distance, conservative_rescaling);
+        toi, min_distance, tmax, conservative_rescaling);
 }
 
-bool point_triangle_nonlinear_ccd(
+bool NonlinearCCD::point_triangle_ccd(
     const NonlinearTrajectory& p,
     const NonlinearTrajectory& t0,
     const NonlinearTrajectory& t1,
     const NonlinearTrajectory& t2,
     double& toi,
-    const double tmax,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     return conservative_piecewise_linear_ccd(
         [&](const double t) {
@@ -306,7 +304,7 @@ bool point_triangle_nonlinear_ccd(
                 output_tolerance,             // delta_actual
                 no_zero_toi);                 // no zero toi
         },
-        toi, tmax, min_distance, conservative_rescaling);
+        toi, min_distance, tmax, conservative_rescaling);
 }
 
 } // namespace ipc

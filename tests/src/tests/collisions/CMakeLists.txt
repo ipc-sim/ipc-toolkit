@@ -1,6 +1,7 @@
 set(SOURCES
   # Tests
   test_normal_collisions.cpp
+  test_plane_vertex_collisions.cpp
 
   # Benchmarks
 

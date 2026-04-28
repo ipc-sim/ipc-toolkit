@@ -14,12 +14,10 @@ protected:
     /// @param collision NormalCollision stencil.
     /// @param positions Collision stencil's vertex positions.
     /// @param normal_potential Normal potential used for normal force.
-    /// @param normal_stiffness Normal potential stiffness.
     void init(
         const NormalCollision& collision,
         Eigen::ConstRef<VectorMax12d> positions,
-        const NormalPotential& normal_potential,
-        const double normal_stiffness);
+        const NormalPotential& normal_potential);
 
     /// @brief Initialize the collision.
     /// @param collision NormalCollision stencil.
@@ -50,7 +48,7 @@ public:
     /// @brief Compute the Jacobian of the tangent basis of the collision.
     /// @param positions Collision stencil's vertex positions.
     /// @return Jacobian of the tangent basis of the collision.
-    virtual MatrixMax<double, 36, 2> compute_tangent_basis_jacobian(
+    virtual MatrixMax<double, 6, 12> compute_tangent_basis_jacobian(
         Eigen::ConstRef<VectorMax12d> positions) const = 0;
 
     /// @brief Compute the barycentric coordinates of the closest point.
@@ -74,21 +72,21 @@ public:
     /// @brief Construct the premultiplier matrix for the relative velocity.
     /// @note Uses the cached closest point.
     /// @return A matrix M such that `relative_velocity = M * velocities`.
-    virtual MatrixMax<double, 3, 12> relative_velocity_matrix() const
+    virtual MatrixMax<double, 3, 12> relative_velocity_jacobian() const
     {
-        return relative_velocity_matrix(closest_point);
+        return relative_velocity_jacobian(closest_point);
     }
 
     /// @brief Construct the premultiplier matrix for the relative velocity.
     /// @param closest_point Barycentric coordinates of the closest point.
     /// @return A matrix M such that `relative_velocity = M * velocities`.
-    virtual MatrixMax<double, 3, 12> relative_velocity_matrix(
+    virtual MatrixMax<double, 3, 12> relative_velocity_jacobian(
         Eigen::ConstRef<VectorMax2d> closest_point) const = 0;
 
     /// @brief Construct the Jacobian of the relative velocity premultiplier wrt the closest points.
     /// @param closest_point Barycentric coordinates of the closest point.
     /// @return Jacobian of the relative velocity premultiplier wrt the closest points.
-    virtual MatrixMax<double, 6, 12> relative_velocity_matrix_jacobian(
+    virtual MatrixMax<double, 36, 2> relative_velocity_dx_dbeta(
         Eigen::ConstRef<VectorMax2d> closest_point) const = 0;
 
 public:
@@ -103,6 +101,42 @@ public:
 
     /// @brief Ratio between normal and kinetic tangential forces (e.g., friction coefficient)
     double mu_k = 0;
+
+    /// @brief Anisotropic static friction coefficients (2D, one per tangent direction).
+    /// @note Zero vector → scalar mu_s (backward compatible). Elliptical model;
+    ///       see ipc::smooth_mu and Erleben et al., CGF 2019,
+    ///       DOI 10.1111/cgf.13885.
+    ///       Components are along the collision's tangent basis (tangent to the
+    ///       mesh at the contact), not world-space directions.
+    Eigen::Vector2d mu_s_aniso = Eigen::Vector2d::Zero();
+
+    /// @brief Anisotropic kinetic friction coefficients (2D, one per tangent direction).
+    /// @note Zero vector → scalar mu_k (backward compatible). Elliptical model;
+    ///       see ipc::smooth_mu and Erleben et al., CGF 2019,
+    ///       DOI 10.1111/cgf.13885.
+    ///       Components are along the collision's tangent basis (tangent to the
+    ///       mesh at the contact), not world-space directions.
+    Eigen::Vector2d mu_k_aniso = Eigen::Vector2d::Zero();
+
+    /// @brief Tangential anisotropy scaling in the collision's tangent basis.
+    /// @note Default (1,1) preserves current isotropic behavior.
+    ///       Values should satisfy a_i > 0 for physically meaningful
+    ///       anisotropic scaling. Values scale tau before friction evaluation.
+    ///       Used with mu_s_aniso/mu_k_aniso by the elliptical model in
+    ///       ipc::smooth_mu.
+    Eigen::Vector2d mu_aniso = Eigen::Vector2d::Ones();
+
+    /// @brief Directional (matchstick) effective static μ lagged for the current solve.
+    /// @note When mu_s_aniso is nonzero, call
+    ///       TangentialCollisions::update_lagged_anisotropic_friction_coefficients
+    ///       after build and when lagged positions or velocities change (e.g.
+    ///       each Newton iteration) so dissipative potential gradients match
+    ///       friction force for this lagged update. During a single evaluation,
+    ///       μ_eff is held fixed (no in-evaluation ∂μ_eff/∂τ terms).
+    double mu_s_effective_lagged = 0;
+
+    /// @brief Directional (matchstick) effective kinetic μ lagged for the current solve.
+    double mu_k_effective_lagged = 0;
 
     /// @brief Weight
     double weight = 1;

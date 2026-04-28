@@ -22,24 +22,19 @@ public:
     /// @brief Compute the force magnitude for a collision.
     /// @param distance_squared The squared distance between elements.
     /// @param dmin The minimum distance offset to the barrier.
-    /// @param barrier_stiffness The barrier stiffness.
     /// @return The force magnitude.
     double force_magnitude(
-        const double distance_squared,
-        const double dmin,
-        const double barrier_stiffness) const override;
+        const double distance_squared, const double dmin) const override;
 
     /// @brief Compute the gradient of the force magnitude for a collision.
     /// @param distance_squared The squared distance between elements.
     /// @param distance_squared_gradient The gradient of the squared distance.
     /// @param dmin The minimum distance offset to the barrier.
-    /// @param barrier_stiffness The stiffness of the barrier.
     /// @return The gradient of the force.
     VectorMax12d force_magnitude_gradient(
         const double distance_squared,
         Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
-        const double dmin,
-        const double barrier_stiffness) const override;
+        const double dmin) const override;
 
     /// @brief The distance of largest adhesion force (\f$\hat{d}_p\f$) (\f$0 < \hat{d}_p < \hat{d}_a\f$).
     double dhat_p;

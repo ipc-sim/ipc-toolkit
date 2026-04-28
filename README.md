@@ -36,17 +36,98 @@ The IPC Toolkit depends on a handful of third-party libraries, which are used to
 
 **All required dependencies are downloaded through CMake** depending on the build options, and are built automatically when you build the IPC Toolkit. You do not need to install them separately.
 
-A full list of dependencies can be found on the [dependencies page](https://ipctk.xyz/dependencies.html).
+A full list of dependencies can be found on the [dependencies page](https://ipctk.xyz/about/dependencies.html).
 
 ## Python Bindings
 
 We provide Python bindings for functions in the toolkit using [pybind11](https://github.com/pybind/pybind11).
 
-For more information, see the [Python documentation](https://ipctk.xyz/python.html).
+For more information, see the [Python documentation](https://ipctk.xyz/build/python.html).
 
-## Usage
+## Quick Start
 
-See the [tutorials](https://ipctk.xyz/tutorials/getting_started.html) for a quick introduction to the toolkit, or the [documentation](https://ipctk.xyz/cpp-api/potentials.html) for a full reference.
+**C++** (include via CMake; see [build instructions](https://ipctk.xyz/build/c++.html)):
+
+```c++
+#include <ipc/ipc.hpp>
+#include <Eigen/Core>
+
+// Two parallel triangles separated by a small gap (just inside dhat)
+const double dhat = 1e-3;
+const double gap = 0.5 * dhat; // separation between the two triangles
+Eigen::MatrixXd vertices(6, 3);
+vertices <<  0.0, 0.0, 0.0,  // triangle 1
+             1.0, 0.0, 0.0,
+             0.5, 1.0, 0.0,
+             0.0, 0.0, gap,  // triangle 2, shifted in z by `gap`
+             1.0, 0.0, gap,
+             0.5, 1.0, gap;
+Eigen::MatrixXi edges(6, 2), faces(2, 3);
+edges << 0, 1, 1, 2, 2, 0, 3, 4, 4, 5, 5, 3;
+faces << 0, 1, 2, 3, 4, 5;
+
+// Build the collision mesh
+ipc::CollisionMesh collision_mesh(vertices, edges, faces);
+
+// Detect collisions
+// The two triangles are within dhat, so collisions are active
+ipc::NormalCollisions collisions;
+collisions.build(collision_mesh, vertices, dhat);
+
+// Compute the barrier potential and its derivatives
+const ipc::BarrierPotential B(dhat, /*stiffness=*/1e3);
+double energy = B(collisions, collision_mesh, vertices);
+Eigen::VectorXd gradient = B.gradient(collisions, collision_mesh, vertices);
+Eigen::SparseMatrix<double> hessian = B.hessian(collisions, collision_mesh, vertices);
+
+// Compute the collision-free step size for CCD
+Eigen::MatrixXd next_vertices = vertices;
+next_vertices.bottomRows(3).col(2).array() -= gap * 2; // move toward triangle 1
+double max_step = ipc::compute_collision_free_stepsize(
+    collision_mesh, vertices, next_vertices);
+```
+
+**Python** (install via `pip install ipctk`):
+
+```python
+import ipctk
+import numpy as np
+
+# Two parallel triangles separated by a small gap (just inside dhat)
+dhat = 1e-3  # barrier activation distance
+gap = 0.5 * dhat  # separation between the two triangles
+vertices = np.array([
+    [0.0, 0.0, 0.0],   # triangle 1
+    [1.0, 0.0, 0.0],
+    [0.5, 1.0, 0.0],
+    [0.0, 0.0, gap],   # triangle 2, shifted in z by `gap`
+    [1.0, 0.0, gap],
+    [0.5, 1.0, gap],
+])
+edges = np.array([[0, 1], [1, 2], [2, 0], [3, 4], [4, 5], [5, 3]])
+faces = np.array([[0, 1, 2], [3, 4, 5]])
+
+# Build the collision mesh
+collision_mesh = ipctk.CollisionMesh(vertices, edges, faces)
+
+# Detect collisions (the two triangles are within dhat, so collisions are active)
+collisions = ipctk.NormalCollisions()
+collisions.build(collision_mesh, vertices, dhat)
+
+# Compute the barrier potential and its derivatives
+B = ipctk.BarrierPotential(dhat, stiffness=1e3)
+energy = B(collisions, collision_mesh, vertices)
+gradient = B.gradient(collisions, collision_mesh, vertices)
+hessian = B.hessian(collisions, collision_mesh, vertices)
+
+# Compute the collision-free step size for CCD
+next_vertices = vertices.copy()
+next_vertices[3:, 2] -= gap * 2  # move the second triangle toward the first
+max_step = ipctk.compute_collision_free_stepsize(
+    collision_mesh, vertices, next_vertices)
+```
+
+For more details, see the [tutorials](https://ipctk.xyz/tutorials/getting_started.html) and [API documentation](https://ipctk.xyz/cpp-api/).
 
 ## Contributing
 

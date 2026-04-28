@@ -32,7 +32,7 @@ jobs:
           - Release
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.0.0
+        uses: actions/checkout@v6
         with:
           fetch-depth: 10
 
@@ -42,18 +42,18 @@ jobs:
           echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
 
       - name: cuda-toolkit
-        uses: Jimver/cuda-toolkit@v0.2.21
+        uses: Jimver/cuda-toolkit@v0.2.30
         with:
           sub-packages: '["nvcc"]'
           method: 'network'
 
       - name: Get number of CPU cores
-        uses: SimenB/github-actions-cpu-cores@v2.0.0
+        uses: SimenB/github-actions-cpu-cores@v2
         id: cpu-cores
 
       - name: Cache Build
         id: cache-build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.CACHE_PATH }}
           key: ${{ runner.os }}-${{ matrix.config }}-cache

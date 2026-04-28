@@ -25,12 +25,6 @@ Spatial Hash
 .. doxygenclass:: ipc::SpatialHash
     :allow-dot-graphs:
 
-BVH
----
-
-.. doxygenclass:: ipc::BVH
-    :allow-dot-graphs:
-
 LBVH
 ---
 

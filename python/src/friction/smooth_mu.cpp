@@ -124,4 +124,24 @@ void define_smooth_mu(py::module_& m)
             The value of the expression at y.
         )ipc_Qu8mg5v7",
         "y"_a, "mu_s"_a, "mu_k"_a, "eps_v"_a);
+
+    m.def(
+        "anisotropic_mu_eff_f", &anisotropic_mu_eff_f,
+        R"ipc_Qu8mg5v7(
+        Effective static and kinetic friction along a unit direction for the
+        elliptical (matchstick) model: μ_eff = sqrt((μ₀ t₀)² + (μ₁ t₁)²).
+        Matchstick model: Erleben et al., CGF 2019, DOI 10.1111/cgf.13885.
+
+        Parameters:
+            tau_dir: Unit 2D direction (tau / ||tau||).
+            mu_s_aniso: Static friction ellipse axes (2D).
+            mu_k_aniso: Kinetic friction ellipse axes (2D).
+
+        Returns:
+            (mu_s_eff, mu_k_eff) along tau_dir. If anisotropic axes are
+            zero, returns (0, 0) as the direct ellipse-formula result.
+            Isotropic fallback is handled by higher-level anisotropic
+            friction routines.
+        )ipc_Qu8mg5v7",
+        "tau_dir"_a, "mu_s_aniso"_a, "mu_k_aniso"_a);
 }

@@ -3,24 +3,25 @@
 #include <tests/config.hpp>
 #include <tests/utils.hpp>
 
-#include <ipc/broad_phase/bvh.hpp>
+#include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/lbvh.hpp>
-// #include <ipc/broad_phase/vulkan/shaders/single_radixsort.hpp>
 #include <ipc/utils/profiler.hpp>
 
 #include <tbb/parallel_sort.h>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <iostream>
-
-#include <random>
 
 using namespace ipc;
 
 namespace {
 
-bool is_aabb_union(LBVH::Node parent, LBVH::Node childA, LBVH::Node childB)
+bool is_aabb_union(
+    const LBVH::Node& parent,
+    const LBVH::Node& childA,
+    const LBVH::Node& childB)
 {
     AABB children;
     children.min = childA.aabb_min.min(childB.aabb_min).cast<double>();
@@ -208,8 +209,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     const std::shared_ptr<LBVH> lbvh = std::make_shared<LBVH>();
     lbvh->build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
 
-    const std::shared_ptr<BVH> bvh = std::make_shared<BVH>();
-    bvh->build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
+    const std::shared_ptr<SpatialHash> spatial_hash =
+        std::make_shared<SpatialHash>();
+    spatial_hash->build(
+        vertices_t0, vertices_t1, edges, faces, inflation_radius);
 
     // detect_vertex_vertex_candidates
     {
@@ -217,7 +220,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         lbvh->detect_vertex_vertex_candidates(vv_candidates);
 
         std::vector<VertexVertexCandidate> expected_vv_candidates;
-        bvh->detect_vertex_vertex_candidates(expected_vv_candidates);
+        spatial_hash->detect_vertex_vertex_candidates(expected_vv_candidates);
 
         CHECK(vv_candidates.size() >= expected_vv_candidates.size());
         CHECK(contains_all_candidates(vv_candidates, expected_vv_candidates));
@@ -228,7 +231,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         lbvh->detect_edge_vertex_candidates(ev_candidates);
 
         std::vector<EdgeVertexCandidate> expected_ev_candidates;
-        bvh->detect_edge_vertex_candidates(expected_ev_candidates);
+        spatial_hash->detect_edge_vertex_candidates(expected_ev_candidates);
 
         CHECK(ev_candidates.size() >= expected_ev_candidates.size());
         CHECK(contains_all_candidates(ev_candidates, expected_ev_candidates));
@@ -239,7 +242,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         lbvh->detect_edge_edge_candidates(ee_candidates);
 
         std::vector<EdgeEdgeCandidate> expected_ee_candidates;
-        bvh->detect_edge_edge_candidates(expected_ee_candidates);
+        spatial_hash->detect_edge_edge_candidates(expected_ee_candidates);
 
         CHECK(ee_candidates.size() >= expected_ee_candidates.size());
         CHECK(contains_all_candidates(ee_candidates, expected_ee_candidates));
@@ -250,7 +253,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         lbvh->detect_face_vertex_candidates(fv_candidates);
 
         std::vector<FaceVertexCandidate> expected_fv_candidates;
-        bvh->detect_face_vertex_candidates(expected_fv_candidates);
+        spatial_hash->detect_face_vertex_candidates(expected_fv_candidates);
 
         CHECK(fv_candidates.size() >= expected_fv_candidates.size());
         CHECK(contains_all_candidates(fv_candidates, expected_fv_candidates));
@@ -261,7 +264,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         lbvh->detect_edge_face_candidates(ef_candidates);
 
         std::vector<EdgeFaceCandidate> expected_ef_candidates;
-        bvh->detect_edge_face_candidates(expected_ef_candidates);
+        spatial_hash->detect_edge_face_candidates(expected_ef_candidates);
 
         CHECK(ef_candidates.size() >= expected_ef_candidates.size());
         CHECK(contains_all_candidates(ef_candidates, expected_ef_candidates));
@@ -272,7 +275,7 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
         lbvh->detect_face_face_candidates(ff_candidates);
 
         std::vector<FaceFaceCandidate> expected_ff_candidates;
-        bvh->detect_face_face_candidates(expected_ff_candidates);
+        spatial_hash->detect_face_face_candidates(expected_ff_candidates);
 
         CHECK(ff_candidates.size() >= expected_ff_candidates.size());
         CHECK(contains_all_candidates(ff_candidates, expected_ff_candidates));
@@ -282,4 +285,65 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     ipc::profiler().print();
     ipc::profiler().clear();
 #endif
+}
+
+TEST_CASE(
+    "Benchmark LBVH::detect_edge_edge_candidates",
+    "[!benchmark][broad_phase][lbvh]")
+{
+    constexpr double inflation_radius = 0;
+
+    std::string mesh_t0, mesh_t1;
+    SECTION("Two cubes")
+    {
+        mesh_t0 = "two-cubes-far.ply";
+        mesh_t1 = "two-cubes-intersecting.ply";
+    }
+    SECTION("Cloth-Ball")
+    {
+        mesh_t0 = "cloth_ball92.ply";
+        mesh_t1 = "cloth_ball93.ply";
+    }
+#ifdef NDEBUG
+    SECTION("Armadillo-Rollers")
+    {
+        mesh_t0 = "armadillo-rollers/326.ply";
+        mesh_t1 = "armadillo-rollers/327.ply";
+    }
+    SECTION("Cloth-Funnel")
+    {
+        mesh_t0 = "cloth-funnel/227.ply";
+        mesh_t1 = "cloth-funnel/228.ply";
+    }
+    SECTION("N-Body-Simulation")
+    {
+        mesh_t0 = "n-body-simulation/balls16_18.ply";
+        mesh_t1 = "n-body-simulation/balls16_19.ply";
+    }
+    SECTION("Rod-Twist")
+    {
+        mesh_t0 = "rod-twist/3036.ply";
+        mesh_t1 = "rod-twist/3037.ply";
+    }
+#endif
+    SECTION("Puffer-Ball")
+    {
+        mesh_t0 = "puffer-ball/20.ply";
+        mesh_t1 = "puffer-ball/21.ply";
+    }
+
+    Eigen::MatrixXd vertices_t0, vertices_t1;
+    Eigen::MatrixXi edges, faces;
+    REQUIRE(tests::load_mesh(mesh_t0, vertices_t0, edges, faces));
+    REQUIRE(tests::load_mesh(mesh_t1, vertices_t1, edges, faces));
+
+    const std::shared_ptr<LBVH> lbvh = std::make_shared<LBVH>();
+    lbvh->build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
+
+    BENCHMARK("LBVH::detect_edge_edge_candidates")
+    {
+        std::vector<EdgeEdgeCandidate> ee_candidates;
+        lbvh->detect_edge_edge_candidates(ee_candidates);
+        return ee_candidates.size();
+    };
 }

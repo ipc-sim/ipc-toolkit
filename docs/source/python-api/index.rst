@@ -1,5 +1,5 @@
-C++ API
-=======
+Python API
+==========
 
 .. list-table::
     :header-rows: 1

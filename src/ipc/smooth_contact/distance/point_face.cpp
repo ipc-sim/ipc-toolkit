@@ -1,6 +1,5 @@
 #include "point_face.hpp"
 
-#include "autogen.hpp"
 #include "point_edge.hpp"
 
 #include <ipc/tangent/closest_point.hpp>
@@ -43,13 +42,8 @@ point_plane_closest_point_direction_hessian(
     const Eigen::Vector2d uv = point_triangle_closest_point(p, t0, t1, t2);
     const Eigen::Matrix<double, 2, 12> jac =
         point_triangle_closest_point_jacobian(p, t0, t1, t2);
-    std::array<Matrix12d, 2> H;
-    autogen::triangle_closest_point_hessian_0(
-        p(0), p(1), p(2), t0(0), t0(1), t0(2), t1(0), t1(1), t1(2), t2(0),
-        t2(1), t2(2), H[0].data());
-    autogen::triangle_closest_point_hessian_1(
-        p(0), p(1), p(2), t0(0), t0(1), t0(2), t1(0), t1(1), t1(2), t2(0),
-        t2(1), t2(2), H[1].data());
+    std::array<Matrix12d, 2> H =
+        point_triangle_closest_point_hessian(p, t0, t1, t2);
 
     // compute derivatives of the closest point
     const Eigen::Vector3d direc =

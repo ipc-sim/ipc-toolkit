@@ -6,7 +6,7 @@
 
 namespace ipc {
 
-inline bool is_in_01(double x) { return 0 <= x && x <= 1; };
+inline bool is_in_01(double x) { return 0 <= x && x <= 1; }
 
 bool point_static_plane_ccd(
     Eigen::ConstRef<VectorMax3d> p_t0,

@@ -78,9 +78,9 @@ void define_tangential_collision(py::module_& m)
             )ipc_Qu8mg5v7",
             "velocities"_a)
         .def(
-            "relative_velocity_matrix",
+            "relative_velocity_jacobian",
             py::overload_cast<>(
-                &TangentialCollision::relative_velocity_matrix, py::const_),
+                &TangentialCollision::relative_velocity_jacobian, py::const_),
             R"ipc_Qu8mg5v7(
             Construct the premultiplier matrix for the relative velocity.
 
@@ -91,9 +91,9 @@ void define_tangential_collision(py::module_& m)
                 A matrix M such that `relative_velocity = M * velocities`.
             )ipc_Qu8mg5v7")
         .def(
-            "relative_velocity_matrix",
+            "relative_velocity_jacobian",
             py::overload_cast<Eigen::ConstRef<VectorMax2d>>(
-                &TangentialCollision::relative_velocity_matrix, py::const_),
+                &TangentialCollision::relative_velocity_jacobian, py::const_),
             R"ipc_Qu8mg5v7(
             Construct the premultiplier matrix for the relative velocity.
 
@@ -105,8 +105,8 @@ void define_tangential_collision(py::module_& m)
             )ipc_Qu8mg5v7",
             "closest_point"_a)
         .def(
-            "relative_velocity_matrix_jacobian",
-            &TangentialCollision::relative_velocity_matrix_jacobian,
+            "relative_velocity_dx_dbeta",
+            &TangentialCollision::relative_velocity_dx_dbeta,
             R"ipc_Qu8mg5v7(
             Construct the Jacobian of the relative velocity premultiplier wrt the closest points.
 
@@ -127,6 +127,27 @@ void define_tangential_collision(py::module_& m)
         .def_readwrite(
             "mu_k", &TangentialCollision::mu_k,
             "Ratio between normal and kinetic tangential forces (e.g., friction coefficient)")
+        .def_readwrite(
+            "mu_aniso", &TangentialCollision::mu_aniso,
+            "Tangential anisotropy scaling in the collision's tangent basis. "
+            "(1,1) = isotropic (default). Positive entries are recommended for "
+            "physically meaningful anisotropic scaling. Scales tau before "
+            "evaluating friction.")
+        .def_readwrite(
+            "mu_s_aniso", &TangentialCollision::mu_s_aniso,
+            "Static friction ellipse axes (2D, one per tangent). Zero → scalar mu_s. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885).")
+        .def_readwrite(
+            "mu_k_aniso", &TangentialCollision::mu_k_aniso,
+            "Kinetic friction ellipse axes (2D, one per tangent). Zero → scalar mu_k. Matchstick model (CGF 2019, DOI 10.1111/cgf.13885).")
+        .def_readwrite(
+            "mu_s_effective_lagged",
+            &TangentialCollision::mu_s_effective_lagged,
+            "Lagged matchstick effective static μ (refresh via "
+            "TangentialCollisions.update_lagged_anisotropic_friction_coefficients).")
+        .def_readwrite(
+            "mu_k_effective_lagged",
+            &TangentialCollision::mu_k_effective_lagged,
+            "Lagged matchstick effective kinetic μ.")
         .def_readwrite("weight", &TangentialCollision::weight, "Weight")
         .def_property(
             "weight_gradient",

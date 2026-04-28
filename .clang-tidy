@@ -12,7 +12,6 @@ Checks: >
 
   # Specific high-value checks (even if not in a group above)
   google-runtime-int,
-  cppcoreguidelines-pro-type-member-init,
 
   # Exclusions/Suppressions (Checks often considered too aggressive or subjective)
   -bugprone-throwing-static-initialization,

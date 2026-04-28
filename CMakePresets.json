@@ -52,16 +52,6 @@
       }
     },
     {
-      "name": "simd",
-      "inherits": "release",
-      "displayName": "SIMD Enabled",
-      "description": "Build with SIMD optimizations",
-      "binaryDir": "${sourceDir}/build/simd",
-      "cacheVariables": {
-        "IPC_TOOLKIT_WITH_SIMD": "ON"
-      }
-    },
-    {
       "name": "test",
       "inherits": "debug",
       "displayName": "Unit Tests",
@@ -82,7 +72,6 @@
       "cacheVariables": {
         "IPC_TOOLKIT_BUILD_PYTHON": "ON",
         "IPC_TOOLKIT_BUILD_TESTS": "OFF",
-        "IPC_TOOLKIT_WITH_SIMD": "OFF",
         "IPC_TOOLKIT_WITH_CUDA": "OFF"
       }
     },
