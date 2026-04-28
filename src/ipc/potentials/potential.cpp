@@ -133,21 +133,28 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
             tbb::blocked_range<size_t>(0, collisions.size()),
             [&](const tbb::blocked_range<size_t>& r) {
                 auto& hess_triplets = storage.local();
-
                 for (size_t i = r.begin(); i < r.end(); i++) {
-
                     const TCollision& collision = collisions[i];
 
-                    const MatrixMaxNd local_hess = this->hessian(
-                        collisions[i], collisions[i].dof(X, edges, faces),
-                        project_hessian_to_psd);
+                    MatrixMaxNd local_hess;
+                    {
+                        // IPC_TOOLKIT_PROFILE_BLOCK("compute local hessian");
+                        local_hess = this->hessian(
+                            collision, collision.dof(X, edges, faces),
+                            project_hessian_to_psd);
+                    }
 
-                    const std::array<index_t, TCollision::STENCIL_SIZE> vids =
-                        collision.vertex_ids(edges, faces);
+                    {
+                        // IPC_TOOLKIT_PROFILE_BLOCK(
+                        //     "map local hessian to global triplets");
 
-                    local_hessian_to_global_triplets(
-                        local_hess, vids, dim, *(hess_triplets.cache),
-                        mesh.num_vertices());
+                        const std::array<index_t, TCollision::STENCIL_SIZE>
+                            vids = collision.vertex_ids(edges, faces);
+
+                        local_hessian_to_global_triplets(
+                            local_hess, vids, dim, *(hess_triplets.cache),
+                            mesh.num_vertices());
+                    }
                 }
             });
     }

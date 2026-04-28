@@ -60,24 +60,34 @@ TEST_CASE("Profiler", "[profiler]")
     REQUIRE(data.contains("Block 2"));
     nlohmann::json block2 = data.at("Block 2");
     CHECK(block2.size() == 2); // count, time_ms
-    CHECK(block2["count"].get<int>() == num_threads);
+    // Only the coordinator thread's iterations are recorded
+    CHECK(block2["count"].get<int>() >= 1);
 
     // ---------------------------------------------------------------------
 
-    {
+    auto foo = []() {
         IPC_TOOLKIT_PROFILE_BLOCK("Block 3");
 
+        IPC_TOOLKIT_PROFILE_BLOCK("Block 4");
         tbb::parallel_for(0, num_threads, [&](int) {
             // for (int i = 0; i < num_threads; ++i) {
-            IPC_TOOLKIT_PROFILE_BLOCK("Block 4");
             {
                 IPC_TOOLKIT_PROFILE_BLOCK("Block 5");
                 std::this_thread::sleep_for(
                     std::chrono::milliseconds(sleep_time_ms / num_threads));
             }
+
+            {
+                IPC_TOOLKIT_PROFILE_BLOCK("Block 6");
+                std::this_thread::sleep_for(
+                    std::chrono::milliseconds(sleep_time_ms / num_threads));
+            }
             // }
         });
-    }
+    };
+
+    foo();
+    foo(); // Run it twice to check that counts are aggregated correctly
 
     data = profiler().data();
     profiler().print();
@@ -88,12 +98,27 @@ TEST_CASE("Profiler", "[profiler]")
     CAPTURE(!data.contains("Block 4"));
     nlohmann::json block3 = data.at("Block 3");
     CHECK(block3.size() == 3); // count, time_ms, Block 4
-    CHECK(block3["count"].get<int>() == 1);
+    CHECK(block3["count"].get<int>() == 2);
 
     REQUIRE(block3.contains("Block 4"));
     nlohmann::json block4 = block3.at("Block 4");
-    CHECK(block4.size() == 3); // count, time_ms
-    CHECK(block4["count"].get<int>() == num_threads);
+
+    REQUIRE(block4.contains("Block 5"));
+    nlohmann::json block5 = block4.at("Block 5");
+    CHECK(block5.size() == 2); // count, time_ms
+    // foo() runs twice; coordinator records at least once per call
+    CHECK(block5["count"].get<int>() >= 2);
+    CHECK(block5["time_ms"].get<double>() < block4["time_ms"].get<double>());
+
+    REQUIRE(block4.contains("Block 6"));
+    nlohmann::json block6 = block4.at("Block 6");
+    CHECK(block6.size() == 2); // count, time_ms
+    CHECK(block6["count"].get<int>() >= 2);
+    CHECK(block6["time_ms"].get<double>() < block4["time_ms"].get<double>());
+
+    CHECK(
+        block5["time_ms"].get<double>() + block6["time_ms"].get<double>()
+        < block4["time_ms"].get<double>());
 }
 
 TEST_CASE("Profile full pipeline", "[!benchmark][profiler]")

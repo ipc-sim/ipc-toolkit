@@ -13,6 +13,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <thread>
 
 // Helper macro to stringify/paste after expansion
 #define IPC_TOOLKIT_PROFILE_BLOCK_CONCAT_IMPL(a, b) a##b
@@ -68,7 +69,11 @@ protected:
     nlohmann::json m_data;
 
     /// @brief The global scope pointer into the JSON data.
-    nlohmann::json::json_pointer current_scope;
+    nlohmann::json::json_pointer m_current_scope;
+
+    /// @brief The thread that records data; calls from all other threads are
+    ///        silently ignored, giving a single-thread estimate of block costs.
+    std::thread::id m_main_thread_id;
 };
 
 Profiler& profiler();
