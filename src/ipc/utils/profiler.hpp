@@ -10,13 +10,9 @@
 // clang-format on
 
 #include <nlohmann/json.hpp>
-#include <tbb/enumerable_thread_specific.h>
 
-#include <atomic>
 #include <chrono>
 #include <iostream>
-#include <thread>
-#include <vector>
 
 // Helper macro to stringify/paste after expansion
 #define IPC_TOOLKIT_PROFILE_BLOCK_CONCAT_IMPL(a, b) a##b
@@ -62,39 +58,17 @@ public:
     void print_csv() const { write_csv(std::cout); }
 
     /// @brief Access the profiling data as a JSON object.
-    nlohmann::json data() const;
+    const nlohmann::json& data() const { return m_data; }
+
+    /// @brief Access the profiling data as a JSON object.
+    nlohmann::json& data() { return m_data; }
 
 protected:
-    struct ThreadLocalData {
-        /// @brief The profiling data stored as a JSON object.
-        nlohmann::json m_data;
+    /// @brief The profiling data stored as a JSON object.
+    nlohmann::json m_data;
 
-        /// @brief The global scope pointer into the JSON data.
-        nlohmann::json::json_pointer current_scope;
-
-        /// @brief A helper vector to track the path strings for syncing logic.
-        std::vector<std::string> scope_path;
-
-        /// @brief The version of the global scope this thread is synced with.
-        size_t sync_version = 0;
-    };
-
-    /// @brief Thread-local storage for profiling data.
-    mutable tbb::enumerable_thread_specific<ThreadLocalData> m_thread_data;
-
-    /// @brief Helper to combine all thread-local data into one JSON object.
-    nlohmann::json combine_data() const;
-
-    /// @brief Helper to recursively merge two JSON objects.
-    static void
-    merge_json(nlohmann::json& target, const nlohmann::json& source);
-
-    // --- Synchronization ---
-    std::thread::id m_main_thread_id;
-    ThreadLocalData* m_main_thread_data = nullptr;
-
-    // Sequence lock version: Even = Stable, Odd = Modifying
-    std::atomic<size_t> m_scope_version { 0 };
+    /// @brief The global scope pointer into the JSON data.
+    nlohmann::json::json_pointer current_scope;
 };
 
 Profiler& profiler();
