@@ -55,35 +55,27 @@ void NormalCollisions::build(
         collision_set_type() == CollisionSetType::OGC);
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.vv_candidates.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            storage.local().add_vertex_vertex_collisions(
-                mesh, vertices, candidates.vv_candidates, is_active, r.begin(),
-                r.end());
+        size_t(0), candidates.vv_candidates.size(), [&](size_t i) {
+            storage.local().add_vertex_vertex_collision(
+                mesh, vertices, candidates.vv_candidates[i], is_active);
         });
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.ev_candidates.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            storage.local().add_edge_vertex_collisions(
-                mesh, vertices, candidates.ev_candidates, is_active, r.begin(),
-                r.end());
+        size_t(0), candidates.ev_candidates.size(), [&](size_t i) {
+            storage.local().add_edge_vertex_collision(
+                mesh, vertices, candidates.ev_candidates[i], is_active);
         });
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.ee_candidates.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            storage.local().add_edge_edge_collisions(
-                mesh, vertices, candidates.ee_candidates, is_active, r.begin(),
-                r.end());
+        size_t(0), candidates.ee_candidates.size(), [&](size_t i) {
+            storage.local().add_edge_edge_collision(
+                mesh, vertices, candidates.ee_candidates[i], is_active);
         });
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.fv_candidates.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            storage.local().add_face_vertex_collisions(
-                mesh, vertices, candidates.fv_candidates, is_active, r.begin(),
-                r.end());
+        size_t(0), candidates.fv_candidates.size(), [&](size_t i) {
+            storage.local().add_face_vertex_collision(
+                mesh, vertices, candidates.fv_candidates[i], is_active);
         });
 
     if (collision_set_type() == CollisionSetType::IMPROVED_MAX_APPROX) {
@@ -92,13 +84,11 @@ void NormalCollisions::build(
             const auto vv_candidates = candidates.edge_vertex_to_vertex_vertex(
                 mesh, vertices, is_active);
 
-            tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
-                [&](const tbb::blocked_range<size_t>& r) {
-                    storage.local()
-                        .add_edge_vertex_negative_vertex_vertex_collisions(
-                            mesh, vertices, vv_candidates, r.begin(), r.end());
-                });
+            tbb::parallel_for(size_t(0), vv_candidates.size(), [&](size_t i) {
+                storage.local()
+                    .add_edge_vertex_negative_vertex_vertex_collision(
+                        mesh, vertices, vv_candidates[i]);
+            });
         }
 
         if (!candidates.ee_candidates.empty()) {
@@ -106,13 +96,10 @@ void NormalCollisions::build(
             const auto ev_candidates =
                 candidates.edge_edge_to_edge_vertex(mesh, vertices, is_active);
 
-            tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
-                [&](const tbb::blocked_range<size_t>& r) {
-                    storage.local()
-                        .add_edge_edge_negative_edge_vertex_collisions(
-                            mesh, vertices, ev_candidates, r.begin(), r.end());
-                });
+            tbb::parallel_for(size_t(0), ev_candidates.size(), [&](size_t i) {
+                storage.local().add_edge_edge_negative_edge_vertex_collision(
+                    mesh, vertices, ev_candidates[i]);
+            });
         }
 
         if (!candidates.fv_candidates.empty()) {
@@ -120,25 +107,20 @@ void NormalCollisions::build(
             const auto ev_candidates = candidates.face_vertex_to_edge_vertex(
                 mesh, vertices, is_active);
 
-            tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
-                [&](const tbb::blocked_range<size_t>& r) {
-                    storage.local()
-                        .add_face_vertex_negative_edge_vertex_collisions(
-                            mesh, vertices, ev_candidates, r.begin(), r.end());
-                });
+            tbb::parallel_for(size_t(0), ev_candidates.size(), [&](size_t i) {
+                storage.local().add_face_vertex_negative_edge_vertex_collision(
+                    mesh, vertices, ev_candidates[i]);
+            });
 
             // Convert face-vertex to vertex-vertex
             const auto vv_candidates = candidates.face_vertex_to_vertex_vertex(
                 mesh, vertices, is_active);
 
-            tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
-                [&](const tbb::blocked_range<size_t>& r) {
-                    storage.local()
-                        .add_face_vertex_positive_vertex_vertex_collisions(
-                            mesh, vertices, vv_candidates, r.begin(), r.end());
-                });
+            tbb::parallel_for(size_t(0), vv_candidates.size(), [&](size_t i) {
+                storage.local()
+                    .add_face_vertex_positive_vertex_vertex_collision(
+                        mesh, vertices, vv_candidates[i]);
+            });
         }
     }
 
