@@ -966,6 +966,62 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#planar-dat-divide-and-truncate" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#planar-dat-divide-and-truncate (reference label)"><span>Planar-<wbr>DAT <wbr>(Divide and Truncate)</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Planar-DAT (Divide and Truncate)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-division-plane-is-computed" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#how-the-division-plane-is-computed (reference label)"><span>How the Division Plane is Computed</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-planar-filter-step" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#using-planar-filter-step (reference label)"><span>Using planar_<wbr>filter_<wbr>step</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-optimization-loop-with-planar-dat" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#full-optimization-loop-with-planar-dat (reference label)"><span>Full Optimization Loop with Planar-<wbr>DAT</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-planar-dat-vs-isotropic" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#when-to-use-planar-dat-vs-isotropic (reference label)"><span>When to Use Planar-<wbr>DAT vs.<wbr> Isotropic</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2303,6 +2359,62 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#planar-dat-divide-and-truncate" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#planar-dat-divide-and-truncate (reference label)"><span>Planar-<wbr>DAT <wbr>(Divide and Truncate)</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Planar-DAT (Divide and Truncate)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-division-plane-is-computed" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#how-the-division-plane-is-computed (reference label)"><span>How the Division Plane is Computed</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-planar-filter-step" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#using-planar-filter-step (reference label)"><span>Using planar_<wbr>filter_<wbr>step</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-optimization-loop-with-planar-dat" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#full-optimization-loop-with-planar-dat (reference label)"><span>Full Optimization Loop with Planar-<wbr>DAT</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-planar-dat-vs-isotropic" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/ogc.rst#when-to-use-planar-dat-vs-isotropic (reference label)"><span>When to Use Planar-<wbr>DAT vs.<wbr> Isotropic</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2321,7 +2433,7 @@
 
 <h1 id="offset-geometric-contact">Offset Geometric Contact<a class="headerlink" href="#offset-geometric-contact" title="Link to this heading">¶</a></h1>
 <p>This tutorial explains how to implement the Offset Geometric Contact
-(OGC) <span id="id1">[<a class="reference internal" href="references.html#id13" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span> algorithm using the IPC Toolkit.</p>
+(OGC) <span id="id1">[<a class="reference internal" href="references.html#id14" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span> algorithm using the IPC Toolkit.</p>
 <p>OGC is a contact model designed to guarantee penetration-free simulation of
 objects while incurring minimal computational overhead. It works by constructing
 a volumetric shape around the object by offsetting each face along its normal
@@ -2330,7 +2442,7 @@ large contact radius without introducing artifacts.</p>
 <p>OGC integrates into the optimization process by replacing the continuous
 collision detection (CCD) line search with a trust region-based approach using
 vertex-specific displacement bounds.</p>
-<p>For more details on the OGC algorithm, please refer to <span id="id2">[<a class="reference internal" href="references.html#id13" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span>
+<p>For more details on the OGC algorithm, please refer to <span id="id2">[<a class="reference internal" href="references.html#id14" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span>
 and their associated video <a class="reference external" href="https://www.youtube.com/watch?v=xxyniqSLJik">here</a>.</p>
 <h2 id="algorithm">Algorithm<a class="headerlink" href="#algorithm" title="Link to this heading">¶</a></h2>
 <p>At a high-level, the OGC algorithm proceeds as follows:</p>
@@ -2617,7 +2729,7 @@ Python</label></div>
 </div>
 </div>
 </div><h2 id="algorithm-details-and-adaptations">Algorithm Details and Adaptations<a class="headerlink" href="#algorithm-details-and-adaptations" title="Link to this heading">¶</a></h2>
-<p>While the implementation follows the core OGC algorithm (Algorithm 3 in <span id="id3">[<a class="reference internal" href="references.html#id13" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span>), there are several practical adaptations in <code class="docutils literal notranslate"><span class="pre">TrustRegion</span></code> to ensure robustness, numerical stability, and compatibility with line-search-based solvers.</p>
+<p>While the implementation follows the core OGC algorithm (Algorithm 3 in <span id="id3">[<a class="reference internal" href="references.html#id14" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span>), there are several practical adaptations in <code class="docutils literal notranslate"><span class="pre">TrustRegion</span></code> to ensure robustness, numerical stability, and compatibility with line-search-based solvers.</p>
 <h3 id="step-scaling-vs-closest-point-projection">Step Scaling vs. Closest-Point Projection<a class="headerlink" href="#step-scaling-vs-closest-point-projection" title="Link to this heading">¶</a></h3>
 <p>The most significant deviation from the original paper lies in how vertices are constrained when they exceed their trust region bounds (Step 2d).</p>
 <ul class="simple">
@@ -2665,6 +2777,142 @@ Mixing Trust Region constraints with Line Search methods can be delicate. If you
 2.  If they are outside, it effectively projects them to the boundary (using the scaling method described above).
 3.  <strong>Crucially</strong>, if the number of vertices hitting the boundary exceeds <code class="docutils literal notranslate"><span class="pre">update_threshold</span></code> immediately during this warm start, it triggers a second <code class="docutils literal notranslate"><span class="pre">update()</span></code> call.</p>
 <p>This prevents the solver from starting with a trust region that is already too restrictive for the bulk of the mesh, potentially saving solver iterations later.</p>
+<h2 id="planar-dat-divide-and-truncate">Planar-DAT (Divide and Truncate)<a class="headerlink" href="#planar-dat-divide-and-truncate" title="Link to this heading">¶</a></h2>
+<p>The isotropic <code class="docutils literal notranslate"><span class="pre">filter_step</span></code> clips every vertex displacement to a sphere, which restricts motion in <em>all</em> directions — even tangential sliding or outward motion away from a contact. In dense or cluttered contact scenarios this causes <strong>artificial damping</strong> and <strong>deadlock</strong>: vertices cannot slide past each other even when no penetration would occur.</p>
+<p><strong>Planar-DAT</strong> <span id="id4">[<a class="reference internal" href="references.html#id13">Chen <em>et al.</em>, 2026</a>]</span> replaces the sphere with a <em>direction-aware division plane</em> computed per collision pair. Only the displacement component that crosses the plane (i.e., moves toward the opposing primitive) is truncated; tangential and separating motion passes through unconstrained. This typically allows steps 2× larger or more, eliminating damping artifacts.</p>
+<h3 id="how-the-division-plane-is-computed">How the Division Plane is Computed<a class="headerlink" href="#how-the-division-plane-is-computed" title="Link to this heading">¶</a></h3>
+<p>For each active collision pair the algorithm:</p>
+<ol class="arabic simple">
+<li><p>Finds the closest points between the two primitives.</p></li>
+<li><p>Constructs a unit normal <span class="math notranslate nohighlight">\(\mathbf{n}\)</span> pointing from one primitive toward the other.</p></li>
+<li><p>Distributes the available gap between the two primitives in proportion to their approach speeds, yielding a <strong>division point</strong> <span class="math notranslate nohighlight">\(\mathbf{p}\)</span> on the segment connecting the closest points.</p></li>
+<li><p>For every vertex of both primitives, finds the ray–plane intersection time <span class="math notranslate nohighlight">\(t_i\)</span> such that <span class="math notranslate nohighlight">\(\mathbf{x}_u + t_i \, \delta\mathbf{x}_u\)</span> lies on the plane through <span class="math notranslate nohighlight">\(\mathbf{p}\)</span> with normal <span class="math notranslate nohighlight">\(\mathbf{n}\)</span>. If <span class="math notranslate nohighlight">\(t_i \in [0, 1/\gamma_r)\)</span>, the vertex is truncated to <span class="math notranslate nohighlight">\(\gamma_r \, t_i\)</span>; otherwise it is left unchanged.</p></li>
+</ol>
+<p>For vertices not covered by an active collision pair, an isotropic fallback clamps motion to a safe-zone sphere centered at <code class="docutils literal notranslate"><span class="pre">trust_region_centers</span></code> with radius <code class="docutils literal notranslate"><span class="pre">trust_region_inflation_radius</span></code>. This fallback is distinct from the isotropic clamp in <code class="docutils literal notranslate"><span class="pre">filter_step</span></code>, which uses the per-vertex radii <code class="docutils literal notranslate"><span class="pre">trust_region_radii(i)</span></code>, but it serves the same purpose of ensuring that no uncovered vertex can escape the safe zone.</p>
+<h3 id="using-planar-filter-step">Using <code class="docutils literal notranslate"><span class="pre">planar_filter_step</span></code><a class="headerlink" href="#using-planar-filter-step" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">planar_filter_step</span></code> is a <em>drop-in replacement</em> for <code class="docutils literal notranslate"><span class="pre">filter_step</span></code> inside the solver loop. It uses the collision candidates stored in <code class="docutils literal notranslate"><span class="pre">trust_region.candidates</span></code> by the last call to <code class="docutils literal notranslate"><span class="pre">update</span></code> or <code class="docutils literal notranslate"><span class="pre">update_if_needed</span></code>. The relaxation ratio is controlled via the <code class="docutils literal notranslate"><span class="pre">relaxed_radius_scaling</span></code> member of the <code class="docutils literal notranslate"><span class="pre">TrustRegion</span></code> object (default 0.9).</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2">
+<input checked type="radio" id="__tabbed_7_1" name="__tabbed_7"><input type="radio" id="__tabbed_7_2" name="__tabbed_7"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_7_1">
+C++</label><label class="tabbed-label" for="__tabbed_7_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// Inside the solver loop, replace:</span>
+<span class="c1">//   trust_region.filter_step(mesh, x, dx);</span>
+<span class="c1">// with:</span>
+<span class="n">trust_region</span><span class="p">.</span><span class="n">planar_filter_step</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">dx</span><span class="p">);</span>
+
+<span class="c1">// Optionally tune the relaxation ratio via the struct member:</span>
+<span class="c1">// trust_region.relaxed_radius_scaling = 0.9; // default</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># Inside the solver loop, replace:</span>
+<span class="c1">#   trust_region.filter_step(mesh, x, dx)</span>
+<span class="c1"># with:</span>
+<span class="n">trust_region</span><span class="o">.</span><span class="n">planar_filter_step</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
+
+<span class="c1"># Optionally tune the relaxation ratio via the struct member:</span>
+<span class="c1"># trust_region.relaxed_radius_scaling = 0.9  # default</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><h3 id="full-optimization-loop-with-planar-dat">Full Optimization Loop with Planar-DAT<a class="headerlink" href="#full-optimization-loop-with-planar-dat" title="Link to this heading">¶</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2">
+<input checked type="radio" id="__tabbed_8_1" name="__tabbed_8"><input type="radio" id="__tabbed_8_2" name="__tabbed_8"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_8_1">
+C++</label><label class="tabbed-label" for="__tabbed_8_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// 1. Initial setup (same as isotropic OGC)</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">NormalCollisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
+<span class="n">collisions</span><span class="p">.</span><span class="n">set_collision_set_type</span><span class="p">(</span><span class="n">ipc</span><span class="o">::</span><span class="n">NormalCollisions</span><span class="o">::</span><span class="n">CollisionSetType</span><span class="o">::</span><span class="n">OGC</span><span class="p">);</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">ogc</span><span class="o">::</span><span class="n">TrustRegion</span><span class="w"> </span><span class="nf">trust_region</span><span class="p">(</span><span class="n">dhat</span><span class="p">);</span>
+
+<span class="c1">// 2. Warm start (Predict &amp; Initialize)</span>
+<span class="n">trust_region</span><span class="p">.</span><span class="n">warm_start_time_step</span><span class="p">(</span>
+<span class="w">    </span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">pred_x</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span>
+
+<span class="c1">// 3. Solver Loop</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">max_iterations</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Update trust region centers/radii if needed</span>
+<span class="w">    </span><span class="n">trust_region</span><span class="p">.</span><span class="n">update_if_needed</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Compute search direction (Solver specific)</span>
+<span class="w">    </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">dx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compute_search_direction</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="p">...);</span>
+
+<span class="w">    </span><span class="c1">// Filter step using Planar-DAT (direction-aware truncation)</span>
+<span class="w">    </span><span class="n">trust_region</span><span class="p">.</span><span class="n">planar_filter_step</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">dx</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Update positions</span>
+<span class="w">    </span><span class="n">x</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">dx</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Check convergence...</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># 1. Initial setup (same as isotropic OGC)</span>
+<span class="n">collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">NormalCollisions</span><span class="p">()</span>
+<span class="n">collisions</span><span class="o">.</span><span class="n">collision_set_type</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">NormalCollisions</span><span class="o">.</span><span class="n">CollisionSetType</span><span class="o">.</span><span class="n">OGC</span>
+<span class="n">trust_region</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">ogc</span><span class="o">.</span><span class="n">TrustRegion</span><span class="p">(</span><span class="n">dhat</span><span class="p">)</span>
+
+<span class="c1"># 2. Warm start (Predict &amp; Initialize)</span>
+<span class="n">trust_region</span><span class="o">.</span><span class="n">warm_start_time_step</span><span class="p">(</span>
+    <span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">pred_x</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">dhat</span><span class="p">)</span>
+
+<span class="c1"># 3. Solver Loop</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iterations</span><span class="p">):</span>
+    <span class="c1"># Update trust region centers/radii if needed</span>
+    <span class="n">trust_region</span><span class="o">.</span><span class="n">update_if_needed</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">dhat</span><span class="p">)</span>
+
+    <span class="c1"># Compute search direction (Solver specific)</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">compute_search_direction</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+
+    <span class="c1"># Filter step using Planar-DAT (direction-aware truncation)</span>
+    <span class="n">trust_region</span><span class="o">.</span><span class="n">planar_filter_step</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
+
+    <span class="c1"># Update positions</span>
+    <span class="n">x</span> <span class="o">+=</span> <span class="n">dx</span>
+
+    <span class="c1"># Check convergence...</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>Like <code class="docutils literal notranslate"><span class="pre">filter_step</span></code>, <code class="docutils literal notranslate"><span class="pre">planar_filter_step</span></code> also sets
+<code class="docutils literal notranslate"><span class="pre">should_update_trust_region</span></code> when a critical mass of vertices are
+restricted by the trust region. Call <code class="docutils literal notranslate"><span class="pre">update_if_needed</span></code> at the top of
+each solver iteration to refresh the collision set when needed.</p>
+</div>
+<h3 id="when-to-use-planar-dat-vs-isotropic">When to Use Planar-DAT vs. Isotropic<a class="headerlink" href="#when-to-use-planar-dat-vs-isotropic" title="Link to this heading">¶</a></h3>
+<table class="docutils data align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Use <code class="docutils literal notranslate"><span class="pre">filter_step</span></code> (isotropic)</p></th>
+<th class="head"><p>Use <code class="docutils literal notranslate"><span class="pre">planar_filter_step</span></code> (Planar-DAT)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Simple scenes, sparse contact</p></td>
+<td><p>Dense contact, many simultaneous constraints</p></td>
+</tr>
+<tr class="row-odd"><td><p>Stepping-stone implementation</p></td>
+<td><p>Coupled multi-physics simulations</p></td>
+</tr>
+<tr class="row-even"><td><p>When implementation simplicity
+is preferred</p></td>
+<td><p>When artificial damping or deadlock
+is observed with isotropic filtering</p></td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -2685,7 +2933,7 @@ Mixing Trust Region constraints with Line Search methods can be delicate. If you
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Apr 24, 2026
+    Apr 29, 2026
   </span>
 
     
