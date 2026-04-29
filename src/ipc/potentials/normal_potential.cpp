@@ -30,24 +30,19 @@ Eigen::VectorXd NormalPotential::gauss_newton_hessian_diagonal(
     tbb::combinable<Eigen::VectorXd> diag_storage(
         Eigen::VectorXd::Zero(vertices.size()));
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const NormalCollision& collision = collisions[i];
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        const NormalCollision& collision = collisions[i];
 
-                const VectorMax12d local_diag =
-                    this->gauss_newton_hessian_diagonal(
-                        collision, collision.dof(vertices, edges, faces));
+        const VectorMax12d local_diag = this->gauss_newton_hessian_diagonal(
+            collision, collision.dof(vertices, edges, faces));
 
-                const auto vids = collision.vertex_ids(edges, faces);
+        const auto vids = collision.vertex_ids(edges, faces);
 
-                // Don't be confused by the "gradient" in the name -- this just
-                // scatters a local vector into a global vector.
-                local_gradient_to_global_gradient(
-                    local_diag, vids, dim, diag_storage.local());
-            }
-        });
+        // Don't be confused by the "gradient" in the name -- this just
+        // scatters a local vector into a global vector.
+        local_gradient_to_global_gradient(
+            local_diag, vids, dim, diag_storage.local());
+    });
 
     return diag_storage.combine([](const Eigen::VectorXd& a,
                                    const Eigen::VectorXd& b) { return a + b; });
@@ -107,19 +102,15 @@ Eigen::SparseMatrix<double> NormalPotential::shape_derivative(
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_triplets = storage.local();
-
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                this->shape_derivative(
-                    collisions[i], collisions[i].vertex_ids(edges, faces),
-                    collisions[i].dof(rest_positions, edges, faces),
-                    collisions[i].dof(vertices, edges, faces), local_triplets,
-                    mesh.num_vertices());
-            }
-        });
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        const NormalCollision& collision = collisions[i];
+        auto& local_triplets = storage.local();
+        this->shape_derivative(
+            collision, collision.vertex_ids(edges, faces),
+            collision.dof(rest_positions, edges, faces),
+            collision.dof(vertices, edges, faces), local_triplets,
+            mesh.num_vertices());
+    });
 
     Eigen::SparseMatrix<double> shape_derivative(ndof, ndof);
     for (const auto& local_triplets : storage) {

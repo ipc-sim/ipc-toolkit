@@ -1,6 +1,5 @@
 #include "trust_region.hpp"
 
-#include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
 
 #include <atomic>
@@ -43,25 +42,19 @@ void TrustRegion::warm_start_time_step(
     should_update_trust_region = false;
 
     std::atomic<int> num_updates(0);
-    tbb::parallel_for(
-        tbb::blocked_range<int>(0, static_cast<int>(x.rows())),
-        [&](const tbb::blocked_range<int>& range) {
-            for (int i = range.begin(); i < range.end(); i++) {
-                const VectorMax3d x_i = x.row(i);
-                const VectorMax3d pred_x_i = pred_x.row(i);
+    tbb::parallel_for(0, static_cast<int>(x.rows()), [&](int i) {
+        const VectorMax3d x_i = x.row(i);
+        const VectorMax3d pred_x_i = pred_x.row(i);
 
-                if (dx_norm(i) <= trust_region_radii(i)) {
-                    x.row(i) = pred_x_i; // Free to move to the predicted
-                                         // position
-                } else {
-                    // Move to the boundary of the trust region
-                    x.row(i) = x_i
-                        + (trust_region_radii(i) / dx_norm(i))
-                            * (pred_x_i - x_i);
-                    ++num_updates;
-                }
-            }
-        });
+        if (dx_norm(i) <= trust_region_radii(i)) {
+            x.row(i) = pred_x_i; // Free to move to the predicted position
+        } else {
+            // Move to the boundary of the trust region
+            x.row(i) =
+                x_i + (trust_region_radii(i) / dx_norm(i)) * (pred_x_i - x_i);
+            num_updates.fetch_add(1, std::memory_order_relaxed);
+        }
+    });
 
     // If a critical mass of vertices are restricted by the trust region,
     // we update the trust region to avoid excessive filtering.
@@ -186,29 +179,25 @@ void TrustRegion::filter_step(
     assert(x.rows() == dx.rows() && x.cols() == dx.cols());
 
     std::atomic<int> num_updates(0);
-    tbb::parallel_for(
-        tbb::blocked_range<int>(0, static_cast<int>(x.rows())),
-        [&](const tbb::blocked_range<int>& range) {
-            for (int i = range.begin(); i < range.end(); i++) {
-                const VectorMax3d ci = trust_region_centers.row(i);
-                const VectorMax3d xi = x.row(i);
-                const VectorMax3d dxi = dx.row(i);
+    tbb::parallel_for(0, static_cast<int>(x.rows()), [&](int i) {
+        const VectorMax3d ci = trust_region_centers.row(i);
+        const VectorMax3d xi = x.row(i);
+        const VectorMax3d dxi = dx.row(i);
 
-                // Check that the current position is within the trust region.
-                assert((xi - ci).norm() <= trust_region_radii(i) + 1e-9);
+        // Check that the current position is within the trust region.
+        assert((xi - ci).norm() <= trust_region_radii(i) + 1e-9);
 
-                const double beta = compute_trust_region_beta(
-                    xi, dxi, ci, trust_region_radii(i));
-                if (beta < 1.0) {
-                    dx.row(i).array() *= beta;
-                    assert(approx(
-                        (xi + dx.row(i).transpose() - ci).norm(),
-                        trust_region_radii(i)));
+        const double beta =
+            compute_trust_region_beta(xi, dxi, ci, trust_region_radii(i));
+        if (beta < 1.0) {
+            dx.row(i).array() *= beta;
+            assert(approx(
+                (xi + dx.row(i).transpose() - ci).norm(),
+                trust_region_radii(i)));
 
-                    ++num_updates;
-                }
-            }
-        });
+            num_updates.fetch_add(1, std::memory_order_relaxed);
+        }
+    });
 
     // If a critical mass of vertices are restricted by the trust region,
     // we update the trust region to avoid excessive filtering.
@@ -253,67 +242,61 @@ void TrustRegion::planar_filter_step(
         t_v_atomic[i].store(1.0, std::memory_order_relaxed);
     }
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, candidates.size()),
-        [&](const tbb::blocked_range<size_t>& range) {
-            for (size_t i = range.begin(); i < range.end(); i++) {
-                const CollisionStencil& c = candidates[i];
-                const auto ids = c.vertex_ids(mesh.edges(), mesh.faces());
-                const int nv = c.num_vertices();
-                const VectorMax12d pos =
-                    c.dof(vertices, mesh.edges(), mesh.faces());
+    tbb::parallel_for(size_t(0), candidates.size(), [&](size_t i) {
+        const CollisionStencil& c = candidates[i];
+        const auto ids = c.vertex_ids(mesh.edges(), mesh.faces());
+        const int nv = c.num_vertices();
+        const VectorMax12d pos = c.dof(vertices, mesh.edges(), mesh.faces());
 
-                // dv = c_first − c_second; positive coeffs → first primitive
-                VectorMax4d coeffs;
-                const VectorMax3d dv = c.compute_distance_vector(pos, coeffs);
-                const double dist = dv.norm();
-                if (dist < 1e-10) {
-                    continue;
-                }
+        // dv = c_first − c_second; positive coeffs → first primitive
+        VectorMax4d coeffs;
+        const VectorMax3d dv = c.compute_distance_vector(pos, coeffs);
+        const double dist = dv.norm();
+        if (dist < 1e-10) {
+            return;
+        }
 
-                const VectorMax3d n = dv / dist;
+        const VectorMax3d n = dv / dist;
 
-                VectorMax3d c_first = VectorMax3d::Zero(d);
-                VectorMax3d c_second = VectorMax3d::Zero(d);
-                double delta_first = 0, delta_second = 0;
+        VectorMax3d c_first = VectorMax3d::Zero(d);
+        VectorMax3d c_second = VectorMax3d::Zero(d);
+        double delta_first = 0, delta_second = 0;
 
-                for (int j = 0; j < nv; ++j) {
-                    const int fid = to_full(ids[j]);
-                    Eigen::ConstRef<VectorMax3d> xj = pos.segment(j * d, d);
-                    Eigen::ConstRef<VectorMax3d> dxj = dx.row(fid);
-                    if (coeffs[j] > 0) {
-                        c_first += coeffs[j] * xj;
-                        delta_first = std::max(delta_first, -dxj.dot(n));
-                    } else if (coeffs[j] < 0) {
-                        c_second -= coeffs[j] * xj;
-                        delta_second = std::max(delta_second, dxj.dot(n));
-                    }
-                }
-                delta_first = std::max(delta_first, 0.0);
-                delta_second = std::max(delta_second, 0.0);
-
-                const double lambda = (delta_first == 0 && delta_second == 0)
-                    ? 0.5
-                    : delta_second / (delta_first + delta_second);
-
-                // Division plane: p = c_second + λ·dv  (λ=0 → plane at
-                // second prim, λ=1 → plane at first prim).
-                const VectorMax3d p = c_second + lambda * dv;
-
-                for (int j = 0; j < nv; ++j) {
-                    assert(ids[j] >= 0); // All candidates should be valid
-                    const int fid = to_full(ids[j]);
-                    Eigen::ConstRef<VectorMax3d> xj = pos.segment(j * d, d);
-                    Eigen::ConstRef<VectorMax3d> dxj = dx.row(fid);
-                    const double t_val = planar_truncation_ratio(xj, dxj, n, p);
-                    double old_val =
-                        t_v_atomic[fid].load(std::memory_order_relaxed);
-                    while (t_val < old_val
-                           && !t_v_atomic[fid].compare_exchange_weak(
-                               old_val, t_val, std::memory_order_relaxed)) { }
-                }
+        for (int j = 0; j < nv; ++j) {
+            const int fid = to_full(ids[j]);
+            Eigen::ConstRef<VectorMax3d> xj = pos.segment(j * d, d);
+            Eigen::ConstRef<VectorMax3d> dxj = dx.row(fid);
+            if (coeffs[j] > 0) {
+                c_first += coeffs[j] * xj;
+                delta_first = std::max(delta_first, -dxj.dot(n));
+            } else if (coeffs[j] < 0) {
+                c_second -= coeffs[j] * xj;
+                delta_second = std::max(delta_second, dxj.dot(n));
             }
-        });
+        }
+        delta_first = std::max(delta_first, 0.0);
+        delta_second = std::max(delta_second, 0.0);
+
+        const double lambda = (delta_first == 0 && delta_second == 0)
+            ? 0.5
+            : delta_second / (delta_first + delta_second);
+
+        // Division plane: p = c_second + λ·dv  (λ=0 → plane at
+        // second prim, λ=1 → plane at first prim).
+        const VectorMax3d p = c_second + lambda * dv;
+
+        for (int j = 0; j < nv; ++j) {
+            assert(ids[j] >= 0); // All candidates should be valid
+            const int fid = to_full(ids[j]);
+            Eigen::ConstRef<VectorMax3d> xj = pos.segment(j * d, d);
+            Eigen::ConstRef<VectorMax3d> dxj = dx.row(fid);
+            const double t_val = planar_truncation_ratio(xj, dxj, n, p);
+            double old_val = t_v_atomic[fid].load(std::memory_order_relaxed);
+            while (t_val < old_val
+                   && !t_v_atomic[fid].compare_exchange_weak(
+                       old_val, t_val, std::memory_order_relaxed)) { }
+        }
+    });
 
     // Convert atomics to a plain vector for the subsequent serial passes.
     Eigen::VectorXd t_v(x.rows());
@@ -324,35 +307,27 @@ void TrustRegion::planar_filter_step(
     // ---- Isotropic Fallback --------------------------------------------
     // For primitives beyond the query radius, fall back to isotropic
     // trust-region clamping (same as filter_step) to prevent penetration.
-    tbb::parallel_for(
-        tbb::blocked_range<int>(0, static_cast<int>(x.rows())),
-        [&](const tbb::blocked_range<int>& range) {
-            for (int i = range.begin(); i < range.end(); i++) {
-                // Use trust_region_inflation_radius instead of
-                // trust_region_radii(v). This is the key difference between
-                // Planar-DAT and Isotropic-DAT. This allows us to preserve
-                // more motion for vertices that are near the boundary of the
-                // trust region, rather than restricting them to a smaller
-                // trust region radius.
-                const double beta = compute_trust_region_beta(
-                    x.row(i), dx.row(i), trust_region_centers.row(i),
-                    trust_region_inflation_radius);
-                t_v[i] = std::min(t_v[i], beta);
-            }
-        });
+    tbb::parallel_for(0, static_cast<int>(x.rows()), [&](int i) {
+        // Use trust_region_inflation_radius instead of
+        // trust_region_radii(v). This is the key difference between
+        // Planar-DAT and Isotropic-DAT. This allows us to preserve
+        // more motion for vertices that are near the boundary of the
+        // trust region, rather than restricting them to a smaller
+        // trust region radius.
+        const double beta = compute_trust_region_beta(
+            x.row(i), dx.row(i), trust_region_centers.row(i),
+            trust_region_inflation_radius);
+        t_v[i] = std::min(t_v[i], beta);
+    });
 
     // ---- Apply Truncations ---------------------------------------------
     std::atomic<int> num_updates(0);
-    tbb::parallel_for(
-        tbb::blocked_range<int>(0, static_cast<int>(x.rows())),
-        [&](const tbb::blocked_range<int>& range) {
-            for (int v = range.begin(); v < range.end(); v++) {
-                if (t_v[v] < 1.0) {
-                    dx.row(v) *= t_v[v];
-                    ++num_updates;
-                }
-            }
-        });
+    tbb::parallel_for(0, static_cast<int>(x.rows()), [&](int v) {
+        if (t_v[v] < 1.0) {
+            dx.row(v) *= t_v[v];
+            num_updates.fetch_add(1, std::memory_order_relaxed);
+        }
+    });
 
     // Mirror filter_step: if a critical mass of vertices are restricted,
     // flag the trust region for re-centering on the next iteration.
