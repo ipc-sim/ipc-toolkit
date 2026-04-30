@@ -22,20 +22,6 @@ SpatialHash::SpatialHash() : impl(std::make_unique<SpatialHash::Impl>()) { }
 SpatialHash::~SpatialHash() = default;
 
 namespace {
-    inline void tbb_parallel_block_range_for(
-        const size_t start_i,
-        const size_t end_i,
-        const std::function<void(size_t)>& body)
-    {
-        tbb::parallel_for(
-            tbb::blocked_range(start_i, end_i),
-            [&](const tbb::blocked_range<size_t>& range) {
-                for (size_t i = range.begin(); i != range.end(); i++) {
-                    body(i);
-                }
-            });
-    }
-
     void fill_primitive_to_voxels(
         Eigen::ConstRef<Eigen::Array3i> min_voxel,
         Eigen::ConstRef<Eigen::Array3i> max_voxel,
@@ -149,14 +135,14 @@ void SpatialHash::build(
     // ------------------------------------------------------------------------
 
     impl->point_to_voxels.resize(num_vertices);
-    tbb_parallel_block_range_for(0, num_vertices, [&](size_t vi) {
+    tbb::parallel_for(size_t(0), num_vertices, [&](size_t vi) {
         fill_primitive_to_voxels(
             vertex_min_voxel_axis_index[vi], vertex_max_voxel_axis_index[vi],
             voxel_count, voxel_count_0x1, impl->point_to_voxels[vi]);
     });
 
     impl->edge_to_voxels.resize(edges.rows());
-    tbb_parallel_block_range_for(0, edges.rows(), [&](size_t ei) {
+    tbb::parallel_for(size_t(0), size_t(edges.rows()), [&](size_t ei) {
         fill_primitive_to_voxels(
             vertex_min_voxel_axis_index[edges(ei, 0)].min(
                 vertex_min_voxel_axis_index[edges(ei, 1)]),
@@ -166,7 +152,7 @@ void SpatialHash::build(
     });
 
     impl->face_to_voxels.resize(faces.rows());
-    tbb_parallel_block_range_for(0, faces.rows(), [&](size_t fi) {
+    tbb::parallel_for(size_t(0), size_t(faces.rows()), [&](size_t fi) {
         fill_primitive_to_voxels(
             vertex_min_voxel_axis_index[faces(fi, 0)]
                 .min(vertex_min_voxel_axis_index[faces(fi, 1)])
@@ -203,37 +189,33 @@ namespace {
     {
         tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
 
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), boxesA.size()),
-            [&](const tbb::blocked_range<size_t>& range) {
-                auto& local_candidates = storage.local();
+        tbb::parallel_for(size_t(0), boxesA.size(), [&](size_t i) {
+            auto& local_candidates = storage.local();
 
-                for (size_t i = range.begin(); i != range.end(); i++) {
-                    unordered_set<int> js;
-                    query_A_for_Bs(i, js);
+            unordered_set<int> js;
+            query_A_for_Bs(i, js);
 
-                    for (const int j : js) {
-                        int ai = i, bi = j;
-                        if constexpr (swap_order) {
-                            std::swap(ai, bi);
-                        }
+            for (const int j : js) {
+                int ai = i, bi = j;
+                if constexpr (swap_order) {
+                    std::swap(ai, bi);
+                }
 
-                        if constexpr (triangular) {
-                            if (ai >= bi) {
-                                continue;
-                            }
-                        }
-
-                        if (!can_collide(ai, bi)) {
-                            continue;
-                        }
-
-                        if (boxesA[i].intersects(boxesB[j])) {
-                            local_candidates.emplace_back(ai, bi);
-                        }
+                if constexpr (triangular) {
+                    if (ai >= bi) {
+                        continue;
                     }
                 }
-            });
+
+                if (!can_collide(ai, bi)) {
+                    continue;
+                }
+
+                if (boxesA[i].intersects(boxesB[j])) {
+                    local_candidates.emplace_back(ai, bi);
+                }
+            }
+        });
 
         merge_thread_local_vectors(storage, candidates);
     }

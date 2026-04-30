@@ -75,23 +75,16 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
 
     {
         IPC_TOOLKIT_PROFILE_BLOCK("compute local gradients");
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                for (size_t i = r.begin(); i < r.end(); i++) {
-                    const TCollision& collision = collisions[i];
+        tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+            const TCollision& collision = collisions[i];
 
-                    const VectorMaxNd local_grad = this->gradient(
-                        collision,
-                        collision.dof(X, mesh.edges(), mesh.faces()));
+            const VectorMaxNd local_grad = this->gradient(
+                collision, collision.dof(X, mesh.edges(), mesh.faces()));
 
-                    const std::array<index_t, TCollision::STENCIL_SIZE> vids =
-                        collision.vertex_ids(mesh.edges(), mesh.faces());
-
-                    local_gradient_to_global_gradient(
-                        local_grad, vids, dim, grad.local());
-                }
-            });
+            local_gradient_to_global_gradient(
+                local_grad, collision.vertex_ids(mesh.edges(), mesh.faces()),
+                dim, grad.local());
+        });
     }
 
     {
@@ -129,34 +122,19 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
     {
         IPC_TOOLKIT_PROFILE_BLOCK("compute local hessians and triplets");
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, collisions.size()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                auto& hess_triplets = storage.local();
-                for (size_t i = r.begin(); i < r.end(); i++) {
-                    const TCollision& collision = collisions[i];
+        tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+            auto& hess_triplets = storage.local();
 
-                    MatrixMaxNd local_hess;
-                    {
-                        // IPC_TOOLKIT_PROFILE_BLOCK("compute local hessian");
-                        local_hess = this->hessian(
-                            collision, collision.dof(X, edges, faces),
-                            project_hessian_to_psd);
-                    }
+            const TCollision& collision = collisions[i];
 
-                    {
-                        // IPC_TOOLKIT_PROFILE_BLOCK(
-                        //     "map local hessian to global triplets");
+            const MatrixMaxNd local_hess = this->hessian(
+                collisions[i], collisions[i].dof(X, edges, faces),
+                project_hessian_to_psd);
 
-                        const std::array<index_t, TCollision::STENCIL_SIZE>
-                            vids = collision.vertex_ids(edges, faces);
-
-                        local_hessian_to_global_triplets(
-                            local_hess, vids, dim, *(hess_triplets.cache),
-                            mesh.num_vertices());
-                    }
-                }
-            });
+            local_hessian_to_global_triplets(
+                local_hess, collision.vertex_ids(edges, faces), dim,
+                *(hess_triplets.cache), mesh.num_vertices());
+        });
     }
     if (storage.empty()) {
         return Eigen::SparseMatrix<double>();

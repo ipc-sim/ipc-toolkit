@@ -4,8 +4,6 @@
 #include <ipc/geometry/normal.hpp>
 #include <ipc/tangent/closest_point.hpp>
 
-#include <iostream>
-
 namespace ipc {
 
 FaceVertexCandidate::FaceVertexCandidate(index_t _face_id, index_t _vertex_id)

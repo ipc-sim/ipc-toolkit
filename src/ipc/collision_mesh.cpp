@@ -6,7 +6,6 @@
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
 
-#include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
 
 #include <algorithm>
@@ -235,16 +234,12 @@ namespace {
 
     void remove_duplicates(std::vector<std::vector<index_t>>& v)
     {
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, v.size()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                for (size_t i = r.begin(); i < r.end(); i++) {
-                    std::sort(v[i].begin(), v[i].end());
-                    auto last = std::unique(v[i].begin(), v[i].end());
-                    v[i].erase(last, v[i].end());
-                    v[i].shrink_to_fit();
-                }
-            });
+        tbb::parallel_for(size_t(0), v.size(), [&](size_t i) {
+            std::sort(v[i].begin(), v[i].end());
+            auto last = std::unique(v[i].begin(), v[i].end());
+            v[i].erase(last, v[i].end());
+            v[i].shrink_to_fit();
+        });
     }
 
 } // namespace

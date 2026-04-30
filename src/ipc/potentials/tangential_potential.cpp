@@ -58,26 +58,19 @@ Eigen::VectorXd TangentialPotential::force(
     tbb::combinable<Eigen::VectorXd> storage(
         Eigen::VectorXd::Zero(velocities.size()));
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            Eigen::VectorXd& global_force = storage.local();
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const auto& collision = collisions[i];
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        const auto& collision = collisions[i];
 
-                const VectorMax12d local_force = force(
-                    collision, collision.dof(rest_positions, edges, faces),
-                    collision.dof(lagged_displacements, edges, faces),
-                    collision.dof(velocities, edges, faces), //
-                    normal_potential, dmin, no_mu);
+        const VectorMax12d local_force = force(
+            collision, collision.dof(rest_positions, edges, faces),
+            collision.dof(lagged_displacements, edges, faces),
+            collision.dof(velocities, edges, faces), //
+            normal_potential, dmin, no_mu);
 
-                const std::array<index_t, 4> vis =
-                    collision.vertex_ids(mesh.edges(), mesh.faces());
-
-                local_gradient_to_global_gradient(
-                    local_force, vis, dim, global_force);
-            }
-        });
+        local_gradient_to_global_gradient(
+            local_force, collision.vertex_ids(mesh.edges(), mesh.faces()), dim,
+            storage.local());
+    });
 
     return storage.combine([](const Eigen::VectorXd& a,
                               const Eigen::VectorXd& b) { return a + b; });
@@ -105,28 +98,20 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& jac_triplets = storage.local();
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        const TangentialCollision& collision = collisions[i];
 
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const TangentialCollision& collision = collisions[i];
+        const MatrixMax12d local_force_jacobian = force_jacobian(
+            collision, collision.dof(rest_positions, edges, faces),
+            collision.dof(lagged_displacements, edges, faces),
+            collision.dof(velocities, edges, faces), //
+            normal_potential, wrt, dmin);
 
-                const MatrixMax12d local_force_jacobian = force_jacobian(
-                    collision, collision.dof(rest_positions, edges, faces),
-                    collision.dof(lagged_displacements, edges, faces),
-                    collision.dof(velocities, edges, faces), //
-                    normal_potential, wrt, dmin);
-
-                const std::array<index_t, 4> vis =
-                    collision.vertex_ids(mesh.edges(), mesh.faces());
-
-                local_hessian_to_global_triplets(
-                    local_force_jacobian, vis, dim, jac_triplets,
-                    mesh.num_vertices());
-            }
-        });
+        local_hessian_to_global_triplets(
+            local_force_jacobian,
+            collision.vertex_ids(mesh.edges(), mesh.faces()), dim,
+            storage.local(), mesh.num_vertices());
+    });
 
     Eigen::SparseMatrix<double> jacobian(velocities.size(), velocities.size());
     for (const auto& local_jac_triplets : storage) {
@@ -189,7 +174,6 @@ double TangentialPotential::operator()(
     const VectorMax2d u_aniso =
         collision.mu_aniso.head(u.size()).cwiseProduct(u);
 
-    const int tangent_dim = u.size();
     double mu_s, mu_k;
     friction_mu_for_evaluation(collision, false, mu_s, mu_k);
 
@@ -627,25 +611,18 @@ Eigen::VectorXd TangentialPotential::smooth_contact_force(
     tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
         Eigen::VectorXd::Zero(velocities.size()));
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            Eigen::VectorXd& global_force = storage.local();
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const auto& collision = collisions[i];
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        const auto& collision = collisions[i];
 
-                const VectorMaxNd local_force = smooth_contact_force(
-                    collision, collision.dof(rest_positions, edges, faces),
-                    collision.dof(lagged_displacements, edges, faces),
-                    collision.dof(velocities, edges, faces), no_mu);
+        const VectorMaxNd local_force = smooth_contact_force(
+            collision, collision.dof(rest_positions, edges, faces),
+            collision.dof(lagged_displacements, edges, faces),
+            collision.dof(velocities, edges, faces), no_mu);
 
-                const auto vis =
-                    collision.vertex_ids(mesh.edges(), mesh.faces());
-
-                local_gradient_to_global_gradient(
-                    local_force, vis, dim, global_force);
-            }
-        });
+        local_gradient_to_global_gradient(
+            local_force, collision.vertex_ids(mesh.edges(), mesh.faces()), dim,
+            storage.local());
+    });
 
     return storage.combine([](const Eigen::VectorXd& a,
                               const Eigen::VectorXd& b) { return a + b; });
@@ -677,59 +654,49 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
     const Eigen::MatrixXd lagged_positions =
         rest_positions + lagged_displacements;
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& jac_triplets = storage.local();
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        auto& jac_triplets = storage.local();
 
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const TangentialCollision& collision = collisions[i];
+        const TangentialCollision& collision = collisions[i];
 
-                // This jacobian doesn't include the derivatives of normal
-                // contact force
-                const MatrixMaxNd local_force_jacobian =
-                    collision.normal_force_magnitude
-                    * smooth_contact_force_jacobian_unit(
-                        collision,
-                        collision.dof(lagged_positions, edges, faces),
-                        collision.dof(velocities, edges, faces), wrt, false);
+        // This jacobian doesn't include the derivatives of normal
+        // contact force
+        const MatrixMaxNd local_force_jacobian =
+            collision.normal_force_magnitude
+            * smooth_contact_force_jacobian_unit(
+                collision, collision.dof(lagged_positions, edges, faces),
+                collision.dof(velocities, edges, faces), wrt, false);
 
-                const auto vis =
-                    collision.vertex_ids(mesh.edges(), mesh.faces());
+        const auto vids = collision.vertex_ids(mesh.edges(), mesh.faces());
 
-                local_hessian_to_global_triplets(
-                    local_force_jacobian, vis, dim, jac_triplets,
-                    mesh.num_vertices());
+        local_hessian_to_global_triplets(
+            local_force_jacobian, vids, dim, jac_triplets, mesh.num_vertices());
 
-                if (wrt == DiffWRT::VELOCITIES) {
-                    continue;
-                }
+        if (wrt == DiffWRT::VELOCITIES) {
+            return;
+        }
 
-                // The term that includes derivatives of normal contact force
-                const VectorMaxNd local_force = smooth_contact_force(
-                    collision, collision.dof(rest_positions, edges, faces),
-                    collision.dof(lagged_displacements, edges, faces),
-                    collision.dof(velocities, edges, faces), false, true);
+        // The term that includes derivatives of normal contact force
+        const VectorMaxNd local_force = smooth_contact_force(
+            collision, collision.dof(rest_positions, edges, faces),
+            collision.dof(lagged_displacements, edges, faces),
+            collision.dof(velocities, edges, faces), false, true);
 
-                // normal_force_grad is the gradient of contact force norm
-                Eigen::VectorXd normal_force_grad;
-                std::vector<index_t> cc_vert_ids;
-                Eigen::MatrixXd Xt = rest_positions + lagged_displacements;
-                auto cc = collision.smooth_collision;
-                const Eigen::VectorXd contact_grad =
-                    cc->gradient(cc->dof(Xt), params);
-                const Eigen::MatrixXd contact_hess =
-                    cc->hessian(cc->dof(Xt), params);
-                normal_force_grad =
-                    (1 / contact_grad.norm()) * (contact_hess * contact_grad);
-                cc_vert_ids = cc->vertex_ids();
+        // normal_force_grad is the gradient of contact force norm
+        Eigen::VectorXd normal_force_grad;
+        std::vector<index_t> cc_vert_ids;
+        Eigen::MatrixXd Xt = rest_positions + lagged_displacements;
+        auto cc = collision.smooth_collision;
+        const Eigen::VectorXd contact_grad = cc->gradient(cc->dof(Xt), params);
+        const Eigen::MatrixXd contact_hess = cc->hessian(cc->dof(Xt), params);
+        normal_force_grad =
+            (1 / contact_grad.norm()) * (contact_hess * contact_grad);
+        cc_vert_ids = cc->vertex_ids();
 
-                local_jacobian_to_global_triplets(
-                    local_force * normal_force_grad.transpose(), vis,
-                    cc_vert_ids, dim, jac_triplets, mesh.num_vertices(),
-                    mesh.num_vertices());
-            }
-        });
+        local_jacobian_to_global_triplets(
+            local_force * normal_force_grad.transpose(), vids, cc_vert_ids, dim,
+            jac_triplets, mesh.num_vertices(), mesh.num_vertices());
+    });
 
     Eigen::SparseMatrix<double> jacobian(velocities.size(), velocities.size());
     for (const auto& local_jac_triplets : storage) {
@@ -793,9 +760,6 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
     // Handle both 2D tangent space (3D sim) and 1D tangent space (2D sim)
     const VectorMax2d tau_aniso =
         collision.mu_aniso.head(tau.size()).cwiseProduct(tau);
-
-    // Get tangent space dimension (1 for 2D sim, 2 for 3D sim)
-    const int tangent_dim = tau.size();
 
     double mu_s, mu_k;
     friction_mu_for_evaluation(collision, no_mu, mu_s, mu_k);

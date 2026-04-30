@@ -2,7 +2,6 @@
 
 #include <ipc/utils/profiler.hpp>
 
-#include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
 
 #include <cfenv>
@@ -64,15 +63,10 @@ void build_vertex_boxes(
 
     vertex_boxes.resize(vertices.rows());
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, vertices.rows()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                vertex_boxes[i] =
-                    AABB::from_point(vertices.row(i), inflation_radius);
-                vertex_boxes[i].vertex_ids = { { index_t(i), -1, -1 } };
-            }
-        });
+    tbb::parallel_for(0, index_t(vertices.rows()), [&](index_t i) {
+        vertex_boxes[i] = AABB::from_point(vertices.row(i), inflation_radius);
+        vertex_boxes[i].vertex_ids = { { i, -1, -1 } };
+    });
 }
 
 void build_vertex_boxes(
@@ -85,15 +79,11 @@ void build_vertex_boxes(
 
     vertex_boxes.resize(vertices_t0.rows());
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, vertices_t0.rows()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                vertex_boxes[i] = AABB::from_point(
-                    vertices_t0.row(i), vertices_t1.row(i), inflation_radius);
-                vertex_boxes[i].vertex_ids = { { index_t(i), -1, -1 } };
-            }
-        });
+    tbb::parallel_for(0, index_t(vertices_t0.rows()), [&](index_t i) {
+        vertex_boxes[i] = AABB::from_point(
+            vertices_t0.row(i), vertices_t1.row(i), inflation_radius);
+        vertex_boxes[i].vertex_ids = { { i, -1, -1 } };
+    });
 }
 
 void build_edge_boxes(
@@ -108,15 +98,11 @@ void build_edge_boxes(
         edge_boxes.resize(edges.rows());
     }
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, edges.rows()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const int e0 = edges(i, 0), e1 = edges(i, 1);
-                edge_boxes[i] = AABB(vertex_boxes[e0], vertex_boxes[e1]);
-                edge_boxes[i].vertex_ids = { { e0, e1, -1 } };
-            }
-        });
+    tbb::parallel_for(0, index_t(edges.rows()), [&](index_t i) {
+        const int e0 = edges(i, 0), e1 = edges(i, 1);
+        edge_boxes[i] = AABB(vertex_boxes[e0], vertex_boxes[e1]);
+        edge_boxes[i].vertex_ids = { { e0, e1, -1 } };
+    });
 }
 
 void build_face_boxes(
@@ -131,16 +117,12 @@ void build_face_boxes(
         face_boxes.resize(faces.rows());
     }
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, faces.rows()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const int f0 = faces(i, 0), f1 = faces(i, 1), f2 = faces(i, 2);
-                face_boxes[i] =
-                    AABB(vertex_boxes[f0], vertex_boxes[f1], vertex_boxes[f2]);
-                face_boxes[i].vertex_ids = { { f0, f1, f2 } };
-            }
-        });
+    tbb::parallel_for(0, index_t(faces.rows()), [&](index_t i) {
+        const int f0 = faces(i, 0), f1 = faces(i, 1), f2 = faces(i, 2);
+        face_boxes[i] =
+            AABB(vertex_boxes[f0], vertex_boxes[f1], vertex_boxes[f2]);
+        face_boxes[i].vertex_ids = { { f0, f1, f2 } };
+    });
 }
 
 } // namespace ipc

@@ -1,5 +1,9 @@
 #include "trust_region.hpp"
 
+#include <tbb/parallel_for.h>
+
+#include <atomic>
+
 namespace ipc::ogc {
 
 TrustRegion::TrustRegion(double dhat) : trust_region_inflation_radius(2 * dhat)
@@ -37,8 +41,8 @@ void TrustRegion::warm_start_time_step(
     update(mesh, x, collisions, min_distance, broad_phase);
     should_update_trust_region = false;
 
-    int num_updates = 0;
-    for (int i = 0; i < x.rows(); i++) {
+    std::atomic<int> num_updates(0);
+    tbb::parallel_for(0, static_cast<int>(x.rows()), [&](int i) {
         const VectorMax3d x_i = x.row(i);
         const VectorMax3d pred_x_i = pred_x.row(i);
 
@@ -48,9 +52,9 @@ void TrustRegion::warm_start_time_step(
             // Move to the boundary of the trust region
             x.row(i) =
                 x_i + (trust_region_radii(i) / dx_norm(i)) * (pred_x_i - x_i);
-            ++num_updates;
+            num_updates.fetch_add(1, std::memory_order_relaxed);
         }
-    }
+    });
 
     // If a critical mass of vertices are restricted by the trust region,
     // we update the trust region to avoid excessive filtering.
@@ -78,15 +82,14 @@ void TrustRegion::update(
         vertices = mesh.vertices(x);
     }
 
-    Candidates trust_region_candidates;
-    trust_region_candidates.build(
+    candidates.build(
         mesh, vertices, trust_region_inflation_radius + min_distance,
         broad_phase);
 
     // Compute the trust region distances for the reduced set of collision
     // vertices.
     Eigen::VectorXd reduced_trust_region_radii =
-        trust_region_candidates.compute_per_vertex_safe_distances(
+        candidates.compute_per_vertex_safe_distances(
             mesh, vertices, trust_region_inflation_radius, min_distance);
 
     // Use < half the safe distance to account for double sided contact
@@ -107,7 +110,7 @@ void TrustRegion::update(
     // NOTE: Use the trust_region_inflation_radius to ensure that the
     // collisions include all pairs until this function is called again.
     collisions.build(
-        trust_region_candidates, mesh, vertices, trust_region_inflation_radius,
+        candidates, mesh, vertices, trust_region_inflation_radius,
         min_distance);
 }
 
@@ -115,6 +118,56 @@ namespace {
     template <typename T> inline bool approx(T a, T b, T tol = 1e-9)
     {
         return std::abs(a - b) <= tol;
+    }
+
+    /// @brief Compute the trust-region truncation ratio for a single vertex.
+    ///
+    /// Returns the largest β ∈ (0, 1] such that ‖xi + β·dxi − ci‖ ≤ ri.
+    /// If xi + dxi is already inside the trust region, returns 1.0.
+    ///
+    /// @param xi  Current position of the vertex.
+    /// @param dxi Proposed displacement of the vertex.
+    /// @param ci  Center of the trust region.
+    /// @param ri  Radius of the trust region.
+    /// @return Truncation ratio β in (0, 1].
+    inline double compute_trust_region_beta(
+        const VectorMax3d& xi,
+        const VectorMax3d& dxi,
+        const VectorMax3d& ci,
+        double ri)
+    {
+        if ((xi + dxi - ci).norm() <= ri) {
+            return 1.0; // Already inside, no truncation needed
+        }
+
+        const double a = dxi.squaredNorm();
+        if (a == 0) {
+            return 1.0; // Zero displacement
+        }
+
+        // Solve ‖x + βΔx - c‖² = r² for β:
+        // (x + βΔx - c)ᵀ(x + βΔx - c) - r²
+        //  = ‖Δx‖² β² + 2(Δxᵀ(x - c)) β + ‖x - c‖² - r²
+        //    { a }      {     b     }     {     c     }
+        const double b = 2 * dxi.dot(xi - ci);
+        const double c = (xi - ci).squaredNorm() - ri * ri;
+        assert(c <= 0);                 // Inside the trust region, so c <= 0
+        assert(b * b - 4 * a * c >= 0); // Roots must be real
+
+        const double sign_b = (b >= 0) ? 1.0 : -1.0;
+        const double sqrt_d = sqrt(b * b - 4 * a * c);
+
+        // β = (-b + √(b² - 4ac)) / 2a, using a numerically stable form
+        double beta;
+        if (sign_b > 0) {
+            beta = -2 * c / (b + sqrt_d);
+        } else {
+            beta = (-b + sqrt_d) / (2 * a);
+        }
+        // β should be the positive root
+        assert(beta > 0);
+
+        return beta;
     }
 } // namespace
 
@@ -125,8 +178,8 @@ void TrustRegion::filter_step(
 {
     assert(x.rows() == dx.rows() && x.cols() == dx.cols());
 
-    int num_updates = 0;
-    for (int i = 0; i < x.rows(); i++) {
+    std::atomic<int> num_updates(0);
+    tbb::parallel_for(0, static_cast<int>(x.rows()), [&](int i) {
         const VectorMax3d ci = trust_region_centers.row(i);
         const VectorMax3d xi = x.row(i);
         const VectorMax3d dxi = dx.row(i);
@@ -134,47 +187,17 @@ void TrustRegion::filter_step(
         // Check that the current position is within the trust region.
         assert((xi - ci).norm() <= trust_region_radii(i) + 1e-9);
 
-        const double alpha = (xi + dxi - ci).norm();
-        if (alpha > trust_region_radii(i)) {
-            // Solve ‖x + βΔx - c‖² = r² for β:
-            // (x + βΔx - c)ᵀ(x + βΔx - c) - r²
-            //  = ‖Δx‖² β² + 2(Δxᵀ(x - c)) β + ‖x - c‖² - r²
-            //    { a }      {     b     }     {     c     }
-
-            const double a = dxi.squaredNorm();
-            assert(a > 0); // Δx should not be zero
-
-            // b can be positive or negative
-            const double b = 2 * dxi.dot(xi - ci);
-
-            const double c = (xi - ci).squaredNorm()
-                - trust_region_radii(i) * trust_region_radii(i);
-            assert(c <= 0); // Inside the trust region, so c <= 0
-
-            // Roots must be real
-            assert(b * b - 4 * a * c >= 0);
-
-            const double sign_b = (b >= 0) ? 1.0 : -1.0;
-            const double sqrt_d = sqrt(b * b - 4 * a * c);
-
-            // β = (-b + √(b² - 4ac)) / 2a, but we use a more stable form below
-            double beta;
-            if (sign_b > 0) {
-                beta = -2 * c / (b + sqrt_d);
-            } else {
-                beta = (-b + sqrt_d) / (2 * a);
-            }
-            // β should be the positive root
-            assert(beta > 0);
-
+        const double beta =
+            compute_trust_region_beta(xi, dxi, ci, trust_region_radii(i));
+        if (beta < 1.0) {
             dx.row(i).array() *= beta;
             assert(approx(
                 (xi + dx.row(i).transpose() - ci).norm(),
                 trust_region_radii(i)));
 
-            num_updates++;
+            num_updates.fetch_add(1, std::memory_order_relaxed);
         }
-    }
+    });
 
     // If a critical mass of vertices are restricted by the trust region,
     // we update the trust region to avoid excessive filtering.
@@ -184,6 +207,161 @@ void TrustRegion::filter_step(
             100.0 * num_updates / mesh.num_vertices());
         should_update_trust_region = true;
     }
+}
+
+void TrustRegion::planar_filter_step(
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> x,
+    Eigen::Ref<Eigen::MatrixXd> dx)
+{
+    assert(x.rows() == dx.rows() && x.cols() == dx.cols());
+    assert(relaxed_radius_scaling > 0 && relaxed_radius_scaling < 1);
+
+    const int d = x.cols();
+
+    // Collision mesh vertex positions (may differ from x if hidden DOFs exist)
+    const bool has_hidden_dofs = x.rows() != mesh.num_vertices();
+    Eigen::MatrixXd vertices;
+    if (has_hidden_dofs) {
+        vertices = mesh.vertices(x);
+    } else {
+        vertices = x;
+    }
+
+    // Map collision-mesh vertex index → full-mesh row index in x/dx
+    const Eigen::VectorXi& full_id_map = mesh.to_full_vertex_id();
+    auto to_full = [&](const index_t coll_id) -> int {
+        return has_hidden_dofs ? full_id_map(coll_id)
+                               : static_cast<int>(coll_id);
+    };
+
+    // Per-vertex truncation ratios (1 = no truncation).
+    // Use atomics to allow concurrent min-reduction across candidates.
+    std::vector<std::atomic<double>> t_v_atomic(x.rows());
+    for (int i = 0; i < x.rows(); i++) {
+        t_v_atomic[i].store(1.0, std::memory_order_relaxed);
+    }
+
+    tbb::parallel_for(size_t(0), candidates.size(), [&](size_t i) {
+        const CollisionStencil& c = candidates[i];
+        const auto ids = c.vertex_ids(mesh.edges(), mesh.faces());
+        const int nv = c.num_vertices();
+        const VectorMax12d pos = c.dof(vertices, mesh.edges(), mesh.faces());
+
+        // dv = c_first − c_second; positive coeffs → first primitive
+        VectorMax4d coeffs;
+        const VectorMax3d dv = c.compute_distance_vector(pos, coeffs);
+        const double dist = dv.norm();
+        if (dist < 1e-10) {
+            return;
+        }
+
+        const VectorMax3d n = dv / dist;
+
+        VectorMax3d c_first = VectorMax3d::Zero(d);
+        VectorMax3d c_second = VectorMax3d::Zero(d);
+        double delta_first = 0, delta_second = 0;
+
+        for (int j = 0; j < nv; ++j) {
+            const int fid = to_full(ids[j]);
+            Eigen::ConstRef<VectorMax3d> xj = pos.segment(j * d, d);
+            Eigen::ConstRef<VectorMax3d> dxj = dx.row(fid);
+            if (coeffs[j] > 0) {
+                c_first += coeffs[j] * xj;
+                delta_first = std::max(delta_first, -dxj.dot(n));
+            } else if (coeffs[j] < 0) {
+                c_second -= coeffs[j] * xj;
+                delta_second = std::max(delta_second, dxj.dot(n));
+            }
+        }
+        delta_first = std::max(delta_first, 0.0);
+        delta_second = std::max(delta_second, 0.0);
+
+        const double lambda = (delta_first == 0 && delta_second == 0)
+            ? 0.5
+            : delta_second / (delta_first + delta_second);
+
+        // Division plane: p = c_second + λ·dv  (λ=0 → plane at
+        // second prim, λ=1 → plane at first prim).
+        const VectorMax3d p = c_second + lambda * dv;
+
+        for (int j = 0; j < nv; ++j) {
+            assert(ids[j] >= 0); // All candidates should be valid
+            const int fid = to_full(ids[j]);
+            Eigen::ConstRef<VectorMax3d> xj = pos.segment(j * d, d);
+            Eigen::ConstRef<VectorMax3d> dxj = dx.row(fid);
+            const double t_val = planar_truncation_ratio(xj, dxj, n, p);
+            double old_val = t_v_atomic[fid].load(std::memory_order_relaxed);
+            while (t_val < old_val
+                   && !t_v_atomic[fid].compare_exchange_weak(
+                       old_val, t_val, std::memory_order_relaxed)) { }
+        }
+    });
+
+    // Convert atomics to a plain vector for the subsequent serial passes.
+    Eigen::VectorXd t_v(x.rows());
+    for (int i = 0; i < x.rows(); i++) {
+        t_v[i] = t_v_atomic[i].load(std::memory_order_relaxed);
+    }
+
+    // ---- Isotropic Fallback --------------------------------------------
+    // For primitives beyond the query radius, fall back to isotropic
+    // trust-region clamping (same as filter_step) to prevent penetration.
+    tbb::parallel_for(0, static_cast<int>(x.rows()), [&](int i) {
+        // Use trust_region_inflation_radius instead of
+        // trust_region_radii(v). This is the key difference between
+        // Planar-DAT and Isotropic-DAT. This allows us to preserve
+        // more motion for vertices that are near the boundary of the
+        // trust region, rather than restricting them to a smaller
+        // trust region radius.
+        const double beta = compute_trust_region_beta(
+            x.row(i), dx.row(i), trust_region_centers.row(i),
+            trust_region_inflation_radius);
+        t_v[i] = std::min(t_v[i], beta);
+    });
+
+    // ---- Apply Truncations ---------------------------------------------
+    std::atomic<int> num_updates(0);
+    tbb::parallel_for(0, static_cast<int>(x.rows()), [&](int v) {
+        if (t_v[v] < 1.0) {
+            dx.row(v) *= t_v[v];
+            num_updates.fetch_add(1, std::memory_order_relaxed);
+        }
+    });
+
+    // Mirror filter_step: if a critical mass of vertices are restricted,
+    // flag the trust region for re-centering on the next iteration.
+    if (num_updates > update_threshold * mesh.num_vertices()) {
+        logger().trace(
+            "{:.1f}% of vertices restricted by planar trust region. Updating trust region.",
+            100.0 * num_updates / mesh.num_vertices());
+        should_update_trust_region = true;
+    }
+}
+
+double TrustRegion::planar_truncation_ratio(
+    Eigen::ConstRef<VectorMax3d> x_u,
+    Eigen::ConstRef<VectorMax3d> dx_u,
+    Eigen::ConstRef<VectorMax3d> n,
+    Eigen::ConstRef<VectorMax3d> p) const
+{
+    const double denom = dx_u.dot(n);
+    if (std::abs(denom) < 1e-15) {
+        return 1.0; // dx parallel to plane → no crossing
+    }
+    // Ray-plane intersection: x_u + t_i * dx_u is on plane when
+    // (x_u + t_i * dx_u - p) · n = 0  →  t_i = -(x_u - p) · n / denom
+    const double t_i = -(x_u - p).dot(n) / denom;
+    // Only constrain if the crossing is meaningfully in the future.
+    // Edge/triangle vertices lie geometrically on the division plane (provable
+    // from the closest-point construction), so t_i is O(ε_machine) rather
+    // than exactly 0. Treating any t_i below this threshold as "no crossing"
+    // avoids zeroing out their displacements when they are retreating.
+    constexpr double T_EPS = 1e-10;
+    if (t_i < T_EPS || t_i >= 1.0 / relaxed_radius_scaling) {
+        return 1.0;
+    }
+    return relaxed_radius_scaling * t_i;
 }
 
 } // namespace ipc::ogc

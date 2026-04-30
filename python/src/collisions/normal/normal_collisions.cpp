@@ -6,7 +6,7 @@
 using namespace ipc;
 
 template <typename collision_type, typename parent_type>
-void define_smooth_collision_template(py::module_& m, std::string name)
+void define_smooth_collision_template(py::module_& m, const std::string& name)
 {
     py::class_<collision_type, parent_type>(m, name.c_str())
         .def("name", &collision_type::name, "Get the type name of collision")
@@ -15,7 +15,7 @@ void define_smooth_collision_template(py::module_& m, std::string name)
             "Get the number of vertices");
 }
 
-void define_smooth_collisions(py::module_& m, std::string name)
+void define_smooth_collisions(py::module_& m, const std::string& name)
 {
     py::class_<SmoothCollisions>(m, name.c_str())
         .def(py::init())

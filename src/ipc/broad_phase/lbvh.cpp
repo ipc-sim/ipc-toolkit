@@ -74,25 +74,17 @@ void LBVH::build(
         IPC_TOOLKIT_PROFILE_BLOCK("copy_vertex_ids");
 
         edge_vertex_ids.resize(edges.rows());
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, edges.rows()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                for (size_t i = r.begin(); i < r.end(); ++i) {
-                    edge_vertex_ids[i][0] = static_cast<index_t>(edges(i, 0));
-                    edge_vertex_ids[i][1] = static_cast<index_t>(edges(i, 1));
-                }
-            });
+        tbb::parallel_for(size_t(0), size_t(edges.rows()), [&](size_t i) {
+            edge_vertex_ids[i][0] = static_cast<index_t>(edges(i, 0));
+            edge_vertex_ids[i][1] = static_cast<index_t>(edges(i, 1));
+        });
 
         face_vertex_ids.resize(faces.rows());
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, faces.rows()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                for (size_t i = r.begin(); i < r.end(); ++i) {
-                    face_vertex_ids[i][0] = static_cast<index_t>(faces(i, 0));
-                    face_vertex_ids[i][1] = static_cast<index_t>(faces(i, 1));
-                    face_vertex_ids[i][2] = static_cast<index_t>(faces(i, 2));
-                }
-            });
+        tbb::parallel_for(size_t(0), size_t(faces.rows()), [&](size_t i) {
+            face_vertex_ids[i][0] = static_cast<index_t>(faces(i, 0));
+            face_vertex_ids[i][1] = static_cast<index_t>(faces(i, 1));
+            face_vertex_ids[i][2] = static_cast<index_t>(faces(i, 2));
+        });
     }
 
     // Clear parent data to save memory.
@@ -218,27 +210,22 @@ void LBVH::init_bvh(
         IPC_TOOLKIT_PROFILE_BLOCK("compute_morton_codes");
 
         const Eigen::Array3d mesh_width = mesh_aabb.max - mesh_aabb.min;
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, boxes.size()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                for (size_t i = r.begin(); i < r.end(); i++) {
-                    const auto& box = boxes[i];
+        tbb::parallel_for(size_t(0), boxes.size(), [&](size_t i) {
+            const auto& box = boxes[i];
 
-                    const Eigen::Array3d center = 0.5 * (box.min + box.max);
-                    const Eigen::Array3d mapped_center =
-                        (center - mesh_aabb.min) / mesh_width;
+            const Eigen::Array3d center = 0.5 * (box.min + box.max);
+            const Eigen::Array3d mapped_center =
+                (center - mesh_aabb.min) / mesh_width;
 
-                    if (dim == 2) {
-                        morton_codes[i].morton_code =
-                            morton_2D(mapped_center.x(), mapped_center.y());
-                    } else {
-                        morton_codes[i].morton_code = morton_3D(
-                            mapped_center.x(), mapped_center.y(),
-                            mapped_center.z());
-                    }
-                    morton_codes[i].box_id = i;
-                }
-            });
+            if (dim == 2) {
+                morton_codes[i].morton_code =
+                    morton_2D(mapped_center.x(), mapped_center.y());
+            } else {
+                morton_codes[i].morton_code = morton_3D(
+                    mapped_center.x(), mapped_center.y(), mapped_center.z());
+            }
+            morton_codes[i].box_id = i;
+        });
     }
 
     {
@@ -260,110 +247,100 @@ void LBVH::init_bvh(
     LBVH::ConstructionInfos construction_infos(lbvh.size());
     {
         IPC_TOOLKIT_PROFILE_BLOCK("build_hierarchy");
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, boxes.size()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                for (size_t i = r.begin(); i < r.end(); i++) {
+        tbb::parallel_for(size_t(0), boxes.size(), [&](size_t i) {
+            assert(i < boxes.size());
+            {
+                const auto& box = boxes[morton_codes[i].box_id];
 
-                    assert(i < boxes.size());
-                    {
-                        const auto& box = boxes[morton_codes[i].box_id];
+                Node leaf_node; // Create leaf node
+                assign_inflated_aabb(box, leaf_node);
+                leaf_node.primitive_id = morton_codes[i].box_id;
+                leaf_node.is_inner_marker = 0;
+                lbvh[LEAF_OFFSET + i] = leaf_node; // Store leaf
+                // A leaf's rightmost leaf is itself
+                rightmost_leaves[LEAF_OFFSET + i] = i;
+            }
 
-                        Node leaf_node; // Create leaf node
-                        assign_inflated_aabb(box, leaf_node);
-                        leaf_node.primitive_id = morton_codes[i].box_id;
-                        leaf_node.is_inner_marker = 0;
-                        lbvh[LEAF_OFFSET + i] = leaf_node; // Store leaf
-                        // A leaf's rightmost leaf is itself
-                        rightmost_leaves[LEAF_OFFSET + i] = i;
-                    }
+            if (i < LEAF_OFFSET) {
+                // Find out which range of objects the node corresponds
+                // to. (This is where the magic happens!)
 
-                    if (i < LEAF_OFFSET) {
-                        // Find out which range of objects the node corresponds
-                        // to. (This is where the magic happens!)
+                int first, last;
+                determine_range(morton_codes, int(i), first, last);
 
-                        int first, last;
-                        determine_range(morton_codes, int(i), first, last);
+                // Determine where to split the range
+                int split = find_split(morton_codes, first, last);
 
-                        // Determine where to split the range
-                        int split = find_split(morton_codes, first, last);
-
-                        // Select child_a
-                        int child_a = -1;
-                        if (split == first) {
-                            // pointer to leaf node
-                            child_a = LEAF_OFFSET + split;
-                        } else {
-                            child_a = split; // pointer to internal node
-                        }
-
-                        // Select child_b
-                        int child_b = -1;
-                        if (split + 1 == last) {
-                            child_b =
-                                LEAF_OFFSET + split + 1; // pointer to leaf node
-                        } else {
-                            child_b = split + 1; // pointer to internal node
-                        }
-
-                        // Record parent-child relationships
-                        lbvh[i].left = child_a;
-                        lbvh[i].right = child_b;
-                        construction_infos[child_a].parent = int(i);
-                        construction_infos[child_b].parent = int(i);
-                        construction_infos[child_a].visitation_count.store(
-                            0, std::memory_order_relaxed);
-                        construction_infos[child_b].visitation_count.store(
-                            0, std::memory_order_relaxed);
-                    }
-
-                    // node 0 is the root and has no parent to set these values
-                    if (i == 0) {
-                        construction_infos[0].parent = 0;
-                        construction_infos[0].visitation_count.store(
-                            0, std::memory_order_relaxed);
-                    }
+                // Select child_a
+                int child_a = -1;
+                if (split == first) {
+                    // pointer to leaf node
+                    child_a = LEAF_OFFSET + split;
+                } else {
+                    child_a = split; // pointer to internal node
                 }
-            });
+
+                // Select child_b
+                int child_b = -1;
+                if (split + 1 == last) {
+                    child_b = LEAF_OFFSET + split + 1; // pointer to leaf node
+                } else {
+                    child_b = split + 1; // pointer to internal node
+                }
+
+                // Record parent-child relationships
+                lbvh[i].left = child_a;
+                lbvh[i].right = child_b;
+                construction_infos[child_a].parent = int(i);
+                construction_infos[child_b].parent = int(i);
+                construction_infos[child_a].visitation_count.store(
+                    0, std::memory_order_relaxed);
+                construction_infos[child_b].visitation_count.store(
+                    0, std::memory_order_relaxed);
+            }
+
+            // node 0 is the root and has no parent to set these values
+            if (i == 0) {
+                construction_infos[0].parent = 0;
+                construction_infos[0].visitation_count.store(
+                    0, std::memory_order_relaxed);
+            }
+        });
     }
 
     {
         IPC_TOOLKIT_PROFILE_BLOCK("populate_boxes");
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, boxes.size()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                for (size_t i = r.begin(); i < r.end(); i++) {
-                    int node_idx = construction_infos[LEAF_OFFSET + i].parent;
-                    while (true) {
-                        auto& info = construction_infos[node_idx];
-                        if (info.visitation_count++ == 0) {
-                            // this is the first thread that arrived at this
-                            // node -> finished
-                            break;
-                        }
-                        // this is the second thread that arrived at this node,
-                        // both children are computed -> compute aabb union and
-                        // continue
-                        assert(lbvh[node_idx].is_inner());
-                        const Node& child_b = lbvh[lbvh[node_idx].right];
-                        const Node& child_a = lbvh[lbvh[node_idx].left];
-                        lbvh[node_idx].aabb_min =
-                            child_a.aabb_min.min(child_b.aabb_min);
-                        lbvh[node_idx].aabb_max =
-                            child_a.aabb_max.max(child_b.aabb_max);
-
-                        // Compute rightmost leaf: max of children's rightmost
-                        rightmost_leaves[node_idx] = std::max(
-                            rightmost_leaves[lbvh[node_idx].left],
-                            rightmost_leaves[lbvh[node_idx].right]);
-
-                        if (node_idx == 0) {
-                            break; // root node
-                        }
-                        node_idx = info.parent;
-                    }
+        tbb::parallel_for(size_t(0), boxes.size(), [&](size_t i) {
+            int node_idx = construction_infos[LEAF_OFFSET + i].parent;
+            while (true) {
+                auto& info = construction_infos[node_idx];
+                if (info.visitation_count++ == 0) {
+                    // this is the first thread that arrived at this
+                    // node -> finished
+                    break;
                 }
-            });
+                // this is the second thread that arrived at this node,
+                // both children are computed -> compute aabb union and
+                // continue
+                assert(lbvh[node_idx].is_inner());
+                const Node& child_b = lbvh[lbvh[node_idx].right];
+                const Node& child_a = lbvh[lbvh[node_idx].left];
+                lbvh[node_idx].aabb_min =
+                    child_a.aabb_min.min(child_b.aabb_min);
+                lbvh[node_idx].aabb_max =
+                    child_a.aabb_max.max(child_b.aabb_max);
+
+                // Compute rightmost leaf: max of children's rightmost
+                rightmost_leaves[node_idx] = std::max(
+                    rightmost_leaves[lbvh[node_idx].left],
+                    rightmost_leaves[lbvh[node_idx].right]);
+
+                if (node_idx == 0) {
+                    break; // root node
+                }
+                node_idx = info.parent;
+            }
+        });
     }
 }
 

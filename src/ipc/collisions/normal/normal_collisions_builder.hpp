@@ -21,68 +21,52 @@ public:
         const bool enable_shape_derivatives,
         const bool use_ogc);
 
-    void add_vertex_vertex_collisions(
+    void add_vertex_vertex_collision(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<VertexVertexCandidate>& candidates,
-        const std::function<bool(double)>& is_active,
-        const size_t start_i,
-        const size_t end_i);
+        const VertexVertexCandidate& candidate,
+        const std::function<bool(double)>& is_active);
 
-    void add_edge_vertex_collisions(
+    void add_edge_vertex_collision(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<EdgeVertexCandidate>& candidates,
-        const std::function<bool(double)>& is_active,
-        const size_t start_i,
-        const size_t end_i);
+        const EdgeVertexCandidate& candidate,
+        const std::function<bool(double)>& is_active);
 
-    void add_edge_edge_collisions(
+    void add_edge_edge_collision(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<EdgeEdgeCandidate>& candidates,
-        const std::function<bool(double)>& is_active,
-        const size_t start_i,
-        const size_t end_i);
+        const EdgeEdgeCandidate& candidate,
+        const std::function<bool(double)>& is_active);
 
-    void add_face_vertex_collisions(
+    void add_face_vertex_collision(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<FaceVertexCandidate>& candidates,
-        const std::function<bool(double)>& is_active,
-        const size_t start_i,
-        const size_t end_i);
+        const FaceVertexCandidate& candidate,
+        const std::function<bool(double)>& is_active);
 
     // ------------------------------------------------------------------------
     // Duplicate removal functions
 
-    void add_edge_vertex_negative_vertex_vertex_collisions(
+    void add_edge_vertex_negative_vertex_vertex_collision(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<VertexVertexCandidate>& candidates,
-        const size_t start_i,
-        const size_t end_i);
+        const VertexVertexCandidate& candidate);
 
-    void add_face_vertex_positive_vertex_vertex_collisions(
+    void add_face_vertex_positive_vertex_vertex_collision(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<VertexVertexCandidate>& candidates,
-        const size_t start_i,
-        const size_t end_i);
+        const VertexVertexCandidate& candidate);
 
-    void add_face_vertex_negative_edge_vertex_collisions(
+    void add_face_vertex_negative_edge_vertex_collision(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<EdgeVertexCandidate>& candidates,
-        const size_t start_i,
-        const size_t end_i);
+        const EdgeVertexCandidate& candidate);
 
-    void add_edge_edge_negative_edge_vertex_collisions(
+    void add_edge_edge_negative_edge_vertex_collision(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<EdgeVertexCandidate>& candidates,
-        const size_t start_i,
-        const size_t end_i);
+        const EdgeVertexCandidate& candidate);
 
     // ------------------------------------------------------------------------
 
