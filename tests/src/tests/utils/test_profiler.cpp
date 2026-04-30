@@ -67,23 +67,24 @@ TEST_CASE("Profiler", "[profiler]")
 
     auto foo = []() {
         IPC_TOOLKIT_PROFILE_BLOCK("Block 3");
+        {
+            IPC_TOOLKIT_PROFILE_BLOCK("Block 4");
+            tbb::parallel_for(0, num_threads, [&](int) {
+                // for (int i = 0; i < num_threads; ++i) {
+                {
+                    IPC_TOOLKIT_PROFILE_BLOCK("Block 5");
+                    std::this_thread::sleep_for(
+                        std::chrono::milliseconds(sleep_time_ms / num_threads));
+                }
 
-        IPC_TOOLKIT_PROFILE_BLOCK("Block 4");
-        tbb::parallel_for(0, num_threads, [&](int) {
-            // for (int i = 0; i < num_threads; ++i) {
-            {
-                IPC_TOOLKIT_PROFILE_BLOCK("Block 5");
-                std::this_thread::sleep_for(
-                    std::chrono::milliseconds(sleep_time_ms / num_threads));
-            }
-
-            {
-                IPC_TOOLKIT_PROFILE_BLOCK("Block 6");
-                std::this_thread::sleep_for(
-                    std::chrono::milliseconds(sleep_time_ms / num_threads));
-            }
-            // }
-        });
+                {
+                    IPC_TOOLKIT_PROFILE_BLOCK("Block 6");
+                    std::this_thread::sleep_for(
+                        std::chrono::milliseconds(sleep_time_ms / num_threads));
+                }
+                // }
+            });
+        }
     };
 
     foo();
