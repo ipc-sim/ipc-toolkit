@@ -356,7 +356,13 @@ TEST_CASE("Benchmark LBVH::build", "[!benchmark][broad_phase][lbvh]")
         std::string name, mesh_t0, mesh_t1;
     };
 
-    const std::array scenes = {
+#ifdef NDEBUG
+    constexpr int NUM_SCENES = 6;
+#else
+    constexpr int NUM_SCENES = 1;
+#endif
+
+    const std::array<Scene, NUM_SCENES> scenes = { {
         Scene { "Cloth-Ball", "cloth_ball92.ply", "cloth_ball93.ply" },
 #ifdef NDEBUG
         Scene { "Cloth-Funnel", "cloth-funnel/227.ply",
@@ -368,7 +374,7 @@ TEST_CASE("Benchmark LBVH::build", "[!benchmark][broad_phase][lbvh]")
                 "n-body-simulation/balls16_19.ply" },
         Scene { "Puffer-Ball", "puffer-ball/20.ply", "puffer-ball/21.ply" },
 #endif
-    };
+    } };
 
     for (const auto& [scene, mesh_t0, mesh_t1] : scenes) {
         Eigen::MatrixXd vertices_t0, vertices_t1;
