@@ -18,6 +18,7 @@ namespace xs = xsimd;
 #endif
 
 #include <array>
+#include <atomic>
 
 using namespace std::placeholders;
 
@@ -95,10 +96,11 @@ void LBVH::build(
 }
 
 namespace {
-    // Returns the number of common leading bits (CLZ of XOR) between
-    // sorted Morton codes at positions i and j.  Returns -1 when j is
-    // out of bounds.  Duplicate codes fall back to CLZ of the index XOR
-    // (offset by 32 so it sorts after any code-level difference).
+    /// Returns the number of common leading bits (CLZ of XOR) between sorted
+    /// Morton codes at positions i and j. code_i is the Morton code at position
+    /// i, passed explicitly to avoid a redundant lookup. Returns -1 when j is
+    /// out of bounds.  Duplicate codes fall back to CLZ of the index XOR
+    /// (offset by 32 so it sorts after any code-level difference).
     int delta(
         const LBVH::MortonCodeElements& sorted_morton_codes,
         int i,
@@ -200,7 +202,7 @@ void LBVH::init_bvh(
     // In this layout internal node j always splits between sorted keys j and
     // j+1. The root is NOT necessarily at index 0, so after construction we
     // swap the root into position 0 to match the traversal code's expectation.
-    int root_idx = -1;
+    std::atomic<int> root_idx(-1);
     {
         IPC_TOOLKIT_PROFILE_BLOCK("build_hierarchy_and_boxes");
         tbb::parallel_for(0, N_LEAVES, [&](int i) {
@@ -288,8 +290,11 @@ void LBVH::init_bvh(
 
                 if (left_key == 0 && right_key == N_LEAVES - 1) {
                     // only one thread should reach the root
-                    assert(root_idx == -1);
-                    root_idx = current_node;
+                    int expected = -1;
+                    [[maybe_unused]] bool set =
+                        root_idx.compare_exchange_strong(
+                            expected, current_node);
+                    assert(set);
                     break; // root AABB is complete
                 }
             }
@@ -305,10 +310,11 @@ void LBVH::init_bvh(
     // only ever written as a LEFT child — meaning no internal node ever has
     // right==0.  Therefore swapping node 0 cannot create a spurious
     // is_inner_marker==0 (which would look like a leaf).
-    if (root_idx > 0) {
+    const int root = root_idx.load();
+    if (root > 0) {
         IPC_TOOLKIT_PROFILE_BLOCK("swap_root_to_zero");
-        std::swap(lbvh[0], lbvh[root_idx]);
-        std::swap(rightmost_leaves[0], rightmost_leaves[root_idx]);
+        std::swap(lbvh[0], lbvh[root]);
+        std::swap(rightmost_leaves[0], rightmost_leaves[root]);
 
         // The root (now at 0) is never any node's child, so no pointer
         // references R that needs rewriting to 0. The only pointers that
@@ -317,7 +323,7 @@ void LBVH::init_bvh(
         // to patch .left pointers.
         tbb::parallel_for(size_t(0), lbvh.size(), [&](size_t i) {
             if (lbvh[i].is_inner() && lbvh[i].left == 0) {
-                lbvh[i].left = root_idx;
+                lbvh[i].left = root;
             }
         });
     }
