@@ -347,3 +347,48 @@ TEST_CASE(
         return ee_candidates.size();
     };
 }
+
+TEST_CASE("Benchmark LBVH::build", "[!benchmark][broad_phase][lbvh]")
+{
+    constexpr double inflation_radius = 0;
+
+    struct Scene {
+        std::string name, mesh_t0, mesh_t1;
+    };
+
+#ifdef NDEBUG
+    constexpr int NUM_SCENES = 6;
+#else
+    constexpr int NUM_SCENES = 1;
+#endif
+
+    const std::array<Scene, NUM_SCENES> scenes = { {
+        Scene { "Cloth-Ball", "cloth_ball92.ply", "cloth_ball93.ply" },
+#ifdef NDEBUG
+        Scene { "Cloth-Funnel", "cloth-funnel/227.ply",
+                "cloth-funnel/228.ply" },
+        Scene { "Armadillo-Rollers", "armadillo-rollers/326.ply",
+                "armadillo-rollers/327.ply" },
+        Scene { "Rod-Twist", "rod-twist/3036.ply", "rod-twist/3037.ply" },
+        Scene { "N-Body-Simulation", "n-body-simulation/balls16_18.ply",
+                "n-body-simulation/balls16_19.ply" },
+        Scene { "Puffer-Ball", "puffer-ball/20.ply", "puffer-ball/21.ply" },
+#endif
+    } };
+
+    for (const auto& [scene, mesh_t0, mesh_t1] : scenes) {
+        Eigen::MatrixXd vertices_t0, vertices_t1;
+        Eigen::MatrixXi edges, faces;
+        REQUIRE(tests::load_mesh(mesh_t0, vertices_t0, edges, faces));
+        REQUIRE(tests::load_mesh(mesh_t1, vertices_t1, edges, faces));
+
+        const std::shared_ptr<LBVH> lbvh = std::make_shared<LBVH>();
+
+        BENCHMARK(fmt::format("LBVH::build [{}]", scene))
+        {
+            lbvh->build(
+                vertices_t0, vertices_t1, edges, faces, inflation_radius);
+            return lbvh->edge_nodes().size();
+        };
+    }
+}
