@@ -37,10 +37,11 @@ template <typename T> struct Math {
     Math(const Math&) = delete;
     Math& operator=(const Math&) = delete;
 
-    static double sign(const double x);
-    static T abs(const T& x);
-    static T sqr(const T& x);
-    static T cubic(const T& x);
+    // NOTE: Define these in the class definition to allow inlining
+    static double sign(const double x) { return x >= 0 ? 1.0 : -1.0; }
+    static T abs(const T& x) { return x >= 0 ? x : -x; }
+    static T sqr(const T& x) { return x * x; }
+    static T cubic(const T& x) { return x * x * x; }
 
     static T cubic_spline(const T& x);
     static double cubic_spline_grad(const double x);
@@ -70,9 +71,13 @@ template <typename T> struct Math {
 
     static T l_ns(const T& x);
 
+    // NOTE: Define this in the class definition to allow inlining
     static T cross2(
         Eigen::ConstRef<Eigen::Vector2<T>> a,
-        Eigen::ConstRef<Eigen::Vector2<T>> b);
+        Eigen::ConstRef<Eigen::Vector2<T>> b)
+    {
+        return a[0] * b[1] - a[1] * b[0];
+    }
 };
 
 template <class T, int rows, int cols, int max_rows = rows>
