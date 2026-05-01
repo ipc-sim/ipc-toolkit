@@ -43,8 +43,9 @@ class CMakeBuild(build_ext):
         debug = int(os.environ.get("DEBUG", 0)) if self.debug is None else self.debug
         cfg = "Debug" if debug else "Release"
 
-        # Allow users to disable SIMD support with an environment variable, since it can cause build issues on some platforms.
-        with_simd = "OFF" if os.environ.get("IPCTK_WITH_SIMD", "1") == "0" else "ON"
+        # Allow users to disable SIMD via IPCTK_WITH_SIMD=0/off/false/no.
+        _simd_env = os.environ.get("IPCTK_WITH_SIMD", "1").strip().lower()
+        with_simd = "OFF" if _simd_env in {"0", "off", "false", "no"} else "ON"
 
         # CMake lets you override the generator - we need to check this.
         # Can be set with Conda-Build, for example.
