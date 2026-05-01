@@ -38,6 +38,23 @@ You can test that the installation was successful by doing
 python -c "import ipctk"
 ```
 
+#### SIMD
+
+SIMD optimizations are enabled by default. To disable them (e.g., for compatibility with older or cross-compiled targets), set `IPCTK_WITH_SIMD=0` before installing:
+
+```sh
+IPCTK_WITH_SIMD=0 pip install .
+```
+
+Accepted falsy values: `0`, `off`, `false`, `no` (case-insensitive). Any other value keeps SIMD enabled.
+
+:::{note}
+Pre-built binary wheels from PyPI have SIMD support baked in at wheel-build time. The `IPCTK_WITH_SIMD` variable only applies when building from source. To force a source build from PyPI, use:
+```sh
+IPCTK_WITH_SIMD=0 pip install --no-binary ipctk ipctk
+```
+:::
+
 ### CMake Build
 
 Alternatively, you can use `cmake` directly. To do this, use the following commands from the root of the repository:
