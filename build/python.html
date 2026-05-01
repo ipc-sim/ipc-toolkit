@@ -2161,12 +2161,13 @@
 </code></pre></div>
 </div>
 <p>Accepted falsy values: <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">off</span></code>, <code class="docutils literal notranslate"><span class="pre">false</span></code>, <code class="docutils literal notranslate"><span class="pre">no</span></code> (case-insensitive). Any other value keeps SIMD enabled.</p>
-<p>:::{note}
-Pre-built binary wheels from PyPI have SIMD support baked in at wheel-build time. The <code class="docutils literal notranslate"><span class="pre">IPCTK_WITH_SIMD</span></code> variable only applies when building from source. To force a source build from PyPI, use:</p>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>Pre-built binary wheels from PyPI have SIMD support baked in at wheel-build time. The <code class="docutils literal notranslate"><span class="pre">IPCTK_WITH_SIMD</span></code> variable only applies when building from source. To force a source build from PyPI, use:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code><span class="nv">IPCTK_WITH_SIMD</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-binary<span class="w"> </span>ipctk<span class="w"> </span>ipctk
 </code></pre></div>
 </div>
-<p>:::</p>
+</div>
 <h3 id="cmake-build">CMake Build<a class="headerlink" href="#cmake-build" title="Link to this heading">¶</a></h3>
 <p>Alternatively, you can use <code class="docutils literal notranslate"><span class="pre">cmake</span></code> directly. To do this, use the following commands from the root of the repository:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>build
