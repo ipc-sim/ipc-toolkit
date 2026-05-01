@@ -68,6 +68,7 @@ bibtex_reference_style = "author_year"
 bibtex_default_style = "plain"
 
 myst_enable_extensions = [
+    "colon_fence",
     "dollarmath",
 ]
 
