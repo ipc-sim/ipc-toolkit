@@ -30,24 +30,19 @@ Eigen::VectorXd NormalPotential::gauss_newton_hessian_diagonal(
     tbb::combinable<Eigen::VectorXd> diag_storage(
         Eigen::VectorXd::Zero(vertices.size()));
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const NormalCollision& collision = collisions[i];
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        const NormalCollision& collision = collisions[i];
 
-                const VectorMax12d local_diag =
-                    this->gauss_newton_hessian_diagonal(
-                        collision, collision.dof(vertices, edges, faces));
+        const VectorMax12d local_diag = this->gauss_newton_hessian_diagonal(
+            collision, collision.dof(vertices, edges, faces));
 
-                const auto vids = collision.vertex_ids(edges, faces);
+        const auto vids = collision.vertex_ids(edges, faces);
 
-                // Don't be confused by the "gradient" in the name -- this just
-                // scatters a local vector into a global vector.
-                local_gradient_to_global_gradient(
-                    local_diag, vids, dim, diag_storage.local());
-            }
-        });
+        // Don't be confused by the "gradient" in the name -- this just
+        // scatters a local vector into a global vector.
+        local_gradient_to_global_gradient(
+            local_diag, vids, dim, diag_storage.local());
+    });
 
     return diag_storage.combine([](const Eigen::VectorXd& a,
                                    const Eigen::VectorXd& b) { return a + b; });
@@ -107,19 +102,15 @@ Eigen::SparseMatrix<double> NormalPotential::shape_derivative(
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_triplets = storage.local();
-
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                this->shape_derivative(
-                    collisions[i], collisions[i].vertex_ids(edges, faces),
-                    collisions[i].dof(rest_positions, edges, faces),
-                    collisions[i].dof(vertices, edges, faces), local_triplets,
-                    mesh.num_vertices());
-            }
-        });
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        const NormalCollision& collision = collisions[i];
+        auto& local_triplets = storage.local();
+        this->shape_derivative(
+            collision, collision.vertex_ids(edges, faces),
+            collision.dof(rest_positions, edges, faces),
+            collision.dof(vertices, edges, faces), local_triplets,
+            mesh.num_vertices());
+    });
 
     Eigen::SparseMatrix<double> shape_derivative(ndof, ndof);
     for (const auto& local_triplets : storage) {
@@ -148,8 +139,16 @@ VectorMax12d NormalPotential::gradient(
     const NormalCollision& collision,
     Eigen::ConstRef<VectorMax12d> positions) const
 {
+    // When m=0 the mollifier also satisfies ∇m=0, so the full gradient
+    // f(d)·∇m + m·f'(d)·∇d = 0 without needing to evaluate f'(d).
+    const double m = collision.mollifier(positions); // m(x)
+    if (m <= 0) {
+        return VectorMax12d::Zero(positions.size());
+    }
+
     // d(x)
     const double d = collision.compute_distance(positions);
+
     // ∇d(x)
     const VectorMax12d grad_d = collision.compute_distance_gradient(positions);
 
@@ -163,7 +162,7 @@ VectorMax12d NormalPotential::gradient(
         return (collision.weight * grad_f) * grad_d;
     }
 
-    const double m = collision.mollifier(positions); // m(x)
+    // Mollified (edge-edge) path: need to apply product rule to m(x) * f(d(x)).
     const VectorMax12d grad_m =
         collision.mollifier_gradient(positions); // ∇m(x)
 
@@ -179,6 +178,16 @@ MatrixMax12d NormalPotential::hessian(
 {
     // d(x)
     const double d = collision.compute_distance(positions);
+
+    // Mollified (edge-edge) path: same reasoning as gradient() — check
+    // m(x) before evaluating barrier derivatives.
+    const double m = collision.mollifier(positions); // m(x)
+    if (collision.is_mollified() && m <= 0) {
+        const double f = (*this)(d, collision.dmin);
+        const MatrixMax12d hess_m = collision.mollifier_hessian(positions);
+        return (collision.weight * f) * hess_m;
+    }
+
     // ∇d(x)
     const VectorMax12d grad_d = collision.compute_distance_gradient(positions);
     // ∇²d(x)
@@ -198,8 +207,6 @@ MatrixMax12d NormalPotential::hessian(
     } else {
         const double f = (*this)(d, collision.dmin); // f(d(x))
 
-        // m(x)
-        const double m = collision.mollifier(positions);
         // ∇ m(x)
         const VectorMax12d grad_m = collision.mollifier_gradient(positions);
         // ∇² m(x)

@@ -514,7 +514,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+build*/
 develop-eggs/
 dist/
 downloads/
@@ -673,3 +673,5 @@ tests/data
 notebooks/*.png
 CMakeGraphVizOptions.cmake
 .zed/*
+
+CLAUDE.md

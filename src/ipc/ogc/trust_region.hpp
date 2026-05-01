@@ -14,6 +14,10 @@ struct TrustRegion {
     /// @brief Trust region radii for each vertex.
     Eigen::VectorXd trust_region_radii;
 
+    /// @brief Collision candidates used for Planar-DAT.
+    /// Updated by update(); passed to planar_filter_step().
+    Candidates candidates;
+
     /// @brief Scaling factor for relaxing the trust region radii.
     /// @note This should be in (0, 1).
     /// @note This is referred to as \f\(2\gamma_p\f\) in the paper.
@@ -97,6 +101,46 @@ struct TrustRegion {
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> x,
         Eigen::Ref<Eigen::MatrixXd> dx);
+
+    /// @brief Filter the optimization step dx using Planar-DAT (Divide and Truncate).
+    ///
+    /// For each collision candidate, computes a direction-aware division plane
+    /// and truncates only the component of displacement toward that plane. This
+    /// eliminates the artificial damping and deadlock of the isotropic
+    /// filter_step while retaining the penetration-free guarantee.
+    ///
+    /// Uses CollisionStencil::compute_distance_vector() to obtain the contact
+    /// normal and closest-point coefficients in a single polymorphic call,
+    /// avoiding stale distance-type decompositions from NormalCollisions.
+    ///
+    /// @see "Divide and Truncate: A Penetration and Inversion Free Framework
+    ///      for Coupled Multi-physics Systems" [ACM SIGGRAPH 2026]
+    ///
+    /// @param mesh The collision mesh.
+    /// @param x Current vertex positions.
+    /// @param dx Proposed vertex displacements (modified in-place).
+    void planar_filter_step(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> x,
+        Eigen::Ref<Eigen::MatrixXd> dx);
+
+private:
+    /// @brief Compute the truncation ratio for a vertex given a division plane.
+    ///
+    /// Finds the parameter t_i such that x_u + t_i * dx_u lies on the plane
+    /// (n, p). If the crossing is in the future and within one step, returns
+    /// relaxation_ratio * t_i; otherwise returns 1 (no truncation).
+    ///
+    /// @param x_u Current position of vertex u.
+    /// @param dx_u Proposed displacement of vertex u.
+    /// @param n Division plane normal (unit vector).
+    /// @param p A point on the division plane.
+    /// @return Truncation ratio in (0, 1].
+    double planar_truncation_ratio(
+        Eigen::ConstRef<VectorMax3d> x_u,
+        Eigen::ConstRef<VectorMax3d> dx_u,
+        Eigen::ConstRef<VectorMax3d> n,
+        Eigen::ConstRef<VectorMax3d> p) const;
 };
 
 } // namespace ipc::ogc

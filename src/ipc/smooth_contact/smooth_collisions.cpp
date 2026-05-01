@@ -262,18 +262,14 @@ double SmoothCollisions::compute_minimum_distance(
     tbb::enumerable_thread_specific<double> storage(
         std::numeric_limits<double>::infinity());
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, m_candidates.size()),
-        [&](tbb::blocked_range<size_t> r) {
-            double& local_min_dist = storage.local();
+    tbb::parallel_for(size_t(0), m_candidates.size(), [&](size_t i) {
+        double& local_min_dist = storage.local();
 
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const double dist = m_candidates[i].compute_distance(
-                    m_candidates[i].dof(vertices, edges, faces));
+        const double dist = m_candidates[i].compute_distance(
+            m_candidates[i].dof(vertices, edges, faces));
 
-                local_min_dist = std::min(dist, local_min_dist);
-            }
-        });
+        local_min_dist = std::min(dist, local_min_dist);
+    });
 
     return storage.combine([](double a, double b) { return std::min(a, b); });
 }
@@ -290,19 +286,15 @@ double SmoothCollisions::compute_active_minimum_distance(
     tbb::enumerable_thread_specific<double> storage(
         std::numeric_limits<double>::infinity());
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, collisions.size()),
-        [&](tbb::blocked_range<size_t> r) {
-            double& local_min_dist = storage.local();
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        double& local_min_dist = storage.local();
 
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const double dist = collisions[i]->compute_distance(vertices);
+        const double dist = collisions[i]->compute_distance(vertices);
 
-                if (collisions[i]->is_active() && dist < local_min_dist) {
-                    local_min_dist = dist;
-                }
-            }
-        });
+        if (collisions[i]->is_active() && dist < local_min_dist) {
+            local_min_dist = dist;
+        }
+    });
 
     return storage.combine([](double a, double b) { return std::min(a, b); });
 }
