@@ -95,6 +95,10 @@ void LBVH::build(
 }
 
 namespace {
+    // Returns the number of common leading bits (CLZ of XOR) between
+    // sorted Morton codes at positions i and j.  Returns -1 when j is
+    // out of bounds.  Duplicate codes fall back to CLZ of the index XOR
+    // (offset by 32 so it sorts after any code-level difference).
     int delta(
         const LBVH::MortonCodeElements& sorted_morton_codes,
         int i,
@@ -107,8 +111,8 @@ namespace {
         uint64_t code_j = sorted_morton_codes[j].morton_code;
         if (code_i == code_j) {
             // handle duplicate morton codes
-            int element_idx_i = i; // sorted_morton_codes[i].elementIdx;
-            int element_idx_j = j; // sorted_morton_codes[j].elementIdx;
+            int element_idx_i = i;
+            int element_idx_j = j;
 
             // add 32 for common prefix of code_i ^ code_j
 #if defined(__GNUC__) || defined(__clang__)
@@ -122,72 +126,6 @@ namespace {
 #elif defined(WIN32)
         return __lzcnt64(code_i ^ code_j);
 #endif
-    }
-
-    void determine_range(
-        const LBVH::MortonCodeElements& sorted_morton_codes,
-        int idx,
-        int& lower,
-        int& upper)
-    {
-        // determine direction of the range (+1 or -1)
-        const uint64_t code = sorted_morton_codes[idx].morton_code;
-        const int delta_l = delta(sorted_morton_codes, idx, code, idx - 1);
-        const int delta_r = delta(sorted_morton_codes, idx, code, idx + 1);
-        const int d = (delta_r >= delta_l) ? 1 : -1;
-
-        // compute upper bound for the length of the range
-        const int delta_min = std::min(delta_l, delta_r);
-        int l_max = 2;
-        while (delta(sorted_morton_codes, idx, code, idx + l_max * d)
-               > delta_min) {
-            l_max = l_max << 1;
-        }
-
-        // find the other end using binary search
-        int l = 0;
-        for (int t = l_max >> 1; t > 0; t >>= 1) {
-            if (delta(sorted_morton_codes, idx, code, idx + (l + t) * d)
-                > delta_min) {
-                l += t;
-            }
-        }
-        int jdx = idx + l * d;
-
-        // ensure idx < jdx
-        lower = std::min(idx, jdx);
-        upper = std::max(idx, jdx);
-    }
-
-    int find_split(
-        const LBVH::MortonCodeElements& sorted_morton_codes,
-        int first,
-        int last)
-    {
-        uint64_t first_code = sorted_morton_codes[first].morton_code;
-
-        // Calculate the number of highest bits that are the same
-        // for all objects, using the count-leading-zeros intrinsic.
-        int common_prefix = delta(sorted_morton_codes, first, first_code, last);
-
-        // Use binary search to find where the next bit differs.
-        // Specifically, we are looking for the highest object that
-        // shares more than common_prefix bits with the first one.
-        int split = first; // initial guess
-        int stride = last - first;
-        do {
-            stride = (stride + 1) >> 1;     // exponential decrease
-            int new_split = split + stride; // proposed new position
-            if (new_split < last) {
-                int split_prefix =
-                    delta(sorted_morton_codes, first, first_code, new_split);
-                if (split_prefix > common_prefix) {
-                    split = new_split; // accept proposal
-                }
-            }
-        } while (stride > 1);
-
-        return split;
     }
 } // namespace
 
@@ -238,7 +176,8 @@ void LBVH::init_bvh(
     }
 
     assert(boxes.size() <= std::numeric_limits<int>::max());
-    const int LEAF_OFFSET = int(boxes.size()) - 1;
+    const int N_LEAVES = int(boxes.size());
+    const int LEAF_OFFSET = N_LEAVES - 1;
 
     if (rightmost_leaves.size() != lbvh.size()) {
         rightmost_leaves.resize(lbvh.size());
@@ -246,9 +185,26 @@ void LBVH::init_bvh(
 
     LBVH::ConstructionInfos construction_infos(lbvh.size());
     {
-        IPC_TOOLKIT_PROFILE_BLOCK("build_hierarchy");
-        tbb::parallel_for(size_t(0), boxes.size(), [&](size_t i) {
-            assert(i < boxes.size());
+        IPC_TOOLKIT_PROFILE_BLOCK("init_visitation_counts");
+        tbb::parallel_for(size_t(0), lbvh.size(), [&](size_t i) {
+            construction_infos[i].visitation_count.store(
+                0, std::memory_order_relaxed);
+        });
+    }
+
+    // Apetrei 2014: single bottom-up pass that simultaneously builds the
+    // hierarchy and computes bounding boxes. Each leaf thread walks toward the
+    // root, choosing its parent in O(1) by comparing the CLZ-delta values at
+    // the two ends of its current key range.
+    //
+    // In this layout internal node j always splits between sorted keys j and
+    // j+1. The root is NOT necessarily at index 0, so after construction we
+    // swap the root into position 0 to match the traversal code's expectation.
+    int root_idx = -1;
+    {
+        IPC_TOOLKIT_PROFILE_BLOCK("build_hierarchy_and_boxes");
+        tbb::parallel_for(0, N_LEAVES, [&](int i) {
+            // --- Initialize leaf node ---
             {
                 const auto& box = boxes[morton_codes[i].box_id];
 
@@ -261,59 +217,51 @@ void LBVH::init_bvh(
                 rightmost_leaves[LEAF_OFFSET + i] = i;
             }
 
-            if (i < LEAF_OFFSET) {
-                // Find out which range of objects the node corresponds
-                // to. (This is where the magic happens!)
+            // --- Bottom-up walk (Apetrei 2014, Fig. 2) ---
+            // Invariant: the current subtree covers the sorted-key range
+            // [left_key, right_key].
+            int left_key = i;
+            int right_key = i;
+            int current_node = LEAF_OFFSET + i;
 
-                int first, last;
-                determine_range(morton_codes, int(i), first, last);
-
-                // Determine where to split the range
-                int split = find_split(morton_codes, first, last);
-
-                // Select child_a
-                int child_a = -1;
-                if (split == first) {
-                    // pointer to leaf node
-                    child_a = LEAF_OFFSET + split;
-                } else {
-                    child_a = split; // pointer to internal node
-                }
-
-                // Select child_b
-                int child_b = -1;
-                if (split + 1 == last) {
-                    child_b = LEAF_OFFSET + split + 1; // pointer to leaf node
-                } else {
-                    child_b = split + 1; // pointer to internal node
-                }
-
-                // Record parent-child relationships
-                lbvh[i].left = child_a;
-                lbvh[i].right = child_b;
-                construction_infos[child_a].parent = int(i);
-                construction_infos[child_b].parent = int(i);
-                construction_infos[child_a].visitation_count.store(
-                    0, std::memory_order_relaxed);
-                construction_infos[child_b].visitation_count.store(
-                    0, std::memory_order_relaxed);
-            }
-
-            // node 0 is the root and has no parent to set these values
-            if (i == 0) {
-                construction_infos[0].parent = 0;
-                construction_infos[0].visitation_count.store(
-                    0, std::memory_order_relaxed);
-            }
-        });
-    }
-
-    {
-        IPC_TOOLKIT_PROFILE_BLOCK("populate_boxes");
-        tbb::parallel_for(size_t(0), boxes.size(), [&](size_t i) {
-            int node_idx = construction_infos[LEAF_OFFSET + i].parent;
             while (true) {
-                auto& info = construction_infos[node_idx];
+                // Choose parent. Candidates are internal node right_key
+                // (current becomes its left / childA) or internal node
+                // left_key-1 (current becomes its right / childB). Our delta()
+                // returns CLZ (higher = more-similar = finer split), so the
+                // CLOSER ancestor has the LARGER delta — hence ">".
+                //
+                // Boundary rules:
+                //   left_key == 0        → must be childA (no node -1)
+                //   right_key == n-1     → must be childB (no node n-1)
+                const bool is_child_a = (left_key == 0)
+                    || (right_key != N_LEAVES - 1
+                        && delta(
+                               morton_codes, right_key,
+                               morton_codes[right_key].morton_code,
+                               right_key + 1)
+                            > delta(
+                                morton_codes, left_key - 1,
+                                morton_codes[left_key - 1].morton_code,
+                                left_key));
+                const int parent = is_child_a ? right_key : left_key - 1;
+
+                auto& info = construction_infos[parent];
+
+                // Write the child pointer on the parent node.
+                // childA writes .left; childB writes .right.
+                if (is_child_a) {
+                    lbvh[parent].left = current_node;
+                    info.left_range = left_key;
+                } else {
+                    lbvh[parent].right = current_node;
+                    info.right_range = right_key;
+                }
+
+                // Atomic arrival gate: the first thread to reach this parent
+                // stops; the second thread proceeds (it now knows both children
+                // are complete).
+
                 if (info.visitation_count++ == 0) {
                     // this is the first thread that arrived at this
                     // node -> finished
@@ -322,23 +270,54 @@ void LBVH::init_bvh(
                 // this is the second thread that arrived at this node,
                 // both children are computed -> compute aabb union and
                 // continue
-                assert(lbvh[node_idx].is_inner());
-                const Node& child_b = lbvh[lbvh[node_idx].right];
-                const Node& child_a = lbvh[lbvh[node_idx].left];
-                lbvh[node_idx].aabb_min =
-                    child_a.aabb_min.min(child_b.aabb_min);
-                lbvh[node_idx].aabb_max =
-                    child_a.aabb_max.max(child_b.aabb_max);
+                assert(lbvh[parent].is_inner());
+                const Node& child_a = lbvh[lbvh[parent].left];
+                const Node& child_b = lbvh[lbvh[parent].right];
+                lbvh[parent].aabb_min = child_a.aabb_min.min(child_b.aabb_min);
+                lbvh[parent].aabb_max = child_a.aabb_max.max(child_b.aabb_max);
 
                 // Compute rightmost leaf: max of children's rightmost
-                rightmost_leaves[node_idx] = std::max(
-                    rightmost_leaves[lbvh[node_idx].left],
-                    rightmost_leaves[lbvh[node_idx].right]);
+                rightmost_leaves[parent] = std::max(
+                    rightmost_leaves[lbvh[parent].left],
+                    rightmost_leaves[lbvh[parent].right]);
 
-                if (node_idx == 0) {
-                    break; // root node
+                // Reconstruct the full key range for the parent.
+                left_key = construction_infos[parent].left_range;
+                right_key = construction_infos[parent].right_range;
+                current_node = parent;
+
+                if (left_key == 0 && right_key == N_LEAVES - 1) {
+                    // only one thread should reach the root
+                    assert(root_idx == -1);
+                    root_idx = current_node;
+                    break; // root AABB is complete
                 }
-                node_idx = info.parent;
+            }
+        });
+    }
+
+    // --- Move the root to index 0 so traversal can start there. ---
+    // In the Apetrei layout the root's index equals the global split position,
+    // which is generally != 0.  We swap the root node into position 0 and patch
+    // up the single affected child pointer.
+    //
+    // Key invariant (Apetrei): node 0's subtree always has left_key=0, so it is
+    // only ever written as a LEFT child — meaning no internal node ever has
+    // right==0.  Therefore swapping node 0 cannot create a spurious
+    // is_inner_marker==0 (which would look like a leaf).
+    if (root_idx > 0) {
+        IPC_TOOLKIT_PROFILE_BLOCK("swap_root_to_zero");
+        std::swap(lbvh[0], lbvh[root_idx]);
+        std::swap(rightmost_leaves[0], rightmost_leaves[root_idx]);
+
+        // The root (now at 0) is never any node's child, so no pointer
+        // references R that needs rewriting to 0. The only pointers that
+        // referenced 0 (the old node-0) must be rewritten to R.  And since old
+        // node-0 was only ever a LEFT child (see invariant above), we only need
+        // to patch .left pointers.
+        tbb::parallel_for(size_t(0), lbvh.size(), [&](size_t i) {
+            if (lbvh[i].is_inner() && lbvh[i].left == 0) {
+                lbvh[i].left = root_idx;
             }
         });
     }
