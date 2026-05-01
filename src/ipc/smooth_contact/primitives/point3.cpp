@@ -566,7 +566,8 @@ HessianType<-1> Point3::smooth_point3_term_hessian(
 template <typename scalar, int n_verts>
 scalar Point3::smooth_point3_term(
     const Eigen::Matrix<scalar, n_verts, 3>& X,
-    Eigen::ConstRef<Eigen::RowVector3<scalar>> direc) const // NOLINT(readability-named-parameter)
+    // NOLINTNEXTLINE(readability-named-parameter)
+    Eigen::ConstRef<Eigen::RowVector3<scalar>> direc) const
 {
     const Eigen::RowVector3<scalar> dn = direc.normalized();
     scalar tangent_term(1.);

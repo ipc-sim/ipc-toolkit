@@ -99,7 +99,7 @@ struct SmoothContactParameters {
     double beta_n = 0;
     int r = 2;
 
-    bool use_rest_shape_measure = true;
+    bool use_rest_shape_measure = false;
 
 private:
     double m_adaptive_dhat_ratio = 0.5;
