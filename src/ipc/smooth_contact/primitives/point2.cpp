@@ -189,7 +189,7 @@ VectorMax<double, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         const T measure = m_params.use_rest_shape_measure
             ? T(m_rest_measure)
-            : ((X.row(2) - X.row(0)).norm() + (X.row(3) - X.row(0)).norm())
+            : ((X.row(2) - X.row(1)).norm() + (X.row(3) - X.row(1)).norm())
                 / 2.0;
         return smooth_point2_term<T>(
                    X.row(1), X.row(0), X.row(2), X.row(3), m_params, orientable,
@@ -203,7 +203,7 @@ VectorMax<double, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         const T measure = m_params.use_rest_shape_measure
             ? T(m_rest_measure)
-            : (X.row(2) - X.row(0)).norm();
+            : (X.row(2) - X.row(1)).norm();
         return smooth_point2_term_one_side<T>(
                    X.row(1), X.row(0), X.row(2), m_params, measure)
             .grad;
@@ -228,7 +228,7 @@ Point2::hessian(
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         const T measure = m_params.use_rest_shape_measure
             ? T(m_rest_measure)
-            : ((X.row(2) - X.row(0)).norm() + (X.row(3) - X.row(0)).norm())
+            : ((X.row(2) - X.row(1)).norm() + (X.row(3) - X.row(1)).norm())
                 / 2.0;
         return smooth_point2_term<T>(
                    X.row(1), X.row(0), X.row(2), X.row(3), m_params, orientable,
@@ -242,7 +242,7 @@ Point2::hessian(
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
         const T measure = m_params.use_rest_shape_measure
             ? T(m_rest_measure)
-            : (X.row(2) - X.row(0)).norm();
+            : (X.row(2) - X.row(1)).norm();
         return smooth_point2_term_one_side<T>(
                    X.row(1), X.row(0), X.row(2), m_params, measure)
             .Hess;
