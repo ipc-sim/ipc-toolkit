@@ -31,7 +31,8 @@ Face::Face(
     m_vertex_ids = { { mesh.faces()(id, 0), mesh.faces()(id, 1),
                        mesh.faces()(id, 2) } };
 
-    // Rest-shape area: computed from rest positions — constant quadrature weight
+    // Rest-shape area: computed from rest positions — constant quadrature
+    // weight
     const Eigen::MatrixXd& rp = mesh.rest_positions();
     Eigen::Vector3d ra = rp.row(m_vertex_ids[1]) - rp.row(m_vertex_ids[0]);
     Eigen::Vector3d rb = rp.row(m_vertex_ids[2]) - rp.row(m_vertex_ids[0]);
@@ -53,9 +54,11 @@ double Face::potential(
     Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const
 {
     if (!m_params.use_rest_shape_measure) {
-        return smooth_face_term<double>(x.head<3>(), x.segment<3>(3), x.tail<3>());
+        return smooth_face_term<double>(
+            x.head<3>(), x.segment<3>(3), x.tail<3>());
     }
-    // Return the rest-shape area — constant quadrature weight per the paper (Eq. 13)
+    // Return the rest-shape area — constant quadrature weight per the paper
+    // (Eq. 13)
     return m_rest_area;
 }
 Vector12d Face::grad(

@@ -62,8 +62,9 @@ Point3::Point3(
     m_vertex_ids = local_to_global_vids;
 
     if (m_params.use_rest_shape_measure) {
-        // Rest-shape vertex area measure: sum of squared rest 1-ring edge lengths / 3
-        // Constant quadrature weight per the paper (Eq. 13), never differentiated through
+        // Rest-shape vertex area measure: sum of squared rest 1-ring edge
+        // lengths / 3 Constant quadrature weight per the paper (Eq. 13), never
+        // differentiated through
         const Eigen::MatrixXd& rp = mesh.rest_positions();
         m_rest_weight = 0.0;
         for (int a = 0; a < edges.rows(); a++) {
@@ -447,7 +448,9 @@ GradientType<-1> Point3::smooth_point3_term_gradient(
     Eigen::VectorXd grad_tmp =
         tangent_grad * normal_term + normal_grad * tangent_term;
 
-    const double weight = m_params.use_rest_shape_measure ? m_rest_weight : tangents.squaredNorm() / 3.;
+    const double weight = m_params.use_rest_shape_measure
+        ? m_rest_weight
+        : tangents.squaredNorm() / 3.;
     grad_tmp *= weight;
     if (!m_params.use_rest_shape_measure) {
         grad_tmp.tail(n_neighbor_dofs) += (2. / 3. * val) * tangents_vec;
@@ -504,7 +507,9 @@ HessianType<-1> Point3::smooth_point3_term_hessian(
         + normal_hess * tangent_term + tangent_grad * normal_grad.transpose()
         + normal_grad * tangent_grad.transpose();
 
-    const double weight = m_params.use_rest_shape_measure ? m_rest_weight : tangents.squaredNorm() / 3.;
+    const double weight = m_params.use_rest_shape_measure
+        ? m_rest_weight
+        : tangents.squaredNorm() / 3.;
     hess_tmp *= weight;
     if (!m_params.use_rest_shape_measure) {
         hess_tmp.bottomRightCorner(n_neighbor_dofs, n_neighbor_dofs)
@@ -561,7 +566,7 @@ HessianType<-1> Point3::smooth_point3_term_hessian(
 template <typename scalar, int n_verts>
 scalar Point3::smooth_point3_term(
     const Eigen::Matrix<scalar, n_verts, 3>& X,
-    Eigen::ConstRef<Eigen::RowVector3<scalar>> direc) const
+    Eigen::ConstRef<Eigen::RowVector3<scalar>> direc) const // NOLINT(readability-named-parameter)
 {
     const Eigen::RowVector3<scalar> dn = direc.normalized();
     scalar tangent_term(1.);
@@ -582,7 +587,8 @@ scalar Point3::smooth_point3_term(
         }
     }
 
-    weight = m_params.use_rest_shape_measure ? scalar(m_rest_weight) : weight / 3.;
+    weight =
+        m_params.use_rest_shape_measure ? scalar(m_rest_weight) : weight / 3.;
 
     if (!orientable || otypes.normal_type(0) == HeavisideType::ONE) {
         normal_term = scalar(1.);

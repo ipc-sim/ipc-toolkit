@@ -13,15 +13,18 @@ Edge2::Edge2(
 {
     m_vertex_ids = { { mesh.edges()(id, 0), mesh.edges()(id, 1) } };
 
-    // Rest-shape edge length: computed from rest positions — constant quadrature weight
+    // Rest-shape edge length: computed from rest positions — constant
+    // quadrature weight
     const Eigen::MatrixXd& rp = mesh.rest_positions();
-    m_rest_length =
-        (rp.row(m_vertex_ids[1]) - rp.row(m_vertex_ids[0])).norm();
+    m_rest_length = (rp.row(m_vertex_ids[1]) - rp.row(m_vertex_ids[0])).norm();
 
     if (mesh.is_orient_vertex(m_vertex_ids[0])
         && mesh.is_orient_vertex(m_vertex_ids[1])) {
-        m_is_active = Math<double>::cross2(
-            d, vertices.row(m_vertex_ids[1]) - vertices.row(m_vertex_ids[0])) > 0;
+        m_is_active =
+            Math<double>::cross2(
+                d,
+                vertices.row(m_vertex_ids[1]) - vertices.row(m_vertex_ids[0]))
+            > 0;
     } else {
         m_is_active = true;
     }
@@ -37,7 +40,8 @@ double Edge2::potential(
     if (!m_params.use_rest_shape_measure) {
         return (x.tail<2>() - x.head<2>()).norm();
     }
-    // Return the rest-shape edge length — constant quadrature weight per the paper (Eq. 13)
+    // Return the rest-shape edge length — constant quadrature weight per the
+    // paper (Eq. 13)
     return m_rest_length;
 }
 
@@ -75,8 +79,8 @@ Matrix6d Edge2::hessian(
 #else
         const Eigen::Vector2d t = x.tail<2>() - x.head<2>();
         const double norm = t.norm();
-        h.block<2, 2>(2, 2) =
-            (Eigen::Matrix2d::Identity() - t * (1. / norm / norm) * t.transpose())
+        h.block<2, 2>(2, 2) = (Eigen::Matrix2d::Identity()
+                               - t * (1. / norm / norm) * t.transpose())
             / norm;
         h.block<2, 2>(4, 4) = h.block<2, 2>(2, 2);
         h.block<2, 2>(2, 4) = -h.block<2, 2>(2, 2);

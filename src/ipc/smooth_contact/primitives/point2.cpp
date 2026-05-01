@@ -126,9 +126,8 @@ Point2::Point2(
 
         // rest-shape measure: average half-edge length from rest positions
         const Eigen::MatrixXd& rp = mesh.rest_positions();
-        m_rest_measure =
-            ((rp.row(neighbor_verts[0]) - rp.row(id)).norm()
-             + (rp.row(neighbor_verts[1]) - rp.row(id)).norm())
+        m_rest_measure = ((rp.row(neighbor_verts[0]) - rp.row(id)).norm()
+                          + (rp.row(neighbor_verts[1]) - rp.row(id)).norm())
             / 2.0;
     } else if (has_neighbor_1 || has_neighbor_2) {
         m_vertex_ids = {
@@ -163,7 +162,8 @@ double Point2::potential(
         const double measure = m_params.use_rest_shape_measure
             ? m_rest_measure
             : ((x.segment<DIM>(DIM) - x.segment<DIM>(0)).norm()
-               + (x.segment<DIM>(2 * DIM) - x.segment<DIM>(0)).norm()) / 2.0;
+               + (x.segment<DIM>(2 * DIM) - x.segment<DIM>(0)).norm())
+                / 2.0;
         return smooth_point2_term<double>(
             x.segment<DIM>(0), d, x.segment<DIM>(DIM), x.segment<DIM>(2 * DIM),
             m_params, orientable, measure);
@@ -189,10 +189,11 @@ VectorMax<double, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         const T measure = m_params.use_rest_shape_measure
             ? T(m_rest_measure)
-            : ((X.row(2) - X.row(0)).norm() + (X.row(3) - X.row(0)).norm()) / 2.0;
+            : ((X.row(2) - X.row(0)).norm() + (X.row(3) - X.row(0)).norm())
+                / 2.0;
         return smooth_point2_term<T>(
-                   X.row(1), X.row(0), X.row(2), X.row(3), m_params,
-                   orientable, measure)
+                   X.row(1), X.row(0), X.row(2), X.row(3), m_params, orientable,
+                   measure)
             .grad;
     } else if (has_neighbor_1 || has_neighbor_2) {
         ScalarBase::setVariableCount(3 * DIM);
@@ -227,10 +228,11 @@ Point2::hessian(
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
         const T measure = m_params.use_rest_shape_measure
             ? T(m_rest_measure)
-            : ((X.row(2) - X.row(0)).norm() + (X.row(3) - X.row(0)).norm()) / 2.0;
+            : ((X.row(2) - X.row(0)).norm() + (X.row(3) - X.row(0)).norm())
+                / 2.0;
         return smooth_point2_term<T>(
-                   X.row(1), X.row(0), X.row(2), X.row(3), m_params,
-                   orientable, measure)
+                   X.row(1), X.row(0), X.row(2), X.row(3), m_params, orientable,
+                   measure)
             .Hess;
     } else if (has_neighbor_1 || has_neighbor_2) {
         ScalarBase::setVariableCount(3 * DIM);
