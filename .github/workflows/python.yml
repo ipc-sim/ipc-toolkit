@@ -78,6 +78,8 @@ jobs:
           ccache --show-stats && ccache --zero-stats
 
       - name: Build and Install
+        env:
+          IPCTK_WITH_SIMD: ${{ runner.os == 'Linux' && '0' || '1' }}
         run: |
           pip install --verbose . && ccache --show-stats
 

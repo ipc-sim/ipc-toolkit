@@ -78,8 +78,8 @@ protected:
 // ============================================================================
 // Matrix Market file utils
 
-Eigen::MatrixXd loadMarketXd(const std::string& f);
-Eigen::MatrixXi loadMarketXi(const std::string& f);
+Eigen::MatrixXd loadMarketXd(const std::string& f); // NOLINT
+Eigen::MatrixXi loadMarketXi(const std::string& f); // NOLINT
 
 // ============================================================================
 

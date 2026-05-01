@@ -23,97 +23,87 @@ NormalCollisionsBuilder::NormalCollisionsBuilder(
 
 // ============================================================================
 
-void NormalCollisionsBuilder::add_vertex_vertex_collisions(
+void NormalCollisionsBuilder::add_vertex_vertex_collision(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<VertexVertexCandidate>& candidates,
-    const std::function<bool(double)>& is_active,
-    const size_t start_i,
-    const size_t end_i)
+    const VertexVertexCandidate& candidate,
+    const std::function<bool(double)>& is_active)
 {
-    for (size_t i = start_i; i < end_i; i++) {
-        const auto& [vi, vj] = candidates[i];
+    const auto& [vi, vj] = candidate;
 
-        const double distance =
-            point_point_distance(vertices.row(vi), vertices.row(vj));
+    const double distance =
         point_point_distance(vertices.row(vi), vertices.row(vj));
-        if (!is_active(distance)) {
-            continue;
-        }
-
-        // ÷ 2 to handle double counting. Sum vertex areas because duplicate
-        // vertex-vertex candidates were removed.
-        const double weight = use_area_weighting
-            ? (0.5 * (mesh.vertex_area(vi) + mesh.vertex_area(vj)))
-            : 1;
-
-        Eigen::SparseVector<double> weight_gradient;
-        if (enable_shape_derivatives) {
-            weight_gradient = use_area_weighting
-                ? (0.5
-                   * (mesh.vertex_area_gradient(vi)
-                      + mesh.vertex_area_gradient(vj)))
-                : Eigen::SparseVector<double>(vertices.size());
-        }
-
-        VertexVertexNormalCollision vv(vi, vj, weight, weight_gradient);
-        vv_to_id.emplace(vv, vv_collisions.size());
-        vv_collisions.push_back(vv);
+    if (!is_active(distance)) {
+        return;
     }
+
+    // ÷ 2 to handle double counting. Sum vertex areas because duplicate
+    // vertex-vertex candidates were removed.
+    const double weight = use_area_weighting
+        ? (0.5 * (mesh.vertex_area(vi) + mesh.vertex_area(vj)))
+        : 1;
+
+    Eigen::SparseVector<double> weight_gradient;
+    if (enable_shape_derivatives) {
+        weight_gradient = use_area_weighting
+            ? (0.5
+               * (mesh.vertex_area_gradient(vi)
+                  + mesh.vertex_area_gradient(vj)))
+            : Eigen::SparseVector<double>(vertices.size());
+    }
+
+    VertexVertexNormalCollision vv(vi, vj, weight, weight_gradient);
+    vv_to_id.emplace(vv, vv_collisions.size());
+    vv_collisions.push_back(vv);
 }
 
-void NormalCollisionsBuilder::add_edge_vertex_collisions(
+void NormalCollisionsBuilder::add_edge_vertex_collision(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<EdgeVertexCandidate>& candidates,
-    const std::function<bool(double)>& is_active,
-    const size_t start_i,
-    const size_t end_i)
+    const EdgeVertexCandidate& candidate,
+    const std::function<bool(double)>& is_active)
 {
-    for (size_t i = start_i; i < end_i; i++) {
-        const auto& [ei, vi] = candidates[i];
-        const auto [v, e0, e1, _] =
-            candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
+    const auto& [ei, vi] = candidate;
+    const auto [v, e0, e1, _] =
+        candidate.vertices(vertices, mesh.edges(), mesh.faces());
 
-        const PointEdgeDistanceType dtype = point_edge_distance_type(v, e0, e1);
-        const double distance_sqr = point_edge_distance(v, e0, e1, dtype);
+    const PointEdgeDistanceType dtype = point_edge_distance_type(v, e0, e1);
+    const double distance_sqr = point_edge_distance(v, e0, e1, dtype);
 
-        if (!is_active(distance_sqr)
-            || (use_ogc
-                && !ogc::is_edge_vertex_feasible(
-                    mesh, vertices, candidates[i], dtype))) {
-            continue;
-        }
+    if (!is_active(distance_sqr)
+        || (use_ogc
+            && !ogc::is_edge_vertex_feasible(
+                mesh, vertices, candidate, dtype))) {
+        return;
+    }
 
-        // ÷ 2 to handle double counting for correct integration
-        double weight = use_area_weighting ? (0.5 * mesh.vertex_area(vi)) : 1;
+    // ÷ 2 to handle double counting for correct integration
+    double weight = use_area_weighting ? (0.5 * mesh.vertex_area(vi)) : 1;
 
-        Eigen::SparseVector<double> weight_gradient;
-        if (enable_shape_derivatives) {
-            weight_gradient = use_area_weighting
-                ? (0.5 * mesh.vertex_area_gradient(vi))
-                : Eigen::SparseVector<double>(vertices.size());
-        }
+    Eigen::SparseVector<double> weight_gradient;
+    if (enable_shape_derivatives) {
+        weight_gradient = use_area_weighting
+            ? (0.5 * mesh.vertex_area_gradient(vi))
+            : Eigen::SparseVector<double>(vertices.size());
+    }
 
-        // ÷ n to handle duplicate counting for correct integration
-        if (use_ogc && int(dtype) < int(PointEdgeDistanceType::P_E)) {
-            // Divide by the number of incident edges of vj
-            // NOTE: This only works for OGC because vj is in the block of
-            // vi iff vi is in the block of vj.
-            const index_t vj = mesh.edges()(ei, int(dtype));
-            const int n = mesh.vertex_edge_adjacencies()[vj].size();
-            assert(n >= 1);
-            if (n > 1) {
-                weight /= n;
-                if (use_area_weighting && enable_shape_derivatives) {
-                    weight_gradient /= n;
-                }
+    // ÷ n to handle duplicate counting for correct integration
+    if (use_ogc && int(dtype) < int(PointEdgeDistanceType::P_E)) {
+        // Divide by the number of incident edges of vj
+        // NOTE: This only works for OGC because vj is in the block of
+        // vi iff vi is in the block of vj.
+        const index_t vj = mesh.edges()(ei, int(dtype));
+        const int n = mesh.vertex_edge_adjacencies()[vj].size();
+        assert(n >= 1);
+        if (n > 1) {
+            weight /= n;
+            if (use_area_weighting && enable_shape_derivatives) {
+                weight_gradient /= n;
             }
         }
-
-        add_edge_vertex_collision(
-            mesh, candidates[i], dtype, weight, weight_gradient);
     }
+
+    add_edge_vertex_collision(mesh, candidate, dtype, weight, weight_gradient);
 }
 
 void NormalCollisionsBuilder::add_edge_vertex_collision(
@@ -147,223 +137,210 @@ void NormalCollisionsBuilder::add_edge_vertex_collision(
     }
 }
 
-void NormalCollisionsBuilder::add_edge_edge_collisions(
+void NormalCollisionsBuilder::add_edge_edge_collision(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<EdgeEdgeCandidate>& candidates,
-    const std::function<bool(double)>& is_active,
-    const size_t start_i,
-    const size_t end_i)
+    const EdgeEdgeCandidate& candidate,
+    const std::function<bool(double)>& is_active)
 {
-    for (size_t i = start_i; i < end_i; i++) {
-        const auto& [eai, ebi] = candidates[i];
+    const auto& [eai, ebi] = candidate;
 
-        const auto [ea0i, ea1i, eb0i, eb1i] =
-            candidates[i].vertex_ids(mesh.edges(), mesh.faces());
+    const auto [ea0i, ea1i, eb0i, eb1i] =
+        candidate.vertex_ids(mesh.edges(), mesh.faces());
 
-        const auto [ea0, ea1, eb0, eb1] =
-            candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
+    const auto [ea0, ea1, eb0, eb1] =
+        candidate.vertices(vertices, mesh.edges(), mesh.faces());
 
-        const EdgeEdgeDistanceType actual_dtype =
-            edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    const EdgeEdgeDistanceType actual_dtype =
+        edge_edge_distance_type(ea0, ea1, eb0, eb1);
 
-        const double distance_sqr =
-            edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype);
+    const double distance_sqr =
+        edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype);
 
-        if (!is_active(distance_sqr)
-            || (use_ogc
-                && !ogc::is_edge_edge_feasible(
-                    mesh, vertices, candidates[i], actual_dtype))) {
-            continue;
-        }
+    if (!is_active(distance_sqr)
+        || (use_ogc
+            && !ogc::is_edge_edge_feasible(
+                mesh, vertices, candidate, actual_dtype))) {
+        return;
+    }
 
-        const double eps_x = edge_edge_mollifier_threshold(
-            mesh.rest_positions().row(ea0i), mesh.rest_positions().row(ea1i),
-            mesh.rest_positions().row(eb0i), mesh.rest_positions().row(eb1i));
+    const double eps_x = edge_edge_mollifier_threshold(
+        mesh.rest_positions().row(ea0i), mesh.rest_positions().row(ea1i),
+        mesh.rest_positions().row(eb0i), mesh.rest_positions().row(eb1i));
 
-        const double ee_cross_norm_sqr =
-            edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
+    const double ee_cross_norm_sqr =
+        edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
 
-        // NOTE: This may not actually be the distance type, but all EE
-        // pairs requiring mollification must be mollified later.
-        const EdgeEdgeDistanceType dtype = ee_cross_norm_sqr < eps_x
-            ? EdgeEdgeDistanceType::EA_EB
-            : actual_dtype;
+    // NOTE: This may not actually be the distance type, but all EE
+    // pairs requiring mollification must be mollified later.
+    const EdgeEdgeDistanceType dtype =
+        ee_cross_norm_sqr < eps_x ? EdgeEdgeDistanceType::EA_EB : actual_dtype;
 
-        // ÷ 4 to handle double counting and PT + EE for correct integration.
-        // Sum edge areas because duplicate edge candidates were removed.
-        const double weight = use_area_weighting
-            ? (0.25 * (mesh.edge_area(eai) + mesh.edge_area(ebi)))
-            : 1;
+    // ÷ 4 to handle double counting and PT + EE for correct integration.
+    // Sum edge areas because duplicate edge candidates were removed.
+    const double weight = use_area_weighting
+        ? (0.25 * (mesh.edge_area(eai) + mesh.edge_area(ebi)))
+        : 1;
 
-        Eigen::SparseVector<double> weight_gradient;
-        if (enable_shape_derivatives) {
-            weight_gradient = use_area_weighting
-                ? (0.25
-                   * (mesh.edge_area_gradient(eai)
-                      + mesh.edge_area_gradient(ebi)))
-                : Eigen::SparseVector<double>(vertices.size());
-        }
+    Eigen::SparseVector<double> weight_gradient;
+    if (enable_shape_derivatives) {
+        weight_gradient = use_area_weighting
+            ? (0.25
+               * (mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi)))
+            : Eigen::SparseVector<double>(vertices.size());
+    }
 
-        switch (dtype) {
-        case EdgeEdgeDistanceType::EA0_EB0:
-            add_vertex_vertex_collision(ea0i, eb0i, weight, weight_gradient);
-            break;
+    switch (dtype) {
+    case EdgeEdgeDistanceType::EA0_EB0:
+        add_vertex_vertex_collision(ea0i, eb0i, weight, weight_gradient);
+        break;
 
-        case EdgeEdgeDistanceType::EA0_EB1:
-            add_vertex_vertex_collision(ea0i, eb1i, weight, weight_gradient);
-            break;
+    case EdgeEdgeDistanceType::EA0_EB1:
+        add_vertex_vertex_collision(ea0i, eb1i, weight, weight_gradient);
+        break;
 
-        case EdgeEdgeDistanceType::EA1_EB0:
-            add_vertex_vertex_collision(ea1i, eb0i, weight, weight_gradient);
-            break;
+    case EdgeEdgeDistanceType::EA1_EB0:
+        add_vertex_vertex_collision(ea1i, eb0i, weight, weight_gradient);
+        break;
 
-        case EdgeEdgeDistanceType::EA1_EB1:
-            add_vertex_vertex_collision(ea1i, eb1i, weight, weight_gradient);
-            break;
+    case EdgeEdgeDistanceType::EA1_EB1:
+        add_vertex_vertex_collision(ea1i, eb1i, weight, weight_gradient);
+        break;
 
-        case EdgeEdgeDistanceType::EA_EB0:
-            add_edge_vertex_collision(eai, eb0i, weight, weight_gradient);
-            break;
+    case EdgeEdgeDistanceType::EA_EB0:
+        add_edge_vertex_collision(eai, eb0i, weight, weight_gradient);
+        break;
 
-        case EdgeEdgeDistanceType::EA_EB1:
-            add_edge_vertex_collision(eai, eb1i, weight, weight_gradient);
-            break;
+    case EdgeEdgeDistanceType::EA_EB1:
+        add_edge_vertex_collision(eai, eb1i, weight, weight_gradient);
+        break;
 
-        case EdgeEdgeDistanceType::EA0_EB:
-            add_edge_vertex_collision(ebi, ea0i, weight, weight_gradient);
-            break;
+    case EdgeEdgeDistanceType::EA0_EB:
+        add_edge_vertex_collision(ebi, ea0i, weight, weight_gradient);
+        break;
 
-        case EdgeEdgeDistanceType::EA1_EB:
-            add_edge_vertex_collision(ebi, ea1i, weight, weight_gradient);
-            break;
+    case EdgeEdgeDistanceType::EA1_EB:
+        add_edge_vertex_collision(ebi, ea1i, weight, weight_gradient);
+        break;
 
-        case EdgeEdgeDistanceType::EA_EB:
-            ee_collisions.emplace_back(
-                eai, ebi, eps_x, weight, weight_gradient, actual_dtype);
-            ee_to_id.emplace(ee_collisions.back(), ee_collisions.size() - 1);
-            break;
+    case EdgeEdgeDistanceType::EA_EB:
+        ee_collisions.emplace_back(
+            eai, ebi, eps_x, weight, weight_gradient, actual_dtype);
+        ee_to_id.emplace(ee_collisions.back(), ee_collisions.size() - 1);
+        break;
 
-        case EdgeEdgeDistanceType::AUTO:
-        default:
-            assert(false);
-            break;
-        }
+    case EdgeEdgeDistanceType::AUTO:
+    default:
+        assert(false);
+        break;
     }
 }
 
-void NormalCollisionsBuilder::add_face_vertex_collisions(
+void NormalCollisionsBuilder::add_face_vertex_collision(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<FaceVertexCandidate>& candidates,
-    const std::function<bool(double)>& is_active,
-    const size_t start_i,
-    const size_t end_i)
+    const FaceVertexCandidate& candidate,
+    const std::function<bool(double)>& is_active)
 {
-    for (size_t i = start_i; i < end_i; i++) {
-        const auto& [fi, vi] = candidates[i];
-        const index_t f0i = mesh.faces()(fi, 0), f1i = mesh.faces()(fi, 1),
-                      f2i = mesh.faces()(fi, 2);
+    const auto& [fi, vi] = candidate;
+    const index_t f0i = mesh.faces()(fi, 0), f1i = mesh.faces()(fi, 1),
+                  f2i = mesh.faces()(fi, 2);
 
-        const auto [v, f0, f1, f2] =
-            candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
+    const auto [v, f0, f1, f2] =
+        candidate.vertices(vertices, mesh.edges(), mesh.faces());
 
-        // Compute distance type
-        const PointTriangleDistanceType dtype =
-            point_triangle_distance_type(v, f0, f1, f2);
-        const double distance_sqr =
-            point_triangle_distance(v, f0, f1, f2, dtype);
+    // Compute distance type
+    const PointTriangleDistanceType dtype =
+        point_triangle_distance_type(v, f0, f1, f2);
+    const double distance_sqr = point_triangle_distance(v, f0, f1, f2, dtype);
 
-        if (!is_active(distance_sqr)
-            || (use_ogc
-                && !ogc::is_face_vertex_feasible(
-                    mesh, vertices, candidates[i], dtype))) {
-            continue;
+    if (!is_active(distance_sqr)
+        || (use_ogc
+            && !ogc::is_face_vertex_feasible(
+                mesh, vertices, candidate, dtype))) {
+        return;
+    }
+
+    // ÷ 4 to handle double counting and PT + EE for correct integration
+    double weight = use_area_weighting ? (0.25 * mesh.vertex_area(vi)) : 1;
+
+    Eigen::SparseVector<double> weight_gradient;
+    if (enable_shape_derivatives) {
+        weight_gradient = use_area_weighting
+            ? (0.25 * mesh.vertex_area_gradient(vi))
+            : Eigen::SparseVector<double>(vertices.size());
+    }
+
+    // ÷ n to handle duplicate counting for correct integration
+    if (use_ogc) {
+        int n = 1; // Default to 1 for P_T
+        if (int(dtype) < int(PointTriangleDistanceType::P_E0)) {
+            // Divide by the number of incident faces of vj
+            // NOTE: This only works for OGC because vj is in the block of
+            // vi iff vi is in the block of vj.
+            const index_t vj = mesh.faces()(fi, int(dtype));
+            n = mesh.vertex_face_adjacencies()[vj].size();
+        } else if (int(dtype) < int(PointTriangleDistanceType::P_T)) {
+            // Divide by the number of incident edges of vj
+            // NOTE: This only works for OGC because if vj is in the block
+            // of ei then vi is in the block of ei on its neighboring face.
+            const index_t ej = mesh.faces_to_edges()(fi, int(dtype) - 3);
+            n = mesh.edge_vertex_adjacencies()[ej].size();
         }
-
-        // ÷ 4 to handle double counting and PT + EE for correct integration
-        double weight = use_area_weighting ? (0.25 * mesh.vertex_area(vi)) : 1;
-
-        Eigen::SparseVector<double> weight_gradient;
-        if (enable_shape_derivatives) {
-            weight_gradient = use_area_weighting
-                ? (0.25 * mesh.vertex_area_gradient(vi))
-                : Eigen::SparseVector<double>(vertices.size());
-        }
-
-        // ÷ n to handle duplicate counting for correct integration
-        if (use_ogc) {
-            int n = 1; // Default to 1 for P_T
-            if (int(dtype) < int(PointTriangleDistanceType::P_E0)) {
-                // Divide by the number of incident faces of vj
-                // NOTE: This only works for OGC because vj is in the block of
-                // vi iff vi is in the block of vj.
-                const index_t vj = mesh.faces()(fi, int(dtype));
-                n = mesh.vertex_face_adjacencies()[vj].size();
-            } else if (int(dtype) < int(PointTriangleDistanceType::P_T)) {
-                // Divide by the number of incident edges of vj
-                // NOTE: This only works for OGC because if vj is in the block
-                // of ei then vi is in the block of ei on its neighboring face.
-                const index_t ej = mesh.faces_to_edges()(fi, int(dtype) - 3);
-                n = mesh.edge_vertex_adjacencies()[ej].size();
-            }
-            assert(n >= 1);
-            if (n > 1) {
-                weight /= n;
-                if (use_area_weighting && enable_shape_derivatives) {
-                    weight_gradient /= n;
-                }
+        assert(n >= 1);
+        if (n > 1) {
+            weight /= n;
+            if (use_area_weighting && enable_shape_derivatives) {
+                weight_gradient /= n;
             }
         }
+    }
 
-        switch (dtype) {
-        case PointTriangleDistanceType::P_T0:
-            add_vertex_vertex_collision(vi, f0i, weight, weight_gradient);
-            break;
+    switch (dtype) {
+    case PointTriangleDistanceType::P_T0:
+        add_vertex_vertex_collision(vi, f0i, weight, weight_gradient);
+        break;
 
-        case PointTriangleDistanceType::P_T1:
-            add_vertex_vertex_collision(vi, f1i, weight, weight_gradient);
-            break;
+    case PointTriangleDistanceType::P_T1:
+        add_vertex_vertex_collision(vi, f1i, weight, weight_gradient);
+        break;
 
-        case PointTriangleDistanceType::P_T2:
-            add_vertex_vertex_collision(vi, f2i, weight, weight_gradient);
-            break;
+    case PointTriangleDistanceType::P_T2:
+        add_vertex_vertex_collision(vi, f2i, weight, weight_gradient);
+        break;
 
-        case PointTriangleDistanceType::P_E0:
-            add_edge_vertex_collision(
-                mesh.faces_to_edges()(fi, 0), vi, weight, weight_gradient);
-            break;
+    case PointTriangleDistanceType::P_E0:
+        add_edge_vertex_collision(
+            mesh.faces_to_edges()(fi, 0), vi, weight, weight_gradient);
+        break;
 
-        case PointTriangleDistanceType::P_E1:
-            add_edge_vertex_collision(
-                mesh.faces_to_edges()(fi, 1), vi, weight, weight_gradient);
-            break;
+    case PointTriangleDistanceType::P_E1:
+        add_edge_vertex_collision(
+            mesh.faces_to_edges()(fi, 1), vi, weight, weight_gradient);
+        break;
 
-        case PointTriangleDistanceType::P_E2:
-            add_edge_vertex_collision(
-                mesh.faces_to_edges()(fi, 2), vi, weight, weight_gradient);
-            break;
+    case PointTriangleDistanceType::P_E2:
+        add_edge_vertex_collision(
+            mesh.faces_to_edges()(fi, 2), vi, weight, weight_gradient);
+        break;
 
-        case PointTriangleDistanceType::P_T:
-            fv_collisions.emplace_back(fi, vi, weight, weight_gradient);
-            break;
+    case PointTriangleDistanceType::P_T:
+        fv_collisions.emplace_back(fi, vi, weight, weight_gradient);
+        break;
 
-        case PointTriangleDistanceType::AUTO:
-        default:
-            assert(false);
-            break;
-        }
+    case PointTriangleDistanceType::AUTO:
+    default:
+        assert(false);
+        break;
     }
 }
 
 // ============================================================================
 
-void NormalCollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collisions(
+void NormalCollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collision(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<VertexVertexCandidate>& candidates,
-    const size_t start_i,
-    const size_t end_i)
+    const VertexVertexCandidate& candidate)
 {
     const auto add_weight = [&](const size_t vi, const size_t vj,
                                 double& weight,
@@ -386,31 +363,27 @@ void NormalCollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collisions(
         }
     };
 
-    for (size_t i = start_i; i < end_i; i++) {
-        const auto& [vi, vj] = candidates[i];
-        assert(vi != vj);
+    const auto& [vi, vj] = candidate;
+    assert(vi != vj);
 
-        double weight = 0;
-        Eigen::SparseVector<double> weight_gradient;
-        if (enable_shape_derivatives) {
-            weight_gradient = Eigen::SparseVector<double>(vertices.size());
-        }
+    double weight = 0;
+    Eigen::SparseVector<double> weight_gradient;
+    if (enable_shape_derivatives) {
+        weight_gradient = Eigen::SparseVector<double>(vertices.size());
+    }
 
-        add_weight(vi, vj, weight, weight_gradient);
-        add_weight(vj, vi, weight, weight_gradient);
+    add_weight(vi, vj, weight, weight_gradient);
+    add_weight(vj, vi, weight, weight_gradient);
 
-        if (weight != 0) {
-            add_vertex_vertex_collision(vi, vj, weight, weight_gradient);
-        }
+    if (weight != 0) {
+        add_vertex_vertex_collision(vi, vj, weight, weight_gradient);
     }
 }
 
-void NormalCollisionsBuilder::add_face_vertex_positive_vertex_vertex_collisions(
+void NormalCollisionsBuilder::add_face_vertex_positive_vertex_vertex_collision(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<VertexVertexCandidate>& candidates,
-    const size_t start_i,
-    const size_t end_i)
+    const VertexVertexCandidate& candidate)
 {
     const auto add_weight = [&](const size_t vi, const size_t vj,
                                 double& weight,
@@ -432,153 +405,141 @@ void NormalCollisionsBuilder::add_face_vertex_positive_vertex_vertex_collisions(
         }
     };
 
-    for (size_t i = start_i; i < end_i; i++) {
-        const auto& [vi, vj] = candidates[i];
-        assert(vi != vj);
+    const auto& [vi, vj] = candidate;
+    assert(vi != vj);
 
-        double weight = 0;
-        Eigen::SparseVector<double> weight_gradient;
-        if (enable_shape_derivatives) {
-            weight_gradient = Eigen::SparseVector<double>(vertices.size());
-        }
+    double weight = 0;
+    Eigen::SparseVector<double> weight_gradient;
+    if (enable_shape_derivatives) {
+        weight_gradient = Eigen::SparseVector<double>(vertices.size());
+    }
 
-        add_weight(vi, vj, weight, weight_gradient);
-        add_weight(vj, vi, weight, weight_gradient);
+    add_weight(vi, vj, weight, weight_gradient);
+    add_weight(vj, vi, weight, weight_gradient);
 
-        if (weight != 0) {
-            add_vertex_vertex_collision(vi, vj, weight, weight_gradient);
-        }
+    if (weight != 0) {
+        add_vertex_vertex_collision(vi, vj, weight, weight_gradient);
     }
 }
 
-void NormalCollisionsBuilder::add_face_vertex_negative_edge_vertex_collisions(
+void NormalCollisionsBuilder::add_face_vertex_negative_edge_vertex_collision(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<EdgeVertexCandidate>& candidates,
-    const size_t start_i,
-    const size_t end_i)
+    const EdgeVertexCandidate& candidate)
 {
-    for (size_t i = start_i; i < end_i; i++) {
-        const auto& [ei, vi] = candidates[i];
-        assert(vi != mesh.edges()(ei, 0) && vi != mesh.edges()(ei, 1));
+    const auto& [ei, vi] = candidate;
+    assert(vi != mesh.edges()(ei, 0) && vi != mesh.edges()(ei, 1));
 
-        const auto& incident_vertices = mesh.edge_vertex_adjacencies()[ei];
-        assert(
-            std::is_sorted(incident_vertices.begin(), incident_vertices.end()));
-        const bool is_vi_incident = std::binary_search(
-            incident_vertices.begin(), incident_vertices.end(), vi);
-        const index_t incident_triangle_amt =
-            incident_vertices.size() - index_t(is_vi_incident);
+    const auto& incident_vertices = mesh.edge_vertex_adjacencies()[ei];
+    assert(std::is_sorted(incident_vertices.begin(), incident_vertices.end()));
+    const bool is_vi_incident = std::binary_search(
+        incident_vertices.begin(), incident_vertices.end(), vi);
+    const index_t incident_triangle_amt =
+        incident_vertices.size() - index_t(is_vi_incident);
 
-        if (incident_triangle_amt > 1) {
-            // ÷ 4 to handle double counting and PT + EE for correct integration
-            const double weight = (1 - incident_triangle_amt)
-                * (use_area_weighting ? (0.25 * mesh.vertex_area(vi)) : 1);
-
-            Eigen::SparseVector<double> weight_gradient;
-            if (enable_shape_derivatives) {
-                weight_gradient = use_area_weighting
-                    ? (0.25 * (1 - incident_triangle_amt)
-                       * mesh.vertex_area_gradient(vi))
-                    : Eigen::SparseVector<double>(vertices.size());
-            }
-
-            add_edge_vertex_collision(
-                mesh, candidates[i],
-                point_edge_distance_type(
-                    vertices.row(vi), vertices.row(mesh.edges()(ei, 0)),
-                    vertices.row(mesh.edges()(ei, 1))),
-                weight, weight_gradient);
-        }
-    }
-}
-
-void NormalCollisionsBuilder::add_edge_edge_negative_edge_vertex_collisions(
-    const CollisionMesh& mesh,
-    Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<EdgeVertexCandidate>& candidates,
-    const size_t start_i,
-    const size_t end_i)
-{
-    // Notation: (ea, p) ∈ C, ea = (ea0, ea1) ∈ E, p ∈ eb = (p, q) ∈ E
-
-    for (size_t i = start_i; i < end_i; i++) {
-        const auto& [ea, p] = candidates[i];
-        const index_t ea0 = mesh.edges()(ea, 0), ea1 = mesh.edges()(ea, 1);
-        assert(p != ea0 && p != ea1);
-
+    if (incident_triangle_amt > 1) {
         // ÷ 4 to handle double counting and PT + EE for correct integration
-        const double weight =
-            use_area_weighting ? (-0.25 * mesh.edge_area(ea)) : -1;
+        const double weight = (1 - incident_triangle_amt)
+            * (use_area_weighting ? (0.25 * mesh.vertex_area(vi)) : 1);
+
         Eigen::SparseVector<double> weight_gradient;
         if (enable_shape_derivatives) {
             weight_gradient = use_area_weighting
-                ? (-0.25 * mesh.edge_area_gradient(ea))
+                ? (0.25 * (1 - incident_triangle_amt)
+                   * mesh.vertex_area_gradient(vi))
                 : Eigen::SparseVector<double>(vertices.size());
         }
 
-        const PointEdgeDistanceType dtype = point_edge_distance_type(
-            vertices.row(p), vertices.row(ea0), vertices.row(ea1));
-
-        index_t nonmollified_incident_edge_amt = 0;
-
-        const auto& incident_edges = mesh.vertex_edge_adjacencies()[p];
-        for (const index_t eb : incident_edges) {
-            const index_t eb0 = mesh.edges()(eb, 0), eb1 = mesh.edges()(eb, 1);
-            const index_t q = mesh.edges()(eb, index_t(p == eb0));
-            assert(p != q);
-            if (q == ea0 || q == ea1) {
-                continue;
-            }
-
-            const double eps_x = edge_edge_mollifier_threshold(
-                mesh.rest_positions().row(ea0), mesh.rest_positions().row(ea1),
-                mesh.rest_positions().row(eb0), mesh.rest_positions().row(eb1));
-
-            const double ee_cross_norm_sqr = edge_edge_cross_squarednorm(
-                vertices.row(ea0), vertices.row(ea1), vertices.row(eb0),
-                vertices.row(eb1));
-
-            if (ee_cross_norm_sqr >= eps_x) {
-                nonmollified_incident_edge_amt++;
-                continue;
-            }
-
-            // Add mollified EE collision with specified distance type
-            // Convert the PE distance type to an EE distance type
-            EdgeEdgeDistanceType ee_dtype = EdgeEdgeDistanceType::AUTO;
-            switch (dtype) {
-            case PointEdgeDistanceType::P_E0:
-                ee_dtype = p == eb0 ? EdgeEdgeDistanceType::EA0_EB0
-                                    : EdgeEdgeDistanceType::EA0_EB1;
-                break;
-            case PointEdgeDistanceType::P_E1:
-                ee_dtype = p == eb0 ? EdgeEdgeDistanceType::EA1_EB0
-                                    : EdgeEdgeDistanceType::EA1_EB1;
-                break;
-            case PointEdgeDistanceType::P_E:
-                ee_dtype = p == eb0 ? EdgeEdgeDistanceType::EA_EB0
-                                    : EdgeEdgeDistanceType::EA_EB1;
-                break;
-            default:
-                assert(false);
-                break;
-            }
-
-            add_edge_edge_collision(
-                ea, eb, eps_x, weight, weight_gradient, ee_dtype);
-        }
-
-        if (nonmollified_incident_edge_amt == 1) {
-            continue; // no collision to add because (ρ(x) - 1) = 0
-        }
-        // if nonmollified_incident_edge_amt == 0, then we need to explicitly
-        // add a positive collision.
         add_edge_vertex_collision(
-            mesh, candidates[i], dtype,
-            (nonmollified_incident_edge_amt - 1) * weight,
-            (nonmollified_incident_edge_amt - 1) * weight_gradient);
+            mesh, candidate,
+            point_edge_distance_type(
+                vertices.row(vi), vertices.row(mesh.edges()(ei, 0)),
+                vertices.row(mesh.edges()(ei, 1))),
+            weight, weight_gradient);
     }
+}
+
+void NormalCollisionsBuilder::add_edge_edge_negative_edge_vertex_collision(
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    const EdgeVertexCandidate& candidate)
+{
+    // Notation: (ea, p) ∈ C, ea = (ea0, ea1) ∈ E, p ∈ eb = (p, q) ∈ E
+
+    const auto& [ea, p] = candidate;
+    const index_t ea0 = mesh.edges()(ea, 0), ea1 = mesh.edges()(ea, 1);
+    assert(p != ea0 && p != ea1);
+
+    // ÷ 4 to handle double counting and PT + EE for correct integration
+    const double weight =
+        use_area_weighting ? (-0.25 * mesh.edge_area(ea)) : -1;
+    Eigen::SparseVector<double> weight_gradient;
+    if (enable_shape_derivatives) {
+        weight_gradient = use_area_weighting
+            ? (-0.25 * mesh.edge_area_gradient(ea))
+            : Eigen::SparseVector<double>(vertices.size());
+    }
+
+    const PointEdgeDistanceType dtype = point_edge_distance_type(
+        vertices.row(p), vertices.row(ea0), vertices.row(ea1));
+
+    index_t nonmollified_incident_edge_amt = 0;
+
+    const auto& incident_edges = mesh.vertex_edge_adjacencies()[p];
+    for (const index_t eb : incident_edges) {
+        const index_t eb0 = mesh.edges()(eb, 0), eb1 = mesh.edges()(eb, 1);
+        const index_t q = mesh.edges()(eb, index_t(p == eb0));
+        assert(p != q);
+        if (q == ea0 || q == ea1) {
+            continue;
+        }
+
+        const double eps_x = edge_edge_mollifier_threshold(
+            mesh.rest_positions().row(ea0), mesh.rest_positions().row(ea1),
+            mesh.rest_positions().row(eb0), mesh.rest_positions().row(eb1));
+
+        const double ee_cross_norm_sqr = edge_edge_cross_squarednorm(
+            vertices.row(ea0), vertices.row(ea1), vertices.row(eb0),
+            vertices.row(eb1));
+
+        if (ee_cross_norm_sqr >= eps_x) {
+            nonmollified_incident_edge_amt++;
+            continue;
+        }
+
+        // Add mollified EE collision with specified distance type
+        // Convert the PE distance type to an EE distance type
+        EdgeEdgeDistanceType ee_dtype = EdgeEdgeDistanceType::AUTO;
+        switch (dtype) {
+        case PointEdgeDistanceType::P_E0:
+            ee_dtype = p == eb0 ? EdgeEdgeDistanceType::EA0_EB0
+                                : EdgeEdgeDistanceType::EA0_EB1;
+            break;
+        case PointEdgeDistanceType::P_E1:
+            ee_dtype = p == eb0 ? EdgeEdgeDistanceType::EA1_EB0
+                                : EdgeEdgeDistanceType::EA1_EB1;
+            break;
+        case PointEdgeDistanceType::P_E:
+            ee_dtype = p == eb0 ? EdgeEdgeDistanceType::EA_EB0
+                                : EdgeEdgeDistanceType::EA_EB1;
+            break;
+        default:
+            assert(false);
+            break;
+        }
+
+        add_edge_edge_collision(
+            ea, eb, eps_x, weight, weight_gradient, ee_dtype);
+    }
+
+    if (nonmollified_incident_edge_amt == 1) {
+        return; // no collision to add because (ρ(x) - 1) = 0
+    }
+    // if nonmollified_incident_edge_amt == 0, then we need to explicitly
+    // add a positive collision.
+    add_edge_vertex_collision(
+        mesh, candidate, dtype, (nonmollified_incident_edge_amt - 1) * weight,
+        (nonmollified_incident_edge_amt - 1) * weight_gradient);
 }
 
 // ============================================================================

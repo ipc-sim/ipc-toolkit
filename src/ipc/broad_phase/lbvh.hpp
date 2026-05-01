@@ -3,8 +3,6 @@
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/utils/default_init_allocator.hpp>
 
-#include <memory>
-
 namespace ipc {
 
 /// @brief Linear Bounding Volume Hierarchy (LBVH) broad phase collision detection.
@@ -88,9 +86,11 @@ public:
 
 private:
     struct ConstructionInfo {
-        /// @brief Parent to the parent
-        int parent;
-        /// @brief Number of threads that arrived
+        /// @brief Left range endpoint passed up by the left child.
+        int32_t left_range;
+        /// @brief Right range endpoint passed up by the right child.
+        int32_t right_range;
+        /// @brief Number of threads that arrived at this node.
         std::atomic<int> visitation_count;
     };
 

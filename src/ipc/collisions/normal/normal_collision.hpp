@@ -5,8 +5,6 @@
 
 #include <Eigen/Core>
 
-#include <array>
-
 namespace ipc {
 
 class NormalCollision : virtual public CollisionStencil {
