@@ -89,7 +89,7 @@ inline auto edge_edge_distance_gradient(
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
     -> Eigen::Vector<typename DerivedEA0::Scalar, 12>
 {
-    using T = typename DerivedEa0::Scalar;
+    using T = typename DerivedEA0::Scalar;
     return edge_edge_distance_gradient(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1),
@@ -110,7 +110,7 @@ inline auto edge_edge_distance_hessian(
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
     -> Eigen::Matrix<typename DerivedEA0::Scalar, 12, 12>
 {
-    using T = typename DerivedEa0::Scalar;
+    using T = typename DerivedEA0::Scalar;
     return edge_edge_distance_hessian(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1),
