@@ -56,19 +56,19 @@ Eigen::Matrix<T, 12, 12> edge_edge_distance_hessian(
 // --- EigenExpression wrappers ---
 
 template <
-    EigenExpression DerivedEa0,
-    EigenExpression DerivedEa1,
-    EigenExpression DerivedEb0,
-    EigenExpression DerivedEb1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto edge_edge_distance(
-    const Eigen::MatrixBase<DerivedEa0>& ea0,
-    const Eigen::MatrixBase<DerivedEa1>& ea1,
-    const Eigen::MatrixBase<DerivedEb0>& eb0,
-    const Eigen::MatrixBase<DerivedEb1>& eb1,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) ->
-    typename DerivedEa0::Scalar
+    typename DerivedEA0::Scalar
 {
-    using T = typename DerivedEa0::Scalar;
+    using T = typename DerivedEA0::Scalar;
     return edge_edge_distance(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1),
@@ -77,17 +77,17 @@ inline auto edge_edge_distance(
 }
 
 template <
-    EigenExpression DerivedEa0,
-    EigenExpression DerivedEa1,
-    EigenExpression DerivedEb0,
-    EigenExpression DerivedEb1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto edge_edge_distance_gradient(
-    const Eigen::MatrixBase<DerivedEa0>& ea0,
-    const Eigen::MatrixBase<DerivedEa1>& ea1,
-    const Eigen::MatrixBase<DerivedEb0>& eb0,
-    const Eigen::MatrixBase<DerivedEb1>& eb1,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
-    -> Eigen::Vector<typename DerivedEa0::Scalar, 12>
+    -> Eigen::Vector<typename DerivedEA0::Scalar, 12>
 {
     using T = typename DerivedEa0::Scalar;
     return edge_edge_distance_gradient(
@@ -98,17 +98,17 @@ inline auto edge_edge_distance_gradient(
 }
 
 template <
-    EigenExpression DerivedEa0,
-    EigenExpression DerivedEa1,
-    EigenExpression DerivedEb0,
-    EigenExpression DerivedEb1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto edge_edge_distance_hessian(
-    const Eigen::MatrixBase<DerivedEa0>& ea0,
-    const Eigen::MatrixBase<DerivedEa1>& ea1,
-    const Eigen::MatrixBase<DerivedEb0>& eb0,
-    const Eigen::MatrixBase<DerivedEb1>& eb1,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
-    -> Eigen::Matrix<typename DerivedEa0::Scalar, 12, 12>
+    -> Eigen::Matrix<typename DerivedEA0::Scalar, 12, 12>
 {
     using T = typename DerivedEa0::Scalar;
     return edge_edge_distance_hessian(

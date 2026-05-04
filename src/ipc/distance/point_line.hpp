@@ -106,10 +106,7 @@ inline MatrixMax9<T> point_line_distance_hessian(
 
 // --- EigenExpression wrappers ---
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
@@ -121,10 +118,7 @@ inline auto point_line_distance(
         Eigen::Ref<const VectorMax3<T>>(e1));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
@@ -137,10 +131,7 @@ inline auto point_line_distance_gradient(
         Eigen::Ref<const VectorMax3<T>>(e1));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,

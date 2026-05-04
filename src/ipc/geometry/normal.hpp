@@ -357,21 +357,27 @@ Eigen::Matrix<T, 36, 12> line_line_normal_hessian(
 
 // --- EigenExpression wrappers ---
 
-template <EigenExpression DerivedX>
+template <
+    typename DerivedX,
+    std::enable_if_t<std::is_class_v<DerivedX>, int> = 0>
 inline auto normalization_and_jacobian(const Eigen::MatrixBase<DerivedX>& x)
 {
     using T = typename DerivedX::Scalar;
     return normalization_and_jacobian(Eigen::Ref<const VectorMax3<T>>(x));
 }
 
-template <EigenExpression DerivedX>
+template <
+    typename DerivedX,
+    std::enable_if_t<std::is_class_v<DerivedX>, int> = 0>
 inline auto normalization_jacobian(const Eigen::MatrixBase<DerivedX>& x)
 {
     using T = typename DerivedX::Scalar;
     return normalization_jacobian(Eigen::Ref<const VectorMax3<T>>(x));
 }
 
-template <EigenExpression DerivedX>
+template <
+    typename DerivedX,
+    std::enable_if_t<std::is_class_v<DerivedX>, int> = 0>
 inline auto
 normalization_and_jacobian_and_hessian(const Eigen::MatrixBase<DerivedX>& x)
 {
@@ -380,14 +386,18 @@ normalization_and_jacobian_and_hessian(const Eigen::MatrixBase<DerivedX>& x)
         Eigen::Ref<const VectorMax3<T>>(x));
 }
 
-template <EigenExpression DerivedX>
+template <
+    typename DerivedX,
+    std::enable_if_t<std::is_class_v<DerivedX>, int> = 0>
 inline auto normalization_hessian(const Eigen::MatrixBase<DerivedX>& x)
 {
     using T = typename DerivedX::Scalar;
     return normalization_hessian(Eigen::Ref<const VectorMax3<T>>(x));
 }
 
-template <EigenExpression DerivedX>
+template <
+    typename DerivedX,
+    std::enable_if_t<std::is_class_v<DerivedX>, int> = 0>
 inline auto cross_product_matrix(const Eigen::MatrixBase<DerivedX>& v)
     -> Eigen::Matrix<typename DerivedX::Scalar, 3, 3>
 {
@@ -395,10 +405,7 @@ inline auto cross_product_matrix(const Eigen::MatrixBase<DerivedX>& v)
     return cross_product_matrix(Eigen::Ref<const Eigen::Vector3<T>>(v));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_unnormalized_normal(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
@@ -411,10 +418,7 @@ inline auto point_line_unnormalized_normal(
         Eigen::Ref<const VectorMax3<T>>(e1));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_normal(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
@@ -427,10 +431,7 @@ inline auto point_line_normal(
         Eigen::Ref<const VectorMax3<T>>(e1));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_unnormalized_normal_jacobian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
@@ -443,10 +444,7 @@ inline auto point_line_unnormalized_normal_jacobian(
         Eigen::Ref<const VectorMax3<T>>(e1));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_unnormalized_normal_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
@@ -459,10 +457,7 @@ inline auto point_line_unnormalized_normal_hessian(
         Eigen::Ref<const VectorMax3<T>>(e1));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_normal_jacobian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
@@ -475,10 +470,7 @@ inline auto point_line_normal_jacobian(
         Eigen::Ref<const VectorMax3<T>>(e1));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_normal_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
@@ -491,10 +483,7 @@ inline auto point_line_normal_hessian(
         Eigen::Ref<const VectorMax3<T>>(e1));
 }
 
-template <
-    EigenExpression DerivedA,
-    EigenExpression DerivedB,
-    EigenExpression DerivedC>
+template <typename DerivedA, typename DerivedB, typename DerivedC>
 inline auto triangle_unnormalized_normal(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
@@ -508,10 +497,7 @@ inline auto triangle_unnormalized_normal(
         Eigen::Ref<const Eigen::Vector3<T>>(c));
 }
 
-template <
-    EigenExpression DerivedA,
-    EigenExpression DerivedB,
-    EigenExpression DerivedC>
+template <typename DerivedA, typename DerivedB, typename DerivedC>
 inline auto triangle_normal(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
@@ -525,10 +511,7 @@ inline auto triangle_normal(
         Eigen::Ref<const Eigen::Vector3<T>>(c));
 }
 
-template <
-    EigenExpression DerivedA,
-    EigenExpression DerivedB,
-    EigenExpression DerivedC>
+template <typename DerivedA, typename DerivedB, typename DerivedC>
 inline auto triangle_unnormalized_normal_jacobian(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
@@ -542,10 +525,7 @@ inline auto triangle_unnormalized_normal_jacobian(
         Eigen::Ref<const Eigen::Vector3<T>>(c));
 }
 
-template <
-    EigenExpression DerivedA,
-    EigenExpression DerivedB,
-    EigenExpression DerivedC>
+template <typename DerivedA, typename DerivedB, typename DerivedC>
 inline auto triangle_unnormalized_normal_hessian(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
@@ -559,10 +539,7 @@ inline auto triangle_unnormalized_normal_hessian(
         Eigen::Ref<const Eigen::Vector3<T>>(c));
 }
 
-template <
-    EigenExpression DerivedA,
-    EigenExpression DerivedB,
-    EigenExpression DerivedC>
+template <typename DerivedA, typename DerivedB, typename DerivedC>
 inline auto triangle_normal_jacobian(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
@@ -576,10 +553,7 @@ inline auto triangle_normal_jacobian(
         Eigen::Ref<const Eigen::Vector3<T>>(c));
 }
 
-template <
-    EigenExpression DerivedA,
-    EigenExpression DerivedB,
-    EigenExpression DerivedC>
+template <typename DerivedA, typename DerivedB, typename DerivedC>
 inline auto triangle_normal_hessian(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
@@ -594,10 +568,10 @@ inline auto triangle_normal_hessian(
 }
 
 template <
-    EigenExpression DerivedEA0,
-    EigenExpression DerivedEA1,
-    EigenExpression DerivedEB0,
-    EigenExpression DerivedEB1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto line_line_unnormalized_normal(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
@@ -614,10 +588,10 @@ inline auto line_line_unnormalized_normal(
 }
 
 template <
-    EigenExpression DerivedEA0,
-    EigenExpression DerivedEA1,
-    EigenExpression DerivedEB0,
-    EigenExpression DerivedEB1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto line_line_normal(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
@@ -634,10 +608,10 @@ inline auto line_line_normal(
 }
 
 template <
-    EigenExpression DerivedEA0,
-    EigenExpression DerivedEA1,
-    EigenExpression DerivedEB0,
-    EigenExpression DerivedEB1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto line_line_unnormalized_normal_jacobian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
@@ -654,10 +628,10 @@ inline auto line_line_unnormalized_normal_jacobian(
 }
 
 template <
-    EigenExpression DerivedEA0,
-    EigenExpression DerivedEA1,
-    EigenExpression DerivedEB0,
-    EigenExpression DerivedEB1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto line_line_normal_jacobian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
@@ -674,10 +648,10 @@ inline auto line_line_normal_jacobian(
 }
 
 template <
-    EigenExpression DerivedEA0,
-    EigenExpression DerivedEA1,
-    EigenExpression DerivedEB0,
-    EigenExpression DerivedEB1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto line_line_unnormalized_normal_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
@@ -694,10 +668,10 @@ inline auto line_line_unnormalized_normal_hessian(
 }
 
 template <
-    EigenExpression DerivedEA0,
-    EigenExpression DerivedEA1,
-    EigenExpression DerivedEB0,
-    EigenExpression DerivedEB1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto line_line_normal_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,

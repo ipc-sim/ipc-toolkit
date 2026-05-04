@@ -233,12 +233,12 @@ using HessianType = std::
 /// Pure requires-expression: checks only members of T itself, so the compiler
 /// never attempts to form Eigen::MatrixBase<double> (which is ill-formed when T
 /// is a scalar type like double).
-template <typename T>
-concept EigenExpression = requires(T& t) {
-    typename T::Scalar;
-    { t.rows() } -> std::convertible_to<Eigen::Index>;
-    { t.cols() } -> std::convertible_to<Eigen::Index>;
-};
+// template <typename T>
+// concept EigenExpression = requires(T& t) {
+//     typename T::Scalar;
+//     { t.rows() } -> std::convertible_to<Eigen::Index>;
+//     { t.cols() } -> std::convertible_to<Eigen::Index>;
+// };
 
 /// @brief Matrix projection onto positive definite cone
 /// @param A Symmetric matrix to project

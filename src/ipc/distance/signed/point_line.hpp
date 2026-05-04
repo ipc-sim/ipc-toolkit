@@ -75,10 +75,7 @@ Eigen::Matrix<T, 6, 6> point_line_signed_distance_hessian(
 
 // --- EigenExpression wrappers ---
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_signed_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
@@ -91,10 +88,7 @@ inline auto point_line_signed_distance(
         Eigen::Ref<const Eigen::Vector2<T>>(e1));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_signed_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
@@ -108,10 +102,7 @@ inline auto point_line_signed_distance_gradient(
         Eigen::Ref<const Eigen::Vector2<T>>(e1));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedE0,
-    EigenExpression DerivedE1>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_signed_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,

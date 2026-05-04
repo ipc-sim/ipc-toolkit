@@ -97,10 +97,10 @@ Eigen::Matrix<T, 12, 12> line_line_signed_distance_hessian(
 // --- EigenExpression wrappers ---
 
 template <
-    EigenExpression DerivedEA0,
-    EigenExpression DerivedEA1,
-    EigenExpression DerivedEB0,
-    EigenExpression DerivedEB1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto line_line_signed_distance(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
@@ -116,10 +116,10 @@ inline auto line_line_signed_distance(
 }
 
 template <
-    EigenExpression DerivedEA0,
-    EigenExpression DerivedEA1,
-    EigenExpression DerivedEB0,
-    EigenExpression DerivedEB1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto line_line_signed_distance_gradient(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
@@ -136,10 +136,10 @@ inline auto line_line_signed_distance_gradient(
 }
 
 template <
-    EigenExpression DerivedEA0,
-    EigenExpression DerivedEA1,
-    EigenExpression DerivedEB0,
-    EigenExpression DerivedEB1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto line_line_signed_distance_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,

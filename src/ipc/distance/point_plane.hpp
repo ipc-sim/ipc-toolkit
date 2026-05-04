@@ -127,10 +127,7 @@ inline Eigen::Matrix<T, 12, 12> point_plane_distance_hessian(
 
 // --- EigenExpression wrappers ---
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedOrigin,
-    EigenExpression DerivedNormal>
+template <typename DerivedP, typename DerivedOrigin, typename DerivedNormal>
 inline auto point_plane_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedOrigin>& origin,
@@ -144,10 +141,10 @@ inline auto point_plane_distance(
 }
 
 template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedT0,
-    EigenExpression DerivedT1,
-    EigenExpression DerivedT2>
+    typename DerivedP,
+    typename DerivedT0,
+    typename DerivedT1,
+    typename DerivedT2>
 inline auto point_plane_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
@@ -162,10 +159,7 @@ inline auto point_plane_distance(
         Eigen::Ref<const Eigen::Vector3<T>>(t2));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedOrigin,
-    EigenExpression DerivedNormal>
+template <typename DerivedP, typename DerivedOrigin, typename DerivedNormal>
 inline auto point_plane_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedOrigin>& origin,
@@ -180,10 +174,10 @@ inline auto point_plane_distance_gradient(
 }
 
 template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedT0,
-    EigenExpression DerivedT1,
-    EigenExpression DerivedT2>
+    typename DerivedP,
+    typename DerivedT0,
+    typename DerivedT1,
+    typename DerivedT2>
 inline auto point_plane_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
@@ -199,10 +193,7 @@ inline auto point_plane_distance_gradient(
         Eigen::Ref<const Eigen::Vector3<T>>(t2));
 }
 
-template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedOrigin,
-    EigenExpression DerivedNormal>
+template <typename DerivedP, typename DerivedOrigin, typename DerivedNormal>
 inline auto point_plane_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedOrigin>& origin,
@@ -217,10 +208,10 @@ inline auto point_plane_distance_hessian(
 }
 
 template <
-    EigenExpression DerivedP,
-    EigenExpression DerivedT0,
-    EigenExpression DerivedT1,
-    EigenExpression DerivedT2>
+    typename DerivedP,
+    typename DerivedT0,
+    typename DerivedT1,
+    typename DerivedT2>
 inline auto point_plane_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,

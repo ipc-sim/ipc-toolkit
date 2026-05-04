@@ -106,30 +106,30 @@ EdgeEdgeDistanceType edge_edge_parallel_distance_type(
 
 // --- EigenExpression wrappers ---
 
-template <EigenExpression D0, EigenExpression D1, EigenExpression D2>
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline PointEdgeDistanceType point_edge_distance_type(
-    const Eigen::MatrixBase<D0>& p,
-    const Eigen::MatrixBase<D1>& e0,
-    const Eigen::MatrixBase<D2>& e1)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    using T = typename D0::Scalar;
+    using T = typename DerivedP::Scalar;
     return point_edge_distance_type(
         Eigen::Ref<const VectorMax3<T>>(p), Eigen::Ref<const VectorMax3<T>>(e0),
         Eigen::Ref<const VectorMax3<T>>(e1));
 }
 
 template <
-    EigenExpression D0,
-    EigenExpression D1,
-    EigenExpression D2,
-    EigenExpression D3>
+    typename DerivedP,
+    typename DerivedT0,
+    typename DerivedT1,
+    typename DerivedT2>
 inline PointTriangleDistanceType point_triangle_distance_type(
-    const Eigen::MatrixBase<D0>& p,
-    const Eigen::MatrixBase<D1>& t0,
-    const Eigen::MatrixBase<D2>& t1,
-    const Eigen::MatrixBase<D3>& t2)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedT0>& t0,
+    const Eigen::MatrixBase<DerivedT1>& t1,
+    const Eigen::MatrixBase<DerivedT2>& t2)
 {
-    using T = typename D0::Scalar;
+    using T = typename DerivedP::Scalar;
     return point_triangle_distance_type(
         Eigen::Ref<const Eigen::Vector3<T>>(p),
         Eigen::Ref<const Eigen::Vector3<T>>(t0),
@@ -138,17 +138,17 @@ inline PointTriangleDistanceType point_triangle_distance_type(
 }
 
 template <
-    EigenExpression D0,
-    EigenExpression D1,
-    EigenExpression D2,
-    EigenExpression D3>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline EdgeEdgeDistanceType edge_edge_distance_type(
-    const Eigen::MatrixBase<D0>& ea0,
-    const Eigen::MatrixBase<D1>& ea1,
-    const Eigen::MatrixBase<D2>& eb0,
-    const Eigen::MatrixBase<D3>& eb1)
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    using T = typename D0::Scalar;
+    using T = typename DerivedEA0::Scalar;
     return edge_edge_distance_type(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1),
@@ -157,17 +157,17 @@ inline EdgeEdgeDistanceType edge_edge_distance_type(
 }
 
 template <
-    EigenExpression D0,
-    EigenExpression D1,
-    EigenExpression D2,
-    EigenExpression D3>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline EdgeEdgeDistanceType edge_edge_parallel_distance_type(
-    const Eigen::MatrixBase<D0>& ea0,
-    const Eigen::MatrixBase<D1>& ea1,
-    const Eigen::MatrixBase<D2>& eb0,
-    const Eigen::MatrixBase<D3>& eb1)
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    using T = typename D0::Scalar;
+    using T = typename DerivedEA0::Scalar;
     return edge_edge_parallel_distance_type(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1),

@@ -320,17 +320,17 @@ Eigen::Vector<T, 12> edge_edge_mollifier_threshold_gradient(
 // --- EigenExpression wrappers ---
 
 template <
-    EigenExpression DerivedEa0,
-    EigenExpression DerivedEa1,
-    EigenExpression DerivedEb0,
-    EigenExpression DerivedEb1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto edge_edge_cross_squarednorm(
-    const Eigen::MatrixBase<DerivedEa0>& ea0,
-    const Eigen::MatrixBase<DerivedEa1>& ea1,
-    const Eigen::MatrixBase<DerivedEb0>& eb0,
-    const Eigen::MatrixBase<DerivedEb1>& eb1) -> typename DerivedEa0::Scalar
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1) -> typename DerivedEA0::Scalar
 {
-    using T = typename DerivedEa0::Scalar;
+    using T = typename DerivedEA0::Scalar;
     return edge_edge_cross_squarednorm(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1),
@@ -339,18 +339,18 @@ inline auto edge_edge_cross_squarednorm(
 }
 
 template <
-    EigenExpression DerivedEa0,
-    EigenExpression DerivedEa1,
-    EigenExpression DerivedEb0,
-    EigenExpression DerivedEb1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto edge_edge_cross_squarednorm_gradient(
-    const Eigen::MatrixBase<DerivedEa0>& ea0,
-    const Eigen::MatrixBase<DerivedEa1>& ea1,
-    const Eigen::MatrixBase<DerivedEb0>& eb0,
-    const Eigen::MatrixBase<DerivedEb1>& eb1)
-    -> Eigen::Vector<typename DerivedEa0::Scalar, 12>
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
+    -> Eigen::Vector<typename DerivedEA0::Scalar, 12>
 {
-    using T = typename DerivedEa0::Scalar;
+    using T = typename DerivedEA0::Scalar;
     return edge_edge_cross_squarednorm_gradient(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1),
@@ -359,18 +359,18 @@ inline auto edge_edge_cross_squarednorm_gradient(
 }
 
 template <
-    EigenExpression DerivedEa0,
-    EigenExpression DerivedEa1,
-    EigenExpression DerivedEb0,
-    EigenExpression DerivedEb1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto edge_edge_cross_squarednorm_hessian(
-    const Eigen::MatrixBase<DerivedEa0>& ea0,
-    const Eigen::MatrixBase<DerivedEa1>& ea1,
-    const Eigen::MatrixBase<DerivedEb0>& eb0,
-    const Eigen::MatrixBase<DerivedEb1>& eb1)
-    -> Eigen::Matrix<typename DerivedEa0::Scalar, 12, 12>
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
+    -> Eigen::Matrix<typename DerivedEA0::Scalar, 12, 12>
 {
-    using T = typename DerivedEa0::Scalar;
+    using T = typename DerivedEA0::Scalar;
     return edge_edge_cross_squarednorm_hessian(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1),
@@ -379,18 +379,18 @@ inline auto edge_edge_cross_squarednorm_hessian(
 }
 
 template <
-    EigenExpression DerivedEa0,
-    EigenExpression DerivedEa1,
-    EigenExpression DerivedEb0,
-    EigenExpression DerivedEb1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto edge_edge_mollifier(
-    const Eigen::MatrixBase<DerivedEa0>& ea0,
-    const Eigen::MatrixBase<DerivedEa1>& ea1,
-    const Eigen::MatrixBase<DerivedEb0>& eb0,
-    const Eigen::MatrixBase<DerivedEb1>& eb1,
-    const typename DerivedEa0::Scalar eps_x) -> typename DerivedEa0::Scalar
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
+    const typename DerivedEA0::Scalar eps_x) -> typename DerivedEA0::Scalar
 {
-    using T = typename DerivedEa0::Scalar;
+    using T = typename DerivedEA0::Scalar;
     return edge_edge_mollifier(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1),
@@ -399,17 +399,17 @@ inline auto edge_edge_mollifier(
 }
 
 template <
-    EigenExpression DerivedEa0,
-    EigenExpression DerivedEa1,
-    EigenExpression DerivedEb0,
-    EigenExpression DerivedEb1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto edge_edge_mollifier_gradient(
-    const Eigen::MatrixBase<DerivedEa0>& ea0,
-    const Eigen::MatrixBase<DerivedEa1>& ea1,
-    const Eigen::MatrixBase<DerivedEb0>& eb0,
-    const Eigen::MatrixBase<DerivedEb1>& eb1,
-    const typename DerivedEa0::Scalar eps_x)
-    -> Eigen::Vector<typename DerivedEa0::Scalar, 12>
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
+    const typename DerivedEA0::Scalar eps_x)
+    -> Eigen::Vector<typename DerivedEA0::Scalar, 12>
 {
     using T = typename DerivedEa0::Scalar;
     return edge_edge_mollifier_gradient(
@@ -420,17 +420,17 @@ inline auto edge_edge_mollifier_gradient(
 }
 
 template <
-    EigenExpression DerivedEa0,
-    EigenExpression DerivedEa1,
-    EigenExpression DerivedEb0,
-    EigenExpression DerivedEb1>
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto edge_edge_mollifier_hessian(
-    const Eigen::MatrixBase<DerivedEa0>& ea0,
-    const Eigen::MatrixBase<DerivedEa1>& ea1,
-    const Eigen::MatrixBase<DerivedEb0>& eb0,
-    const Eigen::MatrixBase<DerivedEb1>& eb1,
-    const typename DerivedEa0::Scalar eps_x)
-    -> Eigen::Matrix<typename DerivedEa0::Scalar, 12, 12>
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
+    const typename DerivedEA0::Scalar eps_x)
+    -> Eigen::Matrix<typename DerivedEA0::Scalar, 12, 12>
 {
     using T = typename DerivedEa0::Scalar;
     return edge_edge_mollifier_hessian(
@@ -441,26 +441,26 @@ inline auto edge_edge_mollifier_hessian(
 }
 
 template <
-    EigenExpression DerivedEa0Rest,
-    EigenExpression DerivedEa1Rest,
-    EigenExpression DerivedEb0Rest,
-    EigenExpression DerivedEb1Rest,
-    EigenExpression DerivedEa0,
-    EigenExpression DerivedEa1,
-    EigenExpression DerivedEb0,
-    EigenExpression DerivedEb1>
+    typename DerivedEA0Rest,
+    typename DerivedEA1Rest,
+    typename DerivedEB0Rest,
+    typename DerivedEB1Rest,
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto edge_edge_mollifier_gradient_wrt_x(
-    const Eigen::MatrixBase<DerivedEa0Rest>& ea0_rest,
-    const Eigen::MatrixBase<DerivedEa1Rest>& ea1_rest,
-    const Eigen::MatrixBase<DerivedEb0Rest>& eb0_rest,
-    const Eigen::MatrixBase<DerivedEb1Rest>& eb1_rest,
-    const Eigen::MatrixBase<DerivedEa0>& ea0,
-    const Eigen::MatrixBase<DerivedEa1>& ea1,
-    const Eigen::MatrixBase<DerivedEb0>& eb0,
-    const Eigen::MatrixBase<DerivedEb1>& eb1)
-    -> Eigen::Vector<typename DerivedEa0Rest::Scalar, 12>
+    const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
+    const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
+    const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,
+    const Eigen::MatrixBase<DerivedEB1Rest>& eb1_rest,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
+    -> Eigen::Vector<typename DerivedEA0Rest::Scalar, 12>
 {
-    using T = typename DerivedEa0Rest::Scalar;
+    using T = typename DerivedEA0Rest::Scalar;
     return edge_edge_mollifier_gradient_wrt_x(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0_rest),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1_rest),
@@ -473,26 +473,26 @@ inline auto edge_edge_mollifier_gradient_wrt_x(
 }
 
 template <
-    EigenExpression DerivedEa0Rest,
-    EigenExpression DerivedEa1Rest,
-    EigenExpression DerivedEb0Rest,
-    EigenExpression DerivedEb1Rest,
-    EigenExpression DerivedEa0,
-    EigenExpression DerivedEa1,
-    EigenExpression DerivedEb0,
-    EigenExpression DerivedEb1>
+    typename DerivedEA0Rest,
+    typename DerivedEA1Rest,
+    typename DerivedEB0Rest,
+    typename DerivedEB1Rest,
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
 inline auto edge_edge_mollifier_gradient_jacobian_wrt_x(
-    const Eigen::MatrixBase<DerivedEa0Rest>& ea0_rest,
-    const Eigen::MatrixBase<DerivedEa1Rest>& ea1_rest,
-    const Eigen::MatrixBase<DerivedEb0Rest>& eb0_rest,
-    const Eigen::MatrixBase<DerivedEb1Rest>& eb1_rest,
-    const Eigen::MatrixBase<DerivedEa0>& ea0,
-    const Eigen::MatrixBase<DerivedEa1>& ea1,
-    const Eigen::MatrixBase<DerivedEb0>& eb0,
-    const Eigen::MatrixBase<DerivedEb1>& eb1)
-    -> Eigen::Matrix<typename DerivedEa0Rest::Scalar, 12, 12>
+    const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
+    const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
+    const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,
+    const Eigen::MatrixBase<DerivedEB1Rest>& eb1_rest,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
+    -> Eigen::Matrix<typename DerivedEA0Rest::Scalar, 12, 12>
 {
-    using T = typename DerivedEa0Rest::Scalar;
+    using T = typename DerivedEA0Rest::Scalar;
     return edge_edge_mollifier_gradient_jacobian_wrt_x(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0_rest),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1_rest),
@@ -505,18 +505,18 @@ inline auto edge_edge_mollifier_gradient_jacobian_wrt_x(
 }
 
 template <
-    EigenExpression DerivedEa0Rest,
-    EigenExpression DerivedEa1Rest,
-    EigenExpression DerivedEb0Rest,
-    EigenExpression DerivedEb1Rest>
+    typename DerivedEA0Rest,
+    typename DerivedEA1Rest,
+    typename DerivedEB0Rest,
+    typename DerivedEB1Rest>
 inline auto edge_edge_mollifier_threshold(
-    const Eigen::MatrixBase<DerivedEa0Rest>& ea0_rest,
-    const Eigen::MatrixBase<DerivedEa1Rest>& ea1_rest,
-    const Eigen::MatrixBase<DerivedEb0Rest>& eb0_rest,
-    const Eigen::MatrixBase<DerivedEb1Rest>& eb1_rest) ->
-    typename DerivedEa0Rest::Scalar
+    const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
+    const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
+    const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,
+    const Eigen::MatrixBase<DerivedEB1Rest>& eb1_rest) ->
+    typename DerivedEA0Rest::Scalar
 {
-    using T = typename DerivedEa0Rest::Scalar;
+    using T = typename DerivedEA0Rest::Scalar;
     return edge_edge_mollifier_threshold(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0_rest),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1_rest),
@@ -525,18 +525,18 @@ inline auto edge_edge_mollifier_threshold(
 }
 
 template <
-    EigenExpression DerivedEa0Rest,
-    EigenExpression DerivedEa1Rest,
-    EigenExpression DerivedEb0Rest,
-    EigenExpression DerivedEb1Rest>
+    typename DerivedEA0Rest,
+    typename DerivedEA1Rest,
+    typename DerivedEB0Rest,
+    typename DerivedEB1Rest>
 inline auto edge_edge_mollifier_threshold_gradient(
-    const Eigen::MatrixBase<DerivedEa0Rest>& ea0_rest,
-    const Eigen::MatrixBase<DerivedEa1Rest>& ea1_rest,
-    const Eigen::MatrixBase<DerivedEb0Rest>& eb0_rest,
-    const Eigen::MatrixBase<DerivedEb1Rest>& eb1_rest)
-    -> Eigen::Vector<typename DerivedEa0Rest::Scalar, 12>
+    const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
+    const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
+    const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,
+    const Eigen::MatrixBase<DerivedEB1Rest>& eb1_rest)
+    -> Eigen::Vector<typename DerivedEA0Rest::Scalar, 12>
 {
-    using T = typename DerivedEa0Rest::Scalar;
+    using T = typename DerivedEA0Rest::Scalar;
     return edge_edge_mollifier_threshold_gradient(
         Eigen::Ref<const Eigen::Vector3<T>>(ea0_rest),
         Eigen::Ref<const Eigen::Vector3<T>>(ea1_rest),
