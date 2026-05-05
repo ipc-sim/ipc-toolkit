@@ -540,6 +540,41 @@ const CollisionStencil& Candidates::operator[](size_t i) const
     throw std::out_of_range("Candidate index is out of range!");
 }
 
+bool Candidates::is_vertex_vertex(size_t i) const
+{
+    return i < vv_candidates.size();
+}
+
+bool Candidates::is_edge_vertex(size_t i) const
+{
+    return i >= vv_candidates.size()
+        && i < vv_candidates.size() + ev_candidates.size();
+}
+
+bool Candidates::is_edge_edge(size_t i) const
+{
+    return i >= vv_candidates.size() + ev_candidates.size()
+        && i
+        < vv_candidates.size() + ev_candidates.size() + ee_candidates.size();
+}
+
+bool Candidates::is_face_vertex(size_t i) const
+{
+    return i
+        >= vv_candidates.size() + ev_candidates.size() + ee_candidates.size()
+        && i < vv_candidates.size() + ev_candidates.size()
+            + ee_candidates.size() + fv_candidates.size();
+}
+
+bool Candidates::is_plane_vertex(size_t i) const
+{
+    return i >= vv_candidates.size() + ev_candidates.size()
+            + ee_candidates.size() + fv_candidates.size()
+        && i < vv_candidates.size() + ev_candidates.size()
+            + ee_candidates.size() + fv_candidates.size()
+            + pv_candidates.size();
+}
+
 // == Convert to subelement candidates ========================================
 
 namespace {
