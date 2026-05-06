@@ -30,19 +30,22 @@ class CMakeBuild(build_ext):
             out = subprocess.check_output(["cmake", "--version"])
         except OSError:
             raise RuntimeError(
-                "CMake must be installed to build the following extensions: " +
-                ", ".join(e.name for e in self.extensions))
+                "CMake must be installed to build the following extensions: "
+                + ", ".join(e.name for e in self.extensions)
+            )
 
-        extdir = os.path.abspath(os.path.dirname(
-            self.get_ext_fullpath(ext.name)))
+        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
 
         # required for auto-detection & inclusion of auxiliary "native" libs
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
 
-        debug = (int(os.environ.get("DEBUG", 0)) if self.debug is None
-                 else self.debug)
+        debug = int(os.environ.get("DEBUG", 0)) if self.debug is None else self.debug
         cfg = "Debug" if debug else "Release"
+
+        # Allow users to disable SIMD via IPCTK_WITH_SIMD=0/off/false/no.
+        _simd_env = os.environ.get("IPCTK_WITH_SIMD", "1").strip().lower()
+        with_simd = "OFF" if _simd_env in {"0", "off", "false", "no"} else "ON"
 
         # CMake lets you override the generator - we need to check this.
         # Can be set with Conda-Build, for example.
@@ -55,13 +58,13 @@ class CMakeBuild(build_ext):
             f"-DCMAKE_BUILD_TYPE={cfg}",  # not used on MSVC, but no harm
             "-DIPC_TOOLKIT_BUILD_TESTS=OFF",
             "-DIPC_TOOLKIT_BUILD_PYTHON=ON",
+            f"-DIPC_TOOLKIT_WITH_SIMD={with_simd}",
         ]
         build_args = []
         # Adding CMake arguments set as environment variable
         # (needed e.g. to build for ARM OSx on conda-forge)
         if "CMAKE_ARGS" in os.environ:
-            cmake_args += [
-                item for item in os.environ["CMAKE_ARGS"].split(" ") if item]
+            cmake_args += [item for item in os.environ["CMAKE_ARGS"].split(" ") if item]
 
         if self.compiler.compiler_type != "msvc":
             # Using Ninja-build since it a) is available as a wheel and b)
@@ -73,8 +76,7 @@ class CMakeBuild(build_ext):
                 try:
                     import ninja  # noqa: F401
 
-                    ninja_executable_path = os.path.join(
-                        ninja.BIN_DIR, "ninja")
+                    ninja_executable_path = os.path.join(ninja.BIN_DIR, "ninja")
                     cmake_args += [
                         "-GNinja",
                         f"-DCMAKE_MAKE_PROGRAM:FILEPATH={ninja_executable_path}",
@@ -83,10 +85,8 @@ class CMakeBuild(build_ext):
                     pass
 
         else:
-
             # Single config generators are handled "normally"
-            single_config = any(
-                x in cmake_generator for x in {"NMake", "Ninja"})
+            single_config = any(x in cmake_generator for x in {"NMake", "Ninja"})
 
             # CMake allows an arch-in-generator style for backward compatibility
             contains_arch = any(x in cmake_generator for x in {"ARM", "Win64"})
@@ -108,8 +108,7 @@ class CMakeBuild(build_ext):
             # Cross-compile support for macOS - respect ARCHFLAGS if set
             archs = re.findall(r"-arch (\S+)", os.environ.get("ARCHFLAGS", ""))
             if archs:
-                cmake_args += [
-                    "-DCMAKE_OSX_ARCHITECTURES={}".format(";".join(archs))]
+                cmake_args += ["-DCMAKE_OSX_ARCHITECTURES={}".format(";".join(archs))]
 
         # Set CMAKE_BUILD_PARALLEL_LEVEL to control the parallel build level
         # across all generators.
@@ -126,14 +125,12 @@ class CMakeBuild(build_ext):
         if not os.path.exists(build_temp):
             os.makedirs(build_temp)
 
-        subprocess.check_call(["cmake", ext.sourcedir] +
-                              cmake_args, cwd=build_temp)
-        subprocess.check_call(["cmake", "--build", "."] +
-                              build_args, cwd=build_temp)
+        subprocess.check_call(["cmake", ext.sourcedir] + cmake_args, cwd=build_temp)
+        subprocess.check_call(["cmake", "--build", "."] + build_args, cwd=build_temp)
 
 
 setup(
-    ext_modules=[CMakeExtension('ipctk')],
+    ext_modules=[CMakeExtension("ipctk")],
     cmdclass={"build_ext": CMakeBuild},
-    zip_safe=False
+    zip_safe=False,
 )
