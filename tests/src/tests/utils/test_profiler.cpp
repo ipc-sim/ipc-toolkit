@@ -96,7 +96,7 @@ TEST_CASE("Profiler", "[profiler]")
     CHECK(data.size() == 3);
 
     REQUIRE(data.contains("Block 3"));
-    CAPTURE(!data.contains("Block 4"));
+    CHECK_FALSE(data.contains("Block 4"));
     nlohmann::json block3 = data.at("Block 3");
     CHECK(block3.size() == 3); // count, time_ms, Block 4
     CHECK(block3["count"].get<int>() == 2);
