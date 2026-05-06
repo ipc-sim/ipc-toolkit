@@ -3,12 +3,11 @@
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/friction/smooth_mu.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/profiler.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
-
-#include <ipc/utils/profiler.hpp>
 
 #include <stdexcept> // std::out_of_range
 #include <tuple>

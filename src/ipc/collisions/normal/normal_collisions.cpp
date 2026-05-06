@@ -2,7 +2,6 @@
 
 #include <ipc/collisions/normal/normal_collisions_builder.hpp>
 #include <ipc/utils/local_to_global.hpp>
-
 #include <ipc/utils/profiler.hpp>
 
 #include <tbb/blocked_range.h>
