@@ -79,14 +79,14 @@ public:
     /// @return If the collision at i is an edge-edge collision.
     bool is_edge_edge(size_t i) const;
 
-    /// @brief Get if the collision at i is an face-vertex collision.
+    /// @brief Get if the collision at i is a face-vertex collision.
     /// @param i The index of the collision.
-    /// @return If the collision at i is an face-vertex collision.
+    /// @return If the collision at i is a face-vertex collision.
     bool is_face_vertex(size_t i) const;
 
-    /// @brief Get if the collision at i is an plane-vertex collision.
+    /// @brief Get if the collision at i is a plane-vertex collision.
     /// @param i The index of the collision.
-    /// @return If the collision at i is an plane-vertex collision.
+    /// @return If the collision at i is a plane-vertex collision.
     bool is_plane_vertex(size_t i) const;
 
     /// @brief Determine if the step is collision free from the set of candidates.
