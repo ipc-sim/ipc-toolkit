@@ -138,7 +138,7 @@ TEST_CASE("Profile full pipeline", "[!benchmark][profiler]")
         (ipc::tests::DATA_DIR / mesh_t1).string(), V1_full, F1);
 
     if (!loaded_t0 || !loaded_t1) {
-        WARN("Skipping profiler test: puffer-ball data not found");
+        WARN("Skipping profiler test: rod-twist data not found");
         return;
     }
 
