@@ -13,6 +13,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <thread>
 
 // Helper macro to stringify/paste after expansion
 #define IPC_TOOLKIT_PROFILE_BLOCK_CONCAT_IMPL(a, b) a##b
@@ -63,12 +64,21 @@ public:
     /// @brief Access the profiling data as a JSON object.
     nlohmann::json& data() { return m_data; }
 
+    bool is_recording_thread() const
+    {
+        return std::this_thread::get_id() == m_main_thread_id;
+    }
+
 protected:
     /// @brief The profiling data stored as a JSON object.
     nlohmann::json m_data;
 
     /// @brief The global scope pointer into the JSON data.
-    nlohmann::json::json_pointer current_scope;
+    nlohmann::json::json_pointer m_current_scope;
+
+    /// @brief The thread that records data; calls from all other threads are
+    ///        silently ignored, giving a single-thread estimate of block costs.
+    std::thread::id m_main_thread_id;
 };
 
 Profiler& profiler();
@@ -96,20 +106,26 @@ public:
 
     ProfilePoint(Profiler& p_profiler, const std::string& name)
         : m_profiler(p_profiler)
+        , m_active(p_profiler.is_recording_thread())
     {
-        m_profiler.start(name);
-        timer.start();
+        if (m_active) {
+            m_profiler.start(name);
+            timer.start();
+        }
     }
 
     ~ProfilePoint()
     {
-        timer.stop();
-        m_profiler.stop(timer.getElapsedTimeInMilliSec());
+        if (m_active) {
+            timer.stop();
+            m_profiler.stop(timer.getElapsedTimeInMilliSec());
+        }
     }
 
 protected:
     Profiler& m_profiler;
     Timer timer;
+    bool m_active;
 };
 
 } // namespace ipc

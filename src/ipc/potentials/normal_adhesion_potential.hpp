@@ -15,6 +15,8 @@ public:
         const double _Y,
         const double _eps_c);
 
+    std::string name() const override { return "NormalAdhesionPotential"; }
+
     using Super::operator();
     using Super::gradient;
     using Super::hessian;

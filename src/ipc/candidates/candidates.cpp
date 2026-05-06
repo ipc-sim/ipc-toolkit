@@ -9,6 +9,7 @@
 #include <ipc/distance/point_plane.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/profiler.hpp>
 #include <ipc/utils/save_obj.hpp>
 
 #include <igl/remove_unreferenced.h>
@@ -45,6 +46,8 @@ void Candidates::build(
     const double inflation_radius,
     BroadPhase* broad_phase)
 {
+    IPC_TOOLKIT_PROFILE_BLOCK("Candidates::build(static)");
+
     std::unique_ptr<BroadPhase> default_broad_phase;
     if (broad_phase == nullptr) {
         default_broad_phase = make_default_broad_phase();
@@ -130,6 +133,8 @@ void Candidates::build(
     const double inflation_radius,
     BroadPhase* broad_phase)
 {
+    IPC_TOOLKIT_PROFILE_BLOCK("Candidates::build(dynamic)");
+
     std::unique_ptr<BroadPhase> default_broad_phase;
     if (broad_phase == nullptr) {
         default_broad_phase = make_default_broad_phase();
@@ -255,6 +260,7 @@ double Candidates::compute_collision_free_stepsize(
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
+    IPC_TOOLKIT_PROFILE_BLOCK("Candidates::compute_collision_free_stepsize");
 
     if (empty()) {
         return 1; // No possible collisions, so can take full step.
