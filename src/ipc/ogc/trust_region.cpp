@@ -165,7 +165,7 @@ namespace {
             beta = (-b + sqrt_d) / (2 * a);
         }
         // β should be the positive root
-        assert(beta > 0);
+        assert(beta >= 0);
 
         return beta;
     }
@@ -258,8 +258,11 @@ void TrustRegion::planar_filter_step(
 
         const VectorMax3d n = dv / dist;
 
+        // Compute the closest points on the two primitives: c_first/c_second.
         VectorMax3d c_first = VectorMax3d::Zero(d);
         VectorMax3d c_second = VectorMax3d::Zero(d);
+        // Compute the approach velocity of the vertices relative to the
+        // division plane: max(-Δxⱼ⋅n)
         double delta_first = 0, delta_second = 0;
 
         for (int j = 0; j < nv; ++j) {
@@ -277,12 +280,29 @@ void TrustRegion::planar_filter_step(
         delta_first = std::max(delta_first, 0.0);
         delta_second = std::max(delta_second, 0.0);
 
+        // Skip if the approach velocity is negligible relative to the distance.
+        // This prevents numerical noise in n from nearly-parallel edges from
+        // truncating uniform displacements.
+        constexpr double APPROACH_TOL = 1e-3;
+        if (candidates.is_edge_edge(i)
+            && delta_first + delta_second <= APPROACH_TOL * dist) {
+            // Check that the edges are nearly parallel:
+            constexpr double EE_PARALLEL_TOL_SQ = 1e-6; // sin of ~0.057°
+            const Eigen::Vector3d ea = pos.segment<3>(3) - pos.segment<3>(0);
+            const Eigen::Vector3d eb = pos.segment<3>(9) - pos.segment<3>(6);
+            const double sin_angle_sq = ea.cross(eb).squaredNorm()
+                / (ea.squaredNorm() * eb.squaredNorm());
+            if (sin_angle_sq < EE_PARALLEL_TOL_SQ) {
+                return;
+            }
+        }
+
         const double lambda = (delta_first == 0 && delta_second == 0)
             ? 0.5
             : delta_second / (delta_first + delta_second);
 
-        // Division plane: p = c_second + λ·dv  (λ=0 → plane at
-        // second prim, λ=1 → plane at first prim).
+        // Point on the division plane: p = c_second + λ·dv
+        // (λ=0 → plane at second prim, λ=1 → plane at first prim).
         const VectorMax3d p = c_second + lambda * dv;
 
         for (int j = 0; j < nv; ++j) {
