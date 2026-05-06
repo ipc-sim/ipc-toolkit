@@ -2,6 +2,17 @@
 
 #include <ipc/config.hpp>
 
+#ifdef IPC_TOOLKIT_WITH_TRACY
+#include <tracy/Tracy.hpp>
+#endif
+
+#include <string>
+
+// Helper macro to stringify/paste after expansion
+#define IPC_TOOLKIT_PROFILE_BLOCK_CONCAT_IMPL(a, b) a##b
+#define IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(a, b)                                 \
+    IPC_TOOLKIT_PROFILE_BLOCK_CONCAT_IMPL(a, b)
+
 #ifdef IPC_TOOLKIT_WITH_PROFILER
 
 // clang-format off
@@ -15,14 +26,25 @@
 #include <iostream>
 #include <thread>
 
-// Helper macro to stringify/paste after expansion
-#define IPC_TOOLKIT_PROFILE_BLOCK_CONCAT_IMPL(a, b) a##b
-#define IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(a, b)                                 \
-    IPC_TOOLKIT_PROFILE_BLOCK_CONCAT_IMPL(a, b)
-
+#if defined(IPC_TOOLKIT_WITH_TRACY) && defined(TRACY_ENABLE)
+// ZoneScoped + ZoneName supports both compile-time string literals and
+// runtime std::string expressions, unlike ZoneScopedN which requires a
+// constexpr const char*.
+#define IPC_TOOLKIT_PROFILE_BLOCK(...)                                         \
+    const std::string IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(                        \
+        __ipc_zone_name_, __LINE__)(__VA_ARGS__);                              \
+    ipc::ProfilePoint IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(                        \
+        __ipc_profile_point_, __LINE__)(                                       \
+        IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(__ipc_zone_name_, __LINE__));         \
+    ZoneScoped;                                                                \
+    ZoneName(                                                                  \
+        IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(__ipc_zone_name_, __LINE__).c_str(),  \
+        IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(__ipc_zone_name_, __LINE__).size())
+#else
 #define IPC_TOOLKIT_PROFILE_BLOCK(...)                                         \
     ipc::ProfilePoint IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(                        \
         __ipc_profile_point_, __COUNTER__)(__VA_ARGS__)
+#endif
 
 namespace ipc {
 
@@ -130,8 +152,21 @@ protected:
 
 } // namespace ipc
 
+#elif defined(IPC_TOOLKIT_WITH_TRACY) && defined(TRACY_ENABLE)
+
+// Custom profiler disabled: Tracy zone only.
+// ZoneScoped + ZoneName supports runtime strings, unlike ZoneScopedN.
+#define IPC_TOOLKIT_PROFILE_BLOCK(...)                                         \
+    const std::string IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(                        \
+        __ipc_zone_name_, __LINE__)(__VA_ARGS__);                              \
+    ZoneScoped;                                                                \
+    ZoneName(                                                                  \
+        IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(__ipc_zone_name_, __LINE__).c_str(),  \
+        IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(__ipc_zone_name_, __LINE__).size())
+
 #else
 
+// No profiling enabled: no-op.
 #define IPC_TOOLKIT_PROFILE_BLOCK(...)
 
 #endif
