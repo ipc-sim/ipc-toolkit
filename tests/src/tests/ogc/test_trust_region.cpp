@@ -631,7 +631,7 @@ TEST_CASE(
     // Adjacent pairs where an even layer is below an odd layer (e.g. 0 and 1)
     // move apart and must not be spuriously truncated.
 
-    const int N_LAYERS = 1; // GENERATE(range(1, 5)); // test 1 to 4 layers
+    const int N_LAYERS = GENERATE(range(1, 5)); // test 1 to 4 layers
 
 #ifdef NDEBUG
     const int N = GENERATE(2, 10);
