@@ -102,7 +102,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const PSDProjectionMethod project_hessian_to_psd) const
 {
     assert(X.rows() == mesh.num_vertices());
-    IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::gradient()");
+    IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::hessian()");
 
     if (collisions.empty()) {
         return Eigen::SparseMatrix<double>(X.size(), X.size());
