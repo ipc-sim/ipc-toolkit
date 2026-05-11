@@ -4,6 +4,7 @@ set(SOURCES
 
   # Tests
   test_cfl.cpp
+  test_collision_filter.cpp
   test_collision_mesh.cpp
   test_has_intersections.cpp
   test_ipc.cpp
