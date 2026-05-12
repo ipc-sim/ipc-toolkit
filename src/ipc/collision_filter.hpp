@@ -19,7 +19,8 @@ namespace ipc {
 //   CollisionFilter h = f & g;  // both conditions must hold
 //   if (h(i, j)) { ... }
 //
-// Filters are value types — cheap to copy (shared_ptr to immutable impl).
+// Filters are value types implemented with std::function; copy cost depends on
+// the stored callable.
 //   operator|  → union        (true if EITHER filter passes)
 //   operator&  → intersection (true if BOTH filters pass)
 //   operator!  → negation
