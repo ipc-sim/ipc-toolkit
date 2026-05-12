@@ -2433,7 +2433,7 @@
 
 <h1 id="offset-geometric-contact">Offset Geometric Contact<a class="headerlink" href="#offset-geometric-contact" title="Link to this heading">¶</a></h1>
 <p>This tutorial explains how to implement the Offset Geometric Contact
-(OGC) <span id="id1">[<a class="reference internal" href="references.html#id14" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span> algorithm using the IPC Toolkit.</p>
+(OGC) <span class="bibtex-citation" id="id1">[<a class="reference internal" href="references.html#id14" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span> algorithm using the IPC Toolkit.</p>
 <p>OGC is a contact model designed to guarantee penetration-free simulation of
 objects while incurring minimal computational overhead. It works by constructing
 a volumetric shape around the object by offsetting each face along its normal
@@ -2442,7 +2442,7 @@ large contact radius without introducing artifacts.</p>
 <p>OGC integrates into the optimization process by replacing the continuous
 collision detection (CCD) line search with a trust region-based approach using
 vertex-specific displacement bounds.</p>
-<p>For more details on the OGC algorithm, please refer to <span id="id2">[<a class="reference internal" href="references.html#id14" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span>
+<p>For more details on the OGC algorithm, please refer to <span class="bibtex-citation" id="id2">[<a class="reference internal" href="references.html#id14" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span>
 and their associated video <a class="reference external" href="https://www.youtube.com/watch?v=xxyniqSLJik">here</a>.</p>
 <h2 id="algorithm">Algorithm<a class="headerlink" href="#algorithm" title="Link to this heading">¶</a></h2>
 <p>At a high-level, the OGC algorithm proceeds as follows:</p>
@@ -2729,7 +2729,7 @@ Python</label></div>
 </div>
 </div>
 </div><h2 id="algorithm-details-and-adaptations">Algorithm Details and Adaptations<a class="headerlink" href="#algorithm-details-and-adaptations" title="Link to this heading">¶</a></h2>
-<p>While the implementation follows the core OGC algorithm (Algorithm 3 in <span id="id3">[<a class="reference internal" href="references.html#id14" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span>), there are several practical adaptations in <code class="docutils literal notranslate"><span class="pre">TrustRegion</span></code> to ensure robustness, numerical stability, and compatibility with line-search-based solvers.</p>
+<p>While the implementation follows the core OGC algorithm (Algorithm 3 in <span class="bibtex-citation" id="id3">[<a class="reference internal" href="references.html#id14" title="Anka He Chen, Jerry Hsu, Ziheng Liu, Miles Macklin, Yin Yang, and Cem Yuksel. Offset Geometric Contact. ACM Transactions on Graphics, August 2025. https://ankachan.github.io/Projects/OGC/index.html.">Chen <em>et al.</em>, 2025</a>]</span>), there are several practical adaptations in <code class="docutils literal notranslate"><span class="pre">TrustRegion</span></code> to ensure robustness, numerical stability, and compatibility with line-search-based solvers.</p>
 <h3 id="step-scaling-vs-closest-point-projection">Step Scaling vs. Closest-Point Projection<a class="headerlink" href="#step-scaling-vs-closest-point-projection" title="Link to this heading">¶</a></h3>
 <p>The most significant deviation from the original paper lies in how vertices are constrained when they exceed their trust region bounds (Step 2d).</p>
 <ul class="simple">
@@ -2779,7 +2779,7 @@ Mixing Trust Region constraints with Line Search methods can be delicate. If you
 <p>This prevents the solver from starting with a trust region that is already too restrictive for the bulk of the mesh, potentially saving solver iterations later.</p>
 <h2 id="planar-dat-divide-and-truncate">Planar-DAT (Divide and Truncate)<a class="headerlink" href="#planar-dat-divide-and-truncate" title="Link to this heading">¶</a></h2>
 <p>The isotropic <code class="docutils literal notranslate"><span class="pre">filter_step</span></code> clips every vertex displacement to a sphere, which restricts motion in <em>all</em> directions — even tangential sliding or outward motion away from a contact. In dense or cluttered contact scenarios this causes <strong>artificial damping</strong> and <strong>deadlock</strong>: vertices cannot slide past each other even when no penetration would occur.</p>
-<p><strong>Planar-DAT</strong> <span id="id4">[<a class="reference internal" href="references.html#id13">Chen <em>et al.</em>, 2026</a>]</span> replaces the sphere with a <em>direction-aware division plane</em> computed per collision pair. Only the displacement component that crosses the plane (i.e., moves toward the opposing primitive) is truncated; tangential and separating motion passes through unconstrained. This typically allows steps 2× larger or more, eliminating damping artifacts.</p>
+<p><strong>Planar-DAT</strong> <span class="bibtex-citation" id="id4">[<a class="reference internal" href="references.html#id13">Chen <em>et al.</em>, 2026</a>]</span> replaces the sphere with a <em>direction-aware division plane</em> computed per collision pair. Only the displacement component that crosses the plane (i.e., moves toward the opposing primitive) is truncated; tangential and separating motion passes through unconstrained. This typically allows steps 2× larger or more, eliminating damping artifacts.</p>
 <h3 id="how-the-division-plane-is-computed">How the Division Plane is Computed<a class="headerlink" href="#how-the-division-plane-is-computed" title="Link to this heading">¶</a></h3>
 <p>For each active collision pair the algorithm:</p>
 <ol class="arabic simple">
@@ -2933,7 +2933,7 @@ is observed with isotropic filtering</p></td>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    May 06, 2026
+    May 12, 2026
   </span>
 
     

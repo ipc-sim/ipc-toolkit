@@ -1985,26 +1985,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#breathe-section-title-protected-static-functions" class="md-nav__link">
-    
-    <span class="md-ellipsis">
-      <span>Protected Static Functions</span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_CPPv4N3ipc10BroadPhase28default_can_vertices_collideE6size_t6size_t" class="md-nav__link">
-    
-    <span class="md-ellipsis">
-      <span title="/cpp-api/broad_phase.rst#_cppv4n3ipc10broadphase28default_can_vertices_collidee6size_t6size_t (reference label)"><span>default_<wbr>can_<wbr>vertices_<wbr>collide</span></span>
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -9895,26 +9875,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#breathe-section-title-protected-static-functions" class="md-nav__link">
-    
-    <span class="md-ellipsis">
-      <span>Protected Static Functions</span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_CPPv4N3ipc10BroadPhase28default_can_vertices_collideE6size_t6size_t" class="md-nav__link">
-    
-    <span class="md-ellipsis">
-      <span title="/cpp-api/broad_phase.rst#_cppv4n3ipc10broadphase28default_can_vertices_collidee6size_t6size_t (reference label)"><span>default_<wbr>can_<wbr>vertices_<wbr>collide</span></span>
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -16065,6 +16025,19 @@
 }</p></object></div>
 </div>
 </figure>
+<p>Collaboration diagram for ipc::BroadPhase:</p>
+<figure class="align-default">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-b0837dbd2f02cfc5285e06246b27ff485450ceea.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph {
+    graph [bgcolor=&quot;#00000000&quot;]
+    node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
+    edge [color=&quot;#1414CE&quot;]
+    &quot;1&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;2&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
+    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;usage&quot;]
+}</p></object></div>
+</div>
+</figure>
 <p>Base class for broad phase collision detection methods. </p>
 <p>Subclassed by <a class="reference internal" href="#classipc_1_1_brute_force"><span class="std std-ref">ipc::BruteForce</span></a>, <a class="reference internal" href="#classipc_1_1_hash_grid"><span class="std std-ref">ipc::HashGrid</span></a>, <a class="reference internal" href="#classipc_1_1_l_b_v_h"><span class="std std-ref">ipc::LBVH</span></a>, <a class="reference internal" href="#classipc_1_1_spatial_hash"><span class="std std-ref">ipc::SpatialHash</span></a>, <a class="reference internal" href="#classipc_1_1_sweep_and_prune"><span class="std std-ref">ipc::SweepAndPrune</span></a></p>
 <div class="breathe-sectiondef docutils container">
@@ -16256,8 +16229,8 @@
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members<a class="headerlink" href="#breathe-section-title-public-members" title="Permalink to this headline">¶</a></p>
 <dl class="cpp var objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc10BroadPhase20can_vertices_collideE">
-<span class="n">std</span><span class="p">::</span><span class="n">function</span><span class="p">&lt;</span><span class="kt">bool</span><span class="p">(</span><span class="n">size_t</span><span class="p">,</span><span class="w">&nbsp;</span><span class="n">size_t</span><span class="p">)</span><span class="p">&gt;</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">can_vertices_collide<br>&nbsp;&nbsp;&nbsp;</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><a class="reference internal" href="#_CPPv4N3ipc10BroadPhase28default_can_vertices_collideE6size_t6size_t" title="ipc::BroadPhase::default_can_vertices_collide (C++ function)"><span class="n">default_can_vertices_collide;</span></a><a class="headerlink" href="#_CPPv4N3ipc10BroadPhase20can_vertices_collideE" title="Link to this definition">¶</a></dt>
-<dd><p>Function for determining if two vertices can collide. </p>
+<span class="n">CollisionFilter</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">can_vertices_collide;</span></span><a class="headerlink" href="#_CPPv4N3ipc10BroadPhase20can_vertices_collideE" title="Link to this definition">¶</a></dt>
+<dd><p>Filter for determining if two vertices can collide. </p>
 </dd></dl>
 
 </div>
@@ -16352,14 +16325,6 @@
 </dd></dl>
 
 </div>
-<div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-static-functions">Protected Static Functions<a class="headerlink" href="#breathe-section-title-protected-static-functions" title="Permalink to this headline">¶</a></p>
-<dl class="cpp function objdesc">
-<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc10BroadPhase28default_can_vertices_collideE6size_t6size_t">
-<span class="k">static</span><span class="w">&nbsp;</span><span class="k">inline</span><span class="w">&nbsp;</span><span class="kt">bool</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">default_can_vertices_collide</span></span><span class="p">(</span><span><span class="n">size_t</span></span><span class="p">,&nbsp;</span><span><span class="n">size_t</span></span><span class="p">);</span><a class="headerlink" href="#_CPPv4N3ipc10BroadPhase28default_can_vertices_collideE6size_t6size_t" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
 </dd></dl>
 
 <h2 id="brute-force">Brute Force<a class="headerlink" href="#brute-force" title="Link to this heading">¶</a></h2>
@@ -16381,13 +16346,15 @@
 </figure>
 <p>Collaboration diagram for ipc::BruteForce:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-377a76b69b9ad88290f635cb85b1bd76e604a208.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-71f669909ab8e29c63d830f98274bdf7670a879d.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
     &quot;1&quot; [label=&quot;ipc::BruteForce&quot; tooltip=&quot;ipc::BruteForce&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
+    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
@@ -16548,13 +16515,15 @@
 </figure>
 <p>Collaboration diagram for ipc::HashGrid:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-52958d51371e48e39afd6ac0810bdb48ed36fd67.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-c77b46e21e610bb3402dfa5f93ce58a37c0f00fd.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
+    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
     &quot;1&quot; [label=&quot;ipc::HashGrid&quot; tooltip=&quot;ipc::HashGrid&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
@@ -16931,13 +16900,15 @@
 </figure>
 <p>Collaboration diagram for ipc::SpatialHash:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-7be307dc7bc69bd7847f30871778578f52e30387.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-35678b9def8961e6896512fcd30651a66db7949c.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
+    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
     &quot;1&quot; [label=&quot;ipc::SpatialHash&quot; tooltip=&quot;ipc::SpatialHash&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
@@ -17477,13 +17448,15 @@
 </figure>
 <p>Collaboration diagram for ipc::LBVH:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-b67e42ae518326e3e1fd204ef346de358d10ddc1.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-1405b6bb9bc2a0e7ed411fad032658b3468cd1e6.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
+    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
     &quot;1&quot; [label=&quot;ipc::LBVH&quot; tooltip=&quot;ipc::LBVH&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
@@ -18086,13 +18059,15 @@
 </figure>
 <p>Collaboration diagram for ipc::SweepAndPrune:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-ea1fb462fd67c961778f39469a3fd87a60561122.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-29f8b65d59eee2db12a7a25bd334f992cf35a862.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
+    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
     &quot;1&quot; [label=&quot;ipc::SweepAndPrune&quot; tooltip=&quot;ipc::SweepAndPrune&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
@@ -18591,7 +18566,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    May 06, 2026
+    May 12, 2026
   </span>
 
     
