@@ -5,6 +5,7 @@
 #include <Eigen/Core>
 
 #include <functional>
+#include <type_traits>
 #include <utility>
 
 namespace ipc {
@@ -31,7 +32,7 @@ public:
     // ── Construction ─────────────────────────────────────────────────────────
 
     /// @brief Default filter: accept all pairs.
-    CollisionFilter() : m_fn([](int, int) { return true; }) { }
+    CollisionFilter() : m_fn([](size_t, size_t) { return true; }) { }
 
     /// @brief Construct from any callable bool(size_t, size_t).
     /// @note Disabled when Fn is CollisionFilter itself to avoid shadowing
@@ -53,31 +54,36 @@ public:
     /// @return true if the pair should be considered for collision.
     bool operator()(size_t vi, size_t vj) const { return m_fn(vi, vj); }
 
+    // ── Implicit conversion ──────────────────────────────────────────────────
+
+    /// @brief Implicit conversion to std::function<bool(size_t, size_t)>.
+    operator std::function<bool(size_t, size_t)>() const { return m_fn; }
+
     // ── Composition ──────────────────────────────────────────────────────────
 
     /// @brief Union: accept if EITHER filter passes.
     friend CollisionFilter operator|(CollisionFilter lhs, CollisionFilter rhs)
     {
-        return CollisionFilter(
-            [l = std::move(lhs.m_fn), r = std::move(rhs.m_fn)](int vi, int vj) {
-                return l(vi, vj) || r(vi, vj);
-            });
+        return CollisionFilter([l = std::move(lhs.m_fn),
+                                r = std::move(rhs.m_fn)](size_t vi, size_t vj) {
+            return l(vi, vj) || r(vi, vj);
+        });
     }
 
     /// @brief Intersection: accept only if BOTH filters pass.
     friend CollisionFilter operator&(CollisionFilter lhs, CollisionFilter rhs)
     {
-        return CollisionFilter(
-            [l = std::move(lhs.m_fn), r = std::move(rhs.m_fn)](int vi, int vj) {
-                return l(vi, vj) && r(vi, vj);
-            });
+        return CollisionFilter([l = std::move(lhs.m_fn),
+                                r = std::move(rhs.m_fn)](size_t vi, size_t vj) {
+            return l(vi, vj) && r(vi, vj);
+        });
     }
 
     /// @brief Negation: accept only if this filter rejects.
     CollisionFilter operator!() const
     {
         return CollisionFilter(
-            [f = m_fn](int vi, int vj) { return !f(vi, vj); });
+            [f = m_fn](size_t vi, size_t vj) { return !f(vi, vj); });
     }
 
     /// @brief Compound union assignment.
@@ -121,6 +127,18 @@ inline CollisionFilter make_static_obstacle_filter(size_t n_dynamic)
 {
     return CollisionFilter([n_dynamic](size_t vi, size_t vj) {
         return vi < n_dynamic || vj < n_dynamic;
+    });
+}
+
+/// @brief Create a filter that allows only mixed codimensional pairs —
+///        one codimensional vertex and one non-codimensional vertex.
+///        Rejects c-vertex/c-vertex and non-c/non-c pairs.
+/// @param n_codim_vertices Number of codimensional vertices; they occupy
+///        indices [0, nCV).
+inline CollisionFilter make_codim_cross_filter(size_t n_codim_vertices)
+{
+    return CollisionFilter([n_codim_vertices](size_t vi, size_t vj) {
+        return (vi < n_codim_vertices) ^ (vj < n_codim_vertices);
     });
 }
 

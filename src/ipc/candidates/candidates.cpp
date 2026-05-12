@@ -102,10 +102,9 @@ void Candidates::build(
 
         // TODO: Can we reuse the broad phase from above?
         broad_phase->clear();
-        broad_phase->can_vertices_collide = [&](size_t vi, size_t vj) {
-            // Ignore c-edge to c-edge and c-vertex to c-vertex
-            return ((vi < nCV) ^ (vj < nCV)) && mesh.can_collide(vi, vj);
-        };
+        // Ignore c-edge to c-edge and c-vertex to c-vertex
+        broad_phase->can_vertices_collide =
+            make_codim_cross_filter(nCV) & mesh.can_collide;
         broad_phase->build(V, CE, Eigen::MatrixXi(), inflation_radius);
 
         broad_phase->detect_edge_vertex_candidates(ev_candidates);
@@ -197,10 +196,9 @@ void Candidates::build(
 
         // TODO: Can we reuse the broad phase from above?
         broad_phase->clear();
-        broad_phase->can_vertices_collide = [&](size_t vi, size_t vj) {
-            // Ignore c-edge to c-edge and c-vertex to c-vertex
-            return ((vi < nCV) ^ (vj < nCV)) && mesh.can_collide(vi, vj);
-        };
+        // Ignore c-edge to c-edge and c-vertex to c-vertex
+        broad_phase->can_vertices_collide =
+            make_codim_cross_filter(nCV) & mesh.can_collide;
         broad_phase->build(V_t0, V_t1, CE, Eigen::MatrixXi(), inflation_radius);
 
         broad_phase->detect_edge_vertex_candidates(ev_candidates);
