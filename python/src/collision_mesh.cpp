@@ -1,5 +1,6 @@
 #include <common.hpp>
 
+#include <ipc/collision_filter.hpp>
 #include <ipc/collision_mesh.hpp>
 #include <ipc/utils/logger.hpp>
 
@@ -20,120 +21,144 @@ struct PairHash {
 using MapCanCollide =
     std::unordered_map<std::pair<size_t, size_t>, bool, PairHash>;
 
-} // namespace
-
-/// @brief A functor which the value of the pair if it is in the map, otherwise a default value.
-class SparseCanCollide {
-public:
-    /// @brief Construct a new Sparse Can Collide object.
-    /// @param explicit_values A map from vertex pairs to whether they can collide. Only the upper triangle is used. The map is assumed to be symmetric.
-    /// @param default_value The default value to return if the pair is not in the map.
-    SparseCanCollide(const MapCanCollide& explicit_values, bool default_value)
-        : m_explicit_values(explicit_values)
-        , m_default_value(default_value)
-    {
-    }
-
-    /// @brief Can two vertices collide?
-    /// @param i Index of the first vertex.
-    /// @param j Index of the second vertex.
-    /// @return The value of the pair if it is in the map, otherwise the default value.
-    bool operator()(size_t i, size_t j) const
-    {
+CollisionFilter
+make_sparse_filter(MapCanCollide explicit_values, bool default_value)
+{
+    return [m_explicit_values = std::move(explicit_values),
+            m_default_value = default_value](size_t i, size_t j) {
         auto it = m_explicit_values.find({ std::min(i, j), std::max(i, j) });
-
         assert(
             m_explicit_values.find({ std::max(i, j), std::min(i, j) })
             == m_explicit_values.end());
-
         if (it != m_explicit_values.end()) {
             return it->second;
         }
         return m_default_value;
-    }
+    };
+}
 
-private:
-    const MapCanCollide m_explicit_values;
-    const bool m_default_value;
-};
-
-class VertexPatchesCanCollide {
-public:
-    /// @brief Construct a new Vertex Patches Can Collide object.
-    /// @param vertex_patches Vector of patches labels for each vertex.
-    VertexPatchesCanCollide(Eigen::ConstRef<Eigen::VectorXi> vertex_patches)
-        : m_vertex_patches(vertex_patches)
-    {
-    }
-
-    /// @brief Can two vertices collide?
-    /// @param i Index of the first vertex.
-    /// @param j Index of the second vertex.
-    /// @return true if the vertices are in different patches
-    bool operator()(size_t i, size_t j) const
-    {
-        assert(i < m_vertex_patches.size());
-        assert(j < m_vertex_patches.size());
-        return m_vertex_patches[i] != m_vertex_patches[j];
-    }
-
-    size_t num_vertices() const { return m_vertex_patches.size(); }
-
-private:
-    const Eigen::VectorXi m_vertex_patches;
-};
+} // namespace
 
 void define_collision_mesh(py::module_& m)
 {
-    py::class_<SparseCanCollide>(
-        m, "SparseCanCollide",
-        "A functor which the value of the pair if it is in the map, otherwise a default value.")
+    py::class_<CollisionFilter>(
+        m, "CollisionFilter",
+        R"ipc_Qu8mg5v7(
+        A composable, type-erased collision filter.
+
+        Wraps any callable ``bool(int, int)`` and supports logical composition
+        via ``|`` (union), ``&`` (intersection), and ``~`` (negation) operators.
+        The default-constructed filter accepts all pairs.
+
+        Example:
+            .. code-block:: python
+
+                patches = CollisionFilter(lambda i, j: patches[i] != patches[j])
+                static  = make_static_obstacle_filter(n_dynamic)
+                active  = patches & static
+                if active(i, j):
+                    ...
+        )ipc_Qu8mg5v7")
+        .def(py::init<>(), "Default filter: accept all pairs.")
         .def(
-            py::init<const MapCanCollide&, bool>(),
-            R"ipc_Qu8mg5v7(
-            Construct a new Sparse Can Collide object.
-
-            Parameters:
-                explicit_values: A map from vertex pairs to whether they can collide. Only the upper triangle is used. The map is assumed to be symmetric.
-                default_value: The default value to return if the pair is not in the map.
-            )ipc_Qu8mg5v7",
-            "explicit_values"_a, "default_value"_a)
+            py::init([](const py::function& fn) {
+                return CollisionFilter([fn](size_t i, size_t j) -> bool {
+                    py::gil_scoped_acquire gil;
+                    return py::cast<bool>(fn(i, j));
+                });
+            }),
+            "Construct from a Python callable ``bool(int, int)``. "
+            "Python-backed filters acquire the GIL on each call and may not "
+            "be safe or performant for parallel broad-phase use.",
+            "fn"_a)
         .def(
-            "__call__", &SparseCanCollide::operator(), R"ipc_Qu8mg5v7(
-            Can two vertices collide?
-
-            Parameters:
-                i: Index of the first vertex.
-                j: Index of the second vertex.
-
-            Returns:
-                The value of the pair if it is in the map, otherwise the default value.
-            )ipc_Qu8mg5v7",
-            "i"_a, "j"_a);
-
-    py::class_<VertexPatchesCanCollide>(
-        m, "VertexPatchesCanCollide",
-        "A functor which returns true if the vertices are in different patches.")
+            "__call__", &CollisionFilter::operator(),
+            "Test whether two vertices may collide.", "vi"_a, "vj"_a)
         .def(
-            py::init<Eigen::ConstRef<Eigen::VectorXi>>(), "vertex_patches"_a,
-            R"ipc_Qu8mg5v7(
-            Construct a new Vertex Patches Can Collide object.
-
-            Parameters:
-                vertex_patches: Vector of patches labels for each vertex.
-            )ipc_Qu8mg5v7")
+            "__or__",
+            [](const CollisionFilter& a, const CollisionFilter& b) {
+                return a | b;
+            },
+            "Union: accept if EITHER filter passes.")
         .def(
-            "__call__", &VertexPatchesCanCollide::operator(), R"ipc_Qu8mg5v7(
-            Can two vertices collide?
+            "__and__",
+            [](const CollisionFilter& a, const CollisionFilter& b) {
+                return a & b;
+            },
+            "Intersection: accept only if BOTH filters pass.")
+        .def(
+            "__invert__", [](const CollisionFilter& f) { return !f; },
+            "Negation: accept only if this filter rejects.")
+        .def(
+            "__ior__",
+            [](CollisionFilter& f,
+               const CollisionFilter& b) -> CollisionFilter& { return f |= b; })
+        .def(
+            "__iand__",
+            [](CollisionFilter& f, const CollisionFilter& b)
+                -> CollisionFilter& { return f &= b; });
 
-            Parameters:
-                i: Index of the first vertex.
-                j: Index of the second vertex.
+    m.def(
+        "make_sparse_filter", &make_sparse_filter,
+        R"ipc_Qu8mg5v7(
+        Create a filter from a sparse map of explicit vertex-pair values.
 
-            Returns:
-                True if the vertices are in different patches.
-            )ipc_Qu8mg5v7",
-            "i"_a, "j"_a);
+        Pairs present in ``explicit_values`` use the stored boolean; all
+        other pairs fall back to ``default_value``.  Only the upper triangle
+        of the pair space is used — keys must satisfy ``i < j``.
+
+        Parameters:
+            explicit_values: Dict mapping ``(i, j)`` pairs (``i < j``) to
+                whether those two vertices can collide.
+            default_value: Value returned for pairs not in the map.
+
+        Returns:
+            A CollisionFilter backed by the sparse map.
+        )ipc_Qu8mg5v7",
+        "explicit_values"_a, "default_value"_a);
+
+    m.def(
+        "make_vertex_patches_filter", &make_vertex_patches_filter,
+        R"ipc_Qu8mg5v7(
+        Create a filter that only allows collisions between vertices in different patches (e.g., different garment panels or bodies).
+
+        Parameters:
+            patch_ids: Per-vertex patch label vector (one entry per vertex).
+
+        Returns:
+            A CollisionFilter that blocks same-patch pairs.
+        )ipc_Qu8mg5v7",
+        "patch_ids"_a);
+
+    m.def(
+        "make_static_obstacle_filter", &make_static_obstacle_filter,
+        R"ipc_Qu8mg5v7(
+        Create a filter that prevents static obstacles from colliding with each other.
+        A vertex is considered "static" if its index is >= n_dynamic.
+        Pairs where both vertices are static are rejected.
+
+        Parameters:
+            n_dynamic: Number of dynamic (simulated) vertices; static vertices occupy indices [n_dynamic, n_verts).
+
+        Returns:
+            A CollisionFilter that blocks static-static pairs.
+        )ipc_Qu8mg5v7",
+        "n_dynamic"_a);
+
+    m.def(
+        "make_connected_components_filter", &make_connected_components_filter,
+        R"ipc_Qu8mg5v7(
+        Create a filter that prevents self-collisions within a connected
+        component of the face mesh. Two vertices in the same connected
+        component are blocked; cross-component pairs are allowed.
+
+        Parameters:
+            faces: Face index matrix (#F × 3).
+
+        Returns:
+            A CollisionFilter that blocks intra-component pairs.
+        )ipc_Qu8mg5v7",
+        "faces"_a);
 
     py::class_<Eigen::Hyperplane<double, 3>>(m, "Hyperplane")
         .def(py::init<>())
@@ -471,36 +496,22 @@ void define_collision_mesh(py::module_& m)
         .def_property(
             "can_collide", [](CollisionMesh& self) { return self.can_collide; },
             [](CollisionMesh& self, const py::object& can_collide) {
-                if (py::isinstance<SparseCanCollide>(can_collide)) {
-
-                    self.can_collide = py::cast<SparseCanCollide>(can_collide);
-
-                } else if (py::isinstance<VertexPatchesCanCollide>(
-                               can_collide)) {
-
-                    const VertexPatchesCanCollide& vertex_patches_can_collide =
-                        py::cast<VertexPatchesCanCollide>(can_collide);
-
-                    if (self.num_vertices()
-                        != vertex_patches_can_collide.num_vertices()) {
-                        throw py::value_error(
-                            "The number of vertices in the VertexPatchesCanCollide object must match the number of vertices in the CollisionMesh.");
-                    }
-
-                    self.can_collide = vertex_patches_can_collide;
-
+                if (py::isinstance<CollisionFilter>(can_collide)) {
+                    self.can_collide = py::cast<CollisionFilter>(can_collide);
                 } else if (py::isinstance<py::function>(can_collide)) {
-
                     logger().warn(
-                        "Using a custom function for can_collide is deprecated because it is slow. "
-                        "Please use a SparseCanCollide or VertexPatchesCanCollide object.");
-                    self.can_collide = [can_collide](size_t i, size_t j) {
-                        return py::cast<bool>(can_collide(i, j));
-                    };
-
+                        "Using a custom Python function for can_collide is deprecated. Please use a CollisionFilter object.");
+                    self.can_collide =
+                        CollisionFilter([can_collide](size_t i, size_t j) {
+                            py::gil_scoped_acquire gil;
+                            return py::cast<bool>(can_collide(i, j));
+                        });
                 } else {
                     throw py::value_error(
-                        "Unknown type for can_collide. Must be a SparseCanCollide, VertexPatchesCanCollide, or a function.");
+                        "can_collide must be a CollisionFilter or a callable "
+                        "bool(int, int). Use make_sparse_filter(), "
+                        "make_vertex_patches_filter(), or similar factory "
+                        "functions to create a CollisionFilter.");
                 }
             },
             R"ipc_Qu8mg5v7(
