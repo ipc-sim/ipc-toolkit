@@ -63,10 +63,14 @@ void define_collision_mesh(py::module_& m)
         .def(
             py::init([](const py::function& fn) {
                 return CollisionFilter([fn](size_t i, size_t j) -> bool {
+                    py::gil_scoped_acquire gil;
                     return py::cast<bool>(fn(i, j));
                 });
             }),
-            "Construct from a Python callable ``bool(int, int)``.", "fn"_a)
+            "Construct from a Python callable ``bool(int, int)``. "
+            "Python-backed filters acquire the GIL on each call and may not "
+            "be safe or performant for parallel broad-phase use.",
+            "fn"_a)
         .def(
             "__call__", &CollisionFilter::operator(),
             "Test whether two vertices may collide.", "vi"_a, "vj"_a)
@@ -499,6 +503,7 @@ void define_collision_mesh(py::module_& m)
                         "Using a custom Python function for can_collide is deprecated. Please use a CollisionFilter object.");
                     self.can_collide =
                         CollisionFilter([can_collide](size_t i, size_t j) {
+                            py::gil_scoped_acquire gil;
                             return py::cast<bool>(can_collide(i, j));
                         });
                 } else {

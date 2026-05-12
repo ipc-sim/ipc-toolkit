@@ -59,7 +59,7 @@ This means the filter acts on the one-ring of a vertex rather than a single prim
     virtual bool can_edge_face_collide(size_t ei, size_t fi) const;
     virtual bool can_faces_collide(size_t fai, size_t fbi) const;
 
-:cpp:`CollisionFilter` wraps any :cpp:`bool(size_t, size_t)` callable and supports logical composition via ``|`` (union), ``&`` (intersection), and ``!``/``~`` (negation).
+:cpp:`CollisionFilter` wraps any :cpp:`bool(size_t, size_t)` callable and supports logical composition via ``|`` (union) and ``&`` (intersection). Negation uses ``!`` in C++ and ``~`` in Python.
 
 The available factory functions are:
 

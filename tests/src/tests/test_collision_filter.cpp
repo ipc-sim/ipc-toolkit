@@ -3,6 +3,7 @@
 #include <ipc/collision_filter.hpp>
 
 #include <Eigen/Core>
+#include <vector>
 
 using namespace ipc;
 
