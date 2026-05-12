@@ -434,7 +434,6 @@ protected:
     std::vector<Eigen::SparseVector<double>> m_vertex_area_jacobian;
     /// @brief The rows of the Jacobian of the edge areas vector.
     std::vector<Eigen::SparseVector<double>> m_edge_area_jacobian;
-
 };
 
 } // namespace ipc
