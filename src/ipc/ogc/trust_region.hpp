@@ -1,3 +1,5 @@
+#pragma once
+
 #include <ipc/collision_mesh.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
