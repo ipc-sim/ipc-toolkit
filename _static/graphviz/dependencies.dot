@@ -84,4 +84,7 @@ digraph "IPC Toolkit Dependencies" {
     // ipc_toolkit -> nlohmann_json
     "node14" [label = "nlohmann_json\n(nlohmann_json::nlohmann_json)";shape = box;style = "rounded,filled";fillcolor = "#FFE6CC";color = "#DAA52D";];
     "node5" -> "node14" [color = "#8FB976";];
+    // ipc_toolkit -> tracy
+    "node16" [label = "TracyClient\n(Tracy::TracyClient)";shape = box;style = "rounded,filled";fillcolor = "#D5E8D4";color = "#8FB976";];
+    "node5" -> "node16" [color = "#8FB976";];
 }
