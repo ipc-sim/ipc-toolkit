@@ -40,7 +40,7 @@ double Potential<TCollisions>::operator()(
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
     assert(X.rows() == mesh.num_vertices());
-    IPC_TOOLKIT_PROFILE_BLOCK(this->name() + "::operator()");
+    IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::operator()");
 
     return tbb::parallel_reduce(
         tbb::blocked_range<size_t>(size_t(0), collisions.size()), 0.0,
@@ -63,7 +63,7 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
     assert(X.rows() == mesh.num_vertices());
-    IPC_TOOLKIT_PROFILE_BLOCK(this->name() + "::gradient()");
+    IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::gradient()");
 
     if (collisions.empty()) {
         return Eigen::VectorXd::Zero(X.size());
@@ -74,7 +74,7 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
     tbb::combinable<Eigen::VectorXd> grad(Eigen::VectorXd::Zero(X.size()));
 
     {
-        IPC_TOOLKIT_PROFILE_BLOCK("compute local gradients");
+        IPC_TOOLKIT_PROFILE_BLOCK("Compute Local Gradients");
         tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
             const TCollision& collision = collisions[i];
 
@@ -88,7 +88,7 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
     }
 
     {
-        IPC_TOOLKIT_PROFILE_BLOCK("combine local gradients");
+        IPC_TOOLKIT_PROFILE_BLOCK("Combine Local Gradients");
         return grad.combine([](const Eigen::VectorXd& a,
                                const Eigen::VectorXd& b) { return a + b; });
     }
@@ -102,7 +102,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const PSDProjectionMethod project_hessian_to_psd) const
 {
     assert(X.rows() == mesh.num_vertices());
-    IPC_TOOLKIT_PROFILE_BLOCK(this->name() + "::hessian()");
+    IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::hessian()");
 
     if (collisions.empty()) {
         return Eigen::SparseMatrix<double>(X.size(), X.size());
@@ -129,7 +129,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
             MatrixMaxNd local_hess;
             {
-                IPC_TOOLKIT_PROFILE_BLOCK("compute local hessian");
+                IPC_TOOLKIT_PROFILE_BLOCK("Compute Local Hessian");
                 local_hess = this->hessian(
                     collision, collision.dof(X, edges, faces),
                     project_hessian_to_psd);
@@ -137,7 +137,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
             {
                 IPC_TOOLKIT_PROFILE_BLOCK(
-                    "map local hessian to global triplets");
+                    "Map Local Hessian to Global Triplets");
                 local_hessian_to_global_triplets(
                     local_hess, collision.vertex_ids(edges, faces), dim,
                     *(hess_triplets.cache), mesh.num_vertices());
@@ -152,7 +152,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     // storage
 
     {
-        IPC_TOOLKIT_PROFILE_BLOCK("prune local storages");
+        IPC_TOOLKIT_PROFILE_BLOCK("Prune Local Storages");
         tbb::parallel_for_each(
             storage.begin(), storage.end(),
             [](const auto& local_storage) { local_storage.cache->prune(); });
@@ -188,13 +188,13 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
     // Allocate triplets
     {
-        IPC_TOOLKIT_PROFILE_BLOCK("allocate triplets");
+        IPC_TOOLKIT_PROFILE_BLOCK("Allocate Triplets");
         triplets.resize(triplet_count);
     }
 
     // Parallel copy into triplets
     {
-        IPC_TOOLKIT_PROFILE_BLOCK("parallel copy into triplets");
+        IPC_TOOLKIT_PROFILE_BLOCK("Parallel Copy into Triplets");
         tbb::parallel_for(size_t(0), storage.size(), [&](size_t i) {
             const SparseMatrixCache& cache =
                 dynamic_cast<const SparseMatrixCache&>(
@@ -214,7 +214,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
     // Sort and assemble
     {
-        IPC_TOOLKIT_PROFILE_BLOCK("assemble hessian from triplets");
+        IPC_TOOLKIT_PROFILE_BLOCK("Assemble Hessian from Triplets");
         hess.setFromTriplets(triplets.begin(), triplets.end());
     }
 

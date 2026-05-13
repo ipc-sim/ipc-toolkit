@@ -2,6 +2,15 @@
 
 #include <ipc/config.hpp>
 
+#ifdef IPC_TOOLKIT_WITH_TRACY
+#include <tracy/Tracy.hpp>
+#else
+// Empty macro to avoid compilation errors when Tracy is not enabled.
+#define ZoneScopedN(name) ((void)0)
+#endif
+
+#include <string>
+
 #ifdef IPC_TOOLKIT_WITH_PROFILER
 
 // clang-format off
@@ -22,7 +31,8 @@
 
 #define IPC_TOOLKIT_PROFILE_BLOCK(...)                                         \
     ipc::ProfilePoint IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(                        \
-        __ipc_profile_point_, __COUNTER__)(__VA_ARGS__)
+        __ipc_profile_point_, __COUNTER__)(__VA_ARGS__);                       \
+    ZoneScopedN(__VA_ARGS__)
 
 namespace ipc {
 
@@ -132,6 +142,7 @@ protected:
 
 #else
 
-#define IPC_TOOLKIT_PROFILE_BLOCK(...)
+// Custom profiler disabled: Tracy zone only.
+#define IPC_TOOLKIT_PROFILE_BLOCK(...) ZoneScopedN(__VA_ARGS__)
 
 #endif

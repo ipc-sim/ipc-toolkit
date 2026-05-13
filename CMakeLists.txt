@@ -82,6 +82,7 @@ option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"     
 option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
 option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
 option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
+option(IPC_TOOLKIT_WITH_TRACY                 "Enable Tracy frame profiler"                   OFF)
 
 # Advanced options
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
@@ -248,6 +249,12 @@ if(IPC_TOOLKIT_WITH_PROFILER)
   # Add nlohmann/json for the profiler
   include(json)
   target_link_libraries(ipc_toolkit PUBLIC nlohmann_json::nlohmann_json)
+endif()
+
+# Tracy profiler
+if(IPC_TOOLKIT_WITH_TRACY)
+  include(tracy)
+  target_link_libraries(ipc_toolkit PUBLIC Tracy::TracyClient)
 endif()
 
 # Extra warnings (link last for highest priority)
