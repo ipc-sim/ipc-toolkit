@@ -74,9 +74,10 @@ public:
     nlohmann::json& data() { return m_data; }
 
     /// @brief Returns true if the current thread should record profiling data.
-    ///        Outside any TBB arena (serial code) always records. Inside a
-    ///        TBB arena only the external/coordinator thread (slot 0) records,
-    ///        giving a single-thread estimate of parallel block costs.
+    ///        When the current thread is not in a TBB arena, this returns
+    ///        true. Inside a TBB arena, only the external/coordinator thread
+    ///        (slot 0) records, giving a single-thread estimate of parallel
+    ///        block costs.
     bool is_recording_thread() const;
 
 protected:
