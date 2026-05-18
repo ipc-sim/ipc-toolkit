@@ -17,10 +17,14 @@
 #include <tbb/parallel_for.h>
 #include <tbb/task_arena.h>
 
+#include <thread>
+
 using namespace ipc;
 
 TEST_CASE("Profiler", "[profiler]")
 {
+    profiler().reset();
+
     constexpr int sleep_time_ms = 100;
     constexpr int num_threads = 10;
 
