@@ -17,6 +17,8 @@
 #include <tbb/parallel_for.h>
 #include <tbb/task_arena.h>
 
+#include <thread>
+
 using namespace ipc;
 
 TEST_CASE("Profiler", "[profiler]")
