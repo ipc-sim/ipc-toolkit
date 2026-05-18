@@ -21,6 +21,8 @@ using namespace ipc;
 
 TEST_CASE("Profiler", "[profiler]")
 {
+    profiler().reset();
+
     constexpr int sleep_time_ms = 100;
     constexpr int num_threads = 10;
 

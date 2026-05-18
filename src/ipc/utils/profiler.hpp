@@ -22,7 +22,6 @@
 
 #include <chrono>
 #include <iostream>
-#include <thread>
 
 // Helper macro to stringify/paste after expansion
 #define IPC_TOOLKIT_PROFILE_BLOCK_CONCAT_IMPL(a, b) a##b
@@ -74,10 +73,11 @@ public:
     /// @brief Access the profiling data as a JSON object.
     nlohmann::json& data() { return m_data; }
 
-    bool is_recording_thread() const
-    {
-        return std::this_thread::get_id() == m_main_thread_id;
-    }
+    /// @brief Returns true if the current thread should record profiling data.
+    ///        Outside any TBB arena (serial code) always records. Inside a
+    ///        TBB arena only the external/coordinator thread (slot 0) records,
+    ///        giving a single-thread estimate of parallel block costs.
+    bool is_recording_thread() const;
 
 protected:
     /// @brief The profiling data stored as a JSON object.
@@ -85,10 +85,6 @@ protected:
 
     /// @brief The global scope pointer into the JSON data.
     nlohmann::json::json_pointer m_current_scope;
-
-    /// @brief The thread that records data; calls from all other threads are
-    ///        silently ignored, giving a single-thread estimate of block costs.
-    std::thread::id m_main_thread_id;
 };
 
 Profiler& profiler();

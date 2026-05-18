@@ -2,12 +2,20 @@
 
 #ifdef IPC_TOOLKIT_WITH_PROFILER
 
+#include <tbb/task_arena.h>
+
 #include <fstream>
 #include <queue>
 
 namespace ipc {
 
-Profiler::Profiler() : m_main_thread_id(std::this_thread::get_id()) { }
+Profiler::Profiler() = default;
+
+bool Profiler::is_recording_thread() const
+{
+    const int idx = tbb::this_task_arena::current_thread_index();
+    return idx == tbb::task_arena::not_initialized || idx == 0;
+}
 
 Profiler& profiler()
 {
@@ -23,7 +31,7 @@ void Profiler::clear()
 
 void Profiler::start(const std::string& name)
 {
-    if (std::this_thread::get_id() != m_main_thread_id) {
+    if (!is_recording_thread()) {
         return;
     }
 
@@ -39,7 +47,7 @@ void Profiler::start(const std::string& name)
 
 void Profiler::stop(const double time_ms)
 {
-    if (std::this_thread::get_id() != m_main_thread_id) {
+    if (!is_recording_thread()) {
         return;
     }
 
@@ -63,9 +71,7 @@ void Profiler::stop(const double time_ms)
 
 void Profiler::reset()
 {
-    m_main_thread_id = std::this_thread::get_id();
     m_data.clear();
-    // reset the calling thread's scope
     m_current_scope = nlohmann::json::json_pointer(); // root
 }
 
