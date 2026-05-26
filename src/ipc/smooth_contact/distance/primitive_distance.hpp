@@ -212,6 +212,92 @@ public:
     }
 };
 
+// Explicit specialization declarations — prevent implicit instantiation of the
+// inline primary template body in other translation units (MSVC requires this).
+#ifndef IPC_TOOLKIT_DEBUG_AUTODIFF
+template <>
+std::tuple<
+    Eigen::Vector<double, PrimitiveDistance<Edge3, Edge3>::DIM>,
+    Eigen::Matrix<
+        double,
+        PrimitiveDistance<Edge3, Edge3>::DIM,
+        PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS>,
+    std::array<
+        Eigen::Matrix<
+            double,
+            PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS,
+            PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS>,
+        PrimitiveDistance<Edge3, Edge3>::DIM>>
+PrimitiveDistance<Edge3, Edge3>::compute_closest_direction_hessian(
+    const Eigen::Vector<double, PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS>&
+        x,
+    EdgeEdgeDistanceType dtype);
+
+template <>
+std::tuple<
+    Eigen::Vector<double, PrimitiveDistance<Point2, Point2>::DIM>,
+    Eigen::Matrix<
+        double,
+        PrimitiveDistance<Point2, Point2>::DIM,
+        PrimitiveDistance<Point2, Point2>::N_CORE_DOFS>,
+    std::array<
+        Eigen::Matrix<
+            double,
+            PrimitiveDistance<Point2, Point2>::N_CORE_DOFS,
+            PrimitiveDistance<Point2, Point2>::N_CORE_DOFS>,
+        PrimitiveDistance<Point2, Point2>::DIM>>
+PrimitiveDistance<Point2, Point2>::compute_closest_direction_hessian(
+    const Eigen::Vector<double, PrimitiveDistance<Point2, Point2>::N_CORE_DOFS>&
+        x,
+    PointPointDistanceType dtype);
+
+template <>
+std::tuple<
+    Eigen::Vector<double, PrimitiveDistance<Point3, Point3>::DIM>,
+    Eigen::Matrix<
+        double,
+        PrimitiveDistance<Point3, Point3>::DIM,
+        PrimitiveDistance<Point3, Point3>::N_CORE_DOFS>,
+    std::array<
+        Eigen::Matrix<
+            double,
+            PrimitiveDistance<Point3, Point3>::N_CORE_DOFS,
+            PrimitiveDistance<Point3, Point3>::N_CORE_DOFS>,
+        PrimitiveDistance<Point3, Point3>::DIM>>
+PrimitiveDistance<Point3, Point3>::compute_closest_direction_hessian(
+    const Eigen::Vector<double, PrimitiveDistance<Point3, Point3>::N_CORE_DOFS>&
+        x,
+    PointPointDistanceType dtype);
+
+template <>
+GradientType<PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS + 1>
+PrimitiveDistance<Edge3, Edge3>::compute_mollifier_gradient(
+    const Eigen::Vector<double, PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS>&
+        x,
+    double dist_sqr);
+
+template <>
+GradientType<PrimitiveDistance<Face, Point3>::N_CORE_DOFS + 1>
+PrimitiveDistance<Face, Point3>::compute_mollifier_gradient(
+    const Eigen::Vector<double, PrimitiveDistance<Face, Point3>::N_CORE_DOFS>&
+        x,
+    double dist_sqr);
+
+template <>
+HessianType<PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS + 1>
+PrimitiveDistance<Edge3, Edge3>::compute_mollifier_hessian(
+    const Eigen::Vector<double, PrimitiveDistance<Edge3, Edge3>::N_CORE_DOFS>&
+        x,
+    double dist_sqr);
+
+template <>
+HessianType<PrimitiveDistance<Face, Point3>::N_CORE_DOFS + 1>
+PrimitiveDistance<Face, Point3>::compute_mollifier_hessian(
+    const Eigen::Vector<double, PrimitiveDistance<Face, Point3>::N_CORE_DOFS>&
+        x,
+    double dist_sqr);
+#endif
+
 } // namespace ipc
 
 #include "primitive_distance.tpp"
