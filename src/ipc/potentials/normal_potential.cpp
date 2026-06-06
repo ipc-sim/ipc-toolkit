@@ -387,10 +387,21 @@ void NormalPotential::shape_derivative(
         const Matrix12d jac_m = collision.mollifier_gradient_jacobian_wrt_x(
             rest_positions, positions);
 
-        // Only compute the second term of the shape derivative
-        // ∇ₓ (f ∇ᵤm + m ∇ᵤf) = f ∇ₓ∇ᵤm + (∇ₓm)(∇ᵤf)ᵀ + (∇ᵤf)(∇ᵤm)ᵀ + m ∇ᵤ²f
+        // Only compute the second term of the shape derivative. With
+        //   ∇ₓm = ∇ᵤm + (∂m/∂ε · ∇_rest ε)        (decomposed into position and
+        //   rest parts) ∇ₓf = ∇ᵤf                              (f depends on
+        //   positions only) ∇ₓ∇ᵤf = ∇ᵤ²f                           (same
+        //   reason)
+        // the chain rule gives FIVE outer-product / Hessian terms:
+        //   ∇ₓ(f ∇ᵤm + m ∇ᵤf) =
+        //       f · ∇ₓ∇ᵤm                                              (jac_m)
+        //     + (∂m/∂ε · ∇_rest ε) · (∇ᵤf)ᵀ                           (gradx_m
+        //     · gradu_fᵀ)
+        //     + (∇ᵤf) · (∇ᵤm)ᵀ + (∇ᵤm) · (∇ᵤf)ᵀ (symmetric pair)
+        //     + m · ∇ᵤ²f (hessu_f)
         local_hess = f * jac_m + gradx_m * gradu_f.transpose()
-            + gradu_f * gradu_m.transpose() + m * hessu_f;
+            + gradu_f * gradu_m.transpose() + gradu_m * gradu_f.transpose()
+            + m * hessu_f;
     }
 
     local_hessian_to_global_triplets(
