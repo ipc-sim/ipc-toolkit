@@ -39,11 +39,20 @@ Matrix12d edge_edge_cross_squarednorm_hessian(
     return hess;
 }
 
+// The active branch returns M(x, eps_x) := m(x, eps_x)^2, where the original
+// base mollifier was m(x, eps_x) = 2y - y^2 (y = x/eps_x). Squaring makes the
+// blend C^1 at the parallel limit (M'(0)=0) — the original m had m'(0)=2/eps_x,
+// which combined with the C^0 EE distance at parallel edges produced a
+// spurious inflation in the EE shape derivative (see repro tests under
+// tests/src/tests/potential/ipc_test_ee_near_parallel_shape_derivative.cpp).
+// The five scalar derivatives below are the analytic chain-rule of M = m^2
+// in the partial m and its scalar partials.
 double edge_edge_mollifier(const double x, const double eps_x)
 {
     if (x < eps_x) {
-        const double x_div_eps_x = x / eps_x;
-        return (-x_div_eps_x + 2) * x_div_eps_x;
+        const double y = x / eps_x;
+        const double m = (2.0 - y) * y; // 2y - y^2
+        return m * m;
     } else {
         return 1;
     }
@@ -52,8 +61,11 @@ double edge_edge_mollifier(const double x, const double eps_x)
 double edge_edge_mollifier_gradient(const double x, const double eps_x)
 {
     if (x < eps_x) {
-        const double one_div_eps_x = 1 / eps_x;
-        return 2 * one_div_eps_x * fma(-one_div_eps_x, x, 1);
+        const double y = x / eps_x;
+        const double m = (2.0 - y) * y;
+        const double m_x = 2.0 * (1.0 - y) / eps_x; // dm/dx
+        // dM/dx = 2 m * dm/dx
+        return 2.0 * m * m_x;
     } else {
         return 0;
     }
@@ -62,7 +74,12 @@ double edge_edge_mollifier_gradient(const double x, const double eps_x)
 double edge_edge_mollifier_hessian(const double x, const double eps_x)
 {
     if (x < eps_x) {
-        return -2 / (eps_x * eps_x);
+        const double y = x / eps_x;
+        const double m = (2.0 - y) * y;
+        const double m_x = 2.0 * (1.0 - y) / eps_x; // dm/dx
+        const double m_xx = -2.0 / (eps_x * eps_x); // d2m/dx2
+        // d2M/dx2 = 2 (dm/dx)^2 + 2 m * d2m/dx2
+        return 2.0 * m_x * m_x + 2.0 * m * m_xx;
     } else {
         return 0;
     }
@@ -71,13 +88,32 @@ double edge_edge_mollifier_hessian(const double x, const double eps_x)
 double
 edge_edge_mollifier_derivative_wrt_eps_x(const double x, const double eps_x)
 {
-    return x < eps_x ? (2 * x * (-eps_x + x) / (eps_x * eps_x * eps_x)) : 0.0;
+    if (x < eps_x) {
+        const double y = x / eps_x;
+        const double m = (2.0 - y) * y;
+        const double m_eps =
+            2.0 * x * (x - eps_x) / (eps_x * eps_x * eps_x); // dm/deps
+        // dM/deps = 2 m * dm/deps
+        return 2.0 * m * m_eps;
+    }
+    return 0.0;
 }
 
 double edge_edge_mollifier_gradient_derivative_wrt_eps_x(
     const double x, const double eps_x)
 {
-    return x < eps_x ? (2 * (-eps_x + 2 * x) / (eps_x * eps_x * eps_x)) : 0.0;
+    if (x < eps_x) {
+        const double y = x / eps_x;
+        const double m = (2.0 - y) * y;
+        const double m_x = 2.0 * (1.0 - y) / eps_x;
+        const double m_eps =
+            2.0 * x * (x - eps_x) / (eps_x * eps_x * eps_x);
+        const double m_eps_x =
+            2.0 * (-eps_x + 2.0 * x) / (eps_x * eps_x * eps_x); // d2m/deps dx
+        // d2M/deps dx = 2 (dm/deps)(dm/dx) + 2 m (d2m/deps dx)
+        return 2.0 * m_eps * m_x + 2.0 * m * m_eps_x;
+    }
+    return 0.0;
 }
 
 double edge_edge_mollifier(
@@ -150,10 +186,13 @@ Vector12d edge_edge_mollifier_gradient_wrt_x(
     const double ee_cross_norm_sqr =
         edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
     if (ee_cross_norm_sqr < eps_x) {
-        // ∇ₓ m = ∂m/∂ε ∇ₓε
+        // ∇ₓ m = ∂m/∂ε · ∇ₓε
+        // (m depends on rest positions only through eps_x, since the
+        // cross-squarednorm s is a function of POSITIONS only)
         return edge_edge_mollifier_derivative_wrt_eps_x(
                    ee_cross_norm_sqr, eps_x)
-            * edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x);
+            * edge_edge_mollifier_threshold_gradient(
+                   ea0_rest, ea1_rest, eb0_rest, eb1_rest);
     } else {
         return Vector12d::Zero();
     }

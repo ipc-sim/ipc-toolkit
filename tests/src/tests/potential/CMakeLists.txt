@@ -5,6 +5,7 @@ set(SOURCES
   test_smooth_potential.cpp
   test_friction_potential.cpp
   test_distance_vector_methods.cpp
+  ipc_test_ee_near_parallel_shape_derivative.cpp
 
   # Benchmarks
 
