@@ -99,6 +99,10 @@ struct SmoothContactParameters {
     double beta_n = 0;
     int r = 2;
 
+    // If true, use the rest-shape measure for quadrature so weights stay
+    // constant in the rest configuration and measure derivatives are omitted.
+    // Enable this when you want a rest-shape-based measure instead of one that
+    // varies with the current deformed shape.
     bool use_rest_shape_measure = false;
 
 private:
