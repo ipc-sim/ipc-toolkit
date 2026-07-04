@@ -102,6 +102,42 @@ public:
     /// @brief Ratio between normal and kinetic tangential forces (e.g., friction coefficient)
     double mu_k = 0;
 
+    /// @brief Anisotropic static friction coefficients (2D, one per tangent direction).
+    /// @note Zero vector → scalar mu_s (backward compatible). Elliptical model;
+    ///       see ipc::smooth_mu and Erleben et al., CGF 2019,
+    ///       DOI 10.1111/cgf.13885.
+    ///       Components are along the collision's tangent basis (tangent to the
+    ///       mesh at the contact), not world-space directions.
+    Eigen::Vector2d mu_s_aniso = Eigen::Vector2d::Zero();
+
+    /// @brief Anisotropic kinetic friction coefficients (2D, one per tangent direction).
+    /// @note Zero vector → scalar mu_k (backward compatible). Elliptical model;
+    ///       see ipc::smooth_mu and Erleben et al., CGF 2019,
+    ///       DOI 10.1111/cgf.13885.
+    ///       Components are along the collision's tangent basis (tangent to the
+    ///       mesh at the contact), not world-space directions.
+    Eigen::Vector2d mu_k_aniso = Eigen::Vector2d::Zero();
+
+    /// @brief Tangential anisotropy scaling in the collision's tangent basis.
+    /// @note Default (1,1) preserves current isotropic behavior.
+    ///       Values should satisfy a_i > 0 for physically meaningful
+    ///       anisotropic scaling. Values scale tau before friction evaluation.
+    ///       Used with mu_s_aniso/mu_k_aniso by the elliptical model in
+    ///       ipc::smooth_mu.
+    Eigen::Vector2d mu_aniso = Eigen::Vector2d::Ones();
+
+    /// @brief Directional (matchstick) effective static μ lagged for the current solve.
+    /// @note When mu_s_aniso is nonzero, call
+    ///       TangentialCollisions::update_lagged_anisotropic_friction_coefficients
+    ///       after build and when lagged positions or velocities change (e.g.
+    ///       each Newton iteration) so dissipative potential gradients match
+    ///       friction force for this lagged update. During a single evaluation,
+    ///       μ_eff is held fixed (no in-evaluation ∂μ_eff/∂τ terms).
+    double mu_s_effective_lagged = 0;
+
+    /// @brief Directional (matchstick) effective kinetic μ lagged for the current solve.
+    double mu_k_effective_lagged = 0;
+
     /// @brief Weight
     double weight = 1;
 

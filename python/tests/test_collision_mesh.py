@@ -1,9 +1,9 @@
 import time
-import numpy as np
-import scipy
 
 import find_ipctk
-from ipctk import CollisionMesh, SparseCanCollide, VertexPatchesCanCollide
+import numpy as np
+import scipy
+from ipctk import CollisionMesh, make_sparse_filter, make_vertex_patches_filter
 
 
 def test_collision_mesh():
@@ -97,7 +97,8 @@ def test_can_collide():
 
     mesh = CollisionMesh(V, E)
 
-    def default_can_collide(i, j): return True
+    def default_can_collide(i, j):
+        return True
 
     patches = np.concatenate([np.zeros(4, dtype=int), np.ones(4, dtype=int)])
     print(patches.size)
@@ -114,8 +115,8 @@ def test_can_collide():
     can_collides = [
         default_can_collide,
         patches_can_collide,
-        SparseCanCollide(dict_can_collide, True),
-        VertexPatchesCanCollide(patches),
+        make_sparse_filter(dict_can_collide, True),
+        make_vertex_patches_filter(patches),
     ]
 
     for can_collide in can_collides:

@@ -202,6 +202,24 @@ protected:
     virtual double mu_f1_over_x(
         const double x, const double mu_s, const double mu_k) const = 0;
 
+    virtual double
+    mu_f0_grad_mu_s(const double x, const double mu_s, const double mu_k) const
+    {
+        // TODO: Replace this finite difference approximation with an analytical
+        // expression for the gradient of the integral with respect to mu_s.
+        constexpr double h = 1e-8;
+        return (mu_f0(x, mu_s + h, mu_k) - mu_f0(x, mu_s - h, mu_k)) / (2 * h);
+    }
+
+    virtual double
+    mu_f0_grad_mu_k(const double x, const double mu_s, const double mu_k) const
+    {
+        // TODO: Replace this finite difference approximation with an analytical
+        // expression for the gradient of the integral with respect to mu_k.
+        constexpr double h = 1e-8;
+        return (mu_f0(x, mu_s, mu_k + h) - mu_f0(x, mu_s, mu_k - h)) / (2 * h);
+    }
+
     /// @brief Compute the value of [(d/dx (μ(y) f₁(y))) x - μ(y) f₁(y)] / x³, where f₁ is the first derivative of the smooth mollifier.
     /// @param x The tangential relative speed.
     /// @param mu_s Coefficient of static friction.

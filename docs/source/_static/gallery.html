@@ -1,0 +1,181 @@
+<!-- Lightbox overlay (shared by all gallery items) -->
+<div class="gallery-lightbox" id="galleryLightbox">
+    <button class="gallery-lightbox-close" aria-label="Close">&times;</button>
+    <div class="gallery-lightbox-caption"></div>
+</div>
+
+<div class="gallery-grid">
+    <!-- ── GIF / image cards ── -->
+    <div class="gallery-card">
+        <div
+            class="gallery-media"
+            data-lightbox
+            data-caption="Biomechanics – Mesh Implant"
+        >
+            <video autoplay loop muted playsinline aria-hidden="true">
+                <source
+                    src="../_static/img/biomechanics-mesh-implant.mp4"
+                    type="video/mp4"
+                />
+            </video>
+        </div>
+        <div class="gallery-caption">
+            <strong>Biomechanics – Mesh Implant</strong>
+            This PolyFEM simulation models the mechanical interaction between a
+            surgical mesh implant and the surrounding soft tissue under tensile
+            load. As the mesh is stretched, the visualization captures the
+            resulting deformation and stress distribution within the connected
+            tissue. It’s an essential look at how synthetic structures influence
+            biological mechanics, ensuring stability and performance in
+            biomechanical applications.
+        </div>
+    </div>
+
+    <div class="gallery-card">
+        <div class="gallery-media" data-lightbox data-caption="Robotic Gripper">
+            <video autoplay loop muted playsinline aria-hidden="true">
+                <source src="../_static/img/grasp.mp4" type="video/mp4" />
+            </video>
+        </div>
+        <div class="gallery-caption">
+            <strong>Robotic Gripper</strong>
+            This PolyFEM simulation highlights the interaction between a rigid
+            object and high-compliance soft gripper pads. While the object
+            remains relatively undeformed, the focus is on the large deformation
+            of the pads as they conform to the complex geometry to create a
+            secure, high-friction grip. It’s a great example of using localized
+            soft-body mechanics to handle rigid components with stability.
+        </div>
+    </div>
+
+    <div class="gallery-card">
+        <div class="gallery-media" data-lightbox data-caption="Trash Compactor">
+            <video autoplay loop muted playsinline aria-hidden="true">
+                <source
+                    src="../_static/img/trash-compactor.mp4"
+                    type="video/mp4"
+                />
+            </video>
+        </div>
+        <div class="gallery-caption">
+            <strong>Trash Compactor</strong>
+            Simulated in PolyFEM, this "trash compactor" scenario tests the
+            limits of contact handling and mesh stability. Diverse geometries
+            are crushed into a perfect cube, demonstrating the solver's ability
+            to maintain numerical stability even under massive topological
+            distortion.
+        </div>
+    </div>
+
+    <div class="gallery-card">
+        <div class="gallery-media" data-lightbox data-caption="Disk Rollers">
+            <video autoplay loop muted playsinline aria-hidden="true">
+                <source src="../_static/img/disk-roller.mp4" type="video/mp4" />
+            </video>
+        </div>
+        <div class="gallery-caption">
+            <strong>Disk Rollers</strong>
+            An advanced demonstration of frictional contact and large-strain
+            deformation within PolyFEM. This simulation features a deformable
+            hyperelastic disk being captured and pulled through a narrow gap by
+            two counter-rotating rigid rollers.
+        </div>
+    </div>
+
+    <div class="gallery-card">
+        <div class="gallery-media" data-lightbox data-caption="Golf Ball">
+            <video autoplay loop muted playsinline aria-hidden="true">
+                <source src="../_static/img/golf-ball.mp4" type="video/mp4" />
+            </video>
+        </div>
+        <div class="gallery-caption">
+            <strong>Golf Ball</strong>
+            High-velocity impact analysis of a golf ball striking a stiff
+            boundary. Using PolyFEM, this video visualizes internal stress
+            distribution during extreme compression. The simulation accurately
+            captures the transition from kinetic energy to elastic potential
+            energy and the subsequent rebound.
+        </div>
+    </div>
+
+    <div class="gallery-card">
+        <div
+            class="gallery-media"
+            data-lightbox
+            data-caption="Character Animation"
+        >
+            <video autoplay loop muted playsinline aria-hidden="true">
+                <source
+                    src="../_static/img/elephant-walking.mp4"
+                    type="video/mp4"
+                />
+            </video>
+        </div>
+        <div class="gallery-caption">
+            <strong>Character Animation</strong>
+            This PolyFEM simulation features an elephant with scripted walking
+            motion, using a dynamic color map to track internal stress as it
+            moves. A standout detail is the intersection-free contact, ensuring
+            the trunk fluidly interacts with the legs and ground without any
+            mesh clipping. It’s a great example of how the solver handles
+            complex, self-touching geometry with precision.
+        </div>
+    </div>
+</div>
+<!-- /.gallery-grid -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var lightbox = document.getElementById("galleryLightbox");
+        var captionEl = lightbox.querySelector(".gallery-lightbox-caption");
+        var closeBtn = lightbox.querySelector(".gallery-lightbox-close");
+
+        function openLightbox(mediaEl, caption) {
+            /* Clone the <img> or <video> so we don't move it out of the card */
+            var clone = mediaEl.cloneNode(true);
+            /* Remove any previous media inside the lightbox */
+            var prev = lightbox.querySelector("img, video");
+            if (prev) prev.remove();
+            lightbox.insertBefore(clone, captionEl);
+            captionEl.textContent = caption || "";
+            captionEl.style.display = caption ? "" : "none";
+            lightbox.classList.add("active");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove("active");
+            document.body.style.overflow = "";
+            var media = lightbox.querySelector("img, video");
+            if (media) {
+                /* Small delay so the fade-out plays before removal */
+                setTimeout(function () {
+                    media.remove();
+                }, 260);
+            }
+        }
+
+        /* Attach click handlers to every [data-lightbox] media container */
+        document
+            .querySelectorAll(".gallery-media[data-lightbox]")
+            .forEach(function (container) {
+                container.addEventListener("click", function () {
+                    var media = container.querySelector("img, video");
+                    if (media) {
+                        openLightbox(
+                            media,
+                            container.getAttribute("data-caption"),
+                        );
+                    }
+                });
+            });
+
+        closeBtn.addEventListener("click", closeLightbox);
+        lightbox.addEventListener("click", function (e) {
+            if (e.target === lightbox) closeLightbox();
+        });
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") closeLightbox();
+        });
+    });
+</script>

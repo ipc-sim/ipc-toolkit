@@ -48,10 +48,9 @@ Nonlinear CCD
 
     .. autoclasstoc::
 
-.. autofunction:: ipctk.point_point_nonlinear_ccd
-.. autofunction:: ipctk.point_edge_nonlinear_ccd
-.. autofunction:: ipctk.edge_edge_nonlinear_ccd
-.. autofunction:: ipctk.point_triangle_nonlinear_ccd
+.. autoclass:: ipctk.NonlinearCCD
+
+    .. autoclasstoc::
 
 Miscellaneous
 -------------

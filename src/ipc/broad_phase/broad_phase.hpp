@@ -96,9 +96,8 @@ public:
     virtual void detect_face_face_candidates(
         std::vector<FaceFaceCandidate>& candidates) const = 0;
 
-    /// @brief Function for determining if two vertices can collide.
-    std::function<bool(size_t, size_t)> can_vertices_collide =
-        default_can_vertices_collide;
+    /// @brief Filter for determining if two vertices can collide.
+    CollisionFilter can_vertices_collide;
 
 protected:
     /// @brief Build the broad phase for collision detection.
@@ -121,12 +120,6 @@ protected:
     virtual bool can_face_vertex_collide(size_t fi, size_t vi) const;
     virtual bool can_edge_face_collide(size_t ei, size_t fi) const;
     virtual bool can_faces_collide(size_t fai, size_t fbi) const;
-
-    static bool
-    default_can_vertices_collide(size_t /*unused*/, size_t /*unused*/)
-    {
-        return true;
-    }
 
     /// @brief AABBs for the vertices.
     AABBs vertex_boxes;

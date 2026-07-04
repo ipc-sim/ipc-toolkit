@@ -11,6 +11,8 @@
 #include <scalable_ccd/cuda/ipc_ccd_strategy.hpp>
 #endif
 
+#include <ipc/utils/profiler.hpp>
+
 #include <igl/predicates/segment_segment_intersect.h>
 
 namespace ipc {
@@ -25,6 +27,7 @@ bool is_step_collision_free(
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
+    IPC_TOOLKIT_PROFILE_BLOCK("is_step_collision_free");
 
     // Broad phase
     Candidates candidates;
@@ -49,6 +52,7 @@ double compute_collision_free_stepsize(
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
+    IPC_TOOLKIT_PROFILE_BLOCK("compute_collision_free_stepsize");
 
     std::unique_ptr<BroadPhase> default_broad_phase;
     if (broad_phase == nullptr) {
@@ -104,6 +108,7 @@ bool has_intersections(
     BroadPhase* broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
+    IPC_TOOLKIT_PROFILE_BLOCK("has_intersections");
 
     std::unique_ptr<BroadPhase> default_broad_phase;
     if (broad_phase == nullptr) {

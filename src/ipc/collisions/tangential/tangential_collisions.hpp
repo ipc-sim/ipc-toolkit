@@ -99,6 +99,26 @@ public:
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
 
+    /// @brief Set lagged effective μ to scalar mu_s/mu_k on every collision (after build).
+    void reset_lagged_anisotropic_friction_coefficients();
+
+    /// @brief Refresh lagged matchstick effective μ from lagged geometry and current slip.
+    /// @param mesh Collision mesh (edges/faces for DOF gathering).
+    /// @param rest_positions Rest configuration (rows = vertices).
+    /// @param lagged_displacements Displacements at lagged state (same shape as rest).
+    /// @param velocities World velocities at stencil vertices (same shape).
+    /// @note Call after build and after any lagged-geometry or velocity update
+    ///       used for slip (typically each Newton iteration). Friction
+    ///       force/gradient/Hessian/Jacobians then use these cached scalars and
+    ///       do not differentiate μ_eff with respect to slip in that
+    ///       evaluation. Directional lagged μ is currently activated when
+    ///       mu_s_aniso is nonzero in a 2D tangent space (3D simulation).
+    void update_lagged_anisotropic_friction_coefficients(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+        Eigen::ConstRef<Eigen::MatrixXd> velocities);
+
     // ------------------------------------------------------------------------
 
     /// @brief Get the number of friction collisions.

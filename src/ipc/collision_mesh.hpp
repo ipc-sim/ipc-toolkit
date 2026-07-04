@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/collision_filter.hpp>
 #include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -142,8 +143,13 @@ public:
         return m_vertices_to_faces;
     }
 
-    /// @brief Get the mapping from edges to faces of the collision mesh (|E| × 2).
-    const Eigen::MatrixXi& edges_to_faces() const { return m_edges_to_faces; }
+    /// @brief Get the mapping from edges to faces of the collision mesh.
+    /// @return A vector of size |E|, where each entry is a vector of face
+    /// indices adjacent to that edge.
+    const std::vector<std::vector<index_t>>& edges_to_faces() const
+    {
+        return m_edges_to_faces;
+    }
 
     // -----------------------------------------------------------------------
 
@@ -326,10 +332,10 @@ public:
     static Eigen::SparseMatrix<double> vertex_matrix_to_dof_matrix(
         const Eigen::SparseMatrix<double>& M_V, int dim);
 
-    /// A function that takes two vertex IDs and returns true if the vertices
-    /// (and faces or edges containing the vertices) can collide. By default all
-    /// primitives can collide with all other primitives.
-    std::function<bool(size_t, size_t)> can_collide = default_can_collide;
+    /// A filter for determining if two vertices (and the primitives containing
+    /// them) can collide. By default all primitives can collide with all other
+    /// primitives.
+    CollisionFilter can_collide;
 
     /// @brief Analytic planes in the scene that can be collided with.
     /// This is useful for representing infinite planes (e.g., the ground plane)
@@ -340,7 +346,7 @@ protected:
     // -----------------------------------------------------------------------
     // Helper initialization functions
 
-    /// @brief Initialize map from edges to adjacent faces (|E| × 2).
+    /// @brief Initialize map from edges to adjacent faces.
     void init_edges_to_faces();
 
     /// @brief Initialize the codimensional vertices.
@@ -377,8 +383,8 @@ protected:
     Eigen::MatrixXi m_faces;
     /// @brief Map from faces edges to rows of edges (|F| × 3).
     Eigen::MatrixXi m_faces_to_edges;
-    /// @brief Map from edges to adjacent faces (|E| × 2).
-    Eigen::MatrixXi m_edges_to_faces;
+    /// @brief Map from edges to adjacent faces (|E| entries, variable length).
+    std::vector<std::vector<index_t>> m_edges_to_faces;
 
     /// @brief Map from full vertices to collision vertices.
     /// @note Negative values indicate full vertex is dropped.
@@ -428,13 +434,6 @@ protected:
     std::vector<Eigen::SparseVector<double>> m_vertex_area_jacobian;
     /// @brief The rows of the Jacobian of the edge areas vector.
     std::vector<Eigen::SparseVector<double>> m_edge_area_jacobian;
-
-private:
-    /// @brief By default all primitives can collide with all other primitives.
-    static bool default_can_collide(size_t /*unused*/, size_t /*unused*/)
-    {
-        return true;
-    }
 };
 
 } // namespace ipc

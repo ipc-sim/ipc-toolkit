@@ -2,8 +2,6 @@
 
 #include <ipc/distance/point_point.hpp>
 
-#include <iostream>
-
 namespace ipc {
 
 VertexVertexCandidate::VertexVertexCandidate(

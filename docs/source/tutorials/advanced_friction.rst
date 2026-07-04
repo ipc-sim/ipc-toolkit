@@ -1,14 +1,18 @@
 Advanced Friction
 =================
 
-This tutorial covers some advanced features of friction in the IPC Toolkit, including
-spatially varying coefficients of friction and separate coefficients of friction for static and kinetic (dynamic) friction.
+This tutorial describes three advanced friction features:
+
+- :ref:`coefficients that vary over the mesh <spatially_varying_coefficients>`,
+- :ref:`separate static and kinetic friction coefficients <separate_coefficients>`, and
+- :ref:`anisotropic friction with different coefficients along each tangent direction <anisotropic_friction>`.
 
 .. seealso::
 
     For an introduction to friction modeling and the dissipative potential, see
     `"Getting Started" <getting_started.html#friction>`_.
 
+.. _spatially_varying_coefficients:
 
 Spatially Varying Coefficients of Friction
 ------------------------------------------
@@ -18,9 +22,11 @@ Spatially Varying Coefficients of Friction
 
     Spatially varying coefficient of friction is achieved by assigning coefficients to each vertex in the mesh. However, friction coefficients are not a material property and should instead be assigned to the contact pair. This feature will be replaced with a per-pair friction coefficient in a future release.
 
-You can specify spatially varying coefficients of friction by passing an ``Eigen::VectorXd`` to ``TangentialCollisions::build``. Each entry in the vector corresponds to the coefficient of friction for a specific vertex in the mesh. This allows you to assign different friction coefficients to different parts of the mesh, enabling more realistic simulations of complex materials and surfaces.
+You can specify spatially varying coefficients of friction by passing an ``Eigen::VectorXd`` to ``TangentialCollisions::build``. Each entry is the coefficient of friction for one vertex. You can assign different coefficients to different parts of the mesh (e.g. rubber in one region, plastic in another).
 
 You can also provide an optional ``blend_mu`` parameter to blend the coefficient of friction on either side of the contact. The default behavior is to average the coefficients of friction on both sides, but you can specify a custom blending function if needed (e.g., multiplying them or taking the maximum or minimum).
+
+.. _separate_coefficients:
 
 Separate Coefficients for Static and Kinetic Friction
 -----------------------------------------------------
@@ -46,19 +52,19 @@ To use separate static and kinetic friction coefficients, you can pass them as p
 
         .. code-block:: c++
 
+            ipc::BarrierPotential B(dhat, barrier_stiffness);
             ipc::TangentialCollisions tangential_collisions;
             tangential_collisions.build(
-                collision_mesh, vertices, collisions, B, barrier_stiffness,
-                mu_s, mu_k);
+                collision_mesh, vertices, collisions, B, mu_s, mu_k);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
+            B = ipctk.BarrierPotential(dhat, barrier_stiffness)
             tangential_collisions = ipctk.TangentialCollisions()
             tangential_collisions.build(
-                collision_mesh, vertices, collisions, B, barrier_stiffness,
-                mu_s, mu_k)
+                collision_mesh, vertices, collisions, B, mu_s, mu_k)
 
 How It Works
 ~~~~~~~~~~~~
@@ -79,7 +85,7 @@ where :math:`\lambda` is the contact force magnitude, :math:`T(x) \in \mathbb{R}
         1 & \text{otherwise}
     \end{cases}
 
-where :math:`\epsilon_v` is a small constant (e.g., ``0.001``). The following plot show the behavior of the function :math:`f_1`:
+where :math:`\epsilon_v` is a small constant (e.g., ``0.001``). The following plot shows the behavior of the function :math:`f_1`:
 
 .. figure:: ../_static/img/f1.png
    :align: center
@@ -95,7 +101,7 @@ To create a dissipative potential we integrate :math:`f_1` to obtain a smooth mo
     \end{cases}
 
 
-The following plot show the behavior of the function :math:`f_0`:
+The following plot shows the behavior of the function :math:`f_0`:
 
 .. figure:: /_static/img/f0.png
    :align: center
@@ -105,7 +111,7 @@ The following plot show the behavior of the function :math:`f_0`:
 Smooth :math:`\mu`
 ^^^^^^^^^^^^^^^^^^
 
-When adding separate coefficients for static and kinetic friction, we need to maintain the :math:`C^1` continuity of the friction force. This lead us to define a smooth coefficient of friction :math:`\mu(y)` that transitions between the static and kinetic coefficients based on the magnitude of the relative velocity :math:`y = \|\mathbf{u}\|`. The smooth coefficient of friction is defined as
+When adding separate coefficients for static and kinetic friction, we need to maintain the :math:`C^1` continuity of the friction force. This leads us to define a smooth coefficient of friction :math:`\mu(y)` that transitions between the static and kinetic coefficients based on the magnitude of the relative velocity :math:`y = \|\mathbf{u}\|`. The smooth coefficient of friction is defined as
 
 .. math::
     \mu(y) = \begin{cases}
@@ -124,7 +130,7 @@ We plot the smooth coefficient of friction :math:`\mu(y)` below:
 Smooth :math:`\mu` Mollifier
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Replacing the constant coefficient of friction :math:`\mu` with a smooth function :math:`\mu(\|\mathbf{u}\|)` allows us to smoothly transition between static and kinetic friction. The function :math:`\mu(\|\mathbf{u}\|) f_1(\|\mathbf{u}\|)` is plotted below:
+Using a smooth function :math:`\mu(\|\mathbf{u}\|)` instead of a constant :math:`\mu` gives a smooth transition between static and kinetic friction. The function :math:`\mu(\|\mathbf{u}\|) f_1(\|\mathbf{u}\|)` is plotted below:
 
 .. figure:: /_static/img/mu_f1.png
    :align: center
@@ -158,13 +164,165 @@ While this approach provides a smooth transition between static and kinetic fric
 
 If you have suggestions for improving this approach or alternative methods, please reach out on our `GitHub Discussions <https://github.com/ipc-sim/ipc-toolkit/discussions>`_.
 
+.. _anisotropic_friction:
+
+Anisotropic Friction
+--------------------
+
+.. seealso::
+
+    :doc:`C++ API </cpp-api/friction>` and :doc:`Python API </python-api/friction>` for the anisotropic
+    helpers. The ``notebooks/anisotropic_friction_math.ipynb`` notebook has the
+    full derivation and plots.
+
+.. tip::
+    :title: New Feature
+
+    Anisotropic friction uses direction-dependent coefficients (e.g. wood grain,
+    brushed surfaces).
+
+You can set different friction coefficients along each tangent direction.
+Wood (along vs. across the grain) and brushed metal are typical cases.
+
+Directions tangent to the mesh
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The two anisotropy axes are the contact's tangent basis. They lie in the
+plane tangent to the contact and are computed from the collision geometry.
+You do not pass a custom 3D direction (e.g. a world-space "grain" vector).
+You pass coefficients only: ``mu_s_aniso`` and ``mu_k_aniso`` are 2D vectors
+whose first component is along the first tangent direction and second along
+the second. So anisotropy is always along the mesh tangent directions at
+each contact.
+
+Setting coefficients (component 0 = first tangent direction, component 1 =
+second, both tangent to the surface):
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            for (size_t i = 0; i < tangential_collisions.size(); ++i) {
+                // Component 0 = first tangent dir, 1 = second (tangent to surface)
+                tangential_collisions[i].mu_s_aniso = Eigen::Vector2d(0.8, 0.4);
+                tangential_collisions[i].mu_k_aniso = Eigen::Vector2d(0.6, 0.3);
+            }
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            for i in range(len(tangential_collisions)):
+                # Component 0 = first tangent dir, 1 = second (tangent to surface)
+                tangential_collisions[i].mu_s_aniso = np.array([0.8, 0.4])
+                tangential_collisions[i].mu_k_aniso = np.array([0.6, 0.3])
+
+Anisotropic friction uses an elliptical :math:`L^2` projection model. For a given
+tangential velocity direction :math:`\mathbf{t} =
+\boldsymbol{\tau} / \|\boldsymbol{\tau}\|`, the effective friction coefficient
+is:
+
+.. math::
+   \mu_{\text{eff}} = \sqrt{(\mu_0 t_0)^2 + (\mu_1 t_1)^2}
+
+where :math:`\mu_0` and :math:`\mu_1` are the friction coefficients along the
+two tangent basis directions, and :math:`t_0` and :math:`t_1` are the
+components of the unit direction vector. This formulation matches the matchstick
+(elliptical Coulomb cone) model. See :cite:t:`Erleben2019Matchstick`.
+
+Usage
+~~~~~
+
+To use anisotropic friction, you can assign anisotropic friction coefficients
+to each tangential collision after building the collisions:
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            ipc::BarrierPotential B(dhat, barrier_stiffness);
+            ipc::TangentialCollisions tangential_collisions;
+            tangential_collisions.build(
+                collision_mesh, vertices, collisions, B, mu_s, mu_k);
+
+            // Assign anisotropic friction coefficients per collision
+            for (size_t i = 0; i < tangential_collisions.size(); ++i) {
+                // Components 0 and 1 = contact's two tangent dirs (tangent to surface)
+                tangential_collisions[i].mu_s_aniso = Eigen::Vector2d(0.8, 0.4);
+                tangential_collisions[i].mu_k_aniso = Eigen::Vector2d(0.6, 0.3);
+            }
+
+            // Refresh lagged matchstick μ from lagged geometry and slip (e.g. each Newton iteration)
+            tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+                collision_mesh, rest_positions, lagged_displacements, velocities);
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            B = ipctk.BarrierPotential(dhat, barrier_stiffness)
+            tangential_collisions = ipctk.TangentialCollisions()
+            tangential_collisions.build(
+                collision_mesh, vertices, collisions, B, mu_s, mu_k)
+
+            # Assign anisotropic friction coefficients per collision
+            for i in range(len(tangential_collisions)):
+                # Components 0 and 1 = contact's two tangent dirs (tangent to surface)
+                tangential_collisions[i].mu_s_aniso = np.array([0.8, 0.4])
+                tangential_collisions[i].mu_k_aniso = np.array([0.6, 0.3])
+
+            tangential_collisions.update_lagged_anisotropic_friction_coefficients(
+                collision_mesh, rest_positions, lagged_displacements, velocities)
+
+Lagged effective μ (direction-dependent coefficients)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When ``mu_s_aniso`` / ``mu_k_aniso`` are nonzero, the toolkit **lags** the
+matchstick effective coefficients for the current nonlinear step (stored in
+``mu_s_effective_lagged`` and ``mu_k_effective_lagged`` on each
+``TangentialCollision``). Call
+``TangentialCollisions::update_lagged_anisotropic_friction_coefficients`` with
+rest positions, lagged displacements, and velocities whenever those change
+(e.g. each Newton iteration), after assigning per-collision ellipse axes. This
+is analogous to lagging the tangent frame and normal data in IPC, and it
+keeps the friction dissipative potential consistent with the friction force for
+that step (a path-dependent μ that updates every iteration would not admit an
+exact incremental potential).
+Friction Jacobians in the toolkit omit :math:`\partial \mu / \partial \tau` for
+this direction-dependent case because :math:`\mu_{\text{eff}}` is held fixed
+after the lag update.
+Directional lagged-:math:`\mu` refresh is currently activated when
+``mu_s_aniso`` is nonzero in a 2D tangent space. If only
+``mu_k_aniso`` is nonzero, the current gate keeps isotropic lagged
+coefficients.
+For discussion of the curl / non-conservative-field issue and the lagged-μ
+recommendation in IPC, see the maintainer notes linked from
+`PR #210 <https://github.com/ipc-sim/ipc-toolkit/pull/210>`_ (and
+:cite:t:`Erleben2019Matchstick` for the matchstick cone).
+
+Relationship with Other Anisotropy Mechanisms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Two mechanisms are available:
+
+1. **Velocity scaling** (``mu_aniso``): component-wise scaling of the
+   tangential velocity before friction; changes the effective speed in the
+   friction law.
+
+2. **Ellipse coefficients** (``mu_s_aniso``, ``mu_k_aniso``): different
+   :math:`\mu` along each tangent direction.
+
+Use one or both. When both are set, velocity scaling is applied first; the
+ellipse effective :math:`\mu` is then chosen from the direction of that scaled
+slip when you call ``update_lagged_anisotropic_friction_coefficients``.
+
+
 Future Directions
 -----------------
 
-The IPC Toolkit is continuously evolving, and future releases may include:
-
-- Anisotropic friction models that account for direction-dependent friction.
-- Velocity-dependent friction models that adjust friction coefficients based on relative velocity magnitude.
-- Rolling coefficients of friction for scenarios involving rolling contacts.
-
-We encourage community contributions to expand these advanced friction models. Feel free to submit pull requests with your improvements or open a discussion on GitHub to propose new features.
+Planned or under discussion: velocity-dependent friction and rolling friction.
+See the project's GitHub for current status or to contribute.

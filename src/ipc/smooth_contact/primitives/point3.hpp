@@ -54,35 +54,35 @@ public:
 
     GradientType<-1> smooth_point3_term_gradient(
         Eigen::ConstRef<Eigen::RowVector3d> direc,
-        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
+        Eigen::ConstRef<Eigen::MatrixX3d> X,
         const SmoothContactParameters& params) const;
 
     HessianType<-1> smooth_point3_term_hessian(
         Eigen::ConstRef<Eigen::RowVector3d> direc,
-        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> X,
+        Eigen::ConstRef<Eigen::MatrixX3d> X,
         const SmoothContactParameters& params) const;
 
     GradientType<-1> smooth_point3_term_tangent_gradient(
         Eigen::ConstRef<Eigen::RowVector3d> direc,
-        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
+        Eigen::ConstRef<Eigen::MatrixX3d> tangents,
         const double alpha,
         const double beta) const;
 
     HessianType<-1> smooth_point3_term_tangent_hessian(
         Eigen::ConstRef<Eigen::RowVector3d> direc,
-        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
+        Eigen::ConstRef<Eigen::MatrixX3d> tangents,
         const double alpha,
         const double beta) const;
 
     GradientType<-1> smooth_point3_term_normal_gradient(
         Eigen::ConstRef<Eigen::RowVector3d> direc,
-        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
+        Eigen::ConstRef<Eigen::MatrixX3d> tangents,
         const double alpha,
         const double beta) const;
 
     HessianType<-1> smooth_point3_term_normal_hessian(
         Eigen::ConstRef<Eigen::RowVector3d> direc,
-        Eigen::ConstRef<Eigen::Matrix<double, -1, 3>> tangents,
+        Eigen::ConstRef<Eigen::MatrixX3d> tangents,
         const double alpha,
         const double beta) const;
 
@@ -93,12 +93,12 @@ private:
     std::vector<index_t> local_to_global_vids;
     std::map<index_t, int> global_to_local_vids;
 
-    Eigen::Matrix<int, -1, 3> faces;
-    Eigen::Matrix<int, -1, 2> edges;
+    Eigen::MatrixX3i faces;
+    Eigen::MatrixX2i edges;
     bool orientable;
 
     bool smooth_point3_term_type(
-        const Eigen::Matrix<double, -1, 3>& X,
+        Eigen::ConstRef<Eigen::MatrixX3d> X,
         Eigen::ConstRef<Eigen::RowVector3d> direc);
 };
 

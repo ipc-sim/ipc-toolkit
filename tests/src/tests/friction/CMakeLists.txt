@@ -1,5 +1,6 @@
 set(SOURCES
   # Tests
+  test_anisotropic_friction.cpp
   test_force_jacobian.cpp
   test_friction.cpp
   test_smooth_friction_mollifier.cpp

@@ -10,6 +10,7 @@
 #include <tbb/parallel_sort.h>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <iostream>
 
@@ -17,7 +18,10 @@ using namespace ipc;
 
 namespace {
 
-bool is_aabb_union(LBVH::Node parent, LBVH::Node childA, LBVH::Node childB)
+bool is_aabb_union(
+    const LBVH::Node& parent,
+    const LBVH::Node& childA,
+    const LBVH::Node& childB)
 {
     AABB children;
     children.min = childA.aabb_min.min(childB.aabb_min).cast<double>();
@@ -281,4 +285,110 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     ipc::profiler().print();
     ipc::profiler().clear();
 #endif
+}
+
+TEST_CASE(
+    "Benchmark LBVH::detect_edge_edge_candidates",
+    "[!benchmark][broad_phase][lbvh]")
+{
+    constexpr double inflation_radius = 0;
+
+    std::string mesh_t0, mesh_t1;
+    SECTION("Two cubes")
+    {
+        mesh_t0 = "two-cubes-far.ply";
+        mesh_t1 = "two-cubes-intersecting.ply";
+    }
+    SECTION("Cloth-Ball")
+    {
+        mesh_t0 = "cloth_ball92.ply";
+        mesh_t1 = "cloth_ball93.ply";
+    }
+#ifdef NDEBUG
+    SECTION("Armadillo-Rollers")
+    {
+        mesh_t0 = "armadillo-rollers/326.ply";
+        mesh_t1 = "armadillo-rollers/327.ply";
+    }
+    SECTION("Cloth-Funnel")
+    {
+        mesh_t0 = "cloth-funnel/227.ply";
+        mesh_t1 = "cloth-funnel/228.ply";
+    }
+    SECTION("N-Body-Simulation")
+    {
+        mesh_t0 = "n-body-simulation/balls16_18.ply";
+        mesh_t1 = "n-body-simulation/balls16_19.ply";
+    }
+    SECTION("Rod-Twist")
+    {
+        mesh_t0 = "rod-twist/3036.ply";
+        mesh_t1 = "rod-twist/3037.ply";
+    }
+#endif
+    SECTION("Puffer-Ball")
+    {
+        mesh_t0 = "puffer-ball/20.ply";
+        mesh_t1 = "puffer-ball/21.ply";
+    }
+
+    Eigen::MatrixXd vertices_t0, vertices_t1;
+    Eigen::MatrixXi edges, faces;
+    REQUIRE(tests::load_mesh(mesh_t0, vertices_t0, edges, faces));
+    REQUIRE(tests::load_mesh(mesh_t1, vertices_t1, edges, faces));
+
+    const std::shared_ptr<LBVH> lbvh = std::make_shared<LBVH>();
+    lbvh->build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
+
+    BENCHMARK("LBVH::detect_edge_edge_candidates")
+    {
+        std::vector<EdgeEdgeCandidate> ee_candidates;
+        lbvh->detect_edge_edge_candidates(ee_candidates);
+        return ee_candidates.size();
+    };
+}
+
+TEST_CASE("Benchmark LBVH::build", "[!benchmark][broad_phase][lbvh]")
+{
+    constexpr double inflation_radius = 0;
+
+    struct Scene {
+        std::string name, mesh_t0, mesh_t1;
+    };
+
+#ifdef NDEBUG
+    constexpr int NUM_SCENES = 6;
+#else
+    constexpr int NUM_SCENES = 1;
+#endif
+
+    const std::array<Scene, NUM_SCENES> scenes = { {
+        Scene { "Cloth-Ball", "cloth_ball92.ply", "cloth_ball93.ply" },
+#ifdef NDEBUG
+        Scene { "Cloth-Funnel", "cloth-funnel/227.ply",
+                "cloth-funnel/228.ply" },
+        Scene { "Armadillo-Rollers", "armadillo-rollers/326.ply",
+                "armadillo-rollers/327.ply" },
+        Scene { "Rod-Twist", "rod-twist/3036.ply", "rod-twist/3037.ply" },
+        Scene { "N-Body-Simulation", "n-body-simulation/balls16_18.ply",
+                "n-body-simulation/balls16_19.ply" },
+        Scene { "Puffer-Ball", "puffer-ball/20.ply", "puffer-ball/21.ply" },
+#endif
+    } };
+
+    for (const auto& [scene, mesh_t0, mesh_t1] : scenes) {
+        Eigen::MatrixXd vertices_t0, vertices_t1;
+        Eigen::MatrixXi edges, faces;
+        REQUIRE(tests::load_mesh(mesh_t0, vertices_t0, edges, faces));
+        REQUIRE(tests::load_mesh(mesh_t1, vertices_t1, edges, faces));
+
+        const std::shared_ptr<LBVH> lbvh = std::make_shared<LBVH>();
+
+        BENCHMARK(fmt::format("LBVH::build [{}]", scene))
+        {
+            lbvh->build(
+                vertices_t0, vertices_t1, edges, faces, inflation_radius);
+            return lbvh->edge_nodes().size();
+        };
+    }
 }

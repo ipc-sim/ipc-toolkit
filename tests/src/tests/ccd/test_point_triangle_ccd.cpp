@@ -7,7 +7,9 @@
 
 using namespace ipc;
 
+#ifdef NDEBUG
 static constexpr double EPSILON = std::numeric_limits<float>::epsilon();
+#endif
 
 #ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
 TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle][!mayfail]")

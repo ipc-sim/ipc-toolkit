@@ -2,12 +2,20 @@
 
 #ifdef IPC_TOOLKIT_WITH_PROFILER
 
+#include <tbb/task_arena.h>
+
 #include <fstream>
 #include <queue>
 
 namespace ipc {
 
-Profiler::Profiler() { }
+Profiler::Profiler() = default;
+
+bool Profiler::is_recording_thread() const
+{
+    const int idx = tbb::this_task_arena::current_thread_index();
+    return idx == tbb::task_arena::not_initialized || idx == 0;
+}
 
 Profiler& profiler()
 {
@@ -15,13 +23,22 @@ Profiler& profiler()
     return instance;
 }
 
-void Profiler::clear() { m_data.clear(); }
+void Profiler::clear()
+{
+    m_data = nlohmann::json::object();
+    m_current_scope = nlohmann::json::json_pointer(); // root
+}
 
 void Profiler::start(const std::string& name)
 {
-    current_scope.push_back(name);
-    if (!m_data.contains(current_scope)) {
-        m_data[current_scope] = {
+    if (!is_recording_thread()) {
+        return;
+    }
+
+    m_current_scope.push_back(name);
+
+    if (!m_data.contains(m_current_scope)) {
+        m_data[m_current_scope] = {
             { "time_ms", 0 },
             { "count", 0 },
         };
@@ -30,28 +47,32 @@ void Profiler::start(const std::string& name)
 
 void Profiler::stop(const double time_ms)
 {
+    if (!is_recording_thread()) {
+        return;
+    }
+
     const static std::string log_fmt_text = fmt::format(
         "[{}] {{}} {{:.6f}} ms",
         fmt::format(fmt::fg(fmt::terminal_color::magenta), "timing"));
 
     logger().trace(
-        fmt::runtime(log_fmt_text), current_scope.to_string(), time_ms);
+        fmt::runtime(log_fmt_text), m_current_scope.to_string(), time_ms);
 
-    assert(m_data.contains(current_scope));
-    assert(m_data.at(current_scope).contains("time_ms"));
-    assert(m_data.at(current_scope).contains("count"));
-    m_data[current_scope]["time_ms"] =
-        m_data[current_scope]["time_ms"].get<double>() + time_ms;
-    m_data[current_scope]["count"] =
-        m_data[current_scope]["count"].get<size_t>() + 1;
-    current_scope.pop_back();
+    assert(m_data.contains(m_current_scope));
+    assert(m_data.at(m_current_scope).contains("time_ms"));
+    assert(m_data.at(m_current_scope).contains("count"));
+    m_data[m_current_scope]["time_ms"] =
+        m_data[m_current_scope]["time_ms"].get<double>() + time_ms;
+    m_data[m_current_scope]["count"] =
+        m_data[m_current_scope]["count"].get<size_t>() + 1;
+
+    m_current_scope.pop_back();
 }
 
 void Profiler::reset()
 {
     m_data.clear();
-    // reset the calling thread's scope
-    current_scope = nlohmann::json::json_pointer(); // root
+    m_current_scope = nlohmann::json::json_pointer(); // root
 }
 
 void Profiler::print() const

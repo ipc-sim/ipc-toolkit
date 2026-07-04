@@ -69,8 +69,28 @@ TEST_CASE("Dihedral angle and gradient", "[angle][dihedral]")
     REQUIRE(grad.array().isFinite().all());
     CHECK(fd::compare_gradient(grad, fd_grad));
     if (!fd::compare_gradient(grad, fd_grad)) {
-        std::cout << "   Gradient:\n" << grad.transpose() << std::endl;
-        std::cout << "FD Gradient:\n" << fd_grad.transpose() << std::endl;
+        std::cout << "   Gradient:\n" << grad.transpose() << "\n";
+        std::cout << "FD Gradient:\n" << fd_grad.transpose() << "\n";
+    }
+
+    // --- Check the Hessian against finite differences ---
+
+    Eigen::MatrixXd hess = dihedral_angle_hessian(x0, x1, x2, x3);
+    Eigen::MatrixXd fd_hess;
+    fd::finite_jacobian(
+        x,
+        [](const Eigen::VectorXd& x_fd) -> Eigen::VectorXd {
+            return dihedral_angle_gradient(
+                x_fd.segment<3>(0), x_fd.segment<3>(3), x_fd.segment<3>(6),
+                x_fd.segment<3>(9));
+        },
+        fd_hess);
+
+    REQUIRE(hess.array().isFinite().all());
+    CHECK(fd::compare_hessian(hess, fd_hess));
+    if (!fd::compare_hessian(hess, fd_hess)) {
+        std::cout << "   Hessian:\n" << grad.transpose() << "\n";
+        std::cout << "FD Hessian:\n" << fd_grad.transpose() << "\n";
     }
 }
 
@@ -88,5 +108,10 @@ TEST_CASE(
     BENCHMARK("Dihedral angle gradient")
     {
         return dihedral_angle_gradient(x0, x1, x2, x3);
+    };
+
+    BENCHMARK("Dihedral angle Hessian")
+    {
+        return dihedral_angle_hessian(x0, x1, x2, x3);
     };
 }

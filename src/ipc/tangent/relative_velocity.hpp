@@ -71,7 +71,6 @@ Eigen::Vector3d edge_edge_relative_velocity(
     Eigen::ConstRef<Eigen::Vector2d> coords);
 
 /// @brief Compute du/dx where u is the relative velocity of two edges
-/// @param dim Dimension (2 or 3)
 /// @param coords Two parametric coordinates of the closest points on the edges
 /// @return The relative velocity Jacobian du/dx
 Eigen::Matrix<double, 3, 12>

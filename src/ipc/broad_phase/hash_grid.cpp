@@ -64,14 +64,9 @@ void HashGrid::insert_boxes(
 {
     tbb::enumerable_thread_specific<std::vector<HashItem>> storage;
 
-    tbb::parallel_for(
-        tbb::blocked_range<long>(0L, long(boxes.size())),
-        [&](const tbb::blocked_range<long>& range) {
-            auto& local_items = storage.local();
-            for (long i = range.begin(); i != range.end(); i++) {
-                insert_box(boxes[i], i, local_items);
-            }
-        });
+    tbb::parallel_for(0L, long(boxes.size()), [&](long i) {
+        insert_box(boxes[i], i, storage.local());
+    });
 
     merge_thread_local_vectors(storage, items);
 

@@ -6,7 +6,6 @@
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
 
-#include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
 
 #include <algorithm>
@@ -135,19 +134,10 @@ void CollisionMesh::init_edges_to_faces()
         return;
     }
 
-    m_edges_to_faces.setConstant(num_edges(), 2, -1);
+    m_edges_to_faces.resize(num_edges());
     for (int f = 0; f < m_faces_to_edges.rows(); f++) {
         for (int le = 0; le < 3; le++) {
-            if (m_edges_to_faces(m_faces_to_edges(f, le), 0) < 0) {
-                m_edges_to_faces(m_faces_to_edges(f, le), 0) = f;
-            } else if (m_edges_to_faces(m_faces_to_edges(f, le), 1) < 0) {
-                m_edges_to_faces(m_faces_to_edges(f, le), 1) = f;
-            } else {
-                logger().warn(
-                    "Edge {} of face {} is shared by more than 2 faces. "
-                    "This may cause issues with the Geometric Contact Potential (smooth contact).",
-                    m_faces_to_edges(f, le), f);
-            }
+            m_edges_to_faces[m_faces_to_edges(f, le)].push_back(f);
         }
     }
 }
@@ -244,16 +234,12 @@ namespace {
 
     void remove_duplicates(std::vector<std::vector<index_t>>& v)
     {
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, v.size()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                for (size_t i = r.begin(); i < r.end(); i++) {
-                    std::sort(v[i].begin(), v[i].end());
-                    auto last = std::unique(v[i].begin(), v[i].end());
-                    v[i].erase(last, v[i].end());
-                    v[i].shrink_to_fit();
-                }
-            });
+        tbb::parallel_for(size_t(0), v.size(), [&](size_t i) {
+            std::sort(v[i].begin(), v[i].end());
+            auto last = std::unique(v[i].begin(), v[i].end());
+            v[i].erase(last, v[i].end());
+            v[i].shrink_to_fit();
+        });
     }
 
 } // namespace

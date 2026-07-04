@@ -83,3 +83,59 @@ TEST_CASE("Smooth mu", "[friction][mollifier][mu]")
 
     CHECK(f2 == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 }
+
+TEST_CASE("anisotropic_mu_eff_f helper", "[friction][smooth-mu][anisotropic]")
+{
+    static constexpr double EPSILON = 1e-6;
+    static constexpr double MARGIN = 1e-8;
+
+    // Test with various inputs
+    const double mu_s0 = GENERATE(0.1, 0.5, 1.0);
+    const double mu_s1 = GENERATE(0.1, 0.5, 1.0);
+    const double mu_k0 = GENERATE(0.1, 0.5, 1.0);
+    const double mu_k1 = GENERATE(0.1, 0.5, 1.0);
+
+    Eigen::Vector2d mu_s_aniso(mu_s0, mu_s1);
+    Eigen::Vector2d mu_k_aniso(mu_k0, mu_k1);
+
+    // Test unit directions
+    Eigen::Vector2d tau_dir_x(1.0, 0.0);
+    Eigen::Vector2d tau_dir_y(0.0, 1.0);
+    Eigen::Vector2d tau_dir_diag(1.0 / std::sqrt(2.0), 1.0 / std::sqrt(2.0));
+
+    // Test x direction
+    const auto [mu_s_eff_x, mu_k_eff_x] =
+        anisotropic_mu_eff_f(tau_dir_x, mu_s_aniso, mu_k_aniso);
+    CHECK(
+        mu_s_eff_x
+        == Catch::Approx(mu_s_aniso[0]).margin(MARGIN).epsilon(EPSILON));
+    CHECK(
+        mu_k_eff_x
+        == Catch::Approx(mu_k_aniso[0]).margin(MARGIN).epsilon(EPSILON));
+
+    // Test y direction
+    const auto [mu_s_eff_y, mu_k_eff_y] =
+        anisotropic_mu_eff_f(tau_dir_y, mu_s_aniso, mu_k_aniso);
+    CHECK(
+        mu_s_eff_y
+        == Catch::Approx(mu_s_aniso[1]).margin(MARGIN).epsilon(EPSILON));
+    CHECK(
+        mu_k_eff_y
+        == Catch::Approx(mu_k_aniso[1]).margin(MARGIN).epsilon(EPSILON));
+
+    // Test diagonal direction
+    const auto [mu_s_eff_diag, mu_k_eff_diag] =
+        anisotropic_mu_eff_f(tau_dir_diag, mu_s_aniso, mu_k_aniso);
+    const double expected_mu_s_diag = std::sqrt(
+        mu_s_aniso[0] * mu_s_aniso[0] * 0.5
+        + mu_s_aniso[1] * mu_s_aniso[1] * 0.5);
+    const double expected_mu_k_diag = std::sqrt(
+        mu_k_aniso[0] * mu_k_aniso[0] * 0.5
+        + mu_k_aniso[1] * mu_k_aniso[1] * 0.5);
+    CHECK(
+        mu_s_eff_diag
+        == Catch::Approx(expected_mu_s_diag).margin(MARGIN).epsilon(EPSILON));
+    CHECK(
+        mu_k_eff_diag
+        == Catch::Approx(expected_mu_k_diag).margin(MARGIN).epsilon(EPSILON));
+}

@@ -1,4 +1,6 @@
 set(SOURCES
+  collision_filter.cpp
+  collision_filter.hpp
   collision_mesh.cpp
   collision_mesh.hpp
   ipc.hpp

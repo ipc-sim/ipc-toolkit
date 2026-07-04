@@ -8,7 +8,7 @@ Collision Mesh
 
 First, we need to create a collision mesh. The ``CollisionMesh`` data structure represents the surface geometry used for collision processing.
 
-We will start by creating a collision mesh from a ``bunny.ply`` mesh file (you can find the mesh `here <https://github.com/ipc-sim/ipc-toolkit-tests-data/blob/main/bunny.ply>`_):
+We will start by creating a collision mesh from a ``bunny.ply`` mesh file (you can find the mesh `here <https://github.com/ipc-sim/ipc-toolkit-tests-data/blob/main/bunny.ply>`__):
 
 .. md-tab-set::
 
@@ -244,7 +244,7 @@ and the Hessian of size :math:`|V|d \times |V|d` with the order
 
 .. note::
 
-    This row-major derivative ordering is the default. If your simulation framework uses a column-major DOF layout, the IPC Toolkit can be configured to use that instead. See :ref:`Vertex Derivative Layout <tutorials/misc:Vertex Derivative Layout>` for details.
+    This row-major derivative ordering is the default. If your simulation framework uses a column-major DOF layout, the IPC Toolkit can be configured to use that instead. See :ref:`Vertex Derivative Layout <vertex-derivative-layout>` for details.
 
 Adaptive Barrier Stiffness
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

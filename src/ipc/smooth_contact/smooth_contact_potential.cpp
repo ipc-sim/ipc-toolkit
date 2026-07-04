@@ -2,7 +2,6 @@
 
 #include <ipc/utils/local_to_global.hpp>
 
-#include <tbb/blocked_range.h>
 #include <tbb/combinable.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
@@ -22,15 +21,10 @@ double SmoothContactPotential::operator()(
 
     tbb::enumerable_thread_specific<double> storage(0);
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_potential = storage.local();
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                // Quadrature weight is premultiplied by local potential
-                local_potential += (*this)(collisions[i], collisions[i].dof(X));
-            }
-        });
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        // Quadrature weight is premultiplied by local potential
+        storage.local() += (*this)(collisions[i], collisions[i].dof(X));
+    });
 
     return storage.combine([](double a, double b) { return a + b; });
 }
@@ -50,23 +44,17 @@ Eigen::VectorXd SmoothContactPotential::gradient(
 
     tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
         Eigen::VectorXd::Zero(X.size()));
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& global_grad = storage.local();
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        const SmoothCollision& collision = collisions[i];
 
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const SmoothCollision& collision = collisions[i];
+        const Eigen::VectorXd local_grad =
+            this->gradient(collision, collision.dof(X));
 
-                const Eigen::VectorXd local_grad =
-                    this->gradient(collision, collision.dof(X));
+        const std::vector<index_t> vids = collision.vertex_ids();
 
-                const std::vector<index_t> vids = collision.vertex_ids();
-
-                local_gradient_to_global_gradient(
-                    local_grad, vids, dim, global_grad);
-            }
-        });
+        local_gradient_to_global_gradient(
+            local_grad, vids, dim, storage.local());
+    });
 
     Eigen::VectorXd grad;
     grad.setZero(X.size());
@@ -95,23 +83,16 @@ Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
     const int buffer_size = std::min(max_triplets_size, ndof);
     tbb::enumerable_thread_specific<LocalThreadMatStorage> storage(
         LocalThreadMatStorage(buffer_size, ndof, ndof));
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& hess_triplets = storage.local();
+    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        const SmoothCollision& collision = collisions[i];
 
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const SmoothCollision& collision = collisions[i];
+        const Eigen::MatrixXd local_hess = this->hessian(
+            collisions[i], collisions[i].dof(X), project_hessian_to_psd);
 
-                const Eigen::MatrixXd local_hess = this->hessian(
-                    collisions[i], collisions[i].dof(X),
-                    project_hessian_to_psd);
-
-                local_hessian_to_global_triplets(
-                    local_hess, collision.vertex_ids(), dim,
-                    *(hess_triplets.cache), mesh.num_vertices());
-            }
-        });
+        local_hessian_to_global_triplets(
+            local_hess, collision.vertex_ids(), dim, *(storage.local().cache),
+            mesh.num_vertices());
+    });
 
     Eigen::SparseMatrix<double> hess(ndof, ndof);
 

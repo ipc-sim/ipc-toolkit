@@ -144,6 +144,8 @@ You can also get the current maximum number of threads as follows:
 
             nthreads = ipctk.get_num_threads()
 
+.. _vertex-derivative-layout:
+
 Vertex Derivative Layout
 ------------------------
 
