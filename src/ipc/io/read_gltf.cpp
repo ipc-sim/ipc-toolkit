@@ -166,7 +166,13 @@ read_gltf(const std::string& filename, const bool convert_planes)
     std::string warn;
 
     // .glb is the binary format, .gltf is the ASCII/JSON format
-    bool ret = loader.LoadBinaryFromFile(&model, &err, &warn, filename);
+    bool ret;
+    if (filename.size() >= 4
+        && filename.compare(filename.size() - 4, 4, ".glb") == 0) {
+        ret = loader.LoadBinaryFromFile(&model, &err, &warn, filename);
+    } else {
+        ret = loader.LoadASCIIFromFile(&model, &err, &warn, filename);
+    }
 
     if (!warn.empty()) {
         logger().warn("[GLTF] {}", warn);

@@ -65,6 +65,24 @@ project(IPCToolkit
         VERSION "1.6.0")
 
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
+  # Generate a compile_commands.json file
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ${CLO_IPC_TOPLEVEL_PROJECT})
+
+  # If we are on a Mac, explicitly add the sysroot to the compiler flags
+  if(CMAKE_EXPORT_COMPILE_COMMANDS AND APPLE)
+    # CMake usually finds the sysroot automatically, but if it didn't, fetch it
+    if(NOT CMAKE_OSX_SYSROOT)
+      execute_process(COMMAND xcrun --show-sdk-path
+                          OUTPUT_VARIABLE CMAKE_OSX_SYSROOT
+                          OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
+
+    # Force the -isysroot flag into the compile commands for clang-tidy
+    add_compile_options("-isysroot" "${CMAKE_OSX_SYSROOT}")
+  endif()
+endif()
+
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
   option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
 else()
@@ -80,6 +98,7 @@ option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle inters
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
 option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
+option(IPC_TOOLKIT_WITH_GLTF                  "Enable glTF I/O (tinygltf)"                     ON)
 option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
 option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
 option(IPC_TOOLKIT_WITH_TRACY                 "Enable Tracy frame profiler"                   OFF)
@@ -215,8 +234,10 @@ include(tinyad)
 target_link_libraries(ipc_toolkit PUBLIC TinyAD::TinyAD)
 
 # TinyGLTF
-include(tinygltf)
-target_link_libraries(ipc_toolkit PRIVATE tinygltf::tinygltf)
+if(IPC_TOOLKIT_WITH_GLTF)
+  include(tinygltf)
+  target_link_libraries(ipc_toolkit PRIVATE tinygltf::tinygltf)
+endif()
 
 # CCD
 if(IPC_TOOLKIT_WITH_INEXACT_CCD)

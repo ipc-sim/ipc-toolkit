@@ -20,13 +20,9 @@ bool write_gltf(
     bool prettyPrint)
 {
     typedef float Float;
-    int float_component_type;
-    if (std::is_same<Float, float>::value) {
-        float_component_type = TINYGLTF_COMPONENT_TYPE_FLOAT;
-    } else {
-        // assert(std::is_same<Float, double>::value);
-        float_component_type = TINYGLTF_COMPONENT_TYPE_DOUBLE;
-    }
+    constexpr int float_component_type = std::is_same<Float, float>::value
+        ? TINYGLTF_COMPONENT_TYPE_FLOAT
+        : TINYGLTF_COMPONENT_TYPE_DOUBLE;
 
     using namespace tinygltf;
 
@@ -63,8 +59,9 @@ bool write_gltf(
         accessor.bufferView = 2 * num_bodies;
         accessor.componentType = float_component_type;
         accessor.count = num_steps;
-        accessor.minValues.push_back(timestep);
-        accessor.maxValues.push_back(num_steps * timestep);
+        // Time samples are i·Δt for i ∈ [0, num_steps)
+        accessor.minValues.push_back(0.0);
+        accessor.maxValues.push_back((num_steps - 1) * timestep);
         accessor.type = TINYGLTF_TYPE_SCALAR;
     }
 
@@ -109,8 +106,17 @@ bool write_gltf(
         accessor->bufferView = 2 * i;
         accessor->componentType = float_component_type;
         accessor->count = bodies.body_num_vertices(i);
-        // accessor->max = ...;
-        // accessor->min = ...;
+        // The glTF 2.0 spec requires min/max on POSITION accessors. Compute
+        // them from the float-cast values actually written to the buffer.
+        {
+            const Eigen::MatrixXf V =
+                (bodies.body_rest_positions(i) * bodies[i].R0().transpose())
+                    .cast<Float>();
+            for (int d = 0; d < 3; d++) {
+                accessor->minValues.push_back(V.col(d).minCoeff());
+                accessor->maxValues.push_back(V.col(d).maxCoeff());
+            }
+        }
         accessor->type = TINYGLTF_TYPE_VEC3;
 
         accessor = &model.accessors[2 * i + 1];
@@ -336,13 +342,27 @@ bool write_gltf(
 
             // write vertex positions as floats (local coordinates = verts -
             // origin)
+            Eigen::Vector3f local_min =
+                Eigen::Vector3f::Constant(std::numeric_limits<Float>::max());
+            Eigen::Vector3f local_max =
+                Eigen::Vector3f::Constant(std::numeric_limits<Float>::lowest());
             for (int vi = 0; vi < 4; ++vi) {
                 Eigen::Vector3d local = verts[vi] - origin;
                 for (int d = 0; d < 3; ++d) {
                     Float vd = static_cast<Float>(local[d]);
+                    local_min[d] = std::min<float>(local_min[d], vd);
+                    local_max[d] = std::max<float>(local_max[d], vd);
                     std::memcpy(&byte_data[byte_i], &vd, sizeof(Float));
                     byte_i += sizeof(Float);
                 }
+            }
+
+            // The glTF 2.0 spec requires min/max on POSITION accessors
+            Accessor& vert_accessor =
+                model.accessors[4 * num_bodies + 1 + 2 * p];
+            for (int d = 0; d < 3; ++d) {
+                vert_accessor.minValues.push_back(local_min[d]);
+                vert_accessor.maxValues.push_back(local_max[d]);
             }
 
             unsigned int faces[6] = { 0, 1, 2, 0, 2, 3 };

@@ -9,7 +9,9 @@
 
 #include <ipc/dynamics/rigid/simulator.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
+#ifdef IPC_TOOLKIT_WITH_GLTF
 #include <ipc/io/write_gltf.hpp>
+#endif
 #include <ipc/potentials/barrier_potential.hpp>
 
 #include <finitediff.hpp>
@@ -145,7 +147,9 @@ TEST_CASE("Rigid body simulator", "[.][rigid]")
             tend)); // Simulation already completed, should return false
         CHECK(n_calls == n_steps - 1); // Callback should not be called again
 
-        write_gltf("simulator_test.glb", *bodies, sim.pose_history(), dt);
+#ifdef IPC_TOOLKIT_WITH_GLTF
+        write_gltf("simulator_test.glb", *bodies, sim.rigid_pose_history(), dt);
+#endif
 
         sim.reset();
         CHECK(sim.t() == 0.0);
