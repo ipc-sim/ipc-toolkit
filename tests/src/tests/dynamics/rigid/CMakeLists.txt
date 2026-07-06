@@ -5,6 +5,8 @@ set(SOURCES
   test_pose.cpp
   test_rigid_bodies.cpp
   test_rigid_body.cpp
+  test_rigid_candidates.cpp
+  test_rigid_trajectory.cpp
   test_simulator.cpp
 )
 

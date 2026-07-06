@@ -1,13 +1,16 @@
 #include "body_forces.hpp"
 
-#include <ipc/dynamics/rigid/time_integrator.hpp>
+#include <ipc/dynamics/time_integration/time_integrator.hpp>
 #include <ipc/geometry/normal.hpp>
+
+#include <tbb/blocked_range.h>
+#include <tbb/parallel_for.h>
 
 namespace ipc::rigid {
 
 void BodyForces::update(const RigidBodies& bodies)
 {
-    const double dt_sq = time_integrator->dt * time_integrator->dt;
+    const double dt_sq = time_integrator->acceleration_scaling();
 
     m_forces.resize(bodies.num_bodies());
     m_torques.resize(bodies.num_bodies());

@@ -296,32 +296,36 @@ struct AffinePose {
     }
 
     /// @brief Compute the Jacobian of the transformed vertices with respect to the pose.
+    ///
+    /// DOF layout: q = [p (dim); vec(A) column-major (dim²)], i.e.,
+    /// q[dim + k + dim·j] = A(k, j) — matching ImplicitEuler's state layout
+    /// and OrthogonalityPotential. Rows are vertex-major (dim·i + k), matching
+    /// the collision-mesh gradient layout.
+    ///
     /// @param V The vertices to transform (each row is a vertex)
     /// @return The Jacobian matrix of size (num_vertices * dim) x (ndof)
     static Eigen::SparseMatrix<double>
     J(Eigen::ConstRef<Eigen::MatrixXd> rest_positions) // NOLINT
     {
+        const int dim = rest_positions.cols();
+
         std::vector<Eigen::Triplet<double>> triplets;
+        triplets.reserve(rest_positions.rows() * dim * (dim + 1));
 
         for (int i = 0; i < rest_positions.rows(); i++) {
-            for (int j = 0; j < rest_positions.cols(); j++) {
-                triplets.emplace_back(rest_positions.rows() * j + i, j, 1);
-            }
-        }
-
-        // I ⊗ x̄
-        for (int i = 0; i < rest_positions.rows(); i++) {
-            for (int j = 0; j < rest_positions.cols(); j++) {
-                for (int k = 0; k < 3; k++) {
+            for (int k = 0; k < dim; k++) {
+                // ∂(world_{i,k}) / ∂p_k = 1
+                triplets.emplace_back(dim * i + k, k, 1);
+                // world_{i,k} = p_k + Σ_j A(k, j) x̄(i, j)
+                for (int j = 0; j < dim; j++) {
                     triplets.emplace_back(
-                        i + k * rest_positions.rows(),
-                        j + k * rest_positions.cols() + 3,
-                        rest_positions(i, j));
+                        dim * i + k, dim + k + dim * j, rest_positions(i, j));
                 }
             }
         }
 
-        Eigen::SparseMatrix<double> J(rest_positions.size(), 12);
+        Eigen::SparseMatrix<double> J(
+            rest_positions.size(), dim + dim * dim);
         J.setFromTriplets(triplets.begin(), triplets.end());
         return J;
     }

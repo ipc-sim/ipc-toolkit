@@ -30,11 +30,11 @@ public:
     Eigen::VectorXd gradient(
         const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const;
 
-    /// @brief Compute the Hessian of the total energy for all rigid bodies.
+    /// @brief Compute the (block-diagonal, sparse) Hessian of the total energy for all rigid bodies.
     /// @param bodies The collection of rigid bodies.
     /// @param x The DOFs of the rigid bodies, where the first 3 entries are the positions and the last 3 entries are the rotations.
-    /// @return The Hessian of the total energy of the rigid bodies.
-    Eigen::MatrixXd hessian(
+    /// @return The sparse Hessian of the total energy of the rigid bodies.
+    Eigen::SparseMatrix<double> hessian(
         const RigidBodies& bodies,
         Eigen::ConstRef<Eigen::VectorXd> x,
         const PSDProjectionMethod project_hessian_to_psd =

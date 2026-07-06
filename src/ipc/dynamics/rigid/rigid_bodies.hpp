@@ -165,17 +165,30 @@ public:
         const std::vector<Pose>& poses,
         Eigen::ConstRef<Eigen::VectorXd> g) const;
 
-    /// @brief Map a matrix quantity on the collision mesh to the full mesh.
-    /// This is useful for mapping Hessians from the collision mesh to the full
-    /// mesh (i.e., applies the chain-rule).
-    /// @param X Matrix quantity on the collision mesh with size equal to ndof() × ndof().
-    /// @return Matrix quantity on the full mesh with size equal to full_ndof() × full_ndof().
-    Eigen::MatrixXd to_rigid_dof(
+    /// @brief Map a Hessian on the collision mesh to the rigid degrees of freedom.
+    ///
+    /// Applies the chain rule JᵀHJ plus the second-order term Σ g·d²V/dx² on
+    /// the diagonal blocks. Only computes the per-body-pair blocks for body
+    /// pairs that are actually coupled in H (plus the diagonal blocks).
+    ///
+    /// @param poses The poses of the rigid bodies.
+    /// @param g Gradient on the collision mesh with size equal to ndof().
+    /// @param H Hessian on the collision mesh with size equal to ndof() × ndof().
+    /// @return Sparse Hessian on the rigid degrees of freedom.
+    Eigen::SparseMatrix<double> to_rigid_dof(
         const std::vector<Pose>& poses,
         Eigen::ConstRef<Eigen::VectorXd> g,
         const Eigen::SparseMatrix<double>& H) const;
 
-private:
+    /// @brief Get the start index of the i-th body's vertices in the collision mesh.
+    index_t body_vertex_start(size_t i) const { return body_vertex_starts[i]; }
+
+    /// @brief Get the start index of the i-th body's edges in the collision mesh.
+    index_t body_edge_start(size_t i) const { return body_edge_starts[i]; }
+
+    /// @brief Get the start index of the i-th body's faces in the collision mesh.
+    index_t body_face_start(size_t i) const { return body_face_starts[i]; }
+
     /// @brief Get the body index for a given vertex index.
     index_t vertex_to_body(index_t vi) const
     {
@@ -191,6 +204,8 @@ private:
                    std::distance(body_vertex_starts.begin(), it))
             - 1;
     }
+
+private:
 
     /// @brief Rigid bodies in the system
     std::vector<RigidBody> bodies;

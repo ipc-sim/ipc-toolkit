@@ -211,7 +211,7 @@ Eigen::VectorXd RigidBodies::to_rigid_dof(
     return result;
 }
 
-Eigen::MatrixXd RigidBodies::to_rigid_dof(
+Eigen::SparseMatrix<double> RigidBodies::to_rigid_dof(
     const std::vector<Pose>& poses,
     Eigen::ConstRef<Eigen::VectorXd> g,
     const Eigen::SparseMatrix<double>& H) const
@@ -219,70 +219,83 @@ Eigen::MatrixXd RigidBodies::to_rigid_dof(
     assert(poses.size() == num_bodies());
     assert(g.size() == ndof());
     assert(H.rows() == ndof() && H.cols() == ndof());
-    assert(H.isApprox(H.transpose())); // Hessian should be symmetric
 
     const int ndof_per_body = poses[0].ndof();
-    Eigen::MatrixXd result(
-        poses.size() * ndof_per_body, poses.size() * ndof_per_body);
+    const int n = poses.size() * ndof_per_body;
 
-    std::vector<Eigen::MatrixXd> dV_dx(bodies.size());
-    std::vector<Eigen::MatrixXd> d2V_dx2(bodies.size());
-    for (size_t i = 0; i < bodies.size(); ++i) {
-        assert(poses[i].ndof() == ndof_per_body);
-
-        // Get the rest positions of the vertices for the i-th body
-        const auto VR = body_rest_positions(i);
-
-        // Compute the Jacobian and Hessian of the transformed vertices with
-        // respect to the pose for the i-th body.
-        dV_dx[i] = poses[i].transform_vertices_jacobian(VR);
-        assert(
-            dV_dx[i].rows() == dim() * body_num_vertices(i)
-            && dV_dx[i].cols() == ndof_per_body);
-
-        d2V_dx2[i] = poses[i].transform_vertices_hessian(VR);
-        assert(d2V_dx2[i].rows() == dim() * body_num_vertices(i));
-        assert(d2V_dx2[i].cols() == ndof_per_body * ndof_per_body);
+    // 1. Find the body pairs coupled in H by scanning its nonzero structure.
+    //    Diagonal blocks are always needed for the second-order term.
+    std::set<std::pair<index_t, index_t>> coupled;
+    for (index_t i = 0; i < index_t(num_bodies()); ++i) {
+        coupled.emplace(i, i);
     }
-
-    for (size_t i = 0; i < bodies.size(); ++i) {
-        for (size_t j = i; j < bodies.size(); ++j) {
-            auto result_ij = result.block(
-                i * ndof_per_body, j * ndof_per_body, ndof_per_body,
-                ndof_per_body);
-
-            result_ij = dV_dx[i].transpose()
-                * H.block(
-                    dim() * body_vertex_starts[i],
-                    dim() * body_vertex_starts[j], //
-                    dim() * body_num_vertices(i),  //
-                    dim() * body_num_vertices(j))
-                * dV_dx[j];
-
-            if (i == j) {
-                const index_t start = body_vertex_starts[i];
-                const index_t end = body_vertex_starts[i + 1];
-                auto gi = g.segment(dim() * start, dim() * (end - start));
-
-                // Add the contribution from the second derivative of the
-                // transformation (only for the diagonal blocks)
-                for (int jj = 0; jj < ndof_per_body; ++jj) {
-                    for (int ii = 0; ii < ndof_per_body; ++ii) {
-                        auto d2Vi_dxii_dxjj =
-                            d2V_dx2[i].col(ii * ndof_per_body + jj);
-                        result_ij(ii, jj) += gi.dot(d2Vi_dxii_dxjj);
-                    }
-                }
-            } else {
-                // Fill in the symmetric block
-                result.block(
-                    j * ndof_per_body, i * ndof_per_body, ndof_per_body,
-                    ndof_per_body) = result_ij.transpose();
+    for (int k = 0; k < H.outerSize(); ++k) {
+        for (Eigen::SparseMatrix<double>::InnerIterator it(H, k); it; ++it) {
+            index_t bi = vertex_to_body(it.row() / dim());
+            index_t bj = vertex_to_body(it.col() / dim());
+            if (bi > bj) {
+                std::swap(bi, bj);
             }
+            coupled.emplace(bi, bj);
         }
     }
 
-    // return project_to_psd(hess, project_hessian_to_psd);
+    // 2. Precompute the per-body Jacobians (and Hessians for the diagonal)
+    std::vector<Eigen::MatrixXd> dV_dx(bodies.size());
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        assert(poses[i].ndof() == ndof_per_body);
+        dV_dx[i] = poses[i].transform_vertices_jacobian(body_rest_positions(i));
+    }
+
+    // 3. Compute the coupled blocks and assemble the sparse result
+    std::vector<Eigen::Triplet<double>> triplets;
+    triplets.reserve(coupled.size() * ndof_per_body * ndof_per_body * 2);
+
+    const auto emplace_block = [&](const index_t bi, const index_t bj,
+                                   Eigen::ConstRef<MatrixMax6d> block) {
+        for (int c = 0; c < ndof_per_body; ++c) {
+            for (int r = 0; r < ndof_per_body; ++r) {
+                if (block(r, c) != 0) {
+                    triplets.emplace_back(
+                        bi * ndof_per_body + r, bj * ndof_per_body + c,
+                        block(r, c));
+                }
+            }
+        }
+    };
+
+    for (const auto& [bi, bj] : coupled) {
+        // Keep the Hessian block sparse to avoid densifying large blocks
+        const Eigen::SparseMatrix<double> H_ij = H.block(
+            dim() * body_vertex_starts[bi], dim() * body_vertex_starts[bj],
+            dim() * body_num_vertices(bi), dim() * body_num_vertices(bj));
+
+        MatrixMax6d block = dV_dx[bi].transpose() * (H_ij * dV_dx[bj]);
+
+        if (bi == bj) {
+            const auto gi = g.segment(
+                dim() * body_vertex_starts[bi], dim() * body_num_vertices(bi));
+            if (!gi.isZero()) {
+                // Second-order term of the transformation (diagonal blocks)
+                const Eigen::MatrixXd d2V_dx2 =
+                    poses[bi].transform_vertices_hessian(
+                        body_rest_positions(bi));
+                for (int jj = 0; jj < ndof_per_body; ++jj) {
+                    for (int ii = 0; ii < ndof_per_body; ++ii) {
+                        block(ii, jj) +=
+                            gi.dot(d2V_dx2.col(ii * ndof_per_body + jj));
+                    }
+                }
+            }
+            emplace_block(bi, bi, block);
+        } else {
+            emplace_block(bi, bj, block);
+            emplace_block(bj, bi, block.transpose());
+        }
+    }
+
+    Eigen::SparseMatrix<double> result(n, n);
+    result.setFromTriplets(triplets.begin(), triplets.end());
     return result;
 }
 

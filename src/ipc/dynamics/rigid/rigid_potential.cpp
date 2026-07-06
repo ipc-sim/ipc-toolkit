@@ -29,19 +29,31 @@ Eigen::VectorXd RigidPotential::gradient(
     return grad;
 }
 
-Eigen::MatrixXd RigidPotential::hessian(
+Eigen::SparseMatrix<double> RigidPotential::hessian(
     const RigidBodies& bodies,
     Eigen::ConstRef<Eigen::VectorXd> x,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
     const int ndof = x.size() / bodies.num_bodies();
 
-    Eigen::MatrixXd hess = Eigen::MatrixXd::Zero(x.size(), x.size());
+    std::vector<Eigen::Triplet<double>> triplets;
+    triplets.reserve(bodies.num_bodies() * ndof * ndof);
     for (size_t i = 0; i < bodies.num_bodies(); ++i) {
-        hess.block(i * ndof, i * ndof, ndof, ndof) = hessian(
+        const MatrixMax6d block = hessian(
             i, bodies[i], x.segment(i * ndof, ndof), project_hessian_to_psd);
+        assert(block.allFinite());
+        for (int c = 0; c < ndof; ++c) {
+            for (int r = 0; r < ndof; ++r) {
+                if (block(r, c) != 0) {
+                    triplets.emplace_back(
+                        i * ndof + r, i * ndof + c, block(r, c));
+                }
+            }
+        }
     }
-    assert(hess.allFinite());
+
+    Eigen::SparseMatrix<double> hess(x.size(), x.size());
+    hess.setFromTriplets(triplets.begin(), triplets.end());
     return hess;
 }
 

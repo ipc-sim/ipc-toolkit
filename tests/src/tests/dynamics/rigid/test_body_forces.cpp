@@ -4,8 +4,8 @@
 
 #include <finitediff.hpp>
 
+#include <ipc/dynamics/time_integration/bdf.hpp>
 #include <ipc/dynamics/rigid/body_forces.hpp>
-#include <ipc/dynamics/rigid/time_integrator.hpp>
 
 #include <iostream>
 
@@ -40,7 +40,8 @@ auto rigid_bodies()
     return bodies;
 }
 
-std::shared_ptr<const ImplicitEuler> time_integrator(const RigidBodies& bodies)
+std::shared_ptr<const dynamics::ImplicitTimeIntegrator>
+time_integrator(const RigidBodies& bodies)
 {
     Eigen::VectorXd x = Eigen::VectorXd::Zero(12 * bodies.num_bodies());
     for (int i = 0; i < bodies.num_bodies(); ++i) {
@@ -50,8 +51,10 @@ std::shared_ptr<const ImplicitEuler> time_integrator(const RigidBodies& bodies)
     const Eigen::VectorXd a = Eigen::VectorXd::Random(12 * bodies.num_bodies());
     const double dt = 0.01; // Arbitrary time step
 
-    return std::make_shared<const ImplicitEuler>(
-        x, v, a, dt, bodies.num_bodies());
+    auto bdf = std::make_shared<dynamics::BDF>(/*order=*/1);
+    bdf->set_dt(dt);
+    bdf->init(x, v, a, bodies.num_bodies());
+    return bdf;
 }
 
 } // namespace
@@ -158,6 +161,8 @@ TEST_CASE(
             body_forces.gradient(0, (*bodies)[0], x)));
 
     CHECK(
-        body_forces.hessian((*bodies), x, PSDProjectionMethod::ABS)
-        == body_forces.hessian(0, (*bodies)[0], x, PSDProjectionMethod::ABS));
+        Eigen::MatrixXd(
+            body_forces.hessian((*bodies), x, PSDProjectionMethod::ABS))
+        == Eigen::MatrixXd(
+            body_forces.hessian(0, (*bodies)[0], x, PSDProjectionMethod::ABS)));
 }

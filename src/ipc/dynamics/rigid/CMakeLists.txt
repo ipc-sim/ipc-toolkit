@@ -15,9 +15,8 @@ set(SOURCES
   rigid_candidates.hpp
   rigid_potential.cpp
   rigid_potential.hpp
-  simulator.cpp
-  simulator.hpp
-  time_integrator.hpp
+  rigid_trajectory.cpp
+  rigid_trajectory.hpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

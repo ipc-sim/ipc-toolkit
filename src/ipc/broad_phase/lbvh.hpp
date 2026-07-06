@@ -144,6 +144,57 @@ public:
     const Nodes& edge_nodes() const { return edge_bvh; }
     const Nodes& face_nodes() const { return face_bvh; }
 
+    // -------------------------------------------------------------------------
+    // Two-tree (inter-BVH) queries between this LBVH and another LBVH.
+    // Candidate ids are each BVH's local primitive ids. The can_collide
+    // callback receives ids in the same order as the emitted candidate.
+
+    /// @brief Find candidate collisions between this BVH's edges and another BVH's vertices.
+    /// @param[in] other The other LBVH containing the vertices.
+    /// @param[in] can_collide Filter callback receiving (this_edge_id, other_vertex_id).
+    /// @param[out] candidates The candidates (edge_id ∈ this, vertex_id ∈ other).
+    void detect_edge_vertex_candidates(
+        const LBVH& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<EdgeVertexCandidate>& candidates) const;
+
+    /// @brief Find candidate collisions between this BVH's vertices and another BVH's edges.
+    /// @param[in] other The other LBVH containing the edges.
+    /// @param[in] can_collide Filter callback receiving (other_edge_id, this_vertex_id).
+    /// @param[out] candidates The candidates (edge_id ∈ other, vertex_id ∈ this).
+    void detect_vertex_edge_candidates(
+        const LBVH& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<EdgeVertexCandidate>& candidates) const;
+
+    /// @brief Find candidate collisions between this BVH's edges and another BVH's edges.
+    /// @param[in] other The other LBVH containing the second set of edges.
+    /// @param[in] can_collide Filter callback receiving (this_edge_id, other_edge_id).
+    /// @param[out] candidates The candidates (edge0_id ∈ this, edge1_id ∈ other).
+    void detect_edge_edge_candidates(
+        const LBVH& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<EdgeEdgeCandidate>& candidates) const;
+
+    /// @brief Find candidate collisions between this BVH's faces and another BVH's vertices.
+    /// @param[in] other The other LBVH containing the vertices.
+    /// @param[in] can_collide Filter callback receiving (this_face_id, other_vertex_id).
+    /// @param[out] candidates The candidates (face_id ∈ this, vertex_id ∈ other).
+    void detect_face_vertex_candidates(
+        const LBVH& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<FaceVertexCandidate>& candidates) const;
+
+    /// @brief Find candidate collisions between this BVH's vertices and another BVH's faces.
+    /// @param[in] other The other LBVH containing the faces.
+    /// @param[in] can_collide Filter callback receiving (other_face_id, this_vertex_id).
+    /// @param[out] candidates The candidates (face_id ∈ other, vertex_id ∈ this).
+    void detect_vertex_face_candidates(
+        const LBVH& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<FaceVertexCandidate>& candidates) const;
+    // -------------------------------------------------------------------------
+
 protected:
     /// @brief Build the broad phase for collision detection.
     /// @note Assumes the vertex_boxes have been built.

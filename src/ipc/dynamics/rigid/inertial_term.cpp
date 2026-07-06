@@ -1,6 +1,6 @@
 #include "inertial_term.hpp"
 
-#include <ipc/dynamics/rigid/time_integrator.hpp>
+#include <ipc/dynamics/time_integration/time_integrator.hpp>
 
 namespace ipc::rigid {
 

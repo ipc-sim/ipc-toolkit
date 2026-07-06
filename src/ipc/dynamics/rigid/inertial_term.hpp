@@ -2,14 +2,18 @@
 
 #include <ipc/dynamics/rigid/rigid_potential.hpp>
 
-namespace ipc::rigid {
+namespace ipc::dynamics {
+class ImplicitTimeIntegrator;
+} // namespace ipc::dynamics
 
-class ImplicitEuler;
+namespace ipc::rigid {
 
 /// @brief Class representing the term ½m‖q - q̂‖² + ½tr((Q - Q̂) J (Q - Q̂)ᵀ)
 class InertialTerm : public RigidPotential {
 public:
-    InertialTerm(const std::shared_ptr<const ImplicitEuler>& _time_integrator)
+    InertialTerm(
+        const std::shared_ptr<const dynamics::ImplicitTimeIntegrator>&
+            _time_integrator)
         : time_integrator(_time_integrator)
     {
     }
@@ -68,7 +72,8 @@ public:
     }
 
 private:
-    const std::shared_ptr<const ImplicitEuler> time_integrator;
+    const std::shared_ptr<const dynamics::ImplicitTimeIntegrator>
+        time_integrator;
 
     /// Cached predicted poses for the rigid body
     std::vector<AffinePose> m_predicted_poses;

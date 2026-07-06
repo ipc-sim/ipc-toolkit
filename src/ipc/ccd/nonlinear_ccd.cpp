@@ -172,9 +172,8 @@ bool NonlinearCCD::point_point_ccd(
             return sqrt(point_point_distance(p0(t), p1(t)));
         },
         [&](const double t0, const double t1) {
-            return std::max(
-                p0.max_distance_from_linear(t0, t1),
-                p1.max_distance_from_linear(t0, t1));
+            return p0.max_distance_from_linear(t0, t1)
+                + p1.max_distance_from_linear(t0, t1);
         },
         [&](const double ti0, const double ti1, const double _min_distance,
             const bool no_zero_toi, double& _toi) {
