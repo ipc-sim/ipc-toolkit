@@ -2,9 +2,6 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
-#define _USE_MATH_DEFINES // For M_PI
-#include <cmath>
-
 namespace ipc::rigid {
 
 /// @brief Convert from a 3D rotation vector to a rotation matrix.
@@ -127,12 +124,12 @@ struct Pose {
         VectorMax3d axis = rotation / angle;
 
         // 3. Wrap angle to [-π, π] using remainder
-        angle = std::remainder(angle, 2.0 * M_PI);
+        angle = std::remainder(angle, 2.0 * EIGEN_PI);
 
         // 4. Canonicalize PI: Ensure -π < angle <= π
         // This prevents the representation from jumping between PI and -PI
-        if (angle <= -M_PI) {
-            angle = M_PI;
+        if (angle <= -EIGEN_PI) {
+            angle = EIGEN_PI;
             axis = -axis; // Flip axis to keep angle positive
         }
 
