@@ -14,6 +14,7 @@
 #include <finitediff.hpp>
 #include <igl/PI.h>
 
+#include <cmath>
 #include <iostream>
 
 using namespace ipc;
@@ -145,10 +146,17 @@ TEST_CASE("Affine simulator gradient and hessian", "[affine][simulator]")
         x.segment<9>(12 * i + 3) =
             initial_poses[i].rotation_matrix().reshaped();
     }
-    // Fixed seed: an unlucky perturbation can separate the cubes beyond dhat,
-    // deactivating the barrier this test requires.
-    std::srand(0);
-    x += 0.001 * Eigen::VectorXd::Random(24);
+    // Deterministic pseudo-random perturbation: an unlucky perturbation can
+    // separate the cubes beyond dhat, deactivating the barrier this test
+    // requires. std::rand() is not used here because it is implementation-
+    // defined and seeding it with std::srand(0) does not reproduce the same
+    // sequence across compilers/platforms (e.g., MSVC vs. glibc/libc++),
+    // which previously made this test flaky on Windows CI.
+    Eigen::VectorXd perturbation(24);
+    for (int i = 0; i < perturbation.size(); ++i) {
+        perturbation(i) = std::sin(12.9898 * (i + 1));
+    }
+    x += 0.001 * perturbation;
 
     sim.initialize_step();
     sim.update_collisions(x);

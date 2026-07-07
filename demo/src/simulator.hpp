@@ -138,6 +138,7 @@ public:
                   { "residual_tolerance", 1e100 } },
                 { { "type", "RegularizedProjectedNewton" },
                   { "residual_tolerance", 1e100 } } } },
+            { "allow_non_grad_convergence", true },
             { "max_iterations", 100 },
             { "grad_norm_tol", 1e-6 },
             { "line_search",
@@ -160,7 +161,7 @@ public:
         /// per-iteration [timing] lines at debug. Lower this (e.g., to warn
         /// or debug) to see them; solve failures are always reported through
         /// the toolkit's logger regardless.
-        spdlog::level::level_enum solver_log_level = spdlog::level::critical;
+        spdlog::level::level_enum solver_log_level = spdlog::level::info;
     };
 
     /// @brief Create a simulator.
