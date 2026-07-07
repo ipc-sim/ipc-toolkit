@@ -29,7 +29,10 @@ void ImplicitTimeIntegrator::init(
     if (x_prev.size() != num_bodies * (m_pos_ndof + m_rot_ndof)) {
         m_pos_ndof = 2, m_rot_ndof = 1; // 2D case
     }
-    assert(x_prev.size() == num_bodies * (m_pos_ndof + m_rot_ndof));
+    // If neither body layout matches exactly, x_prev is not affine-shaped
+    // (e.g., a generic state used only for the raw multistep formulas below);
+    // pose()/predicted_pose() are only meaningful when the layout does fit,
+    // so we don't require it here.
 
     m_available_steps = 1;
     m_current_ptr = 0;

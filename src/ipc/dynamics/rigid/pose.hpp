@@ -73,7 +73,10 @@ struct Pose {
     /// @return Identity pose with zero position and rotation
     static Pose Identity(const int dim) // NOLINT(readability-identifier-naming)
     {
-        return Pose(VectorMax3d::Zero(dim), VectorMax3d::Zero(dim));
+        assert(dim == 2 || dim == 3);
+        // Rotation DOF: 2D uses a single angle, 3D uses a rotation vector.
+        const int rot_ndof = dim == 2 ? 1 : 3;
+        return Pose(VectorMax3d::Zero(dim), VectorMax3d::Zero(rot_ndof));
     }
 
     int ndof() const { return position.size() + rotation.size(); }
