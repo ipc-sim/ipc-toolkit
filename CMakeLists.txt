@@ -351,6 +351,17 @@ if(IPC_TOOLKIT_WITH_CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     --coverage
     -fprofile-update=atomic
   )
+  if(IPC_TOOLKIT_BUILD_DEMO)
+    target_compile_options(ipc_toolkit_demo PRIVATE
+      -g         # generate debug info
+      --coverage # sets all required flags
+      -fprofile-update=atomic
+    )
+    target_link_options(ipc_toolkit_demo PUBLIC
+      --coverage
+      -fprofile-update=atomic
+    )
+  endif()
 endif()
 
 ################################################################################

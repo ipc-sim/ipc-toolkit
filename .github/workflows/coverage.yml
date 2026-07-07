@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/coverage.yml'
       - 'cmake/**'
+      - 'demo/**'
       - 'src/**'
       - 'tests/**'
       - 'CMakeLists.txt'
@@ -56,6 +57,8 @@ jobs:
           cd build
           cmake .. \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
+            -DIPC_TOOLKIT_BUILD_DEMO=ON \
+            -DIPC_TOOLKIT_WITH_GLTF=ON \
             -DIPC_TOOLKIT_WITH_CODE_COVERAGE=ON \
             -DCMAKE_BUILD_TYPE=Release \
 
