@@ -1,6 +1,11 @@
 #include <common.hpp>
 #include <bindings.hpp>
 
+#ifdef IPCTK_WITH_DEMO
+// Defined in demo/python/simulator.cpp
+void define_simulator(py::module_& m);
+#endif
+
 PYBIND11_MODULE(ipctk, m)
 {
     // py::options options;
@@ -128,5 +133,14 @@ PYBIND11_MODULE(ipctk, m)
     define_ipc(m);
 
     // dynamics
-    define_rigid_simulator(m);
+    define_rigid_bodies(m); // must precede the others (binds Pose/RigidBodies)
+    define_affine_joints(m);
+
+#ifdef IPCTK_WITH_DEMO
+    // demo simulator (demo/)
+    py::module_ demo = m.def_submodule(
+        "demo",
+        "Demo body-dynamics simulator built from IPC Toolkit components");
+    define_simulator(demo);
+#endif
 }

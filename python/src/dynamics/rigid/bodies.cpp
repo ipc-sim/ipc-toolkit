@@ -1,9 +1,11 @@
 #include <common.hpp>
 
-#include <ipc/dynamics/rigid/simulator.hpp>
+#include <ipc/config.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
+#ifdef IPC_TOOLKIT_WITH_GLTF
 #include <ipc/io/write_gltf.hpp>
 #include <ipc/io/read_gltf.hpp>
+#endif
 
 #include <pybind11/detail/common.h>
 #include <pybind11/stl_bind.h>
@@ -14,9 +16,12 @@ using namespace ipc::rigid;
 
 PYBIND11_MAKE_OPAQUE(std::vector<Pose>)
 
-void define_rigid_simulator(py::module_& m)
+void define_rigid_bodies(py::module_& m)
 {
-    py::bind_vector<std::vector<Pose>>(m, "Poses")
+    // module_local(false): stl_bind types are module-local by default, which
+    // would prevent any other extension module embedding the toolkit from
+    // returning Poses to Python.
+    py::bind_vector<std::vector<Pose>>(m, "Poses", py::module_local(false))
         .def("__repr__", [](const std::vector<Pose>& poses) {
             std::string repr = "Poses([";
             for (const auto& pose : poses) {
@@ -84,25 +89,7 @@ void define_rigid_simulator(py::module_& m)
             "__getitem__", py::overload_cast<size_t>(&RigidBodies::operator[]),
             "index"_a);
 
-    py::class_<Simulator>(m, "Simulator")
-        .def(
-            py::init<
-                const std::shared_ptr<RigidBodies>, const std::vector<Pose>&,
-                const double>(),
-            "bodies"_a, "initial_poses"_a, "dt"_a)
-        .def("run", &rigid::Simulator::run, "t_end"_a, "callback"_a)
-        .def("step", &rigid::Simulator::step)
-        .def("reset", &rigid::Simulator::reset)
-        .def_property_readonly(
-            "pose_history", &rigid::Simulator::pose_history,
-            R"ipc_Qu8mg5v7(
-             Get the history of poses in the simulation.
-
-             Returns:
-                 A list of poses at each time step.
-             )ipc_Qu8mg5v7")
-        .def_property_readonly("t", &rigid::Simulator::t);
-
+#ifdef IPC_TOOLKIT_WITH_GLTF
     m.def(
         "write_gltf", &rigid::write_gltf, R"ipc_Qu8mg5v7(
          Write a sequence of rigid body poses to a glTF file.
@@ -135,4 +122,5 @@ void define_rigid_simulator(py::module_& m)
              A pair containing the RigidBodies object and a vector of initial poses for each body.
          )ipc_Qu8mg5v7",
         "filename"_a, "convert_planes"_a = false);
+#endif
 }

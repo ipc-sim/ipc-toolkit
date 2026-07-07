@@ -2,8 +2,8 @@
 
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 
-namespace ipc::rigid {
-class ImplicitEuler;
+namespace ipc::dynamics {
+class ImplicitTimeIntegrator;
 }
 
 namespace ipc::affine {
@@ -13,7 +13,8 @@ class InertialTerm {
 public:
     InertialTerm(
         const rigid::RigidBodies& bodies,
-        const std::shared_ptr<const rigid::ImplicitEuler>& time_integrator);
+        const std::shared_ptr<const dynamics::ImplicitTimeIntegrator>&
+            time_integrator);
 
     /// @brief Update the predicted poses of the rigid bodies.
     /// @param bodies The collection of rigid bodies.
@@ -37,46 +38,12 @@ public:
         const rigid::RigidBodies& bodies,
         Eigen::ConstRef<Eigen::VectorXd> x) const;
 
-    /// @brief Compute the Hessian of the total energy for all rigid bodies.
-    /// @param bodies The collection of rigid bodies.
-    /// @param x The DOFs of the rigid bodies, where the first 3 entries are the positions and the last 3 entries are the rotations.
-    /// @return The Hessian of the total energy of the rigid bodies.
-    Eigen::MatrixXd hessian(
-        const rigid::RigidBodies& bodies,
-        Eigen::ConstRef<Eigen::VectorXd> x,
-        const PSDProjectionMethod project_hessian_to_psd =
-            PSDProjectionMethod::NONE) const;
+    /// @brief The (constant, sparse) mass matrix — also the Hessian.
+    const Eigen::SparseMatrix<double>& mass_matrix() const { return m_mass; }
 
 private:
-    static Eigen::SparseMatrix<double>
-    J(Eigen::ConstRef<Eigen::MatrixXd> rest_positions) // NOLINT
-    {
-        std::vector<Eigen::Triplet<double>> triplets;
-
-        for (int i = 0; i < rest_positions.rows(); i++) {
-            for (int j = 0; j < rest_positions.cols(); j++) {
-                triplets.emplace_back(rest_positions.rows() * j + i, j, 1);
-            }
-        }
-
-        // I ⊗ x̄
-        for (int i = 0; i < rest_positions.rows(); i++) {
-            for (int j = 0; j < rest_positions.cols(); j++) {
-                for (int k = 0; k < 3; k++) {
-                    triplets.emplace_back(
-                        i + k * rest_positions.rows(),
-                        j + k * rest_positions.cols() + 3,
-                        rest_positions(i, j));
-                }
-            }
-        }
-
-        Eigen::SparseMatrix<double> J(rest_positions.size(), 12);
-        J.setFromTriplets(triplets.begin(), triplets.end());
-        return J;
-    }
-
-    const std::shared_ptr<const rigid::ImplicitEuler> time_integrator;
+    const std::shared_ptr<const dynamics::ImplicitTimeIntegrator>
+        time_integrator;
 
     /// Mass matrix for the entire system (block diagonal with each block
     /// corresponding to a rigid body)

@@ -10,46 +10,56 @@ from scipy.spatial.transform import Rotation
 
 ipctk.set_logger_level(ipctk.debug)
 
-# mesh_names = [
-#     "bunny (lowpoly).ply",
-#     "bunny (lowpoly).ply",
-#     "bowl.ply",
-# ]
+if len(sys.argv) > 1:
+    bodies, initial_poses = ipctk.read_gltf(sys.argv[1], True)
+else:
+    mesh_names = [
+        "bunny (lowpoly).ply",
+        "bunny (lowpoly).ply",
+        "bowl.ply",
+    ]
 
-# rest_positions = []
-# edges = []
-# faces = []
-# for mesh_name in mesh_names:
-#     mesh = meshio.read(pathlib.Path(__file__).parents[2] / "tests" / "data" / mesh_name)
-#     rest_positions.append(mesh.points.astype("float64"))
-#     edges.append(ipctk.edges(mesh.cells_dict["triangle"]))
-#     faces.append(mesh.cells_dict["triangle"])
+    rest_positions = []
+    edges = []
+    faces = []
+    for mesh_name in mesh_names:
+        mesh = meshio.read(
+            pathlib.Path(__file__).parents[2] / "tests" / "data" / mesh_name
+        )
+        rest_positions.append(mesh.points.astype("float64"))
+        edges.append(ipctk.edges(mesh.cells_dict["triangle"]))
+        faces.append(mesh.cells_dict["triangle"])
 
-# initial_poses = ipctk.Poses(
-#     [
-#         ipctk.Pose(np.array([1.0, 1.5, 0]), np.random.random(3)),
-#         ipctk.Pose(np.array([-1.0, 2.0, 0.0]), np.array([0.0, np.pi / 4, 0.0])),
-#         ipctk.Pose(np.array([0.0, 1.1, 0.0]), np.zeros(3)),
-#     ]
-# )
+    initial_poses = ipctk.Poses(
+        [
+            ipctk.Pose(np.array([1.0, 1.5, 0]), np.random.random(3)),
+            ipctk.Pose(np.array([-1.0, 2.0, 0.0]), np.array([0.0, np.pi / 4, 0.0])),
+            ipctk.Pose(np.array([0.0, 1.1, 0.0]), np.zeros(3)),
+        ]
+    )
 
-# bodies = ipctk.RigidBodies(
-#     rest_positions=rest_positions,
-#     edges=edges,
-#     faces=faces,
-#     densities=np.full(len(mesh_names), 1000.0),
-#     initial_poses=initial_poses,
-# )
+    bodies = ipctk.RigidBodies(
+        rest_positions=rest_positions,
+        edges=edges,
+        faces=faces,
+        densities=np.full(len(mesh_names), 1000.0),
+        initial_poses=initial_poses,
+    )
 
-bodies, initial_poses = ipctk.read_gltf(sys.argv[1], True)
+    # Add a ground plane at y = 0 for the bodies to rest on. `planes` is a
+    # read/write property that returns a copy, so assign the whole list.
+    bodies.planes = [ipctk.Hyperplane(np.array([0.0, 1.0, 0.0]), np.zeros(3))]
 
 # for pose in initial_poses:
 #     print(pose)
 
 ps.init()
 
-ps.set_ground_plane_height_mode("manual")
-ps.set_ground_plane_height(bodies.planes[0].origin()[1])
+if len(bodies.planes) > 0:
+    ps.set_ground_plane_height_mode("manual")
+    ps.set_ground_plane_height(bodies.planes[0].origin()[1])
+else:
+    ps.set_ground_plane_mode("none")
 
 ps.set_give_focus_on_show(True)
 
@@ -77,32 +87,34 @@ for d in range(3):
         vectortype="standard",
     )
 
-sim = ipctk.Simulator(
+settings = ipctk.demo.Simulator.Settings()
+settings.body_dynamics = ipctk.demo.Simulator.BodyDynamics.RIGID
+settings.bdf_order = 2
+
+sim = ipctk.demo.Simulator(
     bodies=bodies,
     initial_poses=initial_poses,
     dt=1 / 60.0,
+    settings=settings,
 )
 
 playing = False
 
 
 def update_mesh():
-    ps_mesh.update_vertex_positions(bodies.vertices(sim.pose_history[-1]))
+    # sim.rigid_poses / sim.poses return only the current frame (O(num_bodies));
+    # the *_history properties copy the entire growing history on each access.
+    poses = sim.rigid_poses
+    affine_poses = sim.poses
+    ps_mesh.update_vertex_positions(bodies.vertices(poses))
     ps_com.update_point_positions(
-        np.vstack(
-            [
-                sim.pose_history[-1][i].position.reshape(-1, 3)
-                for i in range(len(bodies))
-            ]
-        )
+        np.vstack([poses[i].position.reshape(-1, 3) for i in range(len(bodies))])
     )
     for d in range(3):
         dim = np.zeros((len(bodies), 3))
         for i in range(len(bodies)):
             dim[i, d] = 1  # 100 * bodies[i].moment_of_inertia[d]
-            R = Rotation.from_rotvec(
-                sim.pose_history[-1][i].rotation.copy()
-            ).as_matrix()
+            R = np.array(affine_poses[i].rotation)
             dim[i, :] = R @ dim[i, :]
         ps_com.add_vector_quantity(
             "xyz"[d],
@@ -132,7 +144,7 @@ def callback():
         ipctk.write_gltf(
             "output.glb",
             bodies,
-            sim.pose_history,
+            sim.rigid_pose_history,
             1 / 60.0,
         )
 

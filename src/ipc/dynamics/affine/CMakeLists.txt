@@ -1,6 +1,12 @@
 set(SOURCES
+  affine_dof.cpp
+  affine_dof.hpp
+  body_forces.cpp
+  body_forces.hpp
   inertial_term.cpp
   inertial_term.hpp
+  joints.cpp
+  joints.hpp
   orthogonality_potential.cpp
   orthogonality_potential.hpp
 )

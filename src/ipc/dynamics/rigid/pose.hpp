@@ -2,7 +2,8 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
-#include <igl/PI.h>
+#define _USE_MATH_DEFINES // For M_PI
+#include <cmath>
 
 namespace ipc::rigid {
 
@@ -126,12 +127,12 @@ struct Pose {
         VectorMax3d axis = rotation / angle;
 
         // 3. Wrap angle to [-π, π] using remainder
-        angle = std::remainder(angle, 2.0 * igl::PI);
+        angle = std::remainder(angle, 2.0 * M_PI);
 
         // 4. Canonicalize PI: Ensure -π < angle <= π
         // This prevents the representation from jumping between PI and -PI
-        if (angle <= -igl::PI) {
-            angle = igl::PI;
+        if (angle <= -M_PI) {
+            angle = M_PI;
             axis = -axis; // Flip axis to keep angle positive
         }
 
@@ -324,8 +325,7 @@ struct AffinePose {
             }
         }
 
-        Eigen::SparseMatrix<double> J(
-            rest_positions.size(), dim + dim * dim);
+        Eigen::SparseMatrix<double> J(rest_positions.size(), dim + dim * dim);
         J.setFromTriplets(triplets.begin(), triplets.end());
         return J;
     }

@@ -83,13 +83,16 @@ if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
 endif()
 
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-  option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
-  option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
+  option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"          ON)
+  option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings"    OFF)
+  option(IPC_TOOLKIT_BUILD_DEMO   "Build the demo simulator"  ON)
 else()
-  # If this is not the top-level project, we don't want to build tests or Python
-  # bindings. This is useful for projects that use IPC Toolkit as a submodule.
-  set(IPC_TOOLKIT_BUILD_TESTS  OFF CACHE BOOL "Build unit-tests"      FORCE)
-  set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings" FORCE)
+  # If this is not the top-level project, we don't want to build tests, Python
+  # bindings, or the demo simulator. This is useful for projects that use IPC
+  # Toolkit as a submodule.
+  set(IPC_TOOLKIT_BUILD_TESTS  OFF CACHE BOOL "Build unit-tests"          FORCE)
+  set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings"     FORCE)
+  set(IPC_TOOLKIT_BUILD_DEMO   OFF CACHE BOOL "Build the demo simulator"  FORCE)
 endif()
 
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
@@ -98,7 +101,7 @@ option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle inters
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
 option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
-option(IPC_TOOLKIT_WITH_GLTF                  "Enable glTF I/O (tinygltf)"                     ON)
+option(IPC_TOOLKIT_WITH_GLTF                  "Enable glTF I/O (tinygltf)"                    OFF)
 option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
 option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
 option(IPC_TOOLKIT_WITH_TRACY                 "Enable Tracy frame profiler"                   OFF)
@@ -311,6 +314,16 @@ endif()
 
 # Use C++17
 target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
+
+################################################################################
+# Demo simulator (application-side code: solver, problem glue, stepping loop)
+################################################################################
+
+# Added before the tests and Python bindings so both can optionally include
+# the demo's tests and bindings.
+if(IPC_TOOLKIT_BUILD_DEMO)
+  add_subdirectory(demo)
+endif()
 
 ################################################################################
 # Tests

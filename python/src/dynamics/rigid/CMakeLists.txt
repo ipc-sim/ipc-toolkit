@@ -1,5 +1,5 @@
 set(SOURCES
-  simulator.cpp
+  bodies.cpp
 )
 
 target_sources(ipctk PRIVATE ${SOURCES})
