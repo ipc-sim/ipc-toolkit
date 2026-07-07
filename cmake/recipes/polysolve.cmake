@@ -30,7 +30,7 @@ include(json)
 include(spdlog)
 
 include(CPM)
-CPMAddPackage("gh:polyfem/polysolve#39cfe42dc63cd01792df77c85767ec4dc9b769cc")
+CPMAddPackage("gh:polyfem/polysolve#1b01e6cec13c6813ae48846d1f98654bbbf1402b")
 
 # Folder name for IDE
 set_target_properties(polysolve PROPERTIES FOLDER "ThirdParty")
