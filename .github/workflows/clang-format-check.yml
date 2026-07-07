@@ -5,6 +5,7 @@ on:
       - '.github/workflows/clang-format-check.yml'
       - '.clang-format'
       - 'src/**'
+      - 'demo/**'
       - 'tests/src/**'
       - 'python/src/**'
   pull_request:
@@ -12,6 +13,7 @@ on:
       - '.github/workflows/clang-format-check.yml'
       - '.clang-format'
       - 'src/**'
+      - 'demo/**'
       - 'tests/src/**'
       - 'python/src/**'
 jobs:
@@ -22,6 +24,7 @@ jobs:
       matrix:
         path:
           - 'src'
+          - 'demo'
           - 'tests/src'
           - 'python/src'
     steps:

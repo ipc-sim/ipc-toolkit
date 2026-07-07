@@ -64,9 +64,6 @@ jobs:
         if: runner.os == 'Windows'
         uses: seanmiddleditch/gha-setup-ninja@master
 
-      # windows-latest images have shipped MinGW GCC ahead of MSVC on PATH,
-      # which Ninja picks up instead of cl.exe. Use vswhere (via this action)
-      # to find MSVC regardless of VS edition/path and put it on PATH.
       - name: Setup MSVC (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
@@ -104,8 +101,6 @@ jobs:
         shell: cmd
         run: |
           cmake -G Ninja ^
-            -DCMAKE_C_COMPILER=cl ^
-            -DCMAKE_CXX_COMPILER=cl ^
             -DIPC_TOOLKIT_BUILD_TESTS=ON ^
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
             -B build ^
