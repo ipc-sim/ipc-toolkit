@@ -73,7 +73,7 @@ public:
     Eigen::VectorXd to_full(Eigen::ConstRef<Eigen::VectorXd> z) const;
 
     /// @brief The change-of-variable matrix U (x = Uz).
-    const Eigen::MatrixXd& U() const { return m_U; } // NOLINT
+    const Eigen::MatrixXd& U() const { return m_u; } // NOLINT
 
     /// @brief The pinned values s of the first m reduced coordinates.
     const Eigen::VectorXd& rhs() const { return m_s; }
@@ -103,8 +103,8 @@ private:
     std::vector<double> m_rhs;
 
     bool m_finalized = false;
-    Eigen::MatrixXd m_U; ///< x = Uz (permutation folded in)
-    Eigen::MatrixXd m_V; ///< z = Vx (permutation folded in)
+    Eigen::MatrixXd m_u; ///< x = Uz (permutation folded in)
+    Eigen::MatrixXd m_v; ///< z = Vx (permutation folded in)
     Eigen::VectorXd m_s; ///< pinned values of z.head(m)
 };
 

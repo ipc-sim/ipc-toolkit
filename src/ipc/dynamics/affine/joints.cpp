@@ -173,11 +173,11 @@ void JointConstraints::finalize()
         Eigen::MatrixXd::Identity(n, n));
 
     // Fold the DOF permutation in: x_perm[i] = x[perm[i]]
-    m_U.setZero(n, n);
-    m_V.setZero(n, n);
+    m_u.setZero(n, n);
+    m_v.setZero(n, n);
     for (int i = 0; i < n; i++) {
-        m_U.row(perm[i]) = U_perm.row(i);
-        m_V.col(perm[i]) = V_perm.col(i);
+        m_u.row(perm[i]) = U_perm.row(i);
+        m_v.col(perm[i]) = V_perm.col(i);
     }
 
     m_s = s;
@@ -188,14 +188,14 @@ Eigen::VectorXd
 JointConstraints::to_reduced(Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     assert(m_finalized);
-    return m_V * x;
+    return m_v * x;
 }
 
 Eigen::VectorXd
 JointConstraints::to_full(Eigen::ConstRef<Eigen::VectorXd> z) const
 {
     assert(m_finalized);
-    return m_U * z;
+    return m_u * z;
 }
 
 Eigen::VectorXd
