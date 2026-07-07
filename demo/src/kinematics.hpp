@@ -75,7 +75,8 @@ public:
     poses(Eigen::ConstRef<Eigen::VectorXd> x) const = 0;
 
     /// @brief Build the DOF vector from rigid poses.
-    virtual Eigen::VectorXd dof(const std::vector<rigid::Pose>& poses) const = 0;
+    virtual Eigen::VectorXd
+    dof(const std::vector<rigid::Pose>& poses) const = 0;
 
     // -----------------------------------------------------------------------
     // Time-integrator bridge
@@ -126,7 +127,8 @@ public:
     virtual void clear_candidates() = 0;
 
 protected:
-    explicit Kinematics(const std::shared_ptr<const rigid::RigidBodies>& bodies);
+    explicit Kinematics(
+        const std::shared_ptr<const rigid::RigidBodies>& bodies);
 
     /// @brief The bodies in the simulation.
     std::shared_ptr<const rigid::RigidBodies> m_bodies;

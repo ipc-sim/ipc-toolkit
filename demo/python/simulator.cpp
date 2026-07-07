@@ -1,11 +1,10 @@
-#include <common.hpp>
-
 #include <ipc/dynamics/affine/joints.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
-#include <simulator.hpp>
 
+#include <common.hpp>
 #include <pybind11/stl_bind.h>
 #include <pybind11_json/pybind11_json.hpp>
+#include <simulator.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
@@ -80,8 +79,7 @@ void define_simulator(py::module_& m)
              ``settings.solver_params = {**settings.solver_params, "max_iterations": 50}``.
              )ipc_Qu8mg5v7")
         .def_readwrite(
-            "linear_solver_params",
-            &Simulator::Settings::linear_solver_params,
+            "linear_solver_params", &Simulator::Settings::linear_solver_params,
             "polysolve linear solver parameters (a dict; empty selects "
             "polysolve's default Eigen solver). Returns a copy -- assign a "
             "whole dict.")
@@ -106,8 +104,9 @@ void define_simulator(py::module_& m)
         .def(
             py::init<
                 const std::shared_ptr<rigid::RigidBodies>&,
-                const std::vector<rigid::Pose>&, const std::vector<rigid::Pose>&,
-                const double, const Simulator::Settings&>(),
+                const std::vector<rigid::Pose>&,
+                const std::vector<rigid::Pose>&, const double,
+                const Simulator::Settings&>(),
             R"ipc_Qu8mg5v7(
              Create a simulator with initial velocities.
 
@@ -135,8 +134,7 @@ void define_simulator(py::module_& m)
              )ipc_Qu8mg5v7",
             "bodies"_a, "initial_poses"_a, "joints"_a, "dt"_a,
             "settings"_a = Simulator::Settings())
-        .def_property(
-            "gravity", &Simulator::gravity, &Simulator::set_gravity)
+        .def_property("gravity", &Simulator::gravity, &Simulator::set_gravity)
         .def_property_readonly("settings", &Simulator::settings)
         .def(
             "run", &Simulator::run, "t_end"_a,

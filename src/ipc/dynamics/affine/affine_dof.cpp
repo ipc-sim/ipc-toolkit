@@ -27,8 +27,8 @@ dof_to_poses(Eigen::ConstRef<Eigen::VectorXd> x, const int dim)
     return poses;
 }
 
-Eigen::MatrixXd vertices(
-    const rigid::RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
+Eigen::MatrixXd
+vertices(const rigid::RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
 {
     const int dim = bodies.dim();
 

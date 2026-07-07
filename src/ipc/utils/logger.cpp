@@ -30,8 +30,7 @@ spdlog::logger& logger()
         // two Python modules). See
         // https://github.com/gabime/spdlog/wiki/2.-Creating-loggers
         static auto default_logger = std::make_shared<spdlog::logger>(
-            "ipctk",
-            std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+            "ipctk", std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
         return *default_logger;
     }
 }

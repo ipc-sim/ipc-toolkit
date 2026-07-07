@@ -73,14 +73,12 @@ Eigen::VectorXd BDF::predicted_positions() const
         + betas(order() - 1) * dt() * weighted_sum_v_prevs();
 }
 
-Eigen::VectorXd
-BDF::compute_position(Eigen::ConstRef<Eigen::VectorXd> v) const
+Eigen::VectorXd BDF::compute_position(Eigen::ConstRef<Eigen::VectorXd> v) const
 {
     return weighted_sum_x_prevs() + beta_dt() * v;
 }
 
-Eigen::VectorXd
-BDF::compute_velocity(Eigen::ConstRef<Eigen::VectorXd> x) const
+Eigen::VectorXd BDF::compute_velocity(Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     return (x - weighted_sum_x_prevs()) / beta_dt();
 }

@@ -75,8 +75,8 @@ namespace {
             return rigid::Pose::from_poses(poses);
         }
 
-        Eigen::VectorXd to_integrator_state(
-            Eigen::ConstRef<Eigen::VectorXd> x) const override
+        Eigen::VectorXd
+        to_integrator_state(Eigen::ConstRef<Eigen::VectorXd> x) const override
         {
             assert(x.size() == ndof());
             Eigen::VectorXd X(12 * m_bodies->num_bodies());
@@ -89,8 +89,8 @@ namespace {
             return X;
         }
 
-        Eigen::VectorXd from_integrator_state(
-            Eigen::ConstRef<Eigen::VectorXd> X) const override
+        Eigen::VectorXd
+        from_integrator_state(Eigen::ConstRef<Eigen::VectorXd> X) const override
         {
             assert(X.size() == 12 * m_bodies->num_bodies());
             Eigen::VectorXd x(ndof());
@@ -208,14 +208,14 @@ namespace {
             return x;
         }
 
-        Eigen::VectorXd to_integrator_state(
-            Eigen::ConstRef<Eigen::VectorXd> x) const override
+        Eigen::VectorXd
+        to_integrator_state(Eigen::ConstRef<Eigen::VectorXd> x) const override
         {
             return x; // The DOFs are the integrator state
         }
 
-        Eigen::VectorXd from_integrator_state(
-            Eigen::ConstRef<Eigen::VectorXd> X) const override
+        Eigen::VectorXd
+        from_integrator_state(Eigen::ConstRef<Eigen::VectorXd> X) const override
         {
             return X; // The DOFs are the integrator state
         }

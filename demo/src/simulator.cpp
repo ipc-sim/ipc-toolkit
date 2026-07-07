@@ -14,7 +14,6 @@
 
 #include <polysolve/nonlinear/PostStepData.hpp>
 #include <polysolve/nonlinear/Solver.hpp>
-
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
@@ -182,8 +181,7 @@ Simulator::Simulator(
     // silenced independently of the toolkit's logger. Created without
     // registering it in spdlog's global registry (see ipc/utils/logger.cpp).
     m_solver_logger = std::make_shared<spdlog::logger>(
-        "polysolve",
-        std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+        "polysolve", std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
     m_solver_logger->set_level(m_settings.solver_log_level);
 
     m_solver = polysolve::nonlinear::Solver::create(
@@ -292,7 +290,8 @@ double Simulator::energy(Eigen::ConstRef<Eigen::VectorXd> x) const
 
     return energy
         + (*m_barrier_potential)(
-               *m_normal_collisions, *m_bodies, m_kinematics->world_vertices(x));
+               *m_normal_collisions, *m_bodies,
+               m_kinematics->world_vertices(x));
 }
 
 Eigen::VectorXd

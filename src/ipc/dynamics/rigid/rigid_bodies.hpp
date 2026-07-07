@@ -206,7 +206,6 @@ public:
     }
 
 private:
-
     /// @brief Rigid bodies in the system
     std::vector<RigidBody> bodies;
 

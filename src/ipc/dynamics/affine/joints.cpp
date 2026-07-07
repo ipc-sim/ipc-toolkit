@@ -150,8 +150,7 @@ void JointConstraints::finalize()
         }
         // Swap the largest remaining coefficient onto the diagonal
         int j_star;
-        const double pivot =
-            C.row(i).tail(n - i).cwiseAbs().maxCoeff(&j_star);
+        const double pivot = C.row(i).tail(n - i).cwiseAbs().maxCoeff(&j_star);
         j_star += i;
         if (pivot < 1e-12) {
             logger().error(

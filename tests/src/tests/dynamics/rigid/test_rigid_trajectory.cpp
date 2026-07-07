@@ -106,8 +106,7 @@ TEST_CASE(
         for (int i = 0; i < 4; i++) {
             const Eigen::Vector2d r =
                 (Eigen::Vector2d::Random() + Eigen::Vector2d::Ones()) / 2;
-            intervals.emplace_back(
-                std::min(r(0), r(1)), std::max(r(0), r(1)));
+            intervals.emplace_back(std::min(r(0), r(1)), std::max(r(0), r(1)));
         }
 
         for (const auto& [t0, t1] : intervals) {
@@ -145,8 +144,7 @@ TEST_CASE("Rigid trajectory bound tightness", "[rigid][trajectory]")
     const double delta = GENERATE(0.1, 0.5, 1.0, igl::PI / 2);
 
     const Pose pose_t0(Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
-    const Pose pose_t1(
-        Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, delta));
+    const Pose pose_t1(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, delta));
     const RigidTrajectory traj(Eigen::Vector3d(1, 0, 0), pose_t0, pose_t1);
 
     const double bound = traj.max_distance_from_linear(0, 1);
@@ -182,11 +180,11 @@ public:
     {
         const filib::Interval one_minus_t = filib::Interval(1.0) - t;
 
-        const VectorMax3I p = one_minus_t
-                * m_pose_t0.position.template cast<filib::Interval>()
+        const VectorMax3I p =
+            one_minus_t * m_pose_t0.position.template cast<filib::Interval>()
             + t * m_pose_t1.position.template cast<filib::Interval>();
-        const VectorMax3I theta = one_minus_t
-                * m_pose_t0.rotation.template cast<filib::Interval>()
+        const VectorMax3I theta =
+            one_minus_t * m_pose_t0.rotation.template cast<filib::Interval>()
             + t * m_pose_t1.rotation.template cast<filib::Interval>();
 
         const VectorMax3I x_rest =
@@ -210,8 +208,8 @@ public:
             -theta(1), theta(0), filib::Interval(0.0);
         const filib::Interval s = sinc(angle);
         const filib::Interval s_half = sinc(angle * filib::Interval(0.5));
-        Matrix3I R = s * K
-            + (filib::Interval(0.5) * s_half * s_half) * (K * K).eval();
+        Matrix3I R =
+            s * K + (filib::Interval(0.5) * s_half * s_half) * (K * K).eval();
         R.diagonal().array() += filib::Interval(1.0);
         return R * x_rest + p;
     }
@@ -235,8 +233,7 @@ private:
 
 } // namespace
 
-TEST_CASE(
-    "Rigid trajectory interval cross-check", "[rigid][trajectory][filib]")
+TEST_CASE("Rigid trajectory interval cross-check", "[rigid][trajectory][filib]")
 {
     const int dim = GENERATE(2, 3);
     const double max_angle = GENERATE(0.1, 1.0, igl::PI);
@@ -281,8 +278,7 @@ TEST_CASE("Rigid trajectory point-edge CCD", "[rigid][trajectory][ccd]")
     const Pose rotated_2d(
         Eigen::Vector2d::Zero(), VectorMax3d::Constant(1, igl::PI));
 
-    const RigidTrajectory p(
-        Eigen::Vector2d(0, 0.5), identity_2d, identity_2d);
+    const RigidTrajectory p(Eigen::Vector2d(0, 0.5), identity_2d, identity_2d);
     const RigidTrajectory e0(Eigen::Vector2d(-1, 0), identity_2d, rotated_2d);
     const RigidTrajectory e1(Eigen::Vector2d(1, 0), identity_2d, rotated_2d);
 
@@ -314,7 +310,8 @@ TEST_CASE("Rigid trajectory edge-edge CCD", "[rigid][trajectory][ccd]")
         Eigen::Vector3d(1, 0.5, 0), identity_3d, identity_3d);
 
     double toi;
-    const bool collision = NonlinearCCD().edge_edge_ccd(ea0, ea1, eb0, eb1, toi);
+    const bool collision =
+        NonlinearCCD().edge_edge_ccd(ea0, ea1, eb0, eb1, toi);
 
     CHECK(collision);
     CHECK(toi <= 30 / 360.0);
@@ -329,10 +326,8 @@ TEST_CASE("Rigid trajectory point-triangle CCD", "[rigid][trajectory][ccd]")
     const Pose rotated_3d(
         Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, igl::PI));
 
-    const RigidTrajectory t0(
-        Eigen::Vector3d(1, 0, 0), identity_3d, rotated_3d);
-    const RigidTrajectory t1(
-        Eigen::Vector3d(x, 0, 1), identity_3d, rotated_3d);
+    const RigidTrajectory t0(Eigen::Vector3d(1, 0, 0), identity_3d, rotated_3d);
+    const RigidTrajectory t1(Eigen::Vector3d(x, 0, 1), identity_3d, rotated_3d);
     const RigidTrajectory t2(
         Eigen::Vector3d(x, 0, -1), identity_3d, rotated_3d);
     const RigidTrajectory p(

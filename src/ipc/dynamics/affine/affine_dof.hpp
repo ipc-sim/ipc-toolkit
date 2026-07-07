@@ -14,8 +14,8 @@ std::vector<rigid::AffinePose>
 dof_to_poses(Eigen::ConstRef<Eigen::VectorXd> x, const int dim);
 
 /// @brief Compute the world-space collision mesh vertices from the affine DOFs.
-Eigen::MatrixXd vertices(
-    const rigid::RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x);
+Eigen::MatrixXd
+vertices(const rigid::RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x);
 
 /// @brief The block-diagonal Jacobian dV/dx of the collision mesh vertices
 /// with respect to the affine DOFs.

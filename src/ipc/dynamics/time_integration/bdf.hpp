@@ -6,8 +6,9 @@ namespace ipc::dynamics {
 
 /// @brief Backward Differentiation Formulas (BDF) of order 1 ≤ n ≤ 6.
 /// \f[
-///     x^{t+1} = \left(\sum_{i=0}^{n-1} \alpha_i x^{t-i}\right) + \beta\Delta t\, v^{t+1}, \quad
-///     v^{t+1} = \left(\sum_{i=0}^{n-1} \alpha_i v^{t-i}\right) + \beta\Delta t\, a^{t+1}
+///     x^{t+1} = \left(\sum_{i=0}^{n-1} \alpha_i x^{t-i}\right) + \beta\Delta
+///     t\, v^{t+1}, \quad v^{t+1} = \left(\sum_{i=0}^{n-1} \alpha_i
+///     v^{t-i}\right) + \beta\Delta t\, a^{t+1}
 /// \f]
 /// BDF-1 is the standard implicit (backward) Euler method.
 /// @see https://en.wikipedia.org/wiki/Backward_differentiation_formula
@@ -19,7 +20,8 @@ public:
     explicit BDF(const int target_order) { set_target_order(target_order); }
 
     /// @brief Predicted positions
-    /// \f$\hat{x} = \sum_i \alpha_i x^{t-i} + \beta\Delta t \sum_i \alpha_i v^{t-i}\f$.
+    /// \f$\hat{x} = \sum_i \alpha_i x^{t-i} + \beta\Delta t \sum_i \alpha_i
+    /// v^{t-i}\f$.
     Eigen::VectorXd predicted_positions() const override;
 
     /// @brief \f$x = \sum_i \alpha_i x^{t-i} + \beta\Delta t\, v\f$.
