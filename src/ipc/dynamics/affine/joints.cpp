@@ -2,6 +2,7 @@
 
 #include <ipc/utils/logger.hpp>
 
+#include <algorithm>
 #include <numeric>
 #include <stdexcept>
 
@@ -208,12 +209,10 @@ void JointConstraints::finalize()
 bool JointConstraints::is_body_constrained(const size_t body) const
 {
     const int ndof = body_ndof();
-    for (const auto& row : m_rows) {
-        if (!row.segment(ndof * body, ndof).isZero()) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(
+        m_rows.begin(), m_rows.end(), [&](const auto& row) {
+            return !row.segment(ndof * body, ndof).isZero();
+        });
 }
 
 int JointConstraints::free_reduced_index(const int full_dof) const
