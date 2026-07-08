@@ -19,7 +19,7 @@ void BodyForces::update(
             continue; // no gravity or external forces
         }
         m_wrench.segment(ndof * i, dim) =
-            -(bodies[i].mass() * gravity()
+            -(bodies[i].mass() * gravity().head(dim)
               + bodies[i].external_force().position);
 
         const auto& torque = bodies[i].external_force().rotation;
