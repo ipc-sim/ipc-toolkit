@@ -2,6 +2,7 @@
 
 #include <ipc/dynamics/affine/pose.hpp>
 #include <ipc/dynamics/rigid/pose.hpp>
+#include <ipc/dynamics/to_affine.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
@@ -71,6 +72,13 @@ public:
     // Pose conversions
     // -----------------------------------------------------------------------
 
+    /// @brief The to-affine map (DOFs → affine pose coordinates) and its chain
+    /// rule for this parameterization.
+    std::shared_ptr<const dynamics::ToAffine> to_affine() const
+    {
+        return m_to_affine;
+    }
+
     /// @brief Per-body affine poses at x (exact for rigid: A = R(θ)).
     virtual std::vector<affine::Pose>
     poses(Eigen::ConstRef<Eigen::VectorXd> x) const = 0;
@@ -133,6 +141,9 @@ protected:
 
     /// @brief The bodies in the simulation.
     std::shared_ptr<const rigid::RigidBodies> m_bodies;
+
+    /// @brief The to-affine map for this parameterization (set by subclasses).
+    std::shared_ptr<const dynamics::ToAffine> m_to_affine;
 };
 
 } // namespace ipc::demo

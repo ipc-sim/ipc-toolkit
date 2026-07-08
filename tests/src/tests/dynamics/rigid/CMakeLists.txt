@@ -1,7 +1,4 @@
 set(SOURCES
-  test_augmented_lagrangian.cpp
-  test_body_forces.cpp
-  test_inertial_term.cpp
   test_mass.cpp
   test_pose.cpp
   test_rigid_bodies.cpp

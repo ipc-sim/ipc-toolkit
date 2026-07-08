@@ -33,7 +33,7 @@ void ImplicitTimeIntegrator::init(
         // NOTE: This inference is ambiguous (e.g., a multiple of 4 bodies in
         //       2D); pass the layout explicitly when decoding poses matters.
         if (x_prev.size() != num_bodies * (m_pos_ndof + m_rot_ndof)) {
-            m_pos_ndof = 2, m_rot_ndof = 1; // 2D case
+            m_pos_ndof = 2, m_rot_ndof = 4; // 2D case: [p (2); vec(A) (4)]
         }
     }
     // If neither body layout matches exactly, x_prev is not affine-shaped
@@ -108,12 +108,8 @@ affine::Pose ImplicitTimeIntegrator::pose(
     affine::Pose pose;
 
     pose.position = x.segment(i * (m_pos_ndof + m_rot_ndof), m_pos_ndof);
-    if (m_rot_ndof == 1) {
-        // 2D rigid: the raw (unwrapped) angle θ, stored as a 1×1 "rotation".
-        pose.rotation.resize(1, 1);
-        pose.rotation(0, 0) = x(i * (m_pos_ndof + m_rot_ndof) + m_pos_ndof);
-    } else if (m_rot_ndof == 4) {
-        // 2D affine: vec(A) column-major.
+    if (m_rot_ndof == 4) {
+        // 2D: vec(A) column-major.
         pose.rotation =
             x.segment(i * (m_pos_ndof + m_rot_ndof) + m_pos_ndof, m_rot_ndof)
                 .reshaped(2, 2);

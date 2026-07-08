@@ -4,8 +4,9 @@
 
 namespace ipc::affine {
 
-/// @brief Augmented Lagrangian driving KINEMATIC affine bodies to per-step
-/// target poses (the affine analogue of rigid::AugmentedLagrangian).
+/// @brief Augmented Lagrangian driving KINEMATIC bodies to per-step target
+/// poses in affine coordinates [Ferguson et al. 2021]. The rigid
+/// parameterization reaches it through the to-affine map's chain rule.
 ///
 /// With y = [p; vec(A)] per body and the exact ABD mass blocks
 /// M = blkdiag(m I₃, W) with W = J ⊗ I₃ (diagonal), the two channels are

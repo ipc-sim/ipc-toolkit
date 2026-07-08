@@ -24,8 +24,7 @@ void BodyForces::update(
 
         const auto& torque = bodies[i].external_force().rotation;
         if (!torque.isZero()) {
-            // Transform the world space torque into body space (as in
-            // rigid::BodyForces::update)
+            // Transform the world-space torque into body space.
             const auto& A = poses[i].rotation;
             if (dim == 3) {
                 const Eigen::Matrix3d tau =

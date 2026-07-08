@@ -266,20 +266,11 @@ void Simulator::initialize_time_integrator(
 {
     const int dim = m_bodies->dim();
 
-    // Per-body integrator-state layout:
-    // - 3D (both models): [p (3); vec(Q) (9)]
-    // - 2D rigid:         [p (2); θ (1)] (the DOFs themselves)
-    // - 2D affine:        [p (2); vec(Q) (4)]
-    // NOTE: initialize_time_integrator runs before initialize_terms in the
-    // constructor, so decide by the settings (is_affine() checks the terms).
-    const bool affine = m_settings.body_dynamics == BodyDynamics::AFFINE;
-    int pos_ndof = dim;
-    int rot_ndof;
-    if (dim == 3) {
-        rot_ndof = 9;
-    } else {
-        rot_ndof = affine ? 4 : 1;
-    }
+    // The integrator state is affine-shaped [p (dim); vec(Q) (dim²)] per body
+    // in both models and dimensions (the rigid optimization DOFs [p; θ] are
+    // mapped to/from this state by the parameterization's to-affine map).
+    const int pos_ndof = dim;
+    const int rot_ndof = dim * dim;
     const int state_ndof = pos_ndof + rot_ndof;
 
     Eigen::VectorXd x0 =
@@ -305,12 +296,8 @@ void Simulator::initialize_time_integrator(
 
         v0.segment(state_ndof * i, dim) = velocity.position;
 
-        if (rot_ndof == 1) {
-            // 2D rigid: raw angle and angular velocity.
-            x0(state_ndof * i + dim) = poses[i].rotation(0);
-            v0(state_ndof * i + dim) = velocity.rotation(0);
-        } else if (rot_ndof == 4) {
-            // 2D affine: Q̇ = ω S Q with S the 2D skew generator.
+        if (rot_ndof == 4) {
+            // 2D (both models): Q̇ = ω S Q with S the 2D skew generator.
             const Eigen::Matrix2d Q_t0 = poses[i].rotation_matrix();
             x0.segment<4>(state_ndof * i + dim) = Q_t0.reshaped();
             v0.segment<4>(state_ndof * i + dim) =
@@ -338,68 +325,27 @@ void Simulator::initialize_time_integrator(
 
 void Simulator::initialize_terms()
 {
-    m_rigid_inertial.reset();
-    m_rigid_body_forces.reset();
-    m_rigid_al.reset();
-    m_affine_inertial.reset();
-    m_affine_body_forces.reset();
-    m_orthogonality.reset();
-    m_affine_al.reset();
+    affine::AugmentedLagrangian::Params al_params;
+    al_params.initial_penalty = m_settings.al_initial_penalty;
+    al_params.max_penalty = m_settings.al_max_penalty;
+    al_params.satisfied_progress = m_settings.al_satisfied_progress;
+    al_params.stall_progress = m_settings.al_stall_progress;
 
-    switch (m_settings.body_dynamics) {
-    case BodyDynamics::RIGID: {
-        m_rigid_inertial.emplace(m_time_integrator);
-        m_rigid_body_forces.emplace();
-        m_rigid_body_forces->set_gravity(m_settings.gravity);
-        rigid::AugmentedLagrangian::Params al_params;
-        al_params.initial_penalty = m_settings.al_initial_penalty;
-        al_params.max_penalty = m_settings.al_max_penalty;
-        al_params.satisfied_progress = m_settings.al_satisfied_progress;
-        al_params.stall_progress = m_settings.al_stall_progress;
-        m_rigid_al.emplace(al_params);
-        break;
-    }
-    case BodyDynamics::AFFINE: {
-        m_affine_inertial.emplace(*m_bodies, m_time_integrator);
-        m_affine_body_forces.emplace();
-        m_affine_body_forces->set_gravity(m_settings.gravity);
-        m_orthogonality.emplace(m_settings.orthogonality_stiffness);
-        affine::AugmentedLagrangian::Params al_params;
-        al_params.initial_penalty = m_settings.al_initial_penalty;
-        al_params.max_penalty = m_settings.al_max_penalty;
-        al_params.satisfied_progress = m_settings.al_satisfied_progress;
-        al_params.stall_progress = m_settings.al_stall_progress;
-        m_affine_al.emplace(al_params);
-        break;
-    }
-    }
+    // The orthogonality penalty only applies to the affine (identity) map; the
+    // BodyPotentials ignores it for the rigid map.
+    m_body_potentials.emplace(
+        *m_bodies, m_time_integrator, m_kinematics->to_affine(),
+        m_settings.orthogonality_stiffness, al_params);
+    m_body_potentials->set_gravity(m_settings.gravity);
 }
 
-void Simulator::update_terms()
-{
-    // Step-start poses (used to transform world-space torques to body space).
-    std::vector<affine::Pose> poses(m_bodies->num_bodies());
-    for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
-        poses[i] = m_time_integrator->pose(i);
-    }
-
-    if (is_affine()) {
-        m_affine_inertial->update(*m_bodies);
-        m_affine_body_forces->update(*m_bodies, poses);
-    } else {
-        m_rigid_inertial->update(*m_bodies);
-        m_rigid_body_forces->update(*m_bodies, poses);
-    }
-}
+void Simulator::update_terms() { m_body_potentials->update(*m_bodies); }
 
 void Simulator::set_gravity(Eigen::ConstRef<VectorMax3d> gravity)
 {
     m_settings.gravity = gravity;
-    if (m_rigid_body_forces) {
-        m_rigid_body_forces->set_gravity(gravity);
-    }
-    if (m_affine_body_forces) {
-        m_affine_body_forces->set_gravity(gravity);
+    if (m_body_potentials) {
+        m_body_potentials->set_gravity(gravity);
     }
 }
 
@@ -415,16 +361,9 @@ double Simulator::energy(Eigen::ConstRef<Eigen::VectorXd> x) const
     // the integrator on every evaluation.
     const double s = m_time_integrator->acceleration_scaling();
 
-    double energy;
-    if (is_affine()) {
-        energy = (*m_affine_inertial)(*m_bodies, x)
-            + s
-                * ((*m_affine_body_forces)(*m_bodies, x)
-                   + (*m_orthogonality)(*m_bodies, x));
-    } else {
-        energy = (*m_rigid_inertial)(*m_bodies, x)
-            + s * (*m_rigid_body_forces)(*m_bodies, x);
-    }
+    // Inertia + s·(body forces + orthogonality + augmented Lagrangian), pulled
+    // back to the DOFs through one to-affine map.
+    double energy = m_body_potentials->energy(*m_bodies, x, s);
 
     energy += s
         * (*m_barrier_potential)(
@@ -440,52 +379,18 @@ double Simulator::energy(Eigen::ConstRef<Eigen::VectorXd> x) const
                       friction_velocities(x));
     }
 
-    energy += s * al_energy(x);
-
     return energy;
-}
-
-double Simulator::al_energy(Eigen::ConstRef<Eigen::VectorXd> x) const
-{
-    if (m_rigid_al && m_rigid_al->active()) {
-        return (*m_rigid_al)(*m_bodies, x);
-    }
-    if (m_affine_al && m_affine_al->active()) {
-        return (*m_affine_al)(*m_bodies, x);
-    }
-    return 0.0;
-}
-
-Eigen::VectorXd
-Simulator::al_gradient(Eigen::ConstRef<Eigen::VectorXd> x) const
-{
-    // NOTE: Excluded from non_barrier_gradient so the adaptive barrier
-    // stiffness is seeded from the physical forces only (as the original
-    // Rigid IPC solver does).
-    if (m_rigid_al && m_rigid_al->active()) {
-        return m_time_integrator->acceleration_scaling()
-            * m_rigid_al->gradient(*m_bodies, x);
-    }
-    if (m_affine_al && m_affine_al->active()) {
-        return m_time_integrator->acceleration_scaling()
-            * m_affine_al->gradient(*m_bodies, x);
-    }
-    return Eigen::VectorXd::Zero(x.size());
 }
 
 Eigen::VectorXd
 Simulator::non_barrier_gradient(Eigen::ConstRef<Eigen::VectorXd> x) const
 {
-    const double s = m_time_integrator->acceleration_scaling();
-    if (is_affine()) {
-        return m_affine_inertial->gradient(*m_bodies, x)
-            + s
-            * (m_affine_body_forces->gradient(*m_bodies, x)
-               + m_orthogonality->gradient(*m_bodies, x));
-    } else {
-        return m_rigid_inertial->gradient(*m_bodies, x)
-            + s * m_rigid_body_forces->gradient(*m_bodies, x);
-    }
+    // The physical body forces only (augmented Lagrangian excluded) so the
+    // adaptive barrier stiffness is seeded from the physical forces, as the
+    // original Rigid IPC solver does.
+    return m_body_potentials->gradient(
+        *m_bodies, x, m_time_integrator->acceleration_scaling(),
+        /*include_al=*/false);
 }
 
 Eigen::VectorXd
@@ -527,32 +432,15 @@ Simulator::full_hessian(Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     const double s = m_time_integrator->acceleration_scaling();
 
-    // NOTE: The body-force energies are linear in the positional DOFs (zero
-    // Hessian) but the rigid torque energy tr(Qᵀτ) is nonlinear in the
-    // rotation vector.
-    Eigen::SparseMatrix<double> hess(x.size(), x.size());
-    if (is_affine()) {
-        // The affine inertial Hessian is the constant mass matrix (PSD by
-        // construction). The affine body-force energy is linear in the DOFs.
-        hess = m_affine_inertial->mass_matrix()
-            + Eigen::SparseMatrix<double>(
-                   s
-                   * m_orthogonality->hessian(
-                       *m_bodies, x,
-                       m_project_to_psd ? PSDProjectionMethod::CLAMP
-                                        : PSDProjectionMethod::NONE));
-    } else {
-        hess = m_rigid_inertial->hessian(
-                   *m_bodies, x,
-                   m_project_to_psd ? PSDProjectionMethod::ABS
-                                    : PSDProjectionMethod::NONE)
-            + Eigen::SparseMatrix<double>(
-                   s
-                   * m_rigid_body_forces->hessian(
-                       *m_bodies, x,
-                       m_project_to_psd ? PSDProjectionMethod::ABS
-                                        : PSDProjectionMethod::NONE));
-    }
+    // Inertia + s·(body forces + orthogonality + augmented Lagrangian), pulled
+    // back to the DOFs through one to-affine map. The rotation block is PSD-
+    // projected once (ABS for rigid, CLAMP for affine, matching the historical
+    // per-term choices).
+    const PSDProjectionMethod body_psd = m_project_to_psd
+        ? (is_affine() ? PSDProjectionMethod::CLAMP : PSDProjectionMethod::ABS)
+        : PSDProjectionMethod::NONE;
+    Eigen::SparseMatrix<double> hess = m_body_potentials->hessian(
+        *m_bodies, x, s, body_psd, /*include_al=*/true);
 
     // Barrier: chain the vertex-space Hessian to the DOFs (Jᵀ H J plus the
     // second-order term for the rigid parameterization, which needs the
@@ -568,21 +456,6 @@ Simulator::full_hessian(Eigen::ConstRef<Eigen::VectorXd> x) const
 
     hess = hess
         + s * m_kinematics->map_vertex_hessian(x, barrier_grad, barrier_hess);
-
-    if (m_rigid_al && m_rigid_al->active()) {
-        hess = hess
-            + Eigen::SparseMatrix<double>(
-                   s
-                   * m_rigid_al->hessian(
-                       *m_bodies, x,
-                       m_project_to_psd ? PSDProjectionMethod::ABS
-                                        : PSDProjectionMethod::NONE));
-    } else if (m_affine_al && m_affine_al->active()) {
-        // Constant diagonal, PSD by construction.
-        hess = hess
-            + Eigen::SparseMatrix<double>(
-                   s * m_affine_al->hessian(*m_bodies, x));
-    }
 
     if (friction_enabled() && !m_tangential_collisions->empty()) {
         // ∇²ₓ[(βΔt)³ D(v(x))] = (βΔt) Jᵀ ∇²ᵥD J + (βΔt)² Σ ∇ᵥD·d²V/dx²
@@ -628,9 +501,11 @@ double Simulator::value(const TVector& v) { return energy(to_full(v)); }
 void Simulator::gradient(const TVector& v, TVector& grad)
 {
     const Eigen::VectorXd x = to_full(v);
-    grad = non_barrier_gradient(x)
-        + m_time_integrator->acceleration_scaling() * barrier_gradient(x)
-        + friction_gradient(x) + al_gradient(x);
+    const double s = m_time_integrator->acceleration_scaling();
+    // Body potentials incl. the augmented Lagrangian (non_barrier_gradient
+    // excludes it), plus the contact terms via the vertex-space chain rule.
+    grad = m_body_potentials->gradient(*m_bodies, x, s, /*include_al=*/true)
+        + s * barrier_gradient(x) + friction_gradient(x);
     if (has_joints()) {
         // The pinned entries never move: zero their gradient so the search
         // direction leaves them fixed.
@@ -1070,11 +945,7 @@ std::vector<rigid::Pose> Simulator::kinematic_targets() const
         // The current pose (position + rotation vector/angle).
         rigid::Pose current;
         current.position = pose.position;
-        if (pose.rotation.size() == 1) {
-            current.rotation = pose.rotation; // 2D rigid stores the raw angle
-        } else {
-            current.rotation = pose.rotation_vector();
-        }
+        current.rotation = pose.rotation_vector();
 
         targets[i] = current;
 
@@ -1087,11 +958,8 @@ std::vector<rigid::Pose> Simulator::kinematic_targets() const
         // ω extraction from the integrator state layout lives here.
         rigid::Pose velocity;
         velocity.position = v_prev.segment(state_ndof * i, dim);
-        if (m_time_integrator->rot_ndof() == 1) {
-            // 2D rigid: the raw angular velocity.
-            velocity.rotation = v_prev.segment(state_ndof * i + dim, 1);
-        } else if (dim == 2) {
-            // 2D affine: ω from Q̇ = ω S Q ⇒ ω = (Q̇ Qᵀ)(1, 0).
+        if (dim == 2) {
+            // 2D (both models): ω from Q̇ = ω S Q ⇒ ω = (Q̇ Qᵀ)(1, 0).
             const Eigen::Matrix2d Q = pose.rotation;
             const Eigen::Matrix2d Qdot =
                 v_prev.segment<4>(state_ndof * i + 2).reshaped(2, 2);
@@ -1116,26 +984,17 @@ std::vector<rigid::Pose> Simulator::kinematic_targets() const
 void Simulator::al_init(Eigen::ConstRef<Eigen::VectorXd> x)
 {
     const std::vector<rigid::Pose> targets = kinematic_targets();
-    if (m_rigid_al) {
-        m_rigid_al->init(*m_bodies, x, targets);
-    } else if (m_affine_al) {
-        m_affine_al->init(*m_bodies, x, targets);
-    }
+    m_body_potentials->init_augmented_lagrangian(*m_bodies, x, targets);
 }
 
 bool Simulator::al_active() const
 {
-    return (m_rigid_al && m_rigid_al->active())
-        || (m_affine_al && m_affine_al->active());
+    return m_body_potentials->augmented_lagrangian_active();
 }
 
 void Simulator::al_update(Eigen::ConstRef<Eigen::VectorXd> x)
 {
-    if (m_rigid_al) {
-        m_rigid_al->update(*m_bodies, x);
-    } else if (m_affine_al) {
-        m_affine_al->update(*m_bodies, x);
-    }
+    m_body_potentials->update_augmented_lagrangian(*m_bodies, x);
 }
 
 void Simulator::rebuild_dof_mask()
@@ -1145,12 +1004,10 @@ void Simulator::rebuild_dof_mask()
     const int dim = m_bodies->dim();
     const int body_ndof =
         is_affine() ? (dim + dim * dim) : (dim == 2 ? 3 : 6);
-    const bool linear_satisfied = m_rigid_al
-        ? m_rigid_al->linear_satisfied()
-        : (m_affine_al && m_affine_al->linear_satisfied());
-    const bool angular_satisfied = m_rigid_al
-        ? m_rigid_al->angular_satisfied()
-        : (m_affine_al && m_affine_al->angular_satisfied());
+    const bool linear_satisfied =
+        m_body_potentials->augmented_lagrangian_linear_satisfied();
+    const bool angular_satisfied =
+        m_body_potentials->augmented_lagrangian_angular_satisfied();
 
     std::vector<bool> pinned(body_ndof * m_bodies->num_bodies(), false);
     for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {

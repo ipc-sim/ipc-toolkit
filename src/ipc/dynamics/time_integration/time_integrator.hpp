@@ -35,8 +35,8 @@ public:
     ///     state into poses).
     /// @param pos_ndof Positional DOFs per body (2 or 3); -1 infers the
     ///     layout from the state size (fragile for 2D — pass it explicitly).
-    /// @param rot_ndof Rotational DOFs per body (1 = 2D angle, 4 = vec(2×2),
-    ///     9 = vec(3×3)); -1 infers.
+    /// @param rot_ndof Rotational DOFs per body (4 = vec(2×2), 9 = vec(3×3));
+    ///     -1 infers.
     /// @note For multi-step schemes, the scheme's parameters (e.g., the BDF
     ///     order) must be set before calling init() since they determine the
     ///     history buffer size.
@@ -126,7 +126,7 @@ public:
     size_t num_bodies() const { return m_num_bodies; }
     /// @brief Position DOFs per body (2 or 3).
     size_t pos_ndof() const { return m_pos_ndof; }
-    /// @brief Rotation DOFs per body (1 = 2D angle, 4 = vec(2×2), 9 = vec(3×3)).
+    /// @brief Rotation DOFs per body (4 = vec(2×2), 9 = vec(3×3)).
     size_t rot_ndof() const { return m_rot_ndof; }
 
 protected:

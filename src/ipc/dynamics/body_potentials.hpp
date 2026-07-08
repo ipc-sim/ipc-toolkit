@@ -35,7 +35,8 @@ public:
         const rigid::RigidBodies& bodies,
         std::shared_ptr<const ImplicitTimeIntegrator> time_integrator,
         std::shared_ptr<const ToAffine> to_affine,
-        const double orthogonality_stiffness);
+        const double orthogonality_stiffness,
+        const affine::AugmentedLagrangian::Params& al_params = {});
 
     VectorMax3d gravity() const { return m_body_forces.gravity(); }
     void set_gravity(Eigen::ConstRef<VectorMax3d> gravity)
@@ -79,6 +80,14 @@ public:
         const rigid::RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x);
 
     bool augmented_lagrangian_active() const { return m_al.active(); }
+    bool augmented_lagrangian_linear_satisfied() const
+    {
+        return m_al.linear_satisfied();
+    }
+    bool augmented_lagrangian_angular_satisfied() const
+    {
+        return m_al.angular_satisfied();
+    }
 
     double augmented_lagrangian_linear_progress(
         const rigid::RigidBodies& bodies,

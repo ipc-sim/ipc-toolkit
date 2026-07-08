@@ -1,4 +1,5 @@
 set(SOURCES
+  test_augmented_lagrangian.cpp
   test_orthogonality_potential.cpp
 )
 

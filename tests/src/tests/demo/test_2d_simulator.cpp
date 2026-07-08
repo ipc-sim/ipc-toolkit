@@ -73,8 +73,7 @@ TEST_CASE("2D ballistic motion", "[2d][rigid][simulator]")
         REQUIRE(sim.step());
     }
 
-    // Implicit Euler: pₙ = p₀ + n dt v₀ + dt² g n(n+1)/2 and θₙ = θ₀ + n dt ω
-    // (θ is linear in 2D, so the rotation update is exact).
+    // Implicit Euler: pₙ = p₀ + n dt v₀ + dt² g n(n+1)/2.
     const Eigen::Vector2d pn_expected =
         p0 + n * dt * v0 + dt * dt * g * (n * (n + 1) / 2.0);
     CHECK(
@@ -82,10 +81,12 @@ TEST_CASE("2D ballistic motion", "[2d][rigid][simulator]")
         == Catch::Approx(0).margin(1e-6));
 
     const Pose pose_n = sim.rigid_poses()[0];
-    // rigid_poses uses the log map, which wraps to (-π, π].
+    // θₙ ≈ θ₀ + n dt ω. The rotation is integrated in matrix space (as in 3D),
+    // so the recovered angle differs from the linear-in-angle value by an
+    // O((dt ω)³) per-step amount; check with a correspondingly looser margin.
     const double theta_expected =
         std::remainder(theta0 + n * dt * omega, 2 * M_PI);
-    CHECK(pose_n.rotation(0) == Catch::Approx(theta_expected).margin(1e-6));
+    CHECK(pose_n.rotation(0) == Catch::Approx(theta_expected).margin(1e-4));
 }
 
 TEST_CASE("2D simulator gradient and hessian", "[2d][simulator]")

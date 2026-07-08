@@ -1,10 +1,4 @@
 set(SOURCES
-  augmented_lagrangian.cpp
-  augmented_lagrangian.hpp
-  body_forces.cpp
-  body_forces.hpp
-  inertial_term.cpp
-  inertial_term.hpp
   mass.cpp
   mass.hpp
   pose.cpp
@@ -15,8 +9,6 @@ set(SOURCES
   rigid_body.hpp
   rigid_candidates.cpp
   rigid_candidates.hpp
-  rigid_potential.cpp
-  rigid_potential.hpp
   rigid_trajectory.cpp
   rigid_trajectory.hpp
 )

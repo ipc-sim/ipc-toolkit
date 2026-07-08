@@ -3,11 +3,7 @@
 #include "kinematic_driver.hpp"
 #include "kinematics.hpp"
 
-#include <ipc/dynamics/affine/body_forces.hpp>
-#include <ipc/dynamics/affine/inertial_term.hpp>
-#include <ipc/dynamics/affine/orthogonality_potential.hpp>
-#include <ipc/dynamics/rigid/body_forces.hpp>
-#include <ipc/dynamics/rigid/inertial_term.hpp>
+#include <ipc/dynamics/body_potentials.hpp>
 #include <ipc/dynamics/rigid/pose.hpp>
 
 #include <nlohmann/json.hpp>
@@ -41,8 +37,6 @@ namespace ipc::affine {
 class JointConstraints;
 } // namespace ipc::affine
 
-#include <ipc/dynamics/affine/augmented_lagrangian.hpp>
-#include <ipc/dynamics/rigid/augmented_lagrangian.hpp>
 #include <ipc/dynamics/rigid/rigid_body.hpp>
 
 namespace ipc::dynamics {
@@ -486,7 +480,10 @@ protected:
     // ---- Full-space (DOF) energy evaluation ---------------------------------
 
     /// @brief Whether the affine terms are engaged (rigid otherwise).
-    bool is_affine() const { return m_affine_inertial.has_value(); }
+    bool is_affine() const
+    {
+        return m_settings.body_dynamics == BodyDynamics::AFFINE;
+    }
 
     /// @brief Total incremental potential at the full DOFs x.
     double energy(Eigen::ConstRef<Eigen::VectorXd> x) const;
@@ -532,12 +529,6 @@ protected:
 
     /// @brief Apply the AL update policy at the (energy-converged) state x.
     void al_update(Eigen::ConstRef<Eigen::VectorXd> x);
-
-    /// @brief AL energy (unscaled by the acceleration scaling).
-    double al_energy(Eigen::ConstRef<Eigen::VectorXd> x) const;
-
-    /// @brief AL gradient as it enters the objective: (βΔt)² ∇E_AL.
-    Eigen::VectorXd al_gradient(Eigen::ConstRef<Eigen::VectorXd> x) const;
 
     /// @brief Rebuild m_pinned_dofs (STATIC bodies, is_dof_fixed flags, and
     /// AL-satisfied channels of KINEMATIC bodies) in solver coordinates.
@@ -600,10 +591,6 @@ protected:
 
     // ---- Kinematic/static bodies -------------------------------------------
 
-    /// @brief Augmented Lagrangian for KINEMATIC bodies (mode-dependent).
-    std::optional<rigid::AugmentedLagrangian> m_rigid_al;
-    std::optional<affine::AugmentedLagrangian> m_affine_al;
-
     /// @brief Pinned solver-coordinate indices (zero search direction):
     /// STATIC bodies, fixed DOFs, and AL-satisfied kinematic channels.
     std::vector<int> m_pinned_dofs;
@@ -628,14 +615,12 @@ protected:
     /// @brief polysolve Newton solver used to minimize the incremental potential.
     std::unique_ptr<polysolve::nonlinear::Solver> m_solver;
 
-    // ---- Energy terms (mode-dependent; rebuilt by initialize_terms) --------
+    // ---- Energy terms (rebuilt by initialize_terms) ------------------------
 
-    std::optional<rigid::InertialTerm> m_rigid_inertial;
-    std::optional<rigid::BodyForces> m_rigid_body_forces;
-
-    std::optional<affine::InertialTerm> m_affine_inertial;
-    std::optional<affine::BodyForces> m_affine_body_forces;
-    std::optional<affine::OrthogonalityPotential> m_orthogonality;
+    /// @brief The body (non-contact) part of the incremental potential: inertia,
+    /// body forces, the orthogonality penalty (affine only), and the augmented
+    /// Lagrangian, all behind the parameterization's to-affine map.
+    std::optional<dynamics::BodyPotentials> m_body_potentials;
 
     /// @brief Whether hessian() projects each term to PSD (set by polysolve
     /// per descent strategy).

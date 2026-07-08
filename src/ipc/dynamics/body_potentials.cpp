@@ -8,10 +8,12 @@ BodyPotentials::BodyPotentials(
     const rigid::RigidBodies& bodies,
     std::shared_ptr<const ImplicitTimeIntegrator> time_integrator,
     std::shared_ptr<const ToAffine> to_affine,
-    const double orthogonality_stiffness)
+    const double orthogonality_stiffness,
+    const affine::AugmentedLagrangian::Params& al_params)
     : m_time_integrator(std::move(time_integrator))
     , m_to_affine(std::move(to_affine))
     , m_inertial(bodies, m_time_integrator)
+    , m_al(al_params)
 {
     // The orthogonality penalty keeps A near SO(dim); it is only meaningful for
     // the affine (identity) parameterization — rigid rotations are exact.

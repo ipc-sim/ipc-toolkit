@@ -29,6 +29,8 @@ namespace {
             const std::shared_ptr<const rigid::RigidBodies>& bodies)
             : Kinematics(bodies)
         {
+            m_to_affine = std::make_shared<dynamics::RigidToAffine>(
+                bodies->dim(), bodies->num_bodies());
         }
 
         int pose_ndof() const { return m_bodies->dim() == 2 ? 3 : 6; }
@@ -64,17 +66,7 @@ namespace {
         std::vector<affine::Pose>
         poses(Eigen::ConstRef<Eigen::VectorXd> x) const override
         {
-            assert(x.size() == ndof());
-            const int dim = m_bodies->dim();
-            const int body_ndof = pose_ndof();
-            std::vector<affine::Pose> poses(m_bodies->num_bodies());
-            for (size_t i = 0; i < poses.size(); ++i) {
-                poses[i].position = x.segment(body_ndof * i, dim);
-                poses[i].rotation.resize(dim, dim);
-                poses[i].set_rotation_vector(
-                    x.segment(body_ndof * i + dim, body_ndof - dim));
-            }
-            return poses;
+            return m_to_affine->poses(x);
         }
 
         Eigen::VectorXd
@@ -86,38 +78,15 @@ namespace {
         Eigen::VectorXd
         to_integrator_state(Eigen::ConstRef<Eigen::VectorXd> x) const override
         {
-            assert(x.size() == ndof());
-            if (m_bodies->dim() == 2) {
-                // The 2D integrator state is [p (2); θ (1)] per body: the
-                // DOFs themselves (θ is a linear space — no wrapping).
-                return x;
-            }
-            Eigen::VectorXd X(12 * m_bodies->num_bodies());
-            for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
-                X.segment<3>(12 * i) = x.segment<3>(6 * i);
-                X.segment<9>(12 * i + 3) =
-                    rigid::rotation_vector_to_matrix(x.segment<3>(6 * i + 3))
-                        .reshaped();
-            }
-            return X;
+            // The integrator state is affine-shaped [p; vec(Q)] per body; the
+            // log map keeps the optimization variable θ bounded on the way back.
+            return m_to_affine->to_affine(x);
         }
 
         Eigen::VectorXd
         from_integrator_state(Eigen::ConstRef<Eigen::VectorXd> X) const override
         {
-            if (m_bodies->dim() == 2) {
-                return X;
-            }
-            assert(X.size() == 12 * m_bodies->num_bodies());
-            Eigen::VectorXd x(ndof());
-            for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
-                x.segment<3>(6 * i) = X.segment<3>(12 * i);
-                // The log map returns the canonical rotation vector
-                // (‖θ‖ ≤ π), keeping the optimization variable bounded.
-                x.segment<3>(6 * i + 3) = rigid::rotation_matrix_to_vector(
-                    X.segment<9>(12 * i + 3).reshaped(3, 3));
-            }
-            return x;
+            return m_to_affine->from_affine(X);
         }
 
         void update_candidates(
@@ -179,6 +148,8 @@ namespace {
             : Kinematics(bodies)
             , m_J_all(affine::affine_jacobian(*bodies))
         {
+            m_to_affine = std::make_shared<dynamics::AffineToAffine>(
+                bodies->dim(), bodies->num_bodies());
         }
 
         int body_ndof() const
@@ -217,7 +188,7 @@ namespace {
         std::vector<affine::Pose>
         poses(Eigen::ConstRef<Eigen::VectorXd> x) const override
         {
-            return affine::dof_to_poses(x, m_bodies->dim());
+            return m_to_affine->poses(x);
         }
 
         Eigen::VectorXd
@@ -236,13 +207,13 @@ namespace {
         Eigen::VectorXd
         to_integrator_state(Eigen::ConstRef<Eigen::VectorXd> x) const override
         {
-            return x; // The DOFs are the integrator state
+            return m_to_affine->to_affine(x); // identity: DOFs are the state
         }
 
         Eigen::VectorXd
         from_integrator_state(Eigen::ConstRef<Eigen::VectorXd> X) const override
         {
-            return X; // The DOFs are the integrator state
+            return m_to_affine->from_affine(X); // identity: DOFs are the state
         }
 
         void update_candidates(
