@@ -10,12 +10,15 @@ ideas, and serve as living proof that the toolkit is easy to integrate — it is
 
 The core library (`ipc::toolkit`) provides modular, dependency-light math:
 
-- Energy classes (`ipc/dynamics/{rigid,affine}/`): inertial, body-force,
-  orthogonality (ABD), and augmented-Lagrangian terms, plus the barrier and
-  friction potentials — stateless math with explicit arguments
-  (`energy(bodies, x)` / `gradient` / `hessian`). Every term except inertia is
-  a **pure, unscaled physical potential** (energy units); the demo applies the
-  time-integration scaling when it sums them (see below).
+- Energy classes: the body (non-contact) terms — inertial, body-force, the
+  SO(dim) orthogonality penalty (affine only), and the augmented Lagrangian —
+  written once in **affine coordinates** `y = [p; vec(A)]`
+  (`ipc/dynamics/affine/`) and aggregated by `dynamics::BodyPotentials` behind a
+  `dynamics::ToAffine` change of variables (see "Rigid and affine dynamics"
+  below), plus the barrier and friction potentials. Stateless math with explicit
+  arguments (`energy(bodies, x)` / `gradient` / `hessian`). Every term except
+  inertia is a **pure, unscaled physical potential** (energy units); the demo
+  applies the time-integration scaling when it sums them (see below).
 - Time integration (`ipc/dynamics/time_integration/`): BDF (state history +
   `dt` → predicted state); it knows nothing about solvers or stepping loops.
 - Contact, friction, adhesion potentials and CCD (unchanged).
@@ -25,16 +28,18 @@ source pairs:
 
 - `demo/src/simulator.hpp` — the `Simulator`: it *is* a
   [polysolve](https://github.com/polyfem/polysolve)
-  `nonlinear::Problem` (energy/gradient/Hessian summed directly from the
-  library's energy classes, the toolkit's CCD routed into polysolve's line
-  search via `max_step_size`, and the joint-constraint change of variables
-  x = Uz [Chen et al. 2022, §4.1] applied around the interface), plus the
-  time-stepping loop, adaptive barrier stiffness, the friction/kinematic outer
-  loop, pose history, and a stored `polysolve::nonlinear::Solver`.
+  `nonlinear::Problem` (energy/gradient/Hessian summed from the library's
+  `BodyPotentials` for the body terms plus the barrier and friction contact
+  terms, the toolkit's CCD routed into polysolve's line search via
+  `max_step_size`, and the joint-constraint change of variables x = Uz
+  [Chen et al. 2022, §4.1] applied around the interface), plus the time-stepping
+  loop, adaptive barrier stiffness, the friction/kinematic outer loop, pose
+  history, and a stored `polysolve::nonlinear::Solver`.
 - `demo/src/kinematics.hpp` — how the simulation state maps to the world:
-  the rigid and affine parameterizations (in 2D and 3D), with their world
-  maps, chain rules, and the mode-appropriate collision candidates and CCD.
-  Future discretizations (FEM nodal DOFs, SPH particles) slot in as additional
+  the rigid and affine parameterizations (in 2D and 3D), with their world-vertex
+  maps, chain rules, and the mode-appropriate collision candidates and CCD. The
+  DOF→pose map itself is the library's `dynamics::ToAffine`. Future
+  discretizations (FEM nodal DOFs, SPH particles) slot in as additional
   `Kinematics` implementations.
 
 The core library never depends on the demo, on polysolve, or on any solver.
@@ -51,6 +56,37 @@ potentials, and the adaptive barrier stiffness balances ∇E against `s·κ·∇
 (see `initialize_barrier_stiffness`). Barrier stiffness κ is stored only in the
 `BarrierPotential`, so the friction term automatically sees the current normal
 forces.
+
+## Rigid and affine dynamics (one formulation)
+
+`Settings::body_dynamics` selects rigid-body dynamics (RBD) or affine-body
+dynamics (ABD) [Lan et al. 2022]. Both run the *same* code: the body terms are
+written once in affine coordinates `y = [p; vec(A)]` and reached through a
+`dynamics::ToAffine` map that the chosen parameterization supplies —
+
+- **rigid** (`RigidToAffine`): the optimization DOFs are `x = [p; θ]` (θ a
+  rotation vector in 3D, a scalar angle in 2D) and `A = Q(θ) ∈ SO(dim)` is an
+  exact change of variables; each term's affine-space gradient/Hessian is pulled
+  back to `x` by its chain rule (with the rotation block projected to PSD once).
+- **affine** (`AffineToAffine`): `x = y` (the identity); `A` is optimized
+  directly and kept near `SO(dim)` by the orthogonality penalty.
+
+`BodyPotentials` evaluates every body term at `y = to_affine(x)`, sums them with
+the incremental-potential scaling, and applies this chain rule **once**. Contact
+and friction are deliberately *not* part of it — they couple pairs of bodies
+(off-diagonal Hessian blocks), so they keep their own vertex-space chain rule
+(`Kinematics::map_vertex_*`), while the block-diagonal body terms share the
+single `ToAffine` pullback.
+
+This is the main structural difference from Rigid IPC, which is rigid-only and
+carries the rotation as a rotation vector everywhere — forces, inertia, and the
+time integrator all act in `[p; θ]`. Here rigid bodies still *optimize* `[p; θ]`
+each step (so rotations stay exact and the variable stays bounded, via the log
+map), but the integrator state and every body energy live in the affine matrix
+representation, so **rigid rotation is integrated in matrix space, as in ABD**.
+Its recovered angle therefore differs from the linear-in-angle value by an
+`O((Δtω)³)` per-step amount — the same higher-order term ABD and 3D already
+carry — rather than being exact as in Rigid IPC's angle-space update.
 
 ## Differences from the original Rigid IPC solver
 
@@ -128,9 +164,11 @@ sim.set_kinematic_driver(0, demo::KinematicDriver::scripted(script));
 ```
 
 The augmented Lagrangian lives in the library
-(`ipc/dynamics/{rigid,affine}::AugmentedLagrangian`) as another energy term
-(manual derivatives, no autodiff). The `Simulator` drives it and the friction
-lagging in a **single outer loop**: each iteration is one Newton solve followed
+(`ipc::affine::AugmentedLagrangian`, evaluated in affine coordinates and reached
+through the same `ToAffine` chain rule in rigid mode) as another body term
+inside `BodyPotentials` (manual derivatives, no autodiff). The `Simulator`
+drives it and the friction lagging in a **single outer loop**: each iteration is
+one Newton solve followed
 by an AL penalty/multiplier update (satisfied channels freeze their DOFs) and a
 friction re-lag, until both converge (`Settings::max_outer_iterations` caps it,
 with `al_initial_penalty` / `al_max_penalty` / `al_satisfied_progress` /
@@ -210,6 +248,7 @@ The demo's tests live in the unified `ipc_toolkit_tests` binary
 both dynamics models, friction (finite-difference derivatives plus analytic
 stick/slip and deceleration), static/kinematic bodies (both modes), 2D
 simulation, codimensional contact, and finite-difference checks of the
-gradient/Hessian through the polysolve `Problem` interface. The
-augmented-Lagrangian terms are finite-difference-tested in
-`tests/src/tests/dynamics/`.
+gradient/Hessian through the polysolve `Problem` interface. The `ToAffine`
+change of variables and the `BodyPotentials` aggregator are finite-difference-
+tested in `tests/src/tests/dynamics/` (`test_to_affine`, `test_body_potentials`),
+and the augmented Lagrangian in `tests/src/tests/dynamics/affine/`.
