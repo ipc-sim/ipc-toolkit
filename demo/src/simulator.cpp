@@ -378,7 +378,7 @@ void Simulator::initialize_terms()
 void Simulator::update_terms()
 {
     // Step-start poses (used to transform world-space torques to body space).
-    std::vector<rigid::AffinePose> poses(m_bodies->num_bodies());
+    std::vector<affine::Pose> poses(m_bodies->num_bodies());
     for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
         poses[i] = m_time_integrator->pose(i);
     }
@@ -1065,7 +1065,7 @@ std::vector<rigid::Pose> Simulator::kinematic_targets() const
         int(m_time_integrator->pos_ndof() + m_time_integrator->rot_ndof());
 
     for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
-        const rigid::AffinePose pose = m_time_integrator->pose(i);
+        const affine::Pose pose = m_time_integrator->pose(i);
 
         // The current pose (position + rotation vector/angle).
         rigid::Pose current;
@@ -1225,7 +1225,7 @@ void Simulator::set_kinematic_driver(
 
 namespace {
     std::vector<rigid::Pose>
-    to_rigid_poses(const std::vector<rigid::AffinePose>& affine_poses)
+    to_rigid_poses(const std::vector<affine::Pose>& affine_poses)
     {
         std::vector<rigid::Pose> rigid_poses(affine_poses.size());
         for (size_t i = 0; i < affine_poses.size(); ++i) {

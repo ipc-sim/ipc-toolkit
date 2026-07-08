@@ -1,16 +1,17 @@
 #pragma once
 
+#include <ipc/dynamics/affine/pose.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 
 namespace ipc::affine {
 
 /// @brief Extract the affine pose of body i from the stacked DOF vector.
 /// DOF layout per body: [p (dim); vec(A) column-major (dim²)].
-rigid::AffinePose
+affine::Pose
 dof_to_pose(Eigen::ConstRef<Eigen::VectorXd> x, const size_t i, const int dim);
 
 /// @brief Extract all affine poses from the stacked DOF vector.
-std::vector<rigid::AffinePose>
+std::vector<affine::Pose>
 dof_to_poses(Eigen::ConstRef<Eigen::VectorXd> x, const int dim);
 
 /// @brief Compute the world-space collision mesh vertices from the affine DOFs.

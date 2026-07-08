@@ -61,13 +61,13 @@ namespace {
                 rigid::Pose::to_poses(x, m_bodies->dim()), grad, hess);
         }
 
-        std::vector<rigid::AffinePose>
+        std::vector<affine::Pose>
         poses(Eigen::ConstRef<Eigen::VectorXd> x) const override
         {
             assert(x.size() == ndof());
             const int dim = m_bodies->dim();
             const int body_ndof = pose_ndof();
-            std::vector<rigid::AffinePose> poses(m_bodies->num_bodies());
+            std::vector<affine::Pose> poses(m_bodies->num_bodies());
             for (size_t i = 0; i < poses.size(); ++i) {
                 poses[i].position = x.segment(body_ndof * i, dim);
                 poses[i].rotation.resize(dim, dim);
@@ -214,7 +214,7 @@ namespace {
             return m_J_all.transpose() * hess * m_J_all;
         }
 
-        std::vector<rigid::AffinePose>
+        std::vector<affine::Pose>
         poses(Eigen::ConstRef<Eigen::VectorXd> x) const override
         {
             return affine::dof_to_poses(x, m_bodies->dim());

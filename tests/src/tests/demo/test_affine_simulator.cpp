@@ -223,7 +223,7 @@ TEST_CASE("Affine simulator cube drop", "[affine][simulator]")
     for (int i = 0; i < 25; ++i) {
         REQUIRE(sim.step());
 
-        const rigid::AffinePose& pose = sim.pose_history().back()[0];
+        const affine::Pose& pose = sim.pose_history().back()[0];
 
         // A stays near SO(3) under the stiff orthogonality potential
         const Eigen::Matrix3d AtA_minus_I =
@@ -235,7 +235,7 @@ TEST_CASE("Affine simulator cube drop", "[affine][simulator]")
     // The cube must rest on (not penetrate) the ground
     const Eigen::MatrixXd V_final = vertices(*bodies, [&] {
         Eigen::VectorXd x(12);
-        const rigid::AffinePose& pose = sim.pose_history().back()[0];
+        const affine::Pose& pose = sim.pose_history().back()[0];
         x.head<3>() = pose.position;
         x.tail<9>() = pose.rotation.reshaped();
         return x;

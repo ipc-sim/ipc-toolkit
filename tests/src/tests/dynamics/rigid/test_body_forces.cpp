@@ -39,9 +39,9 @@ auto rigid_bodies()
     return bodies;
 }
 
-std::vector<AffinePose> identity_poses(const RigidBodies& bodies)
+std::vector<affine::Pose> identity_poses(const RigidBodies& bodies)
 {
-    std::vector<AffinePose> poses(bodies.num_bodies());
+    std::vector<affine::Pose> poses(bodies.num_bodies());
     for (auto& pose : poses) {
         pose.position = Eigen::Vector3d::Zero();
         pose.rotation = Eigen::Matrix3d::Identity();

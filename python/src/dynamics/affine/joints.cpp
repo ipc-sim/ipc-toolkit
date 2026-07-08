@@ -1,6 +1,7 @@
 #include <common.hpp>
 
 #include <ipc/dynamics/affine/joints.hpp>
+#include <ipc/dynamics/affine/pose.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 
 #include <pybind11/stl_bind.h>
@@ -15,15 +16,15 @@ PYBIND11_MAKE_OPAQUE(std::vector<rigid::Pose>)
 
 void define_affine_joints(py::module_& m)
 {
-    py::class_<rigid::AffinePose>(m, "AffinePose")
+    py::class_<affine::Pose>(m, "AffinePose")
         .def(py::init<>())
-        .def_readwrite("position", &rigid::AffinePose::position)
-        .def_readwrite("rotation", &rigid::AffinePose::rotation)
-        .def("rotation_vector", &rigid::AffinePose::rotation_vector)
+        .def_readwrite("position", &affine::Pose::position)
+        .def_readwrite("rotation", &affine::Pose::rotation)
+        .def("rotation_vector", &affine::Pose::rotation_vector)
         .def(
-            "transform_vertices", &rigid::AffinePose::transform_vertices,
+            "transform_vertices", &affine::Pose::transform_vertices,
             "vertices"_a)
-        .def("__repr__", [](const rigid::AffinePose& p) {
+        .def("__repr__", [](const affine::Pose& p) {
             return fmt::format(
                 "AffinePose(position={}, rotation={})", p.position,
                 p.rotation.reshaped().transpose());

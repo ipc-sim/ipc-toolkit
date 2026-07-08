@@ -8,7 +8,7 @@
 namespace ipc::rigid {
 
 void BodyForces::update(
-    const RigidBodies& bodies, const std::vector<AffinePose>& poses)
+    const RigidBodies& bodies, const std::vector<affine::Pose>& poses)
 {
     assert(poses.size() == bodies.num_bodies());
 

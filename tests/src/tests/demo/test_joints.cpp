@@ -33,7 +33,7 @@ Eigen::Vector3d anchor_position(
     return A * material + p;
 }
 
-Eigen::VectorXd poses_to_dof(const std::vector<rigid::AffinePose>& poses)
+Eigen::VectorXd poses_to_dof(const std::vector<affine::Pose>& poses)
 {
     Eigen::VectorXd x(12 * poses.size());
     for (size_t i = 0; i < poses.size(); i++) {
@@ -104,7 +104,7 @@ TEST_CASE("Joint change of variables", "[affine][joints]")
 
     // The initial configuration satisfies the constraints
     const Eigen::VectorXd x0 = poses_to_dof([&] {
-        std::vector<rigid::AffinePose> poses(2);
+        std::vector<affine::Pose> poses(2);
         for (int i = 0; i < 2; i++) {
             poses[i].position = initial_poses[i].position;
             poses[i].rotation = initial_poses[i].rotation_matrix();
@@ -198,7 +198,7 @@ TEST_CASE("Affine hinge door", "[affine][joints][simulator]")
 
         Eigen::VectorXd x(24);
         for (int b = 0; b < 2; b++) {
-            const rigid::AffinePose& pose = sim.pose_history().back()[b];
+            const affine::Pose& pose = sim.pose_history().back()[b];
             x.segment<3>(12 * b) = pose.position;
             x.segment<9>(12 * b + 3) = pose.rotation.reshaped();
         }
@@ -206,7 +206,7 @@ TEST_CASE("Affine hinge door", "[affine][joints][simulator]")
         // Body 0 stays fixed
         CHECK(
             (x.head<12>() - poses_to_dof({ [&] {
-                 rigid::AffinePose pose;
+                 affine::Pose pose;
                  pose.position = initial_poses[0].position;
                  pose.rotation = initial_poses[0].rotation_matrix();
                  return pose;
@@ -225,6 +225,6 @@ TEST_CASE("Affine hinge door", "[affine][joints][simulator]")
     }
 
     // The door swung about the hinge: its center moved in z
-    const rigid::AffinePose& door = sim.pose_history().back()[1];
+    const affine::Pose& door = sim.pose_history().back()[1];
     CHECK(std::abs(door.position.z()) > 0.05);
 }

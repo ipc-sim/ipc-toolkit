@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/dynamics/affine/pose.hpp>
 #include <ipc/dynamics/rigid/rigid_potential.hpp>
 
 namespace ipc::rigid {
@@ -17,7 +18,7 @@ public:
     /// @param poses The poses of the bodies at the start of the step (used to
     ///     transform world-space torques into body space).
     void update(
-        const RigidBodies& bodies, const std::vector<AffinePose>& poses);
+        const RigidBodies& bodies, const std::vector<affine::Pose>& poses);
 
     // ---- Cumulative functions -----------------------------------------------
 

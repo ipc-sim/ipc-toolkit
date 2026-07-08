@@ -54,7 +54,7 @@ TEST_CASE("Static body support", "[static][simulator]")
 
     Simulator sim(bodies, initial_poses, /*dt=*/0.01, settings);
 
-    const AffinePose floor_pose_0 = sim.poses()[0];
+    const affine::Pose floor_pose_0 = sim.poses()[0];
 
     REQUIRE(sim.run(/*t_end=*/0.5));
 
@@ -86,7 +86,7 @@ TEST_CASE("All bodies static", "[static][simulator]")
     settings.body_dynamics = mode;
 
     Simulator sim(bodies, initial_poses, /*dt=*/0.01, settings);
-    const AffinePose pose_0 = sim.poses()[0];
+    const affine::Pose pose_0 = sim.poses()[0];
 
     REQUIRE(sim.run(/*t_end=*/0.1));
     CHECK(sim.poses()[0].position == pose_0.position);
@@ -257,7 +257,7 @@ TEST_CASE("Partial DOF fixing", "[static][simulator]")
 
     Simulator sim(bodies, initial_poses, /*dt=*/0.01, settings);
 
-    const AffinePose pose_0 = sim.poses()[0];
+    const affine::Pose pose_0 = sim.poses()[0];
     REQUIRE(sim.run(/*t_end=*/0.2));
 
     // Orientation unchanged; position responded to the force.
@@ -301,7 +301,7 @@ TEST_CASE("Kinematic max time expiry", "[kinematic][simulator]")
     REQUIRE(sim.step()); // converts to STATIC at step start
     CHECK((*bodies)[0].type() == RigidBody::Type::STATIC);
 
-    const AffinePose pose_frozen = sim.poses()[0];
+    const affine::Pose pose_frozen = sim.poses()[0];
     REQUIRE(sim.step());
     CHECK(sim.poses()[0].position == pose_frozen.position);
     CHECK(sim.poses()[0].rotation == pose_frozen.rotation);

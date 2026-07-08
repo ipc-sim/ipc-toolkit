@@ -170,6 +170,45 @@ Eigen::Vector3d rotation_matrix_to_vector(Eigen::ConstRef<Eigen::Matrix3d> R)
 #endif
 }
 
+MatrixMax<double, 9, 3>
+rotation_to_matrix_jacobian(Eigen::ConstRef<VectorMax3d> theta)
+{
+    assert(theta.size() == 1 || theta.size() == 3);
+    if (theta.size() == 1) {
+        // 2D rotation matrix R(θ) = [cos -sin; sin cos] (column-major vec):
+        //   d vec(R)/dθ = [-sin, cos, -cos, -sin]ᵀ
+        MatrixMax<double, 9, 3> dR(4, 1);
+        const double dcos = -std::sin(theta(0));
+        const double dsin = std::cos(theta(0));
+        dR(0, 0) = dcos;
+        dR(1, 0) = dsin;
+        dR(2, 0) = -dsin;
+        dR(3, 0) = dcos;
+        return dR;
+    } else {
+        return rotation_vector_to_matrix_jacobian(theta);
+    }
+}
+
+MatrixMax<double, 9, 9>
+rotation_to_matrix_hessian(Eigen::ConstRef<VectorMax3d> theta)
+{
+    assert(theta.size() == 1 || theta.size() == 3);
+    if (theta.size() == 1) {
+        // 2D: d² vec(R)/dθ² = -vec(R) = [-cos, -sin, sin, -cos]ᵀ
+        MatrixMax<double, 9, 9> d2R(4, 1);
+        const double d2cos = -std::cos(theta(0));
+        const double d2sin = -std::sin(theta(0));
+        d2R(0, 0) = d2cos;
+        d2R(1, 0) = d2sin;
+        d2R(2, 0) = -d2sin;
+        d2R(3, 0) = d2cos;
+        return d2R;
+    } else {
+        return rotation_vector_to_matrix_hessian(theta);
+    }
+}
+
 Eigen::MatrixXd
 Pose::transform_vertices_jacobian(Eigen::ConstRef<Eigen::MatrixXd> V) const
 {
@@ -184,21 +223,8 @@ Pose::transform_vertices_jacobian(Eigen::ConstRef<Eigen::MatrixXd> V) const
     }
 
     // Precompute dR/dθ
-    MatrixMax<double, 9, 3> dR_dtheta;
-    if (dim == 2) {
-        dR_dtheta.resize(4, 1);
-        // 2D rotation matrix:
-        // R(θ) = [cos(θ) -sin(θ);
-        //         sin(θ)  cos(θ)]
-        const double dcos = -std::sin(rotation(0));
-        const double dsin = std::cos(rotation(0));
-        dR_dtheta(0, 0) = dcos;
-        dR_dtheta(1, 0) = dsin;
-        dR_dtheta(2, 0) = -dsin;
-        dR_dtheta(3, 0) = dcos;
-    } else {
-        dR_dtheta = rotation_vector_to_matrix_jacobian(rotation);
-    }
+    const MatrixMax<double, 9, 3> dR_dtheta =
+        rotation_to_matrix_jacobian(rotation);
 
     // Derivative w.r.t. rotation
     for (int j = 0; j < rotation.size(); ++j) {
@@ -223,21 +249,8 @@ Pose::transform_vertices_hessian(Eigen::ConstRef<Eigen::MatrixXd> V) const
     // derivatives involving rotation.
 
     // Precompute d^2R/dθ^2
-    MatrixMax<double, 9, 9> d2R_dtheta2;
-    if (dim == 2) {
-        d2R_dtheta2.resize(4, 1);
-        // 2D rotation matrix:
-        // R(θ) = [cos(θ) -sin(θ);
-        //         sin(θ)  cos(θ)]
-        const double d2cos = -std::cos(rotation(0));
-        const double d2sin = -std::sin(rotation(0));
-        d2R_dtheta2(0, 0) = d2cos;
-        d2R_dtheta2(1, 0) = d2sin;
-        d2R_dtheta2(2, 0) = -d2sin;
-        d2R_dtheta2(3, 0) = d2cos;
-    } else {
-        d2R_dtheta2 = rotation_vector_to_matrix_hessian(rotation);
-    }
+    const MatrixMax<double, 9, 9> d2R_dtheta2 =
+        rotation_to_matrix_hessian(rotation);
 
     // Derivative w.r.t. rotation
     for (int j = position.size(); j < ndof; ++j) {

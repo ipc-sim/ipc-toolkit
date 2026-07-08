@@ -32,6 +32,29 @@ rotation_vector_to_matrix_hessian(Eigen::ConstRef<Eigen::Vector3d> theta);
 /// @return The rotation vector corresponding to the rotation matrix
 Eigen::Vector3d rotation_matrix_to_vector(Eigen::ConstRef<Eigen::Matrix3d> R);
 
+/// @brief Jacobian of the rotation matrix w.r.t. the rotation parameters,
+/// dispatching on the dimension.
+///
+/// For a rotation parameterized by @p theta (a scalar angle in 2D or a rotation
+/// vector in 3D), this returns d vec(R)/d theta as a (dim²)×rot_ndof matrix:
+/// 2D → 4×1 (so(2) exp map, single generator), 3D → 9×3 (Rodrigues).
+///
+/// @param theta The rotation parameters (size 1 in 2D, size 3 in 3D)
+/// @return The Jacobian, sized 4×1 (2D) or 9×3 (3D)
+MatrixMax<double, 9, 3>
+rotation_to_matrix_jacobian(Eigen::ConstRef<VectorMax3d> theta);
+
+/// @brief Hessian of the rotation matrix w.r.t. the rotation parameters,
+/// dispatching on the dimension.
+///
+/// Returns d² vec(R)/d theta² flattened as a (dim²)×(rot_ndof²) matrix:
+/// 2D → 4×1 (d²R/dθ² = −R), 3D → 9×9.
+///
+/// @param theta The rotation parameters (size 1 in 2D, size 3 in 3D)
+/// @return The Hessian, sized 4×1 (2D) or 9×9 (3D)
+MatrixMax<double, 9, 9>
+rotation_to_matrix_hessian(Eigen::ConstRef<VectorMax3d> theta);
+
 // ----------------------------------------------------------------------------
 
 struct Pose {
@@ -233,101 +256,6 @@ struct Pose {
                 poses[i].rotation;
         }
         return x;
-    }
-};
-
-struct AffinePose {
-    // Position of the rigid body
-    VectorMax3d position;
-    // Rotation of the rigid body (rotation vector for 3D, angle for 1D)
-    MatrixMax3d rotation;
-
-    /// @brief Construct a rotation vector from the rotation matrix.
-    /// @return The rotation vector corresponding to the rotation matrix
-    VectorMax3d rotation_vector() const
-    {
-        assert(rotation.rows() == rotation.cols());
-        assert(rotation.rows() == 2 || rotation.rows() == 3);
-        assert(rotation.isUnitary(1e-9)); // Ensure it's a rotation matrix
-        if (rotation.rows() == 2) {
-            // For 2D, return the angle
-            VectorMax3d angle(1);
-            // rotation(1, 0) = sin(θ), rotation(0, 0) = cos(θ)
-            // Thus, θ = atan2(sin(θ), cos(θ))
-            angle(0) = std::atan2(rotation(1, 0), rotation(0, 0));
-            return angle;
-        } else {
-            // For 3D, return the rotation vector
-            return rotation_matrix_to_vector(rotation);
-        }
-    }
-
-    /// @brief Set the rotation matrix from a rotation vector or angle.
-    /// @param theta The rotation vector (3D) or angle (2D).
-    void set_rotation_vector(Eigen::ConstRef<VectorMax3d> theta)
-    {
-        assert(theta.size() == 1 || theta.size() == 3);
-        if (theta.size() == 1) {
-            // For 2D, set the rotation matrix directly
-            rotation << std::cos(theta(0)), -std::sin(theta(0)),
-                std::sin(theta(0)), std::cos(theta(0));
-        } else {
-            // For 3D, convert the rotation vector to a rotation matrix
-            rotation = rotation_vector_to_matrix(theta);
-        }
-    }
-
-    /// @brief Transform vertices from local to world coordinates using the pose.
-    /// @param V The vertices to transform (each row is a vertex)
-    /// @return The transformed vertices
-    Eigen::MatrixXd transform_vertices(Eigen::ConstRef<Eigen::MatrixXd> V) const
-    {
-        // Compute: A x̄ + p
-        // transpose because x is row-ordered
-        return (V * rotation.transpose()).rowwise() + position.transpose();
-    }
-
-    /// @brief Compute the Jacobian of the transformed vertices with respect to the pose.
-    /// @param V The vertices to transform (each row is a vertex)
-    /// @return The Jacobian matrix of size (num_vertices * dim) x ndof
-    Eigen::SparseMatrix<double>
-    transform_vertices_jacobian(Eigen::ConstRef<Eigen::MatrixXd> V) const
-    {
-        return J(V);
-    }
-
-    /// @brief Compute the Jacobian of the transformed vertices with respect to the pose.
-    ///
-    /// DOF layout: q = [p (dim); vec(A) column-major (dim²)], i.e.,
-    /// q[dim + k + dim·j] = A(k, j) — matching ImplicitEuler's state layout
-    /// and OrthogonalityPotential. Rows are vertex-major (dim·i + k), matching
-    /// the collision-mesh gradient layout.
-    ///
-    /// @param V The vertices to transform (each row is a vertex)
-    /// @return The Jacobian matrix of size (num_vertices * dim) x (ndof)
-    static Eigen::SparseMatrix<double>
-    J(Eigen::ConstRef<Eigen::MatrixXd> rest_positions) // NOLINT
-    {
-        const int dim = rest_positions.cols();
-
-        std::vector<Eigen::Triplet<double>> triplets;
-        triplets.reserve(rest_positions.rows() * dim * (dim + 1));
-
-        for (int i = 0; i < rest_positions.rows(); i++) {
-            for (int k = 0; k < dim; k++) {
-                // ∂(world_{i,k}) / ∂p_k = 1
-                triplets.emplace_back(dim * i + k, k, 1);
-                // world_{i,k} = p_k + Σ_j A(k, j) x̄(i, j)
-                for (int j = 0; j < dim; j++) {
-                    triplets.emplace_back(
-                        dim * i + k, dim + k + dim * j, rest_positions(i, j));
-                }
-            }
-        }
-
-        Eigen::SparseMatrix<double> J(rest_positions.size(), dim + dim * dim);
-        J.setFromTriplets(triplets.begin(), triplets.end());
-        return J;
     }
 };
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/dynamics/rigid/pose.hpp>
+#include <ipc/dynamics/affine/pose.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Core>
@@ -22,7 +22,7 @@ namespace ipc::dynamics {
 /// A ring buffer of the previous positions, velocities, and accelerations is
 /// stored so multi-step schemes (e.g., BDF-n) can be implemented. The state is
 /// affine-shaped ([p; vec(Q) column-major] per body); the pose() helpers decode
-/// it into rigid::AffinePose.
+/// it into affine::Pose.
 class ImplicitTimeIntegrator {
 public:
     virtual ~ImplicitTimeIntegrator() = default;
@@ -113,14 +113,14 @@ public:
     // -----------------------------------------------------------------------
 
     /// @brief Decode body i's affine pose from a state vector x.
-    rigid::AffinePose
+    affine::Pose
     pose(Eigen::ConstRef<Eigen::VectorXd> x, const size_t i) const;
 
     /// @brief Decode body i's affine pose from the most recent state.
-    rigid::AffinePose pose(const size_t i) const { return pose(x_prev(0), i); }
+    affine::Pose pose(const size_t i) const { return pose(x_prev(0), i); }
 
     /// @brief Decode all bodies' poses from predicted_positions().
-    std::vector<rigid::AffinePose> predicted_pose() const;
+    std::vector<affine::Pose> predicted_pose() const;
 
     /// @brief Number of bodies.
     size_t num_bodies() const { return m_num_bodies; }

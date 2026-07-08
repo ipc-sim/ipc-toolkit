@@ -102,10 +102,10 @@ ImplicitTimeIntegrator::a_prev(const int i) const
         m_a_prevs.data() + ptr * m_a_prevs.rows(), m_a_prevs.rows());
 }
 
-rigid::AffinePose ImplicitTimeIntegrator::pose(
+affine::Pose ImplicitTimeIntegrator::pose(
     Eigen::ConstRef<Eigen::VectorXd> x, const size_t i) const
 {
-    rigid::AffinePose pose;
+    affine::Pose pose;
 
     pose.position = x.segment(i * (m_pos_ndof + m_rot_ndof), m_pos_ndof);
     if (m_rot_ndof == 1) {
@@ -127,11 +127,11 @@ rigid::AffinePose ImplicitTimeIntegrator::pose(
     return pose;
 }
 
-std::vector<rigid::AffinePose> ImplicitTimeIntegrator::predicted_pose() const
+std::vector<affine::Pose> ImplicitTimeIntegrator::predicted_pose() const
 {
     const Eigen::VectorXd x_hat = predicted_positions();
 
-    std::vector<rigid::AffinePose> predicted(m_num_bodies);
+    std::vector<affine::Pose> predicted(m_num_bodies);
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, m_num_bodies),
         [&](const tbb::blocked_range<size_t>& r) {

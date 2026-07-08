@@ -200,7 +200,7 @@ TEST_CASE("Rigid simulator ballistic motion", "[rigid][simulator]")
     const Eigen::Vector3d g = settings.gravity;
 
     REQUIRE(sim.step());
-    const AffinePose pose_1 = sim.pose_history().back()[0];
+    const affine::Pose pose_1 = sim.pose_history().back()[0];
 
     // Implicit Euler translation: p₁ = p₀ + dt v₀ + dt² g
     const Eigen::Vector3d p1_expected = p0 + dt * v0 + dt * dt * g;
@@ -243,7 +243,7 @@ TEST_CASE("Rigid simulator ballistic motion", "[rigid][simulator]")
     sim.reset();
     CHECK(sim.t() == 0.0);
     REQUIRE(sim.step());
-    const AffinePose pose_1_again = sim.pose_history().back()[0];
+    const affine::Pose pose_1_again = sim.pose_history().back()[0];
     CHECK(
         (pose_1_again.position - pose_1.position).norm()
         == Catch::Approx(0).margin(1e-10));

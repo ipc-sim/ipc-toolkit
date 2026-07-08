@@ -376,7 +376,7 @@ public:
 
     /// @brief History of the (affine) poses at each time step.
     /// @note In rigid mode the rotation part is exactly R(θ).
-    const std::list<std::vector<rigid::AffinePose>>& pose_history() const
+    const std::list<std::vector<affine::Pose>>& pose_history() const
     {
         return m_pose_history;
     }
@@ -389,7 +389,7 @@ public:
     /// @brief The current (most recent) affine poses.
     /// @note O(num_bodies); prefer this over pose_history().back() for
     /// per-frame access, since the full history is copied on each access.
-    const std::vector<rigid::AffinePose>& poses() const
+    const std::vector<affine::Pose>& poses() const
     {
         return m_pose_history.back();
     }
@@ -570,7 +570,7 @@ protected:
     std::shared_ptr<affine::JointConstraints> m_joints;
 
     /// @brief History of poses at each time step.
-    std::list<std::vector<rigid::AffinePose>> m_pose_history;
+    std::list<std::vector<affine::Pose>> m_pose_history;
 
     /// @brief Initial poses (used by reset()).
     std::vector<rigid::Pose> m_initial_poses;

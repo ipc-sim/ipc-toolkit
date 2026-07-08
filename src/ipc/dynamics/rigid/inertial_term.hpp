@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/dynamics/affine/pose.hpp>
 #include <ipc/dynamics/rigid/rigid_potential.hpp>
 
 namespace ipc::dynamics {
@@ -66,7 +67,7 @@ public:
 
     /// @brief Get the predicted poses of the rigid bodies.
     /// @return A vector of predicted poses for each rigid body.
-    const std::vector<AffinePose>& predicted_poses() const
+    const std::vector<affine::Pose>& predicted_poses() const
     {
         return m_predicted_poses;
     }
@@ -76,7 +77,7 @@ private:
         time_integrator;
 
     /// Cached predicted poses for the rigid body
-    std::vector<AffinePose> m_predicted_poses;
+    std::vector<affine::Pose> m_predicted_poses;
 };
 
 } // namespace ipc::rigid

@@ -2,25 +2,25 @@
 
 namespace ipc::affine {
 
-rigid::AffinePose
+affine::Pose
 dof_to_pose(Eigen::ConstRef<Eigen::VectorXd> x, const size_t i, const int dim)
 {
     const int ndof = dim + dim * dim;
     assert((i + 1) * ndof <= size_t(x.size()));
 
-    rigid::AffinePose pose;
+    affine::Pose pose;
     pose.position = x.segment(i * ndof, dim);
     pose.rotation = x.segment(i * ndof + dim, dim * dim).reshaped(dim, dim);
     return pose;
 }
 
-std::vector<rigid::AffinePose>
+std::vector<affine::Pose>
 dof_to_poses(Eigen::ConstRef<Eigen::VectorXd> x, const int dim)
 {
     const int ndof = dim + dim * dim;
     assert(x.size() % ndof == 0);
 
-    std::vector<rigid::AffinePose> poses(x.size() / ndof);
+    std::vector<affine::Pose> poses(x.size() / ndof);
     for (size_t i = 0; i < poses.size(); i++) {
         poses[i] = dof_to_pose(x, i, dim);
     }
@@ -51,7 +51,7 @@ Eigen::SparseMatrix<double> affine_jacobian(const rigid::RigidBodies& bodies)
 
     for (size_t i = 0; i < bodies.num_bodies(); ++i) {
         const Eigen::SparseMatrix<double> J_i =
-            rigid::AffinePose::J(bodies.body_rest_positions(i));
+            affine::Pose::J(bodies.body_rest_positions(i));
 
         const index_t row_start = dim * bodies.body_vertex_start(i);
         const index_t col_start = ndof * i;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/dynamics/affine/pose.hpp>
 #include <ipc/dynamics/rigid/pose.hpp>
 
 #include <Eigen/Core>
@@ -71,7 +72,7 @@ public:
     // -----------------------------------------------------------------------
 
     /// @brief Per-body affine poses at x (exact for rigid: A = R(θ)).
-    virtual std::vector<rigid::AffinePose>
+    virtual std::vector<affine::Pose>
     poses(Eigen::ConstRef<Eigen::VectorXd> x) const = 0;
 
     /// @brief Build the DOF vector from rigid poses.

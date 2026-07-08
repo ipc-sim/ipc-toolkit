@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/dynamics/affine/pose.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 
 namespace ipc::affine {
@@ -28,7 +29,7 @@ public:
     ///     transform world-space torques into body space).
     void update(
         const rigid::RigidBodies& bodies,
-        const std::vector<rigid::AffinePose>& poses);
+        const std::vector<affine::Pose>& poses);
 
     double operator()(
         const rigid::RigidBodies& bodies,
