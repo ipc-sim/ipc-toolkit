@@ -165,8 +165,8 @@ TEST_CASE("Kinematic body scripted poses", "[kinematic][simulator]")
     std::deque<Pose> script;
     for (int i = 1; i <= n; ++i) {
         Pose pose = initial_poses[0];
-        pose.position += Eigen::Vector3d(
-            0.1 * i * dt, 0.05 * std::sin(0.5 * i), 0);
+        pose.position +=
+            Eigen::Vector3d(0.1 * i * dt, 0.05 * std::sin(0.5 * i), 0);
         script.push_back(pose);
     }
     Simulator::Settings settings;

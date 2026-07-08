@@ -36,7 +36,8 @@ void Pose::set_rotation_vector(Eigen::ConstRef<VectorMax3d> theta)
     }
 }
 
-Eigen::SparseMatrix<double> Pose::J(Eigen::ConstRef<Eigen::MatrixXd> rest_positions)
+Eigen::SparseMatrix<double>
+Pose::J(Eigen::ConstRef<Eigen::MatrixXd> rest_positions)
 {
     const int dim = rest_positions.cols();
 

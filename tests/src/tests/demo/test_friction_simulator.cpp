@@ -161,8 +161,8 @@ TEST_CASE("Friction incline stick and slip", "[friction][simulator]")
     }
 
     std::vector<Pose> initial_poses;
-    auto bodies = cube_on_plane(
-        initial_poses, settings.dhat, 1000.0, /*gap_factor=*/1.1);
+    auto bodies =
+        cube_on_plane(initial_poses, settings.dhat, 1000.0, /*gap_factor=*/1.1);
 
     const double dt = 0.01, t_end = 1.0;
     Simulator sim(bodies, initial_poses, dt, settings);
@@ -211,8 +211,8 @@ TEST_CASE("Friction sliding deceleration", "[friction][simulator]")
     settings.velocity_conv_tol = 1e-3;
 
     std::vector<Pose> initial_poses;
-    auto bodies = cube_on_plane(
-        initial_poses, settings.dhat, 1000.0, /*gap_factor=*/1.1);
+    auto bodies =
+        cube_on_plane(initial_poses, settings.dhat, 1000.0, /*gap_factor=*/1.1);
 
     std::vector<Pose> initial_velocities(1, Pose::Identity(3));
     initial_velocities[0].position = Eigen::Vector3d(v0, 0, 0);
@@ -221,7 +221,7 @@ TEST_CASE("Friction sliding deceleration", "[friction][simulator]")
     Simulator sim(bodies, initial_poses, initial_velocities, dt, settings);
 
     const Eigen::Vector3d p0 = initial_poses[0].position;
-    const double stopping_time = v0 / (mu * g);     // ≈ 0.34 s
+    const double stopping_time = v0 / (mu * g);          // ≈ 0.34 s
     const double stopping_dist = v0 * v0 / (2 * mu * g); // ≈ 0.17 m
 
     REQUIRE(sim.run(/*t_end=*/2 * stopping_time));
@@ -250,7 +250,7 @@ TEST_CASE("Friction lagging semantics", "[friction][simulator]")
         settings.friction_iterations = -1;
 
         auto bodies = cube_on_plane(
-        initial_poses, settings.dhat, 1000.0, /*gap_factor=*/1.1);
+            initial_poses, settings.dhat, 1000.0, /*gap_factor=*/1.1);
         std::vector<Pose> initial_velocities(1, Pose::Identity(3));
         initial_velocities[0].position = Eigen::Vector3d(1.0, 0, 0);
 
@@ -273,7 +273,8 @@ TEST_CASE("Friction lagging semantics", "[friction][simulator]")
             Simulator::Settings s;
             s.friction_coefficient = mu;
             s.friction_iterations = iterations;
-            auto bodies = cube_on_plane(poses, s.dhat, 1000.0, /*gap_factor=*/1.1);
+            auto bodies =
+                cube_on_plane(poses, s.dhat, 1000.0, /*gap_factor=*/1.1);
             std::vector<Pose> velocities(1, Pose::Identity(3));
             velocities[0].position = Eigen::Vector3d(1.0, 0, 0);
             Simulator sim(bodies, poses, velocities, /*dt=*/0.01, s);

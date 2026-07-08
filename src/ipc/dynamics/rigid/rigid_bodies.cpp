@@ -23,7 +23,8 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
     assert(rest_positions.size() == edges.size());
     assert(rest_positions.size() == faces.size());
     assert(rest_positions.size() == densities.size());
-    assert(is_dof_fixed.empty() || is_dof_fixed.size() == rest_positions.size());
+    assert(
+        is_dof_fixed.empty() || is_dof_fixed.size() == rest_positions.size());
 
     if (rest_positions.empty()) {
         return nullptr;

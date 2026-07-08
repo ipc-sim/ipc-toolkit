@@ -261,8 +261,7 @@ TEST_CASE("2D kinematic body", "[2d][kinematic][simulator]")
         REQUIRE(sim.step());
     }
 
-    const Eigen::Vector2d p_expected =
-        p0 + n * dt * Eigen::Vector2d(1.0, 0.5);
+    const Eigen::Vector2d p_expected = p0 + n * dt * Eigen::Vector2d(1.0, 0.5);
     CHECK(
         (Eigen::Vector2d(sim.poses()[0].position) - p_expected).norm()
         < 2e-3 * n * dt);
@@ -292,8 +291,8 @@ TEST_CASE("2D joints", "[2d][affine][joints][simulator]")
 
     // Pendulum: pin the top-left corner of the square; it swings under
     // gravity, keeping the pinned point fixed.
-    const Eigen::Vector2d pivot = initial_poses[0].rotation_matrix()
-            * Eigen::Vector2d(-0.5, 0.5)
+    const Eigen::Vector2d pivot =
+        initial_poses[0].rotation_matrix() * Eigen::Vector2d(-0.5, 0.5)
         + Eigen::Vector2d(initial_poses[0].position);
     joints->add_fixed_point(0, pivot);
 
@@ -314,8 +313,9 @@ TEST_CASE("2D joints", "[2d][affine][joints][simulator]")
         CHECK((p - pivot).norm() == Catch::Approx(0).margin(1e-8));
         max_swing = std::max(
             max_swing,
-            std::abs(Eigen::Vector2d(pose.position).x()
-                     - initial_poses[0].position(0)));
+            std::abs(
+                Eigen::Vector2d(pose.position).x()
+                - initial_poses[0].position(0)));
     }
     CHECK(max_swing > 0.01); // it actually swings
 }

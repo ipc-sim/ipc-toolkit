@@ -79,7 +79,8 @@ namespace {
         to_integrator_state(Eigen::ConstRef<Eigen::VectorXd> x) const override
         {
             // The integrator state is affine-shaped [p; vec(Q)] per body; the
-            // log map keeps the optimization variable θ bounded on the way back.
+            // log map keeps the optimization variable θ bounded on the way
+            // back.
             return m_to_affine->to_affine(x);
         }
 

@@ -116,9 +116,9 @@ private:
     std::vector<double> m_rhs;
 
     bool m_finalized = false;
-    Eigen::MatrixXd m_u; ///< x = Uz (permutation folded in)
-    Eigen::MatrixXd m_v; ///< z = Vx (permutation folded in)
-    Eigen::VectorXd m_s; ///< pinned values of z.head(m)
+    Eigen::MatrixXd m_u;         ///< x = Uz (permutation folded in)
+    Eigen::MatrixXd m_v;         ///< z = Vx (permutation folded in)
+    Eigen::VectorXd m_s;         ///< pinned values of z.head(m)
     std::vector<int> m_perm_inv; ///< full DOF index → permuted (z) index
 };
 

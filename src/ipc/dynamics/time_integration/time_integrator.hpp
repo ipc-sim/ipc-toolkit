@@ -113,8 +113,7 @@ public:
     // -----------------------------------------------------------------------
 
     /// @brief Decode body i's affine pose from a state vector x.
-    affine::Pose
-    pose(Eigen::ConstRef<Eigen::VectorXd> x, const size_t i) const;
+    affine::Pose pose(Eigen::ConstRef<Eigen::VectorXd> x, const size_t i) const;
 
     /// @brief Decode body i's affine pose from the most recent state.
     affine::Pose pose(const size_t i) const { return pose(x_prev(0), i); }

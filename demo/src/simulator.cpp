@@ -4,9 +4,9 @@
 #include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
+#include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/dynamics/affine/joints.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
-#include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/dynamics/time_integration/bdf.hpp>
 #include <ipc/geometry/normal.hpp> // cross_product_matrix
 #include <ipc/potentials/barrier_potential.hpp>
@@ -32,8 +32,8 @@ namespace {
     // TODO: Why does this not work with 0.5?
     inline constexpr double INFLATION_RADIUS_MULTIPLIER = 1.0;
 
-    std::vector<rigid::Pose> zero_velocities(
-        const size_t num_bodies, const int dim)
+    std::vector<rigid::Pose>
+    zero_velocities(const size_t num_bodies, const int dim)
     {
         return std::vector<rigid::Pose>(num_bodies, rigid::Pose::Identity(dim));
     }
@@ -131,8 +131,7 @@ Simulator::Simulator(
     if (m_settings.gravity.size() != m_bodies->dim()) {
         // The default gravity is 3D; truncate for 2D scenes.
         logger().debug(
-            "truncating gravity to the scene dimension ({})",
-            m_bodies->dim());
+            "truncating gravity to the scene dimension ({})", m_bodies->dim());
         m_settings.gravity =
             VectorMax3d(m_settings.gravity.head(m_bodies->dim()));
     }
@@ -365,18 +364,19 @@ double Simulator::energy(Eigen::ConstRef<Eigen::VectorXd> x) const
     // back to the DOFs through one to-affine map.
     double energy = m_body_potentials->energy(*m_bodies, x, s);
 
-    energy += s
+    energy +=
+        s
         * (*m_barrier_potential)(
-              *m_normal_collisions, *m_bodies, m_kinematics->world_vertices(x));
+            *m_normal_collisions, *m_bodies, m_kinematics->world_vertices(x));
 
     if (friction_enabled() && !m_tangential_collisions->empty()) {
         // The friction term (βΔt)²·(βΔt)·D(v(x)) contributes the friction
         // force −μλ to the equations of motion: its x-gradient is
         // (βΔt)²·μλf₁t̂, matching the (βΔt)²-scaled force terms.
-        energy += s * m_time_integrator->velocity_scaling()
+        energy +=
+            s * m_time_integrator->velocity_scaling()
             * (*m_friction_potential)(
-                      *m_tangential_collisions, *m_bodies,
-                      friction_velocities(x));
+                *m_tangential_collisions, *m_bodies, friction_velocities(x));
     }
 
     return energy;
@@ -421,10 +421,9 @@ Simulator::friction_gradient(Eigen::ConstRef<Eigen::VectorXd> x) const
     // ∇ₓ[(βΔt)³ D(v(x))] = (βΔt)² Jᵀ ∇ᵥD since ∂v/∂V = 1/(βΔt).
     return m_time_integrator->acceleration_scaling()
         * m_kinematics->map_vertex_gradient(
-               x,
-               m_friction_potential->gradient(
-                   *m_tangential_collisions, *m_bodies,
-                   friction_velocities(x)));
+            x,
+            m_friction_potential->gradient(
+                *m_tangential_collisions, *m_bodies, friction_velocities(x)));
 }
 
 Eigen::SparseMatrix<double>
@@ -464,7 +463,7 @@ Simulator::full_hessian(Eigen::ConstRef<Eigen::VectorXd> x) const
         const Eigen::MatrixXd velocities = friction_velocities(x);
         const Eigen::VectorXd friction_grad = s
             * m_friction_potential->gradient(
-                  *m_tangential_collisions, *m_bodies, velocities);
+                *m_tangential_collisions, *m_bodies, velocities);
         const Eigen::SparseMatrix<double> friction_hess =
             (s / m_time_integrator->velocity_scaling())
             * m_friction_potential->hessian(
@@ -716,7 +715,8 @@ bool Simulator::step()
     for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
         if (m_kinematic_drivers[i].has_value()
             && m_kinematic_drivers[i]->expired(m_time_integrator->dt())) {
-            logger().debug("kinematic body {} expired; converting to static", i);
+            logger().debug(
+                "kinematic body {} expired; converting to static", i);
             (*m_bodies)[i].convert_to_static();
             m_kinematic_drivers[i].reset();
         }
@@ -898,7 +898,7 @@ void Simulator::initialize_friction_step()
     assert(!weights.empty());
     m_friction_vertex_history = weights[0]
         * m_kinematics->world_vertices(
-              m_kinematics->from_integrator_state(m_time_integrator->x_prev(0)));
+            m_kinematics->from_integrator_state(m_time_integrator->x_prev(0)));
     for (size_t i = 1; i < weights.size(); ++i) {
         m_friction_vertex_history += weights[i]
             * m_kinematics->world_vertices(m_kinematics->from_integrator_state(
@@ -970,8 +970,8 @@ std::vector<rigid::Pose> Simulator::kinematic_targets() const
             const Eigen::Matrix3d Q = pose.rotation;
             const Eigen::Matrix3d Qdot =
                 v_prev.segment<9>(state_ndof * i + 3).reshaped(3, 3);
-            const Eigen::Matrix3d omega_hat =
-                0.5 * (Qdot * Q.transpose() - (Qdot * Q.transpose()).transpose());
+            const Eigen::Matrix3d omega_hat = 0.5
+                * (Qdot * Q.transpose() - (Qdot * Q.transpose()).transpose());
             velocity.rotation = Eigen::Vector3d(
                 omega_hat(2, 1), omega_hat(0, 2), omega_hat(1, 0));
         }
@@ -1002,8 +1002,7 @@ void Simulator::rebuild_dof_mask()
     m_pinned_dofs.clear();
 
     const int dim = m_bodies->dim();
-    const int body_ndof =
-        is_affine() ? (dim + dim * dim) : (dim == 2 ? 3 : 6);
+    const int body_ndof = is_affine() ? (dim + dim * dim) : (dim == 2 ? 3 : 6);
     const bool linear_satisfied =
         m_body_potentials->augmented_lagrangian_linear_satisfied();
     const bool angular_satisfied =
@@ -1025,8 +1024,8 @@ void Simulator::rebuild_dof_mask()
         }
 
         // Rotational DOFs.
-        const bool pin_rotation = is_static
-            || (kinematic && angular_satisfied) || fixed.tail(rot_flags).all();
+        const bool pin_rotation = is_static || (kinematic && angular_satisfied)
+            || fixed.tail(rot_flags).all();
         if (is_affine()) {
             // Whole-rotation only (partial rejected at construction).
             if (pin_rotation) {

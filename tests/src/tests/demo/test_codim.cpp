@@ -49,8 +49,7 @@ void segment_net(Eigen::MatrixXd& V, Eigen::MatrixXi& E, Eigen::MatrixXi& F)
 
 } // namespace
 
-TEST_CASE(
-    "Codim broad phase completeness", "[codim][rigid][candidates]")
+TEST_CASE("Codim broad phase completeness", "[codim][rigid][candidates]")
 {
     Eigen::MatrixXd V_cloud;
     Eigen::MatrixXi E_cloud, F_cloud;
@@ -148,8 +147,7 @@ TEST_CASE(
     std::vector<Pose> poses_alpha(2);
     for (int b = 0; b < 2; ++b) {
         poses_alpha[b] = Pose(
-            (1 - alpha) * poses_t0[b].position
-                + alpha * poses_t1[b].position,
+            (1 - alpha) * poses_t0[b].position + alpha * poses_t1[b].position,
             poses_t0[b].rotation);
     }
     const Eigen::MatrixXd V = bodies->vertices(poses_alpha);
@@ -190,8 +188,8 @@ TEST_CASE("Codim point cloud drop", "[codim][simulator]")
     const Eigen::MatrixXd V = bodies->vertices(sim.rigid_pose_history().back());
     double min_d_sq = std::numeric_limits<double>::infinity();
     for (int v = 0; v < 10; ++v) {
-        min_d_sq = std::min(
-            min_d_sq, point_point_distance(V.row(v), V.row(10 + v)));
+        min_d_sq =
+            std::min(min_d_sq, point_point_distance(V.row(v), V.row(10 + v)));
     }
     CHECK(min_d_sq > 0);
     CHECK(sim.poses()[0].position(1) > 0); // did not fall through

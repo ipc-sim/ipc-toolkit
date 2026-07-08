@@ -37,8 +37,7 @@ void define_rigid_bodies(py::module_& m)
         .def(py::init<>())
         .def(
             py::init<
-                Eigen::ConstRef<VectorMax3d>,
-                Eigen::ConstRef<VectorMax3d>>(),
+                Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>>(),
             "position"_a, "rotation"_a)
         .def("rotation_matrix", &Pose::rotation_matrix)
         .def("transform_vertices", &Pose::transform_vertices, "vertices"_a)
@@ -52,8 +51,7 @@ void define_rigid_bodies(py::module_& m)
 
     py::class_<RigidBody> rigid_body(m, "RigidBody");
 
-    py::enum_<RigidBody::Type>(
-        rigid_body, "Type", "How a body is simulated.")
+    py::enum_<RigidBody::Type>(rigid_body, "Type", "How a body is simulated.")
         .value("STATIC", RigidBody::Type::STATIC, "Does not move.")
         .value(
             "KINEMATIC", RigidBody::Type::KINEMATIC,

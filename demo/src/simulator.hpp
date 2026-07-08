@@ -361,8 +361,7 @@ public:
     /// captured as the reset() state.
     /// @param body Index of the body (must be KINEMATIC).
     /// @param driver The kinematic driver.
-    void
-    set_kinematic_driver(const size_t body, const KinematicDriver& driver);
+    void set_kinematic_driver(const size_t body, const KinematicDriver& driver);
 
     // -----------------------------------------------------------------------
     // Accessors
@@ -512,8 +511,7 @@ protected:
 
     /// @brief Friction term gradient as it enters the objective:
     /// (βΔt)² Jᵀ ∇ᵥD (zero when friction is disabled or contact-free).
-    Eigen::VectorXd
-    friction_gradient(Eigen::ConstRef<Eigen::VectorXd> x) const;
+    Eigen::VectorXd friction_gradient(Eigen::ConstRef<Eigen::VectorXd> x) const;
 
     // ---- Kinematic/static bodies -------------------------------------------
 

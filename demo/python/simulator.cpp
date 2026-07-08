@@ -36,8 +36,7 @@ void define_simulator(py::module_& m)
                     std::deque<rigid::Pose>(poses.begin(), poses.end()),
                     max_time);
             },
-            "poses"_a,
-            "max_time"_a = std::numeric_limits<double>::infinity(),
+            "poses"_a, "max_time"_a = std::numeric_limits<double>::infinity(),
             "A scripted driver (target is the front pose, advanced per step).")
         .def_property_readonly("max_time", &KinematicDriver::max_time)
         .def_property_readonly("is_scripted", &KinematicDriver::is_scripted);
@@ -81,8 +80,7 @@ void define_simulator(py::module_& m)
         .def_readwrite(
             "dhat_epsilon_scale", &Simulator::Settings::dhat_epsilon_scale)
         .def_readwrite(
-            "friction_coefficient",
-            &Simulator::Settings::friction_coefficient,
+            "friction_coefficient", &Simulator::Settings::friction_coefficient,
             "Coefficient of friction (0 disables friction).")
         .def_readwrite(
             "static_friction_speed_bound",
@@ -96,8 +94,7 @@ void define_simulator(py::module_& m)
             "iterates until the momentum balance converges (up to "
             "max_outer_iterations).")
         .def_readwrite(
-            "max_outer_iterations",
-            &Simulator::Settings::max_outer_iterations,
+            "max_outer_iterations", &Simulator::Settings::max_outer_iterations,
             "Hard cap on the outer (friction-lagging / augmented Lagrangian) "
             "solves per step.")
         .def_readwrite(
@@ -202,8 +199,8 @@ void define_simulator(py::module_& m)
         .def("step", &Simulator::step)
         .def("reset", &Simulator::reset)
         .def(
-            "set_kinematic_driver", &Simulator::set_kinematic_driver,
-            "body"_a, "driver"_a,
+            "set_kinematic_driver", &Simulator::set_kinematic_driver, "body"_a,
+            "driver"_a,
             "Attach a kinematic driver to a KINEMATIC body (call after "
             "construction; the body must already be KINEMATIC).")
         .def_property_readonly(

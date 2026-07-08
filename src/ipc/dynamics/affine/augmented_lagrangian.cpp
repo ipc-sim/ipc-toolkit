@@ -19,7 +19,8 @@ namespace {
 
     /// Progress η = 1 − √(d²/d₀²) with an absolute floor (see the rigid AL).
     double progress(
-        const double distance_sq, const double start_distance_sq,
+        const double distance_sq,
+        const double start_distance_sq,
         const double tol)
     {
         const double tol_sq = tol * tol;
@@ -166,7 +167,10 @@ void AugmentedLagrangian::update(
                 // λ_A ← λ_A − κ_A W^{1/2} (a − â)
                 const int ndof = m_dim + m_dim * m_dim;
                 m_lambda_A[i] -= m_kappa_A
-                    * angular_weights(bodies[i]).array().sqrt().matrix()
+                    * angular_weights(bodies[i])
+                          .array()
+                          .sqrt()
+                          .matrix()
                           .asDiagonal()
                     * (x.segment(ndof * i + m_dim, m_dim * m_dim)
                        - Eigen::VectorXd(m_target_rotations[i].reshaped()));
@@ -236,8 +240,7 @@ Eigen::VectorXd AugmentedLagrangian::gradient(
 }
 
 Eigen::SparseMatrix<double> AugmentedLagrangian::hessian(
-    const rigid::RigidBodies& bodies,
-    Eigen::ConstRef<Eigen::VectorXd> x) const
+    const rigid::RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     Eigen::SparseMatrix<double> hess(x.size(), x.size());
     if (!active()) {

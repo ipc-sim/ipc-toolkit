@@ -118,8 +118,7 @@ public:
     int rot_ndof() const override { return m_dim * m_dim; }
     bool is_identity() const override { return true; }
 
-    Eigen::VectorXd
-    to_affine(Eigen::ConstRef<Eigen::VectorXd> x) const override
+    Eigen::VectorXd to_affine(Eigen::ConstRef<Eigen::VectorXd> x) const override
     {
         return x;
     }

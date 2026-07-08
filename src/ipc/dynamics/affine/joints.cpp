@@ -126,8 +126,7 @@ void JointConstraints::add_fixed_body(const size_t body)
         row(ndof * body + d) = 1.0;
         m_rows.push_back(row);
         m_rhs.push_back(
-            d < dim ? pose.position(d)
-                    : A.reshaped()(d - dim)); // column-major
+            d < dim ? pose.position(d) : A.reshaped()(d - dim)); // column-major
     }
 }
 

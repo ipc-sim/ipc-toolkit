@@ -107,7 +107,8 @@ Eigen::VectorXd RigidToAffine::apply_gradient(
     Eigen::VectorXd g(rndof * m_num_bodies);
     for (size_t i = 0; i < m_num_bodies; ++i) {
         const VectorMax3d theta = x.segment(i * rndof + d, rot);
-        const MatrixMax<double, 9, 3> dQ = rigid::rotation_to_matrix_jacobian(theta);
+        const MatrixMax<double, 9, 3> dQ =
+            rigid::rotation_to_matrix_jacobian(theta);
 
         // Position block: dy/dx = I
         g.segment(i * rndof, d) = g_affine.segment(i * andof, d);
@@ -134,8 +135,10 @@ Eigen::SparseMatrix<double> RigidToAffine::apply_hessian(
             extract_diagonal_block(H_affine, int(i) * andof, andof);
 
         const VectorMax3d theta = x.segment(i * rndof + d, rot);
-        const MatrixMax<double, 9, 3> dQ = rigid::rotation_to_matrix_jacobian(theta);
-        const MatrixMax<double, 9, 9> d2Q = rigid::rotation_to_matrix_hessian(theta);
+        const MatrixMax<double, 9, 3> dQ =
+            rigid::rotation_to_matrix_jacobian(theta);
+        const MatrixMax<double, 9, 9> d2Q =
+            rigid::rotation_to_matrix_hessian(theta);
 
         MatrixMax6d H = MatrixMax6d::Zero(rndof, rndof);
         // pos-pos
@@ -147,9 +150,9 @@ Eigen::SparseMatrix<double> RigidToAffine::apply_hessian(
         MatrixMax3d H_rot = dQ.transpose() * Ha.block(d, d, d * d, d * d) * dQ;
         H_rot += (d2Q.transpose() * g_affine.segment(i * andof + d, d * d))
                      .reshaped(rot, rot);
-        // Project only the rotation block (position block is PSD by construction)
-        H.block(d, d, rot, rot) =
-            project_to_psd(H_rot, project_hessian_to_psd);
+        // Project only the rotation block (position block is PSD by
+        // construction)
+        H.block(d, d, rot, rot) = project_to_psd(H_rot, project_hessian_to_psd);
 
         blocks[i] = H;
     }
