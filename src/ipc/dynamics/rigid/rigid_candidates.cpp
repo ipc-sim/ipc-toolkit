@@ -272,9 +272,67 @@ void RigidCandidates::build(
             }
         }
 
-        // TODO: Codimensional vertex-vertex candidates (bodies are assumed to
-        // be surface meshes here, matching the original Rigid IPC broad
-        // phase).
+        // Codimensional candidates, mirroring the single-mesh logic of
+        // Candidates::build: codim-vertex × codim-vertex pairs (narrow-phased
+        // with point-point CCD) and, in 3D, codim-edge × codim-vertex pairs
+        // (a codim edge against a non-codim vertex is already covered by the
+        // ee/fv passes above, and a codim vertex against a face-adjacent edge
+        // by fv). The passes are skipped entirely for surface-mesh pairs.
+        const bool i_has_cv = bodies.body_num_codim_vertices(body_i) > 0;
+        const bool j_has_cv = bodies.body_num_codim_vertices(body_j) > 0;
+
+        if (i_has_cv && j_has_cv) {
+            // (vᵢ, vⱼ): receives (this_vertex_id, other_vertex_id)
+            std::vector<VertexVertexCandidate> vv;
+            body_i_bvh.detect_vertex_vertex_candidates(
+                body_j_bvh,
+                [&](size_t vi, size_t vj) {
+                    return bodies.is_codim_vertex(vi_start + vi)
+                        && bodies.is_codim_vertex(vj_start + vj)
+                        && can_vv(vi_start + vi, vj_start + vj);
+                },
+                vv);
+            for (const VertexVertexCandidate& c : vv) {
+                vv_candidates.emplace_back(
+                    vi_start + c.vertex0_id, vj_start + c.vertex1_id);
+            }
+        }
+
+        if (dim == 3) {
+            if (bodies.body_num_codim_edges(body_i) > 0 && j_has_cv) {
+                // (eᵢ, vⱼ): receives (this_edge_id, other_vertex_id)
+                std::vector<EdgeVertexCandidate> ev;
+                body_i_bvh.detect_edge_vertex_candidates(
+                    body_j_bvh,
+                    [&](size_t ei, size_t vj) {
+                        return bodies.is_codim_edge(ei_start + ei)
+                            && bodies.is_codim_vertex(vj_start + vj)
+                            && can_ev(ei_start + ei, vj_start + vj);
+                    },
+                    ev);
+                for (const EdgeVertexCandidate& c : ev) {
+                    ev_candidates.emplace_back(
+                        ei_start + c.edge_id, vj_start + c.vertex_id);
+                }
+            }
+
+            if (i_has_cv && bodies.body_num_codim_edges(body_j) > 0) {
+                // (eⱼ, vᵢ): receives (other_edge_id, this_vertex_id)
+                std::vector<EdgeVertexCandidate> ev;
+                body_i_bvh.detect_vertex_edge_candidates(
+                    body_j_bvh,
+                    [&](size_t ej, size_t vi) {
+                        return bodies.is_codim_edge(ej_start + ej)
+                            && bodies.is_codim_vertex(vi_start + vi)
+                            && can_ev(ej_start + ej, vi_start + vi);
+                    },
+                    ev);
+                for (const EdgeVertexCandidate& c : ev) {
+                    ev_candidates.emplace_back(
+                        ej_start + c.edge_id, vi_start + c.vertex_id);
+                }
+            }
+        }
     }
 }
 

@@ -805,6 +805,23 @@ void LBVH::detect_face_face_candidates(
 // rightmost_leaves argument is only used for triangular (self-collision)
 // traversal, so an empty vector is passed here.
 
+void LBVH::detect_vertex_vertex_candidates(
+    const LBVH& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<VertexVertexCandidate>& candidates) const
+{
+    if (!has_vertices() || !other.has_vertices()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK(
+        "LBVH::detect_vertex_vertex_candidates(two-tree)");
+
+    detect_candidates<VertexVertexCandidate, /*swap_order=*/true>(
+        other.vertex_bvh, vertex_bvh, /*rightmost_leaves=*/ {}, can_collide,
+        candidates);
+}
+
 void LBVH::detect_edge_vertex_candidates(
     const LBVH& other,
     const std::function<bool(size_t, size_t)>& can_collide,

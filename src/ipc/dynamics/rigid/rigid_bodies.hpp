@@ -19,6 +19,7 @@ public:
     /// @param body_face_starts A vector of start indices for the faces of each rigid body in the concatenated faces matrix.
     /// @param densities A vector of densities for each rigid body.
     /// @param initial_poses A vector of initial poses for each rigid body.
+    /// @param is_dof_fixed Optional per-body fixed-DOF flags (empty means all free).
     RigidBodies(
         Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
@@ -27,7 +28,8 @@ public:
         const std::vector<index_t>& body_edge_starts,
         const std::vector<index_t>& body_face_starts,
         const std::vector<double>& densities,
-        std::vector<Pose>& initial_poses);
+        std::vector<Pose>& initial_poses,
+        const std::vector<VectorMax6b>& is_dof_fixed = {});
 
     /// @brief Build a RigidBodies object from a set of meshes, where each mesh corresponds to a rigid body.
     /// @param rest_positions A vector of vertex positions for each rigid body mesh.
@@ -36,6 +38,7 @@ public:
     /// @param densities A vector of densities for each rigid body mesh.
     /// @param initial_poses A vector of initial poses for each rigid body mesh.
     /// @param convert_planes If true, any mesh with exactly two coplanar faces will be converted to a plane.
+    /// @param is_dof_fixed Optional per-body fixed-DOF flags (empty means all free).
     /// @return A shared pointer to the constructed RigidBodies object
     static std::shared_ptr<RigidBodies> build_from_meshes(
         const std::vector<Eigen::MatrixXd>& rest_positions,
@@ -43,7 +46,8 @@ public:
         const std::vector<Eigen::MatrixXi>& faces,
         const std::vector<double>& densities,
         std::vector<Pose>& initial_poses,
-        const bool convert_planes = false);
+        const bool convert_planes = false,
+        const std::vector<VectorMax6b>& is_dof_fixed = {});
 
     /// @brief Get the vertices of the collision mesh given the poses of each rigid body.
     /// @param poses A vector of poses for each rigid body.
@@ -90,6 +94,26 @@ public:
     /// @brief Get the number of rigid bodies in the system.
     /// @return Number of rigid bodies.
     size_t num_bodies() const { return bodies.size(); }
+
+    /// @brief Number of codimensional (in no edge) vertices of body i.
+    size_t body_num_codim_vertices(size_t i) const
+    {
+        return m_body_num_codim_vertices[i];
+    }
+
+    /// @brief Number of codimensional (in no face) edges of body i.
+    size_t body_num_codim_edges(size_t i) const
+    {
+        return m_body_num_codim_edges[i];
+    }
+
+    /// @brief Count the bodies of the given type.
+    size_t count_type(const RigidBody::Type type) const
+    {
+        return std::count_if(
+            bodies.begin(), bodies.end(),
+            [type](const RigidBody& body) { return body.type() == type; });
+    }
 
     /// @brief Get the number of vertices in the i-th rigid body mesh.
     /// @param i Index of the rigid body mesh.
@@ -213,6 +237,11 @@ private:
     std::vector<index_t> body_vertex_starts;
     std::vector<index_t> body_edge_starts;
     std::vector<index_t> body_face_starts;
+
+    /// Per-body codimensional element counts (used to skip the codim
+    /// broad-phase passes for surface-mesh body pairs).
+    std::vector<size_t> m_body_num_codim_vertices;
+    std::vector<size_t> m_body_num_codim_edges;
 };
 
 } // namespace ipc::rigid

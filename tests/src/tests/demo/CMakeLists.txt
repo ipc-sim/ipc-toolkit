@@ -4,9 +4,13 @@ if(NOT IPC_TOOLKIT_BUILD_DEMO)
 endif()
 
 set(SOURCES
+  test_2d_simulator.cpp
+  test_codim.cpp
   test_affine_simulator.cpp
+  test_friction_simulator.cpp
   test_joints.cpp
   test_rigid_simulator.cpp
+  test_static_kinematic.cpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

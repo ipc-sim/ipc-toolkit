@@ -37,8 +37,8 @@ void define_rigid_bodies(py::module_& m)
         .def(py::init<>())
         .def(
             py::init<
-                Eigen::ConstRef<Eigen::Vector3d>,
-                Eigen::ConstRef<Eigen::Vector3d>>(),
+                Eigen::ConstRef<VectorMax3d>,
+                Eigen::ConstRef<VectorMax3d>>(),
             "position"_a, "rotation"_a)
         .def("rotation_matrix", &Pose::rotation_matrix)
         .def("transform_vertices", &Pose::transform_vertices, "vertices"_a)
@@ -50,25 +50,54 @@ void define_rigid_bodies(py::module_& m)
                 "Pose(position={}, rotation={})", p.position, p.rotation);
         });
 
-    py::class_<RigidBody>(m, "RigidBody")
+    py::class_<RigidBody> rigid_body(m, "RigidBody");
+
+    py::enum_<RigidBody::Type>(
+        rigid_body, "Type", "How a body is simulated.")
+        .value("STATIC", RigidBody::Type::STATIC, "Does not move.")
+        .value(
+            "KINEMATIC", RigidBody::Type::KINEMATIC,
+            "Moves along a prescribed script/velocity but does not respond "
+            "to forces.")
+        .value(
+            "DYNAMIC", RigidBody::Type::DYNAMIC,
+            "Moves and responds to forces.")
+        .export_values();
+
+    rigid_body
         .def(
             py::init<
                 Eigen::Ref<Eigen::MatrixXd>, Eigen::ConstRef<Eigen::MatrixXi>,
-                Eigen::ConstRef<Eigen::MatrixXi>, const double, Pose&>(),
-            "vertices"_a, "edges"_a, "faces"_a, "density"_a, "initial_pose"_a)
+                Eigen::ConstRef<Eigen::MatrixXi>, const double, Pose&,
+                const VectorMax6b&>(),
+            "vertices"_a, "edges"_a, "faces"_a, "density"_a, "initial_pose"_a,
+            "is_dof_fixed"_a = VectorMax6b())
         .def_property_readonly("mass", &RigidBody::mass)
         .def_property_readonly(
             "moment_of_inertia", &RigidBody::moment_of_inertia)
         .def_property_readonly("J", &RigidBody::J)
         .def_property_readonly("R0", &RigidBody::R0)
-        .def_property_readonly("external_force", &RigidBody::external_force);
+        .def_property_readonly("external_force", &RigidBody::external_force)
+        .def_property(
+            "type", &RigidBody::type, &RigidBody::set_type,
+            "How this body is simulated (STATIC/KINEMATIC/DYNAMIC).")
+        .def_property_readonly(
+            "is_dof_fixed", &RigidBody::is_dof_fixed,
+            "Per-DOF fixed flags ([position | rotation]; set at "
+            "construction).")
+        .def(
+            "convert_to_static", &RigidBody::convert_to_static,
+            "Convert this body to a STATIC body (all DOF fixed). "
+            "Kinematic scripting/driving lives on the demo Simulator "
+            "(see ipctk.demo.KinematicDriver / Simulator.set_kinematic_driver).");
 
     py::class_<RigidBodies, std::shared_ptr<RigidBodies>, CollisionMesh>(
         m, "RigidBodies")
         .def(
             py::init(&RigidBodies::build_from_meshes), "rest_positions"_a,
             "edges"_a, "faces"_a, "densities"_a, "initial_poses"_a,
-            "convert_planes"_a = false)
+            "convert_planes"_a = false,
+            "is_dof_fixed"_a = std::vector<VectorMax6b>())
         .def(
             "vertices",
             py::overload_cast<const std::vector<Pose>&>(

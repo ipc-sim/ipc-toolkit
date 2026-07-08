@@ -12,7 +12,7 @@ public:
 
     /// @brief Update the predicted poses of the rigid bodies.
     /// @param bodies The collection of rigid bodies.
-    virtual void update(const RigidBodies& bodies) = 0;
+    virtual void update(const RigidBodies& bodies) { }
 
     // ---- Cumulative functions -----------------------------------------------
 

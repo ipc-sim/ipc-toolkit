@@ -8,7 +8,15 @@ namespace ipc::rigid {
 
 namespace {
 
-    void compute_mass_properties_2D(
+    /// Lumped-mass properties for edge meshes and point clouds (both
+    /// dimensions): edge-Voronoi masses when edges are given, unit mass per
+    /// point otherwise.
+    ///
+    /// In 2D the returned inertia is the full 2x2 second moment
+    /// ∫ρ x̄x̄ᵀ about the center of mass (the scalar moment about z is its
+    /// trace). In 3D it is the classical inertia tensor Σ mᵢ (‖r‖² I − r rᵀ)
+    /// about the center of mass.
+    void compute_mass_properties_lumped(
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const double density,
@@ -16,19 +24,41 @@ namespace {
         VectorMax3d& center,
         MatrixMax3d& inertia)
     {
-        Eigen::SparseMatrix<double> mass_matrix;
-        construct_mass_matrix(vertices, edges, mass_matrix);
-        total_mass = mass_matrix.sum();
+        assert(vertices.size() > 0);
+        const int dim = vertices.cols();
 
-        if (total_mass == 0) {
-            center.setZero(vertices.cols());
+        Eigen::VectorXd masses;
+        if (edges.rows() > 0) {
+            assert(edges.cols() == 2);
+            Eigen::SparseMatrix<double> mass_matrix;
+            construct_mass_matrix(vertices, edges, mass_matrix);
+            masses = mass_matrix.diagonal();
         } else {
-            center = (mass_matrix * vertices).colwise().sum() / total_mass;
+            // Point cloud: unit mass per point.
+            masses = Eigen::VectorXd::Ones(vertices.rows());
         }
 
-        // ∑ mᵢ rᵢ ⋅ rᵢ
-        inertia.resize(1, 1);
-        inertia(0) = (mass_matrix * vertices.rowwise().squaredNorm()).sum();
+        total_mass = masses.sum();
+        if (total_mass == 0) {
+            center.setZero(dim);
+        } else {
+            center =
+                (masses.asDiagonal() * vertices).colwise().sum() / total_mass;
+        }
+
+        inertia.setZero(dim, dim);
+        for (long i = 0; i < vertices.rows(); i++) {
+            const VectorMax3d r = vertices.row(i).transpose() - center;
+            if (dim == 2) {
+                // Second moment Σ mᵢ r rᵀ
+                inertia += masses(i) * r * r.transpose();
+            } else {
+                // Classical tensor Σ mᵢ (‖r‖² I − r rᵀ)
+                inertia += masses(i)
+                    * (r.squaredNorm() * Eigen::Matrix3d::Identity()
+                       - r * r.transpose());
+            }
+        }
 
         // Total mass above is the paremeter length of the edges, so we need to
         // multiply by the density to get the total mass in the correct units.
@@ -179,39 +209,6 @@ namespace {
         return true;
     }
 
-    void compute_mass_properties_point_cloud(
-        const Eigen::MatrixXd& vertices,
-        const double density,
-        double& total_mass,
-        VectorMax3d& center,
-        MatrixMax3d& inertia)
-    {
-        assert(vertices.size() > 0);
-        total_mass = vertices.rows(); // Point cloud has unit mass per point
-        center = vertices.colwise().mean();
-        inertia = Eigen::Matrix3d::Zero();
-        // https://i.ytimg.com/vi/9jOrDufoO50/hqdefault.jpg
-        for (long i = 0; i < vertices.rows(); i++) {
-            const Eigen::Vector3d v = vertices.row(i);
-            const Eigen::Vector3d v_sqr = v.array().pow(2);
-            inertia(0, 0) += v_sqr.y() + v_sqr.z();
-            inertia(1, 1) += v_sqr.x() + v_sqr.z();
-            inertia(2, 2) += v_sqr.x() + v_sqr.y();
-            inertia(0, 1) += -v.x() * v.y();
-            inertia(0, 2) += -v.x() * v.z();
-            inertia(1, 2) += -v.y() * v.z();
-        }
-        inertia(1, 0) = inertia(0, 1);
-        inertia(2, 0) = inertia(0, 2);
-        inertia(2, 1) = inertia(1, 2);
-
-        // Total mass above is the number of points, so we need to multiply by
-        // the density to get the total mass in the correct units.
-        total_mass *= density;
-        // Same for the inertia.
-        inertia *= density;
-    }
-
 } // namespace
 
 void compute_mass_properties(
@@ -223,21 +220,19 @@ void compute_mass_properties(
     MatrixMax3d& inertia)
 {
     assert(facets.cols() <= 3);
-    if (vertices.cols() == 2) {
-        compute_mass_properties_2D(
-            vertices, facets, density, total_mass, center, inertia);
-    }
-    if (facets.size() == 0 || facets.cols() != 3) {
-        compute_mass_properties_point_cloud(
-            vertices, density, total_mass, center, inertia);
+    if (vertices.cols() == 2 || facets.size() == 0 || facets.cols() != 3) {
+        // 2D meshes (facets = edges), 3D edge meshes, and point clouds.
+        compute_mass_properties_lumped(
+            vertices, facets.cols() == 2 ? facets : Eigen::MatrixXi(0, 2),
+            density, total_mass, center, inertia);
     } else if (
         facets.rows() < 4 // Not enough faces to form a closed mesh
         || !compute_mass_properties_3D(
             vertices, facets, density, total_mass, center, inertia)) {
-        // If the mesh is not closed, we fall back to treating it as a point
-        // cloud.
-        compute_mass_properties_point_cloud(
-            vertices, density, total_mass, center, inertia);
+        // If the mesh is not closed, fall back to lumped point masses.
+        compute_mass_properties_lumped(
+            vertices, Eigen::MatrixXi(0, 2), density, total_mass, center,
+            inertia);
     }
 }
 
@@ -247,7 +242,11 @@ void construct_mass_matrix(
     const Eigen::MatrixXi& facets,
     Eigen::SparseMatrix<double>& mass_matrix)
 {
-    if (vertices.cols() == 2 || facets.cols() == 2) {
+    if (facets.rows() == 0) {
+        // Point cloud: unit mass per point.
+        mass_matrix.resize(vertices.rows(), vertices.rows());
+        mass_matrix.setIdentity();
+    } else if (vertices.cols() == 2 || facets.cols() == 2) {
         assert(facets.cols() == 2);
         Eigen::VectorXd vertex_masses = Eigen::VectorXd::Zero(vertices.rows());
         for (long i = 0; i < facets.rows(); i++) {
@@ -258,8 +257,13 @@ void construct_mass_matrix(
             vertex_masses(facets(i, 0)) += edge_length / 2;
             vertex_masses(facets(i, 1)) += edge_length / 2;
         }
+        std::vector<Eigen::Triplet<double>> triplets;
+        triplets.reserve(vertices.rows());
+        for (long i = 0; i < vertices.rows(); i++) {
+            triplets.emplace_back(i, i, vertex_masses(i));
+        }
         mass_matrix.resize(vertices.rows(), vertices.rows());
-        mass_matrix.diagonal() = vertex_masses;
+        mass_matrix.setFromTriplets(triplets.begin(), triplets.end());
     } else if (facets.cols() == 3) {
         assert(vertices.cols() == 3); // Only use triangles in 3D
         igl::massmatrix(

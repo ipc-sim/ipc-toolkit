@@ -1,5 +1,6 @@
 #pragma once
 
+#include "kinematic_driver.hpp"
 #include "kinematics.hpp"
 
 #include <ipc/dynamics/affine/body_forces.hpp>
@@ -27,7 +28,9 @@ namespace ipc {
 class BarrierPotential;
 class BroadPhase;
 class Candidates;
+class FrictionPotential;
 class NormalCollisions;
+class TangentialCollisions;
 } // namespace ipc
 
 namespace ipc::rigid {
@@ -37,6 +40,10 @@ class RigidBodies;
 namespace ipc::affine {
 class JointConstraints;
 } // namespace ipc::affine
+
+#include <ipc/dynamics/affine/augmented_lagrangian.hpp>
+#include <ipc/dynamics/rigid/augmented_lagrangian.hpp>
+#include <ipc/dynamics/rigid/rigid_body.hpp>
 
 namespace ipc::dynamics {
 class ImplicitTimeIntegrator;
@@ -97,6 +104,38 @@ public:
         /// @brief Adaptive barrier stiffness updates if the minimum distance
         /// is less than this fraction of the bounding box diagonal.
         double dhat_epsilon_scale = 1e-9;
+        /// @brief Coefficient of friction (0 disables friction)
+        /// [Ferguson et al. 2021].
+        /// @note Friction forces are proportional to the (lagged) barrier
+        /// normal forces, so their accuracy follows the contact-force
+        /// accuracy of the solve: for quantitative friction, iterate the
+        /// lagging to convergence (friction_iterations < 0) and tighten
+        /// velocity_conv_tol (e.g., 1e-3) so the solver cannot stop while
+        /// the contact forces are unbalanced.
+        double friction_coefficient = 0;
+        /// @brief Smooth friction mollifier speed bound εᵥ (m/s): sliding
+        /// speeds below this are treated as static [Ferguson et al. 2021].
+        double static_friction_speed_bound = 1e-3;
+        /// @brief Friction lagging iterations: the friction operators (tangent
+        /// bases and normal forces) are frozen during each solve and rebuilt
+        /// between solves. 0 disables friction; > 0 caps the number of solves
+        /// per step (1 = a single lagged solve); < 0 iterates until the
+        /// momentum balance ‖∇E + κ∇B + ∇D‖ ≤ 1e-2·bbox_diagonal (up to
+        /// max_outer_iterations).
+        int friction_iterations = 1;
+        /// @brief Hard cap on the outer (friction-lagging / augmented
+        /// Lagrangian) solves per step.
+        int max_outer_iterations = 50;
+        /// @brief Initial penalty of the kinematic-body augmented Lagrangian
+        /// (reset each step) [Ferguson et al. 2021].
+        double al_initial_penalty = 1e3;
+        /// @brief Maximum AL penalty (stop doubling).
+        double al_max_penalty = 1e8;
+        /// @brief AL progress η at which a channel is satisfied (DOFs freeze).
+        double al_satisfied_progress = 0.999;
+        /// @brief AL progress below which the penalty doubles (otherwise the
+        /// multipliers update).
+        double al_stall_progress = 0.99;
         /// @brief Stiffness of the orthogonality potential (affine mode).
         /// @note The potential also scales by each body's volume and enters
         /// the incremental potential as Δt²V⊥ [Lan et al. 2022, Eq. 9].
@@ -306,6 +345,31 @@ public:
     void update_collisions(
         Eigen::ConstRef<Eigen::VectorXd> x, bool update_candidates = true);
 
+    /// @brief Capture the vertex-space velocity history for the friction term
+    /// (Σᵢ wᵢ V(xᵗ⁻ⁱ) from the time integrator's velocity formula). Called at
+    /// the start of every step; kept fixed through all lagging iterations.
+    void initialize_friction_step();
+
+    /// @brief Rebuild the tangential (friction) collision set at the lagged
+    /// state x (the normal collision set must be up to date at x). The
+    /// tangent bases and normal force magnitudes are baked in at x — the
+    /// friction lagging [Ferguson et al. 2021].
+    void update_friction_collisions(Eigen::ConstRef<Eigen::VectorXd> x);
+
+    /// @brief Whether any body is KINEMATIC.
+    bool has_kinematic_bodies() const;
+
+    /// @brief Attach a kinematic driver to a KINEMATIC body.
+    ///
+    /// KINEMATIC bodies default to a velocity-driven driver at construction;
+    /// call this to script their motion or set a finite drive time. Call after
+    /// construction (the body must already be KINEMATIC). The driver is also
+    /// captured as the reset() state.
+    /// @param body Index of the body (must be KINEMATIC).
+    /// @param driver The kinematic driver.
+    void
+    set_kinematic_driver(const size_t body, const KinematicDriver& driver);
+
     // -----------------------------------------------------------------------
     // Accessors
     // -----------------------------------------------------------------------
@@ -348,6 +412,22 @@ public:
     {
         return *m_barrier_potential;
     }
+
+    /// @brief Get the friction potential (dissipative, velocity-based).
+    const FrictionPotential& friction_potential() const
+    {
+        return *m_friction_potential;
+    }
+
+    /// @brief Get the tangential (friction) collision set.
+    const TangentialCollisions& tangential_collisions() const
+    {
+        return *m_tangential_collisions;
+    }
+
+    /// @brief The momentum balance ‖∇E + κ∇B + ∇D‖ after the last friction
+    /// lagging iteration (-1 before any friction solve).
+    double last_momentum_balance() const { return m_last_momentum_balance; }
 
     /// @brief Get the candidate collisions for the current time step.
     const Candidates& candidates() const { return m_kinematics->candidates(); }
@@ -411,13 +491,61 @@ protected:
     /// @brief Total incremental potential at the full DOFs x.
     double energy(Eigen::ConstRef<Eigen::VectorXd> x) const;
 
-    /// @brief Gradient of every term except the barrier (also used to
+    /// @brief Gradient of every term except the barrier, as the terms enter
+    /// the objective (i.e., scaled by (βΔt)² where applicable; also used to
     /// initialize the adaptive barrier stiffness).
     Eigen::VectorXd
     non_barrier_gradient(Eigen::ConstRef<Eigen::VectorXd> x) const;
 
     /// @brief Barrier energy gradient chained to the DOFs: Jᵀ ∇B.
+    /// @note Not scaled by the (βΔt)² acceleration scaling; callers apply it.
     Eigen::VectorXd barrier_gradient(Eigen::ConstRef<Eigen::VectorXd> x) const;
+
+    /// @brief Whether the friction term is active.
+    bool friction_enabled() const
+    {
+        return m_settings.friction_coefficient > 0
+            && m_settings.friction_iterations != 0;
+    }
+
+    /// @brief Per-vertex velocities at x from the time integrator's velocity
+    /// formula: (V(x) − Σᵢ wᵢ V(xᵗ⁻ⁱ)) / (βΔt).
+    Eigen::MatrixXd
+    friction_velocities(Eigen::ConstRef<Eigen::VectorXd> x) const;
+
+    /// @brief Friction term gradient as it enters the objective:
+    /// (βΔt)² Jᵀ ∇ᵥD (zero when friction is disabled or contact-free).
+    Eigen::VectorXd
+    friction_gradient(Eigen::ConstRef<Eigen::VectorXd> x) const;
+
+    // ---- Kinematic/static bodies -------------------------------------------
+
+    /// @brief Per-body target poses for this step (KINEMATIC bodies: script
+    /// front or velocity-integrated; others: current pose, unused).
+    std::vector<rigid::Pose> kinematic_targets() const;
+
+    /// @brief Reset the augmented Lagrangian for a new step at state x.
+    void al_init(Eigen::ConstRef<Eigen::VectorXd> x);
+
+    /// @brief Whether the augmented Lagrangian still has unsatisfied channels.
+    bool al_active() const;
+
+    /// @brief Apply the AL update policy at the (energy-converged) state x.
+    void al_update(Eigen::ConstRef<Eigen::VectorXd> x);
+
+    /// @brief AL energy (unscaled by the acceleration scaling).
+    double al_energy(Eigen::ConstRef<Eigen::VectorXd> x) const;
+
+    /// @brief AL gradient as it enters the objective: (βΔt)² ∇E_AL.
+    Eigen::VectorXd al_gradient(Eigen::ConstRef<Eigen::VectorXd> x) const;
+
+    /// @brief Rebuild m_pinned_dofs (STATIC bodies, is_dof_fixed flags, and
+    /// AL-satisfied channels of KINEMATIC bodies) in solver coordinates.
+    void rebuild_dof_mask();
+
+    /// @brief Advance kinematic scripts and convert expired bodies to STATIC
+    /// (called at the end of every step).
+    void step_kinematic_bodies();
 
     /// @brief Total Hessian at the full DOFs x (PSD projected per term if
     /// m_project_to_psd).
@@ -455,6 +583,39 @@ protected:
 
     /// @brief Normal collision set.
     std::shared_ptr<NormalCollisions> m_normal_collisions;
+
+    /// @brief Friction (dissipative) potential; evaluated on velocities.
+    std::shared_ptr<FrictionPotential> m_friction_potential;
+
+    /// @brief Tangential (friction) collision set (lagged: rebuilt between
+    /// solves, frozen during each solve).
+    std::shared_ptr<TangentialCollisions> m_tangential_collisions;
+
+    /// @brief Vertex-space velocity history Σᵢ wᵢ V(xᵗ⁻ⁱ) — the reference for
+    /// the friction velocities (captured at step start, fixed for the step).
+    Eigen::MatrixXd m_friction_vertex_history;
+
+    /// @brief Momentum balance after the last friction lagging iteration.
+    double m_last_momentum_balance = -1.0;
+
+    // ---- Kinematic/static bodies -------------------------------------------
+
+    /// @brief Augmented Lagrangian for KINEMATIC bodies (mode-dependent).
+    std::optional<rigid::AugmentedLagrangian> m_rigid_al;
+    std::optional<affine::AugmentedLagrangian> m_affine_al;
+
+    /// @brief Pinned solver-coordinate indices (zero search direction):
+    /// STATIC bodies, fixed DOFs, and AL-satisfied kinematic channels.
+    std::vector<int> m_pinned_dofs;
+
+    /// @brief Per-body kinematic drivers (empty entry ⇒ not kinematic).
+    /// KINEMATIC bodies get a default velocity-driven driver at construction.
+    std::vector<std::optional<KinematicDriver>> m_kinematic_drivers;
+
+    /// @brief Body state at construction (restored by reset()).
+    std::vector<rigid::RigidBody::Type> m_initial_body_types;
+    std::vector<VectorMax6b> m_initial_is_dof_fixed;
+    std::vector<std::optional<KinematicDriver>> m_initial_kinematic_drivers;
 
     /// @brief Broad phase collision handler for efficiently finding potential collisions.
     std::unique_ptr<BroadPhase> m_broad_phase;

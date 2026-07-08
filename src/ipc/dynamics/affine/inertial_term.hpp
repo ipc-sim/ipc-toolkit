@@ -42,6 +42,10 @@ public:
     const Eigen::SparseMatrix<double>& mass_matrix() const { return m_mass; }
 
 private:
+    /// @brief (Re)build the block-diagonal ABD mass matrix (zero blocks for
+    /// non-DYNAMIC bodies).
+    void build_mass_matrix(const rigid::RigidBodies& bodies);
+
     const std::shared_ptr<const dynamics::ImplicitTimeIntegrator>
         time_integrator;
 

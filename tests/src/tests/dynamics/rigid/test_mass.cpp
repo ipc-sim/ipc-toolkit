@@ -85,3 +85,59 @@ TEST_CASE("Mass properties", "[rigid][mass]")
         REQUIRE(inertia.isApprox(expected_inertia, 1e-6));
     }
 }
+
+TEST_CASE("2D mass properties", "[2d][mass]")
+{
+    // A W×H rectangle outline with edge-Voronoi lumped masses.
+    const double W = 2.0, H = 1.0, density = GENERATE(1.0, 100.0);
+
+    Eigen::MatrixXd V(4, 2);
+    V << -W / 2, -H / 2, W / 2, -H / 2, W / 2, H / 2, -W / 2, H / 2;
+    Eigen::MatrixXi E(4, 2);
+    E << 0, 1, 1, 2, 2, 3, 3, 0;
+
+    double mass;
+    ipc::VectorMax3d center;
+    ipc::MatrixMax3d inertia;
+    ipc::rigid::compute_mass_properties(V, E, density, mass, center, inertia);
+
+    // Mass = density × perimeter; centered at the origin.
+    CHECK(mass == Catch::Approx(density * 2 * (W + H)));
+    CHECK(center.norm() == Catch::Approx(0).margin(1e-12));
+
+    // Second moment ∫ρ x̄x̄ᵀ of 4 lumped corner masses m_i = ρ(W + H)/2 at
+    // (±W/2, ±H/2).
+    const double corner_mass = density * (W + H) / 2;
+    REQUIRE(inertia.rows() == 2);
+    CHECK(inertia(0, 0) == Catch::Approx(4 * corner_mass * W * W / 4));
+    CHECK(inertia(1, 1) == Catch::Approx(4 * corner_mass * H * H / 4));
+    CHECK(inertia(0, 1) == Catch::Approx(0).margin(1e-10));
+}
+
+TEST_CASE("2D point cloud mass properties", "[2d][mass]")
+{
+    Eigen::MatrixXd V(3, 2);
+    V << 0, 0, 2, 0, 0, 2;
+    const Eigen::MatrixXi E(0, 2);
+
+    double mass;
+    ipc::VectorMax3d center;
+    ipc::MatrixMax3d inertia;
+    ipc::rigid::compute_mass_properties(V, E, 1.0, mass, center, inertia);
+
+    CHECK(mass == Catch::Approx(3.0)); // unit mass per point
+    CHECK(center.x() == Catch::Approx(2.0 / 3.0));
+    CHECK(center.y() == Catch::Approx(2.0 / 3.0));
+    REQUIRE(inertia.rows() == 2);
+    // Second moment about the COM: Σ (vᵢ − c)(vᵢ − c)ᵀ
+    double sxx = 0, syy = 0, sxy = 0;
+    for (int i = 0; i < 3; ++i) {
+        const Eigen::Vector2d r = V.row(i).transpose() - center;
+        sxx += r.x() * r.x();
+        syy += r.y() * r.y();
+        sxy += r.x() * r.y();
+    }
+    CHECK(inertia(0, 0) == Catch::Approx(sxx));
+    CHECK(inertia(1, 1) == Catch::Approx(syy));
+    CHECK(inertia(0, 1) == Catch::Approx(sxy));
+}

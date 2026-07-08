@@ -4,7 +4,6 @@
 
 #include <finitediff.hpp>
 
-#include <ipc/dynamics/time_integration/bdf.hpp>
 #include <ipc/dynamics/rigid/body_forces.hpp>
 
 #include <iostream>
@@ -40,21 +39,14 @@ auto rigid_bodies()
     return bodies;
 }
 
-std::shared_ptr<const dynamics::ImplicitTimeIntegrator>
-time_integrator(const RigidBodies& bodies)
+std::vector<AffinePose> identity_poses(const RigidBodies& bodies)
 {
-    Eigen::VectorXd x = Eigen::VectorXd::Zero(12 * bodies.num_bodies());
-    for (int i = 0; i < bodies.num_bodies(); ++i) {
-        x.segment<9>(i * 12 + 3) = Eigen::Matrix3d::Identity().reshaped();
+    std::vector<AffinePose> poses(bodies.num_bodies());
+    for (auto& pose : poses) {
+        pose.position = Eigen::Vector3d::Zero();
+        pose.rotation = Eigen::Matrix3d::Identity();
     }
-    const Eigen::VectorXd v = Eigen::VectorXd::Random(12 * bodies.num_bodies());
-    const Eigen::VectorXd a = Eigen::VectorXd::Random(12 * bodies.num_bodies());
-    const double dt = 0.01; // Arbitrary time step
-
-    auto bdf = std::make_shared<dynamics::BDF>(/*order=*/1);
-    bdf->set_dt(dt);
-    bdf->init(x, v, a, bodies.num_bodies());
-    return bdf;
+    return poses;
 }
 
 } // namespace
@@ -64,8 +56,8 @@ TEST_CASE(
     "[body_forces][energy][gradient][hessian]")
 {
     auto bodies = rigid_bodies();
-    BodyForces body_forces(time_integrator(*bodies));
-    body_forces.update(*bodies);
+    BodyForces body_forces;
+    body_forces.update(*bodies, identity_poses(*bodies));
 
     VectorMax6d x = VectorMax6d::Random(6);
 
@@ -144,9 +136,9 @@ TEST_CASE(
     "[rigid][body_forces][total_energy][total_gradient][total_hessian]")
 {
     auto bodies = rigid_bodies();
-    BodyForces body_forces(time_integrator(*bodies));
+    BodyForces body_forces;
     body_forces.set_gravity(Eigen::Vector3d(0, -9.81, 0));
-    body_forces.update(*bodies);
+    body_forces.update(*bodies, identity_poses(*bodies));
 
     VectorMax6d x = VectorMax6d::Random(6);
 

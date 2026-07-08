@@ -149,6 +149,15 @@ public:
     // Candidate ids are each BVH's local primitive ids. The can_collide
     // callback receives ids in the same order as the emitted candidate.
 
+    /// @brief Find candidate collisions between this BVH's vertices and another BVH's vertices.
+    /// @param[in] other The other LBVH containing the second set of vertices.
+    /// @param[in] can_collide Filter callback receiving (this_vertex_id, other_vertex_id).
+    /// @param[out] candidates The candidates (vertex0_id ∈ this, vertex1_id ∈ other).
+    void detect_vertex_vertex_candidates(
+        const LBVH& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<VertexVertexCandidate>& candidates) const;
+
     /// @brief Find candidate collisions between this BVH's edges and another BVH's vertices.
     /// @param[in] other The other LBVH containing the vertices.
     /// @param[in] can_collide Filter callback receiving (this_edge_id, other_vertex_id).

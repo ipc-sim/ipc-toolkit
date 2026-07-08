@@ -13,44 +13,51 @@ JointConstraints::JointConstraints(
     : m_bodies(bodies)
     , m_initial_poses(initial_poses)
 {
-    assert(m_bodies->dim() == 3); // TODO: Support 2D affine bodies
     assert(initial_poses.size() == m_bodies->num_bodies());
 }
 
-Eigen::Vector3d JointConstraints::world_to_material(
-    const size_t body, Eigen::ConstRef<Eigen::Vector3d> world_point) const
+VectorMax3d JointConstraints::world_to_material(
+    const size_t body, Eigen::ConstRef<VectorMax3d> world_point) const
 {
     assert(body < m_bodies->num_bodies());
     const rigid::Pose& pose = m_initial_poses[body];
-    // x̄ = A⁻¹ (p_world − p); A ∈ SO(3) initially, so A⁻¹ = Aᵀ
+    // x̄ = A⁻¹ (p_world − p); A ∈ SO(dim) initially, so A⁻¹ = Aᵀ
     return pose.rotation_matrix().transpose() * (world_point - pose.position);
+}
+
+int JointConstraints::body_ndof() const
+{
+    const int dim = m_bodies->dim();
+    return dim + dim * dim;
 }
 
 void JointConstraints::add_point_coefficients(
     Eigen::Ref<Eigen::RowVectorXd> row,
     const size_t body,
-    Eigen::ConstRef<Eigen::Vector3d> material_point,
+    Eigen::ConstRef<VectorMax3d> material_point,
     const int k,
     const double sign) const
 {
-    // p(x)_k = x[12b + k] + Σⱼ x[12b + 3 + k + 3j] x̄ⱼ
-    row(12 * body + k) += sign;
-    for (int j = 0; j < 3; j++) {
-        row(12 * body + 3 + k + 3 * j) += sign * material_point(j);
+    const int dim = m_bodies->dim();
+    const int ndof = body_ndof();
+    // p(x)_k = x[ndof·b + k] + Σⱼ x[ndof·b + dim + k + dim·j] x̄ⱼ
+    row(ndof * body + k) += sign;
+    for (int j = 0; j < dim; j++) {
+        row(ndof * body + dim + k + dim * j) += sign * material_point(j);
     }
 }
 
 void JointConstraints::add_point_connection(
     const size_t body_a,
     const size_t body_b,
-    Eigen::ConstRef<Eigen::Vector3d> world_anchor)
+    Eigen::ConstRef<VectorMax3d> world_anchor)
 {
     assert(!m_finalized);
     assert(body_a != body_b);
-    const Eigen::Vector3d xa = world_to_material(body_a, world_anchor);
-    const Eigen::Vector3d xb = world_to_material(body_b, world_anchor);
-    const int n = 12 * m_bodies->num_bodies();
-    for (int k = 0; k < 3; k++) {
+    const VectorMax3d xa = world_to_material(body_a, world_anchor);
+    const VectorMax3d xb = world_to_material(body_b, world_anchor);
+    const int n = body_ndof() * m_bodies->num_bodies();
+    for (int k = 0; k < m_bodies->dim(); k++) {
         Eigen::RowVectorXd row = Eigen::RowVectorXd::Zero(n);
         add_point_coefficients(row, body_a, xa, k, 1.0);
         add_point_coefficients(row, body_b, xb, k, -1.0);
@@ -60,12 +67,12 @@ void JointConstraints::add_point_connection(
 }
 
 void JointConstraints::add_fixed_point(
-    const size_t body, Eigen::ConstRef<Eigen::Vector3d> world_anchor)
+    const size_t body, Eigen::ConstRef<VectorMax3d> world_anchor)
 {
     assert(!m_finalized);
-    const Eigen::Vector3d xb = world_to_material(body, world_anchor);
-    const int n = 12 * m_bodies->num_bodies();
-    for (int k = 0; k < 3; k++) {
+    const VectorMax3d xb = world_to_material(body, world_anchor);
+    const int n = body_ndof() * m_bodies->num_bodies();
+    for (int k = 0; k < m_bodies->dim(); k++) {
         Eigen::RowVectorXd row = Eigen::RowVectorXd::Zero(n);
         add_point_coefficients(row, body, xb, k, 1.0);
         m_rows.push_back(row);
@@ -76,24 +83,30 @@ void JointConstraints::add_fixed_point(
 void JointConstraints::add_hinge(
     const size_t body_a,
     const size_t body_b,
-    Eigen::ConstRef<Eigen::Vector3d> world_axis_p0,
-    Eigen::ConstRef<Eigen::Vector3d> world_axis_p1)
+    Eigen::ConstRef<VectorMax3d> world_axis_p0,
+    Eigen::ConstRef<VectorMax3d> world_axis_p1)
 {
+    if (m_bodies->dim() == 2) {
+        // A 2D "hinge" is a point connection; two anchors would be redundant
+        // rows (and trip the redundancy check in finalize()).
+        throw std::invalid_argument(
+            "add_hinge is 3D-only; use add_point_connection in 2D");
+    }
     add_point_connection(body_a, body_b, world_axis_p0);
     add_point_connection(body_a, body_b, world_axis_p1);
 }
 
 void JointConstraints::add_sliding_plane(
     const size_t body,
-    Eigen::ConstRef<Eigen::Vector3d> world_anchor,
-    Eigen::ConstRef<Eigen::Vector3d> normal)
+    Eigen::ConstRef<VectorMax3d> world_anchor,
+    Eigen::ConstRef<VectorMax3d> normal)
 {
     assert(!m_finalized);
-    const Eigen::Vector3d xb = world_to_material(body, world_anchor);
-    const Eigen::Vector3d n_hat = normal.normalized();
-    const int n = 12 * m_bodies->num_bodies();
+    const VectorMax3d xb = world_to_material(body, world_anchor);
+    const VectorMax3d n_hat = normal.normalized();
+    const int n = body_ndof() * m_bodies->num_bodies();
     Eigen::RowVectorXd row = Eigen::RowVectorXd::Zero(n);
-    for (int k = 0; k < 3; k++) {
+    for (int k = 0; k < m_bodies->dim(); k++) {
         add_point_coefficients(row, body, xb, k, n_hat(k));
     }
     m_rows.push_back(row);
@@ -103,15 +116,18 @@ void JointConstraints::add_sliding_plane(
 void JointConstraints::add_fixed_body(const size_t body)
 {
     assert(!m_finalized);
-    const int n = 12 * m_bodies->num_bodies();
+    const int dim = m_bodies->dim();
+    const int ndof = body_ndof();
+    const int n = ndof * m_bodies->num_bodies();
     const rigid::Pose& pose = m_initial_poses[body];
-    const Eigen::Matrix3d A = pose.rotation_matrix();
-    for (int d = 0; d < 12; d++) {
+    const MatrixMax3d A = pose.rotation_matrix();
+    for (int d = 0; d < ndof; d++) {
         Eigen::RowVectorXd row = Eigen::RowVectorXd::Zero(n);
-        row(12 * body + d) = 1.0;
+        row(ndof * body + d) = 1.0;
         m_rows.push_back(row);
         m_rhs.push_back(
-            d < 3 ? pose.position(d) : A.reshaped()(d - 3)); // column-major
+            d < dim ? pose.position(d)
+                    : A.reshaped()(d - dim)); // column-major
     }
 }
 
@@ -121,7 +137,7 @@ void JointConstraints::finalize()
         return;
     }
 
-    const int n = 12 * int(m_bodies->num_bodies());
+    const int n = body_ndof() * int(m_bodies->num_bodies());
     const int m = int(m_rows.size());
     assert(m < n);
 
@@ -181,7 +197,37 @@ void JointConstraints::finalize()
     }
 
     m_s = s;
+
+    m_perm_inv.resize(n);
+    for (int i = 0; i < n; i++) {
+        m_perm_inv[perm[i]] = i;
+    }
+
     m_finalized = true;
+}
+
+bool JointConstraints::is_body_constrained(const size_t body) const
+{
+    const int ndof = body_ndof();
+    for (const auto& row : m_rows) {
+        if (!row.segment(ndof * body, ndof).isZero()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int JointConstraints::free_reduced_index(const int full_dof) const
+{
+    assert(m_finalized);
+#ifndef NDEBUG
+    for (const auto& row : m_rows) {
+        assert(row(full_dof) == 0.0);
+    }
+#endif
+    const int k = m_perm_inv[full_dof];
+    assert(k >= int(num_constraints()));
+    return k;
 }
 
 Eigen::VectorXd

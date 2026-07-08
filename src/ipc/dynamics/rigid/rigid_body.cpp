@@ -31,18 +31,17 @@ namespace {
         }
     }
 
-    inline Eigen::DiagonalMatrix<double, 3>
+    /// Convert the classical principal moments of inertia to the diagonal
+    /// second-moment matrix J = ∫ρ x̄x̄ᵀ (3D only; in 2D the second moment is
+    /// computed directly).
+    inline Eigen::DiagonalMatrix<double, Eigen::Dynamic, 3>
     compute_J(Eigen::ConstRef<VectorMax3d> I) // NOLINT
     {
-        if (I.size() == 1) {
-            return I.asDiagonal();
-        } else {
-            assert(I.size() == 3);
-            return Eigen::DiagonalMatrix<double, 3>(
-                0.5 * (-I.x() + I.y() + I.z()), //
-                0.5 * (I.x() - I.y() + I.z()),  //
-                0.5 * (I.x() + I.y() - I.z()));
-        }
+        assert(I.size() == 3);
+        Eigen::DiagonalMatrix<double, Eigen::Dynamic, 3> J(3); // NOLINT
+        J.diagonal() << 0.5 * (-I.x() + I.y() + I.z()),
+            0.5 * (I.x() - I.y() + I.z()), 0.5 * (I.x() + I.y() - I.z());
+        return J;
     }
 } // namespace
 
@@ -51,7 +50,8 @@ RigidBody::RigidBody(
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double density,
-    Pose& initial_pose)
+    Pose& initial_pose,
+    const VectorMax6b& is_dof_fixed)
 {
     assert(vertices.size() > 0);
     assert(edges.size() == 0 || edges.cols() == 2);
@@ -59,6 +59,12 @@ RigidBody::RigidBody(
 
     const int dim = vertices.cols();
     assert(dim == 2 || dim == 3);
+
+    const int ndof = dim == 2 ? 3 : 6;
+    assert(is_dof_fixed.size() == 0 || is_dof_fixed.size() == ndof);
+    m_is_dof_fixed = is_dof_fixed.size() == ndof
+        ? is_dof_fixed
+        : VectorMax6b(VectorMax6b::Zero(ndof));
 
     // 1. Center the vertices, so the mass properties are computed correctly
     // TODO: This should not be necessary. Determine why the mass properties
@@ -75,7 +81,20 @@ RigidBody::RigidBody(
     m_volume = m_mass / density;
 
     // 3. Convert the inertia tensor to the principal axes moments of inertia
-    if (dim == 3) {
+    const int num_rot_dof_fixed =
+        dim == 3 ? int(m_is_dof_fixed.tail(3).count()) : 0;
+    if (dim == 3 && num_rot_dof_fixed == 2) {
+        // Rotation is confined to a single world axis: keep the world-frame
+        // moments of inertia and skip the principal-axes rotation R₀ so the
+        // free rotation-vector component stays aligned with its world axis.
+        m_moment_of_inertia = inertia_tensor.diagonal();
+        m_R0 = Eigen::Matrix3d::Identity();
+    } else if (dim == 3) {
+        if (num_rot_dof_fixed == 1) {
+            logger().warn(
+                "Rigid body dynamics with two free rotational DOF has not "
+                "been tested thoroughly.");
+        }
         // This computation is taken from ProjectChrono: https://bit.ly/2RpbTl1
         // The eigen values of the inertia tensor are the principal moments
         // of inertia, which are the diagonal elements of the diagonalized
@@ -113,20 +132,6 @@ RigidBody::RigidBody(
         }
         assert(m_R0.isUnitary(1e-9));
 
-        // TODO: Enable this code
-        // int num_rot_dof_fixed =
-        //     is_dof_fixed.tail(PoseD::dim_to_rot_ndof(dim())).count();
-        // if (num_rot_dof_fixed == 2) {
-        //     // Convert moment of inertia to world coordinates
-        //     // https://physics.stackexchange.com/a/268812
-        //     moment_of_inertia = -I.diagonal().array() + I.diagonal().sum();
-        //     m_R0.setIdentity();
-        // } else if (num_rot_dof_fixed == 1) {
-        //     spdlog::warn(
-        //         "Rigid body dynamics with two rotational DoF has "
-        //         "not been tested thoroughly.");
-        // }
-
         // Remove the initial rotation from the rest vertices
         vertices = vertices * m_R0;
 
@@ -134,52 +139,46 @@ RigidBody::RigidBody(
         Eigen::AngleAxisd r = Eigen::AngleAxisd(Eigen::Matrix3d(m_R0));
         centering_pose.rotation = r.angle() * r.axis();
 
-        // TODO:
-        // ω = R₀ᵀω₀ (ω₀ expressed in body coordinates)
-        // this->velocity.rotation = m_R0.transpose() * this->velocity.rotation;
-        // Eigen::Matrix3d Q_t0 = this->pose.construct_rotation_matrix();
-        // this->Qdot = Q_t0 * Hat(this->velocity.rotation);
-
-        // τ = R₀ᵀτ₀ (τ₀ expressed in body coordinates)
-        // NOTE: this transformation will be done later
-        // this->force.rotation = R0.transpose() * this->force.rotation;
+        // Compute the diagonal second moment in the principal frame from the
+        // classical inertia tensor.
+        m_J = compute_J(m_moment_of_inertia);
     } else {
-        // For 2D, the inertia tensor is a scalar, and the rotation vector
-        // is a single value.
-        m_moment_of_inertia = inertia_tensor.diagonal();
-        // The input orientation is already in the inertial frame
-        m_R0 = Eigen::Matrix2d::Identity();
+        // 2D: the inertia is the full 2×2 second moment ∫ρ x̄x̄ᵀ (about the
+        // COM). Mirror the 3D principal-frame handling: diagonalize, fold the
+        // principal rotation into the pose, and rotate the rest vertices.
+        Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> solver;
+        solver.compute(Eigen::Matrix2d(inertia_tensor));
+        assert(solver.info() == Eigen::Success);
+
+        Eigen::Matrix2d R0 = solver.eigenvectors(); // NOLINT
+        if (R0.determinant() < 0.0) {
+            R0.col(0) *= -1.0;
+        }
+        assert(R0.isUnitary(1e-9));
+        m_R0 = R0;
+
+        // Remove the initial rotation from the rest vertices
+        vertices = vertices * m_R0;
+
+        // Store the initial rotation angle in the pose
+        centering_pose.rotation.resize(1);
+        centering_pose.rotation(0) = std::atan2(R0(1, 0), R0(0, 0));
+
+        // Diagonal second moment in the principal frame
+        m_J = Eigen::DiagonalMatrix<double, Eigen::Dynamic, 3>(
+            solver.eigenvalues().cwiseAbs());
+
+        // Scalar moment about z: I_z = ∫ρ(x² + y²) = tr(∫ρ x̄x̄ᵀ)
+        m_moment_of_inertia.resize(1);
+        m_moment_of_inertia(0) = m_J.diagonal().sum();
     }
 
     // 4. Apply the centering pose to the initial pose
     initial_pose = initial_pose * centering_pose;
 
-    m_J = compute_J(m_moment_of_inertia);
-
-    // Zero out the velocity and forces of fixed dof
-    // this->velocity.zero_dof(is_dof_fixed, m_R0);
-    // this->force.zero_dof(is_dof_fixed, m_R0);
-
     m_external_force = Pose::Identity(dim);
 
-    // Compute and construct some useful constants
-    // mass_matrix.resize(ndof());
-    // mass_matrix.diagonal().head(pos_ndof()).setConstant(mass);
-    // mass_matrix.diagonal().tail(rot_ndof()) = moment_of_inertia;
-
     m_bounding_radius = vertices.rowwise().norm().maxCoeff();
-
-    // average_edge_length = 0;
-    // for (long i = 0; i < edges.rows(); i++) {
-    //     average_edge_length +=
-    //         (this->vertices.row(edges(i, 0)) - this->vertices.row(edges(i,
-    //         1)))
-    //             .norm();
-    // }
-    // if (edges.rows() > 0) {
-    //     average_edge_length /= edges.rows();
-    // }
-    // assert(std::isfinite(average_edge_length));
 
     m_bvh = std::make_shared<LBVH>();
     m_bvh->build(vertices, edges, faces);

@@ -2,25 +2,22 @@
 
 #include <ipc/dynamics/rigid/rigid_potential.hpp>
 
-namespace ipc::dynamics {
-class ImplicitTimeIntegrator;
-} // namespace ipc::dynamics
-
 namespace ipc::rigid {
 
-/// @brief Class representing the term qᵀf + tr(Qᵀτ)
+/// @brief Class representing the term -(qᵀf + tr(Qᵀτ))
+///
+/// This is a pure potential (no time-integrator scaling): the simulator is
+/// responsible for scaling it into the incremental potential (by (βΔt)²).
 class BodyForces : public RigidPotential {
 public:
-    BodyForces(
-        const std::shared_ptr<const dynamics::ImplicitTimeIntegrator>&
-            _time_integrator)
-        : time_integrator(_time_integrator)
-    {
-    }
+    BodyForces() = default;
 
     /// @brief Update the forces and torques of the rigid bodies.
     /// @param bodies The collection of rigid bodies.
-    void update(const RigidBodies& bodies) override;
+    /// @param poses The poses of the bodies at the start of the step (used to
+    ///     transform world-space torques into body space).
+    void update(
+        const RigidBodies& bodies, const std::vector<AffinePose>& poses);
 
     // ---- Cumulative functions -----------------------------------------------
 
@@ -75,9 +72,6 @@ public:
     const std::vector<MatrixMax3d>& torques() const { return m_torques; }
 
 private:
-    const std::shared_ptr<const dynamics::ImplicitTimeIntegrator>
-        time_integrator;
-
     std::vector<VectorMax3d> m_forces;
     std::vector<MatrixMax3d> m_torques;
 

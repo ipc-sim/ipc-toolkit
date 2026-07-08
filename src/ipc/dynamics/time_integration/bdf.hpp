@@ -42,6 +42,12 @@ public:
     /// @brief \f$\beta\Delta t\f$.
     double velocity_scaling() const override { return beta_dt(); }
 
+    /// @brief The \f$\alpha\f$ coefficients of the current order.
+    std::vector<double> velocity_history_weights() const override
+    {
+        return alphas(order() - 1);
+    }
+
     /// @brief \f$\partial v/\partial x = 1/(\beta\Delta t)\f$,
     /// \f$\partial v/\partial x^{t-i} = -\alpha_i/(\beta\Delta t)\f$.
     double dvdx(const unsigned prev_ti = 0) const override;

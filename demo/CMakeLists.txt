@@ -9,6 +9,8 @@
 ################################################################################
 
 set(SOURCES
+  src/kinematic_driver.cpp
+  src/kinematic_driver.hpp
   src/kinematics.cpp
   src/kinematics.hpp
   src/simulator.cpp

@@ -16,18 +16,25 @@ void ImplicitTimeIntegrator::init(
     Eigen::ConstRef<Eigen::VectorXd> x_prev,
     Eigen::ConstRef<Eigen::VectorXd> v_prev,
     Eigen::ConstRef<Eigen::VectorXd> a_prev,
-    const size_t num_bodies)
+    const size_t num_bodies,
+    const int pos_ndof,
+    const int rot_ndof)
 {
     assert(x_prev.size() == v_prev.size());
     assert(v_prev.size() == a_prev.size());
 
     m_num_bodies = num_bodies;
 
-    m_pos_ndof = 3, m_rot_ndof = 9; // Default to the 3D case
-    // TODO: This can be broken if there are a multiple of 4 bodies in 2D. We
-    //       should probably pass in the number of DOFs instead of inferring it.
-    if (x_prev.size() != num_bodies * (m_pos_ndof + m_rot_ndof)) {
-        m_pos_ndof = 2, m_rot_ndof = 1; // 2D case
+    if (pos_ndof > 0 && rot_ndof > 0) {
+        assert(x_prev.size() == num_bodies * size_t(pos_ndof + rot_ndof));
+        m_pos_ndof = pos_ndof, m_rot_ndof = rot_ndof;
+    } else {
+        m_pos_ndof = 3, m_rot_ndof = 9; // Default to the 3D case
+        // NOTE: This inference is ambiguous (e.g., a multiple of 4 bodies in
+        //       2D); pass the layout explicitly when decoding poses matters.
+        if (x_prev.size() != num_bodies * (m_pos_ndof + m_rot_ndof)) {
+            m_pos_ndof = 2, m_rot_ndof = 1; // 2D case
+        }
     }
     // If neither body layout matches exactly, x_prev is not affine-shaped
     // (e.g., a generic state used only for the raw multistep formulas below);
@@ -102,9 +109,16 @@ rigid::AffinePose ImplicitTimeIntegrator::pose(
 
     pose.position = x.segment(i * (m_pos_ndof + m_rot_ndof), m_pos_ndof);
     if (m_rot_ndof == 1) {
+        // 2D rigid: the raw (unwrapped) angle θ, stored as a 1×1 "rotation".
         pose.rotation.resize(1, 1);
         pose.rotation(0, 0) = x(i * (m_pos_ndof + m_rot_ndof) + m_pos_ndof);
+    } else if (m_rot_ndof == 4) {
+        // 2D affine: vec(A) column-major.
+        pose.rotation =
+            x.segment(i * (m_pos_ndof + m_rot_ndof) + m_pos_ndof, m_rot_ndof)
+                .reshaped(2, 2);
     } else {
+        assert(m_rot_ndof == 9);
         pose.rotation =
             x.segment(i * (m_pos_ndof + m_rot_ndof) + m_pos_ndof, m_rot_ndof)
                 .reshaped(3, 3);

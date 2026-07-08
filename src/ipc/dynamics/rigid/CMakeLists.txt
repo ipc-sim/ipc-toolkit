@@ -1,4 +1,6 @@
 set(SOURCES
+  augmented_lagrangian.cpp
+  augmented_lagrangian.hpp
   body_forces.cpp
   body_forces.hpp
   inertial_term.cpp

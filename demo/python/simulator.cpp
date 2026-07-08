@@ -17,6 +17,31 @@ PYBIND11_MAKE_OPAQUE(std::vector<rigid::Pose>)
 
 void define_simulator(py::module_& m)
 {
+    py::class_<KinematicDriver>(m, "KinematicDriver", R"ipc_Qu8mg5v7(
+         Drives a KINEMATIC rigid body to a per-step target pose.
+
+         Either follows a scripted sequence of absolute poses (one per step)
+         or, with no script, integrates the body's prescribed velocity. After
+         an optional maximum drive time the body converts to STATIC.
+         )ipc_Qu8mg5v7")
+        .def_static(
+            "velocity_driven", &KinematicDriver::velocity_driven,
+            "max_time"_a = std::numeric_limits<double>::infinity(),
+            "A velocity-driven driver (target integrated from the body's "
+            "prescribed velocity each step).")
+        .def_static(
+            "scripted",
+            [](const std::vector<rigid::Pose>& poses, const double max_time) {
+                return KinematicDriver::scripted(
+                    std::deque<rigid::Pose>(poses.begin(), poses.end()),
+                    max_time);
+            },
+            "poses"_a,
+            "max_time"_a = std::numeric_limits<double>::infinity(),
+            "A scripted driver (target is the front pose, advanced per step).")
+        .def_property_readonly("max_time", &KinematicDriver::max_time)
+        .def_property_readonly("is_scripted", &KinematicDriver::is_scripted);
+
     py::class_<Simulator> simulator(m, "Simulator", R"ipc_Qu8mg5v7(
          Body dynamics simulator with a rigid/affine toggle.
 
@@ -55,6 +80,41 @@ void define_simulator(py::module_& m)
             &Simulator::Settings::min_barrier_stiffness_scale)
         .def_readwrite(
             "dhat_epsilon_scale", &Simulator::Settings::dhat_epsilon_scale)
+        .def_readwrite(
+            "friction_coefficient",
+            &Simulator::Settings::friction_coefficient,
+            "Coefficient of friction (0 disables friction).")
+        .def_readwrite(
+            "static_friction_speed_bound",
+            &Simulator::Settings::static_friction_speed_bound,
+            "Smooth friction mollifier speed bound eps_v (m/s): sliding "
+            "speeds below this are treated as static.")
+        .def_readwrite(
+            "friction_iterations", &Simulator::Settings::friction_iterations,
+            "Friction lagging iterations: 0 disables friction; > 0 caps the "
+            "number of solves per step (1 = a single lagged solve); < 0 "
+            "iterates until the momentum balance converges (up to "
+            "max_outer_iterations).")
+        .def_readwrite(
+            "max_outer_iterations",
+            &Simulator::Settings::max_outer_iterations,
+            "Hard cap on the outer (friction-lagging / augmented Lagrangian) "
+            "solves per step.")
+        .def_readwrite(
+            "al_initial_penalty", &Simulator::Settings::al_initial_penalty,
+            "Initial penalty of the kinematic-body augmented Lagrangian "
+            "(reset each step).")
+        .def_readwrite(
+            "al_max_penalty", &Simulator::Settings::al_max_penalty,
+            "Maximum AL penalty (stop doubling).")
+        .def_readwrite(
+            "al_satisfied_progress",
+            &Simulator::Settings::al_satisfied_progress,
+            "AL progress at which a channel is satisfied (DOFs freeze).")
+        .def_readwrite(
+            "al_stall_progress", &Simulator::Settings::al_stall_progress,
+            "AL progress below which the penalty doubles (otherwise the "
+            "multipliers update).")
         .def_readwrite(
             "orthogonality_stiffness",
             &Simulator::Settings::orthogonality_stiffness,
@@ -141,6 +201,11 @@ void define_simulator(py::module_& m)
             "callback"_a = std::function<void(bool)>([](bool) { }))
         .def("step", &Simulator::step)
         .def("reset", &Simulator::reset)
+        .def(
+            "set_kinematic_driver", &Simulator::set_kinematic_driver,
+            "body"_a, "driver"_a,
+            "Attach a kinematic driver to a KINEMATIC body (call after "
+            "construction; the body must already be KINEMATIC).")
         .def_property_readonly(
             "pose_history", &Simulator::pose_history,
             R"ipc_Qu8mg5v7(

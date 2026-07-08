@@ -17,6 +17,12 @@ double InertialTerm::operator()(
     const RigidBody& body,
     Eigen::ConstRef<VectorMax6d> x) const
 {
+    if (!body.is_dynamic()) {
+        // Non-DYNAMIC bodies contribute no inertia: their motion is fully
+        // prescribed (pinned DOFs and/or the augmented Lagrangian).
+        return 0.0;
+    }
+
     const auto& [q_hat, Q_hat] = predicted_poses().at(body_id);
 
     double energy = 0.0;
@@ -56,6 +62,10 @@ VectorMax6d InertialTerm::gradient(
     const RigidBody& body,
     Eigen::ConstRef<VectorMax6d> x) const
 {
+    if (!body.is_dynamic()) {
+        return VectorMax6d::Zero(x.size());
+    }
+
     const auto& [q_hat, Q_hat] = predicted_poses().at(body_id);
 
     VectorMax6d grad = VectorMax6d::Zero(x.size());
@@ -97,6 +107,10 @@ MatrixMax6d InertialTerm::hessian(
     Eigen::ConstRef<VectorMax6d> x,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
+    if (!body.is_dynamic()) {
+        return MatrixMax6d::Zero(x.size(), x.size());
+    }
+
     const auto& [q_hat, Q_hat] = predicted_poses().at(body_id);
 
     MatrixMax6d hess = MatrixMax6d::Zero(x.size(), x.size());

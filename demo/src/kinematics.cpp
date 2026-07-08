@@ -21,17 +21,22 @@ Kinematics::~Kinematics() = default;
 
 namespace {
 
-    /// @brief 6-DOF rigid parameterization: x_i = [p (3); θ rotation vector (3)].
+    /// @brief Rigid parameterization: x_i = [p; θ] (6-DOF in 3D with θ the
+    /// rotation vector; 3-DOF in 2D with θ the scalar angle).
     class RigidKinematics : public Kinematics {
     public:
         explicit RigidKinematics(
             const std::shared_ptr<const rigid::RigidBodies>& bodies)
             : Kinematics(bodies)
         {
-            assert(m_bodies->dim() == 3); // TODO: Support 2D rigid bodies
         }
 
-        int ndof() const override { return 6 * int(m_bodies->num_bodies()); }
+        int pose_ndof() const { return m_bodies->dim() == 2 ? 3 : 6; }
+
+        int ndof() const override
+        {
+            return pose_ndof() * int(m_bodies->num_bodies());
+        }
 
         Eigen::MatrixXd
         world_vertices(Eigen::ConstRef<Eigen::VectorXd> x) const override
@@ -60,11 +65,14 @@ namespace {
         poses(Eigen::ConstRef<Eigen::VectorXd> x) const override
         {
             assert(x.size() == ndof());
+            const int dim = m_bodies->dim();
+            const int body_ndof = pose_ndof();
             std::vector<rigid::AffinePose> poses(m_bodies->num_bodies());
             for (size_t i = 0; i < poses.size(); ++i) {
-                poses[i].position = x.segment<3>(6 * i);
-                poses[i].rotation =
-                    rigid::rotation_vector_to_matrix(x.segment<3>(6 * i + 3));
+                poses[i].position = x.segment(body_ndof * i, dim);
+                poses[i].rotation.resize(dim, dim);
+                poses[i].set_rotation_vector(
+                    x.segment(body_ndof * i + dim, body_ndof - dim));
             }
             return poses;
         }
@@ -79,6 +87,11 @@ namespace {
         to_integrator_state(Eigen::ConstRef<Eigen::VectorXd> x) const override
         {
             assert(x.size() == ndof());
+            if (m_bodies->dim() == 2) {
+                // The 2D integrator state is [p (2); θ (1)] per body: the
+                // DOFs themselves (θ is a linear space — no wrapping).
+                return x;
+            }
             Eigen::VectorXd X(12 * m_bodies->num_bodies());
             for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
                 X.segment<3>(12 * i) = x.segment<3>(6 * i);
@@ -92,6 +105,9 @@ namespace {
         Eigen::VectorXd
         from_integrator_state(Eigen::ConstRef<Eigen::VectorXd> X) const override
         {
+            if (m_bodies->dim() == 2) {
+                return X;
+            }
             assert(X.size() == 12 * m_bodies->num_bodies());
             Eigen::VectorXd x(ndof());
             for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
@@ -154,7 +170,8 @@ namespace {
         NonlinearCCD m_ccd;
     };
 
-    /// @brief 12-DOF affine parameterization: x_i = [p (3); vec(A) (9)].
+    /// @brief Affine parameterization: x_i = [p; vec(A) column-major]
+    /// (12-DOF per body in 3D; 6-DOF in 2D).
     class AffineKinematics : public Kinematics {
     public:
         explicit AffineKinematics(
@@ -162,10 +179,17 @@ namespace {
             : Kinematics(bodies)
             , m_J_all(affine::affine_jacobian(*bodies))
         {
-            assert(m_bodies->dim() == 3); // TODO: Support 2D affine bodies
         }
 
-        int ndof() const override { return 12 * int(m_bodies->num_bodies()); }
+        int body_ndof() const
+        {
+            return m_bodies->dim() + m_bodies->dim() * m_bodies->dim();
+        }
+
+        int ndof() const override
+        {
+            return body_ndof() * int(m_bodies->num_bodies());
+        }
 
         Eigen::MatrixXd
         world_vertices(Eigen::ConstRef<Eigen::VectorXd> x) const override
@@ -199,10 +223,11 @@ namespace {
         Eigen::VectorXd
         dof(const std::vector<rigid::Pose>& poses) const override
         {
-            Eigen::VectorXd x(12 * poses.size());
+            const int dim = m_bodies->dim();
+            Eigen::VectorXd x(body_ndof() * poses.size());
             for (size_t i = 0; i < poses.size(); ++i) {
-                x.segment<3>(12 * i) = poses[i].position;
-                x.segment<9>(12 * i + 3) =
+                x.segment(body_ndof() * i, dim) = poses[i].position;
+                x.segment(body_ndof() * i + dim, dim * dim) =
                     poses[i].rotation_matrix().reshaped();
             }
             return x;

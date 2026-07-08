@@ -1,6 +1,5 @@
 #include "body_forces.hpp"
 
-#include <ipc/dynamics/time_integration/time_integrator.hpp>
 #include <ipc/geometry/normal.hpp>
 
 #include <tbb/blocked_range.h>
@@ -8,9 +7,10 @@
 
 namespace ipc::rigid {
 
-void BodyForces::update(const RigidBodies& bodies)
+void BodyForces::update(
+    const RigidBodies& bodies, const std::vector<AffinePose>& poses)
 {
-    const double dt_sq = time_integrator->acceleration_scaling();
+    assert(poses.size() == bodies.num_bodies());
 
     m_forces.resize(bodies.num_bodies());
     m_torques.resize(bodies.num_bodies());
@@ -19,23 +19,30 @@ void BodyForces::update(const RigidBodies& bodies)
         tbb::blocked_range<size_t>(0, bodies.num_bodies()),
         [&](const tbb::blocked_range<size_t>& r) {
             for (size_t i = r.begin(); i < r.end(); ++i) {
-                m_forces[i] = -dt_sq
-                    * (bodies[i].mass() * gravity()
-                       + bodies[i].external_force().position);
+                if (!bodies[i].is_dynamic()) {
+                    // Non-DYNAMIC bodies feel no gravity or external forces.
+                    m_forces[i] = VectorMax3d::Zero(bodies.dim());
+                    m_torques[i] = MatrixMax3d::Zero(
+                        bodies.dim() == 2 ? 1 : 3, bodies.dim() == 2 ? 1 : 3);
+                    continue;
+                }
+                m_forces[i] =
+                    -(bodies[i].mass() * gravity()
+                      + bodies[i].external_force().position);
 
                 const auto& torque = bodies[i].external_force().rotation;
 
                 // Add external torques to the predicted pose
                 if (torque.size() == 3) {
-                    const auto& Q = time_integrator->pose(i).rotation;
+                    const auto& Q = poses[i].rotation;
                     // Transform the world space torque into body space
                     const Eigen::Matrix3d Tau =
                         Q.transpose() * cross_product_matrix(torque);
-                    m_torques[i] = -dt_sq * Tau;
+                    m_torques[i] = -Tau;
                 } else {
                     assert(torque.size() == 1);
                     m_torques[i].resize(1, 1);
-                    m_torques[i](0, 0) = -dt_sq * torque(0);
+                    m_torques[i](0, 0) = -torque(0);
                 }
             }
         });
@@ -85,7 +92,7 @@ VectorMax6d BodyForces::gradient(
 
     // if (!body.is_dof_fixed.head(pose.pos_ndof()).all())
     if (!force.isZero()) {
-        grad.head(gravity().size()) = force;
+        grad.head(force.size()) = force;
     }
 
     // Rotational energy

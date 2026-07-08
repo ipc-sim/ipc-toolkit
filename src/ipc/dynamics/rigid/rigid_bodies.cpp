@@ -17,11 +17,13 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
     const std::vector<Eigen::MatrixXi>& faces,
     const std::vector<double>& densities,
     std::vector<Pose>& initial_poses,
-    const bool convert_planes)
+    const bool convert_planes,
+    const std::vector<VectorMax6b>& is_dof_fixed)
 {
     assert(rest_positions.size() == edges.size());
     assert(rest_positions.size() == faces.size());
     assert(rest_positions.size() == densities.size());
+    assert(is_dof_fixed.empty() || is_dof_fixed.size() == rest_positions.size());
 
     if (rest_positions.empty()) {
         return nullptr;
@@ -122,9 +124,19 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
         initial_poses.erase(new_end, initial_poses.end());
     }
 
+    std::vector<VectorMax6b> nonplane_is_dof_fixed;
+    if (!is_dof_fixed.empty()) {
+        for (size_t i = 0; i < is_dof_fixed.size(); ++i) {
+            if (plane_bodies.count(i) == 0) {
+                nonplane_is_dof_fixed.push_back(is_dof_fixed[i]);
+            }
+        }
+    }
+
     std::shared_ptr<RigidBodies> bodies = std::make_shared<RigidBodies>(
         concat_rest_positions, concat_edges, concat_faces, body_vertex_starts,
-        body_edge_starts, body_face_starts, densities, initial_poses);
+        body_edge_starts, body_face_starts, densities, initial_poses,
+        nonplane_is_dof_fixed);
 
     bodies->planes = std::move(planes);
 
@@ -139,7 +151,8 @@ RigidBodies::RigidBodies(
     const std::vector<index_t>& _body_edge_starts,
     const std::vector<index_t>& _body_face_starts,
     const std::vector<double>& densities,
-    std::vector<Pose>& initial_poses)
+    std::vector<Pose>& initial_poses,
+    const std::vector<VectorMax6b>& is_dof_fixed)
     : CollisionMesh(_rest_positions, _edges, _faces)
     , body_vertex_starts(_body_vertex_starts)
     , body_edge_starts(_body_edge_starts)
@@ -151,6 +164,9 @@ RigidBodies::RigidBodies(
     assert(body_edge_starts.back() == num_edges());
     assert(body_face_starts.back() == num_faces());
     assert(initial_poses.size() == body_vertex_starts.size() - 1);
+    assert(
+        is_dof_fixed.empty()
+        || is_dof_fixed.size() == body_vertex_starts.size() - 1);
 
     bodies.reserve(body_vertex_starts.size() - 1);
     for (size_t i = 0; i < body_vertex_starts.size() - 1; ++i) {
@@ -168,11 +184,27 @@ RigidBodies::RigidBodies(
                        body_face_starts[i + 1] - body_face_starts[i])
                     .array()
                 - body_vertex_starts[i],
-            densities[i], initial_poses[i]);
+            densities[i], initial_poses[i],
+            is_dof_fixed.empty() ? VectorMax6b() : is_dof_fixed[i]);
         logger().info(
             "Initial pose: position={}, rotation={}",
             initial_poses[i].position.transpose(),
             initial_poses[i].rotation.transpose());
+    }
+
+    // Per-body codimensional element counts (the CollisionMesh base infers
+    // codim vertices/edges from the concatenated connectivity).
+    m_body_num_codim_vertices.assign(num_bodies(), 0);
+    m_body_num_codim_edges.assign(num_bodies(), 0);
+    for (size_t i = 0; i < num_bodies(); ++i) {
+        for (index_t v = body_vertex_starts[i]; v < body_vertex_starts[i + 1];
+             ++v) {
+            m_body_num_codim_vertices[i] += is_codim_vertex(v);
+        }
+        for (index_t e = body_edge_starts[i]; e < body_edge_starts[i + 1];
+             ++e) {
+            m_body_num_codim_edges[i] += is_codim_edge(e);
+        }
     }
 
     assert(body_vertex_starts.size() > 0);
