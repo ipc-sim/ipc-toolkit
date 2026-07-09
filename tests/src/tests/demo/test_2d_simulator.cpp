@@ -14,6 +14,8 @@
 
 #include <finitediff.hpp>
 
+#include <igl/PI.h>
+
 #include <iostream>
 
 using namespace ipc;
@@ -85,7 +87,7 @@ TEST_CASE("2D ballistic motion", "[2d][rigid][simulator]")
     // so the recovered angle differs from the linear-in-angle value by an
     // O((dt ω)³) per-step amount; check with a correspondingly looser margin.
     const double theta_expected =
-        std::remainder(theta0 + n * dt * omega, 2 * M_PI);
+        std::remainder(theta0 + n * dt * omega, 2 * igl::PI);
     CHECK(pose_n.rotation(0) == Catch::Approx(theta_expected).margin(1e-4));
 }
 

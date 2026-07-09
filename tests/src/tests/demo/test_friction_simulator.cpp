@@ -14,6 +14,8 @@
 
 #include <finitediff.hpp>
 
+#include <igl/PI.h>
+
 #include <iostream>
 
 using namespace ipc;
@@ -134,7 +136,7 @@ TEST_CASE("Friction incline stick and slip", "[friction][simulator]")
     CAPTURE(affine);
 
     // Tilt gravity instead of the plane: an incline of angle θ.
-    const double theta = 20.0 * M_PI / 180.0; // tan θ ≈ 0.364
+    const double theta = 20.0 * igl::PI / 180.0; // tan θ ≈ 0.364
     const double g = 9.81;
 
     Simulator::Settings settings;
