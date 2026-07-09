@@ -14,6 +14,18 @@ if(MSVC)
         # unusably noisy, enabling off-by-default warnings like C4711/C4710/
         # C4514/C4820/C5045)
     /MP # Multi-processor compilation
+    # Silence /W4 warnings that have no counterpart in our GCC/Clang flag set
+    # (-Wall -Wextra -Wpedantic, with -Wconversion intentionally off), so the
+    # MSVC output matches the other compilers:
+    /wd4250 # 'inherits via dominance' (benign; from virtual inheritance)
+    /wd4244 # conversion, possible loss of data (GCC: -Wconversion, off)
+    /wd4267 # size_t -> smaller conversion   (GCC: -Wconversion, off)
+    /wd4201 # nonstandard nameless struct/union (a GCC/Clang extension)
+    /wd4068 # unknown pragma (cross-compiler #pragma gcc/clang directives)
+    /wd4100 # unreferenced formal parameter. GCC's -Wunused-parameter only
+            # fires here because the Windows CI builds Release: asserts (and the
+            # params they use) are compiled out, and the collision-stencil
+            # virtual overrides legitimately ignore some params.
   )
 else()
   set(IPC_TOOLKIT_WARNING_FLAGS

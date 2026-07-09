@@ -20,9 +20,10 @@ namespace {
         Eigen::Vector<double, dim>& sigma)
     {
         using MatrixType = Eigen::Matrix<double, dim, dim>;
+        // Compute-time U/V options (runtime options are deprecated in Eigen).
         constexpr int ComputeFullUV = Eigen::ComputeFullU | Eigen::ComputeFullV;
 
-        Eigen::JacobiSVD<MatrixType> svd(A, ComputeFullUV);
+        Eigen::JacobiSVD<MatrixType, ComputeFullUV> svd(A);
 
         U = svd.matrixU();
         V = svd.matrixV();
