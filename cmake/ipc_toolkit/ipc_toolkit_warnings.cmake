@@ -10,8 +10,10 @@ endif()
 # Flags above don't make sense for MSVC
 if(MSVC)
   set(IPC_TOOLKIT_WARNING_FLAGS
-    /Wall # Display all warnings
-    /MP   # Multi-processor compilation
+    /W4 # High warning level (MSVC equivalent of -Wall -Wextra; /Wall is
+        # unusably noisy, enabling off-by-default warnings like C4711/C4710/
+        # C4514/C4820/C5045)
+    /MP # Multi-processor compilation
   )
 else()
   set(IPC_TOOLKIT_WARNING_FLAGS
