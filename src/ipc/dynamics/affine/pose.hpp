@@ -18,7 +18,9 @@ struct Pose {
     MatrixMax3d rotation;
 
     /// @brief Recover the rotation vector (3D) or angle (2D) from A.
-    /// @note Assumes A ∈ SO(dim).
+    /// @note Assumes A is (approximately) in SO(dim). This holds exactly for
+    ///       rigid bodies and approximately for affine bodies, whose A is only
+    ///       softly constrained toward SO(dim) by the orthogonality potential.
     /// @return The rotation vector (3D) or 1-vector angle (2D).
     VectorMax3d rotation_vector() const;
 
