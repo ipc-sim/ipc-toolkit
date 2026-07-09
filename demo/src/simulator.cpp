@@ -9,7 +9,7 @@
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 #include <ipc/dynamics/time_integration/bdf.hpp>
 #include <ipc/geometry/normal.hpp> // cross_product_matrix
-#include <ipc/math/math.hpp> // nearest_rotation
+#include <ipc/math/math.hpp>       // nearest_rotation
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/potentials/friction_potential.hpp>
 #include <ipc/utils/eigen_ext.hpp>
