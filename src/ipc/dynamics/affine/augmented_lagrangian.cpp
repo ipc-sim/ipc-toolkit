@@ -50,10 +50,12 @@ void AugmentedLagrangian::init(
     m_lambda_A.resize(targets.size());
     m_num_kinematic = 0;
     for (size_t i = 0; i < targets.size(); ++i) {
-        m_target_rotations[i] = targets[i].rotation_matrix();
         m_lambda[i] = VectorMax3d::Zero(m_dim);
         m_lambda_A[i] = Eigen::VectorXd::Zero(m_dim * m_dim);
+        // Only kinematic bodies have a meaningful target rotation; the rest
+        // are left default (never read — see the KINEMATIC guards below).
         if (bodies[i].type() == rigid::RigidBody::Type::KINEMATIC) {
+            m_target_rotations[i] = targets[i].rotation_matrix();
             ++m_num_kinematic;
         }
     }

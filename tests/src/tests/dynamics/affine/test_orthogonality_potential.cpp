@@ -26,14 +26,14 @@ auto rigid_bodies()
 
     const double density = GENERATE(1.0, 2.0, 3.0);
 
-    std::vector<Pose> initial_poses;
-    initial_poses.push_back(Pose::Identity(3)); // Initial pose at the origin
+    std::vector<rigid::Pose> initial_poses;
+    initial_poses.push_back(rigid::Pose::Identity(3)); // Initial pose at the origin
 
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { density }, initial_poses);
 
     (*bodies)[0].set_external_force(
-        Pose(Eigen::Vector3d::Random(), Eigen::Vector3d::Random()));
+        rigid::Pose(Eigen::Vector3d::Random(), Eigen::Vector3d::Random()));
 
     return bodies;
 }

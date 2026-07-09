@@ -9,6 +9,7 @@
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 #include <ipc/dynamics/time_integration/bdf.hpp>
 #include <ipc/geometry/normal.hpp> // cross_product_matrix
+#include <ipc/math/math.hpp> // nearest_rotation
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/potentials/friction_potential.hpp>
 #include <ipc/utils/eigen_ext.hpp>
@@ -930,7 +931,6 @@ bool Simulator::has_kinematic_bodies() const
 
 std::vector<rigid::Pose> Simulator::kinematic_targets() const
 {
-    // Start from the current poses (non-KINEMATIC entries are unused).
     std::vector<rigid::Pose> targets(m_bodies->num_bodies());
 
     const int dim = m_bodies->dim();
@@ -940,18 +940,21 @@ std::vector<rigid::Pose> Simulator::kinematic_targets() const
         int(m_time_integrator->pos_ndof() + m_time_integrator->rot_ndof());
 
     for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
-        const affine::Pose pose = m_time_integrator->pose(i);
+        // Skip non-kinematic bodies
+        if (!m_kinematic_drivers[i].has_value()) {
+            continue;
+        }
+
+        affine::Pose pose = m_time_integrator->pose(i);
+        // Kinematic bodies track a rigid motion, so their A is a rotation — but
+        // only to the affine solver's convergence tolerance. Snap it to the
+        // exact nearest rotation before reading off the rigid rotation vector.
+        pose.rotation = nearest_rotation(pose.rotation);
 
         // The current pose (position + rotation vector/angle).
         rigid::Pose current;
         current.position = pose.position;
         current.rotation = pose.rotation_vector();
-
-        targets[i] = current;
-
-        if (!m_kinematic_drivers[i].has_value()) {
-            continue;
-        }
 
         // The prescribed velocity: linear in .position, angular ω in
         // .rotation. The driver applies the script-or-integrate policy; the

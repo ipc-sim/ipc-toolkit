@@ -65,7 +65,7 @@ TEST_CASE("Static body support", "[static][simulator]")
     // The dynamic cube rests on top without intersecting.
     CHECK(sim.poses()[1].position.y() > 0.9);
     CHECK(!has_intersections(
-        *bodies, bodies->vertices(sim.rigid_pose_history().back())));
+        *bodies, bodies->vertices(sim.pose_history().back())));
 }
 
 TEST_CASE("All bodies static", "[static][simulator]")
@@ -217,7 +217,7 @@ TEST_CASE("Kinematic body pushes dynamic body", "[kinematic][simulator]")
         CAPTURE(i);
         REQUIRE(sim.step());
         CHECK(!has_intersections(
-            *bodies, bodies->vertices(sim.rigid_pose_history().back())));
+            *bodies, bodies->vertices(sim.pose_history().back())));
     }
 
     // The kinematic cube advanced ~0.5 m; the gap was 0.2 m, so the dynamic

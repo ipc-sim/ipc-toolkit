@@ -4,6 +4,10 @@
 
 #include <memory>
 
+namespace ipc::affine {
+struct Pose;
+} // namespace ipc::affine
+
 namespace ipc::rigid {
 
 class RigidBodies : public CollisionMesh {
@@ -65,6 +69,14 @@ public:
         }
         return V;
     }
+
+    /// @brief Get the collision-mesh vertices given the affine pose of each
+    ///        body (world = A x̄ + p), preserving any affine deformation.
+    /// @note For affine bodies use this rather than projecting to a rigid pose,
+    ///       which would discard the stretch/shear in A.
+    /// @param poses A vector of affine poses for each body.
+    /// @return A matrix of vertex positions for the collision mesh.
+    Eigen::MatrixXd vertices(const std::vector<affine::Pose>& poses) const;
 
     /// @brief Get the vertices of the collision mesh given the full positions or poses.
     /// @param full_positions_or_poses A matrix of full positions (size: num_vertices() × dim()) or a matrix of full poses (size: num_bodies() × 1).

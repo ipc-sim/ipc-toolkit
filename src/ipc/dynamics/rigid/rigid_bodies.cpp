@@ -1,5 +1,6 @@
 #include "rigid_bodies.hpp"
 
+#include <ipc/dynamics/affine/pose.hpp>
 #include <ipc/geometry/normal.hpp>
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
@@ -10,6 +11,20 @@
 #include <memory>
 
 namespace ipc::rigid {
+
+Eigen::MatrixXd
+RigidBodies::vertices(const std::vector<affine::Pose>& poses) const
+{
+    assert(poses.size() == num_bodies());
+    Eigen::MatrixXd V(num_vertices(), dim());
+    for (size_t i = 0; i < num_bodies(); ++i) {
+        const index_t start = body_vertex_starts[i];
+        const index_t end = body_vertex_starts[i + 1];
+        V.middleRows(start, end - start) = poses[i].transform_vertices(
+            rest_positions().middleRows(body_vertex_starts[i], end - start));
+    }
+    return V;
+}
 
 std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
     const std::vector<Eigen::MatrixXd>& rest_positions,

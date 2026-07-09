@@ -8,14 +8,7 @@ VectorMax3d Pose::rotation_vector() const
 {
     assert(rotation.rows() == rotation.cols());
     assert(rotation.rows() == 2 || rotation.rows() == 3);
-    // A should be (approximately) a rotation. For rigid bodies (RBD) A = exp(θ)
-    // is orthogonal to machine precision, but for affine bodies (ABD) A is only
-    // *softly* held in SO(dim) by the orthogonality potential, so it drifts
-    // from unitary by a small amount (~1e-5 in the near-rigid regime these
-    // bodies operate in). Use a loose tolerance that still catches a genuine
-    // non-rotation (real affine deformation drifts by orders of magnitude
-    // more).
-    assert(rotation.isUnitary(1e-3));
+    assert(rotation.isUnitary(1e-9)); // R must be an actual rotation
     if (rotation.rows() == 2) {
         // For 2D, return the angle
         VectorMax3d angle(1);
