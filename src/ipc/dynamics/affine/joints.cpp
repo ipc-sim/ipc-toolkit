@@ -209,10 +209,9 @@ void JointConstraints::finalize()
 bool JointConstraints::is_body_constrained(const size_t body) const
 {
     const int ndof = body_ndof();
-    return std::any_of(
-        m_rows.begin(), m_rows.end(), [&](const auto& row) {
-            return !row.segment(ndof * body, ndof).isZero();
-        });
+    return std::any_of(m_rows.begin(), m_rows.end(), [&](const auto& row) {
+        return !row.segment(ndof * body, ndof).isZero();
+    });
 }
 
 int JointConstraints::free_reduced_index(const int full_dof) const

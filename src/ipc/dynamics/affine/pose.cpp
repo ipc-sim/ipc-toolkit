@@ -13,7 +13,8 @@ VectorMax3d Pose::rotation_vector() const
     // *softly* held in SO(dim) by the orthogonality potential, so it drifts
     // from unitary by a small amount (~1e-5 in the near-rigid regime these
     // bodies operate in). Use a loose tolerance that still catches a genuine
-    // non-rotation (real affine deformation drifts by orders of magnitude more).
+    // non-rotation (real affine deformation drifts by orders of magnitude
+    // more).
     assert(rotation.isUnitary(1e-3));
     if (rotation.rows() == 2) {
         // For 2D, return the angle
