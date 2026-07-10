@@ -114,7 +114,13 @@ void define_rigid_bodies(py::module_& m)
         .def("__len__", &RigidBodies::num_bodies)
         .def(
             "__getitem__", py::overload_cast<size_t>(&RigidBodies::operator[]),
-            "index"_a);
+            // reference_internal: return a live reference tied to the parent's
+            // lifetime so mutations (e.g. body.type = STATIC) persist.
+            py::return_value_policy::reference_internal, "index"_a)
+        .def(
+            "vertex_to_body", &RigidBodies::vertex_to_body,
+            "Get the body index for a given collision-mesh vertex index.",
+            "vertex_id"_a);
 
 #ifdef IPC_TOOLKIT_WITH_GLTF
     m.def(

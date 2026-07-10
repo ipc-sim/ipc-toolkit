@@ -161,8 +161,13 @@ Simulator::Simulator(
         m_settings.dhat, /*stiffness=*/1.0, /*use_physical_barrier=*/true);
     m_normal_collisions = std::make_shared<NormalCollisions>();
     m_normal_collisions->set_use_area_weighting(m_settings.use_area_weighting);
+    // The improved max approximator [Li et al. 2023] assumes area-weighted
+    // collisions; without area weighting use the original IPC set (which is
+    // also what the original Rigid IPC solver used).
     m_normal_collisions->set_collision_set_type(
-        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
+        m_settings.use_area_weighting
+            ? NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX
+            : NormalCollisions::CollisionSetType::IPC);
     m_broad_phase = std::make_unique<LBVH>();
 
     if (friction_enabled() && m_settings.static_friction_speed_bound <= 0) {
@@ -706,7 +711,7 @@ void Simulator::initialize_barrier_stiffness(Eigen::ConstRef<Eigen::VectorXd> x)
     logger().debug(
         "initial barrier stiffness: κ={:g} κ_max={:g} min_distance={:g}",
         m_barrier_potential->stiffness(), m_max_barrier_stiffness,
-        m_prev_min_distance);
+        sqrt(m_prev_min_distance));
 }
 
 bool Simulator::step()
