@@ -9,7 +9,8 @@ void define_inexact_ccd(py::module_& m)
 #ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
     using namespace ipc;
 
-    py::class_<InexactCCD, NarrowPhaseCCD>(m, "InexactCCD")
+    py::class_<InexactCCD, NarrowPhaseCCD, std::shared_ptr<InexactCCD>>(
+        m, "InexactCCD")
         .def(
             py::init<const double>(),
             R"ipc_Qu8mg5v7(

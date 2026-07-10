@@ -57,7 +57,8 @@ bool InexactCCD::point_point_ccd_3D(
     Eigen::ConstRef<Eigen::Vector3d> p1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const bool cm_no_zero_toi) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -72,6 +73,14 @@ bool InexactCCD::point_point_ccd_3D(
             p0_t0, p1_t0, p0_t1, p1_t1, _min_distance, _toi);
     };
 
+    if (component_mode) {
+        // Per-piece linear CCD inside a piecewise driver (e.g. NonlinearCCD):
+        // the driver supplies its own conservative margins, so run the CCD
+        // directly with the caller's minimum separation (no strategy
+        // inflation, rerun, or rescaling).
+        return ccd(min_distance, toi);
+    }
+
     return ccd_strategy(
         ccd, min_distance, initial_distance, conservative_rescaling, toi);
 }
@@ -83,14 +92,15 @@ bool InexactCCD::point_point_ccd(
     Eigen::ConstRef<VectorMax3d> p1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const bool cm_no_zero_toi) const
 {
     assert(p0_t0.size() == p1_t0.size());
     assert(p0_t0.size() == p0_t1.size());
     assert(p0_t0.size() == p1_t1.size());
     return point_point_ccd_3D(
         to_3D(p0_t0), to_3D(p1_t0), to_3D(p0_t1), to_3D(p1_t1), toi,
-        min_distance, tmax);
+        min_distance, tmax, cm_no_zero_toi);
 }
 
 bool InexactCCD::point_edge_ccd_3D(
@@ -102,7 +112,8 @@ bool InexactCCD::point_edge_ccd_3D(
     Eigen::ConstRef<Eigen::Vector3d> e1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const bool cm_no_zero_toi) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -118,6 +129,14 @@ bool InexactCCD::point_edge_ccd_3D(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, _min_distance, _toi);
     };
 
+    if (component_mode) {
+        // Per-piece linear CCD inside a piecewise driver (e.g. NonlinearCCD):
+        // the driver supplies its own conservative margins, so run the CCD
+        // directly with the caller's minimum separation (no strategy
+        // inflation, rerun, or rescaling).
+        return ccd(min_distance, toi);
+    }
+
     return ccd_strategy(
         ccd, min_distance, initial_distance, conservative_rescaling, toi);
 }
@@ -131,14 +150,15 @@ bool InexactCCD::point_edge_ccd(
     Eigen::ConstRef<VectorMax3d> e1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const bool cm_no_zero_toi) const
 {
     assert(p_t1.size() == p_t0.size());
     assert(e0_t0.size() == p_t0.size() && e1_t0.size() == p_t0.size());
     assert(e0_t1.size() == p_t0.size() && e1_t1.size() == p_t0.size());
     return point_edge_ccd_3D(
         to_3D(p_t0), to_3D(e0_t0), to_3D(e1_t0), to_3D(p_t1), to_3D(e0_t1),
-        to_3D(e1_t1), toi, min_distance, tmax);
+        to_3D(e1_t1), toi, min_distance, tmax, cm_no_zero_toi);
 }
 
 bool InexactCCD::edge_edge_ccd(
@@ -152,7 +172,8 @@ bool InexactCCD::edge_edge_ccd(
     Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const bool cm_no_zero_toi) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -170,6 +191,14 @@ bool InexactCCD::edge_edge_ccd(
             _min_distance, _toi);
     };
 
+    if (component_mode) {
+        // Per-piece linear CCD inside a piecewise driver (e.g. NonlinearCCD):
+        // the driver supplies its own conservative margins, so run the CCD
+        // directly with the caller's minimum separation (no strategy
+        // inflation, rerun, or rescaling).
+        return ccd(min_distance, toi);
+    }
+
     return ccd_strategy(
         ccd, min_distance, initial_distance, conservative_rescaling, toi);
 }
@@ -185,7 +214,8 @@ bool InexactCCD::point_triangle_ccd(
     Eigen::ConstRef<Eigen::Vector3d> t2_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const bool cm_no_zero_toi) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -202,6 +232,14 @@ bool InexactCCD::point_triangle_ccd(
             p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, _min_distance,
             _toi);
     };
+
+    if (component_mode) {
+        // Per-piece linear CCD inside a piecewise driver (e.g. NonlinearCCD):
+        // the driver supplies its own conservative margins, so run the CCD
+        // directly with the caller's minimum separation (no strategy
+        // inflation, rerun, or rescaling).
+        return ccd(min_distance, toi);
+    }
 
     return ccd_strategy(
         ccd, min_distance, initial_distance, conservative_rescaling, toi);

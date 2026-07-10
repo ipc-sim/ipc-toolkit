@@ -6,7 +6,8 @@ using namespace ipc;
 
 void define_additive_ccd(py::module_& m)
 {
-    py::class_<AdditiveCCD, NarrowPhaseCCD>(m, "AdditiveCCD")
+    py::class_<AdditiveCCD, NarrowPhaseCCD, std::shared_ptr<AdditiveCCD>>(
+        m, "AdditiveCCD")
         .def(
             py::init<const double, const double>(),
             R"ipc_Qu8mg5v7(
@@ -22,6 +23,10 @@ void define_additive_ccd(py::module_& m)
             "DEFAULT_CONSERVATIVE_RESCALING",
             &AdditiveCCD::DEFAULT_CONSERVATIVE_RESCALING,
             "The default conservative rescaling value used to avoid taking steps exactly to impact. Value choosen to based on [Li et al. 2021].")
+        .def_readonly_static(
+            "COMPONENT_CONSERVATIVE_RESCALING",
+            &AdditiveCCD::COMPONENT_CONSERVATIVE_RESCALING,
+            "The conservative rescaling used in component mode (as raw as Additive CCD can safely get; the member value is ignored).")
         .def_readwrite(
             "conservative_rescaling", &AdditiveCCD::conservative_rescaling,
             "The conservative rescaling value used to avoid taking steps exactly to impact.");

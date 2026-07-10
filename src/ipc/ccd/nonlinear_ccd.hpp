@@ -1,12 +1,14 @@
 #pragma once
 
 #include <ipc/config.hpp>
+#include <ipc/ccd/narrow_phase_ccd.hpp>
 #include <ipc/ccd/tight_inclusion_ccd.hpp>
 #ifdef IPC_TOOLKIT_WITH_FILIB
 #include <ipc/math/interval.hpp>
 #endif
 
 #include <functional>
+#include <memory>
 
 namespace ipc {
 
@@ -50,18 +52,17 @@ public:
 
 class NonlinearCCD {
 public:
-    /// The default tolerance used with Tight-Inclusion CCD.
-    static constexpr double DEFAULT_TOLERANCE = 1e-6;
-    /// The default maximum number of iterations used with Tight-Inclusion CCD.
-    static constexpr long DEFAULT_MAX_ITERATIONS = 10'000'000L;
     /// The default conservative rescaling value used to avoid taking steps
     /// exactly to impact.
     static constexpr double DEFAULT_CONSERVATIVE_RESCALING = 0.8;
 
+    /// @brief Construct a new NonlinearCCD object.
+    /// @param conservative_rescaling Conservative rescaling of the time of impact.
+    /// @param narrow_phase_ccd The narrow-phase CCD used for the per-piece linear CCD (if null, a default-constructed TightInclusionCCD is used).
+    /// @note The constructor sets NarrowPhaseCCD::component_mode on the given object — telling it that it is a component of this piecewise driver — so do not share the instance with standalone (non-component) users.
     NonlinearCCD(
-        const double tolerance = DEFAULT_TOLERANCE,
-        const long max_iterations = DEFAULT_MAX_ITERATIONS,
-        const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
+        const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING,
+        std::shared_ptr<NarrowPhaseCCD> narrow_phase_ccd = nullptr);
 
     virtual ~NonlinearCCD() = default;
 
@@ -132,20 +133,32 @@ public:
         const double min_distance = 0.0,
         const double tmax = 1.0) const;
 
-    /// @brief Solver tolerance.
-    double tolerance;
+    /// @brief Set the narrow-phase CCD used for the per-piece linear CCD.
+    /// @note Sets NarrowPhaseCCD::component_mode on the given object —
+    /// telling it that it is a component of this piecewise driver — so do not
+    /// share the instance with standalone (non-component) users.
+    /// @param narrow_phase_ccd The narrow-phase CCD to use (if null, a default-constructed TightInclusionCCD is used).
+    void set_narrow_phase_ccd(std::shared_ptr<NarrowPhaseCCD> narrow_phase_ccd);
 
-    /// @brief Maximum number of iterations.
-    long max_iterations;
+    /// @brief The narrow-phase CCD used for the per-piece linear CCD (in component mode; never null).
+    std::shared_ptr<const NarrowPhaseCCD> narrow_phase_ccd() const
+    {
+        return m_narrow_phase_ccd;
+    }
 
     /// @brief Conservative rescaling of the time of impact.
     double conservative_rescaling;
+
+private:
+    /// @brief The narrow-phase CCD used for the per-piece linear CCD (in component mode; never null).
+    /// @note The piecewise driver passes each piece's linearization error as the minimum separation distance, so the narrow phase must support minimum separation (both TightInclusionCCD and AdditiveCCD do).
+    std::shared_ptr<const NarrowPhaseCCD> m_narrow_phase_ccd;
 
 public:
     /// @brief Perform conservative piecewise linear CCD of a nonlinear trajectories.
     /// @param[in] distance Return the distance for a given time in [0, 1].
     /// @param[in] max_distance_from_linear Return the maximum distance from the linearized trajectory for a given time interval.
-    /// @param[in] linear_ccd Perform linear CCD on a given time interval.
+    /// @param[in] linear_ccd Perform linear CCD on a given time interval. Receives the piece interval, the deviation-inflated minimum separation, and a cm_no_zero_toi hint (true on the first piece, whose start is known to be more than min_distance apart).
     /// @param[out] toi Output time of impact.
     /// @param[in] min_distance Minimum separation distance between the objects.
     /// @param[in] tmax Maximum time to check for collision.
@@ -159,7 +172,7 @@ public:
             const double /*ti0*/,
             const double /*ti1*/,
             const double /*min_distance*/,
-            const bool /*no_zero_toi*/,
+            const bool /*cm_no_zero_toi*/,
             double& /*toi*/)>& linear_ccd,
         double& toi,
         const double min_distance = 0,

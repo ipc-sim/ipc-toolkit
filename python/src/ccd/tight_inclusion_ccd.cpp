@@ -158,7 +158,9 @@ void define_tight_inclusion_ccd(py::module_& m)
         "min_corner"_a, "max_corner"_a, "is_vertex_face"_a,
         "using_minimum_separation"_a);
 
-    py::class_<TightInclusionCCD, NarrowPhaseCCD>(m, "TightInclusionCCD")
+    py::class_<
+        TightInclusionCCD, NarrowPhaseCCD, std::shared_ptr<TightInclusionCCD>>(
+        m, "TightInclusionCCD")
         .def(
             py::init<const double, const long, const double>(),
             R"ipc_Qu8mg5v7(

@@ -27,12 +27,28 @@ def test_custom_ccd():
             ipctk.NarrowPhaseCCD.__init__(self)
 
         def point_point_ccd(
-            self, p0_t0, p1_t0, p0_t1, p1_t1, min_distance=0.0, tmax=1.0
+            self,
+            p0_t0,
+            p1_t0,
+            p0_t1,
+            p1_t1,
+            min_distance=0.0,
+            tmax=1.0,
+            cm_no_zero_toi=False,
         ):
             return True, 0.0
 
         def point_edge_ccd(
-            self, p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, min_distance=0.0, tmax=1.0
+            self,
+            p_t0,
+            e0_t0,
+            e1_t0,
+            p_t1,
+            e0_t1,
+            e1_t1,
+            min_distance=0.0,
+            tmax=1.0,
+            cm_no_zero_toi=False,
         ):
             return True, 0.0
 
@@ -48,6 +64,7 @@ def test_custom_ccd():
             t2_t1,
             min_distance=0.0,
             tmax=1.0,
+            cm_no_zero_toi=False,
         ):
             return True, 0.0
 
@@ -63,6 +80,7 @@ def test_custom_ccd():
             eb1_t1,
             min_distance=0.0,
             tmax=1.0,
+            cm_no_zero_toi=False,
         ):
             return True, 0.0
 

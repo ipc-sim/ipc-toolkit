@@ -68,6 +68,43 @@ AdditiveCCD::AdditiveCCD(
     conservative_rescaling = _conservative_rescaling;
 }
 
+bool AdditiveCCD::handle_initial_proximity(
+    const double initial_distance_sq,
+    double& min_distance,
+    const bool cm_no_zero_toi,
+    double& toi) const
+{
+    if (initial_distance_sq > min_distance * min_distance) {
+        return false; // initial distance clears the minimum separation
+    }
+
+    if (cm_no_zero_toi && initial_distance_sq > 0) {
+        // The caller cannot accept toi = 0: halve the minimum separation
+        // until the initial distance clears it, trading separation margin
+        // for a positive TOI (mirrors Tight Inclusion's small-TOI rerun).
+        const double initial_distance = std::sqrt(initial_distance_sq);
+        const double r = min_distance / initial_distance;
+        assert(r >= 1);
+        const int k = static_cast<int>(std::floor(std::log2(r))) + 1;
+        min_distance = std::ldexp(min_distance, -k); // halve k times
+        return false;
+    }
+
+    if (component_mode) {
+        // Expected per-piece situation: the driver's linearization error can
+        // exceed the current distance; it handles toi = 0 by subdividing.
+        logger().trace(
+            "Initial distance {} ≤ d_min={}, returning toi=0!",
+            std::sqrt(initial_distance_sq), min_distance);
+    } else {
+        logger().warn(
+            "Initial distance {} ≤ d_min={}, returning toi=0!",
+            std::sqrt(initial_distance_sq), min_distance);
+    }
+    toi = 0;
+    return true;
+}
+
 bool AdditiveCCD::additive_ccd(
     VectorMax12d x, // mutable copy
     Eigen::ConstRef<VectorMax12d> dx,
@@ -78,6 +115,13 @@ bool AdditiveCCD::additive_ccd(
     const double min_distance,
     const double tmax) const
 {
+    // In component mode this object is the per-piece linear CCD inside a
+    // piecewise driver which supplies its own conservative margins, so use
+    // the least conservative rescaling that still terminates (see
+    // COMPONENT_CONSERVATIVE_RESCALING).
+    const double conservative_rescaling = component_mode
+        ? COMPONENT_CONSERVATIVE_RESCALING
+        : this->conservative_rescaling;
     assert(conservative_rescaling > 0 && conservative_rescaling <= 1);
 
     const double min_distance_sq = min_distance * min_distance;
@@ -134,17 +178,16 @@ bool AdditiveCCD::point_point_ccd(
     Eigen::ConstRef<VectorMax3d> p1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const bool cm_no_zero_toi) const
 {
     const int dim = p0_t0.size();
     assert(dim == p1_t0.size() && dim == p0_t1.size() && dim == p1_t1.size());
 
     const double initial_distance = point_point_distance(p0_t0, p1_t0);
-    if (initial_distance <= min_distance * min_distance) {
-        logger().warn(
-            "Initial distance {} ≤ d_min={}, returning toi=0!",
-            std::sqrt(initial_distance), min_distance);
-        toi = 0;
+    double adj_min_distance = min_distance;
+    if (handle_initial_proximity(
+            initial_distance, adj_min_distance, cm_no_zero_toi, toi)) {
         return true;
     }
 
@@ -165,7 +208,7 @@ bool AdditiveCCD::point_point_ccd(
     const VectorMax12d dx = stack(dp0, dp1);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
+        x, dx, distance_squared, max_disp_mag, toi, adj_min_distance, tmax);
 }
 
 bool AdditiveCCD::point_edge_ccd(
@@ -177,18 +220,17 @@ bool AdditiveCCD::point_edge_ccd(
     Eigen::ConstRef<VectorMax3d> e1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const bool cm_no_zero_toi) const
 {
     const int dim = p_t0.size();
     assert(dim == e0_t0.size() && dim == e1_t0.size());
     assert(dim == p_t1.size() && dim == e0_t1.size() && dim == e1_t1.size());
 
     const double initial_distance = point_edge_distance(p_t0, e0_t0, e1_t0);
-    if (initial_distance <= min_distance * min_distance) {
-        logger().warn(
-            "Initial distance {} ≤ d_min={}, returning toi=0!",
-            std::sqrt(initial_distance), min_distance);
-        toi = 0;
+    double adj_min_distance = min_distance;
+    if (handle_initial_proximity(
+            initial_distance, adj_min_distance, cm_no_zero_toi, toi)) {
         return true;
     }
 
@@ -212,7 +254,7 @@ bool AdditiveCCD::point_edge_ccd(
     const VectorMax12d dx = stack(dp, de0, de1);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
+        x, dx, distance_squared, max_disp_mag, toi, adj_min_distance, tmax);
 }
 
 bool AdditiveCCD::point_triangle_ccd(
@@ -226,15 +268,14 @@ bool AdditiveCCD::point_triangle_ccd(
     Eigen::ConstRef<Eigen::Vector3d> t2_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const bool cm_no_zero_toi) const
 {
     const double initial_distance =
         point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0);
-    if (initial_distance <= min_distance * min_distance) {
-        logger().warn(
-            "Initial distance {} ≤ d_min={}, returning toi=0!",
-            std::sqrt(initial_distance), min_distance);
-        toi = 0;
+    double adj_min_distance = min_distance;
+    if (handle_initial_proximity(
+            initial_distance, adj_min_distance, cm_no_zero_toi, toi)) {
         return true;
     }
 
@@ -260,7 +301,7 @@ bool AdditiveCCD::point_triangle_ccd(
     const VectorMax12d dx = stack(dp, dt0, dt1, dt2);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
+        x, dx, distance_squared, max_disp_mag, toi, adj_min_distance, tmax);
 }
 
 bool AdditiveCCD::edge_edge_ccd(
@@ -274,15 +315,14 @@ bool AdditiveCCD::edge_edge_ccd(
     Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const bool cm_no_zero_toi) const
 {
     const double initial_distance =
         edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0);
-    if (initial_distance <= min_distance * min_distance) {
-        logger().warn(
-            "Initial distance {} ≤ d_min={}, returning toi=0!",
-            std::sqrt(initial_distance), min_distance);
-        toi = 0;
+    double adj_min_distance = min_distance;
+    if (handle_initial_proximity(
+            initial_distance, adj_min_distance, cm_no_zero_toi, toi)) {
         return true;
     }
 
@@ -299,7 +339,7 @@ bool AdditiveCCD::edge_edge_ccd(
         return false;
     }
 
-    const double min_distance_sq = min_distance * min_distance;
+    const double min_distance_sq = adj_min_distance * adj_min_distance;
     auto distance_squared = [min_distance_sq](Eigen::ConstRef<VectorMax12d> x) {
         const auto& ea0 = x.head<3>();
         const auto& ea1 = x.segment<3>(3);
@@ -321,7 +361,7 @@ bool AdditiveCCD::edge_edge_ccd(
     const VectorMax12d dx = stack(dea0, dea1, deb0, deb1);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
+        x, dx, distance_squared, max_disp_mag, toi, adj_min_distance, tmax);
 }
 
 } // namespace ipc
