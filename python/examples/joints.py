@@ -109,6 +109,7 @@ settings.bdf_order = 2
 # steps at a smaller dt -- so the default actually damps *more* at dt=1/600 than
 # at dt=1/60. At 1e-4 the swing amplitude is conserved and, as expected, the
 # smaller timestep is the less-damped one.
+settings.velocity_conv_tol = 1e-4
 
 # Solve at a small timestep for accuracy, but only redraw every SUBSTEPS steps
 # so the viewer still runs at ~60 fps (600 steps/s ÷ 10 = 60 frames/s).
