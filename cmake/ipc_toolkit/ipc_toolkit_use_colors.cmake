@@ -13,17 +13,6 @@ include_guard(GLOBAL)
 
 # options
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  # Reduce the warning level of external files to the selected value (W1 - only major).
-  # Requires Visual Studio 2017 version 15.7
-  # https://blogs.msdn.microsoft.com/vcblog/2017/12/13/broken-warnings-theory/
-
-  # There is an issue in using these flags in earlier versions of MSVC:
-  # https://developercommunity.visualstudio.com/content/problem/220812/experimentalexternal-generates-a-lot-of-c4193-warn.html
-  if(MSVC_VERSION GREATER 1920)
-      add_compile_options(/experimental:external)
-      add_compile_options(/external:W1)
-  endif()
-
   # When building in parallel, MSVC sometimes fails with the following error:
   # > fatal error C1090: PDB API call failed, error code '23'
   # To avoid this problem, we force PDB write to be synchronous with /FS.

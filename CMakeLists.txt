@@ -65,6 +65,24 @@ project(IPCToolkit
         VERSION "1.6.0")
 
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
+  # Generate a compile_commands.json file
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+
+  # If we are on a Mac, explicitly add the sysroot to the compiler flags
+  if(CMAKE_EXPORT_COMPILE_COMMANDS AND APPLE)
+    # CMake usually finds the sysroot automatically, but if it didn't, fetch it
+    if(NOT CMAKE_OSX_SYSROOT)
+      execute_process(COMMAND xcrun --show-sdk-path
+                          OUTPUT_VARIABLE CMAKE_OSX_SYSROOT
+                          OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
+
+    # Force the -isysroot flag into the compile commands for clang-tidy
+    add_compile_options("-isysroot" "${CMAKE_OSX_SYSROOT}")
+  endif()
+endif()
+
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
   option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
 else()
