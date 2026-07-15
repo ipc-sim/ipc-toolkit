@@ -10,6 +10,12 @@ set(SOURCES
   point_triangle.hpp
 )
 
+if(NOT IPC_TOOLKIT_WITH_CUDA)
+  list(APPEND SOURCES
+    point_point.cpp
+  )
+endif()
+
 target_sources(ipc_toolkit PRIVATE ${SOURCES})
 
 # These definitions are shared between host C++ and CUDA device code. The

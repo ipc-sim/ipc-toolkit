@@ -147,3 +147,7 @@ IPC_TOOLKIT_HOST_DEVICE inline auto point_point_distance_hessian(
 }
 
 } // namespace ipc
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include "point_point.cpp"
+#endif
