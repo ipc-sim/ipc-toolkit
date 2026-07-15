@@ -1,0 +1,4 @@
+NormalPotential
+===============
+
+.. doxygenclass:: ipc::NormalPotential

@@ -1,0 +1,4 @@
+TangentialAdhesionPotential
+============================
+
+.. doxygenclass:: ipc::TangentialAdhesionPotential
