@@ -39,10 +39,10 @@ jobs:
             name: macOS
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3
+        uses: pypa/cibuildwheel@v4.1.0
         # to supply options, put them in 'env', like:
         env:
           MACOSX_DEPLOYMENT_TARGET: "11.0"
@@ -51,7 +51,7 @@ jobs:
           CIBW_BUILD: ${{ matrix.python-version }}-*
           CIBW_SKIP: "cp38-* pp* *musllinux* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheelhouse-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.arch }}
           path: ./wheelhouse/*.whl
@@ -60,12 +60,12 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Build sdist
         run: pipx run build --sdist
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sdist
           path: dist/*.tar.gz
@@ -80,25 +80,25 @@ jobs:
     # if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: wheelhouse-*
           merge-multiple: true
           path: dist
 
       - name: Download source distribution
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sdist
           merge-multiple: true
           path: dist
 
-      - uses: pypa/gh-action-pypi-publish@v1.13.0
+      - uses: pypa/gh-action-pypi-publish@v1.14.0
         with:
           user: __token__
           # To test:
-          # password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           # repository-url: https://test.pypi.org/legacy/
+          # password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           # To release:
           password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true
