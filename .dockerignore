@@ -1,0 +1,17 @@
+# Shrinks the build context uploaded to the Docker daemon. Both dev containers
+# (.devcontainer/Dockerfile and .devcontainer/cuda/Dockerfile) use the repo
+# root as their build context but never COPY it in (the workspace is mounted at
+# runtime), so this only speeds up context transfer — it does not affect image
+# contents.
+build/
+graphify-out/
+docs/_build/
+*.o
+*.so
+*.a
+__pycache__/
+*.pyc
+.git/
+.venv/
+venv/
+.DS_Store

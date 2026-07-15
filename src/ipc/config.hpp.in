@@ -23,6 +23,16 @@
 #cmakedefine IPC_TOOLKIT_WITH_TRACY
 // #define IPC_TOOLKIT_DEBUG_AUTODIFF
 
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#ifdef __CUDACC__
+#define IPC_TOOLKIT_INLINE inline __host__ __device__
+#else
+#define IPC_TOOLKIT_INLINE inline
+#endif
+#else
+#define IPC_TOOLKIT_INLINE
+#endif
+
 namespace ipc {
 
 // Type definitions

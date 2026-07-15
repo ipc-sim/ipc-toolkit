@@ -13,11 +13,16 @@ set(SOURCES
   point_line.hpp
   point_plane.cpp
   point_plane.hpp
-  point_point.cpp
   point_point.hpp
   point_triangle.cpp
   point_triangle.hpp
 )
+
+if(NOT IPC_TOOLKIT_WITH_CUDA)
+  list(APPEND SOURCES
+    point_point.cpp
+  )
+endif()
 
 target_sources(ipc_toolkit PRIVATE ${SOURCES})
 
