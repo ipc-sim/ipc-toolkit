@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
@@ -8,7 +9,7 @@ namespace ipc {
 /// @param e0 The first vertex of the edge.
 /// @param e1 The second vertex of the edge.
 /// @return The length of the edge.
-inline double
+IPC_TOOLKIT_HOST_DEVICE inline double
 edge_length(Eigen::ConstRef<VectorMax3d> e0, Eigen::ConstRef<VectorMax3d> e1)
 {
     return (e1 - e0).norm();
@@ -18,7 +19,7 @@ edge_length(Eigen::ConstRef<VectorMax3d> e0, Eigen::ConstRef<VectorMax3d> e1)
 /// @param e0 The first vertex of the edge.
 /// @param e1 The second vertex of the edge.
 /// @return The gradient of the edge's length wrt e0, and e1.
-VectorMax6d edge_length_gradient(
+IPC_TOOLKIT_INLINE VectorMax6d edge_length_gradient(
     Eigen::ConstRef<VectorMax3d> e0, Eigen::ConstRef<VectorMax3d> e1);
 
 /// @brief Compute the area of a triangle.
@@ -26,7 +27,7 @@ VectorMax6d edge_length_gradient(
 /// @param t1 The second vertex of the triangle.
 /// @param t2 The third vertex of the triangle.
 /// @return The area of the triangle.
-inline double triangle_area(
+IPC_TOOLKIT_HOST_DEVICE inline double triangle_area(
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2)
@@ -39,7 +40,7 @@ inline double triangle_area(
 /// @param t1 The second vertex of the triangle.
 /// @param t2 The third vertex of the triangle.
 /// @return The gradient of the triangle's area t0, t1, and t2.
-Vector9d triangle_area_gradient(
+IPC_TOOLKIT_INLINE Vector9d triangle_area_gradient(
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2);
@@ -47,7 +48,7 @@ Vector9d triangle_area_gradient(
 namespace autogen {
 
     // dA is (9×1) flattened in column-major order
-    void triangle_area_gradient(
+    IPC_TOOLKIT_INLINE void triangle_area_gradient(
         double t0_x,
         double t0_y,
         double t0_z,
@@ -62,3 +63,7 @@ namespace autogen {
 } // namespace autogen
 
 } // namespace ipc
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include "area.cpp"
+#endif

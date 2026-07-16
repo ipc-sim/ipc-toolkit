@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/geometry/normal.hpp>
 
 namespace ipc {
@@ -17,7 +18,7 @@ namespace ipc {
 /// @param e1  The second endpoint of the directed edge (2D).
 /// @return    The signed scalar distance from p to the infinite line through e0 and e1.
 /// @note      The edge must be non-degenerate (e0 != e1).
-inline double point_line_signed_distance(
+IPC_TOOLKIT_HOST_DEVICE inline double point_line_signed_distance(
     Eigen::ConstRef<Eigen::Vector2d> p,
     Eigen::ConstRef<Eigen::Vector2d> e0,
     Eigen::ConstRef<Eigen::Vector2d> e1)
@@ -37,7 +38,7 @@ inline double point_line_signed_distance(
 /// @param e1  The second endpoint of the directed edge (2D).
 /// @return    A 6-vector containing the gradient of the signed distance.
 /// @note      The edge must be non-degenerate (e0 != e1).
-Vector6d point_line_signed_distance_gradient(
+IPC_TOOLKIT_INLINE Vector6d point_line_signed_distance_gradient(
     Eigen::ConstRef<Eigen::Vector2d> p,
     Eigen::ConstRef<Eigen::Vector2d> e0,
     Eigen::ConstRef<Eigen::Vector2d> e1);
@@ -56,9 +57,13 @@ Vector6d point_line_signed_distance_gradient(
 /// @param e1  The second endpoint of the directed edge (2D).
 /// @return    A 6x6 Hessian matrix of the signed distance.
 /// @note      The edge must be non-degenerate (e0 != e1).
-Matrix6d point_line_signed_distance_hessian(
+IPC_TOOLKIT_INLINE Matrix6d point_line_signed_distance_hessian(
     Eigen::ConstRef<Eigen::Vector2d> p,
     Eigen::ConstRef<Eigen::Vector2d> e0,
     Eigen::ConstRef<Eigen::Vector2d> e1);
 
 } // namespace ipc
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include "point_line.cpp"
+#endif

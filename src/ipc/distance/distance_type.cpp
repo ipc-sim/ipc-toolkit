@@ -1,7 +1,12 @@
 #include "distance_type.hpp"
 
 #include <ipc/utils/eigen_ext.hpp>
+
+// nvcc cannot parse spdlog; host TUs (which never define __CUDACC__) keep the
+// degenerate-edge warning below.
+#ifndef __CUDACC__
 #include <ipc/utils/logger.hpp>
+#endif
 
 #include <Eigen/Geometry>
 
@@ -19,7 +24,9 @@ PointEdgeDistanceType point_edge_distance_type(
     const VectorMax3d e = e1 - e0;
     const double e_length_sqr = e.squaredNorm();
     if (e_length_sqr == 0) {
+#ifndef __CUDACC__
         logger().warn("Degenerate edge in point_edge_distance_type!");
+#endif
         return PointEdgeDistanceType::P_E0; // WARNING: use arbitrary end-point
     }
 

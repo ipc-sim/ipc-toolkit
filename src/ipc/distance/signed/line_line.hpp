@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/geometry/normal.hpp>
 
 namespace ipc {
@@ -23,7 +24,7 @@ namespace ipc {
 /// @note The points may be any two distinct points on each line (they need not
 /// represent segment endpoints). Behavior is undefined if ea0 == ea1 or eb0 ==
 /// eb1.
-inline double line_line_signed_distance(
+IPC_TOOLKIT_HOST_DEVICE inline double line_line_signed_distance(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -50,7 +51,7 @@ inline double line_line_signed_distance(
 /// @pre ea0 != ea1 and eb0 != eb1. For near-parallel lines, results may be unstable.
 ///
 /// @see line_line_signed_distance, line_line_normal
-Vector12d line_line_signed_distance_gradient(
+IPC_TOOLKIT_INLINE Vector12d line_line_signed_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -75,10 +76,14 @@ Vector12d line_line_signed_distance_gradient(
 /// @pre ea0 != ea1 and eb0 != eb1. Results may be invalid for parallel lines.
 ///
 /// @see line_line_signed_distance, line_line_signed_distance_gradient
-Matrix12d line_line_signed_distance_hessian(
+IPC_TOOLKIT_INLINE Matrix12d line_line_signed_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
     Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 } // namespace ipc
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include "line_line.cpp"
+#endif

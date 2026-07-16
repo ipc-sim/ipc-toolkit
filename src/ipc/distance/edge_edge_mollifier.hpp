@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
@@ -10,7 +11,7 @@ namespace ipc {
 /// @param eb0 The first vertex of the second edge.
 /// @param eb1 The second vertex of the second edge.
 /// @return The squared norm of the edge-edge cross product.
-double edge_edge_cross_squarednorm(
+IPC_TOOLKIT_INLINE double edge_edge_cross_squarednorm(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -22,7 +23,7 @@ double edge_edge_cross_squarednorm(
 /// @param eb0 The first vertex of the second edge.
 /// @param eb1 The second vertex of the second edge.
 /// @return The gradient of the squared norm of the edge cross product wrt ea0, ea1, eb0, and eb1.
-Vector12d edge_edge_cross_squarednorm_gradient(
+IPC_TOOLKIT_INLINE Vector12d edge_edge_cross_squarednorm_gradient(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -34,7 +35,7 @@ Vector12d edge_edge_cross_squarednorm_gradient(
 /// @param eb0 The first vertex of the second edge.
 /// @param eb1 The second vertex of the second edge.
 /// @return The hessian of the squared norm of the edge cross product wrt ea0, ea1, eb0, and eb1.
-Matrix12d edge_edge_cross_squarednorm_hessian(
+IPC_TOOLKIT_INLINE Matrix12d edge_edge_cross_squarednorm_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -44,32 +45,35 @@ Matrix12d edge_edge_cross_squarednorm_hessian(
 /// @param x Squared norm of the edge-edge cross product.
 /// @param eps_x Mollifier activation threshold.
 /// @return The mollifier coefficient to premultiply the edge-edge distance.
-double edge_edge_mollifier(const double x, const double eps_x);
+IPC_TOOLKIT_INLINE double
+edge_edge_mollifier(const double x, const double eps_x);
 
 /// @brief The gradient of the mollifier function for edge-edge distance.
 /// @param x Squared norm of the edge-edge cross product.
 /// @param eps_x Mollifier activation threshold.
 /// @return The gradient of the mollifier function for edge-edge distance wrt x.
-double edge_edge_mollifier_gradient(const double x, const double eps_x);
+IPC_TOOLKIT_INLINE double
+edge_edge_mollifier_gradient(const double x, const double eps_x);
 
 /// @brief The derivative of the mollifier function for edge-edge distance wrt eps_x.
 /// @param x Squared norm of the edge-edge cross product.
 /// @param eps_x Mollifier activation threshold.
 /// @return The derivative of the mollifier function for edge-edge distance wrt eps_x.
-double
+IPC_TOOLKIT_INLINE double
 edge_edge_mollifier_derivative_wrt_eps_x(const double x, const double eps_x);
 
 /// @brief The hessian of the mollifier function for edge-edge distance.
 /// @param x Squared norm of the edge-edge cross product.
 /// @param eps_x Mollifier activation threshold.
 /// @return The hessian of the mollifier function for edge-edge distance wrt x.
-double edge_edge_mollifier_hessian(const double x, const double eps_x);
+IPC_TOOLKIT_INLINE double
+edge_edge_mollifier_hessian(const double x, const double eps_x);
 
 /// @brief The derivative of the gradient of the mollifier function for edge-edge distance wrt eps_x.
 /// @param x Squared norm of the edge-edge cross product.
 /// @param eps_x Mollifier activation threshold.
 /// @return The derivative of the gradient of the mollifier function for edge-edge distance wrt eps_x.
-double edge_edge_mollifier_gradient_derivative_wrt_eps_x(
+IPC_TOOLKIT_INLINE double edge_edge_mollifier_gradient_derivative_wrt_eps_x(
     const double x, const double eps_x);
 
 /// @brief Compute a mollifier for the edge-edge distance.
@@ -82,7 +86,7 @@ double edge_edge_mollifier_gradient_derivative_wrt_eps_x(
 /// @param eb1 The second vertex of the second edge.
 /// @param eps_x Mollifier activation threshold.
 /// @return The mollifier coefficient to premultiply the edge-edge distance.
-double edge_edge_mollifier(
+IPC_TOOLKIT_INLINE double edge_edge_mollifier(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -96,7 +100,7 @@ double edge_edge_mollifier(
 /// @param eb1 The second vertex of the second edge.
 /// @param eps_x Mollifier activation threshold.
 /// @return The gradient of the mollifier.
-Vector12d edge_edge_mollifier_gradient(
+IPC_TOOLKIT_INLINE Vector12d edge_edge_mollifier_gradient(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -110,7 +114,7 @@ Vector12d edge_edge_mollifier_gradient(
 /// @param eb1 The second vertex of the second edge.
 /// @param eps_x Mollifier activation threshold.
 /// @return The hessian of the mollifier.
-Matrix12d edge_edge_mollifier_hessian(
+IPC_TOOLKIT_INLINE Matrix12d edge_edge_mollifier_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -127,7 +131,7 @@ Matrix12d edge_edge_mollifier_hessian(
 /// @param eb0 The first vertex of the second edge.
 /// @param eb1 The second vertex of the second edge.
 /// @return The derivative of the mollifier wrt rest positions.
-Vector12d edge_edge_mollifier_gradient_wrt_x(
+IPC_TOOLKIT_INLINE Vector12d edge_edge_mollifier_gradient_wrt_x(
     Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
     Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
     Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
@@ -148,7 +152,7 @@ Vector12d edge_edge_mollifier_gradient_wrt_x(
 /// @param eb0 The first vertex of the second edge.
 /// @param eb1 The second vertex of the second edge.
 /// @return The jacobian of the mollifier's gradient wrt rest positions.
-Matrix12d edge_edge_mollifier_gradient_jacobian_wrt_x(
+IPC_TOOLKIT_INLINE Matrix12d edge_edge_mollifier_gradient_jacobian_wrt_x(
     Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
     Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
     Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
@@ -167,7 +171,7 @@ Matrix12d edge_edge_mollifier_gradient_jacobian_wrt_x(
 /// @param eb0_rest The rest position of the first vertex of the second edge.
 /// @param eb1_rest The rest position of the second vertex of the second edge.
 /// @return Threshold for edge-edge mollification.
-double edge_edge_mollifier_threshold(
+IPC_TOOLKIT_INLINE double edge_edge_mollifier_threshold(
     Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
     Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
     Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
@@ -182,7 +186,7 @@ double edge_edge_mollifier_threshold(
 /// @param eb0_rest The rest position of the first vertex of the second edge.
 /// @param eb1_rest The rest position of the second vertex of the second edge.
 /// @return Gradient of the threshold for edge-edge mollification.
-Vector12d edge_edge_mollifier_threshold_gradient(
+IPC_TOOLKIT_INLINE Vector12d edge_edge_mollifier_threshold_gradient(
     Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
     Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
     Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
@@ -190,7 +194,7 @@ Vector12d edge_edge_mollifier_threshold_gradient(
 
 // Symbolically generated derivatives;
 namespace autogen {
-    void edge_edge_cross_squarednorm_gradient(
+    IPC_TOOLKIT_INLINE void edge_edge_cross_squarednorm_gradient(
         double v01,
         double v02,
         double v03,
@@ -205,7 +209,7 @@ namespace autogen {
         double v33,
         double g[12]);
 
-    void edge_edge_cross_squarednorm_hessian(
+    IPC_TOOLKIT_INLINE void edge_edge_cross_squarednorm_hessian(
         double v01,
         double v02,
         double v03,
@@ -220,7 +224,7 @@ namespace autogen {
         double v33,
         double H[144]);
 
-    void edge_edge_mollifier_threshold_gradient(
+    IPC_TOOLKIT_INLINE void edge_edge_mollifier_threshold_gradient(
         double ea0x,
         double ea0y,
         double ea0z,
@@ -237,3 +241,7 @@ namespace autogen {
         double scale = 1e-3);
 } // namespace autogen
 } // namespace ipc
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include "edge_edge_mollifier.cpp"
+#endif

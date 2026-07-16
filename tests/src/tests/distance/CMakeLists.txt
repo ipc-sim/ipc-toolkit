@@ -18,7 +18,7 @@ set(SOURCES
 
 if(IPC_TOOLKIT_WITH_CUDA)
   list(APPEND SOURCES
-    test_gpu_point_point.cu
+    test_gpu_distance.cu
   )
 endif()
 

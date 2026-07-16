@@ -1,4 +1,4 @@
-#include "ipc/geometry/normal.hpp"
+#include "normal.hpp"
 
 namespace ipc {
 

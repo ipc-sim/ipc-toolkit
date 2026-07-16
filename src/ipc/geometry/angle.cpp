@@ -36,10 +36,17 @@ Eigen::Vector<double, 12> dihedral_angle_gradient(
     dn0_dx.leftCols<9>() = triangle_normal_jacobian(x0, x1, x2);
     dn0_dx.rightCols<3>().setZero();
 
+    // n1 = triangle_normal(x1, x0, x3): scatter the 3x9 jacobian's per-vertex
+    // blocks into the (x0, x1, x2, x3) layout — x0<-block1, x1<-block0, x2
+    // zero, x3<-block2. Written out explicitly because Eigen::all index
+    // slicing is unavailable in device code.
+    const Eigen::Matrix<double, 3, 9> dn1 =
+        triangle_normal_jacobian(x1, x0, x3);
     Eigen::Matrix<double, 3, 12> dn1_dx;
-    const std::array<int, 9> idx = { { 3, 4, 5, 0, 1, 2, 9, 10, 11 } };
-    dn1_dx(Eigen::all, idx) = triangle_normal_jacobian(x1, x0, x3);
+    dn1_dx.middleCols<3>(0) = dn1.middleCols<3>(3);
+    dn1_dx.middleCols<3>(3) = dn1.middleCols<3>(0);
     dn1_dx.middleCols<3>(6).setZero();
+    dn1_dx.middleCols<3>(9) = dn1.middleCols<3>(6);
 
     // --- Angle gradient ---
 
@@ -87,10 +94,17 @@ Matrix12d dihedral_angle_hessian(
     dn0_dx.leftCols<9>() = triangle_normal_jacobian(x0, x1, x2);
     dn0_dx.rightCols<3>().setZero();
 
+    // n1 = triangle_normal(x1, x0, x3): scatter the 3x9 jacobian's per-vertex
+    // blocks into the (x0, x1, x2, x3) layout — x0<-block1, x1<-block0, x2
+    // zero, x3<-block2. Written out explicitly because Eigen::all index
+    // slicing is unavailable in device code.
+    const Eigen::Matrix<double, 3, 9> dn1 =
+        triangle_normal_jacobian(x1, x0, x3);
     Eigen::Matrix<double, 3, 12> dn1_dx;
-    const std::array<int, 9> idx = { { 3, 4, 5, 0, 1, 2, 9, 10, 11 } };
-    dn1_dx(Eigen::all, idx) = triangle_normal_jacobian(x1, x0, x3);
+    dn1_dx.middleCols<3>(0) = dn1.middleCols<3>(3);
+    dn1_dx.middleCols<3>(3) = dn1.middleCols<3>(0);
     dn1_dx.middleCols<3>(6).setZero();
+    dn1_dx.middleCols<3>(9) = dn1.middleCols<3>(6);
 
     // -------------------------------------------------------------------------
     // Hessians of n0 and n1 — shape (27 × 9) each, then embedded in 12-DOF

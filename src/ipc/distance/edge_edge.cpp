@@ -6,6 +6,7 @@
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
 
+#include <limits>    // std::numeric_limits (device-side error sentinel)
 #include <stdexcept> // std::invalid_argument
 
 namespace ipc {
@@ -50,8 +51,8 @@ double edge_edge_distance(
         return line_line_distance(ea0, ea1, eb0, eb1);
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for edge-edge distance!");
+        assert(false && "Invalid distance type for edge-edge distance!");
+        return std::numeric_limits<double>::quiet_NaN();
     }
 }
 
@@ -124,8 +125,9 @@ Vector12d edge_edge_distance_gradient(
         break;
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for edge-edge distance gradient!");
+        assert(false && "Invalid distance type for edge-edge gradient!");
+        grad.setConstant(std::numeric_limits<double>::quiet_NaN());
+        break;
     }
 
     return grad;
@@ -213,8 +215,9 @@ Matrix12d edge_edge_distance_hessian(
         break;
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for edge-edge distance hessian!");
+        assert(false && "Invalid distance type for edge-edge hessian!");
+        hess.setConstant(std::numeric_limits<double>::quiet_NaN());
+        break;
     }
 
     return hess;

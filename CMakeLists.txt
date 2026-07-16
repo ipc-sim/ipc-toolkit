@@ -177,6 +177,12 @@ if(IPC_TOOLKIT_WITH_CUDA)
   # library to be built with -dc as the member functions could be called by
   # other libraries and executables.
   set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+  # Device code calls constexpr host functions (std::numeric_limits,
+  # std::tuple, std::array). PUBLIC so downstream CUDA consumers (e.g. the
+  # tests) inherit the flag.
+  target_compile_options(ipc_toolkit PUBLIC
+    "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>")
 endif()
 
 # Fill in configuration options

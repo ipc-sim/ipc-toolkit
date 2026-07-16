@@ -23,12 +23,18 @@
 #cmakedefine IPC_TOOLKIT_WITH_TRACY
 // #define IPC_TOOLKIT_DEBUG_AUTODIFF
 
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#ifdef __CUDACC__
-#define IPC_TOOLKIT_INLINE inline __host__ __device__
+// Execution-space annotations for functions shared between C++ and CUDA.
+// IPC_TOOLKIT_HOST_DEVICE marks a function already defined inline in a header;
+// IPC_TOOLKIT_INLINE marks a declaration whose definition is textually
+// included into the header (from its .cpp) when CUDA is enabled.
+#if defined(IPC_TOOLKIT_WITH_CUDA) && defined(__CUDACC__)
+#define IPC_TOOLKIT_HOST_DEVICE __host__ __device__
 #else
-#define IPC_TOOLKIT_INLINE inline
+#define IPC_TOOLKIT_HOST_DEVICE
 #endif
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#define IPC_TOOLKIT_INLINE IPC_TOOLKIT_HOST_DEVICE inline
 #else
 #define IPC_TOOLKIT_INLINE
 #endif

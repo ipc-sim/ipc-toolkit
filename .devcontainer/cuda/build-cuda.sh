@@ -15,6 +15,7 @@
 #   .devcontainer/cuda/build-cuda.sh                 # cuda-release, arch 75;80;86;89
 #   PRESET=test .devcontainer/cuda/build-cuda.sh     # test preset (CUDA + tests)
 #   CUDA_ARCH="86" .devcontainer/cuda/build-cuda.sh  # single architecture
+#   JOBS=4 .devcontainer/cuda/build-cuda.sh          # limit parallelism (memory)
 #
 set -euo pipefail
 
@@ -24,6 +25,9 @@ IMAGE_NAME="${IMAGE_NAME:-ipc-toolkit-cuda-dev}"
 PRESET="${PRESET:-cuda-release}"
 CUDA_ARCH="${CUDA_ARCH:-75;80;86;89}"
 CUDA_IMAGE="${CUDA_IMAGE:-nvidia/cuda:12.6.2-devel-ubuntu22.04}"
+# Heavy TUs (headers textually include implementations under CUDA) can OOM the
+# VM at full parallelism; default below nproc.
+JOBS="${JOBS:-4}"
 
 echo ">> Building CUDA dev image '${IMAGE_NAME}'"
 docker build \
@@ -38,23 +42,39 @@ echo ">> Compiling (preset=${PRESET}, arch=${CUDA_ARCH})"
 docker run --rm --user root \
     -e PRESET="${PRESET}" \
     -e CUDA_ARCH="${CUDA_ARCH}" \
+    -e JOBS="${JOBS}" \
     -v "${REPO_ROOT}":/src:ro \
+    -v ipc-toolkit-cuda-workspace:/workspace \
     -v ipc-toolkit-cpm-cache:/cpm-cache \
     -v ipc-toolkit-cuda-ccache:/root/.ccache \
     "${IMAGE_NAME}" \
     bash -euo pipefail -c '
         export CPM_SOURCE_CACHE=/cpm-cache CCACHE_DIR=/root/.ccache
         mkdir -p /workspace
-        tar -C /src --exclude=./build --exclude=./.git -cf - . \
-            | tar -C /workspace -xf -
+        # /workspace is a persistent named volume: rsync copies only files
+        # that changed since the last run (the macOS<->VM file-share is slow,
+        # so minimizing reads matters) and ninja can then build incrementally.
+        # The excludes also shield the persistent build/ dir from --delete.
+        echo ">> [1/3] Syncing source into the container (delta copy)..."
+        time rsync -a --delete \
+            --exclude=/build \
+            --exclude=/.git \
+            --exclude=/graphify-out \
+            --exclude=/.ccache \
+            --exclude=/docs \
+            --exclude=/notebooks \
+            --exclude=/IPCToolkitOptions.cmake \
+            /src/ /workspace/
         rm -f /workspace/IPCToolkitOptions.cmake
         cd /workspace
+        echo ">> [2/3] Configuring (preset=${PRESET})..."
         cmake --preset="${PRESET}" -G Ninja \
             -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCH}" \
             -DSCALABLE_CCD_CUDA_ARCHITECTURES="${CUDA_ARCH}" \
             -DCMAKE_CXX_FLAGS="-Wno-psabi" \
             -DCMAKE_CUDA_FLAGS="-Xcompiler=-Wno-psabi"
-        cmake --build --preset="${PRESET}" -j "$(nproc)"
+        echo ">> [3/3] Building (-j ${JOBS})..."
+        cmake --build --preset="${PRESET}" -j "${JOBS}"
     '
 
 echo ">> Done. CUDA build succeeded (compile-only; code was not executed)."

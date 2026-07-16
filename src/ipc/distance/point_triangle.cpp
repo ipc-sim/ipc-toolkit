@@ -4,6 +4,7 @@
 #include <ipc/distance/point_plane.hpp>
 #include <ipc/distance/point_point.hpp>
 
+#include <limits>    // std::numeric_limits (device-side error sentinel)
 #include <stdexcept> // std::invalid_argument
 
 namespace ipc {
@@ -42,8 +43,8 @@ double point_triangle_distance(
         return point_plane_distance(p, t0, t1, t2);
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for point-triangle distance!");
+        assert(false && "Invalid distance type for point-triangle distance!");
+        return std::numeric_limits<double>::quiet_NaN();
     }
 }
 
@@ -103,8 +104,9 @@ Vector12d point_triangle_distance_gradient(
         break;
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for point-triangle distance gradient!");
+        assert(false && "Invalid distance type for point-triangle gradient!");
+        grad.setConstant(std::numeric_limits<double>::quiet_NaN());
+        break;
     }
 
     return grad;
@@ -178,8 +180,9 @@ Matrix12d point_triangle_distance_hessian(
         break;
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for point-triangle distance hessian!");
+        assert(false && "Invalid distance type for point-triangle hessian!");
+        hess.setConstant(std::numeric_limits<double>::quiet_NaN());
+        break;
     }
 
     return hess;

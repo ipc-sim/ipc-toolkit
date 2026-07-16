@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
@@ -12,7 +13,7 @@ namespace ipc {
 /// @param eb0 The first vertex of the edge defining the second line.
 /// @param eb1 The second vertex of the edge defining the second line.
 /// @return The distance between the two lines.
-double line_line_distance(
+IPC_TOOLKIT_INLINE double line_line_distance(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -26,7 +27,7 @@ double line_line_distance(
 /// @param eb0 The first vertex of the edge defining the second line.
 /// @param eb1 The second vertex of the edge defining the second line.
 /// @return The gradient of the distance wrt ea0, ea1, eb0, and eb1.
-Vector12d line_line_distance_gradient(
+IPC_TOOLKIT_INLINE Vector12d line_line_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -40,7 +41,7 @@ Vector12d line_line_distance_gradient(
 /// @param eb0 The first vertex of the edge defining the second line.
 /// @param eb1 The second vertex of the edge defining the second line.
 /// @return The hessian of the distance wrt ea0, ea1, eb0, and eb1.
-Matrix12d line_line_distance_hessian(
+IPC_TOOLKIT_INLINE Matrix12d line_line_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -48,7 +49,7 @@ Matrix12d line_line_distance_hessian(
 
 // Symbolically generated derivatives;
 namespace autogen {
-    void line_line_distance_gradient(
+    IPC_TOOLKIT_INLINE void line_line_distance_gradient(
         double v01,
         double v02,
         double v03,
@@ -63,7 +64,7 @@ namespace autogen {
         double v33,
         double g[12]);
 
-    void line_line_distance_hessian(
+    IPC_TOOLKIT_INLINE void line_line_distance_hessian(
         double v01,
         double v02,
         double v03,
@@ -80,3 +81,7 @@ namespace autogen {
 } // namespace autogen
 
 } // namespace ipc
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include "line_line.cpp"
+#endif
