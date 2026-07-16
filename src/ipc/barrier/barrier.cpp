@@ -3,6 +3,10 @@
 // Barrier functions that grow to infinity as x -> 0+. Includes gradient and
 // hessian functions, too. These barrier functions can be used to impose
 // inequality constraints on a function.
+//
+// Only the free functions live here so this file can be textually included
+// into barrier.hpp when CUDA is enabled; the Barrier class hierarchy's
+// out-of-line definitions are in barrier_classes.cpp.
 #include "barrier.hpp"
 
 #include <ipc/math/scalar_math.hpp>

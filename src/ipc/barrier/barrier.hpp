@@ -400,3 +400,7 @@ public:
 };
 
 } // namespace ipc
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include "barrier.cpp"
+#endif

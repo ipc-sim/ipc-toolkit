@@ -5,6 +5,7 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/simd.hpp>
 
+#include <limits>    // std::numeric_limits (device-side error sentinel)
 #include <stdexcept> // std::invalid_argument
 
 namespace ipc {

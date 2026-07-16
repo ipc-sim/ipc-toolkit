@@ -184,3 +184,7 @@ IPC_TOOLKIT_HOST_DEVICE inline auto triangle_area_gradient(
 }
 
 } // namespace ipc
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include "area.cpp"
+#endif
