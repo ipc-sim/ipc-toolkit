@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zsh \
     ninja-build \
     ccache \
+    rsync \
     python3 \
     python3-pip \
     python3-dev \

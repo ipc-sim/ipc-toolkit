@@ -534,3 +534,7 @@ IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_mollifier_threshold_gradient(
 }
 
 } // namespace ipc
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include "edge_edge_mollifier.cpp"
+#endif
