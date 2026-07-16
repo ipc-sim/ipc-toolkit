@@ -8,7 +8,7 @@ message(STATUS "Third-party: creating target 'TinyAD::TinyAD'")
 
 include(CPM)
 CPMAddPackage(
-    URI "gh:zfergus/tinyad#957ede5bcf4b8d924f27230083508c664a9f7a7d"
+    URI "gh:zfergus/tinyad#5bddce2c83e85d61b30e99359671037ee4a29349"
     OPTIONS "TINYAD_PARALLEL_BACKEND onetbb"
 )
 

@@ -206,6 +206,10 @@ source_group(TREE "${PROJECT_SOURCE_DIR}" FILES ${IPC_TOOLKIT_SOURCES})
 include(eigen)
 target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
 
+# Logger
+include(spdlog)
+target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
+
 # libigl
 include(libigl)
 target_link_libraries(ipc_toolkit PRIVATE igl::core igl::predicates)
@@ -221,11 +225,6 @@ target_link_libraries(ipc_toolkit PRIVATE tight_inclusion::tight_inclusion)
 # Scalable CCD (STQ broad phase and GPU Tight Inclusion)
 include(scalable_ccd)
 target_link_libraries(ipc_toolkit PRIVATE scalable_ccd::scalable_ccd)
-
-
-# Logger
-include(spdlog)
-target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
 # TinyAD
 include(tinyad)
@@ -285,8 +284,10 @@ target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 
 ## SIMD support
 if(IPC_TOOLKIT_WITH_SIMD)
-  # Add SIMD flags to compiler flags
-  target_compile_options(ipc_toolkit PRIVATE ${SIMD_CXX_FLAGS})
+  # Add SIMD flags to compiler flags.
+  # Restrict to C++ sources: these are MSVC-style /arch flags that nvcc would
+  # otherwise treat as input files, and device code has no use for CPU SIMD.
+  target_compile_options(ipc_toolkit PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:${SIMD_CXX_FLAGS}>")
 
   # Link against cross-platform xsimd library
   include(xsimd)

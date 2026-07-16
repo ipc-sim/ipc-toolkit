@@ -17,7 +17,9 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   # > fatal error C1090: PDB API call failed, error code '23'
   # To avoid this problem, we force PDB write to be synchronous with /FS.
   # https://developercommunity.visualstudio.com/content/problem/48897/c1090-pdb-api-call-failed-error-code-23.html
-  add_compile_options(/FS)
+  # Exclude CUDA: nvcc would treat a bare /FS as an input file. CMake already
+  # forwards /FS to the MSVC host compiler for CUDA targets via -Xcompiler.
+  add_compile_options($<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:/FS>)
 else()
   include(ipc_toolkit_filter_flags)
   set(IPC_TOOLKIT_GLOBAL_FLAGS
