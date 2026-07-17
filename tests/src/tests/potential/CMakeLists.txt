@@ -21,6 +21,12 @@ set(SOURCES
   synthetic_contact_scene.hpp
 )
 
+if(IPC_TOOLKIT_WITH_CUDA)
+  list(APPEND SOURCES
+    test_gpu_barrier_potential.cu
+  )
+endif()
+
 target_sources(ipc_toolkit_tests PRIVATE ${SOURCES})
 
 ################################################################################
