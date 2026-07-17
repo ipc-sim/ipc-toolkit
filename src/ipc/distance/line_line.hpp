@@ -103,7 +103,3 @@ IPC_TOOLKIT_HOST_DEVICE inline auto line_line_distance_hessian(
 }
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "line_line.cpp"
-#endif

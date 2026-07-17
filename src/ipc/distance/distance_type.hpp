@@ -297,7 +297,3 @@ edge_edge_parallel_distance_type(
 }
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "distance_type.cpp"
-#endif
