@@ -14,7 +14,7 @@ namespace ipc {
 /// @param x2 The opposite vertex of the first triangle.
 /// @param x3 The opposite vertex of the second triangle.
 /// @return The bending angle between the two triangles.
-IPC_TOOLKIT_INLINE double dihedral_angle(
+IPC_TOOLKIT_HOST_DEVICE double dihedral_angle(
     Eigen::ConstRef<Eigen::Vector3d> x0,
     Eigen::ConstRef<Eigen::Vector3d> x1,
     Eigen::ConstRef<Eigen::Vector3d> x2,
@@ -29,7 +29,7 @@ IPC_TOOLKIT_INLINE double dihedral_angle(
 /// @param x2 The opposite vertex of the first triangle.
 /// @param x3 The opposite vertex of the second triangle.
 /// @return The Jacobian matrix of the bending angle with respect to the input vertices.
-IPC_TOOLKIT_INLINE Eigen::Vector<double, 12> dihedral_angle_gradient(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Vector<double, 12> dihedral_angle_gradient(
     Eigen::ConstRef<Eigen::Vector3d> x0,
     Eigen::ConstRef<Eigen::Vector3d> x1,
     Eigen::ConstRef<Eigen::Vector3d> x2,
@@ -44,14 +44,10 @@ IPC_TOOLKIT_INLINE Eigen::Vector<double, 12> dihedral_angle_gradient(
 /// @param x2 The opposite vertex of the first triangle.
 /// @param x3 The opposite vertex of the second triangle.
 /// @return The 12x12 Hessian matrix of the bending angle with respect to the input vertices.
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 12, 12> dihedral_angle_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 12, 12> dihedral_angle_hessian(
     Eigen::ConstRef<Eigen::Vector3d> x0,
     Eigen::ConstRef<Eigen::Vector3d> x1,
     Eigen::ConstRef<Eigen::Vector3d> x2,
     Eigen::ConstRef<Eigen::Vector3d> x3);
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "angle.cpp"
-#endif

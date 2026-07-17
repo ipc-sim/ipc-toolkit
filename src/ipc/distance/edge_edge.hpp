@@ -13,7 +13,7 @@ namespace ipc {
 /// @param eb1 The second vertex of the second edge.
 /// @param dtype The point edge distance type to compute.
 /// @return The distance between the two edges.
-IPC_TOOLKIT_INLINE double edge_edge_distance(
+IPC_TOOLKIT_HOST_DEVICE double edge_edge_distance(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -28,7 +28,7 @@ IPC_TOOLKIT_INLINE double edge_edge_distance(
 /// @param eb1 The second vertex of the second edge.
 /// @param dtype The point edge distance type to compute.
 /// @return The gradient of the distance wrt ea0, ea1, eb0, and eb1.
-IPC_TOOLKIT_INLINE Vector12d edge_edge_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE Vector12d edge_edge_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -43,7 +43,7 @@ IPC_TOOLKIT_INLINE Vector12d edge_edge_distance_gradient(
 /// @param eb1 The second vertex of the second edge.
 /// @param dtype The point edge distance type to compute.
 /// @return The hessian of the distance wrt ea0, ea1, eb0, and eb1.
-IPC_TOOLKIT_INLINE Matrix12d edge_edge_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE Matrix12d edge_edge_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -51,7 +51,3 @@ IPC_TOOLKIT_INLINE Matrix12d edge_edge_distance_hessian(
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "edge_edge.cpp"
-#endif

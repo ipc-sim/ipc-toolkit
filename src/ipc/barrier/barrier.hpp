@@ -54,7 +54,7 @@ public:
 /// @param d The distance.
 /// @param dhat Activation distance of the barrier.
 /// @return The value of the barrier function at d.
-IPC_TOOLKIT_INLINE double barrier(const double d, const double dhat);
+IPC_TOOLKIT_HOST_DEVICE double barrier(const double d, const double dhat);
 
 /// @brief Derivative of the barrier function.
 ///
@@ -66,7 +66,7 @@ IPC_TOOLKIT_INLINE double barrier(const double d, const double dhat);
 /// @param d The distance.
 /// @param dhat Activation distance of the barrier.
 /// @return The derivative of the barrier wrt d.
-IPC_TOOLKIT_INLINE double
+IPC_TOOLKIT_HOST_DEVICE double
 barrier_first_derivative(const double d, const double dhat);
 
 /// @brief Second derivative of the barrier function.
@@ -79,7 +79,7 @@ barrier_first_derivative(const double d, const double dhat);
 /// @param d The distance.
 /// @param dhat Activation distance of the barrier.
 /// @return The second derivative of the barrier wrt d.
-IPC_TOOLKIT_INLINE double
+IPC_TOOLKIT_HOST_DEVICE double
 barrier_second_derivative(const double d, const double dhat);
 
 /// @brief Smoothly clamped log barrier functions from [Li et al. 2020].
@@ -388,7 +388,3 @@ public:
 };
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "barrier.cpp"
-#endif

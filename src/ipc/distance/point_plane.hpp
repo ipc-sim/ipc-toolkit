@@ -11,7 +11,7 @@ namespace ipc {
 /// @param origin The origin of the plane.
 /// @param normal The normal of the plane.
 /// @return The distance between the point and plane.
-IPC_TOOLKIT_INLINE double point_plane_distance(
+IPC_TOOLKIT_HOST_DEVICE double point_plane_distance(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> origin,
     Eigen::ConstRef<Eigen::Vector3d> normal);
@@ -23,7 +23,7 @@ IPC_TOOLKIT_INLINE double point_plane_distance(
 /// @param t1 The second vertex of the triangle.
 /// @param t2 The third vertex of the triangle.
 /// @return The distance between the point and plane.
-IPC_TOOLKIT_INLINE double point_plane_distance(
+IPC_TOOLKIT_HOST_DEVICE double point_plane_distance(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
@@ -35,7 +35,7 @@ IPC_TOOLKIT_INLINE double point_plane_distance(
 /// @param origin The origin of the plane.
 /// @param normal The normal of the plane.
 /// @return The gradient of the distance wrt p.
-IPC_TOOLKIT_INLINE Eigen::Vector3d point_plane_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Vector3d point_plane_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> origin,
     Eigen::ConstRef<Eigen::Vector3d> normal);
@@ -47,7 +47,7 @@ IPC_TOOLKIT_INLINE Eigen::Vector3d point_plane_distance_gradient(
 /// @param t1 The second vertex of the triangle.
 /// @param t2 The third vertex of the triangle.
 /// @return The gradient of the distance wrt p, t0, t1, and t2.
-IPC_TOOLKIT_INLINE Vector12d point_plane_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE Vector12d point_plane_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
@@ -59,7 +59,7 @@ IPC_TOOLKIT_INLINE Vector12d point_plane_distance_gradient(
 /// @param origin The origin of the plane.
 /// @param normal The normal of the plane.
 /// @return The hessian of the distance wrt p.
-IPC_TOOLKIT_INLINE Eigen::Matrix3d point_plane_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix3d point_plane_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> origin,
     Eigen::ConstRef<Eigen::Vector3d> normal);
@@ -71,7 +71,7 @@ IPC_TOOLKIT_INLINE Eigen::Matrix3d point_plane_distance_hessian(
 /// @param t1 The second vertex of the triangle.
 /// @param t2 The third vertex of the triangle.
 /// @return The hessian of the distance wrt p, t0, t1, and t2.
-IPC_TOOLKIT_INLINE Matrix12d point_plane_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE Matrix12d point_plane_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
@@ -79,7 +79,7 @@ IPC_TOOLKIT_INLINE Matrix12d point_plane_distance_hessian(
 
 // Symbolically generated derivatives;
 namespace autogen {
-    IPC_TOOLKIT_INLINE void point_plane_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE void point_plane_distance_gradient(
         double v01,
         double v02,
         double v03,
@@ -94,7 +94,7 @@ namespace autogen {
         double v33,
         double g[12]);
 
-    IPC_TOOLKIT_INLINE void point_plane_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE void point_plane_distance_hessian(
         double v01,
         double v02,
         double v03,
@@ -111,7 +111,3 @@ namespace autogen {
 } // namespace autogen
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "point_plane.cpp"
-#endif

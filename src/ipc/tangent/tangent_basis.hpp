@@ -12,14 +12,15 @@ namespace ipc {
 /// @param p0 First point
 /// @param p1 Second point
 /// @return A 3x2 matrix whose columns are the basis vectors.
-IPC_TOOLKIT_INLINE MatrixMax<double, 3, 2> point_point_tangent_basis(
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<double, 3, 2> point_point_tangent_basis(
     Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1);
 
 /// @brief Compute the Jacobian of the tangent basis for the point-point pair.
 /// @param p0 First point
 /// @param p1 Second point
 /// @return A (3*2)x6 matrix whose columns are the basis vectors.
-IPC_TOOLKIT_INLINE MatrixMax<double, 6, 6> point_point_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<double, 6, 6>
+point_point_tangent_basis_jacobian(
     Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1);
 
 // ============================================================================
@@ -30,7 +31,7 @@ IPC_TOOLKIT_INLINE MatrixMax<double, 6, 6> point_point_tangent_basis_jacobian(
 /// @param e0 First edge point
 /// @param e1 Second edge point
 /// @return A 3x2 matrix whose columns are the basis vectors.
-IPC_TOOLKIT_INLINE MatrixMax<double, 3, 2> point_edge_tangent_basis(
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<double, 3, 2> point_edge_tangent_basis(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -40,7 +41,8 @@ IPC_TOOLKIT_INLINE MatrixMax<double, 3, 2> point_edge_tangent_basis(
 /// @param e0 First edge point
 /// @param e1 Second edge point
 /// @return A (3*2)x9 matrix whose columns are the basis vectors.
-IPC_TOOLKIT_INLINE MatrixMax<double, 6, 9> point_edge_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<double, 6, 9>
+point_edge_tangent_basis_jacobian(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -54,7 +56,7 @@ IPC_TOOLKIT_INLINE MatrixMax<double, 6, 9> point_edge_tangent_basis_jacobian(
 /// @param eb0 First point of the second edge
 /// @param eb1 Second point of the second edge
 /// @return A 3x2 matrix whose columns are the basis vectors.
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 3, 2> edge_edge_tangent_basis(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 3, 2> edge_edge_tangent_basis(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -66,7 +68,7 @@ IPC_TOOLKIT_INLINE Eigen::Matrix<double, 3, 2> edge_edge_tangent_basis(
 /// @param eb0 First point of the second edge
 /// @param eb1 Second point of the second edge
 /// @return A (3*2)x12 matrix whose columns are the basis vectors.
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 6, 12>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 6, 12>
 edge_edge_tangent_basis_jacobian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
@@ -90,7 +92,8 @@ edge_edge_tangent_basis_jacobian(
 /// @param t1 Triangle's second vertex
 /// @param t2 Triangle's third vertex
 /// @return A 3x2 matrix whose columns are the basis vectors.
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 3, 2> point_triangle_tangent_basis(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 3, 2>
+point_triangle_tangent_basis(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
@@ -102,7 +105,7 @@ IPC_TOOLKIT_INLINE Eigen::Matrix<double, 3, 2> point_triangle_tangent_basis(
 /// @param t1 Triangle's second vertex
 /// @param t2 Triangle's third vertex
 /// @return A (3*2)x12 matrix whose columns are the basis vectors.
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 6, 12>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 6, 12>
 point_triangle_tangent_basis_jacobian(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
@@ -113,11 +116,11 @@ point_triangle_tangent_basis_jacobian(
 
 namespace autogen {
     // J is (2×4) flattened in column-major order
-    IPC_TOOLKIT_INLINE void point_point_tangent_basis_2D_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_point_tangent_basis_2D_jacobian(
         double p0_x, double p0_y, double p1_x, double p1_y, double J[8]);
 
     // J is (6×6) flattened in column-major order
-    IPC_TOOLKIT_INLINE void point_point_tangent_basis_3D_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_point_tangent_basis_3D_jacobian(
         double p0_x,
         double p0_y,
         double p0_z,
@@ -127,7 +130,7 @@ namespace autogen {
         double J[36]);
 
     // J is (2×6) flattened in column-major order
-    IPC_TOOLKIT_INLINE void point_edge_tangent_basis_2D_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_edge_tangent_basis_2D_jacobian(
         double p_x,
         double p_y,
         double e0_x,
@@ -137,7 +140,7 @@ namespace autogen {
         double J[12]);
 
     // J is (6×9) flattened in column-major order
-    IPC_TOOLKIT_INLINE void point_edge_tangent_basis_3D_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_edge_tangent_basis_3D_jacobian(
         double p_x,
         double p_y,
         double p_z,
@@ -150,7 +153,7 @@ namespace autogen {
         double J[54]);
 
     // J is (6×12) flattened in column-major order
-    IPC_TOOLKIT_INLINE void edge_edge_tangent_basis_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void edge_edge_tangent_basis_jacobian(
         double ea0_x,
         double ea0_y,
         double ea0_z,
@@ -166,7 +169,7 @@ namespace autogen {
         double J[72]);
 
     // J is (6×12) flattened in column-major order
-    IPC_TOOLKIT_INLINE void point_triangle_tangent_basis_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_triangle_tangent_basis_jacobian(
         double p_x,
         double p_y,
         double p_z,
@@ -183,7 +186,3 @@ namespace autogen {
 } // namespace autogen
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "tangent_basis.cpp"
-#endif

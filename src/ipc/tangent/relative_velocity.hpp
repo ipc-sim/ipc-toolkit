@@ -12,19 +12,19 @@ namespace ipc {
 /// @param dp0 Velocity of the first point
 /// @param dp1 Velocity of the second point
 /// @return The relative velocity of the two points
-IPC_TOOLKIT_INLINE VectorMax3d point_point_relative_velocity(
+IPC_TOOLKIT_HOST_DEVICE VectorMax3d point_point_relative_velocity(
     Eigen::ConstRef<VectorMax3d> dp0, Eigen::ConstRef<VectorMax3d> dp1);
 
 /// @brief Compute du/dx where u is the relative velocity of two points
 /// @param dim Dimension (2 or 3)
 /// @return The relative velocity Jacobian du/dx
-IPC_TOOLKIT_INLINE MatrixMax<double, 3, 6>
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<double, 3, 6>
 point_point_relative_velocity_jacobian(const int dim);
 
 /// @brief Compute d²u/dxdβ where u is the relative velocity of two points
 /// @param dim Dimension (2 or 3)
 /// @return The vectorized tensor of d²u/dxdβ
-IPC_TOOLKIT_INLINE VectorMax<double, 18>
+IPC_TOOLKIT_HOST_DEVICE VectorMax<double, 18>
 point_point_relative_velocity_dx_dbeta(const int dim);
 
 // ============================================================================
@@ -36,7 +36,7 @@ point_point_relative_velocity_dx_dbeta(const int dim);
 /// @param de1 Velocity of the second endpoint of the edge
 /// @param alpha Parametric coordinate of the closest point on the edge
 /// @return The relative velocity of the point and the edge
-IPC_TOOLKIT_INLINE VectorMax3d point_edge_relative_velocity(
+IPC_TOOLKIT_HOST_DEVICE VectorMax3d point_edge_relative_velocity(
     Eigen::ConstRef<VectorMax3d> dp,
     Eigen::ConstRef<VectorMax3d> de0,
     Eigen::ConstRef<VectorMax3d> de1,
@@ -46,14 +46,14 @@ IPC_TOOLKIT_INLINE VectorMax3d point_edge_relative_velocity(
 /// @param dim Dimension (2 or 3)
 /// @param alpha Parametric coordinate of the closest point on the edge
 /// @return The relative velocity Jacobian du/dx
-IPC_TOOLKIT_INLINE MatrixMax<double, 3, 9>
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<double, 3, 9>
 point_edge_relative_velocity_jacobian(const int dim, const double alpha);
 
 /// @brief Compute d²u/dxdα where u is the relative velocity of a point and an edge
 /// @param dim Dimension (2 or 3)
 /// @param alpha Parametric coordinate of the closest point on the edge
 /// @return The vectorized tensor of d²u/dxdα
-IPC_TOOLKIT_INLINE VectorMax<double, 27>
+IPC_TOOLKIT_HOST_DEVICE VectorMax<double, 27>
 point_edge_relative_velocity_dx_dbeta(const int dim, const double alpha);
 
 // ============================================================================
@@ -66,7 +66,7 @@ point_edge_relative_velocity_dx_dbeta(const int dim, const double alpha);
 /// @param deb1 Velocity of the second endpoint of the second edge
 /// @param coords Two parametric coordinates of the closest points on the edges
 /// @return The relative velocity of the edges
-IPC_TOOLKIT_INLINE Eigen::Vector3d edge_edge_relative_velocity(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Vector3d edge_edge_relative_velocity(
     Eigen::ConstRef<Eigen::Vector3d> dea0,
     Eigen::ConstRef<Eigen::Vector3d> dea1,
     Eigen::ConstRef<Eigen::Vector3d> deb0,
@@ -76,13 +76,13 @@ IPC_TOOLKIT_INLINE Eigen::Vector3d edge_edge_relative_velocity(
 /// @brief Compute du/dx where u is the relative velocity of two edges
 /// @param coords Two parametric coordinates of the closest points on the edges
 /// @return The relative velocity Jacobian du/dx
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 3, 12>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 3, 12>
 edge_edge_relative_velocity_jacobian(Eigen::ConstRef<Eigen::Vector2d> coords);
 
 /// @brief Compute d²u/dxdβ where u is the relative velocity of two edges
 /// @param coords Two parametric coordinates of the closest points on the edges
 /// @return The vectorized tensor of d²u/dxdβ
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 36, 2>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 36, 2>
 edge_edge_relative_velocity_dx_dbeta(Eigen::ConstRef<Eigen::Vector2d> coords);
 
 // ============================================================================
@@ -95,7 +95,7 @@ edge_edge_relative_velocity_dx_dbeta(Eigen::ConstRef<Eigen::Vector2d> coords);
 /// @param dt2 Velocity of the third vertex of the triangle
 /// @param coords Baricentric coordinates of the closest point on the triangle
 /// @return The relative velocity of the point to the triangle
-IPC_TOOLKIT_INLINE Eigen::Vector3d point_triangle_relative_velocity(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Vector3d point_triangle_relative_velocity(
     Eigen::ConstRef<Eigen::Vector3d> dp,
     Eigen::ConstRef<Eigen::Vector3d> dt0,
     Eigen::ConstRef<Eigen::Vector3d> dt1,
@@ -105,19 +105,15 @@ IPC_TOOLKIT_INLINE Eigen::Vector3d point_triangle_relative_velocity(
 /// @brief Compute du/dx where u is the relative velocity of a point and a triangle
 /// @param coords Barycentric coordinates of the closest point on the triangle
 /// @return The relative velocity Jacobian du/dx
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 3, 12>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 3, 12>
 point_triangle_relative_velocity_jacobian(
     Eigen::ConstRef<Eigen::Vector2d> coords);
 
 /// @brief Compute d²u/dxdβ where u is the relative velocity of a point and a triangle
 /// @param coords Baricentric coordinates of the closest point on the triangle
 /// @return The vectorized tensor of d²u/dxdβ
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 36, 2>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 36, 2>
 point_triangle_relative_velocity_dx_dbeta(
     Eigen::ConstRef<Eigen::Vector2d> coords);
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "relative_velocity.cpp"
-#endif

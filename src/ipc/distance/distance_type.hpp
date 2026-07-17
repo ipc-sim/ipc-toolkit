@@ -60,7 +60,7 @@ enum class EdgeEdgeDistanceType : uint8_t {
 /// @param e0 The first vertex of the edge.
 /// @param e1 The second vertex of the edge.
 /// @return The distance type of the point-edge pair.
-IPC_TOOLKIT_INLINE PointEdgeDistanceType point_edge_distance_type(
+IPC_TOOLKIT_HOST_DEVICE PointEdgeDistanceType point_edge_distance_type(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -71,7 +71,7 @@ IPC_TOOLKIT_INLINE PointEdgeDistanceType point_edge_distance_type(
 /// @param t1 The second vertex of the triangle.
 /// @param t2 The third vertex of the triangle.
 /// @return The distance type of the point-triangle pair.
-IPC_TOOLKIT_INLINE PointTriangleDistanceType point_triangle_distance_type(
+IPC_TOOLKIT_HOST_DEVICE PointTriangleDistanceType point_triangle_distance_type(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
@@ -83,7 +83,7 @@ IPC_TOOLKIT_INLINE PointTriangleDistanceType point_triangle_distance_type(
 /// @param eb0 The first vertex of the second edge.
 /// @param eb1 The second vertex of the second edge.
 /// @return The distance type of the edge-edge pair.
-IPC_TOOLKIT_INLINE EdgeEdgeDistanceType edge_edge_distance_type(
+IPC_TOOLKIT_HOST_DEVICE EdgeEdgeDistanceType edge_edge_distance_type(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -95,14 +95,10 @@ IPC_TOOLKIT_INLINE EdgeEdgeDistanceType edge_edge_distance_type(
 /// @param eb0 The first vertex of the second edge.
 /// @param eb1 The second vertex of the second edge.
 /// @return The distance type of the edge-edge pair.
-IPC_TOOLKIT_INLINE EdgeEdgeDistanceType edge_edge_parallel_distance_type(
+IPC_TOOLKIT_HOST_DEVICE EdgeEdgeDistanceType edge_edge_parallel_distance_type(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
     Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "distance_type.cpp"
-#endif

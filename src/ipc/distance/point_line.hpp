@@ -11,7 +11,7 @@ namespace ipc {
 /// @param e0 The first vertex of the edge defining the line.
 /// @param e1 The second vertex of the edge defining the line.
 /// @return The distance between the point and line.
-IPC_TOOLKIT_INLINE double point_line_distance(
+IPC_TOOLKIT_HOST_DEVICE double point_line_distance(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -22,7 +22,7 @@ IPC_TOOLKIT_INLINE double point_line_distance(
 /// @param e0 The first vertex of the edge defining the line.
 /// @param e1 The second vertex of the edge defining the line.
 /// @return The gradient of the distance wrt p, e0, and e1.
-IPC_TOOLKIT_INLINE VectorMax9d point_line_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE VectorMax9d point_line_distance_gradient(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -33,14 +33,14 @@ IPC_TOOLKIT_INLINE VectorMax9d point_line_distance_gradient(
 /// @param e0 The first vertex of the edge defining the line.
 /// @param e1 The second vertex of the edge defining the line.
 /// @return The hessian of the distance wrt p, e0, and e1.
-IPC_TOOLKIT_INLINE MatrixMax9d point_line_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE MatrixMax9d point_line_distance_hessian(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
 
 // Symbolically generated derivatives;
 namespace autogen {
-    IPC_TOOLKIT_INLINE void point_line_distance_gradient_2D(
+    IPC_TOOLKIT_HOST_DEVICE void point_line_distance_gradient_2D(
         double v01,
         double v02,
         double v11,
@@ -49,7 +49,7 @@ namespace autogen {
         double v22,
         double g[6]);
 
-    IPC_TOOLKIT_INLINE void point_line_distance_gradient_3D(
+    IPC_TOOLKIT_HOST_DEVICE void point_line_distance_gradient_3D(
         double v01,
         double v02,
         double v03,
@@ -61,7 +61,7 @@ namespace autogen {
         double v23,
         double g[9]);
 
-    IPC_TOOLKIT_INLINE void point_line_distance_hessian_2D(
+    IPC_TOOLKIT_HOST_DEVICE void point_line_distance_hessian_2D(
         double v01,
         double v02,
         double v11,
@@ -70,7 +70,7 @@ namespace autogen {
         double v22,
         double H[36]);
 
-    IPC_TOOLKIT_INLINE void point_line_distance_hessian_3D(
+    IPC_TOOLKIT_HOST_DEVICE void point_line_distance_hessian_3D(
         double v01,
         double v02,
         double v03,
@@ -83,7 +83,3 @@ namespace autogen {
         double H[81]);
 } // namespace autogen
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "point_line.cpp"
-#endif

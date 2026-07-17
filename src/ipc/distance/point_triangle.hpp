@@ -13,7 +13,7 @@ namespace ipc {
 /// @param t2 The third vertex of the triangle.
 /// @param dtype The point-triangle distance type to compute.
 /// @return The distance between the point and triangle.
-IPC_TOOLKIT_INLINE double point_triangle_distance(
+IPC_TOOLKIT_HOST_DEVICE double point_triangle_distance(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
@@ -28,7 +28,7 @@ IPC_TOOLKIT_INLINE double point_triangle_distance(
 /// @param t2 The third vertex of the triangle.
 /// @param dtype The point-triangle distance type to compute.
 /// @return The gradient of the distance wrt p, t0, t1, and t2.
-IPC_TOOLKIT_INLINE Vector12d point_triangle_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE Vector12d point_triangle_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
@@ -43,7 +43,7 @@ IPC_TOOLKIT_INLINE Vector12d point_triangle_distance_gradient(
 /// @param t2 The third vertex of the triangle.
 /// @param dtype The point-triangle distance type to compute.
 /// @return The hessian of the distance wrt p, t0, t1, and t2.
-IPC_TOOLKIT_INLINE Matrix12d point_triangle_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE Matrix12d point_triangle_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
@@ -51,7 +51,3 @@ IPC_TOOLKIT_INLINE Matrix12d point_triangle_distance_hessian(
     PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO);
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "point_triangle.cpp"
-#endif

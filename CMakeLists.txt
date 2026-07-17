@@ -128,6 +128,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/find/")
 # General CMake utils
 include(ipc_toolkit_cpm_cache)
 include(ipc_toolkit_use_colors)
+include(ipc_toolkit_shared_device_sources)
 
 # Generate position-independent code by default
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)

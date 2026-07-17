@@ -19,7 +19,7 @@ edge_length(Eigen::ConstRef<VectorMax3d> e0, Eigen::ConstRef<VectorMax3d> e1)
 /// @param e0 The first vertex of the edge.
 /// @param e1 The second vertex of the edge.
 /// @return The gradient of the edge's length wrt e0, and e1.
-IPC_TOOLKIT_INLINE VectorMax6d edge_length_gradient(
+IPC_TOOLKIT_HOST_DEVICE VectorMax6d edge_length_gradient(
     Eigen::ConstRef<VectorMax3d> e0, Eigen::ConstRef<VectorMax3d> e1);
 
 /// @brief Compute the area of a triangle.
@@ -40,7 +40,7 @@ IPC_TOOLKIT_HOST_DEVICE inline double triangle_area(
 /// @param t1 The second vertex of the triangle.
 /// @param t2 The third vertex of the triangle.
 /// @return The gradient of the triangle's area t0, t1, and t2.
-IPC_TOOLKIT_INLINE Vector9d triangle_area_gradient(
+IPC_TOOLKIT_HOST_DEVICE Vector9d triangle_area_gradient(
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2);
@@ -48,7 +48,7 @@ IPC_TOOLKIT_INLINE Vector9d triangle_area_gradient(
 namespace autogen {
 
     // dA is (9×1) flattened in column-major order
-    IPC_TOOLKIT_INLINE void triangle_area_gradient(
+    IPC_TOOLKIT_HOST_DEVICE void triangle_area_gradient(
         double t0_x,
         double t0_y,
         double t0_z,
@@ -63,7 +63,3 @@ namespace autogen {
 } // namespace autogen
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "area.cpp"
-#endif

@@ -12,7 +12,7 @@ namespace ipc {
 /// @brief Computes the normalization and Jacobian of a vector.
 /// @param x The input vector.
 /// @return A tuple containing the normalized vector and its Jacobian.
-IPC_TOOLKIT_INLINE std::tuple<VectorMax3d, MatrixMax3d>
+IPC_TOOLKIT_HOST_DEVICE std::tuple<VectorMax3d, MatrixMax3d>
 normalization_and_jacobian(Eigen::ConstRef<VectorMax3d> x);
 
 /// @brief Computes the Jacobian of the normalization operation.
@@ -27,7 +27,7 @@ normalization_jacobian(Eigen::ConstRef<VectorMax3d> x)
 /// @brief Computes the normalization, Jacobian, and Hessian of a vector.
 /// @param t The input vector.
 /// @return A tuple containing the normalized vector, its Jacobian, and its Hessian.
-IPC_TOOLKIT_INLINE
+IPC_TOOLKIT_HOST_DEVICE
 std::tuple<VectorMax3d, MatrixMax3d, std::array<MatrixMax3d, 3>>
 normalization_and_jacobian_and_hessian(Eigen::ConstRef<VectorMax3d> x);
 
@@ -57,7 +57,8 @@ cross_product_matrix(Eigen::ConstRef<Eigen::Vector3d> v)
 
 /// @brief Computes the Jacobian of the cross product matrix.
 /// @return The Jacobian of the cross product matrix.
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 9, 3> cross_product_matrix_jacobian();
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 9, 3>
+cross_product_matrix_jacobian();
 
 // =============================================================================
 
@@ -72,7 +73,7 @@ IPC_TOOLKIT_INLINE Eigen::Matrix<double, 9, 3> cross_product_matrix_jacobian();
 /// @param e0 The start position of the line.
 /// @param e1 The end position of the line.
 /// @return The unnormalized normal vector.
-IPC_TOOLKIT_INLINE VectorMax3d point_line_unnormalized_normal(
+IPC_TOOLKIT_HOST_DEVICE VectorMax3d point_line_unnormalized_normal(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -95,7 +96,7 @@ IPC_TOOLKIT_HOST_DEVICE inline VectorMax3d point_line_normal(
 /// @param e0 The start position of the line.
 /// @param e1 The end position of the line.
 /// @return The Jacobian of the unnormalized normal vector.
-IPC_TOOLKIT_INLINE MatrixMax<double, 3, 9>
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<double, 3, 9>
 point_line_unnormalized_normal_jacobian(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
@@ -106,7 +107,7 @@ point_line_unnormalized_normal_jacobian(
 /// @param e0 The start position of the line.
 /// @param e1 The end position of the line.
 /// @return The Hessian of the unnormalized normal vector of the point-line pair.
-IPC_TOOLKIT_INLINE MatrixMax<double, 27, 9>
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<double, 27, 9>
 point_line_unnormalized_normal_hessian(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
@@ -133,7 +134,7 @@ point_line_normal_jacobian(
 /// @param e0 The start position of the line.
 /// @param e1 The end position of the line.
 /// @return The Hessian of the normal vector.
-IPC_TOOLKIT_INLINE MatrixMax<double, 27, 9> point_line_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<double, 27, 9> point_line_normal_hessian(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -197,7 +198,7 @@ triangle_unnormalized_normal_jacobian(
 /// @param b The second vertex of the triangle.
 /// @param c The third vertex of the triangle.
 /// @return The Hessian of the unnormalized normal vector of the triangle.
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 27, 9>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 27, 9>
 triangle_unnormalized_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3d> a,
     Eigen::ConstRef<Eigen::Vector3d> b,
@@ -224,7 +225,7 @@ triangle_normal_jacobian(
 /// @param b The second vertex of the triangle.
 /// @param c The third vertex of the triangle.
 /// @return The Hessian of the normal vector of the triangle.
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 27, 9> triangle_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 27, 9> triangle_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3d> a,
     Eigen::ConstRef<Eigen::Vector3d> b,
     Eigen::ConstRef<Eigen::Vector3d> c);
@@ -315,7 +316,7 @@ line_line_normal_jacobian(
 /// @param eb0 The first vertex of the second line.
 /// @param eb1 The second vertex of the second line.
 /// @return The Hessian of the unnormalized normal vector of the two lines.
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 36, 12>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 36, 12>
 line_line_unnormalized_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
@@ -328,7 +329,7 @@ line_line_unnormalized_normal_hessian(
 /// @param eb0 The first vertex of the second line.
 /// @param eb1 The second vertex of the second line.
 /// @return The Hessian of the normal vector of the two lines.
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 36, 12> line_line_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 36, 12> line_line_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -337,7 +338,3 @@ IPC_TOOLKIT_INLINE Eigen::Matrix<double, 36, 12> line_line_normal_hessian(
 /** @} */
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "normal.cpp"
-#endif

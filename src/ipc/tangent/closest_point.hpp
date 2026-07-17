@@ -13,7 +13,7 @@ namespace ipc {
 /// @param e0 First edge point
 /// @param e1 Second edge point
 /// @return barycentric coordinates of the closest point
-IPC_TOOLKIT_INLINE double point_edge_closest_point(
+IPC_TOOLKIT_HOST_DEVICE double point_edge_closest_point(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -23,7 +23,7 @@ IPC_TOOLKIT_INLINE double point_edge_closest_point(
 /// @param e0 First edge point
 /// @param e1 Second edge point
 /// @return Jacobian of the closest point
-IPC_TOOLKIT_INLINE VectorMax9d point_edge_closest_point_jacobian(
+IPC_TOOLKIT_HOST_DEVICE VectorMax9d point_edge_closest_point_jacobian(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -34,7 +34,7 @@ IPC_TOOLKIT_INLINE VectorMax9d point_edge_closest_point_jacobian(
 /// @param e1 Second edge point
 /// @return Hessian of the closest point
 /// @todo Implement this for 2D vectors
-IPC_TOOLKIT_INLINE MatrixMax9d point_edge_closest_point_hessian(
+IPC_TOOLKIT_HOST_DEVICE MatrixMax9d point_edge_closest_point_hessian(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
@@ -48,7 +48,7 @@ IPC_TOOLKIT_INLINE MatrixMax9d point_edge_closest_point_hessian(
 /// @param eb0 First point of the second edge
 /// @param eb1 Second point of the second edge
 /// @return Barycentric coordinates of the closest points
-IPC_TOOLKIT_INLINE Eigen::Vector2d edge_edge_closest_point(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Vector2d edge_edge_closest_point(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -60,7 +60,7 @@ IPC_TOOLKIT_INLINE Eigen::Vector2d edge_edge_closest_point(
 /// @param eb0 First point of the second edge
 /// @param eb1 Second point of the second edge
 /// @return Jacobian of the closest points
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 2, 12>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 2, 12>
 edge_edge_closest_point_jacobian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
@@ -73,7 +73,8 @@ edge_edge_closest_point_jacobian(
 /// @param eb0 First point of the second edge
 /// @param eb1 Second point of the second edge
 /// @return Hessian of the closest points (2x12x12 tensor)
-IPC_TOOLKIT_INLINE std::array<Matrix12d, 2> edge_edge_closest_point_hessian(
+IPC_TOOLKIT_HOST_DEVICE std::array<Matrix12d, 2>
+edge_edge_closest_point_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -88,7 +89,7 @@ IPC_TOOLKIT_INLINE std::array<Matrix12d, 2> edge_edge_closest_point_hessian(
 /// @param t1 Triangle's second vertex
 /// @param t2 Triangle's third vertex
 /// @return Barycentric coordinates of the closest point
-IPC_TOOLKIT_INLINE Eigen::Vector2d point_triangle_closest_point(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Vector2d point_triangle_closest_point(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
@@ -100,7 +101,7 @@ IPC_TOOLKIT_INLINE Eigen::Vector2d point_triangle_closest_point(
 /// @param t1 Triangle's second vertex
 /// @param t2 Triangle's third vertex
 /// @return Jacobian of the closest point
-IPC_TOOLKIT_INLINE Eigen::Matrix<double, 2, 12>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<double, 2, 12>
 point_triangle_closest_point_jacobian(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
@@ -113,7 +114,7 @@ point_triangle_closest_point_jacobian(
 /// @param t1 Triangle's second vertex
 /// @param t2 Triangle's third vertex
 /// @return Hessian of the closest point (2x12x12 tensor)
-IPC_TOOLKIT_INLINE std::array<Matrix12d, 2>
+IPC_TOOLKIT_HOST_DEVICE std::array<Matrix12d, 2>
 point_triangle_closest_point_hessian(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
@@ -124,7 +125,7 @@ point_triangle_closest_point_hessian(
 
 namespace autogen {
     // hess is (6×6) flattened in column-major order
-    IPC_TOOLKIT_INLINE void point_edge_closest_point_2D_hessian(
+    IPC_TOOLKIT_HOST_DEVICE void point_edge_closest_point_2D_hessian(
         double p_x,
         double p_y,
         double e0_x,
@@ -134,7 +135,7 @@ namespace autogen {
         double hess[36]);
 
     // hess is (9×9) flattened in column-major order
-    IPC_TOOLKIT_INLINE void point_edge_closest_point_3D_hessian(
+    IPC_TOOLKIT_HOST_DEVICE void point_edge_closest_point_3D_hessian(
         double p_x,
         double p_y,
         double p_z,
@@ -147,7 +148,7 @@ namespace autogen {
         double hess[81]);
 
     // J is (2×12) flattened in column-major order
-    IPC_TOOLKIT_INLINE void edge_edge_closest_point_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void edge_edge_closest_point_jacobian(
         double ea0_x,
         double ea0_y,
         double ea0_z,
@@ -163,7 +164,7 @@ namespace autogen {
         double J[24]);
 
     // hess is (144×1) flattened in column-major order
-    IPC_TOOLKIT_INLINE void edge_edge_closest_point_hessian_a(
+    IPC_TOOLKIT_HOST_DEVICE void edge_edge_closest_point_hessian_a(
         double ea0_x,
         double ea0_y,
         double ea0_z,
@@ -179,7 +180,7 @@ namespace autogen {
         double hess[144]);
 
     // hess is (144×1) flattened in column-major order
-    IPC_TOOLKIT_INLINE void edge_edge_closest_point_hessian_b(
+    IPC_TOOLKIT_HOST_DEVICE void edge_edge_closest_point_hessian_b(
         double ea0_x,
         double ea0_y,
         double ea0_z,
@@ -195,7 +196,7 @@ namespace autogen {
         double hess[144]);
 
     // J is (2×12) flattened in column-major order
-    IPC_TOOLKIT_INLINE void point_triangle_closest_point_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_triangle_closest_point_jacobian(
         double p_x,
         double p_y,
         double p_z,
@@ -211,7 +212,7 @@ namespace autogen {
         double J[24]);
 
     // hess is (144×1) flattened in column-major order
-    IPC_TOOLKIT_INLINE void point_triangle_closest_point_hessian_0(
+    IPC_TOOLKIT_HOST_DEVICE void point_triangle_closest_point_hessian_0(
         double p_x,
         double p_y,
         double p_z,
@@ -227,7 +228,7 @@ namespace autogen {
         double hess[144]);
 
     // hess is (144×1) flattened in column-major order
-    IPC_TOOLKIT_INLINE void point_triangle_closest_point_hessian_1(
+    IPC_TOOLKIT_HOST_DEVICE void point_triangle_closest_point_hessian_1(
         double p_x,
         double p_y,
         double p_z,
@@ -244,7 +245,3 @@ namespace autogen {
 } // namespace autogen
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "closest_point.cpp"
-#endif

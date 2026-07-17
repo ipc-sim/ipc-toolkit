@@ -8,14 +8,12 @@ set(SOURCES
   barrier.hpp
 )
 
-# With CUDA enabled, barrier.cpp (the free functions only) is textually
-# included into barrier.hpp (see the IPC_TOOLKIT_WITH_CUDA footer) so it can be
-# compiled as __host__ __device__ code; compiling it separately would produce
-# duplicate symbols.
-if(NOT IPC_TOOLKIT_WITH_CUDA)
-  list(APPEND SOURCES
-    barrier.cpp
-  )
-endif()
-
 target_sources(ipc_toolkit PRIVATE ${SOURCES})
+
+# barrier.cpp (the free functions) is shared between host C++ and CUDA device
+# code; under CUDA the helper generates a .cu wrapper (see
+# ipc_toolkit_shared_device_sources). The other barrier .cpp files are ordinary
+# host-only sources listed in SOURCES above.
+ipc_toolkit_target_shared_device_sources(ipc_toolkit
+  barrier.cpp
+)

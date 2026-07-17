@@ -35,7 +35,7 @@ IPC_TOOLKIT_HOST_DEVICE inline double point_plane_signed_distance(
 /// @param t1  Second vertex of the triangle (3D).
 /// @param t2  Third vertex of the triangle (3D).
 /// @return    A Vector12d containing the gradient of the signed distance.
-IPC_TOOLKIT_INLINE Vector12d point_plane_signed_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE Vector12d point_plane_signed_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
@@ -51,14 +51,10 @@ IPC_TOOLKIT_INLINE Vector12d point_plane_signed_distance_gradient(
 /// @param t1  Second vertex of the triangle (3D).
 /// @param t2  Third vertex of the triangle (3D).
 /// @return    A Matrix12d representing the Hessian of the signed distance.
-IPC_TOOLKIT_INLINE Matrix12d point_plane_signed_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE Matrix12d point_plane_signed_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3d> p,
     Eigen::ConstRef<Eigen::Vector3d> t0,
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2);
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "point_plane.cpp"
-#endif

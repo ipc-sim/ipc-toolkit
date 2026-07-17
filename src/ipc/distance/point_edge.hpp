@@ -12,7 +12,7 @@ namespace ipc {
 /// @param e1 The second vertex of the edge.
 /// @param dtype The point edge distance type to compute.
 /// @return The distance between the point and edge.
-IPC_TOOLKIT_INLINE double point_edge_distance(
+IPC_TOOLKIT_HOST_DEVICE double point_edge_distance(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1,
@@ -25,7 +25,7 @@ IPC_TOOLKIT_INLINE double point_edge_distance(
 /// @param e1 The second vertex of the edge.
 /// @param dtype The point edge distance type to compute.
 /// @return grad The gradient of the distance wrt p, e0, and e1.
-IPC_TOOLKIT_INLINE VectorMax9d point_edge_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE VectorMax9d point_edge_distance_gradient(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1,
@@ -38,14 +38,10 @@ IPC_TOOLKIT_INLINE VectorMax9d point_edge_distance_gradient(
 /// @param e1 The second vertex of the edge.
 /// @param dtype The point edge distance type to compute.
 /// @return hess The hessian of the distance wrt p, e0, and e1.
-IPC_TOOLKIT_INLINE MatrixMax9d point_edge_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE MatrixMax9d point_edge_distance_hessian(
     Eigen::ConstRef<VectorMax3d> p,
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1,
     PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO);
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "point_edge.cpp"
-#endif

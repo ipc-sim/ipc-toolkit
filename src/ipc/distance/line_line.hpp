@@ -13,7 +13,7 @@ namespace ipc {
 /// @param eb0 The first vertex of the edge defining the second line.
 /// @param eb1 The second vertex of the edge defining the second line.
 /// @return The distance between the two lines.
-IPC_TOOLKIT_INLINE double line_line_distance(
+IPC_TOOLKIT_HOST_DEVICE double line_line_distance(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -27,7 +27,7 @@ IPC_TOOLKIT_INLINE double line_line_distance(
 /// @param eb0 The first vertex of the edge defining the second line.
 /// @param eb1 The second vertex of the edge defining the second line.
 /// @return The gradient of the distance wrt ea0, ea1, eb0, and eb1.
-IPC_TOOLKIT_INLINE Vector12d line_line_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE Vector12d line_line_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -41,7 +41,7 @@ IPC_TOOLKIT_INLINE Vector12d line_line_distance_gradient(
 /// @param eb0 The first vertex of the edge defining the second line.
 /// @param eb1 The second vertex of the edge defining the second line.
 /// @return The hessian of the distance wrt ea0, ea1, eb0, and eb1.
-IPC_TOOLKIT_INLINE Matrix12d line_line_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE Matrix12d line_line_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
@@ -49,7 +49,7 @@ IPC_TOOLKIT_INLINE Matrix12d line_line_distance_hessian(
 
 // Symbolically generated derivatives;
 namespace autogen {
-    IPC_TOOLKIT_INLINE void line_line_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE void line_line_distance_gradient(
         double v01,
         double v02,
         double v03,
@@ -64,7 +64,7 @@ namespace autogen {
         double v33,
         double g[12]);
 
-    IPC_TOOLKIT_INLINE void line_line_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE void line_line_distance_hessian(
         double v01,
         double v02,
         double v03,
@@ -81,7 +81,3 @@ namespace autogen {
 } // namespace autogen
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "line_line.cpp"
-#endif
