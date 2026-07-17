@@ -211,7 +211,3 @@ IPC_TOOLKIT_HOST_DEVICE inline auto point_edge_distance_hessian(
 }
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "point_edge.cpp"
-#endif

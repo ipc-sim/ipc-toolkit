@@ -518,7 +518,3 @@ IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_relative_velocity_dx_dbeta(
 }
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "relative_velocity.cpp"
-#endif

@@ -509,7 +509,3 @@ namespace autogen {
 } // namespace autogen
 
 } // namespace ipc
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include "tangent_basis.cpp"
-#endif
