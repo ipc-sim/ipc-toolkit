@@ -16,3 +16,7 @@ set(SOURCES
 )
 
 target_sources(ipc_toolkit PRIVATE ${SOURCES})
+
+if(IPC_TOOLKIT_WITH_CUDA)
+  add_subdirectory(cuda)
+endif()

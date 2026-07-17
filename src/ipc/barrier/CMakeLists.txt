@@ -4,6 +4,7 @@ set(SOURCES
   barrier_classes.cpp
   barrier_force_magnitude.cpp
   barrier_force_magnitude.hpp
+  barrier_type.hpp
   barrier.hpp
 )
 
