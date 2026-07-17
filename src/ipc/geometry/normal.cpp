@@ -231,7 +231,7 @@ MatrixMax<double, 27, 9> point_line_normal_hessian(
 // --- triangle normal functions ----------------------------------------------
 
 namespace {
-    void set_cross_product_matrix_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE inline void set_cross_product_matrix_jacobian(
         Eigen::Ref<Eigen::Matrix<double, 9, 3>> Jx, double chain_rule = 1.0)
     {
         Jx(2, 1) = Jx(3, 2) = Jx(7, 0) = -chain_rule;

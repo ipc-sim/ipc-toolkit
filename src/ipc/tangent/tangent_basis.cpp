@@ -8,7 +8,10 @@ namespace {
     /// @brief Compute the power of 1.5 of a number.
     /// @param x Number to compute the power of 1.5
     /// @return x^(1.5)
-    inline double pow_1_5(double x) { return x * std::sqrt(x); }
+    IPC_TOOLKIT_HOST_DEVICE inline double pow_1_5(double x)
+    {
+        return x * std::sqrt(x);
+    }
 } // namespace
 
 // ============================================================================

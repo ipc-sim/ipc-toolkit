@@ -118,11 +118,15 @@ else()
     -Wno-gnu-anonymous-struct
     -Wno-nested-anon-types
 
+    # Disable these warning because Eigen causes false positives with GCC 15
+    -Wno-maybe-uninitialized
+    -Wno-unknown-pragmas
+    -Wno-null-dereference
+
     ###########
     # GCC 6.1 #
     ###########
 
-    -Wnull-dereference
     -fdelete-null-pointer-checks
     -Wduplicated-cond
     -Wmisleading-indentation

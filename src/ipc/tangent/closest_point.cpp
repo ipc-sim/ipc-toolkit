@@ -81,7 +81,11 @@ Eigen::Vector2d edge_edge_closest_point(
     rhs[0] = -eb_to_ea.dot(ea);
     rhs[1] = eb_to_ea.dot(eb);
 
+#ifdef __CUDA_ARCH__
+    const Eigen::Vector2d x = A.inverse() * rhs;
+#else
     const Eigen::Vector2d x = A.ldlt().solve(rhs);
+#endif
     assert((A * x - rhs).norm() < 1e-10);
     return x;
 }
@@ -131,7 +135,11 @@ Eigen::Vector2d point_triangle_closest_point(
     basis.row(1) = Eigen::RowVector3d(t2 - t0); // edge 1
     const Eigen::Matrix2d A = basis * basis.transpose();
     const Eigen::Vector2d b = basis * (p - t0);
+#ifdef __CUDA_ARCH__
+    const Eigen::Vector2d x = A.inverse() * b;
+#else
     const Eigen::Vector2d x = A.ldlt().solve(b);
+#endif
     assert((A * x - b).norm() < 1e-10);
     return x;
 }

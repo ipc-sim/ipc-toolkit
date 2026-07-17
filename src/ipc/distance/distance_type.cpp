@@ -52,21 +52,33 @@ PointTriangleDistanceType point_triangle_distance_type(
 
     basis.row(0) = t1 - t0;
     basis.row(1) = basis.row(0).cross(normal);
+#ifdef __CUDA_ARCH__
+    param.col(0) = (basis * basis.transpose()).inverse() * (basis * (p - t0));
+#else
     param.col(0) = (basis * basis.transpose()).ldlt().solve(basis * (p - t0));
+#endif
     if (param(0, 0) > 0.0 && param(0, 0) < 1.0 && param(1, 0) >= 0.0) {
         return PointTriangleDistanceType::P_E0; // edge 0 is the closest
     }
 
     basis.row(0) = t2 - t1;
     basis.row(1) = basis.row(0).cross(normal);
+#ifdef __CUDA_ARCH__
+    param.col(1) = (basis * basis.transpose()).inverse() * (basis * (p - t1));
+#else
     param.col(1) = (basis * basis.transpose()).ldlt().solve(basis * (p - t1));
+#endif
     if (param(0, 1) > 0.0 && param(0, 1) < 1.0 && param(1, 1) >= 0.0) {
         return PointTriangleDistanceType::P_E1; // edge 1 is the closest
     }
 
     basis.row(0) = t0 - t2;
     basis.row(1) = basis.row(0).cross(normal);
+#ifdef __CUDA_ARCH__
+    param.col(2) = (basis * basis.transpose()).inverse() * (basis * (p - t2));
+#else
     param.col(2) = (basis * basis.transpose()).ldlt().solve(basis * (p - t2));
+#endif
     if (param(0, 2) > 0.0 && param(0, 2) < 1.0 && param(1, 2) >= 0.0) {
         return PointTriangleDistanceType::P_E2; // edge 2 is the closest
     }

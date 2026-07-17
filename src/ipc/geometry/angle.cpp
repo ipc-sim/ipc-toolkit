@@ -67,7 +67,7 @@ Eigen::Vector<double, 12> dihedral_angle_gradient(
 }
 
 namespace {
-    inline Eigen::Vector3d cross(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector3d cross(
         Eigen::ConstRef<Eigen::Vector3d> a, Eigen::ConstRef<Eigen::Vector3d> b)
     {
         return a.cross(b);

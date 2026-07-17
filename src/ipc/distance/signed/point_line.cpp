@@ -39,7 +39,12 @@ Matrix6d point_line_signed_distance_hessian(
     // ---------------------------------------------------------
     // Contract the normal Hessian (2x36) with vector v (2x1).
     // Result is 1x36, mapped to 6x6.
-    hess = (hess_n.reshaped(2, 36).transpose() * v).reshaped(6, 6);
+    {
+        auto hess_n_2_36 =
+            Eigen::Map<const Eigen::Matrix<double, 2, 36>>(hess_n.data());
+        hess = Eigen::Map<const Eigen::Matrix<double, 6, 6>>(
+            (hess_n_2_36.transpose() * v).eval().data());
+    }
 
     // ---------------------------------------------------------
     // 2. Add Jacobian Terms (Product Rule Corrections)
