@@ -15,6 +15,8 @@
 #include <finitediff.hpp>
 #include <igl/edges.h>
 
+#include <Eigen/Eigenvalues>
+
 using namespace ipc;
 
 TEST_CASE(
@@ -474,9 +476,10 @@ TEST_CASE(
     // negative-weight collisions have mollifier m == 0 exactly. That exercises
     // NormalPotential::hessian()'s m <= 0 early-return branch.
     //
-    // Before the fix, that branch returned (weight * f) * hess_m without applying
-    // the requested PSD projection, so negative-weight collisions could introduce
-    // non-PSD blocks into the assembled "PSD-projected" hessian.
+    // Before the fix, that branch returned (weight * f) * hess_m without
+    // applying the requested PSD projection, so negative-weight collisions
+    // could introduce non-PSD blocks into the assembled "PSD-projected"
+    // hessian.
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
     REQUIRE(tests::load_mesh("cube.ply", vertices, edges, faces));
@@ -491,14 +494,17 @@ TEST_CASE(
     REQUIRE(!collisions.empty());
 
     // Ensure the test actually exercises NormalPotential::hessian()'s m <= 0
-    // early-return branch (and the negative-weight case that motivated the fix).
+    // early-return branch (and the negative-weight case that motivated the
+    // fix).
     int m_le_0_count = 0;
     int m_le_0_negative_weight_count = 0;
-    for (const auto& c : collisions) {
+    for (size_t i = 0; i < collisions.size(); i++) {
+        const NormalCollision& c = collisions[i];
         if (!c.is_mollified()) {
             continue;
         }
-        const double m = c.mollifier(c.dof(vertices, mesh.edges(), mesh.faces()));
+        const double m =
+            c.mollifier(c.dof(vertices, mesh.edges(), mesh.faces()));
         if (m <= 0) {
             m_le_0_count++;
             if (c.weight < 0) {
@@ -520,7 +526,7 @@ TEST_CASE(
     // With per-block CLAMP projection (including the m <= 0 blocks), the
     // assembled hessian must be PSD. Before the fix, the m <= 0 branch returned
     // negative-definite blocks unprojected, making this fail.
-    const Eigen::MatrixXd H_dense(H);
+    const Eigen::MatrixXd H_dense = H.toDense();
     const Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(H_dense);
     const double min_eig = eigensolver.eigenvalues().minCoeff();
     const double scale = eigensolver.eigenvalues().cwiseAbs().maxCoeff();

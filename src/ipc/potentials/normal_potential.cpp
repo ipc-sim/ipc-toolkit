@@ -186,11 +186,12 @@ MatrixMax12d NormalPotential::hessian(
     // m(x) before evaluating barrier derivatives.
     const double m = collision.mollifier(positions); // m(x)
     if (collision.is_mollified() && m <= 0) {
-        // The mollified hessian is w·f·∇²m here (∇m = 0 when m = 0). Because
-        // m == 0 (⟺ ‖cross‖² == 0, exactly parallel edges) is a global minimum
-        // of the mollifier, hess_m = ∇²m is PSD. The block is therefore a scalar
-        // multiple of a PSD matrix, so its PSD projection reduces to projecting
-        // the scalar w·f -- no eigendecomposition needed.
+        // The mollified hessian is weight * f * hess_m here (the mollifier
+        // gradient is zero when m = 0). At m == 0 the edges are exactly
+        // parallel -- a global minimum of the mollifier -- so hess_m is PSD,
+        // and f = f(d) > 0. The block is therefore a scalar multiple of a PSD
+        // matrix, so its PSD projection reduces to projecting the scalar
+        // weight * f (no eigendecomposition needed).
         const double f = (*this)(d, collision.dmin);
         const MatrixMax12d hess_m = collision.mollifier_hessian(positions);
         double scale = collision.weight * f;
