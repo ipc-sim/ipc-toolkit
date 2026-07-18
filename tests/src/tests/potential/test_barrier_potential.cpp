@@ -472,10 +472,11 @@ TEST_CASE(
 {
     // The cube's edges are axis-aligned, so IMPROVED_MAX_APPROX's near-parallel
     // negative-weight collisions have mollifier m == 0 exactly. That exercises
-    // NormalPotential::hessian()'s early-return branch, which returns the block
-    // (weight * f) * hess_m WITHOUT PSD projection. In debug builds an assert
-    // there checks the returned block is actually PSD -- if it fires, the CPU
-    // is returning a non-PSD block unprojected (a latent bug).
+    // NormalPotential::hessian()'s m <= 0 early-return branch.
+    //
+    // Before the fix, that branch returned (weight * f) * hess_m without applying
+    // the requested PSD projection, so negative-weight collisions could introduce
+    // non-PSD blocks into the assembled "PSD-projected" hessian.
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
     REQUIRE(tests::load_mesh("cube.ply", vertices, edges, faces));
