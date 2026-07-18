@@ -490,6 +490,25 @@ TEST_CASE(
     collisions.build(mesh, vertices, dhat);
     REQUIRE(!collisions.empty());
 
+    // Ensure the test actually exercises NormalPotential::hessian()'s m <= 0
+    // early-return branch (and the negative-weight case that motivated the fix).
+    int m_le_0_count = 0;
+    int m_le_0_negative_weight_count = 0;
+    for (const auto& c : collisions) {
+        if (!c.is_mollified()) {
+            continue;
+        }
+        const double m = c.mollifier(c.dof(vertices, mesh.edges(), mesh.faces()));
+        if (m <= 0) {
+            m_le_0_count++;
+            if (c.weight < 0) {
+                m_le_0_negative_weight_count++;
+            }
+        }
+    }
+    REQUIRE(m_le_0_count > 0);
+    REQUIRE(m_le_0_negative_weight_count > 0);
+
     const BarrierPotential barrier_potential(dhat, /*stiffness=*/1.0);
 
     // Triggers the m <= 0 early-return (and its debug PSD assert) for every
