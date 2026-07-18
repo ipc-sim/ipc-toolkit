@@ -21,32 +21,25 @@ void append_local_hessian_blocks(
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, slab_count),
-        [&](const tbb::blocked_range<size_t>& range) {
-            std::vector<Eigen::Triplet<double>>& local_triplets =
-                storage.local();
-            for (size_t k = range.begin(); k != range.end(); k++) {
-                const std::array<index_t, 4>& ids = vertex_ids[slab_begin + k];
+    tbb::parallel_for(size_t(0), slab_count, [&](const size_t k) {
+        std::vector<Eigen::Triplet<double>>& local_triplets = storage.local();
+        const std::array<index_t, 4>& ids = vertex_ids[slab_begin + k];
 
-                // Unused vertex id entries are -1.
-                int n_verts = 0;
-                while (n_verts < 4 && ids[n_verts] >= 0) {
-                    n_verts++;
-                }
-                const int ndof = 3 * n_verts;
+        // Unused vertex id entries are -1.
+        int n_verts = 0;
+        while (n_verts < 4 && ids[n_verts] >= 0) {
+            n_verts++;
+        }
+        const int ndof = 3 * n_verts;
 
-                const MatrixMax12d local_hessian = project_to_psd(
-                    MatrixMax12d(
-                        Eigen::Map<const Eigen::MatrixXd>(
-                            blocks + k * HESSIAN_BLOCK_SLOT_SIZE, ndof, ndof)),
-                    project_hessian_to_psd);
+        MatrixMax12d local_hessian = Eigen::Map<const Eigen::MatrixXd>(
+            blocks + k * HESSIAN_BLOCK_SLOT_SIZE, ndof, ndof);
 
-                local_hessian_to_global_triplets(
-                    local_hessian, ids, /*dim=*/3, local_triplets,
-                    n_total_vertices);
-            }
-        });
+        local_hessian = project_to_psd(local_hessian, project_hessian_to_psd);
+
+        local_hessian_to_global_triplets(
+            local_hessian, ids, /*dim=*/3, local_triplets, n_total_vertices);
+    });
 
     for (const std::vector<Eigen::Triplet<double>>& local_triplets : storage) {
         triplets.insert(
