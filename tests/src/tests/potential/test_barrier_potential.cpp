@@ -15,6 +15,8 @@
 #include <finitediff.hpp>
 #include <igl/edges.h>
 
+#include <Eigen/Eigenvalues>
+
 using namespace ipc;
 
 TEST_CASE(
@@ -464,6 +466,71 @@ TEST_CASE(
     if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
         tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
     }
+}
+
+TEST_CASE(
+    "Mollified m<=0 hessian block is PSD",
+    "[potential][barrier_potential][hessian]")
+{
+    // The cube's edges are axis-aligned, so IMPROVED_MAX_APPROX's near-parallel
+    // negative-weight collisions have mollifier m == 0 exactly. That exercises
+    // NormalPotential::hessian()'s m <= 0 early-return branch.
+    //
+    // Before the fix, that branch returned (weight * f) * hess_m without
+    // applying the requested PSD projection, so negative-weight collisions
+    // could introduce non-PSD blocks into the assembled "PSD-projected"
+    // hessian.
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    REQUIRE(tests::load_mesh("cube.ply", vertices, edges, faces));
+    const CollisionMesh mesh(vertices, edges, faces);
+
+    const double dhat = std::sqrt(2.0);
+    NormalCollisions collisions;
+    collisions.set_use_area_weighting(true);
+    collisions.set_collision_set_type(
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
+    collisions.build(mesh, vertices, dhat);
+    REQUIRE(!collisions.empty());
+
+    // Ensure the test actually exercises NormalPotential::hessian()'s m <= 0
+    // early-return branch (and the negative-weight case that motivated the
+    // fix).
+    int m_le_0_count = 0;
+    int m_le_0_negative_weight_count = 0;
+    for (size_t i = 0; i < collisions.size(); i++) {
+        const NormalCollision& c = collisions[i];
+        if (!c.is_mollified()) {
+            continue;
+        }
+        const double m =
+            c.mollifier(c.dof(vertices, mesh.edges(), mesh.faces()));
+        if (m <= 0) {
+            m_le_0_count++;
+            if (c.weight < 0) {
+                m_le_0_negative_weight_count++;
+            }
+        }
+    }
+    REQUIRE(m_le_0_count > 0);
+    REQUIRE(m_le_0_negative_weight_count > 0);
+
+    const BarrierPotential barrier_potential(dhat, /*stiffness=*/1.0);
+
+    // Triggers the m <= 0 early-return (and its debug PSD assert) for every
+    // mollified collision that reaches it.
+    const Eigen::SparseMatrix<double> H = barrier_potential.hessian(
+        collisions, mesh, vertices, PSDProjectionMethod::CLAMP);
+    REQUIRE(H.nonZeros() > 0);
+
+    // With per-block CLAMP projection (including the m <= 0 blocks), the
+    // assembled hessian must be PSD. Before the fix, the m <= 0 branch returned
+    // negative-definite blocks unprojected, making this fail.
+    const Eigen::MatrixXd H_dense = H.toDense();
+    const Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(H_dense);
+    const double min_eig = eigensolver.eigenvalues().minCoeff();
+    const double scale = eigensolver.eigenvalues().cwiseAbs().maxCoeff();
+    CHECK(min_eig >= -1e-10 * std::max(scale, 1.0));
 }
 
 // -- Benchmarking ------------------------------------------------------------

@@ -8,6 +8,9 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
 
+#include <algorithm>
+#include <cmath>
+
 namespace ipc {
 
 // -- Cumulative methods -------------------------------------------------------
@@ -183,9 +186,21 @@ MatrixMax12d NormalPotential::hessian(
     // m(x) before evaluating barrier derivatives.
     const double m = collision.mollifier(positions); // m(x)
     if (collision.is_mollified() && m <= 0) {
+        // The mollified hessian is weight * f * hess_m here (the mollifier
+        // gradient is zero when m = 0). At m == 0 the edges are exactly
+        // parallel -- a global minimum of the mollifier -- so hess_m is PSD,
+        // and f = f(d) > 0. The block is therefore a scalar multiple of a PSD
+        // matrix, so its PSD projection reduces to projecting the scalar
+        // weight * f (no eigendecomposition needed).
         const double f = (*this)(d, collision.dmin);
         const MatrixMax12d hess_m = collision.mollifier_hessian(positions);
-        return (collision.weight * f) * hess_m;
+        double scale = collision.weight * f;
+        if (project_hessian_to_psd == PSDProjectionMethod::CLAMP) {
+            scale = std::max(scale, 0.0); // NSD (w < 0) projects to zero
+        } else if (project_hessian_to_psd == PSDProjectionMethod::ABS) {
+            scale = std::abs(scale);
+        }
+        return scale * hess_m;
     }
 
     // ∇d(x)
