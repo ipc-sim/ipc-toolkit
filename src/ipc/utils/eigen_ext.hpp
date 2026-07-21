@@ -5,10 +5,12 @@
 
 #include <cassert>
 
-#ifdef EIGEN_DONT_VECTORIZE
+#if defined(EIGEN_DONT_VECTORIZE) && !defined(__CUDACC__)
 // NOTE: Avoid error about abs casting double to int. Eigen does this
 // internally but seemingly only if EIGEN_DONT_VECTORIZE is not defined.
 // TODO: We should always use std::abs to avoid this issue.
+// NOTE: Skipped under nvcc: EIGEN_USING_STD expands to `using ::abs;`
+// there, which is a no-op at global scope and triggers warning #737.
 EIGEN_USING_STD(abs) // using std::abs;
 #endif
 
