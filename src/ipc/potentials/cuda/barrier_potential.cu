@@ -20,7 +20,6 @@
 #include <thrust/fill.h>
 #include <thrust/reduce.h>
 
-#include <algorithm>
 #include <array>
 #include <limits>
 #include <vector>
@@ -746,21 +745,12 @@ Eigen::SparseMatrix<double> BarrierPotential::hessian(
     }
     IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
-    // Project each block onto the PSD cone on device with cuSOLVER's batched
-    // eigensolver (chunked to bound the eigensolver scratch). NONE is a no-op.
+    // Project each block onto the PSD cone on device with a one-thread-per-
+    // collision Eigen SelfAdjointEigenSolver. NONE is a no-op.
     if (project_hessian_to_psd != PSDProjectionMethod::NONE) {
-        constexpr size_t MAX_BATCH_BYTES = size_t(256) << 20; // 256 MB
-        const size_t slab = std::max(
-            size_t(1),
-            std::min(
-                n, MAX_BATCH_BYTES / (size_t(PADDED_BLOCK) * sizeof(double))));
         BatchedPSDProjection projector;
-        for (size_t begin = 0; begin < n; begin += slab) {
-            const int count = static_cast<int>(std::min(slab, n - begin));
-            projector.project(
-                d_blocks_ptr + begin * size_t(PADDED_BLOCK), count,
-                project_hessian_to_psd);
-        }
+        projector.project(
+            d_blocks_ptr, static_cast<int>(n), project_hessian_to_psd);
     }
 
     // Assemble the sparse hessian on device (Thrust sort + segmented reduce
