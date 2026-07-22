@@ -83,11 +83,6 @@ public:
     /// @brief Get if the collision set is empty.
     bool empty() const { return size() == 0; }
 
-    /// @brief Host-side mirror of the vertex ids of every collision (in the
-    /// flattened order vv | ev | ee | fv; unused entries are -1). Used for
-    /// CPU-side sparse matrix assembly.
-    const std::vector<std::array<index_t, 4>>& host_vertex_ids() const;
-
     // Pimpl pattern to keep CUDA types out of this header. The Impl is
     // defined in device_normal_collisions_impl.cuh for use by the
     // ipc::cuda implementation files (.cu) only.
