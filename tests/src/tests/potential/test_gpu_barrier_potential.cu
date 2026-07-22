@@ -111,11 +111,14 @@ TEST_CASE(
             gpu_potential.hessian(collisions, mesh, vertices, method);
         REQUIRE(gpu_hess.rows() == cpu_hess.rows());
         REQUIRE(gpu_hess.cols() == cpu_hess.cols());
-        // PSD projection runs on the CPU with the same project_to_psd, so
-        // the only differences are GPU-vs-CPU rounding in the local blocks
-        // (slightly amplified by the projection's eigendecomposition).
+        // NONE: the GPU assembly sums the same device-computed blocks as the
+        // CPU (just in a different order) -> tight. CLAMP/ABS: the GPU projects
+        // with cuSOLVER's batched Jacobi while the CPU uses Eigen's QR
+        // eigensolver, so the projected blocks differ by conditioning-amplified
+        // rounding (worst near the near-zero eigenvalue clusters of contact
+        // hessians) -> looser tolerance.
         const double tol =
-            (method == ipc::PSDProjectionMethod::NONE) ? 1e-10 : 1e-8;
+            (method == ipc::PSDProjectionMethod::NONE) ? 1e-10 : 1e-6;
         CHECK((gpu_hess - cpu_hess).norm() <= tol * (1 + cpu_hess.norm()));
     }
 
@@ -142,7 +145,7 @@ TEST_CASE(
         collisions, mesh, vertices, ipc::PSDProjectionMethod::CLAMP);
     const Eigen::SparseMatrix<double> gpu_hess_fast = gpu_potential.hessian(
         device_collisions, device_vertices, ipc::PSDProjectionMethod::CLAMP);
-    CHECK((gpu_hess_fast - cpu_hess).norm() <= 1e-8 * (1 + cpu_hess.norm()));
+    CHECK((gpu_hess_fast - cpu_hess).norm() <= 1e-6 * (1 + cpu_hess.norm()));
 }
 
 TEST_CASE(

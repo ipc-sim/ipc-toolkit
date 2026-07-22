@@ -58,9 +58,6 @@ struct DeviceNormalCollisions::Impl {
     size_t ee_begin() const { return n_vv + n_ev; }
     size_t fv_begin() const { return n_vv + n_ev + n_ee; }
     size_t size() const { return n_vv + n_ev + n_ee + n_fv; }
-
-    /// @brief Host-side mirror of the vertex ids (for CPU-side assembly).
-    std::vector<std::array<index_t, 4>> host_vertex_ids;
 };
 
 } // namespace ipc::cuda

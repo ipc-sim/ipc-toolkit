@@ -80,7 +80,7 @@ DeviceNormalCollisions::DeviceNormalCollisions(
     const size_t n = impl.size();
 
     // Stage on the host in the flattened order vv | ev | ee | fv.
-    std::vector<std::array<index_t, 4>>& vertex_ids = impl.host_vertex_ids;
+    std::vector<std::array<index_t, 4>> vertex_ids;
     vertex_ids.reserve(n);
     std::vector<double> weight, dmin;
     weight.reserve(n);
@@ -134,12 +134,6 @@ const DeviceNormalCollisions::Impl& DeviceNormalCollisions::impl() const
 }
 
 size_t DeviceNormalCollisions::size() const { return m_impl->size(); }
-
-const std::vector<std::array<index_t, 4>>&
-DeviceNormalCollisions::host_vertex_ids() const
-{
-    return m_impl->host_vertex_ids;
-}
 
 } // namespace ipc::cuda
 
