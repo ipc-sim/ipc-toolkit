@@ -10,12 +10,14 @@
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
-#include <ipc/potentials/cuda/local_hessian_assembly.hpp>
+#include <ipc/potentials/cuda/hessian_assembly.cuh>
+#include <ipc/potentials/cuda/psd_projection.cuh>
 #include <ipc/utils/cuda/device_utils.cuh>
 #include <ipc/utils/logger.hpp>
 
 #include <thrust/copy.h>
 #include <thrust/device_vector.h>
+#include <thrust/fill.h>
 #include <thrust/reduce.h>
 
 #include <algorithm>
@@ -26,6 +28,12 @@
 namespace ipc::cuda {
 
 namespace {
+
+    // Padded block layout consumed by the batched eigensolver and assembler:
+    // each collision's ndof×ndof block lives in the top-left of a zero-padded
+    // 12×12 column-major slot.
+    constexpr int PADDED_DIM = BatchedPSDProjection::DIM;
+    constexpr int PADDED_BLOCK = BatchedPSDProjection::BLOCK_SIZE;
 
     // ========================================================================
     // Device barrier dispatch (mirrors BarrierPotential's scalar hooks in
@@ -377,8 +385,7 @@ namespace {
         const BarrierParams params,
         const size_t begin,
         const size_t count,
-        const size_t slab_begin,
-        double* blocks)
+        double* blocks) // n × PADDED_BLOCK doubles, zero-initialized
     {
         const size_t k =
             static_cast<size_t>(blockIdx.x) * blockDim.x + threadIdx.x;
@@ -450,13 +457,13 @@ namespace {
                 + (weight * grad_f) * hess_d;
         }
 
-        // Write the weighted (unprojected) block column-major; PSD projection
-        // happens on the CPU during assembly.
-        double* block =
-            blocks + (i - slab_begin) * internal::HESSIAN_BLOCK_SLOT_SIZE;
+        // Write the weighted (unprojected) block into the top-left NDOF×NDOF of
+        // a zero-padded 12×12 column-major slot (leading dim PADDED_DIM). The
+        // batched eigensolver projects it and the GPU assembler scatters it.
+        double* block = blocks + i * size_t(PADDED_BLOCK);
         for (int c = 0; c < NDOF; c++) {
             for (int r = 0; r < NDOF; r++) {
-                block[c * NDOF + r] = hess(r, c);
+                block[c * PADDED_DIM + r] = hess(r, c);
             }
         }
     }
@@ -691,9 +698,8 @@ Eigen::SparseMatrix<double> BarrierPotential::hessian(
     const index_t n_total_vertices = vertices.num_vertices();
     const index_t ndof = 3 * n_total_vertices;
 
-    Eigen::SparseMatrix<double> hess(ndof, ndof);
     if (collisions.empty()) {
-        return hess;
+        return Eigen::SparseMatrix<double>(ndof, ndof);
     }
 
     const DeviceNormalCollisions::Impl& impl = collisions.impl();
@@ -705,73 +711,63 @@ Eigen::SparseMatrix<double> BarrierPotential::hessian(
 
     const size_t n = impl.size();
 
-    // Process the collisions in slabs to bound the block buffer's memory.
-    constexpr size_t MAX_BUFFER_BYTES = size_t(256) << 20; // 256 MB
-    constexpr size_t BLOCK_BYTES =
-        internal::HESSIAN_BLOCK_SLOT_SIZE * sizeof(double);
-    const size_t slab_size =
-        std::max(size_t(1), std::min(n, MAX_BUFFER_BYTES / BLOCK_BYTES));
-
-    thrust::device_vector<double> d_blocks(
-        slab_size * internal::HESSIAN_BLOCK_SLOT_SIZE);
+    // Per-collision weighted blocks, each in the top-left of a zero-padded
+    // 12×12 column-major slot (zero-init so the padding is exactly zero).
+    thrust::device_vector<double> d_blocks(n * size_t(PADDED_BLOCK), 0.0);
     double* d_blocks_ptr = thrust::raw_pointer_cast(d_blocks.data());
-    std::vector<double> h_blocks(slab_size * internal::HESSIAN_BLOCK_SLOT_SIZE);
 
-    std::vector<Eigen::Triplet<double>> triplets;
-
-    for (size_t slab_begin = 0; slab_begin < n; slab_begin += slab_size) {
-        const size_t slab_end = std::min(slab_begin + slab_size, n);
-        const size_t slab_count = slab_end - slab_begin;
-
-        for (const TypeRange& range : type_ranges(impl)) {
-            const size_t begin = std::max(range.begin, slab_begin);
-            const size_t end = std::min(range.end, slab_end);
-            if (begin >= end) {
-                continue;
-            }
-            const size_t count = end - begin;
-            switch (range.type) {
-            case CollisionType::VV:
-                hessian_kernel<CollisionType::VV>
-                    <<<kernel_grid_size(count), KERNEL_BLOCK_SIZE>>>(
-                        view, positions, params, begin, count, slab_begin,
-                        d_blocks_ptr);
-                break;
-            case CollisionType::EV:
-                hessian_kernel<CollisionType::EV>
-                    <<<kernel_grid_size(count), KERNEL_BLOCK_SIZE>>>(
-                        view, positions, params, begin, count, slab_begin,
-                        d_blocks_ptr);
-                break;
-            case CollisionType::EE:
-                hessian_kernel<CollisionType::EE>
-                    <<<kernel_grid_size(count), KERNEL_BLOCK_SIZE>>>(
-                        view, positions, params, begin, count, slab_begin,
-                        d_blocks_ptr);
-                break;
-            case CollisionType::FV:
-                hessian_kernel<CollisionType::FV>
-                    <<<kernel_grid_size(count), KERNEL_BLOCK_SIZE>>>(
-                        view, positions, params, begin, count, slab_begin,
-                        d_blocks_ptr);
-                break;
-            }
+    for (const TypeRange& range : type_ranges(impl)) {
+        const size_t count = range.end - range.begin;
+        if (count == 0) {
+            continue;
         }
-        IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+        switch (range.type) {
+        case CollisionType::VV:
+            hessian_kernel<CollisionType::VV>
+                <<<kernel_grid_size(count), KERNEL_BLOCK_SIZE>>>(
+                    view, positions, params, range.begin, count, d_blocks_ptr);
+            break;
+        case CollisionType::EV:
+            hessian_kernel<CollisionType::EV>
+                <<<kernel_grid_size(count), KERNEL_BLOCK_SIZE>>>(
+                    view, positions, params, range.begin, count, d_blocks_ptr);
+            break;
+        case CollisionType::EE:
+            hessian_kernel<CollisionType::EE>
+                <<<kernel_grid_size(count), KERNEL_BLOCK_SIZE>>>(
+                    view, positions, params, range.begin, count, d_blocks_ptr);
+            break;
+        case CollisionType::FV:
+            hessian_kernel<CollisionType::FV>
+                <<<kernel_grid_size(count), KERNEL_BLOCK_SIZE>>>(
+                    view, positions, params, range.begin, count, d_blocks_ptr);
+            break;
+        }
+    }
+    IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
-        thrust::copy(
-            d_blocks.begin(),
-            d_blocks.begin() + slab_count * internal::HESSIAN_BLOCK_SLOT_SIZE,
-            h_blocks.begin());
-
-        internal::append_local_hessian_blocks(
-            h_blocks.data(), slab_begin, slab_count,
-            collisions.host_vertex_ids(), project_hessian_to_psd,
-            n_total_vertices, triplets);
+    // Project each block onto the PSD cone on device with cuSOLVER's batched
+    // eigensolver (chunked to bound the eigensolver scratch). NONE is a no-op.
+    if (project_hessian_to_psd != PSDProjectionMethod::NONE) {
+        constexpr size_t MAX_BATCH_BYTES = size_t(256) << 20; // 256 MB
+        const size_t slab = std::max(
+            size_t(1),
+            std::min(
+                n, MAX_BATCH_BYTES / (size_t(PADDED_BLOCK) * sizeof(double))));
+        BatchedPSDProjection projector;
+        for (size_t begin = 0; begin < n; begin += slab) {
+            const int count = static_cast<int>(std::min(slab, n - begin));
+            projector.project(
+                d_blocks_ptr + begin * size_t(PADDED_BLOCK), count,
+                project_hessian_to_psd);
+        }
     }
 
-    hess.setFromTriplets(triplets.begin(), triplets.end());
-    return hess;
+    // Assemble the sparse hessian on device (Thrust sort + segmented reduce
+    // into CSC arrays), then wrap as an Eigen sparse matrix.
+    return assemble_sparse_hessian(
+        d_blocks_ptr, view.vertex_id_0, view.vertex_id_1, view.vertex_id_2,
+        view.vertex_id_3, n, n_total_vertices);
 }
 
 } // namespace ipc::cuda

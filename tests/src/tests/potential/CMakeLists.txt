@@ -14,6 +14,7 @@ set(SOURCES
 if(IPC_TOOLKIT_WITH_CUDA)
   list(APPEND SOURCES
     test_gpu_barrier_potential.cu
+    test_gpu_psd_projection.cu
   )
 endif()
 

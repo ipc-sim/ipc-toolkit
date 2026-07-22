@@ -184,6 +184,11 @@ if(IPC_TOOLKIT_WITH_CUDA)
   # tests) inherit the flag.
   target_compile_options(ipc_toolkit PUBLIC
     "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>")
+
+  # cuSOLVER provides the batched symmetric eigensolver used to project the
+  # per-collision hessian blocks onto the PSD cone.
+  find_package(CUDAToolkit REQUIRED)
+  target_link_libraries(ipc_toolkit PRIVATE CUDA::cusolver)
 endif()
 
 # Fill in configuration options
