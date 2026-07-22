@@ -301,8 +301,17 @@ if(IPC_TOOLKIT_WITH_SIMD)
   target_link_libraries(ipc_toolkit PRIVATE xsimd::xsimd)
 
   # Disable vectorization in Eigen since I've found it to have alignment issues.
-  # NOTE: I don't know why this needs to be public, but it crashes if I make it private.
-  target_compile_definitions(ipc_toolkit PUBLIC EIGEN_DONT_VECTORIZE=1)
+  # NOTE: These must be public: every TU that exchanges Eigen objects with the
+  # library must agree on their layout, otherwise it is an ODR violation.
+  # NOTE: EIGEN_MAX_(STATIC_)ALIGN_BYTES must be pinned explicitly because
+  # EIGEN_DONT_VECTORIZE alone yields align=0 under g++ but align=16 under
+  # nvcc (Eigen forces 16-byte alignment when compiling CUDA), so fixed-max
+  # types (e.g., VectorMax<double, 18>) get different sizeof/alignof in CXX
+  # vs CUDA TUs, corrupting the stack when returned by value across them.
+  target_compile_definitions(ipc_toolkit PUBLIC
+    EIGEN_DONT_VECTORIZE=1
+    EIGEN_MAX_STATIC_ALIGN_BYTES=16
+    EIGEN_MAX_ALIGN_BYTES=16)
 endif()
 
 # For MSVC, do not use the min and max macros.
