@@ -296,7 +296,7 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
 TEST_CASE("Create broad phase", "[broad_phase]")
 {
 #ifdef IPC_TOOLKIT_WITH_CUDA
-    uint8_t n_broad_phase_methods = 6;
+    uint8_t n_broad_phase_methods = 7;
 #else
     uint8_t n_broad_phase_methods = 5;
 #endif
