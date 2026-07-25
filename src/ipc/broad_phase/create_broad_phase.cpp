@@ -1,6 +1,7 @@
 #include "create_broad_phase.hpp"
 
 #include <ipc/broad_phase/brute_force.hpp>
+#include <ipc/broad_phase/cuda/lbvh.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
 #include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
@@ -29,6 +30,13 @@ create_broad_phase(const BroadPhaseMethod& broad_phase_method)
 #else
         log_and_throw_error(
             "Sweep and Tiniest Queue broad phase requires CUDA! Enable it through CMake option IPC_TOOLKIT_WITH_CUDA.");
+#endif
+    case BroadPhaseMethod::LBVH_CUDA:
+#ifdef IPC_TOOLKIT_WITH_CUDA
+        return std::make_shared<ipc::cuda::LBVH>();
+#else
+        log_and_throw_error(
+            "CUDA LBVH broad phase requires CUDA! Enable it through CMake option IPC_TOOLKIT_WITH_CUDA.");
 #endif
     default:
         log_and_throw_error("Unknown broad phase type!");
