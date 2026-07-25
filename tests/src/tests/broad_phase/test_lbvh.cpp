@@ -7,6 +7,10 @@
 #include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/utils/profiler.hpp>
 
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include <ipc/broad_phase/cuda/lbvh.hpp>
+#endif
+
 #include <tbb/parallel_sort.h>
 
 #include <catch2/catch_test_macros.hpp>
@@ -346,6 +350,24 @@ TEST_CASE(
         lbvh->detect_edge_edge_candidates(ee_candidates);
         return ee_candidates.size();
     };
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+    cuda::LBVH gpu_lbvh;
+    gpu_lbvh.build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
+    // Warm up the CUDA context so the first sample is not skewed by lazy
+    // context/allocation initialization.
+    {
+        std::vector<EdgeEdgeCandidate> warmup;
+        gpu_lbvh.detect_edge_edge_candidates(warmup);
+    }
+
+    BENCHMARK("cuda::LBVH::detect_edge_edge_candidates")
+    {
+        std::vector<EdgeEdgeCandidate> ee_candidates;
+        gpu_lbvh.detect_edge_edge_candidates(ee_candidates);
+        return ee_candidates.size();
+    };
+#endif
 }
 
 TEST_CASE("Benchmark LBVH::build", "[!benchmark][broad_phase][lbvh]")
@@ -390,5 +412,20 @@ TEST_CASE("Benchmark LBVH::build", "[!benchmark][broad_phase][lbvh]")
                 vertices_t0, vertices_t1, edges, faces, inflation_radius);
             return lbvh->edge_nodes().size();
         };
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+        cuda::LBVH gpu_lbvh;
+        // Warm up the CUDA context so the first sample is not skewed by lazy
+        // context/allocation initialization.
+        gpu_lbvh.build(
+            vertices_t0, vertices_t1, edges, faces, inflation_radius);
+
+        BENCHMARK(fmt::format("cuda::LBVH::build [{}]", scene))
+        {
+            gpu_lbvh.build(
+                vertices_t0, vertices_t1, edges, faces, inflation_radius);
+            return gpu_lbvh.num_edge_nodes();
+        };
+#endif
     }
 }

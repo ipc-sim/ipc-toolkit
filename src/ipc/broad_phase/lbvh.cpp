@@ -149,13 +149,14 @@ void LBVH::init_bvh(
     {
         IPC_TOOLKIT_PROFILE_BLOCK("compute_morton_codes");
 
-        const Eigen::Array3d mesh_width = mesh_aabb.max - mesh_aabb.min;
+        const Eigen::Array3d mesh_width_inv =
+            1.0 / (mesh_aabb.max - mesh_aabb.min);
         tbb::parallel_for(size_t(0), boxes.size(), [&](size_t i) {
             const auto& box = boxes[i];
 
             const Eigen::Array3d center = 0.5 * (box.min + box.max);
             const Eigen::Array3d mapped_center =
-                (center - mesh_aabb.min) / mesh_width;
+                (center - mesh_aabb.min) * mesh_width_inv;
 
             if (dim == 2) {
                 morton_codes[i].morton_code =

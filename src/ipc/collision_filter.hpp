@@ -32,7 +32,11 @@ public:
     // ── Construction ─────────────────────────────────────────────────────────
 
     /// @brief Default filter: accept all pairs.
-    CollisionFilter() : m_fn([](size_t, size_t) { return true; }) { }
+    CollisionFilter()
+        : m_fn([](size_t, size_t) { return true; })
+        , m_accepts_all(true)
+    {
+    }
 
     /// @brief Construct from any callable bool(size_t, size_t).
     /// @note Disabled when Fn is CollisionFilter itself to avoid shadowing
@@ -58,6 +62,13 @@ public:
 
     /// @brief Implicit conversion to std::function<bool(size_t, size_t)>.
     operator std::function<bool(size_t, size_t)>() const { return m_fn; }
+
+    /// @brief Whether this filter trivially accepts every pair.
+    /// @return true only for the default-constructed (accept-all) filter;
+    ///         conservatively false for any user-supplied or composed filter.
+    /// @note Used by GPU broad phases to skip host-side filtering entirely when
+    ///       the device-emitted (connectivity-filtered) set is already exact.
+    bool accepts_all() const { return m_accepts_all; }
 
     // ── Composition ──────────────────────────────────────────────────────────
 
@@ -100,6 +111,9 @@ public:
 
 private:
     std::function<bool(size_t, size_t)> m_fn;
+    /// @brief True only for the default (accept-all) filter. Any callable- or
+    /// composition-constructed filter leaves this false (conservative).
+    bool m_accepts_all = false;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
