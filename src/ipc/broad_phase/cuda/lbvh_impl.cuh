@@ -46,10 +46,21 @@ struct LBVH::Impl {
         thrust::device_vector<int32_t> a;
         thrust::device_vector<int32_t> b;
 
+        /// @brief Largest candidate count ever observed for this type on this
+        /// object, used to size the next traversal's output buffer so repeated
+        /// calls (e.g. one per Newton iteration, or one per build() at a new
+        /// timestep) don't pay the overflow-and-retry cost every time -- only
+        /// the first time, or when the count grows past every prior call.
+        /// Deliberately NOT reset by clear() (see below): build() calls
+        /// clear() every timestep, and this hint must survive that so the
+        /// learned size doesn't need re-discovering each time.
+        size_t predicted_capacity = 0;
+
         void clear()
         {
             a.clear();
             b.clear();
+            // predicted_capacity is intentionally left untouched.
         }
     };
 
