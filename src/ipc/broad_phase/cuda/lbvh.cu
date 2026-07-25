@@ -794,9 +794,12 @@ namespace {
     }
 
     /// @brief Run the device traversal of the target BVH by the source leaves,
-    /// leaving the connectivity-filtered candidate pairs device-resident in the
-    /// output buffers (resized to the exact count). Grows the buffer and
-    /// re-runs once if the first pass overflows.
+    /// leaving the connectivity-filtered candidate pairs device-resident in
+    /// buf.a/buf.b (resized to the exact count). The initial buffer size is
+    /// seeded from buf.predicted_capacity (the largest count ever observed for
+    /// this type on this object), so only the first call -- or a call whose
+    /// count exceeds every prior call -- pays the overflow-and-retry cost;
+    /// every other call fits on the first pass.
     /// @tparam triangular Self-collision: skip subtrees fully left of the query.
     /// @tparam swap_order Emit (target_prim, source_prim) instead.
     /// @param source The BVH whose leaves are the queries.
@@ -805,8 +808,7 @@ namespace {
     /// @param source_count The vertex ids per source primitive (1, 2, or 3).
     /// @param target_conn The target primitives' connectivity (null for vertices).
     /// @param target_count The vertex ids per target primitive (1, 2, or 3).
-    /// @param d_a The first ids of each emitted pair (output, device).
-    /// @param d_b The second ids of each emitted pair (output, device).
+    /// @param buf The output candidate buffer and capacity hint (in/out).
     /// @return The number of candidate pairs emitted.
     template <bool triangular, bool swap_order>
     size_t run_traversal(
@@ -816,25 +818,26 @@ namespace {
         const int source_count,
         const index_t* target_conn,
         const int target_count,
-        thrust::device_vector<int32_t>& d_a,
-        thrust::device_vector<int32_t>& d_b)
+        LBVH::Impl::DeviceCandidates& buf)
     {
         const int n_source_leaves = source.n_leaves;
         const int target_size = static_cast<int>(target.nodes.size());
         if (n_source_leaves == 0 || target_size == 0) {
-            d_a.clear();
-            d_b.clear();
+            buf.a.clear();
+            buf.b.clear();
             return 0;
         }
         const int source_leaf_offset = n_source_leaves - 1;
 
-        int capacity = std::max(1024, 8 * n_source_leaves);
+        size_t capacity = std::max(
+            buf.predicted_capacity,
+            static_cast<size_t>(std::max(1024, 8 * n_source_leaves)));
         thrust::device_vector<int> d_counter(1);
 
         int count = 0;
         while (true) {
-            d_a.resize(capacity);
-            d_b.resize(capacity);
+            buf.a.resize(capacity);
+            buf.b.resize(capacity);
             d_counter[0] = 0;
 
             traverse_kernel<triangular, swap_order>
@@ -844,20 +847,28 @@ namespace {
                     thrust::raw_pointer_cast(target.nodes.data()), target_size,
                     thrust::raw_pointer_cast(target.rightmost_leaves.data()),
                     source_conn, source_count, target_conn, target_count,
-                    thrust::raw_pointer_cast(d_a.data()),
-                    thrust::raw_pointer_cast(d_b.data()),
-                    thrust::raw_pointer_cast(d_counter.data()), capacity);
+                    thrust::raw_pointer_cast(buf.a.data()),
+                    thrust::raw_pointer_cast(buf.b.data()),
+                    thrust::raw_pointer_cast(d_counter.data()),
+                    static_cast<int>(capacity));
             IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
             count = d_counter[0]; // device->host read (also synchronizes)
-            if (count <= capacity) {
+            if (static_cast<size_t>(count) <= capacity) {
                 break; // everything fit
             }
-            capacity = count; // exact size now known; the re-run will fit
+
+            logger().warn(
+                "[ipc::cuda::LBVH] candidate count {} exceeded preallocated "
+                "capacity {}; re-running with the exact size (this cost is "
+                "amortized: later calls reuse the learned capacity)",
+                count, capacity);
+            capacity = static_cast<size_t>(count); // exact size now known
         }
 
-        d_a.resize(count); // shrink to the exact candidate count (keeps data)
-        d_b.resize(count);
+        buf.predicted_capacity = std::max(buf.predicted_capacity, capacity);
+        buf.a.resize(count); // shrink to the exact candidate count (keeps data)
+        buf.b.resize(count);
         return static_cast<size_t>(count);
     }
 
@@ -1072,7 +1083,7 @@ namespace {
     {
         const size_t count = run_traversal<triangular, swap_order>(
             source, target, source_conn, source_count, target_conn,
-            target_count, buf.a, buf.b);
+            target_count, buf);
         materialize<Candidate>(
             buf.a, buf.b, count, accepts_all, can_collide, out);
     }
@@ -1090,7 +1101,7 @@ namespace {
     {
         const size_t count = run_traversal<triangular, swap_order>(
             source, target, source_conn, source_count, target_conn,
-            target_count, buf.a, buf.b);
+            target_count, buf);
         return LBVH::DeviceCandidateView {
             count ? thrust::raw_pointer_cast(buf.a.data()) : nullptr,
             count ? thrust::raw_pointer_cast(buf.b.data()) : nullptr, count
