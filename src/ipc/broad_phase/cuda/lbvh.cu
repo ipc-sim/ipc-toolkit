@@ -80,12 +80,20 @@ namespace {
     // double bounds are nudged outward with nextafter so the box is
     // conservative. (The leaf nodes later apply a second float-nextafter in
     // build_hierarchy_kernel, matching assign_inflated_aabb.)
+    //
+    // For dim == 2 input, ipc::AABB always stores a 3-wide array whose z
+    // component is zero-initialized and never touched by conservative_inflation
+    // (only the first `dim` components of the constructor argument are
+    // assigned) -- so the z bound is an exact, uninflated 0.0, not
+    // nextafter(0 +/- inflation_radius, ...). Replicate that exactly: for
+    // k >= dim, write a hard 0.0 instead of inflating.
 
     __global__ void build_vertex_boxes_static_kernel(
-        const double* __restrict__ vertices, // 3 * n, row-major
+        const double* __restrict__ vertices, // dim * n, row-major
         const int n,
+        const int dim,
         const double inflation_radius,
-        double* __restrict__ box_min,
+        double* __restrict__ box_min, // always 3 * n, row-major
         double* __restrict__ box_max)
     {
         const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -94,18 +102,24 @@ namespace {
         }
 #pragma unroll
         for (int k = 0; k < 3; ++k) {
-            const double v = vertices[3 * i + k];
-            box_min[3 * i + k] = nextafter(v - inflation_radius, -INFINITY);
-            box_max[3 * i + k] = nextafter(v + inflation_radius, INFINITY);
+            if (k < dim) {
+                const double v = vertices[dim * i + k];
+                box_min[3 * i + k] = nextafter(v - inflation_radius, -INFINITY);
+                box_max[3 * i + k] = nextafter(v + inflation_radius, INFINITY);
+            } else {
+                box_min[3 * i + k] = 0.0;
+                box_max[3 * i + k] = 0.0;
+            }
         }
     }
 
     __global__ void build_vertex_boxes_dynamic_kernel(
-        const double* __restrict__ vertices_t0, // 3 * n, row-major
-        const double* __restrict__ vertices_t1, // 3 * n, row-major
+        const double* __restrict__ vertices_t0, // dim * n, row-major
+        const double* __restrict__ vertices_t1, // dim * n, row-major
         const int n,
+        const int dim,
         const double inflation_radius,
-        double* __restrict__ box_min,
+        double* __restrict__ box_min, // always 3 * n, row-major
         double* __restrict__ box_max)
     {
         const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -114,14 +128,20 @@ namespace {
         }
 #pragma unroll
         for (int k = 0; k < 3; ++k) {
-            const double a = vertices_t0[3 * i + k];
-            const double b = vertices_t1[3 * i + k];
-            // union of the two inflated point boxes; nextafter is monotonic so
-            // min(nextafter(a),nextafter(b)) == nextafter(min(a,b)).
-            box_min[3 * i + k] =
-                nextafter(fmin(a, b) - inflation_radius, -INFINITY);
-            box_max[3 * i + k] =
-                nextafter(fmax(a, b) + inflation_radius, INFINITY);
+            if (k < dim) {
+                const double a = vertices_t0[dim * i + k];
+                const double b = vertices_t1[dim * i + k];
+                // union of the two inflated point boxes; nextafter is
+                // monotonic so min(nextafter(a),nextafter(b)) ==
+                // nextafter(min(a,b)).
+                box_min[3 * i + k] =
+                    nextafter(fmin(a, b) - inflation_radius, -INFINITY);
+                box_max[3 * i + k] =
+                    nextafter(fmax(a, b) + inflation_radius, INFINITY);
+            } else {
+                box_min[3 * i + k] = 0.0;
+                box_max[3 * i + k] = 0.0;
+            }
         }
     }
 
@@ -931,32 +951,31 @@ void LBVH::build(
 {
     clear();
 
-    if (vertices.cols() != 3) {
-        log_and_throw_error("ipc::cuda::LBVH currently supports 3D only!");
-    }
-    dim = 3;
+    assert(vertices.cols() == 2 || vertices.cols() == 3);
+    dim = static_cast<uint8_t>(vertices.cols());
 
     const int n_vertices = static_cast<int>(vertices.rows());
     if (n_vertices == 0) {
         return;
     }
 
-    // Upload vertices as a flat row-major array.
-    std::vector<double> h_verts(3 * size_t(n_vertices));
+    // Upload vertices as a flat row-major array (dim components per vertex;
+    // no padding -- the box kernel below fills the unused z for 2D input).
+    std::vector<double> h_verts(size_t(dim) * size_t(n_vertices));
     for (int i = 0; i < n_vertices; ++i) {
-        for (int k = 0; k < 3; ++k) {
-            h_verts[3 * size_t(i) + k] = vertices(i, k);
+        for (int k = 0; k < dim; ++k) {
+            h_verts[size_t(dim) * size_t(i) + k] = vertices(i, k);
         }
     }
     const thrust::device_vector<double> d_verts(h_verts);
 
-    // Build vertex boxes on the device.
+    // Build vertex boxes on the device (always 3-wide storage).
     thrust::device_vector<double> vbox_min(3 * size_t(n_vertices));
     thrust::device_vector<double> vbox_max(3 * size_t(n_vertices));
     build_vertex_boxes_static_kernel<<<
         kernel_grid_size(n_vertices), KERNEL_BLOCK_SIZE>>>(
-        thrust::raw_pointer_cast(d_verts.data()), n_vertices, inflation_radius,
-        thrust::raw_pointer_cast(vbox_min.data()),
+        thrust::raw_pointer_cast(d_verts.data()), n_vertices, dim,
+        inflation_radius, thrust::raw_pointer_cast(vbox_min.data()),
         thrust::raw_pointer_cast(vbox_max.data()));
     IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
@@ -976,22 +995,20 @@ void LBVH::build(
 
     clear();
 
-    if (vertices_t0.cols() != 3) {
-        log_and_throw_error("ipc::cuda::LBVH currently supports 3D only!");
-    }
-    dim = 3;
+    assert(vertices_t0.cols() == 2 || vertices_t0.cols() == 3);
+    dim = static_cast<uint8_t>(vertices_t0.cols());
 
     const int n_vertices = static_cast<int>(vertices_t0.rows());
     if (n_vertices == 0) {
         return;
     }
 
-    std::vector<double> h_v0(3 * size_t(n_vertices));
-    std::vector<double> h_v1(3 * size_t(n_vertices));
+    std::vector<double> h_v0(size_t(dim) * size_t(n_vertices));
+    std::vector<double> h_v1(size_t(dim) * size_t(n_vertices));
     for (int i = 0; i < n_vertices; ++i) {
-        for (int k = 0; k < 3; ++k) {
-            h_v0[3 * size_t(i) + k] = vertices_t0(i, k);
-            h_v1[3 * size_t(i) + k] = vertices_t1(i, k);
+        for (int k = 0; k < dim; ++k) {
+            h_v0[size_t(dim) * size_t(i) + k] = vertices_t0(i, k);
+            h_v1[size_t(dim) * size_t(i) + k] = vertices_t1(i, k);
         }
     }
     const thrust::device_vector<double> d_v0(h_v0);
@@ -1002,8 +1019,8 @@ void LBVH::build(
     build_vertex_boxes_dynamic_kernel<<<
         kernel_grid_size(n_vertices), KERNEL_BLOCK_SIZE>>>(
         thrust::raw_pointer_cast(d_v0.data()),
-        thrust::raw_pointer_cast(d_v1.data()), n_vertices, inflation_radius,
-        thrust::raw_pointer_cast(vbox_min.data()),
+        thrust::raw_pointer_cast(d_v1.data()), n_vertices, dim,
+        inflation_radius, thrust::raw_pointer_cast(vbox_min.data()),
         thrust::raw_pointer_cast(vbox_max.data()));
     IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
@@ -1019,10 +1036,8 @@ void LBVH::build(
 {
     clear();
 
-    if (_dim != 3) {
-        log_and_throw_error("ipc::cuda::LBVH currently supports 3D only!");
-    }
-    dim = 3;
+    assert(_dim == 2 || _dim == 3);
+    dim = _dim;
 
     const int n_vertices = static_cast<int>(vertex_boxes.size());
     if (n_vertices == 0) {
