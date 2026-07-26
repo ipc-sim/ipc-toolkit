@@ -19,6 +19,7 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <cuda_runtime.h>
+#include <igl/readCSV.h>
 
 #include <algorithm>
 #include <vector>
@@ -304,6 +305,50 @@ TEST_CASE(
         cpu_lbvh.detect_edge_face_candidates(cpu_c);
         compare_candidates_exact(gpu_c, cpu_c);
     }
+}
+
+// 2D input has no faces; ipc::AABB zero-pads the unused z component without
+// inflating it (see build_vertex_boxes_{static,dynamic}_kernel in lbvh.cu), so
+// this also exercises that padding path against the CPU's exact behavior.
+TEST_CASE("GPU LBVH 2D build and detect", "[broad_phase][lbvh][cuda][gpu]")
+{
+    if (!has_cuda_device()) {
+        SKIP("No CUDA device available; kernels compiled but not executed.");
+    }
+
+    Eigen::MatrixXd tmp;
+    REQUIRE(igl::readCSV((tests::DATA_DIR / "mesh-2D/V_t0.csv").string(), tmp));
+    const Eigen::MatrixXd V0 = tmp.leftCols(2);
+    REQUIRE(igl::readCSV((tests::DATA_DIR / "mesh-2D/V_t1.csv").string(), tmp));
+    const Eigen::MatrixXd V1 = tmp.leftCols(2);
+    Eigen::MatrixXi E;
+    REQUIRE(igl::readCSV((tests::DATA_DIR / "mesh-2D/E.csv").string(), E));
+    E.array() -= 1; // Convert from OBJ format to 0-indexed
+    const Eigen::MatrixXi F(0, 3);
+
+    constexpr double inflation_radius = 1e-3;
+
+    cuda::LBVH gpu_lbvh;
+    gpu_lbvh.build(V0, V1, E, F, inflation_radius);
+
+    LBVH cpu_lbvh;
+    cpu_lbvh.build(V0, V1, E, F, inflation_radius);
+
+    // -- Build parity (structure + root AABB, same checks as the 3D case). --
+    LBVH::Nodes nodes;
+    LBVH::RightmostLeaves rightmost;
+    gpu_lbvh.vertex_nodes_to_host(nodes, rightmost);
+    check_tree(nodes, cpu_lbvh.vertex_nodes());
+    gpu_lbvh.edge_nodes_to_host(nodes, rightmost);
+    check_tree(nodes, cpu_lbvh.edge_nodes());
+
+    // -- Detection parity (only edge-vertex is meaningful in 2D; mirrors
+    //    BroadPhase::detect_collision_candidates's dim == 2 branch). --
+    std::vector<EdgeVertexCandidate> gpu_c, cpu_c;
+    gpu_lbvh.detect_edge_vertex_candidates(gpu_c);
+    cpu_lbvh.detect_edge_vertex_candidates(cpu_c);
+    compare_candidates_exact(gpu_c, cpu_c);
+    CHECK(!gpu_c.empty());
 }
 
 #endif // IPC_TOOLKIT_WITH_CUDA
