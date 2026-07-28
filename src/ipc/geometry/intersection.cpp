@@ -14,12 +14,15 @@ namespace ipc {
 
 #ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
 namespace {
-    bool is_edge_intersecting_triangle_rational(
+    bool edge_intersecting_triangle_rational(
         Eigen::ConstRef<Eigen::Vector3d> e0_float,
         Eigen::ConstRef<Eigen::Vector3d> e1_float,
         Eigen::ConstRef<Eigen::Vector3d> t0_float,
         Eigen::ConstRef<Eigen::Vector3d> t1_float,
-        Eigen::ConstRef<Eigen::Vector3d> t2_float)
+        Eigen::ConstRef<Eigen::Vector3d> t2_float,
+        double& _u,
+        double& _v,
+        double& _t)
     {
         using namespace rational;
 
@@ -74,6 +77,7 @@ namespace {
                             + t0[1] * t1[0] * t2[2] - t0[1] * t1[2] * t2[0]
                             - t0[2] * t1[0] * t2[1] + t0[2] * t1[1] * t2[0])
             / d;
+        _t = t;
 
         if (t < 0 || t > 1) {
             return false;
@@ -93,6 +97,8 @@ namespace {
                             - e1[1] * t0[0] * t2[2] + e1[1] * t0[2] * t2[0]
                             + e1[2] * t0[0] * t2[1] - e1[2] * t0[1] * t2[0])
             / d;
+        _u = u;
+
         // v is the second barycentric coordinate for the triangle
         const Rational v = (e0[0] * e1[1] * t0[2] - e0[0] * e1[1] * t1[2]
                             - e0[0] * e1[2] * t0[1] + e0[0] * e1[2] * t1[1]
@@ -107,6 +113,7 @@ namespace {
                             + e1[1] * t0[0] * t1[2] - e1[1] * t0[2] * t1[0]
                             - e1[2] * t0[0] * t1[1] + e1[2] * t0[1] * t1[0])
             / d;
+        _v = v;
 
         return u >= 0 && u <= 1 && v >= 0 && v <= 1 && u + v <= 1;
     }
@@ -120,6 +127,22 @@ bool is_edge_intersecting_triangle(
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2)
 {
+    double u, v, t;
+    return edge_triangle_intersection(e0, e1, t0, t1, t2, u, v, t);
+}
+
+bool edge_triangle_intersection(
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
+    double& u,
+    double& v,
+    double& t)
+{
+    // Robust plane-side gate (same as is_edge_intersecting_triangle): both edge
+    // endpoints strictly on one side of the triangle's plane ⇒ no crossing.
     igl::predicates::exactinit();
     const auto ori1 = igl::predicates::orient3d(t0, t1, t2, e0);
     const auto ori2 = igl::predicates::orient3d(t0, t1, t2, e1);
@@ -131,15 +154,18 @@ bool is_edge_intersecting_triangle(
     }
 
 #ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
-    return is_edge_intersecting_triangle_rational(e0, e1, t0, t1, t2);
+    return edge_intersecting_triangle_rational(e0, e1, t0, t1, t2, u, v, t);
 #else
+    // Solve e0 − t0 = u·(t1−t0) + v·(t2−t0) + t·(e0−e1) for (u, v, t).
     Eigen::Matrix3d M;
     M.col(0) = t1 - t0;
     M.col(1) = t2 - t0;
     M.col(2) = e0 - e1;
-    Eigen::Vector3d uvt = M.fullPivLu().solve(e0 - t0);
-    return uvt[0] >= 0.0 && uvt[1] >= 0.0 && uvt[0] + uvt[1] <= 1.0
-        && uvt[2] >= 0.0 && uvt[2] <= 1.0;
+    const Eigen::Vector3d uvt = M.fullPivLu().solve(e0 - t0);
+    u = uvt[0];
+    v = uvt[1];
+    t = uvt[2];
+    return u >= 0.0 && v >= 0.0 && u + v <= 1.0 && t >= 0.0 && t <= 1.0;
 #endif
 }
 

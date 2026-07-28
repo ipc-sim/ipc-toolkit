@@ -18,4 +18,25 @@ bool is_edge_intersecting_triangle(
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2);
 
+/// @brief Edge–triangle intersection test that also returns the hit location.
+///
+/// Uses the same robust orient3d plane-side gate as
+/// `is_edge_intersecting_triangle`, then solves for the barycentric (a, b) on
+/// the triangle and the parameter t along the edge.
+///
+/// @param[in] e0,e1 Edge endpoints.
+/// @param[in] t0,t1,t2 Triangle vertices.
+/// @param[out] u,v Triangle barycentric coordinates (along t1−t0, t2−t0).
+/// @param[out] t Edge parameter in [0, 1].
+/// @return True if the edge intersects the triangle interior.
+bool edge_triangle_intersection(
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
+    double& u,
+    double& v,
+    double& t);
+
 } // namespace ipc
