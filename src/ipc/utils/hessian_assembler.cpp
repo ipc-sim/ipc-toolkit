@@ -31,7 +31,10 @@ namespace {
 } // namespace
 
 void TripletHessianAssembler::begin(
-    const int ndof, const int dim, const size_t num_stencils)
+    const int ndof,
+    const int dim,
+    const size_t num_stencils,
+    const StencilGetter& /*stencil*/)
 {
     m_ndof = ndof;
     m_dim = dim;

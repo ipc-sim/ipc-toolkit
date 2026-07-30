@@ -101,6 +101,7 @@ option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic
 option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
 option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
 option(IPC_TOOLKIT_WITH_TRACY                 "Enable Tracy frame profiler"                   OFF)
+option(IPC_TOOLKIT_WITH_MESHFEM_SPARSE        "Use MeshFEMSparse for block-accelerated assembly" OFF)
 
 # Advanced options
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
@@ -261,6 +262,13 @@ endif()
 if(IPC_TOOLKIT_WITH_FILIB)
   include(filib)
   target_link_libraries(ipc_toolkit PUBLIC filib::filib)
+endif()
+
+# Block-accelerated Hessian assembly
+if(IPC_TOOLKIT_WITH_MESHFEM_SPARSE)
+  include(meshfem_sparse)
+  # PUBLIC: the MeshFEMHessianAssembler header includes MeshFEMSparse headers.
+  target_link_libraries(ipc_toolkit PUBLIC MeshFEM::Sparse)
 endif()
 
 if(IPC_TOOLKIT_WITH_PROFILER)

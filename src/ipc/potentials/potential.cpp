@@ -149,7 +149,20 @@ void Potential<TCollisions>::assemble_hessian(
     const int dim = X.cols();
     const int ndof = in_full_dof ? mesh.full_ndof() : X.size(); // NOLINT
 
-    assembler.begin(ndof, dim, collisions.size());
+    // Stencil vertex IDs as assembled (remapped to full-mesh IDs if folding).
+    const auto stencil_vertex_ids = [&](const size_t i) {
+        auto ids = collisions[i].vertex_ids(edges, faces);
+        if (in_full_dof) {
+            for (auto& id : ids) {
+                if (id >= 0) {
+                    id = mesh.to_full_vertex_id(id);
+                }
+            }
+        }
+        return ids;
+    };
+
+    assembler.begin(ndof, dim, collisions.size(), stencil_vertex_ids);
 
     {
         IPC_TOOLKIT_PROFILE_BLOCK("compute and assemble local hessians");
@@ -164,16 +177,7 @@ void Potential<TCollisions>::assemble_hessian(
                     project_hessian_to_psd);
             }
 
-            auto ids = collision.vertex_ids(edges, faces);
-            if (in_full_dof) {
-                for (auto& id : ids) {
-                    if (id >= 0) {
-                        id = mesh.to_full_vertex_id(id);
-                    }
-                }
-            }
-
-            assembler.add_local_hessian(local_hess, ids);
+            assembler.add_local_hessian(local_hess, stencil_vertex_ids(i));
         });
     }
 

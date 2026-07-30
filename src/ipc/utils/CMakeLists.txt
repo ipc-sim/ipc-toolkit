@@ -10,6 +10,9 @@ set(SOURCES
   logger.hpp
   matrix_cache.cpp
   matrix_cache.hpp
+  meshfem_eigen_compat.hpp
+  meshfem_hessian_assembler.cpp
+  meshfem_hessian_assembler.hpp
   merge_thread_local.hpp
   profiler.cpp
   profiler.hpp

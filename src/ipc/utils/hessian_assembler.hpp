@@ -9,6 +9,7 @@
 #include <tbb/enumerable_thread_specific.h>
 
 #include <array>
+#include <functional>
 
 namespace ipc {
 
@@ -25,13 +26,26 @@ namespace ipc {
 /// (possibly concurrent), then end().
 class HessianAssembler {
 public:
+    /// @brief Callable returning the global vertex IDs of stencil i.
+    /// The IDs match those later passed to add_local_hessian for the same
+    /// stencil index (invalid trailing entries are negative). Must be safe to
+    /// call concurrently.
+    using StencilGetter = std::function<std::array<index_t, 4>(size_t)>;
+
     virtual ~HessianAssembler() = default;
 
     /// @brief Prepare for assembly. Called once before any add_local_hessian.
     /// @param ndof Number of global scalar DOF (rows == cols of the result).
     /// @param dim Spatial dimension (rows/cols per vertex block).
     /// @param num_stencils Number of local Hessians that will be added.
-    virtual void begin(int ndof, int dim, size_t num_stencils) = 0;
+    /// @param stencil Enumerates the stencils' vertex IDs; pattern-based
+    ///     assemblers use this to build their sparsity pattern up front. Only
+    ///     valid for the duration of the begin() call.
+    virtual void begin(
+        int ndof,
+        int dim,
+        size_t num_stencils,
+        const StencilGetter& stencil) = 0;
 
     /// @brief Add one local (stencil) Hessian to the global matrix.
     ///
@@ -58,7 +72,10 @@ class TripletHessianAssembler final : public HessianAssembler {
 public:
     TripletHessianAssembler() = default;
 
-    void begin(int ndof, int dim, size_t num_stencils) override;
+    /// @note `stencil` is unused: the triplet path needs no sparsity pattern.
+    void
+    begin(int ndof, int dim, size_t num_stencils, const StencilGetter& stencil)
+        override;
 
     void add_local_hessian(
         const MatrixMax12d& local_hess,

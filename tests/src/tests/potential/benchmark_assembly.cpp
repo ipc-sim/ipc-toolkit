@@ -25,6 +25,9 @@
 
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#ifdef IPC_TOOLKIT_WITH_MESHFEM_SPARSE
+#include <ipc/utils/meshfem_hessian_assembler.hpp>
+#endif
 
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_reduce.h>
@@ -35,6 +38,7 @@
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
+#include <limits>
 
 using namespace ipc;
 
@@ -255,6 +259,32 @@ TEST_CASE("Benchmark contact Hessian assembly", "[!benchmark][assembly]")
             /*in_full_dof=*/true);
     };
 
+#ifdef IPC_TOOLKIT_WITH_MESHFEM_SPARSE
+    // Phase 3: MeshFEMSparse block-CSC backend (pattern built per call; the
+    // pattern-reuse win is Phase 4).
+    BENCHMARK(fmt::format("{}: hessian (MeshFEM, full DOF)", scene.label()))
+    {
+        MeshFEMHessianAssembler assembler;
+        potential.assemble_hessian(
+            collisions, mesh, X, assembler, PSDProjectionMethod::NONE,
+            /*in_full_dof=*/true);
+        return assembler.get_matrix();
+    };
+
+    // Without the Eigen conversion: what a caller that consumes the block-CSC
+    // format directly (e.g., a block-aware solver) would pay.
+    BENCHMARK(
+        fmt::format("{}: hessian (MeshFEM, no Eigen conv.)", scene.label()))
+    {
+        // Pattern + scattered values only. The scatter writes to heap
+        // storage through virtual dispatch, so it cannot be optimized away.
+        MeshFEMHessianAssembler assembler;
+        potential.assemble_hessian(
+            collisions, mesh, X, assembler, PSDProjectionMethod::NONE,
+            /*in_full_dof=*/true);
+    };
+#endif
+
     BENCHMARK(
         fmt::format(
             "{}: {}x (hessian + to_full_dof)", scene.label(),
@@ -319,10 +349,11 @@ TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
     // directly comparable.
     fmt::print("\n=== Hessian assembly cost breakdown ===\n");
     fmt::print(
-        "{:<20} {:>9} {:>10} {:>10} {:>10} {:>10} {:>10} {:>8} {:>8} {:>8} "
-        "{:>8}\n",
+        "{:<20} {:>9} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>8} "
+        "{:>8} {:>8} {:>8}\n",
         "scene", "#collis", "local(ms)", "total(ms)", "asm(ms)", "full(ms)",
-        "fold(ms)", "local%", "asm%", "full%", "speedup");
+        "fold(ms)", "mfem(ms)", "mfblk(ms)", "local%", "asm%", "full%",
+        "speedup");
 
     for (const auto& spec : ipc::tests::assembly_scene_specs()) {
         const std::optional<ipc::tests::AssemblyScene> maybe_scene =
@@ -353,6 +384,27 @@ TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
                 /*in_full_dof=*/true);
         });
 
+#ifdef IPC_TOOLKIT_WITH_MESHFEM_SPARSE
+        // Phase 3: MeshFEM block-CSC backend (pattern rebuilt per call).
+        const double t_meshfem = median_seconds([&] {
+            MeshFEMHessianAssembler assembler;
+            potential.assemble_hessian(
+                collisions, mesh, X, assembler, PSDProjectionMethod::NONE,
+                /*in_full_dof=*/true);
+            (void)assembler.get_matrix();
+        });
+        // Same, but skipping the block-CSC -> Eigen conversion.
+        const double t_meshfem_blk = median_seconds([&] {
+            MeshFEMHessianAssembler assembler;
+            potential.assemble_hessian(
+                collisions, mesh, X, assembler, PSDProjectionMethod::NONE,
+                /*in_full_dof=*/true);
+        });
+#else
+        const double t_meshfem = std::numeric_limits<double>::quiet_NaN();
+        const double t_meshfem_blk = std::numeric_limits<double>::quiet_NaN();
+#endif
+
         // Assembly is what the full call does beyond the local derivatives.
         const double t_asm = t_total - t_local;
         const double t_end_to_end = t_total + t_full;
@@ -360,11 +412,12 @@ TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
         constexpr double MS = 1e3;
         fmt::print(
             "{:<20} {:>9} {:>10.3f} {:>10.3f} {:>10.3f} {:>10.3f} {:>10.3f} "
-            "{:>7.1f}% {:>7.1f}% {:>7.1f}% {:>7.2f}x\n",
+            "{:>10.3f} {:>10.3f} {:>7.1f}% {:>7.1f}% {:>7.1f}% {:>7.2f}x\n",
             scene.label(), scene.num_collisions(), t_local * MS, t_total * MS,
-            t_asm * MS, t_full * MS, t_folded * MS,
-            100.0 * t_local / t_end_to_end, 100.0 * t_asm / t_end_to_end,
-            100.0 * t_full / t_end_to_end, t_end_to_end / t_folded);
+            t_asm * MS, t_full * MS, t_folded * MS, t_meshfem * MS,
+            t_meshfem_blk * MS, 100.0 * t_local / t_end_to_end,
+            100.0 * t_asm / t_end_to_end, 100.0 * t_full / t_end_to_end,
+            t_end_to_end / t_folded);
         std::fflush(stdout);
     }
     fmt::print("\n");
