@@ -260,21 +260,20 @@ TEST_CASE("Benchmark contact Hessian assembly", "[!benchmark][assembly]")
     };
 
 #ifdef IPC_TOOLKIT_WITH_MESHFEM_SPARSE
-    // Phase 3: MeshFEMSparse block-CSC backend (pattern built per call; the
-    // pattern-reuse win is Phase 4).
-    BENCHMARK(fmt::format("{}: hessian (MeshFEM, full DOF)", scene.label()))
+    // Phase 3: MeshFEMSparse block-CSC backend, cold (pattern built per
+    // call, e.g., a fresh assembler every iteration).
+    BENCHMARK(fmt::format("{}: hessian (MeshFEM, cold)", scene.label()))
     {
         MeshFEMHessianAssembler assembler;
         potential.assemble_hessian(
             collisions, mesh, X, assembler, PSDProjectionMethod::NONE,
             /*in_full_dof=*/true);
-        return assembler.get_matrix();
+        return &assembler.get_matrix();
     };
 
     // Without the Eigen conversion: what a caller that consumes the block-CSC
     // format directly (e.g., a block-aware solver) would pay.
-    BENCHMARK(
-        fmt::format("{}: hessian (MeshFEM, no Eigen conv.)", scene.label()))
+    BENCHMARK(fmt::format("{}: hessian (MeshFEM, cold, block)", scene.label()))
     {
         // Pattern + scattered values only. The scatter writes to heap
         // storage through virtual dispatch, so it cannot be optimized away.
@@ -283,6 +282,48 @@ TEST_CASE("Benchmark contact Hessian assembly", "[!benchmark][assembly]")
             collisions, mesh, X, assembler, PSDProjectionMethod::NONE,
             /*in_full_dof=*/true);
     };
+
+    // Phase 4: persistent assembler — the pattern (and the cached Eigen
+    // structure) are reused across assemblies, as in a Newton solve.
+    {
+        MeshFEMHessianAssembler assembler;
+        potential.assemble_hessian(
+            collisions, mesh, X, assembler, PSDProjectionMethod::NONE,
+            /*in_full_dof=*/true); // warm-up: builds the pattern
+
+        BENCHMARK(fmt::format("{}: hessian (MeshFEM, reused)", scene.label()))
+        {
+            potential.assemble_hessian(
+                collisions, mesh, X, assembler, PSDProjectionMethod::NONE,
+                /*in_full_dof=*/true);
+            return &assembler.get_matrix();
+        };
+
+        BENCHMARK(
+            fmt::format(
+                "{}: {}x (MeshFEM, reused)", scene.label(),
+                ASSEMBLIES_PER_SOLVE))
+        {
+            double checksum = 0;
+            for (int i = 0; i < ASSEMBLIES_PER_SOLVE; i++) {
+                potential.assemble_hessian(
+                    collisions, mesh, X, assembler, PSDProjectionMethod::NONE,
+                    /*in_full_dof=*/true);
+                checksum += assembler.get_matrix().coeff(0, 0);
+            }
+            return checksum;
+        };
+
+        // Caller-asserted unchanged stencils: change detection skipped too.
+        assembler.set_assume_unchanged_stencils(true);
+        BENCHMARK(fmt::format("{}: hessian (MeshFEM, assumed)", scene.label()))
+        {
+            potential.assemble_hessian(
+                collisions, mesh, X, assembler, PSDProjectionMethod::NONE,
+                /*in_full_dof=*/true);
+            return &assembler.get_matrix();
+        };
+    }
 #endif
 
     BENCHMARK(
@@ -349,11 +390,11 @@ TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
     // directly comparable.
     fmt::print("\n=== Hessian assembly cost breakdown ===\n");
     fmt::print(
-        "{:<20} {:>9} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>8} "
-        "{:>8} {:>8} {:>8}\n",
+        "{:<20} {:>9} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} "
+        "{:>10} {:>10} {:>8} {:>8} {:>8} {:>8}\n",
         "scene", "#collis", "local(ms)", "total(ms)", "asm(ms)", "full(ms)",
-        "fold(ms)", "mfem(ms)", "mfblk(ms)", "local%", "asm%", "full%",
-        "speedup");
+        "fold(ms)", "mfem(ms)", "mfblk(ms)", "mfr(ms)", "mfa(ms)", "local%",
+        "asm%", "full%", "speedup");
 
     for (const auto& spec : ipc::tests::assembly_scene_specs()) {
         const std::optional<ipc::tests::AssemblyScene> maybe_scene =
@@ -400,9 +441,32 @@ TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
                 collisions, mesh, X, assembler, PSDProjectionMethod::NONE,
                 /*in_full_dof=*/true);
         });
+        // Phase 4: persistent assembler (pattern + Eigen structure reused).
+        MeshFEMHessianAssembler persistent_assembler;
+        potential.assemble_hessian(
+            collisions, mesh, X, persistent_assembler,
+            PSDProjectionMethod::NONE, /*in_full_dof=*/true); // warm-up
+        const double t_meshfem_reused = median_seconds([&] {
+            potential.assemble_hessian(
+                collisions, mesh, X, persistent_assembler,
+                PSDProjectionMethod::NONE, /*in_full_dof=*/true);
+            (void)persistent_assembler.get_matrix();
+        });
+        // Same, with caller-asserted unchanged stencils (no detection).
+        persistent_assembler.set_assume_unchanged_stencils(true);
+        const double t_meshfem_assumed = median_seconds([&] {
+            potential.assemble_hessian(
+                collisions, mesh, X, persistent_assembler,
+                PSDProjectionMethod::NONE, /*in_full_dof=*/true);
+            (void)persistent_assembler.get_matrix();
+        });
 #else
         const double t_meshfem = std::numeric_limits<double>::quiet_NaN();
         const double t_meshfem_blk = std::numeric_limits<double>::quiet_NaN();
+        const double t_meshfem_reused =
+            std::numeric_limits<double>::quiet_NaN();
+        const double t_meshfem_assumed =
+            std::numeric_limits<double>::quiet_NaN();
 #endif
 
         // Assembly is what the full call does beyond the local derivatives.
@@ -412,12 +476,13 @@ TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
         constexpr double MS = 1e3;
         fmt::print(
             "{:<20} {:>9} {:>10.3f} {:>10.3f} {:>10.3f} {:>10.3f} {:>10.3f} "
-            "{:>10.3f} {:>10.3f} {:>7.1f}% {:>7.1f}% {:>7.1f}% {:>7.2f}x\n",
+            "{:>10.3f} {:>10.3f} {:>10.3f} {:>10.3f} {:>7.1f}% {:>7.1f}% "
+            "{:>7.1f}% {:>7.2f}x\n",
             scene.label(), scene.num_collisions(), t_local * MS, t_total * MS,
             t_asm * MS, t_full * MS, t_folded * MS, t_meshfem * MS,
-            t_meshfem_blk * MS, 100.0 * t_local / t_end_to_end,
-            100.0 * t_asm / t_end_to_end, 100.0 * t_full / t_end_to_end,
-            t_end_to_end / t_folded);
+            t_meshfem_blk * MS, t_meshfem_reused * MS, t_meshfem_assumed * MS,
+            100.0 * t_local / t_end_to_end, 100.0 * t_asm / t_end_to_end,
+            100.0 * t_full / t_end_to_end, t_end_to_end / t_folded);
         std::fflush(stdout);
     }
     fmt::print("\n");

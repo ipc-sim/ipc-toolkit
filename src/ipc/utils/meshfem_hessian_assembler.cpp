@@ -18,10 +18,23 @@ namespace ipc {
 
 struct MeshFEMHessianAssembler::ImplBase {
     virtual ~ImplBase() = default;
+
+    virtual int dimension() const = 0;
+    virtual size_t num_block_vars() const = 0;
+
+    /// Reuse the cached pattern if the stencils still fit (returns true) or
+    /// rebuild it (returns false). Zeroes the values either way.
+    virtual bool update_pattern(
+        size_t num_stencils,
+        const StencilGetter& stencil,
+        size_t stale_block_tolerance,
+        bool assume_unchanged) = 0;
+
     virtual void
     add(const MatrixMax12d& local_hess,
         const std::array<index_t, 4>& vertex_ids) = 0;
-    virtual Eigen::SparseMatrix<double> to_eigen() const = 0;
+
+    virtual const Eigen::SparseMatrix<double>& to_eigen() const = 0;
 };
 
 /// Dimension-specific implementation (dim ∈ {2, 3}), mirroring MeshFEM's own
@@ -33,27 +46,70 @@ struct MeshFEMHessianAssembler::Impl final
     /// Local (block) variables of a collision stencil: 1–4 vertices.
     using Stencil = MeshFEM::ElementBlockVarsWithSizeRange<1, 4>;
 
-    Impl(
-        const size_t num_block_vars,
-        const size_t num_stencils,
-        const StencilGetter& stencil)
+    explicit Impl(const size_t num_block_vars)
         : m_assembler(num_block_vars)
         , m_vars(num_block_vars)
     {
+        m_locks.init(num_block_vars);
+    }
+
+    int dimension() const override { return dim; }
+    size_t num_block_vars() const override { return m_vars.numBlocks(); }
+
+    bool update_pattern(
+        const size_t num_stencils,
+        const StencilGetter& stencil,
+        const size_t stale_block_tolerance,
+        const bool assume_unchanged) override
+    {
+        const auto block_vars_of_stencil = [&stencil](const size_t i) {
+            return to_stencil(stencil(i));
+        };
+
+        if (m_H != nullptr) {
+            // Caller-asserted fast path: skip change detection, which costs
+            // as much as a pattern rebuild on large scenes. A differing
+            // stencil count disproves the assumption, so fall through to
+            // detection in that case.
+            if (assume_unchanged && num_stencils == m_num_stencils) {
+                // Verify the caller's claim where it is cheap to do so.
+                assert(
+                    m_assembler.detectChangedEntries(
+                        *m_H, num_stencils, block_vars_of_stencil)
+                    != MeshFEM::SystemAssembler<dim>::NEW_ENTRIES);
+                m_H->setZero();
+                return true;
+            }
+
+            IPC_TOOLKIT_PROFILE_BLOCK("MeshFEM detect pattern change");
+            const size_t changed = m_assembler.detectChangedEntries(
+                *m_H, num_stencils, block_vars_of_stencil);
+            // NEW_ENTRIES (size_t max) must always trigger a rebuild:
+            // scattering into a pattern that is missing an entry is undefined.
+            if (changed != MeshFEM::SystemAssembler<dim>::NEW_ENTRIES
+                && changed <= stale_block_tolerance) {
+                m_num_stencils = num_stencils;
+                m_H->setZero();
+                return true;
+            }
+        }
+
         {
             IPC_TOOLKIT_PROFILE_BLOCK("MeshFEM block sparsity pattern");
             m_H = m_assembler.blockSparsityPattern(
-                num_stencils,
-                [&stencil](const size_t i) { return to_stencil(stencil(i)); });
+                num_stencils, block_vars_of_stencil);
         }
+        m_num_stencils = num_stencils;
         m_H->setZero(); // Allocate (and zero) the value array.
-        m_locks.init(num_block_vars);
+        m_eigen_structure_valid = false;
+        return false;
     }
 
     void
     add(const MatrixMax12d& local_hess,
         const std::array<index_t, 4>& vertex_ids) override
     {
+        assert(m_H != nullptr);
         assert(local_hess.rows() == local_hess.cols());
         assert(local_hess.rows() % dim == 0);
 
@@ -78,7 +134,9 @@ struct MeshFEMHessianAssembler::Impl final
     }
 
     // Convert the block-CSC upper-triangle matrix to a full symmetric Eigen
-    // matrix.
+    // matrix. The structure (symmetrized pattern + index arrays) is cached
+    // and reused while the block pattern is unchanged; only the values are
+    // recomputed per call.
     //
     // NOTE: We deliberately do not use BlockCSCHessian::toEigen here: its
     // toScalar step assumes every block column is non-empty (true for FE
@@ -91,103 +149,30 @@ struct MeshFEMHessianAssembler::Impl final
     // library default): block entry ii occupies Ax[N²·ii, N²·(ii+1)),
     // column-major within the block; diagonal blocks are full N×N with a
     // zeroed strict lower triangle.
-    Eigen::SparseMatrix<double> to_eigen() const override
+    const Eigen::SparseMatrix<double>& to_eigen() const override
     {
         IPC_TOOLKIT_PROFILE_BLOCK("MeshFEM block CSC to Eigen");
-        static constexpr int N = dim;
+        assert(m_H != nullptr);
 
-        const auto& Ap = m_H->Ap; // block column pointers (size n_blocks + 1)
-        const auto& Ai = m_H->Ai; // block row indices
-        const auto& Ax = m_H->Ax; // scalar values (N² per block)
-
-        const std::ptrdiff_t n_blocks = m_H->n;
-        const std::ptrdiff_t n = N * n_blocks; // scalar dimension
-
-        // --- Symmetrized *block* pattern -------------------------------
-        // Every stored block (bi, bj) (bi ≤ bj) appears at (bi, bj) and, if
-        // off-diagonal, mirrored at (bj, bi) in the full matrix.
-        struct BlockEntry {
-            std::ptrdiff_t row; ///< Block row in the full (symmetrized) matrix
-            std::ptrdiff_t src; ///< Index of the stored block (into Ai/Ax)
-            bool transposed;    ///< Whether the stored block is mirrored
-        };
-
-        std::vector<std::ptrdiff_t> sym_col_start(n_blocks + 1, 0);
-        for (std::ptrdiff_t bj = 0; bj < n_blocks; bj++) {
-            for (std::ptrdiff_t ii = Ap[bj]; ii < Ap[bj + 1]; ii++) {
-                sym_col_start[bj + 1]++;
-                if (Ai[ii] != bj) {
-                    sym_col_start[Ai[ii] + 1]++;
-                }
-            }
+        if (!m_eigen_structure_valid) {
+            build_eigen_structure();
+            m_eigen_structure_valid = true;
         }
-        std::partial_sum(
-            sym_col_start.begin(), sym_col_start.end(), sym_col_start.begin());
-        const std::ptrdiff_t num_sym_blocks = sym_col_start[n_blocks];
-
-        // Sweeping bj in ascending order appends rows to every column in
-        // ascending order: column c receives its upper entries (rows ≤ c) at
-        // step bj = c and its mirrored entries (rows bj > c) at later steps.
-        std::vector<BlockEntry> sym_entries(num_sym_blocks);
-        {
-            std::vector<std::ptrdiff_t> cursor(
-                sym_col_start.begin(), sym_col_start.end() - 1);
-            for (std::ptrdiff_t bj = 0; bj < n_blocks; bj++) {
-                for (std::ptrdiff_t ii = Ap[bj]; ii < Ap[bj + 1]; ii++) {
-                    const std::ptrdiff_t bi = Ai[ii];
-                    sym_entries[cursor[bj]++] = { bi, ii, false };
-                    if (bi != bj) {
-                        sym_entries[cursor[bi]++] = { bj, ii, true };
-                    }
-                }
-            }
-        }
-
-        // --- Expand to a scalar CSC matrix ------------------------------
-        Eigen::SparseMatrix<double> M(n, n);
-        M.makeCompressed();
-        M.resizeNonZeros(N * N * num_sym_blocks);
-
-        int* outer = M.outerIndexPtr();
-        int* inner = M.innerIndexPtr();
-        double* values = M.valuePtr();
-
-        for (std::ptrdiff_t bj = 0; bj <= n_blocks; bj++) {
-            const std::ptrdiff_t col_nnz = bj < n_blocks
-                ? N * (sym_col_start[bj + 1] - sym_col_start[bj])
-                : 0;
-            for (int c = 0; c < ((bj < n_blocks) ? N : 1); c++) {
-                outer[N * bj + c] =
-                    int(N * N * sym_col_start[bj] + c * col_nnz);
-            }
-        }
-
-        tbb::parallel_for(
-            std::ptrdiff_t(0), n_blocks, [&](const std::ptrdiff_t bj) {
-                for (int c = 0; c < N; c++) {
-                    std::ptrdiff_t out = outer[N * bj + c];
-                    for (std::ptrdiff_t ei = sym_col_start[bj];
-                         ei < sym_col_start[bj + 1]; ei++) {
-                        const BlockEntry& e = sym_entries[ei];
-                        const double* block = Ax.data() + N * N * e.src;
-                        const bool diagonal = e.row == bj;
-                        for (int r = 0; r < N; r++) {
-                            inner[out] = int(N * e.row + r);
-                            if (e.transposed || (diagonal && r > c)) {
-                                values[out] = block[r * N + c]; // transposed
-                            } else {
-                                values[out] = block[c * N + r];
-                            }
-                            out++;
-                        }
-                    }
-                }
-            });
-
-        return M;
+        fill_eigen_values();
+        return m_M;
     }
 
 private:
+    static constexpr int N = dim;
+
+    /// A block of the full (symmetrized) matrix and the stored block backing
+    /// it.
+    struct BlockEntry {
+        std::ptrdiff_t row; ///< Block row in the full (symmetrized) matrix
+        std::ptrdiff_t src; ///< Index of the stored block (into Ai/Ax)
+        bool transposed;    ///< Whether the stored block is mirrored
+    };
+
     /// Compact the (possibly -1-padded) vertex ID array into a MeshFEM
     /// stencil of block variables.
     static Stencil to_stencil(const std::array<index_t, 4>& vertex_ids)
@@ -203,10 +188,123 @@ private:
         return bvars;
     }
 
+    void build_eigen_structure() const
+    {
+        const auto& Ap = m_H->Ap; // block column pointers (size n_blocks + 1)
+        const auto& Ai = m_H->Ai; // block row indices
+
+        const std::ptrdiff_t n_blocks = m_H->n;
+        const std::ptrdiff_t n = N * n_blocks; // scalar dimension
+
+        // --- Symmetrized *block* pattern --------------------------------
+        // Every stored block (bi, bj) (bi ≤ bj) appears at (bi, bj) and, if
+        // off-diagonal, mirrored at (bj, bi) in the full matrix.
+        m_sym_col_start.assign(n_blocks + 1, 0);
+        for (std::ptrdiff_t bj = 0; bj < n_blocks; bj++) {
+            for (std::ptrdiff_t ii = Ap[bj]; ii < Ap[bj + 1]; ii++) {
+                m_sym_col_start[bj + 1]++;
+                if (Ai[ii] != bj) {
+                    m_sym_col_start[Ai[ii] + 1]++;
+                }
+            }
+        }
+        std::partial_sum(
+            m_sym_col_start.begin(), m_sym_col_start.end(),
+            m_sym_col_start.begin());
+        const std::ptrdiff_t num_sym_blocks = m_sym_col_start[n_blocks];
+
+        // Sweeping bj in ascending order appends rows to every column in
+        // ascending order: column c receives its upper entries (rows ≤ c) at
+        // step bj = c and its mirrored entries (rows bj > c) at later steps.
+        m_sym_entries.resize(num_sym_blocks);
+        {
+            std::vector<std::ptrdiff_t> cursor(
+                m_sym_col_start.begin(), m_sym_col_start.end() - 1);
+            for (std::ptrdiff_t bj = 0; bj < n_blocks; bj++) {
+                for (std::ptrdiff_t ii = Ap[bj]; ii < Ap[bj + 1]; ii++) {
+                    const std::ptrdiff_t bi = Ai[ii];
+                    m_sym_entries[cursor[bj]++] = { bi, ii, false };
+                    if (bi != bj) {
+                        m_sym_entries[cursor[bi]++] = { bj, ii, true };
+                    }
+                }
+            }
+        }
+
+        // --- Scalar CSC index arrays ------------------------------------
+        m_M.resize(n, n);
+        m_M.makeCompressed();
+        m_M.resizeNonZeros(N * N * num_sym_blocks);
+
+        int* outer = m_M.outerIndexPtr();
+        int* inner = m_M.innerIndexPtr();
+
+        for (std::ptrdiff_t bj = 0; bj <= n_blocks; bj++) {
+            const std::ptrdiff_t col_nnz = bj < n_blocks
+                ? N * (m_sym_col_start[bj + 1] - m_sym_col_start[bj])
+                : 0;
+            for (int c = 0; c < ((bj < n_blocks) ? N : 1); c++) {
+                outer[N * bj + c] =
+                    int(N * N * m_sym_col_start[bj] + c * col_nnz);
+            }
+        }
+
+        tbb::parallel_for(
+            std::ptrdiff_t(0), n_blocks, [&](const std::ptrdiff_t bj) {
+                for (int c = 0; c < N; c++) {
+                    std::ptrdiff_t out = outer[N * bj + c];
+                    for (std::ptrdiff_t ei = m_sym_col_start[bj];
+                         ei < m_sym_col_start[bj + 1]; ei++) {
+                        for (int r = 0; r < N; r++) {
+                            inner[out++] = int(N * m_sym_entries[ei].row + r);
+                        }
+                    }
+                }
+            });
+    }
+
+    void fill_eigen_values() const
+    {
+        const auto& Ax = m_H->Ax; // scalar values (N² per block)
+        const std::ptrdiff_t n_blocks = m_H->n;
+
+        const int* outer = m_M.outerIndexPtr();
+        double* values = m_M.valuePtr();
+
+        tbb::parallel_for(
+            std::ptrdiff_t(0), n_blocks, [&](const std::ptrdiff_t bj) {
+                for (int c = 0; c < N; c++) {
+                    std::ptrdiff_t out = outer[N * bj + c];
+                    for (std::ptrdiff_t ei = m_sym_col_start[bj];
+                         ei < m_sym_col_start[bj + 1]; ei++) {
+                        const BlockEntry& e = m_sym_entries[ei];
+                        const double* block = Ax.data() + N * N * e.src;
+                        const bool diagonal = e.row == bj;
+                        for (int r = 0; r < N; r++) {
+                            if (e.transposed || (diagonal && r > c)) {
+                                values[out] = block[r * N + c]; // transposed
+                            } else {
+                                values[out] = block[c * N + r];
+                            }
+                            out++;
+                        }
+                    }
+                }
+            });
+    }
+
     MeshFEM::SystemAssembler<dim> m_assembler;
     VarStructure m_vars;
     std::unique_ptr<MeshFEM::BlockCSCHessian<VarStructure>> m_H;
     MeshFEM::VarLocks m_locks;
+    /// Stencil count of the cached pattern (assume-unchanged sanity check).
+    size_t m_num_stencils = 0;
+
+    // Cached Eigen conversion structure; valid while the pattern is reused.
+    mutable bool m_eigen_structure_valid = false;
+    mutable std::vector<std::ptrdiff_t> m_sym_col_start;
+    mutable std::vector<BlockEntry> m_sym_entries;
+    mutable Eigen::SparseMatrix<double> m_M;
 };
 
 MeshFEMHessianAssembler::MeshFEMHessianAssembler() = default;
@@ -220,16 +318,22 @@ void MeshFEMHessianAssembler::begin(
 {
     assert(ndof % dim == 0);
     const size_t num_block_vars = size_t(ndof) / dim;
-    if (dim == 2) {
-        m_impl =
-            std::make_unique<Impl<2>>(num_block_vars, num_stencils, stencil);
-    } else if (dim == 3) {
-        m_impl =
-            std::make_unique<Impl<3>>(num_block_vars, num_stencils, stencil);
-    } else {
-        log_and_throw_error(
-            "MeshFEMHessianAssembler: unsupported dimension {}!", dim);
+
+    if (m_impl == nullptr || m_impl->dimension() != dim
+        || m_impl->num_block_vars() != num_block_vars) {
+        if (dim == 2) {
+            m_impl = std::make_unique<Impl<2>>(num_block_vars);
+        } else if (dim == 3) {
+            m_impl = std::make_unique<Impl<3>>(num_block_vars);
+        } else {
+            log_and_throw_error(
+                "MeshFEMHessianAssembler: unsupported dimension {}!", dim);
+        }
     }
+
+    m_reused_pattern = m_impl->update_pattern(
+        num_stencils, stencil, m_stale_block_tolerance,
+        m_assume_unchanged_stencils);
 }
 
 void MeshFEMHessianAssembler::add_local_hessian(
@@ -239,7 +343,7 @@ void MeshFEMHessianAssembler::add_local_hessian(
     m_impl->add(local_hess, vertex_ids);
 }
 
-Eigen::SparseMatrix<double> MeshFEMHessianAssembler::get_matrix() const
+const Eigen::SparseMatrix<double>& MeshFEMHessianAssembler::get_matrix() const
 {
     assert(m_impl != nullptr);
     return m_impl->to_eigen();

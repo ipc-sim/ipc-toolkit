@@ -18,6 +18,8 @@
 #include <ipc/utils/hessian_assembler.hpp>
 #include <ipc/utils/meshfem_hessian_assembler.hpp>
 
+#include <limits>
+
 using namespace ipc;
 
 TEST_CASE(
@@ -65,6 +67,94 @@ TEST_CASE(
     // Same additions in a different order; compare with a tight tolerance.
     const double scale = std::max(1.0, expected.norm());
     CHECK((actual - expected).norm() <= 1e-13 * scale);
+}
+
+TEST_CASE("MeshFEM assembly pattern reuse", "[potential][assembly][meshfem]")
+{
+    // A persistent assembler must produce correct results across repeated
+    // assemblies, reusing the cached sparsity pattern when the contact set
+    // allows it.
+#ifndef NDEBUG
+    SKIP("Building the bunny's collision sets is too slow in debug mode.");
+#endif
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    REQUIRE(tests::load_mesh("bunny.ply", vertices, edges, faces));
+
+    const CollisionMesh mesh =
+        CollisionMesh::build_from_full_mesh(vertices, edges, faces);
+    vertices = mesh.vertices(vertices);
+
+    // Two nested contact sets: the small-dhat set is a subset of the large-
+    // dhat set (fewer vertex pairs within the activation distance).
+    const double dhat_large = 1e-2, dhat_small = 5e-3;
+    NormalCollisions collisions_large, collisions_small;
+    collisions_large.build(mesh, vertices, dhat_large);
+    collisions_small.build(mesh, vertices, dhat_small);
+    REQUIRE(!collisions_small.empty());
+    REQUIRE(collisions_small.size() < collisions_large.size());
+
+    const BarrierPotential potential(dhat_large, /*stiffness=*/1.0);
+
+    const auto reference = [&](const NormalCollisions& collisions) {
+        TripletHessianAssembler triplet_assembler;
+        potential.assemble_hessian(
+            collisions, mesh, vertices, triplet_assembler);
+        return triplet_assembler.get_matrix();
+    };
+    const auto check_matches = [](const Eigen::SparseMatrix<double>& actual,
+                                  const Eigen::SparseMatrix<double>& expected) {
+        // Stale blocks assemble to explicit zeros, so compare values (the
+        // difference ignores pattern mismatches), not nonZeros().
+        const double scale = std::max(1.0, expected.norm());
+        CHECK((actual - expected).norm() <= 1e-13 * scale);
+    };
+
+    MeshFEMHessianAssembler assembler;
+
+    // 1. First assembly builds the pattern.
+    potential.assemble_hessian(collisions_large, mesh, vertices, assembler);
+    CHECK(!assembler.reused_pattern());
+    check_matches(assembler.get_matrix(), reference(collisions_large));
+
+    // 2. Same collision set: the pattern must be reused.
+    potential.assemble_hessian(collisions_large, mesh, vertices, assembler);
+    CHECK(assembler.reused_pattern());
+    check_matches(assembler.get_matrix(), reference(collisions_large));
+
+    // 3. Shrunken collision set with a permissive tolerance: reused pattern
+    //    with stale (explicitly zero) blocks; values must still be correct.
+    assembler.set_stale_block_tolerance(std::numeric_limits<int>::max());
+    potential.assemble_hessian(collisions_small, mesh, vertices, assembler);
+    CHECK(assembler.reused_pattern());
+    check_matches(assembler.get_matrix(), reference(collisions_small));
+
+    // 4. Shrunken collision set with zero tolerance: rebuild.
+    assembler.set_stale_block_tolerance(0);
+    potential.assemble_hessian(collisions_small, mesh, vertices, assembler);
+    CHECK(!assembler.reused_pattern());
+    check_matches(assembler.get_matrix(), reference(collisions_small));
+
+    // 5. Grown collision set: new entries always force a rebuild, regardless
+    //    of the tolerance.
+    assembler.set_stale_block_tolerance(std::numeric_limits<int>::max());
+    potential.assemble_hessian(collisions_large, mesh, vertices, assembler);
+    CHECK(!assembler.reused_pattern());
+    check_matches(assembler.get_matrix(), reference(collisions_large));
+
+    // 6. Assume-unchanged fast path: identical set, detection skipped.
+    assembler.set_stale_block_tolerance(0);
+    assembler.set_assume_unchanged_stencils(true);
+    potential.assemble_hessian(collisions_large, mesh, vertices, assembler);
+    CHECK(assembler.reused_pattern());
+    check_matches(assembler.get_matrix(), reference(collisions_large));
+
+    // 7. Assume-unchanged with a differing stencil count: the assumption is
+    //    disproven, so it falls back to detection (and rebuilds here, since
+    //    the tolerance is zero and blocks disappeared).
+    potential.assemble_hessian(collisions_small, mesh, vertices, assembler);
+    CHECK(!assembler.reused_pattern());
+    check_matches(assembler.get_matrix(), reference(collisions_small));
 }
 
 TEST_CASE(
