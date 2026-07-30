@@ -2,36 +2,17 @@
 
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/collisions/tangential/tangential_collisions.hpp>
+#include <ipc/utils/hessian_assembler.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/logger.hpp>
 #include <ipc/utils/profiler.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/combinable.h>
-#include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
-#include <tbb/parallel_for_each.h>
 #include <tbb/parallel_reduce.h>
 
 namespace ipc {
-
-namespace {
-    void set_triplets(
-        const Eigen::SparseMatrix<double>& M,
-        std::vector<Eigen::Triplet<double>>& triplets,
-        const size_t start_index)
-    {
-        using InnerIterator = Eigen::SparseMatrix<double>::InnerIterator;
-        assert(start_index + M.nonZeros() <= triplets.size());
-        int count = 0;
-        for (int k = 0; k < M.outerSize(); ++k) {
-            for (InnerIterator it(M, k); it; ++it) {
-                assert(count < M.nonZeros());
-                triplets[start_index + count++] =
-                    Eigen::Triplet<double>(it.row(), it.col(), it.value());
-            }
-        }
-    }
-} // namespace
 
 template <class TCollisions>
 double Potential<TCollisions>::operator()(
@@ -122,7 +103,6 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const PSDProjectionMethod project_hessian_to_psd,
     const bool in_full_dof) const
 {
-    assert(X.rows() == mesh.num_vertices());
     IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::hessian()");
 
     // Assemble directly in full-mesh DOF when the DOF map is a pure selection
@@ -131,31 +111,49 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const bool fold_to_full = in_full_dof && mesh.is_selection_dof_map();
     const bool map_to_full = in_full_dof && !fold_to_full;
 
-    const int n_verts = fold_to_full ? mesh.full_num_vertices() // NOLINT
-                                     : mesh.num_vertices();
-    const int ndof = fold_to_full ? mesh.full_ndof() : X.size(); // NOLINT
+    TripletHessianAssembler assembler;
+    assemble_hessian(
+        collisions, mesh, X, assembler, project_hessian_to_psd, fold_to_full);
+    const Eigen::SparseMatrix<double> hess = assembler.get_matrix();
 
-    if (collisions.empty()) {
-        const Eigen::SparseMatrix<double> hess(ndof, ndof);
-        return map_to_full ? mesh.to_full_dof(hess) : hess;
+    return map_to_full ? mesh.to_full_dof(hess) : hess;
+}
+
+template <class TCollisions>
+void Potential<TCollisions>::assemble_hessian(
+    const TCollisions& collisions,
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> X,
+    HessianAssembler& assembler,
+    const PSDProjectionMethod project_hessian_to_psd,
+    const bool in_full_dof) const
+{
+    assert(X.rows() == mesh.num_vertices());
+    IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::assemble_hessian()");
+
+    // The HessianAssembler interface is sized for the universal collision
+    // stencil (≤ 4 vertices ⇒ ≤ 12 DOF).
+    static_assert(TCollision::STENCIL_SIZE == 4);
+    static_assert(std::is_same_v<MatrixMaxNd, MatrixMax12d>);
+
+    if (in_full_dof && !mesh.is_selection_dof_map()) {
+        log_and_throw_error(
+            "assemble_hessian: in_full_dof requires the mesh's DOF map to be "
+            "a pure selection (see CollisionMesh::is_selection_dof_map); "
+            "assemble in collision DOF and apply to_full_dof instead.");
     }
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
     const int dim = X.cols();
+    const int ndof = in_full_dof ? mesh.full_ndof() : X.size(); // NOLINT
 
-    constexpr int MAX_TRIPLETS_SIZE = 10'000'000;
-    const int buffer_size = std::min(MAX_TRIPLETS_SIZE, ndof);
-
-    tbb::enumerable_thread_specific<LocalThreadMatStorage> storage(
-        LocalThreadMatStorage(buffer_size, ndof, ndof));
+    assembler.begin(ndof, dim, collisions.size());
 
     {
-        IPC_TOOLKIT_PROFILE_BLOCK("compute local hessians and triplets");
+        IPC_TOOLKIT_PROFILE_BLOCK("compute and assemble local hessians");
         tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
-            auto& hess_triplets = storage.local();
-
             const TCollision& collision = collisions[i];
 
             MatrixMaxNd local_hess;
@@ -166,98 +164,20 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
                     project_hessian_to_psd);
             }
 
-            {
-                IPC_TOOLKIT_PROFILE_BLOCK(
-                    "Map Local Hessian to Global Triplets");
-                auto ids = collision.vertex_ids(edges, faces);
-                if (fold_to_full) {
-                    for (auto& id : ids) {
-                        if (id >= 0) {
-                            id = mesh.to_full_vertex_id(id);
-                        }
+            auto ids = collision.vertex_ids(edges, faces);
+            if (in_full_dof) {
+                for (auto& id : ids) {
+                    if (id >= 0) {
+                        id = mesh.to_full_vertex_id(id);
                     }
                 }
-                local_hessian_to_global_triplets(
-                    local_hess, ids, dim, *(hess_triplets.cache), n_verts);
             }
-        });
-    }
-    if (storage.empty()) {
-        const Eigen::SparseMatrix<double> hess(ndof, ndof);
-        return map_to_full ? mesh.to_full_dof(hess) : hess;
-    }
 
-    // Assemble the stiffness matrix by concatenating the tuples in each local
-    // storage
-
-    {
-        IPC_TOOLKIT_PROFILE_BLOCK("Prune Local Storages");
-        tbb::parallel_for_each(
-            storage.begin(), storage.end(),
-            [](const auto& local_storage) { local_storage.cache->prune(); });
-    }
-
-    // Prepares for parallel concatenation
-    std::vector<size_t> offsets(storage.size());
-
-    size_t index = 0;
-    size_t triplet_count = 0;
-    for (auto& local_storage : storage) {
-        offsets[index++] = triplet_count;
-        triplet_count += local_storage.cache->triplet_count();
-    }
-
-    std::vector<Eigen::Triplet<double>> triplets;
-
-    Eigen::SparseMatrix<double> hess(ndof, ndof);
-    if (triplet_count >= triplets.max_size()) {
-        // Serial fallback version in case the vector of triplets cannot be
-        // allocated
-        logger().warn(
-            "Unable to allocate sufficient memory for triplets. "
-            "Falling back to serial assembly, which may impact performance. "
-            "Consider reducing the problem size or optimizing memory usage.");
-        // Serially merge local storages
-        for (LocalThreadMatStorage& local_storage : storage) {
-            hess += local_storage.cache->get_matrix(false); // will also prune
-        }
-        hess.makeCompressed();
-        return map_to_full ? mesh.to_full_dof(hess) : hess;
-    }
-
-    // Allocate triplets
-    {
-        IPC_TOOLKIT_PROFILE_BLOCK("Allocate Triplets");
-        triplets.resize(triplet_count);
-    }
-
-    // Parallel copy into triplets
-    {
-        IPC_TOOLKIT_PROFILE_BLOCK("Parallel Copy into Triplets");
-        tbb::parallel_for(size_t(0), storage.size(), [&](size_t i) {
-            const SparseMatrixCache& cache =
-                dynamic_cast<const SparseMatrixCache&>(
-                    *((storage.begin() + i)->cache));
-            size_t offset = offsets[i];
-
-            std::copy(
-                cache.entries().begin(), cache.entries().end(),
-                triplets.begin() + offset);
-            offset += cache.entries().size();
-
-            if (cache.mat().nonZeros() > 0) {
-                set_triplets(cache.mat(), triplets, offset);
-            }
+            assembler.add_local_hessian(local_hess, ids);
         });
     }
 
-    // Sort and assemble
-    {
-        IPC_TOOLKIT_PROFILE_BLOCK("Assemble Hessian from Triplets");
-        hess.setFromTriplets(triplets.begin(), triplets.end());
-    }
-
-    return map_to_full ? mesh.to_full_dof(hess) : hess;
+    assembler.end();
 }
 
 template class Potential<NormalCollisions>;

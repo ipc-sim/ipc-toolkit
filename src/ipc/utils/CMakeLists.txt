@@ -3,6 +3,8 @@ set(SOURCES
   default_init_allocator.hpp
   eigen_ext.hpp
   eigen_ext.tpp
+  hessian_assembler.cpp
+  hessian_assembler.hpp
   local_to_global.hpp
   logger.cpp
   logger.hpp
