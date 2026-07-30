@@ -2,7 +2,6 @@ import time
 
 import find_ipctk
 import numpy as np
-import pytest
 import scipy
 from ipctk import CollisionMesh, make_sparse_filter, make_vertex_patches_filter
 
@@ -49,18 +48,18 @@ def check_faces_to_edges(E, expected_F2E):
     assert (CollisionMesh.construct_faces_to_edges(F, E) == expected_F2E).all()
 
 
-@pytest.mark.parametrize("E,expected_F2E", [
-    (np.array([[0, 1], [1, 2], [2, 0]]), np.array([0, 1, 2])),
-    (np.array([[2, 0], [2, 1], [1, 0]]), np.array([2, 1, 0])),
-    (np.array([[0, 1], [2, 0], [2, 1]]), np.array([0, 2, 1])),
-])
-def test_faces_to_edges(E, expected_F2E):
-    check_faces_to_edges(E, expected_F2E)
-
-
-def test_faces_to_edges_missing_edge():
-    with pytest.raises(RuntimeError, match="Unable to find edge!"):
+def test_faces_to_edges():
+    yield check_faces_to_edges, np.array([[0, 1], [1, 2], [2, 0]]), np.array([0, 1, 2])
+    yield check_faces_to_edges, np.array([[2, 0], [2, 1], [1, 0]]), np.array([2, 1, 0])
+    yield check_faces_to_edges, np.array([[0, 1], [2, 0], [2, 1]]), np.array([0, 2, 1])
+    # Shouldnt work
+    try:
         check_faces_to_edges(np.array([[0, 1], [1, 2], [0, 3]]), None)
+        assert False
+    except RuntimeError as e:
+        assert str(e) == "Unable to find edge!"
+    except:
+        assert False
 
 
 def test_codim_points_collision_mesh():
@@ -154,5 +153,8 @@ def test_face_normals_2d_raises():
 
     mesh = CollisionMesh(V, E)
 
-    with pytest.raises(ValueError):
+    try:
         mesh.face_normals(V)
+        assert False
+    except ValueError:
+        pass
