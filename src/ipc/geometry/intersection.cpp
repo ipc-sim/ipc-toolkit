@@ -6,6 +6,8 @@
 #include <Eigen/Geometry>
 #include <igl/predicates/predicates.h>
 
+#include <limits>
+
 #ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
 #include <rational/rational.hpp>
 #endif
@@ -60,6 +62,10 @@ namespace {
             + e1[2] * t0[1] * t1[0] - e1[2] * t0[1] * t2[0]
             - e1[2] * t1[0] * t2[1] + e1[2] * t1[1] * t2[0];
         if (d.sign() == 0) {
+            // Degenerate: the edge is coplanar with the triangle (or the
+            // triangle is degenerate). Conservatively report an intersection,
+            // leaving the coordinates as the caller's NaN seed since they are
+            // not uniquely defined here.
             return true;
         }
 
@@ -77,7 +83,6 @@ namespace {
                             + t0[1] * t1[0] * t2[2] - t0[1] * t1[2] * t2[0]
                             - t0[2] * t1[0] * t2[1] + t0[2] * t1[1] * t2[0])
             / d;
-        _t = t;
 
         if (t < 0 || t > 1) {
             return false;
@@ -97,7 +102,6 @@ namespace {
                             - e1[1] * t0[0] * t2[2] + e1[1] * t0[2] * t2[0]
                             + e1[2] * t0[0] * t2[1] - e1[2] * t0[1] * t2[0])
             / d;
-        _u = u;
 
         // v is the second barycentric coordinate for the triangle
         const Rational v = (e0[0] * e1[1] * t0[2] - e0[0] * e1[1] * t1[2]
@@ -113,9 +117,19 @@ namespace {
                             + e1[1] * t0[0] * t1[2] - e1[1] * t0[2] * t1[0]
                             - e1[2] * t0[0] * t1[1] + e1[2] * t0[1] * t1[0])
             / d;
-        _v = v;
 
-        return u >= 0 && u <= 1 && v >= 0 && v <= 1 && u + v <= 1;
+        const bool intersects =
+            u >= 0 && u <= 1 && v >= 0 && v <= 1 && u + v <= 1;
+
+        // Only write the outputs once the intersection is confirmed, so they
+        // are never partially populated on a negative result.
+        if (intersects) {
+            _u = double(u);
+            _v = double(v);
+            _t = double(t);
+        }
+
+        return intersects;
     }
 } // namespace
 #endif
@@ -141,6 +155,12 @@ bool edge_triangle_intersection(
     double& v,
     double& t)
 {
+    // Seed the outputs so every return path leaves them deterministic. Paths
+    // that bail out early (or that cannot define the coordinates uniquely, as
+    // in the degenerate rational case below) leave them as NaN rather than
+    // indeterminate.
+    u = v = t = std::numeric_limits<double>::quiet_NaN();
+
     // Robust plane-side gate (same as is_edge_intersecting_triangle): both edge
     // endpoints strictly on one side of the triangle's plane ⇒ no crossing.
     igl::predicates::exactinit();
@@ -149,7 +169,7 @@ bool edge_triangle_intersection(
 
     if (ori1 != igl::predicates::Orientation::COPLANAR
         && ori2 != igl::predicates::Orientation::COPLANAR && ori1 == ori2) {
-        // edge is completly on one side of the plane that triangle is in
+        // edge is completely on one side of the plane that triangle is in
         return false;
     }
 
@@ -162,10 +182,20 @@ bool edge_triangle_intersection(
     M.col(1) = t2 - t0;
     M.col(2) = e0 - e1;
     const Eigen::Vector3d uvt = M.fullPivLu().solve(e0 - t0);
-    u = uvt[0];
-    v = uvt[1];
-    t = uvt[2];
-    return u >= 0.0 && v >= 0.0 && u + v <= 1.0 && t >= 0.0 && t <= 1.0;
+
+    const bool intersects = uvt[0] >= 0.0 && uvt[1] >= 0.0
+        && uvt[0] + uvt[1] <= 1.0 && uvt[2] >= 0.0 && uvt[2] <= 1.0;
+
+    // Only write the outputs once the intersection is confirmed, so they are
+    // never partially populated on a negative result (matching the rational
+    // implementation above).
+    if (intersects) {
+        u = uvt[0];
+        v = uvt[1];
+        t = uvt[2];
+    }
+
+    return intersects;
 #endif
 }
 
