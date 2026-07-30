@@ -60,18 +60,28 @@ template <class TCollisions>
 Eigen::VectorXd Potential<TCollisions>::gradient(
     const TCollisions& collisions,
     const CollisionMesh& mesh,
-    Eigen::ConstRef<Eigen::MatrixXd> X) const
+    Eigen::ConstRef<Eigen::MatrixXd> X,
+    const bool in_full_dof) const
 {
     assert(X.rows() == mesh.num_vertices());
     IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::gradient()");
 
+    // Assemble directly in full-mesh DOF when the DOF map is a pure selection
+    // (remapping stencil vertex IDs is then equivalent to to_full_dof());
+    // otherwise assemble in collision DOF and apply the map at the end.
+    const bool fold_to_full = in_full_dof && mesh.is_selection_dof_map();
+    const bool map_to_full = in_full_dof && !fold_to_full;
+
+    const int out_ndof = fold_to_full ? mesh.full_ndof() : X.size();
+
     if (collisions.empty()) {
-        return Eigen::VectorXd::Zero(X.size());
+        Eigen::VectorXd grad = Eigen::VectorXd::Zero(out_ndof);
+        return map_to_full ? mesh.to_full_dof(grad) : grad;
     }
 
     const int dim = X.cols();
 
-    tbb::combinable<Eigen::VectorXd> grad(Eigen::VectorXd::Zero(X.size()));
+    tbb::combinable<Eigen::VectorXd> grad(Eigen::VectorXd::Zero(out_ndof));
 
     {
         IPC_TOOLKIT_PROFILE_BLOCK("Compute Local Gradients");
@@ -81,16 +91,26 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
             const VectorMaxNd local_grad = this->gradient(
                 collision, collision.dof(X, mesh.edges(), mesh.faces()));
 
+            auto ids = collision.vertex_ids(mesh.edges(), mesh.faces());
+            if (fold_to_full) {
+                for (auto& id : ids) {
+                    if (id >= 0) {
+                        id = mesh.to_full_vertex_id(id);
+                    }
+                }
+            }
+
             local_gradient_to_global_gradient(
-                local_grad, collision.vertex_ids(mesh.edges(), mesh.faces()),
-                dim, grad.local());
+                local_grad, ids, dim, grad.local());
         });
     }
 
     {
         IPC_TOOLKIT_PROFILE_BLOCK("Combine Local Gradients");
-        return grad.combine([](const Eigen::VectorXd& a,
-                               const Eigen::VectorXd& b) { return a + b; });
+        Eigen::VectorXd combined_grad = grad.combine(
+            [](const Eigen::VectorXd& a,
+               const Eigen::VectorXd& b) -> Eigen::VectorXd { return a + b; });
+        return map_to_full ? mesh.to_full_dof(combined_grad) : combined_grad;
     }
 }
 
@@ -99,20 +119,31 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const TCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X,
-    const PSDProjectionMethod project_hessian_to_psd) const
+    const PSDProjectionMethod project_hessian_to_psd,
+    const bool in_full_dof) const
 {
     assert(X.rows() == mesh.num_vertices());
     IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::hessian()");
 
+    // Assemble directly in full-mesh DOF when the DOF map is a pure selection
+    // (remapping stencil vertex IDs is then equivalent to to_full_dof());
+    // otherwise assemble in collision DOF and apply the map at the end.
+    const bool fold_to_full = in_full_dof && mesh.is_selection_dof_map();
+    const bool map_to_full = in_full_dof && !fold_to_full;
+
+    const int n_verts = fold_to_full ? mesh.full_num_vertices() // NOLINT
+                                     : mesh.num_vertices();
+    const int ndof = fold_to_full ? mesh.full_ndof() : X.size(); // NOLINT
+
     if (collisions.empty()) {
-        return Eigen::SparseMatrix<double>(X.size(), X.size());
+        const Eigen::SparseMatrix<double> hess(ndof, ndof);
+        return map_to_full ? mesh.to_full_dof(hess) : hess;
     }
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
     const int dim = X.cols();
-    const int ndof = X.size();
 
     constexpr int MAX_TRIPLETS_SIZE = 10'000'000;
     const int buffer_size = std::min(MAX_TRIPLETS_SIZE, ndof);
@@ -138,14 +169,22 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
             {
                 IPC_TOOLKIT_PROFILE_BLOCK(
                     "Map Local Hessian to Global Triplets");
+                auto ids = collision.vertex_ids(edges, faces);
+                if (fold_to_full) {
+                    for (auto& id : ids) {
+                        if (id >= 0) {
+                            id = mesh.to_full_vertex_id(id);
+                        }
+                    }
+                }
                 local_hessian_to_global_triplets(
-                    local_hess, collision.vertex_ids(edges, faces), dim,
-                    *(hess_triplets.cache), mesh.num_vertices());
+                    local_hess, ids, dim, *(hess_triplets.cache), n_verts);
             }
         });
     }
     if (storage.empty()) {
-        return Eigen::SparseMatrix<double>();
+        const Eigen::SparseMatrix<double> hess(ndof, ndof);
+        return map_to_full ? mesh.to_full_dof(hess) : hess;
     }
 
     // Assemble the stiffness matrix by concatenating the tuples in each local
@@ -183,7 +222,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
             hess += local_storage.cache->get_matrix(false); // will also prune
         }
         hess.makeCompressed();
-        return hess;
+        return map_to_full ? mesh.to_full_dof(hess) : hess;
     }
 
     // Allocate triplets
@@ -218,7 +257,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
         hess.setFromTriplets(triplets.begin(), triplets.end());
     }
 
-    return hess;
+    return map_to_full ? mesh.to_full_dof(hess) : hess;
 }
 
 template class Potential<NormalCollisions>;

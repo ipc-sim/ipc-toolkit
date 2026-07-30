@@ -411,6 +411,13 @@ void define_collision_mesh(py::module_& m)
             )ipc_Qu8mg5v7",
             "X"_a)
         .def_property_readonly(
+            "is_selection_dof_map", &CollisionMesh::is_selection_dof_map,
+            R"ipc_Qu8mg5v7(
+            Whether the full ↔ collision DOF map is a pure selection matrix.
+
+            This is the case unless a (non-empty) displacement map was provided at construction. When true, to_full_dof() is equivalent to scattering entries from collision DOF i to full DOF dim * to_full_vertex_id(i // dim) + i % dim, so derivatives can be assembled directly in full-mesh DOFs instead of applying to_full_dof() after the fact.
+            )ipc_Qu8mg5v7")
+        .def_property_readonly(
             "vertex_vertex_adjacencies",
             &CollisionMesh::vertex_vertex_adjacencies,
             "Get the vertex-vertex adjacency matrix.")

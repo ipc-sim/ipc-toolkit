@@ -246,6 +246,15 @@ TEST_CASE("Benchmark contact Hessian assembly", "[!benchmark][assembly]")
         return mesh.to_full_dof(potential.hessian(collisions, mesh, X));
     };
 
+    // Phase 1: assemble directly in full DOF (folds to_full_dof into the
+    // triplet remap).
+    BENCHMARK(fmt::format("{}: hessian (full DOF, folded)", scene.label()))
+    {
+        return potential.hessian(
+            collisions, mesh, X, PSDProjectionMethod::NONE,
+            /*in_full_dof=*/true);
+    };
+
     BENCHMARK(
         fmt::format(
             "{}: {}x (hessian + to_full_dof)", scene.label(),
@@ -295,6 +304,12 @@ TEST_CASE("Benchmark contact gradient assembly", "[!benchmark][assembly]")
     {
         return mesh.to_full_dof(grad);
     };
+
+    // Phase 1: assemble directly in full DOF.
+    BENCHMARK(fmt::format("{}: gradient (full DOF, folded)", scene.label()))
+    {
+        return potential.gradient(collisions, mesh, X, /*in_full_dof=*/true);
+    };
 }
 
 TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
@@ -304,9 +319,10 @@ TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
     // directly comparable.
     fmt::print("\n=== Hessian assembly cost breakdown ===\n");
     fmt::print(
-        "{:<20} {:>9} {:>10} {:>10} {:>10} {:>10} {:>8} {:>8} {:>8}\n", "scene",
-        "#collis", "local(ms)", "total(ms)", "asm(ms)", "full(ms)", "local%",
-        "asm%", "full%");
+        "{:<20} {:>9} {:>10} {:>10} {:>10} {:>10} {:>10} {:>8} {:>8} {:>8} "
+        "{:>8}\n",
+        "scene", "#collis", "local(ms)", "total(ms)", "asm(ms)", "full(ms)",
+        "fold(ms)", "local%", "asm%", "full%", "speedup");
 
     for (const auto& spec : ipc::tests::assembly_scene_specs()) {
         const std::optional<ipc::tests::AssemblyScene> maybe_scene =
@@ -330,6 +346,12 @@ TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
             [&] { (void)potential.hessian(collisions, mesh, X); });
         const double t_full =
             median_seconds([&] { (void)mesh.to_full_dof(hess); });
+        // Phase 1: fold to_full_dof into assembly.
+        const double t_folded = median_seconds([&] {
+            (void)potential.hessian(
+                collisions, mesh, X, PSDProjectionMethod::NONE,
+                /*in_full_dof=*/true);
+        });
 
         // Assembly is what the full call does beyond the local derivatives.
         const double t_asm = t_total - t_local;
@@ -337,11 +359,13 @@ TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
 
         constexpr double MS = 1e3;
         fmt::print(
-            "{:<20} {:>9} {:>10.3f} {:>10.3f} {:>10.3f} {:>10.3f} "
-            "{:>7.1f}% {:>7.1f}% {:>7.1f}%\n",
+            "{:<20} {:>9} {:>10.3f} {:>10.3f} {:>10.3f} {:>10.3f} {:>10.3f} "
+            "{:>7.1f}% {:>7.1f}% {:>7.1f}% {:>7.2f}x\n",
             scene.label(), scene.num_collisions(), t_local * MS, t_total * MS,
-            t_asm * MS, t_full * MS, 100.0 * t_local / t_end_to_end,
-            100.0 * t_asm / t_end_to_end, 100.0 * t_full / t_end_to_end);
+            t_asm * MS, t_full * MS, t_folded * MS,
+            100.0 * t_local / t_end_to_end, 100.0 * t_asm / t_end_to_end,
+            100.0 * t_full / t_end_to_end, t_end_to_end / t_folded);
+        std::fflush(stdout);
     }
     fmt::print("\n");
 }

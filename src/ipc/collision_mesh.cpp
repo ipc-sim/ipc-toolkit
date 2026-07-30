@@ -70,7 +70,8 @@ CollisionMesh::CollisionMesh(
     // Initializes m_select_vertices and m_select_dof
     init_selection_matrices(dim);
 
-    if (displacement_map.size() == 0) {
+    m_is_selection_dof_map = displacement_map.size() == 0;
+    if (m_is_selection_dof_map) {
         m_displacement_map = m_select_vertices;
         m_displacement_dof_map = m_select_dof;
     } else {

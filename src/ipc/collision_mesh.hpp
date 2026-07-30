@@ -209,6 +209,14 @@ public:
     Eigen::SparseMatrix<double>
     to_full_dof(const Eigen::SparseMatrix<double>& X) const;
 
+    /// @brief Whether the full ↔ collision DOF map is a pure selection matrix.
+    /// This is the case unless a (non-empty) displacement map was provided at
+    /// construction. When true, to_full_dof() is equivalent to scattering
+    /// entries from collision DOF i to full DOF `dim * to_full_vertex_id(i /
+    /// dim) + i % dim`, so derivatives can be assembled directly in full-mesh
+    /// DOFs instead of applying to_full_dof() after the fact.
+    bool is_selection_dof_map() const { return m_is_selection_dof_map; }
+
     // -----------------------------------------------------------------------
 
     /// @brief Get the vertex-vertex adjacency matrix.
@@ -410,6 +418,9 @@ protected:
     /// @brief Mapping from full displacements DOF to collision displacements DOF
     /// @note this is premultiplied by m_select_dof
     Eigen::SparseMatrix<double> m_displacement_dof_map;
+    /// @brief Whether the user-provided displacement map is the identity
+    /// (i.e., m_displacement_dof_map is a pure selection matrix).
+    bool m_is_selection_dof_map = true;
 
     /// @brief Vertices adjacent to vertices
     std::vector<std::vector<index_t>> m_vertex_vertex_adjacencies;

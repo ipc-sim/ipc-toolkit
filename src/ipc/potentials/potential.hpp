@@ -40,24 +40,28 @@ public:
     /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
-    /// @returns The gradient of the potential w.r.t. X. This will have a size of X.size().
+    /// @param in_full_dof If true, return the gradient in full-mesh DOF (equivalent to `mesh.to_full_dof(gradient)`, but assembled directly in full DOF when possible, avoiding the extra map).
+    /// @returns The gradient of the potential w.r.t. X. This will have a size of X.size() (or `mesh.full_ndof()` if in_full_dof).
     Eigen::VectorXd gradient(
         const TCollisions& collisions,
         const CollisionMesh& mesh,
-        Eigen::ConstRef<Eigen::MatrixXd> X) const;
+        Eigen::ConstRef<Eigen::MatrixXd> X,
+        const bool in_full_dof = false) const;
 
     /// @brief Compute the hessian of the potential.
     /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
     /// @param project_hessian_to_psd Make sure the hessian is positive semi-definite.
-    /// @returns The Hessian of the potential w.r.t. X. This will have a size of X.size() by X.size().
+    /// @param in_full_dof If true, return the Hessian in full-mesh DOF (equivalent to `mesh.to_full_dof(hessian)`, but assembled directly in full DOF when possible, avoiding the two sparse-matrix products).
+    /// @returns The Hessian of the potential w.r.t. X. This will have a size of X.size() by X.size() (or `mesh.full_ndof()` square if in_full_dof).
     Eigen::SparseMatrix<double> hessian(
         const TCollisions& collisions,
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> X,
         const PSDProjectionMethod project_hessian_to_psd =
-            PSDProjectionMethod::NONE) const;
+            PSDProjectionMethod::NONE,
+        const bool in_full_dof = false) const;
 
     // -- Single collision methods ---------------------------------------------
 

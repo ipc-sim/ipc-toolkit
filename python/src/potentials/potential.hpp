@@ -36,7 +36,7 @@ void define_potential_methods(PyClass& potential)
             "gradient",
             py::overload_cast<
                 const TCollisions&, const CollisionMesh&,
-                Eigen::ConstRef<Eigen::MatrixXd>>(
+                Eigen::ConstRef<Eigen::MatrixXd>, const bool>(
                 &Potential<TCollisions>::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the potential.
@@ -45,17 +45,18 @@ void define_potential_methods(PyClass& potential)
                 collisions: The set of collisions.
                 mesh: The collision mesh.
                 X: Degrees of freedom of the collision mesh (e.g., vertices or velocities).
+                in_full_dof: If true, return the gradient in full-mesh DOF (equivalent to mesh.to_full_dof(gradient), but assembled directly in full DOF when possible, avoiding the extra map).
 
             Returns:
-                The gradient of the potential w.r.t. X. This will have a size of X.size.
+                The gradient of the potential w.r.t. X. This will have a size of X.size (or mesh.full_ndof if in_full_dof).
             )ipc_Qu8mg5v7",
-            "collisions"_a, "mesh"_a, "X"_a)
+            "collisions"_a, "mesh"_a, "X"_a, "in_full_dof"_a = false)
         .def(
             "hessian",
             py::overload_cast<
                 const TCollisions&, const CollisionMesh&,
-                Eigen::ConstRef<Eigen::MatrixXd>, const PSDProjectionMethod>(
-                &Potential<TCollisions>::hessian, py::const_),
+                Eigen::ConstRef<Eigen::MatrixXd>, const PSDProjectionMethod,
+                const bool>(&Potential<TCollisions>::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential.
 
@@ -64,12 +65,14 @@ void define_potential_methods(PyClass& potential)
                 mesh: The collision mesh.
                 X: Degrees of freedom of the collision mesh (e.g., vertices or velocities).
                 project_hessian_to_psd: Make sure the hessian is positive semi-definite.
+                in_full_dof: If true, return the Hessian in full-mesh DOF (equivalent to mesh.to_full_dof(hessian), but assembled directly in full DOF when possible, avoiding the two sparse-matrix products).
 
             Returns:
-                The Hessian of the potential w.r.t. X. This will have a size of X.size by X.size.
+                The Hessian of the potential w.r.t. X. This will have a size of X.size by X.size (or mesh.full_ndof square if in_full_dof).
             )ipc_Qu8mg5v7",
             "collisions"_a, "mesh"_a, "X"_a,
-            "project_hessian_to_psd"_a = PSDProjectionMethod::NONE)
+            "project_hessian_to_psd"_a = PSDProjectionMethod::NONE,
+            "in_full_dof"_a = false)
         .def(
             "__call__",
             py::overload_cast<const TCollision&, Eigen::ConstRef<VectorMax12d>>(
