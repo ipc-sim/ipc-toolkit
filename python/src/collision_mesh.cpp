@@ -283,6 +283,43 @@ void define_collision_mesh(py::module_& m)
             "faces_to_edges", &CollisionMesh::faces_to_edges,
             "Get the mapping from faces to edges of the collision mesh (#F × 3).")
         .def(
+            "face_normals",
+            [](const CollisionMesh& self,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices) -> Eigen::MatrixXd {
+                // face_normals() only asserts this, which is a no-op in a
+                // release build, so check it here to avoid UB from Python.
+                if (vertices.cols() != 3) {
+                    throw py::value_error(
+                        "face_normals() is only implemented for 3D meshes, but "
+                        "got vertices.shape = ["
+                        + std::to_string(vertices.rows()) + ", "
+                        + std::to_string(vertices.cols()) + "]");
+                }
+
+                const std::vector<Eigen::Vector3d> normals =
+                    self.face_normals(vertices);
+                // Return an (#F × 3) array rather than a list of vectors, to
+                // match the rest of the per-element accessors.
+                Eigen::MatrixXd N(normals.size(), 3);
+                for (size_t f = 0; f < normals.size(); ++f) {
+                    N.row(f) = normals[f];
+                }
+                return N;
+            },
+            R"ipc_Qu8mg5v7(
+            Compute the unit normal of each face for the given vertex positions.
+
+            Note:
+                3D only (requires triangular faces).
+
+            Parameters:
+                vertices: The vertex positions of the collision mesh (#V × 3).
+
+            Returns:
+                The per-face unit normals (#F × 3).
+            )ipc_Qu8mg5v7",
+            "vertices"_a)
+        .def(
             "vertices", &CollisionMesh::vertices,
             R"ipc_Qu8mg5v7(
             Compute the vertex positions from the positions of the full mesh.

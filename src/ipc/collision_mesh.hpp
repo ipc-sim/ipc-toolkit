@@ -131,6 +131,13 @@ public:
     /// @brief Compute the maximum rest length of all edges.
     double max_edge_length() const;
 
+    /// @brief Compute the unit normal of each face for the given vertex positions.
+    /// @note 3D only (requires triangular faces).
+    /// @param vertices The vertex positions of the collision mesh (|V| × 3).
+    /// @return The per-face unit normals (size |F|).
+    std::vector<Eigen::Vector3d>
+    face_normals(Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
+
     /// @brief Get the mapping from vertices to edges of the collision mesh.
     const std::vector<std::vector<index_t>>& vertices_to_edges() const
     {
