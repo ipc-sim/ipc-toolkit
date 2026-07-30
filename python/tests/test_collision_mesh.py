@@ -2,6 +2,7 @@ import time
 
 import find_ipctk
 import numpy as np
+import pytest
 import scipy
 from ipctk import CollisionMesh, make_sparse_filter, make_vertex_patches_filter
 
@@ -48,18 +49,18 @@ def check_faces_to_edges(E, expected_F2E):
     assert (CollisionMesh.construct_faces_to_edges(F, E) == expected_F2E).all()
 
 
-def test_faces_to_edges():
-    yield check_faces_to_edges, np.array([[0, 1], [1, 2], [2, 0]]), np.array([0, 1, 2])
-    yield check_faces_to_edges, np.array([[2, 0], [2, 1], [1, 0]]), np.array([2, 1, 0])
-    yield check_faces_to_edges, np.array([[0, 1], [2, 0], [2, 1]]), np.array([0, 2, 1])
-    # Shouldnt work
-    try:
+@pytest.mark.parametrize("E,expected_F2E", [
+    (np.array([[0, 1], [1, 2], [2, 0]]), np.array([0, 1, 2])),
+    (np.array([[2, 0], [2, 1], [1, 0]]), np.array([2, 1, 0])),
+    (np.array([[0, 1], [2, 0], [2, 1]]), np.array([0, 2, 1])),
+])
+def test_faces_to_edges(E, expected_F2E):
+    check_faces_to_edges(E, expected_F2E)
+
+
+def test_faces_to_edges_missing_edge():
+    with pytest.raises(RuntimeError, match="Unable to find edge!"):
         check_faces_to_edges(np.array([[0, 1], [1, 2], [0, 3]]), None)
-        assert False
-    except RuntimeError as e:
-        assert str(e) == "Unable to find edge!"
-    except:
-        assert False
 
 
 def test_codim_points_collision_mesh():
@@ -126,3 +127,32 @@ def test_can_collide():
         for i in range(V.shape[0]):
             for j in range(V.shape[0]):
                 assert mesh.can_collide(i, j) == can_collide(i, j)
+
+
+def test_face_normals():
+    # Two triangles of a unit square in the z = 0 plane.
+    V = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]], dtype=float)
+    F = np.array([[0, 1, 2], [0, 2, 3]], dtype=int)
+    E = np.array([[0, 1], [1, 2], [2, 0], [2, 3], [3, 0]], dtype=int)
+
+    mesh = CollisionMesh(V, E, F)
+
+    N = mesh.face_normals(V)
+    assert N.shape == (mesh.num_faces, 3)
+    assert np.allclose(N, np.array([[0, 0, 1], [0, 0, 1]], dtype=float))
+    assert np.allclose(np.linalg.norm(N, axis=1), 1.0)
+
+    # Rotate 90° about the x-axis: +z normal ⇒ −y normal.
+    V_rot = np.column_stack((V[:, 0], -V[:, 2], V[:, 1]))
+    N_rot = mesh.face_normals(V_rot)
+    assert np.allclose(N_rot, np.array([[0, -1, 0], [0, -1, 0]], dtype=float))
+
+
+def test_face_normals_2d_raises():
+    V = np.array([[0, 0], [1, 0], [0, 1], [1, 1]], dtype=float)
+    E = np.array([[0, 1], [1, 3], [3, 2], [2, 0]], dtype=int)
+
+    mesh = CollisionMesh(V, E)
+
+    with pytest.raises(ValueError):
+        mesh.face_normals(V)
