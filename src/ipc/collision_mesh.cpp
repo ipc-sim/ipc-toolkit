@@ -1,6 +1,7 @@
 #include "collision_mesh.hpp"
 
 #include <ipc/geometry/area.hpp>
+#include <ipc/geometry/normal.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/logger.hpp>
@@ -556,5 +557,18 @@ double CollisionMesh::max_edge_length() const
         val = std::max(edge_length(i), val);
     }
     return val;
+}
+
+std::vector<Eigen::Vector3d>
+CollisionMesh::face_normals(Eigen::ConstRef<Eigen::MatrixXd> vertices) const
+{
+    assert(vertices.cols() == 3); // Only implemented for 3D meshes
+    std::vector<Eigen::Vector3d> normals(num_faces());
+    tbb::parallel_for(size_t(0), num_faces(), [&](size_t f) {
+        normals[f] = triangle_normal(
+            vertices.row(m_faces(f, 0)), vertices.row(m_faces(f, 1)),
+            vertices.row(m_faces(f, 2)));
+    });
+    return normals;
 }
 } // namespace ipc
