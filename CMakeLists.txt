@@ -101,7 +101,7 @@ option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic
 option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
 option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
 option(IPC_TOOLKIT_WITH_TRACY                 "Enable Tracy frame profiler"                   OFF)
-option(IPC_TOOLKIT_WITH_MESHFEM_SPARSE        "Use MeshFEMSparse for block-accelerated assembly" OFF)
+option(IPC_TOOLKIT_WITH_MESHFEM_SPARSE        "Use MeshFEMSparse for block-accelerated assembly" ON)
 
 # Advanced options
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
@@ -150,6 +150,13 @@ if(IPC_TOOLKIT_WITH_CUDA)
 
   # Enable CUDA support
   enable_language(CUDA)
+endif()
+
+## MeshFEMSparse block assembly requires per-vertex blocks in the derivative
+## layout, i.e., the default RowMajor ([x0, y0, z0, x1, ...]) ordering.
+if(IPC_TOOLKIT_WITH_MESHFEM_SPARSE AND NOT IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT STREQUAL "RowMajor")
+  message(WARNING "MeshFEMSparse assembly requires IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT=RowMajor. Continuing without MeshFEMSparse.")
+  set(IPC_TOOLKIT_WITH_MESHFEM_SPARSE OFF CACHE BOOL "Use MeshFEMSparse for block-accelerated assembly" FORCE)
 endif()
 
 ## SIMD support

@@ -57,6 +57,13 @@ public:
     /// begin() call; copy it to keep a snapshot.
     const Eigen::SparseMatrix<double>& get_matrix() const;
 
+    /// @brief Like get_matrix(), but moves the matrix out of the assembler.
+    ///
+    /// Avoids a copy for one-shot use (e.g., Potential::hessian). The cached
+    /// Eigen structure is invalidated; the next get_matrix()/take_matrix()
+    /// rebuilds it.
+    Eigen::SparseMatrix<double> take_matrix();
+
     /// @brief Number of vanished blocks tolerated before a pattern rebuild.
     ///
     /// When a stencil introduces a vertex pair absent from the cached pattern,

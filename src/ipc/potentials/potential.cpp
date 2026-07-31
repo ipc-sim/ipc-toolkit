@@ -5,6 +5,7 @@
 #include <ipc/utils/hessian_assembler.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/logger.hpp>
+#include <ipc/utils/meshfem_hessian_assembler.hpp>
 #include <ipc/utils/profiler.hpp>
 
 #include <tbb/blocked_range.h>
@@ -233,10 +234,17 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const bool fold_to_full = in_full_dof && mesh.is_selection_dof_map();
     const bool map_to_full = in_full_dof && !fold_to_full;
 
+#ifdef IPC_TOOLKIT_WITH_MESHFEM_SPARSE
+    MeshFEMHessianAssembler assembler;
+    assemble_hessian(
+        collisions, mesh, X, assembler, project_hessian_to_psd, fold_to_full);
+    const Eigen::SparseMatrix<double> hess = assembler.take_matrix();
+#else
     TripletHessianAssembler assembler;
     assemble_hessian(
         collisions, mesh, X, assembler, project_hessian_to_psd, fold_to_full);
     const Eigen::SparseMatrix<double> hess = assembler.get_matrix();
+#endif
 
     return map_to_full ? mesh.to_full_dof(hess) : hess;
 }

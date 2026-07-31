@@ -21,17 +21,22 @@ include(eigen)
 include(onetbb)
 find_package(Threads REQUIRED)
 
+# TEMPORARY: pinned to zfergus' forks, which carry two fixes submitted
+# upstream — Eigen 5 support (https://github.com/MeshFEM/MeshFEMCore/pull/1)
+# and an out-of-bounds read on empty block columns
+# (https://github.com/MeshFEM/MeshFEMSparse/pull/1). Repoint to
+# MeshFEM/MeshFEMCore and MeshFEM/MeshFEMSparse once the PRs merge.
 include(CPM)
 CPMAddPackage(
     NAME MeshFEMCore
-    URL "https://github.com/MeshFEM/MeshFEMCore/archive/24e81c425e85eee3ed79af000e82ef1a75bbe696.zip"
-    URL_HASH SHA256=7d505f57af2a4b2fbc01668d57c1296d646c6aa0aa923c9d70e814b55987aff7
+    URL "https://github.com/zfergus/MeshFEMCore/archive/8d0e84788189748d9e906cc7f807507a3cb4b2ef.zip"
+    URL_HASH SHA256=71fe52e49276a401ae64d692dc26aea4147b1baa636bc78082d3fd0061eb4ccb
     DOWNLOAD_ONLY YES
 )
 CPMAddPackage(
     NAME MeshFEMSparse
-    URL "https://github.com/MeshFEM/MeshFEMSparse/archive/efe1af87cf6f7d04359628552e84c666b8612f4c.zip"
-    URL_HASH SHA256=e23cb168e9e709662083116e73876f97c23edd60413108bd70bde5a5a1684dd5
+    URL "https://github.com/zfergus/MeshFEMSparse/archive/ade01a1775f1911c0bf373190001923f452ad6cc.zip"
+    URL_HASH SHA256=6545cb0aa7b8513a370dc8561ea5abdd5ec484d03ded7e64f48e5dbfc94c49b0
     DOWNLOAD_ONLY YES
 )
 
@@ -80,19 +85,6 @@ target_compile_definitions(MeshFEMSparse PUBLIC
     _ENABLE_EXTENDED_ALIGNED_STORAGE
     _USE_MATH_DEFINES
 )
-
-# MeshFEM targets Eigen 3.4, but Eigen 5 removed
-# Eigen::internal::make_coherent, which MeshFEMCore's
-# AutomaticDifferentiation.hh references. Force-include a shim reimplementing
-# it (see src/ipc/utils/meshfem_eigen_compat.hpp); TUs outside this target
-# that include MeshFEM headers must include the shim first themselves.
-set(MESHFEM_EIGEN_COMPAT_HEADER
-    "${PROJECT_SOURCE_DIR}/src/ipc/utils/meshfem_eigen_compat.hpp")
-if(MSVC)
-    target_compile_options(MeshFEMSparse PRIVATE "/FI${MESHFEM_EIGEN_COMPAT_HEADER}")
-else()
-    target_compile_options(MeshFEMSparse PRIVATE "-include" "${MESHFEM_EIGEN_COMPAT_HEADER}")
-endif()
 
 # ipc_toolkit is compiled with EIGEN_DONT_VECTORIZE=1 when SIMD is enabled;
 # compiling the same Eigen templates with different vectorization settings is
