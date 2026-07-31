@@ -301,7 +301,8 @@ private:
 
     MeshFEM::SystemAssembler<dim> m_assembler;
     VarStructure m_vars;
-    std::unique_ptr<MeshFEM::BlockCSCHessian<VarStructure>> m_H;
+    std::unique_ptr<MeshFEM::BlockCSCHessian<VarStructure>>
+        m_H; // NOLINT(readability-identifier-naming): H = Hessian matrix
     MeshFEM::VarLocks m_locks;
     /// Stencil count of the cached pattern (assume-unchanged sanity check).
     size_t m_num_stencils = 0;
@@ -310,7 +311,8 @@ private:
     mutable bool m_eigen_structure_valid = false;
     mutable std::vector<std::ptrdiff_t> m_sym_col_start;
     mutable std::vector<BlockEntry> m_sym_entries;
-    mutable Eigen::SparseMatrix<double> m_M;
+    mutable Eigen::SparseMatrix<double>
+        m_M; // NOLINT(readability-identifier-naming): M = matrix
 };
 
 MeshFEMHessianAssembler::MeshFEMHessianAssembler() = default;
