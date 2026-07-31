@@ -14,9 +14,15 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <ipc/utils/hessian_assembler.hpp>
 #include <ipc/utils/meshfem_hessian_assembler.hpp>
+
+// Deliberately included here rather than by meshfem_hessian_assembler.hpp:
+// block_matrix() is declared against a forward declaration, so only callers
+// that want the block matrix pay for MeshFEM's headers.
+#include <MeshFEMSparse/BlockCSCHessian.hh>
 
 #include <limits>
 
@@ -155,6 +161,56 @@ TEST_CASE("MeshFEM assembly pattern reuse", "[potential][assembly][meshfem]")
     potential.assemble_hessian(collisions_small, mesh, vertices, assembler);
     CHECK(!assembler.reused_pattern());
     check_matches(assembler.get_matrix(), reference(collisions_small));
+}
+
+TEST_CASE(
+    "MeshFEM assembly exposes the block-CSC matrix",
+    "[potential][assembly][meshfem]")
+{
+    // A downstream user should be able to consume the native block-CSC matrix
+    // (e.g., to hand it to MeshFEM's solvers) instead of paying for the Eigen
+    // conversion. This also checks that the forward declaration in our header
+    // is enough: MeshFEMSparse's header is included by this test, not by
+    // meshfem_hessian_assembler.hpp.
+    const auto& spec = ipc::tests::assembly_scene_specs().at(0); // two-cubes
+
+    const std::optional<ipc::tests::AssemblyScene> maybe_scene =
+        ipc::tests::build_assembly_scene(spec);
+    if (!maybe_scene.has_value()) {
+        SKIP(fmt::format("Scene '{}' is unavailable.", spec.mesh_name));
+    }
+    const ipc::tests::AssemblyScene& scene = maybe_scene.value();
+
+    MeshFEMHessianAssembler assembler;
+    scene.potential().assemble_hessian(
+        scene.collisions(), scene.mesh(), scene.vertices(), assembler);
+
+    const MeshFEM::BlockCSCHessianBase& H = assembler.block_matrix();
+    const Eigen::SparseMatrix<double> H_eigen = assembler.get_matrix();
+
+    REQUIRE(H.numScalarCols() == size_t(H_eigen.cols()));
+    // Only the upper triangle is stored, so the block matrix holds fewer
+    // scalar entries than the symmetrized Eigen matrix.
+    CHECK(H.scalarNNZ() <= size_t(H_eigen.nonZeros()));
+
+    // trace() must skip the empty block columns of a contact pattern rather
+    // than reading the preceding column's storage.
+    CHECK_THAT(
+        H.trace(),
+        Catch::Matchers::WithinRel(Eigen::MatrixXd(H_eigen).trace(), 1e-12));
+
+    // addDiag()/setDiag() cannot work without every diagonal block present,
+    // so they must reject a contact pattern instead of corrupting it.
+    const Eigen::VectorXd ones =
+        Eigen::VectorXd::Ones(Eigen::Index(H.numScalarCols()));
+    CHECK_THROWS(const_cast<MeshFEM::BlockCSCHessianBase&>(H).addDiag(ones));
+
+    // Exercise MeshFEM's own API on the result: y = H x must match Eigen's.
+    const Eigen::VectorXd x =
+        Eigen::VectorXd::Random(Eigen::Index(H.numScalarCols()));
+    const Eigen::VectorXd y_expected = H_eigen * x;
+    const Eigen::VectorXd y = H.apply(x);
+    CHECK((y - y_expected).norm() <= 1e-12 * std::max(1.0, y_expected.norm()));
 }
 
 TEST_CASE(

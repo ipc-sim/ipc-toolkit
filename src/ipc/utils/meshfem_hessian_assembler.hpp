@@ -8,6 +8,13 @@
 
 #include <memory>
 
+namespace MeshFEM {
+/// Forward declaration so block_matrix() can be exposed without pulling
+/// MeshFEMSparse's headers into this one. Include
+/// <MeshFEMSparse/BlockCSCHessian.hh> to use the returned object.
+struct BlockCSCHessianBase;
+} // namespace MeshFEM
+
 namespace ipc {
 
 // The MeshFEM backend scatters per-vertex d×d blocks, which requires
@@ -63,6 +70,29 @@ public:
     /// Eigen structure is invalidated; the next get_matrix()/take_matrix()
     /// rebuilds it.
     Eigen::SparseMatrix<double> take_matrix();
+
+    /// @brief Access the assembled matrix in its native block-CSC form.
+    ///
+    /// Skips the conversion performed by get_matrix(), which is worth doing if
+    /// you can consume the block format directly (e.g., MeshFEM's block SpMV
+    /// or its Cholesky factorizers). Include
+    /// <MeshFEMSparse/BlockCSCHessian.hh> to use the result.
+    ///
+    /// The matrix is symmetric with only the upper triangle stored, and its
+    /// block sparsity pattern covers the interacting vertex pairs of the last
+    /// assembly (possibly with explicitly-zero stale blocks if the pattern was
+    /// reused). The reference stays valid until the next begin() call, which
+    /// may rebuild the pattern in place.
+    ///
+    /// @note A contact Hessian has no diagonal block for any vertex that is
+    /// not in contact, so most block columns are empty. Reading operations
+    /// handle that (trace() skips the missing diagonals; apply() and the
+    /// sparsity pattern are unaffected), but the diagonal-mutating operations
+    /// (addDiag(), setDiag()) have no entry to write and throw. Insert the
+    /// missing diagonal blocks first if you need them.
+    ///
+    /// @throws std::runtime_error if called before the first assembly.
+    const MeshFEM::BlockCSCHessianBase& block_matrix() const;
 
     /// @brief Number of vanished blocks tolerated before a pattern rebuild.
     ///

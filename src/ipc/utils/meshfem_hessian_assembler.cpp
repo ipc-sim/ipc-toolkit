@@ -35,6 +35,7 @@ struct MeshFEMHessianAssembler::ImplBase {
 
     virtual const Eigen::SparseMatrix<double>& to_eigen() const = 0;
     virtual Eigen::SparseMatrix<double> take_eigen() = 0;
+    virtual const MeshFEM::BlockCSCHessianBase& block_matrix() const = 0;
 };
 
 /// Dimension-specific implementation (dim ∈ {2, 3}), mirroring MeshFEM's own
@@ -166,6 +167,12 @@ struct MeshFEMHessianAssembler::Impl final
         to_eigen();
         m_eigen_structure_valid = false; // m_M is about to be gutted
         return std::move(m_M);
+    }
+
+    const MeshFEM::BlockCSCHessianBase& block_matrix() const override
+    {
+        assert(m_H != nullptr);
+        return *m_H;
     }
 
 private:
@@ -361,6 +368,17 @@ Eigen::SparseMatrix<double> MeshFEMHessianAssembler::take_matrix()
 {
     assert(m_impl != nullptr);
     return m_impl->take_eigen();
+}
+
+const MeshFEM::BlockCSCHessianBase&
+MeshFEMHessianAssembler::block_matrix() const
+{
+    if (m_impl == nullptr) {
+        log_and_throw_error(
+            "MeshFEMHessianAssembler::block_matrix() called before the first "
+            "assembly!");
+    }
+    return m_impl->block_matrix();
 }
 
 } // namespace ipc

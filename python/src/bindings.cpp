@@ -117,6 +117,7 @@ PYBIND11_MODULE(ipctk, m)
     define_tangential_adhesion_potential(m);
 
     // utils
+    define_hessian_assembler(m);
     define_logger(m);
     define_profiler(m);
     define_thread_limiter(m);

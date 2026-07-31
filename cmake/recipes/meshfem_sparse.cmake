@@ -35,8 +35,8 @@ CPMAddPackage(
 )
 CPMAddPackage(
     NAME MeshFEMSparse
-    URL "https://github.com/zfergus/MeshFEMSparse/archive/ade01a1775f1911c0bf373190001923f452ad6cc.zip"
-    URL_HASH SHA256=6545cb0aa7b8513a370dc8561ea5abdd5ec484d03ded7e64f48e5dbfc94c49b0
+    URL "https://github.com/zfergus/MeshFEMSparse/archive/15a92834189ade69ed9e00373adc3036a72cd40a.zip"
+    URL_HASH SHA256=882f3a126f59023b4d4aba6e1b96b89d5f82f2e80bfe086c1f3afd435f8e4c80
     DOWNLOAD_ONLY YES
 )
 
