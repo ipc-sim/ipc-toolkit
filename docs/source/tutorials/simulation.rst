@@ -152,6 +152,36 @@ When computing the gradient and Hessian of the potentials, the derivatives will 
             hess = B.hessian(collision, collision_mesh, vertices)
             hess_full = collision_mesh.to_full_dof(hess)
 
+If the full DOF derivatives are all you need, ask for them directly with ``in_full_dof`` instead of mapping afterwards. The stencil indices are remapped during assembly, so the gradient is scattered into full DOF as it is summed and the Hessian never goes through the two sparse matrix products that ``to_full_dof`` performs:
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            Eigen::VectorXd grad_full = B.gradient(
+                collisions, collision_mesh, vertices, /*in_full_dof=*/true);
+
+            Eigen::SparseMatrix<double> hess_full = B.hessian(
+                collisions, collision_mesh, vertices,
+                ipc::PSDProjectionMethod::NONE, /*in_full_dof=*/true);
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            grad_full = B.gradient(
+                collisions, collision_mesh, vertices, in_full_dof=True)
+
+            hess_full = B.hessian(
+                collisions, collision_mesh, vertices, in_full_dof=True)
+
+The results match ``collision_mesh.to_full_dof(...)`` up to the order in which the local contributions are summed.
+
+.. note::
+    Remapping indices only works when the map from collision to full DOF is a pure selection, which is the case for every collision mesh built without a displacement map. You can check with ``collision_mesh.is_selection_dof_map()``. When a displacement map is present, ``in_full_dof`` still returns the right answer, but it does so by falling back to ``to_full_dof``, so there is nothing to gain.
+
 Codimensional Vertices
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -264,3 +294,76 @@ To remedy this, we can project the Hessian onto the positive semidefinite (PSD) 
 
         - ``ProjectToPSD.CLAMP``: Clamp the negative eigenvalues of the Hessian to 0. This is the same as used by :cite:t:`Li2020IPC`.
         - ``ProjectToPSD.ABS``: Set the negative eigenvalues of the Hessian to their absolute value. This is the method proposed by :cite:t:`Chen2024Stabler`.
+
+Reusing the Hessian Assembler
+-----------------------------
+
+Each call to ``Potential::hessian`` builds a sparse matrix from scratch. On anything but a small scene, evaluating the local Hessians is the cheap part; most of the time goes into figuring out where those numbers belong in the global matrix. A Newton solve pays that cost on every iteration even though the contact set usually barely moves between iterations.
+
+``Potential::assemble_hessian`` takes the assembler as an argument so you can keep it alive across the whole solve and let it remember its work:
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            // One assembler for the solve, not one per iteration.
+            ipc::MeshFEMHessianAssembler assembler;
+
+            for (int i = 0; i < max_iterations; i++) {
+                // ... update vertices and rebuild the collision set ...
+
+                B.assemble_hessian(
+                    collisions, collision_mesh, vertices, assembler,
+                    ipc::PSDProjectionMethod::CLAMP, /*in_full_dof=*/true);
+
+                // Valid until the next assembly; copy it if you need it longer.
+                const Eigen::SparseMatrix<double>& hess = assembler.get_matrix();
+
+                // ... solve for the Newton direction, line search, etc. ...
+            }
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            # One assembler for the solve, not one per iteration.
+            assembler = ipctk.MeshFEMHessianAssembler()
+
+            for i in range(max_iterations):
+                # ... update vertices and rebuild the collision set ...
+
+                B.assemble_hessian(
+                    collisions, collision_mesh, vertices, assembler,
+                    ipctk.PSDProjectionMethod.CLAMP, in_full_dof=True)
+
+                hess = assembler.get_matrix()
+
+                # ... solve for the Newton direction, line search, etc. ...
+
+The first call walks the collision stencils and builds a block sparsity pattern: one :math:`d \times d` block per pair of interacting vertices, rather than one entry per scalar. Later calls check the new stencils against that pattern. A contact that appears adds a block the pattern does not have, which forces a rebuild. A contact that separates only leaves a block behind that assembles to zero, which costs a little memory but does not change the matrix, so the pattern is kept as long as no more than ``stale_block_tolerance`` blocks have gone stale.
+
+Internally the matrix is symmetric with only its upper triangle stored, and ``get_matrix()`` mirrors it into a full Eigen matrix, reusing the cached structure whenever the pattern survives. If your solver speaks block CSC natively, ``block_matrix()`` hands you MeshFEM's matrix and skips that conversion. Our header only forward declares the type, so include ``<MeshFEMSparse/BlockCSCHessian.hh>`` yourself when you want it.
+
+When you reassemble without touching the collision set (a new stiffness, say, or the same Hessian under a different PSD projection) you can skip the comparison as well:
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            assembler.set_assume_unchanged_stencils(true);
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            assembler.assume_unchanged_stencils = True
+
+.. warning::
+    ``assume_unchanged_stencils`` trusts you. If the stencils changed while their count stayed the same, assembly reads past the end of the pattern. Debug builds check the assumption; release builds do not.
+
+.. note::
+    ``MeshFEMHessianAssembler`` requires the toolkit to be built with ``IPC_TOOLKIT_WITH_MESHFEM_SPARSE`` (on by default, and also what ``Potential::hessian`` uses internally). ``TripletHessianAssembler`` is always available and does what ``hessian`` has always done, gathering thread-local triplets and handing them to ``setFromTriplets``, but it has no pattern to carry over so reusing it saves nothing.

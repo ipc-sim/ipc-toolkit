@@ -21,9 +21,9 @@ include(eigen)
 include(onetbb)
 find_package(Threads REQUIRED)
 
-# TEMPORARY: pinned to zfergus' forks, which carry two fixes submitted
-# upstream — Eigen 5 support (https://github.com/MeshFEM/MeshFEMCore/pull/1)
-# and an out-of-bounds read on empty block columns
+# TEMPORARY: pinned to zfergus' forks, which carry fixes submitted upstream:
+# Eigen 5 support (https://github.com/MeshFEM/MeshFEMCore/pull/1) and the
+# mishandling of empty block columns, which a contact pattern is full of
 # (https://github.com/MeshFEM/MeshFEMSparse/pull/1). Repoint to
 # MeshFEM/MeshFEMCore and MeshFEM/MeshFEMSparse once the PRs merge.
 include(CPM)
