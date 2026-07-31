@@ -152,7 +152,7 @@ When computing the gradient and Hessian of the potentials, the derivatives will 
             hess = B.hessian(collision, collision_mesh, vertices)
             hess_full = collision_mesh.to_full_dof(hess)
 
-If the full DOF derivatives are all you need, ask for them directly with ``in_full_dof`` instead of mapping afterwards. The stencil indices are remapped during assembly, so the gradient is scattered into full DOF as it is summed and the Hessian never goes through the two sparse matrix products that ``to_full_dof`` performs:
+If only the full DOF derivatives are required, the optional ``in_full_dof`` parameter requests them directly rather than mapping after the fact. The stencil indices are remapped during assembly, so the gradient is scattered into full DOF as it is accumulated and the Hessian avoids the two sparse matrix products performed by ``to_full_dof``:
 
 .. md-tab-set::
 
@@ -177,10 +177,10 @@ If the full DOF derivatives are all you need, ask for them directly with ``in_fu
             hess_full = B.hessian(
                 collisions, collision_mesh, vertices, in_full_dof=True)
 
-The results match ``collision_mesh.to_full_dof(...)`` up to the order in which the local contributions are summed.
+The results agree with ``collision_mesh.to_full_dof(...)`` up to the order in which the local contributions are summed.
 
 .. note::
-    Remapping indices only works when the map from collision to full DOF is a pure selection, which is the case for every collision mesh built without a displacement map. You can check with ``collision_mesh.is_selection_dof_map()``. When a displacement map is present, ``in_full_dof`` still returns the right answer, but it does so by falling back to ``to_full_dof``, so there is nothing to gain.
+    Remapping the indices is only valid when the map from collision to full DOF is a pure selection, which holds for any collision mesh constructed without a displacement map. Use ``collision_mesh.is_selection_dof_map()`` to query this. When a displacement map is present, ``in_full_dof`` still returns the correct result, but it does so by applying ``to_full_dof`` internally and therefore offers no advantage.
 
 Codimensional Vertices
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -298,9 +298,9 @@ To remedy this, we can project the Hessian onto the positive semidefinite (PSD) 
 Reusing the Hessian Assembler
 -----------------------------
 
-Each call to ``Potential::hessian`` builds a sparse matrix from scratch. On anything but a small scene, evaluating the local Hessians is the cheap part; most of the time goes into figuring out where those numbers belong in the global matrix. A Newton solve pays that cost on every iteration even though the contact set usually barely moves between iterations.
+Each call to ``Potential::hessian`` constructs a sparse matrix from scratch. Except on small scenes, evaluating the local Hessians accounts for a minority of the cost; the bulk is spent determining where each local contribution belongs in the global matrix. A Newton solve repeats that work every iteration, even though the contact set typically changes little between iterations.
 
-``Potential::assemble_hessian`` takes the assembler as an argument so you can keep it alive across the whole solve and let it remember its work:
+``Potential::assemble_hessian`` accepts the assembler as a parameter, allowing a single instance to persist across the solve and retain its sparsity pattern:
 
 .. md-tab-set::
 
@@ -308,7 +308,7 @@ Each call to ``Potential::hessian`` builds a sparse matrix from scratch. On anyt
 
         .. code-block:: c++
 
-            // One assembler for the solve, not one per iteration.
+            // A single assembler for the entire solve, rather than one per iteration.
             ipc::MeshFEMHessianAssembler assembler;
 
             for (int i = 0; i < max_iterations; i++) {
@@ -318,7 +318,7 @@ Each call to ``Potential::hessian`` builds a sparse matrix from scratch. On anyt
                     collisions, collision_mesh, vertices, assembler,
                     ipc::PSDProjectionMethod::CLAMP, /*in_full_dof=*/true);
 
-                // Valid until the next assembly; copy it if you need it longer.
+                // Valid until the next assembly; copy it to retain it longer.
                 const Eigen::SparseMatrix<double>& hess = assembler.get_matrix();
 
                 // ... solve for the Newton direction, line search, etc. ...
@@ -328,7 +328,7 @@ Each call to ``Potential::hessian`` builds a sparse matrix from scratch. On anyt
 
         .. code-block:: python
 
-            # One assembler for the solve, not one per iteration.
+            # A single assembler for the entire solve, rather than one per iteration.
             assembler = ipctk.MeshFEMHessianAssembler()
 
             for i in range(max_iterations):
@@ -342,11 +342,11 @@ Each call to ``Potential::hessian`` builds a sparse matrix from scratch. On anyt
 
                 # ... solve for the Newton direction, line search, etc. ...
 
-The first call walks the collision stencils and builds a block sparsity pattern: one :math:`d \times d` block per pair of interacting vertices, rather than one entry per scalar. Later calls check the new stencils against that pattern. A contact that appears adds a block the pattern does not have, which forces a rebuild. A contact that separates only leaves a block behind that assembles to zero, which costs a little memory but does not change the matrix, so the pattern is kept as long as no more than ``stale_block_tolerance`` blocks have gone stale.
+The first call traverses the collision stencils and builds a block sparsity pattern, allocating one :math:`d \times d` block per interacting vertex pair instead of one entry per scalar. Subsequent calls compare the new stencils against the cached pattern. A newly active contact introduces a block the pattern does not contain and therefore forces a rebuild. A separating contact merely leaves behind a block that assembles to zero, which consumes some memory but does not alter the matrix, so the pattern is retained provided no more than ``stale_block_tolerance`` blocks have become stale.
 
-Internally the matrix is symmetric with only its upper triangle stored, and ``get_matrix()`` mirrors it into a full Eigen matrix, reusing the cached structure whenever the pattern survives. If your solver speaks block CSC natively, ``block_matrix()`` hands you MeshFEM's matrix and skips that conversion. Our header only forward declares the type, so include ``<MeshFEMSparse/BlockCSCHessian.hh>`` yourself when you want it.
+The assembled matrix is symmetric and stored with only its upper triangle; ``get_matrix()`` mirrors it into a full Eigen matrix, reusing the cached structure whenever the pattern is unchanged. Solvers that consume block CSC directly can instead call ``block_matrix()`` to obtain MeshFEM's representation and avoid the conversion. Because our header only forward declares that type, such callers must include ``<MeshFEMSparse/BlockCSCHessian.hh>`` themselves.
 
-When you reassemble without touching the collision set (a new stiffness, say, or the same Hessian under a different PSD projection) you can skip the comparison as well:
+When reassembling without modifying the collision set, for example under a different stiffness or PSD projection, the comparison itself can also be skipped:
 
 .. md-tab-set::
 
@@ -363,7 +363,7 @@ When you reassemble without touching the collision set (a new stiffness, say, or
             assembler.assume_unchanged_stencils = True
 
 .. warning::
-    ``assume_unchanged_stencils`` trusts you. If the stencils changed while their count stayed the same, assembly reads past the end of the pattern. Debug builds check the assumption; release builds do not.
+    ``assume_unchanged_stencils`` is an unchecked assertion. If the stencils did change while their count remained equal, assembly reads past the end of the pattern. Debug builds verify the assumption; release builds do not.
 
 .. note::
-    ``MeshFEMHessianAssembler`` requires the toolkit to be built with ``IPC_TOOLKIT_WITH_MESHFEM_SPARSE`` (on by default, and also what ``Potential::hessian`` uses internally). ``TripletHessianAssembler`` is always available and does what ``hessian`` has always done, gathering thread-local triplets and handing them to ``setFromTriplets``, but it has no pattern to carry over so reusing it saves nothing.
+    ``MeshFEMHessianAssembler`` requires the toolkit to be built with ``IPC_TOOLKIT_WITH_MESHFEM_SPARSE`` (enabled by default, and the backend ``Potential::hessian`` uses internally). ``TripletHessianAssembler`` is always available and reproduces the historical behavior of ``hessian``, accumulating thread-local triplets and merging them with ``setFromTriplets``. It maintains no sparsity pattern, so reusing an instance of it confers no benefit.
