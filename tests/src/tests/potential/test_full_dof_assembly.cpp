@@ -50,10 +50,16 @@ TEST_CASE(
             mesh.to_full_dof(potential.gradient(collisions, mesh, X));
 
         REQUIRE(grad_folded.size() == mesh.full_ndof());
-        // tbb::combinable partitions work nondeterministically, so the two
-        // calls may sum in different orders; compare with a tight tolerance.
+        // The folded and mapped paths sum in different orders; compare with
+        // a tight tolerance.
         const double scale = std::max(1.0, grad_mapped.norm());
         CHECK((grad_folded - grad_mapped).norm() <= 1e-13 * scale);
+
+        // Repeated evaluations may differ by floating-point rounding (the
+        // parallel summation order is not fixed) but must agree tightly.
+        const Eigen::VectorXd grad_folded2 =
+            potential.gradient(collisions, mesh, X, /*in_full_dof=*/true);
+        CHECK((grad_folded - grad_folded2).norm() <= 1e-13 * scale);
     }
 
     SECTION("hessian")

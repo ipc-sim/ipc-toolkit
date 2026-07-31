@@ -12,7 +12,84 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
 
+#include <atomic>
+#include <vector>
+
 namespace ipc {
+
+namespace {
+
+    /// @brief Gather-based global gradient assembly.
+    ///
+    /// Sums per-stencil gradient contributions into the global gradient by
+    /// gathering per *vertex* instead of scattering per stencil: a
+    /// vertex→slot adjacency is built with a parallel counting sort, then
+    /// each vertex sums its contributions independently. This avoids the
+    /// dense per-thread accumulators of a scatter+reduce (whose zero+combine
+    /// cost grows with ndof, not with the number of collisions).
+    ///
+    /// @param out_ndof Size of the output gradient.
+    /// @param dim Spatial dimension.
+    /// @param local_grads Flat buffer of slot contributions; slot s occupies
+    ///     [dim·s, dim·(s+1)). Slots with an invalid vertex are never read.
+    /// @param slot_vertex Global vertex of each slot (negative = unused).
+    Eigen::VectorXd gather_global_gradient(
+        const int out_ndof,
+        const int dim,
+        Eigen::ConstRef<Eigen::VectorXd> local_grads,
+        const std::vector<index_t>& slot_vertex)
+    {
+        const size_t num_slots = slot_vertex.size();
+        const size_t out_num_verts = size_t(out_ndof) / dim;
+        assert(local_grads.size() == Eigen::Index(dim * num_slots));
+
+        // --- Vertex → slot adjacency (parallel counting sort) -----------
+        std::vector<std::atomic<std::ptrdiff_t>> cursor(out_num_verts);
+        tbb::parallel_for(size_t(0), out_num_verts, [&](const size_t v) {
+            cursor[v].store(0, std::memory_order_relaxed);
+        });
+        tbb::parallel_for(size_t(0), num_slots, [&](const size_t s) {
+            if (slot_vertex[s] >= 0) {
+                cursor[slot_vertex[s]].fetch_add(1, std::memory_order_relaxed);
+            }
+        });
+
+        std::vector<std::ptrdiff_t> bucket_start(out_num_verts + 1);
+        bucket_start[0] = 0;
+        for (size_t v = 0; v < out_num_verts; v++) {
+            bucket_start[v + 1] =
+                bucket_start[v] + cursor[v].load(std::memory_order_relaxed);
+            cursor[v].store(bucket_start[v], std::memory_order_relaxed);
+        }
+
+        std::vector<std::ptrdiff_t> bucket_slots(bucket_start.back());
+        tbb::parallel_for(size_t(0), num_slots, [&](const size_t s) {
+            if (slot_vertex[s] >= 0) {
+                bucket_slots[cursor[slot_vertex[s]].fetch_add(
+                    1, std::memory_order_relaxed)] = s;
+            }
+        });
+
+        // --- Per-vertex gather -------------------------------------------
+        Eigen::VectorXd grad(out_ndof);
+        tbb::parallel_for(size_t(0), out_num_verts, [&](const size_t v) {
+            VectorMax3d acc = VectorMax3d::Zero(dim);
+            for (auto bi = bucket_start[v]; bi < bucket_start[v + 1]; bi++) {
+                acc += local_grads.segment(dim * bucket_slots[bi], dim);
+            }
+
+            if constexpr (VERTEX_DERIVATIVE_LAYOUT == Eigen::RowMajor) {
+                grad.segment(dim * v, dim) = acc;
+            } else {
+                for (int d = 0; d < dim; d++) {
+                    grad[out_num_verts * d + v] = acc[d];
+                }
+            }
+        });
+        return grad;
+    }
+
+} // namespace
 
 template <class TCollisions>
 double Potential<TCollisions>::operator()(
@@ -61,12 +138,57 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
     }
 
     const int dim = X.cols();
+    const size_t num_collisions = collisions.size();
+    constexpr int STENCIL_SIZE = TCollision::STENCIL_SIZE;
+    const size_t num_slots = STENCIL_SIZE * num_collisions;
+
+    // Two assembly strategies with complementary scaling:
+    //  - gather: per-vertex reduction through a slot adjacency. Cost scales
+    //    with the number of contributions.
+    //  - scatter+reduce: thread-local dense accumulators. Cost scales with
+    //    out_ndof (zeroing + combining a gradient-sized vector per thread).
+    // The crossover is at out_ndof ≈ num_slots on the benchmarked scenes.
+    if (size_t(out_ndof) > num_slots) {
+        // Evaluate the local gradients into a flat buffer of per-vertex
+        // slots: vertex k of collision i is slot s = STENCIL_SIZE·i + k,
+        // with its dim gradient entries at local_grads[dim·s].
+        Eigen::VectorXd local_grads(dim * num_slots);
+        std::vector<index_t> slot_vertex(num_slots);
+
+        {
+            IPC_TOOLKIT_PROFILE_BLOCK("Compute Local Gradients");
+            tbb::parallel_for(size_t(0), num_collisions, [&](size_t i) {
+                const TCollision& collision = collisions[i];
+
+                const VectorMaxNd local_grad = this->gradient(
+                    collision, collision.dof(X, mesh.edges(), mesh.faces()));
+                local_grads.segment(STENCIL_SIZE * dim * i, local_grad.size()) =
+                    local_grad;
+
+                const auto ids =
+                    collision.vertex_ids(mesh.edges(), mesh.faces());
+                const int n_verts = local_grad.size() / dim;
+                for (int k = 0; k < STENCIL_SIZE; k++) {
+                    index_t id = k < n_verts ? ids[k] : index_t(-1);
+                    if (fold_to_full && id >= 0) {
+                        id = mesh.to_full_vertex_id(id);
+                    }
+                    slot_vertex[STENCIL_SIZE * i + k] = id;
+                }
+            });
+        }
+
+        IPC_TOOLKIT_PROFILE_BLOCK("Gather Local Gradients");
+        Eigen::VectorXd grad =
+            gather_global_gradient(out_ndof, dim, local_grads, slot_vertex);
+        return map_to_full ? mesh.to_full_dof(grad) : grad;
+    }
 
     tbb::combinable<Eigen::VectorXd> grad(Eigen::VectorXd::Zero(out_ndof));
 
     {
         IPC_TOOLKIT_PROFILE_BLOCK("Compute Local Gradients");
-        tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
+        tbb::parallel_for(size_t(0), num_collisions, [&](size_t i) {
             const TCollision& collision = collisions[i];
 
             const VectorMaxNd local_grad = this->gradient(
