@@ -137,11 +137,11 @@ private:
     /// @param min_distance The minimum distance between the objects.
     /// @param tmax The maximum time to check for collisions.
     /// @return True if a collision was detected, false otherwise.
+    template <typename DistanceSqrFunc>
     bool additive_ccd(
         VectorMax12d x, // mutable copy
         Eigen::ConstRef<VectorMax12d> dx,
-        const std::function<double(Eigen::ConstRef<VectorMax12d>)>&
-            distance_squared,
+        const DistanceSqrFunc& distance_squared,
         const double max_disp_mag,
         double& toi,
         const double min_distance = 0.0,
