@@ -544,7 +544,19 @@ Possible values for ``broad_phase`` are: ``BruteForce`` (parallel brute force cu
 Narrow-Phase
 ^^^^^^^^^^^^
 
-The narrow phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). Narrow-phase algorithms are implemented as subclasses of ``NarrowPhaseCCD``. The default is ``TightInclusionCCD``, the Tight Inclusion CCD method of :cite:t:`Wang2021TightInclusion`, as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient. The alternatives are ``AdditiveCCD`` and ``InexactCCD``.
+The narrow phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). Narrow-phase algorithms are implemented as subclasses of ``NarrowPhaseCCD``. The default is ``TightInclusionCCD``, the Tight Inclusion CCD method of :cite:t:`Wang2021TightInclusion`, as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient. It is what every function taking a ``narrow_phase_ccd`` argument uses unless you pass something else.
+
+Two other implementations are also available:
+
+- ``AdditiveCCD``, the method of :cite:t:`Li2021CIPC`, is much faster than Tight Inclusion (>100×) and reliable in practice. It does not account for rounding error in its distance computations, so in theory it can miss collisions, but its default margin (10% of the initial separation) is large enough to avoid this. The cost of that margin is a less accurate time of impact and more false positives. Shrinking it -- pushing ``conservative_rescaling`` toward ``1.0`` -- tightens the time of impact but is what can introduce false negatives. Tight Inclusion accounts for the rounding error, so it can reduce its tolerance without that trade-off :cite:p:`Belgrod2023Time`.
+- ``InexactCCD``, the original method from the IPC codebase, is disabled by default. To use it, set the ``IPC_TOOLKIT_WITH_INEXACT_CCD`` CMake option to ``ON``.
+
+All three use the same expression for their conservative margin, stopping short of contact at a separation of
+
+.. math::
+   d_\min + (1 - r)(d_0 - d_\min),
+
+where :math:`r` is ``conservative_rescaling`` and :math:`d_0` is the distance at :math:`t=0`. Note that the margin is a fraction of the initial separation *in excess of* :math:`d_\min`, not of the raw distance. ``TightInclusionCCD`` differs only in additionally capping the second term at :math:`10^{-4}` (see the note below), which is why it usually reports a time of impact much closer to the exact one than ``AdditiveCCD`` does for the same query.
 
 The following example shows how to use the narrow phase to determine if a point is colliding with a triangle (static in this case).
 
@@ -612,7 +624,7 @@ The following example shows how to use the narrow phase to determine if a point 
    narrow-phase query with a minimum separation of
 
    .. math::
-      d_\text{min} + \min\left((1 - r)(d_0 - d_\text{min}),\ 10^{-4}\right),
+      d_\min + \min\left((1 - r)(d_0 - d_\min),\ 10^{-4}\right),
 
    where :math:`r` is ``conservative_rescaling`` and :math:`d_0` is the distance
    at :math:`t=0`. The TOI therefore comes back early by roughly that separation
@@ -623,7 +635,7 @@ The following example shows how to use the narrow phase to determine if a point 
    The TOI itself is multiplied by ``conservative_rescaling`` only in a fallback
    path, when the query above returns a TOI below
    ``TightInclusionCCD::SMALL_TOI``; the query is then rerun with the true
-   :math:`d_\text{min}` and the result scaled to keep it away from zero.
+   :math:`d_\min` and the result scaled to keep it away from zero.
 
 Alternatively, the ``FaceVertexCandidate`` class contains a ``ccd`` function that can be used to determine if the face-vertex pairing is colliding. It takes the *stencil* vertices (the four vertices of the face-vertex pair), which you can gather from the full vertex matrix using ``CollisionStencil::dof``:
 
