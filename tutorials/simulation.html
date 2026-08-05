@@ -2163,7 +2163,7 @@ Python</label></div>
 <span class="c1">// TODO: Show how to load a volumetric mesh from a file (e.g., using MshIO)</span>
 
 <span class="c1">// Faces of the surface mesh with indices into full_rest_positions</span>
-<span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">faces</span><span class="p">;</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="w"> </span><span class="n">faces</span><span class="p">;</span>
 <span class="n">igl</span><span class="o">::</span><span class="n">boundary_facets</span><span class="p">(</span><span class="n">tets</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
 
 <span class="c1">// Edges of the surface mesh with indices into full_rest_positions</span>
@@ -2198,7 +2198,7 @@ Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// Convert full vertices to surface vertices</span>
-<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">vertices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">vertices</span><span class="p">(</span><span class="n">full_vertices</span><span class="p">);</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">vertices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">vertices</span><span class="p">(</span><span class="n">full_vertices</span><span class="p">);</span>
 
 <span class="c1">// Construct the set of collisions</span>
 <span class="n">ipc</span><span class="o">::</span><span class="n">NormalCollisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
@@ -2211,7 +2211,7 @@ Python</label></div>
 <span class="kt">double</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">B</span><span class="p">(</span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">);</span>
 
 <span class="c1">// Convert full velocities to surface velocities</span>
-<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">velocities</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">map_displacements</span><span class="p">(</span><span class="n">full_velocities</span><span class="p">);</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">velocities</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">map_displacements</span><span class="p">(</span><span class="n">full_velocities</span><span class="p">);</span>
 
 <span class="c1">// Construct the set of friction collisions</span>
 <span class="n">ipc</span><span class="o">::</span><span class="n">TangentialCollisions</span><span class="w"> </span><span class="n">tangential_collisions</span><span class="p">;</span>
@@ -2229,7 +2229,7 @@ Python</label></div>
 <span class="n">vertices</span> <span class="o">=</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">vertices</span><span class="p">(</span><span class="n">full_vertices</span><span class="p">)</span>
 
 <span class="c1"># Construct the set of collisions</span>
-<span class="n">collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">Collisions</span><span class="p">()</span>
+<span class="n">collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">NormalCollisions</span><span class="p">()</span>
 <span class="n">collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">dhat</span><span class="p">)</span>
 
 <span class="c1"># Construct a barrier potential</span>
@@ -2272,12 +2272,12 @@ Python</label></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">B</span> <span class="o">=</span> <span class="n">BarrierPotential</span><span class="p">(</span><span class="n">dhat</span><span class="p">,</span> <span class="n">stiffness</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">B</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">BarrierPotential</span><span class="p">(</span><span class="n">dhat</span><span class="p">,</span> <span class="n">stiffness</span><span class="p">)</span>
 
-<span class="n">grad</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">collision</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
+<span class="n">grad</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
 <span class="n">grad_full</span> <span class="o">=</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">to_full_dof</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span>
 
-<span class="n">hess</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">collision</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
+<span class="n">hess</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
 <span class="n">hess_full</span> <span class="o">=</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">to_full_dof</span><span class="p">(</span><span class="n">hess</span><span class="p">)</span>
 </code></pre></div>
 </div>
@@ -2299,9 +2299,14 @@ Python</label></div>
 <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="w"> </span><span class="n">is_on_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipc</span><span class="o">::</span><span class="n">CollisionMesh</span><span class="o">::</span><span class="n">construct_is_on_surface</span><span class="p">(</span>
 <span class="w">    </span><span class="n">full_rest_positions</span><span class="p">.</span><span class="n">rows</span><span class="p">(),</span><span class="w"> </span><span class="n">boundary_edges</span><span class="p">,</span><span class="w"> </span><span class="n">codim_vertices</span><span class="p">);</span>
 
-<span class="c1">// Construct the collision mesh from the is_on_surface vector and full mesh data</span>
+<span class="c1">// is_orient_vertex marks the vertices with a well-defined orientation</span>
+<span class="c1">// (i.e., those usable for signed distances). Codimensional vertices</span>
+<span class="c1">// have no orientation, so false is a safe default for all vertices.</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="w"> </span><span class="n">is_orient_vertex</span><span class="p">(</span><span class="n">full_rest_positions</span><span class="p">.</span><span class="n">rows</span><span class="p">(),</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+
+<span class="c1">// Construct the collision mesh from the masks and full mesh data</span>
 <span class="n">ipc</span><span class="o">::</span><span class="n">CollisionMesh</span><span class="w"> </span><span class="nf">collision_mesh</span><span class="p">(</span>
-<span class="w">    </span><span class="n">is_on_surface</span><span class="p">,</span><span class="w"> </span><span class="n">full_rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
+<span class="w">    </span><span class="n">is_on_surface</span><span class="p">,</span><span class="w"> </span><span class="n">is_orient_vertex</span><span class="p">,</span><span class="w"> </span><span class="n">full_rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
@@ -2313,9 +2318,14 @@ Python</label></div>
 <span class="n">is_on_surface</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">CollisionMesh</span><span class="o">.</span><span class="n">construct_is_on_surface</span><span class="p">(</span>
     <span class="nb">len</span><span class="p">(</span><span class="n">full_rest_positions</span><span class="p">),</span> <span class="n">boundary_edges</span><span class="p">,</span> <span class="n">codim_vertices</span><span class="p">)</span>
 
-<span class="c1"># Construct the collision mesh from the is_on_surface vector and full mesh data</span>
+<span class="c1"># is_orient_vertex marks the vertices with a well-defined orientation</span>
+<span class="c1"># (i.e., those usable for signed distances). Codimensional vertices</span>
+<span class="c1"># have no orientation, so False is a safe default for all vertices.</span>
+<span class="n">is_orient_vertex</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_rest_positions</span><span class="p">)</span>
+
+<span class="c1"># Construct the collision mesh from the masks and full mesh data</span>
 <span class="n">collision_mesh</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">CollisionMesh</span><span class="p">(</span>
-    <span class="n">is_on_surface</span><span class="p">,</span> <span class="n">full_rest_positions</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">faces</span><span class="p">)</span>
+    <span class="n">is_on_surface</span><span class="p">,</span> <span class="n">is_orient_vertex</span><span class="p">,</span> <span class="n">full_rest_positions</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">faces</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -2338,8 +2348,8 @@ Python</label></div>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">proxy_rest_positions</span><span class="p">;</span>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="w"> </span><span class="n">proxy_edges</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_faces</span><span class="p">;</span>
 <span class="c1">// Load the proxy mesh from a file</span>
-<span class="n">igl</span><span class="o">::</span><span class="n">read_triangle_mesh</span><span class="p">(</span><span class="s">&quot;proxy.ply&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
-<span class="n">igl</span><span class="o">::</span><span class="n">edges</span><span class="p">(</span><span class="n">faces</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">);</span>
+<span class="n">igl</span><span class="o">::</span><span class="n">read_triangle_mesh</span><span class="p">(</span><span class="s">&quot;proxy.ply&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_faces</span><span class="p">);</span>
+<span class="n">igl</span><span class="o">::</span><span class="n">edges</span><span class="p">(</span><span class="n">proxy_faces</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_edges</span><span class="p">);</span>
 <span class="c1">// Or build it from the volumetric mesh</span>
 
 <span class="c1">// Linear map from the finite element mesh to the collision proxy</span>
@@ -2353,8 +2363,8 @@ Python</label></div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># Finite element mesh</span>
 <span class="n">fe_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;mesh.msh&quot;</span><span class="p">)</span>
-<span class="n">fe_rest_positions</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">points</span>
-<span class="n">tets</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;tetra&quot;</span><span class="p">]</span>
+<span class="n">fe_rest_positions</span> <span class="o">=</span> <span class="n">fe_mesh</span><span class="o">.</span><span class="n">points</span>
+<span class="n">tets</span> <span class="o">=</span> <span class="n">fe_mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;tetra&quot;</span><span class="p">]</span>
 
 <span class="c1"># Collision proxy mesh</span>
 <span class="c1"># Load the proxy mesh from a file</span>
@@ -2367,13 +2377,13 @@ Python</label></div>
 <span class="c1"># Linear map from the finite element mesh to the collision proxy</span>
 <span class="n">displacement_map</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># build or load the displacement map</span>
 
-<span class="n">collision_mesh</span> <span class="o">=</span> <span class="n">CollisionMesh</span><span class="p">(</span>
+<span class="n">collision_mesh</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">CollisionMesh</span><span class="p">(</span>
     <span class="n">proxy_rest_positions</span><span class="p">,</span> <span class="n">proxy_edges</span><span class="p">,</span> <span class="n">proxy_faces</span><span class="p">,</span> <span class="n">displacement_map</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
 </div>
-</div><p>We can then map the displacements using <code class="docutils literal notranslate"><span class="pre">collision_mesh.map_displacement(fe_displacements)</span></code> or directly get the displaced proxy mesh vertices using <code class="docutils literal notranslate"><span class="pre">collision_mesh.displace_vertices(fe_displacements)</span></code>. Similarly, we can map forces/potential gradients using <code class="docutils literal notranslate"><span class="pre">collision_mesh.to_full_dof(collision_forces)</span></code> or force Jacobians/potential Hessians using <code class="docutils literal notranslate"><span class="pre">collision_mesh.to_full_dof(potential_hessian)</span></code>.</p>
+</div><p>We can then map the displacements using <code class="docutils literal notranslate"><span class="pre">collision_mesh.map_displacements(fe_displacements)</span></code> or directly get the displaced proxy mesh vertices using <code class="docutils literal notranslate"><span class="pre">collision_mesh.displace_vertices(fe_displacements)</span></code>. Similarly, we can map forces/potential gradients using <code class="docutils literal notranslate"><span class="pre">collision_mesh.to_full_dof(collision_forces)</span></code> or force Jacobians/potential Hessians using <code class="docutils literal notranslate"><span class="pre">collision_mesh.to_full_dof(potential_hessian)</span></code>.</p>
 <div class="warning admonition">
 <p class="admonition-title">Warning</p>
 <p>The function <code class="docutils literal notranslate"><span class="pre">CollisionMesh::vertices(full_positions)</span></code> should not be used in this case because the rest positions used to construct the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> are not the same as the finite element mesh’s rest positions. Instead, use <code class="docutils literal notranslate"><span class="pre">CollisionMesh::displace_vertices(fe_displacements)</span></code> where <code class="docutils literal notranslate"><span class="pre">fe_displacements</span></code> is already the solution of the PDE or can be computed as <code class="docutils literal notranslate"><span class="pre">fe_displacements</span> <span class="pre">=</span> <span class="pre">fe_positions</span> <span class="pre">-</span> <span class="pre">fe_rest_positions</span></code> from deformed and rest positions.</p>
@@ -2389,15 +2399,27 @@ Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">ProjectToPSD::CLAMP</span></code>: Clamp the negative eigenvalues of the Hessian to 0. This is the same as used by <span class="bibtex-citation" id="id5">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ProjectToPSD::ABS</span></code>: Set the negative eigenvalues of the Hessian to their absolute value. This is the method proposed by <span class="bibtex-citation" id="id6">Chen <em>et al.</em> [<a class="reference internal" href="references.html#id9" title="Honglin Chen, Hsueh-Ti Derek Liu, David I.W. Levin, Changxi Zheng, and Alec Jacobson. Stabler neo-hookean simulation: absolute eigenvalue filtering for projected newton. In ACM SIGGRAPH 2024 Conference Proceedings. 2024. https://www.cs.columbia.edu/cg/abs-psd/.">2024</a>]</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PSDProjectionMethod::NONE</span></code>: Do not project the Hessian. This is the default.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PSDProjectionMethod::CLAMP</span></code>: Clamp the negative eigenvalues of the Hessian to 0. This is the same as used by <span class="bibtex-citation" id="id5">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PSDProjectionMethod::ABS</span></code>: Set the negative eigenvalues of the Hessian to their absolute value. This is the method proposed by <span class="bibtex-citation" id="id6">Chen <em>et al.</em> [<a class="reference internal" href="references.html#id9" title="Honglin Chen, Hsueh-Ti Derek Liu, David I.W. Levin, Changxi Zheng, and Alec Jacobson. Stabler neo-hookean simulation: absolute eigenvalue filtering for projected newton. In ACM SIGGRAPH 2024 Conference Proceedings. 2024. https://www.cs.columbia.edu/cg/abs-psd/.">2024</a>]</span>.</p></li>
 </ul>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">hess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">B</span><span class="p">.</span><span class="n">hessian</span><span class="p">(</span>
+<span class="w">    </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ipc</span><span class="o">::</span><span class="n">PSDProjectionMethod</span><span class="o">::</span><span class="n">CLAMP</span><span class="p">);</span>
+</code></pre></div>
+</div>
 </div>
 <div class="tabbed-block docutils">
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">ProjectToPSD.CLAMP</span></code>: Clamp the negative eigenvalues of the Hessian to 0. This is the same as used by <span class="bibtex-citation" id="id7">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ProjectToPSD.ABS</span></code>: Set the negative eigenvalues of the Hessian to their absolute value. This is the method proposed by <span class="bibtex-citation" id="id8">Chen <em>et al.</em> [<a class="reference internal" href="references.html#id9" title="Honglin Chen, Hsueh-Ti Derek Liu, David I.W. Levin, Changxi Zheng, and Alec Jacobson. Stabler neo-hookean simulation: absolute eigenvalue filtering for projected newton. In ACM SIGGRAPH 2024 Conference Proceedings. 2024. https://www.cs.columbia.edu/cg/abs-psd/.">2024</a>]</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PSDProjectionMethod.NONE</span></code>: Do not project the Hessian. This is the default.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PSDProjectionMethod.CLAMP</span></code>: Clamp the negative eigenvalues of the Hessian to 0. This is the same as used by <span class="bibtex-citation" id="id7">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PSDProjectionMethod.ABS</span></code>: Set the negative eigenvalues of the Hessian to their absolute value. This is the method proposed by <span class="bibtex-citation" id="id8">Chen <em>et al.</em> [<a class="reference internal" href="references.html#id9" title="Honglin Chen, Hsueh-Ti Derek Liu, David I.W. Levin, Changxi Zheng, and Alec Jacobson. Stabler neo-hookean simulation: absolute eigenvalue filtering for projected newton. In ACM SIGGRAPH 2024 Conference Proceedings. 2024. https://www.cs.columbia.edu/cg/abs-psd/.">2024</a>]</span>.</p></li>
 </ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">hess</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span>
+    <span class="n">collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span>
+    <span class="n">project_hessian_to_psd</span><span class="o">=</span><span class="n">ipctk</span><span class="o">.</span><span class="n">PSDProjectionMethod</span><span class="o">.</span><span class="n">CLAMP</span><span class="p">)</span>
+</code></pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -2421,7 +2443,7 @@ Python</label></div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Jul 30, 2026
+    Aug 05, 2026
   </span>
 
     

@@ -301,8 +301,7 @@ To compute the adaptive barrier stiffness, we can use two functions: ``initial_b
             bbox_diagonal = ipctk.world_bbox_diagonal_length(vertices)
 
             barrier_stiffness, max_barrier_stiffness = ipctk.initial_barrier_stiffness(
-                bbox_diagonal, B.barrier, dhat, avg_mass, grad_energy, grad_barrier,
-                max_barrier_stiffness)
+                bbox_diagonal, B.barrier, dhat, avg_mass, grad_energy, grad_barrier)
 
             prev_distance = collisions.compute_minimum_distance(collision_mesh, vertices)
 
@@ -348,10 +347,10 @@ To add a collision offset, we need to set the ``dmin`` variable. For example, we
             dhat = 1e-4
             dmin = 1e-3
 
-            collisions = ipctk.Collisions()
+            collisions = ipctk.NormalCollisions()
             collisions.build(collision_mesh, vertices, dhat, dmin)
 
-This will then set the ``dmin`` field in all of the ``Collision`` objects stored in the ``collisions``.
+This will then set the ``dmin`` field in all of the ``NormalCollision`` objects stored in the ``collisions``.
 
 .. note::
     Currently, only a single thickness value is supported for the entire mesh.
@@ -371,7 +370,7 @@ Computing the friction dissipative potential is similar to the barrier potential
 
             ipc::TangentialCollisions tangential_collisions;
             tangential_collisions.build(
-                collision_mesh, vertices, collisions, B, barrier_stiffness, mu);
+                collision_mesh, vertices, collisions, B, mu);
 
     .. md-tab-item:: Python
 
@@ -379,9 +378,12 @@ Computing the friction dissipative potential is similar to the barrier potential
 
             tangential_collisions = ipctk.TangentialCollisions()
             tangential_collisions.build(
-                collision_mesh, vertices, collisions, B, barrier_stiffness, mu)
+                collision_mesh, vertices, collisions, B, mu)
 
-Here ``mu`` (:math:`\mu`) is the (global) coefficient of friction, and ``barrier_stiffness`` (:math:`\kappa`) is the barrier stiffness.
+Here ``mu`` (:math:`\mu`) is the (global) coefficient of friction.
+
+.. note::
+   The barrier stiffness (:math:`\kappa`) is retrieved from the normal potential ``B`` and used to compute the lagged normal force magnitudes.
 
 Friction Dissipative Potential
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -486,22 +488,24 @@ The following example determines the maximum step size allowable between the res
 
             Eigen::MatrixXd collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0;
-            assert(ipc::is_step_collision_free(mesh, vertices_t0, collision_free_vertices));
+            assert(ipc::is_step_collision_free(
+                collision_mesh, vertices_t0, collision_free_vertices));
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            vertices_t0 = collision_mesh.rest_positions() # vertices at t=0
-            vertices_t1 = vertices_t0.copy()              # vertices at t=1
+            vertices_t0 = collision_mesh.rest_positions # vertices at t=0
+            vertices_t1 = vertices_t0.copy()            # vertices at t=1
             vertices_t1[:, 1] *= 0.01 # squash the mesh in the y-direction
 
             max_step_size = ipctk.compute_collision_free_stepsize(
                     collision_mesh, vertices_t0, vertices_t1)
 
-            collision_free_vertices =
-                (vertices_t1 - vertices_t0) * max_step_size + vertices_t0
-            assert(ipctk.is_step_collision_free(mesh, vertices_t0, collision_free_vertices))
+            collision_free_vertices = (
+                (vertices_t1 - vertices_t0) * max_step_size + vertices_t0)
+            assert ipctk.is_step_collision_free(
+                collision_mesh, vertices_t0, collision_free_vertices)
 
 CCD is comprised of two parts (phases): broad-phase and narrow-phase.
 
@@ -523,7 +527,8 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
             ipc::Candidates candidates;
             ipc::LBVH broad_phase;
             candidates.build(
-                mesh, vertices_t0, vertices_t1, /*inflation_radius=*/0.0, broad_phase);
+                collision_mesh, vertices_t0, vertices_t1,
+                /*inflation_radius=*/0.0, &broad_phase);
 
     .. md-tab-item:: Python
 
@@ -531,14 +536,27 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
 
             candidates = ipctk.Candidates()
             candidates.build(
-                mesh, vertices_t0, vertices_t1, broad_phase=ipctk.LBVH())
+                collision_mesh, vertices_t0, vertices_t1,
+                broad_phase=ipctk.LBVH())
 
 Possible values for ``broad_phase`` are: ``BruteForce`` (parallel brute force culling), ``HashGrid``, ``SpatialHash`` (implementation from the original IPC codebase), ``LBVH`` (CPU implementation of :cite:t:`Karras2012HPG` using TBB), ``SweepAndPrune`` (a.k.a. Sort-and-Sweep from :cite:t:`Baraff1992PhD`), or ``SweepAndTiniestQueue`` (method of :cite:t:`Belgrod2023Time`; requires CUDA). The default is ``LBVH``.
 
 Narrow-Phase
 ^^^^^^^^^^^^
 
-The narrow phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). To do this we utilize the Tight Inclusion CCD method of :cite:t:`Wang2021TightInclusion` for the narrow phase as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient.
+The narrow phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). Narrow-phase algorithms are implemented as subclasses of ``NarrowPhaseCCD``. The default is ``TightInclusionCCD``, the Tight Inclusion CCD method of :cite:t:`Wang2021TightInclusion`, as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient. It is what every function taking a ``narrow_phase_ccd`` argument uses unless you pass something else.
+
+Two other implementations are also available:
+
+- ``AdditiveCCD``, the method of :cite:t:`Li2021CIPC`, is much faster than Tight Inclusion (>100×) and reliable in practice. It does not account for rounding error in its distance computations, so in theory it can miss collisions, but its default margin (10% of the initial separation) is large enough to avoid this. The cost of that margin is a less accurate time of impact and more false positives. Shrinking it -- pushing ``conservative_rescaling`` toward ``1.0`` -- tightens the time of impact but is what can introduce false negatives. Tight Inclusion accounts for the rounding error, so it can reduce its tolerance without that trade-off :cite:p:`Belgrod2023Time`.
+- ``InexactCCD``, the original method from the IPC codebase, is disabled by default. To use it, set the ``IPC_TOOLKIT_WITH_INEXACT_CCD`` CMake option to ``ON``.
+
+All three use the same expression for their conservative margin, stopping short of contact at a separation of
+
+.. math::
+   d_\min + (1 - r)(d_0 - d_\min),
+
+where :math:`r` is ``conservative_rescaling`` and :math:`d_0` is the distance at :math:`t=0`. Note that the margin is a fraction of the initial separation *in excess of* :math:`d_\min`, not of the raw distance. ``TightInclusionCCD`` differs only in additionally capping the second term at :math:`10^{-4}` (see the note below), which is why it usually reports a time of impact much closer to the exact one than ``AdditiveCCD`` does for the same query.
 
 The following example shows how to use the narrow phase to determine if a point is colliding with a triangle (static in this case).
 
@@ -548,7 +566,7 @@ The following example shows how to use the narrow phase to determine if a point 
 
         .. code-block:: c++
 
-            #include <ipc/ccd/ccd.hpp>
+            #include <ipc/ccd/tight_inclusion_ccd.hpp>
 
             // ...
 
@@ -565,10 +583,10 @@ The following example shows how to use the narrow phase to determine if a point 
             Eigen::Vector3d t2_t1 = t2_t0; // triangle vertex 2 at t=1
 
             double toi; // output time of impact
-            bool is_colliding = ipc::point_triangle_ccd(
+            bool is_colliding = ipc::TightInclusionCCD().point_triangle_ccd(
                 p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
             assert(is_colliding);
-            assert(abs(toi - 0.5) < 1e-8);
+            assert(toi <= 0.5); // conservative estimate of the exact TOI of 0.5
 
     .. md-tab-item:: Python
 
@@ -591,12 +609,35 @@ The following example shows how to use the narrow phase to determine if a point 
 
             # returns a boolean indicating if the point is colliding with the triangle
             # and the time of impact (TOI)
-            is_colliding, toi = ipctk.point_triangle_ccd(
+            is_colliding, toi = ipctk.TightInclusionCCD().point_triangle_ccd(
                 p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1)
-            assert(is_colliding)
-            assert(abs(toi - 0.5) < 1e-8)
+            assert is_colliding
+            assert toi <= 0.5 # conservative estimate of the exact TOI of 0.5
 
-Alternatively, the ``FaceVertexCandidate`` class contains a ``ccd`` function that can be used to determine if the face-vertex pairing is colliding:
+.. note::
+   The returned time of impact is a *conservative* under-estimate, so do not test
+   it for exact equality. For the query above the exact TOI is ``0.5``, but the
+   returned value is slightly less than that.
+
+   ``TightInclusionCCD`` achieves this primarily by inflating the *distance* at
+   which the query stops rather than by scaling the resulting TOI. It runs the
+   narrow-phase query with a minimum separation of
+
+   .. math::
+      d_\min + \min\left((1 - r)(d_0 - d_\min),\ 10^{-4}\right),
+
+   where :math:`r` is ``conservative_rescaling`` and :math:`d_0` is the distance
+   at :math:`t=0`. The TOI therefore comes back early by roughly that separation
+   divided by the distance travelled. Note the :math:`10^{-4}` cap: for
+   well-separated primitives it is what binds, so changing
+   ``conservative_rescaling`` has no effect on the result.
+
+   The TOI itself is multiplied by ``conservative_rescaling`` only in a fallback
+   path, when the query above returns a TOI below
+   ``TightInclusionCCD::SMALL_TOI``; the query is then rerun with the true
+   :math:`d_\min` and the result scaled to keep it away from zero.
+
+Alternatively, the ``FaceVertexCandidate`` class contains a ``ccd`` function that can be used to determine if the face-vertex pairing is colliding. It takes the *stencil* vertices (the four vertices of the face-vertex pair), which you can gather from the full vertex matrix using ``CollisionStencil::dof``:
 
 .. md-tab-set::
 
@@ -606,9 +647,13 @@ Alternatively, the ``FaceVertexCandidate`` class contains a ``ccd`` function tha
 
             ipc::FaceVertexCandidate candidate = ...; // face-vertex candidate
 
+            const Eigen::MatrixXi& edges = collision_mesh.edges();
+            const Eigen::MatrixXi& faces = collision_mesh.faces();
+
             double toi; // output time of impact
             bool is_colliding = candidate.ccd(
-                vertices_t0, vertices_t1, collision_mesh.edges(), collision_mesh.faces(), toi);
+                candidate.dof(vertices_t0, edges, faces),
+                candidate.dof(vertices_t1, edges, faces), toi);
 
     .. md-tab-item:: Python
 
@@ -616,12 +661,15 @@ Alternatively, the ``FaceVertexCandidate`` class contains a ``ccd`` function tha
 
             candidate = ... # face-vertex candidate
 
+            edges, faces = collision_mesh.edges, collision_mesh.faces
+
             # returns a boolean indicating if the point is colliding with the triangle
             # and the time of impact (TOI)
             is_colliding, toi = candidate.ccd(
-                vertices_t0, vertices_t1, collision_mesh.edges, collision_mesh.faces)
+                candidate.dof(vertices_t0, edges, faces),
+                candidate.dof(vertices_t1, edges, faces))
 
-The same can be done for point-edge collisions using the ``point_edge_ccd`` function or ``EdgeVertexCandidate`` class and for edge-edge collisions using the ``edge_edge_ccd`` function or ``EdgeEdgeCandidate`` class.
+The same can be done for point-edge collisions using the ``NarrowPhaseCCD::point_edge_ccd`` method or ``EdgeVertexCandidate`` class and for edge-edge collisions using the ``NarrowPhaseCCD::edge_edge_ccd`` method or ``EdgeEdgeCandidate`` class.
 
 .. _minimum-separation-ccd:
 
@@ -644,7 +692,8 @@ To do this, we need to set the ``min_distance`` parameter when calling ``is_step
             Eigen::MatrixXd collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0;
             assert(ipc::is_step_collision_free(
-                mesh, vertices_t0, collision_free_vertices, /*min_distance=*/1e-4));
+                collision_mesh, vertices_t0, collision_free_vertices,
+                /*min_distance=*/1e-4));
 
     .. md-tab-item:: Python
 
@@ -653,7 +702,8 @@ To do this, we need to set the ``min_distance`` parameter when calling ``is_step
             max_step_size = ipctk.compute_collision_free_stepsize(
                     collision_mesh, vertices_t0, vertices_t1, min_distance=1e-4)
 
-            collision_free_vertices =
-                (vertices_t1 - vertices_t0) * max_step_size + vertices_t0
-            assert(ipctk.is_step_collision_free(
-                mesh, vertices_t0, collision_free_vertices, min_distance=1e-4))
+            collision_free_vertices = (
+                (vertices_t1 - vertices_t0) * max_step_size + vertices_t0)
+            assert ipctk.is_step_collision_free(
+                collision_mesh, vertices_t0, collision_free_vertices,
+                min_distance=1e-4)

@@ -2604,8 +2604,7 @@ Python</label></div>
 <span class="n">bbox_diagonal</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">world_bbox_diagonal_length</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
 
 <span class="n">barrier_stiffness</span><span class="p">,</span> <span class="n">max_barrier_stiffness</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">initial_barrier_stiffness</span><span class="p">(</span>
-    <span class="n">bbox_diagonal</span><span class="p">,</span> <span class="n">B</span><span class="o">.</span><span class="n">barrier</span><span class="p">,</span> <span class="n">dhat</span><span class="p">,</span> <span class="n">avg_mass</span><span class="p">,</span> <span class="n">grad_energy</span><span class="p">,</span> <span class="n">grad_barrier</span><span class="p">,</span>
-    <span class="n">max_barrier_stiffness</span><span class="p">)</span>
+    <span class="n">bbox_diagonal</span><span class="p">,</span> <span class="n">B</span><span class="o">.</span><span class="n">barrier</span><span class="p">,</span> <span class="n">dhat</span><span class="p">,</span> <span class="n">avg_mass</span><span class="p">,</span> <span class="n">grad_energy</span><span class="p">,</span> <span class="n">grad_barrier</span><span class="p">)</span>
 
 <span class="n">prev_distance</span> <span class="o">=</span> <span class="n">collisions</span><span class="o">.</span><span class="n">compute_minimum_distance</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
 
@@ -2648,13 +2647,13 @@ Python</label></div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">dhat</span> <span class="o">=</span> <span class="mf">1e-4</span>
 <span class="n">dmin</span> <span class="o">=</span> <span class="mf">1e-3</span>
 
-<span class="n">collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">Collisions</span><span class="p">()</span>
+<span class="n">collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">NormalCollisions</span><span class="p">()</span>
 <span class="n">collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">dhat</span><span class="p">,</span> <span class="n">dmin</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
 </div>
-</div><p>This will then set the <code class="docutils literal notranslate"><span class="pre">dmin</span></code> field in all of the <code class="docutils literal notranslate"><span class="pre">Collision</span></code> objects stored in the <code class="docutils literal notranslate"><span class="pre">collisions</span></code>.</p>
+</div><p>This will then set the <code class="docutils literal notranslate"><span class="pre">dmin</span></code> field in all of the <code class="docutils literal notranslate"><span class="pre">NormalCollision</span></code> objects stored in the <code class="docutils literal notranslate"><span class="pre">collisions</span></code>.</p>
 <div class="note admonition">
 <p class="admonition-title">Note</p>
 <p>Currently, only a single thickness value is supported for the entire mesh.</p>
@@ -2671,19 +2670,23 @@ Python</label></div>
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipc</span><span class="o">::</span><span class="n">TangentialCollisions</span><span class="w"> </span><span class="n">tangential_collisions</span><span class="p">;</span>
 <span class="n">tangential_collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span>
-<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">mu</span><span class="p">);</span>
+<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">mu</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">tangential_collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">TangentialCollisions</span><span class="p">()</span>
 <span class="n">tangential_collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
-    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">barrier_stiffness</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
 </div>
-</div><p>Here <code class="docutils literal notranslate"><span class="pre">mu</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) is the (global) coefficient of friction, and <code class="docutils literal notranslate"><span class="pre">barrier_stiffness</span></code> (<span class="math notranslate nohighlight">\(\kappa\)</span>) is the barrier stiffness.</p>
+</div><p>Here <code class="docutils literal notranslate"><span class="pre">mu</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) is the (global) coefficient of friction.</p>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>The barrier stiffness (<span class="math notranslate nohighlight">\(\kappa\)</span>) is retrieved from the normal potential <code class="docutils literal notranslate"><span class="pre">B</span></code> and used to compute the lagged normal force magnitudes.</p>
+</div>
 <h3 id="friction-dissipative-potential">Friction Dissipative Potential<a class="headerlink" href="#friction-dissipative-potential" title="Link to this heading">¶</a></h3>
 <p>Now we can compute the friction dissipative potential using the <code class="docutils literal notranslate"><span class="pre">FrictionPotential</span></code> class.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="9:2">
@@ -2773,21 +2776,23 @@ Python</label></div>
 
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">collision_free_vertices</span><span class="w"> </span><span class="o">=</span>
 <span class="w">    </span><span class="p">(</span><span class="n">vertices_t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">max_step_size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">;</span>
-<span class="n">assert</span><span class="p">(</span><span class="n">ipc</span><span class="o">::</span><span class="n">is_step_collision_free</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">collision_free_vertices</span><span class="p">));</span>
+<span class="n">assert</span><span class="p">(</span><span class="n">ipc</span><span class="o">::</span><span class="n">is_step_collision_free</span><span class="p">(</span>
+<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">collision_free_vertices</span><span class="p">));</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">vertices_t0</span> <span class="o">=</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">rest_positions</span><span class="p">()</span> <span class="c1"># vertices at t=0</span>
-<span class="n">vertices_t1</span> <span class="o">=</span> <span class="n">vertices_t0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>              <span class="c1"># vertices at t=1</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">vertices_t0</span> <span class="o">=</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">rest_positions</span> <span class="c1"># vertices at t=0</span>
+<span class="n">vertices_t1</span> <span class="o">=</span> <span class="n">vertices_t0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>            <span class="c1"># vertices at t=1</span>
 <span class="n">vertices_t1</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="mf">0.01</span> <span class="c1"># squash the mesh in the y-direction</span>
 
 <span class="n">max_step_size</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">compute_collision_free_stepsize</span><span class="p">(</span>
         <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">vertices_t1</span><span class="p">)</span>
 
-<span class="n">collision_free_vertices</span> <span class="o">=</span>
-    <span class="p">(</span><span class="n">vertices_t1</span> <span class="o">-</span> <span class="n">vertices_t0</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_step_size</span> <span class="o">+</span> <span class="n">vertices_t0</span>
-<span class="k">assert</span><span class="p">(</span><span class="n">ipctk</span><span class="o">.</span><span class="n">is_step_collision_free</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">collision_free_vertices</span><span class="p">))</span>
+<span class="n">collision_free_vertices</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="n">vertices_t1</span> <span class="o">-</span> <span class="n">vertices_t0</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_step_size</span> <span class="o">+</span> <span class="n">vertices_t0</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">is_step_collision_free</span><span class="p">(</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">collision_free_vertices</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -2808,21 +2813,32 @@ Python</label></div>
 <span class="n">ipc</span><span class="o">::</span><span class="n">Candidates</span><span class="w"> </span><span class="n">candidates</span><span class="p">;</span>
 <span class="n">ipc</span><span class="o">::</span><span class="n">LBVH</span><span class="w"> </span><span class="n">broad_phase</span><span class="p">;</span>
 <span class="n">candidates</span><span class="p">.</span><span class="n">build</span><span class="p">(</span>
-<span class="w">    </span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t1</span><span class="p">,</span><span class="w"> </span><span class="cm">/*inflation_radius=*/</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">broad_phase</span><span class="p">);</span>
+<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t1</span><span class="p">,</span>
+<span class="w">    </span><span class="cm">/*inflation_radius=*/</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">broad_phase</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">candidates</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">Candidates</span><span class="p">()</span>
 <span class="n">candidates</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
-    <span class="n">mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">vertices_t1</span><span class="p">,</span> <span class="n">broad_phase</span><span class="o">=</span><span class="n">ipctk</span><span class="o">.</span><span class="n">LBVH</span><span class="p">())</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">vertices_t1</span><span class="p">,</span>
+    <span class="n">broad_phase</span><span class="o">=</span><span class="n">ipctk</span><span class="o">.</span><span class="n">LBVH</span><span class="p">())</span>
 </code></pre></div>
 </div>
 </div>
 </div>
 </div><p>Possible values for <code class="docutils literal notranslate"><span class="pre">broad_phase</span></code> are: <code class="docutils literal notranslate"><span class="pre">BruteForce</span></code> (parallel brute force culling), <code class="docutils literal notranslate"><span class="pre">HashGrid</span></code>, <code class="docutils literal notranslate"><span class="pre">SpatialHash</span></code> (implementation from the original IPC codebase), <code class="docutils literal notranslate"><span class="pre">LBVH</span></code> (CPU implementation of <span class="bibtex-citation" id="id6">Karras [<a class="reference internal" href="references.html#id16" title="Tero Karras. Maximizing parallelism in the construction of bvhs, octrees, and k-d trees. In Proceedings of the Fourth Eurographics Conference on High-Performance Graphics, HPG '12, 33–37. Goslar, Germany, 2012. Eurographics Association. doi:10.2312/EGGH/HPG12/033-037.">2012</a>]</span> using TBB), <code class="docutils literal notranslate"><span class="pre">SweepAndPrune</span></code> (a.k.a. Sort-and-Sweep from <span class="bibtex-citation" id="id7">Baraff [<a class="reference internal" href="references.html#id20" title="David Baraff. Dynamic Simulation of Non-Penetrating Rigid Bodies. PhD thesis, Cornell University, Ithaca, NY, USA, 1992. Technical Report TR 92-1275.">1992</a>]</span>), or <code class="docutils literal notranslate"><span class="pre">SweepAndTiniestQueue</span></code> (method of <span class="bibtex-citation" id="id8">Belgrod <em>et al.</em> [<a class="reference internal" href="references.html#id6" title="David Belgrod, Bolun Wang, Zachary Ferguson, Xin Zhao, Marco Attene, Daniele Panozzo, and Teseo Schneider. Time of impact dataset for continuous collision detection and a scalable conservative algorithm. 2023. arXiv:2112.06300.">2023</a>]</span>; requires CUDA). The default is <code class="docutils literal notranslate"><span class="pre">LBVH</span></code>.</p>
 <h3 id="narrow-phase">Narrow-Phase<a class="headerlink" href="#narrow-phase" title="Link to this heading">¶</a></h3>
-<p>The narrow phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). To do this we utilize the Tight Inclusion CCD method of <span class="bibtex-citation" id="id9">Wang <em>et al.</em> [<a class="reference internal" href="references.html#id5" title="Bolun Wang, Zachary Ferguson, Teseo Schneider, Xin Jiang, Marco Attene, and Daniele Panozzo. A large scale benchmark and an inclusion-based algorithm for continuous collision detection. ACM Transactions on Graphics, October 2021. https://continuous-collision-detection.github.io/tight_inclusion/.">2021</a>]</span> for the narrow phase as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient.</p>
+<p>The narrow phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). Narrow-phase algorithms are implemented as subclasses of <code class="docutils literal notranslate"><span class="pre">NarrowPhaseCCD</span></code>. The default is <code class="docutils literal notranslate"><span class="pre">TightInclusionCCD</span></code>, the Tight Inclusion CCD method of <span class="bibtex-citation" id="id9">Wang <em>et al.</em> [<a class="reference internal" href="references.html#id5" title="Bolun Wang, Zachary Ferguson, Teseo Schneider, Xin Jiang, Marco Attene, and Daniele Panozzo. A large scale benchmark and an inclusion-based algorithm for continuous collision detection. ACM Transactions on Graphics, October 2021. https://continuous-collision-detection.github.io/tight_inclusion/.">2021</a>]</span>, as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient. It is what every function taking a <code class="docutils literal notranslate"><span class="pre">narrow_phase_ccd</span></code> argument uses unless you pass something else.</p>
+<p>Two other implementations are also available:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">AdditiveCCD</span></code>, the method of <span class="bibtex-citation" id="id10">Li <em>et al.</em> [<a class="reference internal" href="references.html#id3" title="Minchen Li, Danny M. Kaufman, and Chenfanfu Jiang. Codimensional incremental potential contact. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/C-IPC.">2021</a>]</span>, is much faster than Tight Inclusion (&gt;100×) and reliable in practice. It does not account for rounding error in its distance computations, so in theory it can miss collisions, but its default margin (10% of the initial separation) is large enough to avoid this. The cost of that margin is a less accurate time of impact and more false positives. Shrinking it – pushing <code class="docutils literal notranslate"><span class="pre">conservative_rescaling</span></code> toward <code class="docutils literal notranslate"><span class="pre">1.0</span></code> – tightens the time of impact but is what can introduce false negatives. Tight Inclusion accounts for the rounding error, so it can reduce its tolerance without that trade-off <span class="bibtex-citation" id="id11">[<a class="reference internal" href="references.html#id6" title="David Belgrod, Bolun Wang, Zachary Ferguson, Xin Zhao, Marco Attene, Daniele Panozzo, and Teseo Schneider. Time of impact dataset for continuous collision detection and a scalable conservative algorithm. 2023. arXiv:2112.06300.">Belgrod <em>et al.</em>, 2023</a>]</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">InexactCCD</span></code>, the original method from the IPC codebase, is disabled by default. To use it, set the <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_INEXACT_CCD</span></code> CMake option to <code class="docutils literal notranslate"><span class="pre">ON</span></code>.</p></li>
+</ul>
+<p>All three use the same expression for their conservative margin, stopping short of contact at a separation of</p>
+<div class="math notranslate nohighlight">
+\[d_\min + (1 - r)(d_0 - d_\min),\]</div>
+<p>where <span class="math notranslate nohighlight">\(r\)</span> is <code class="docutils literal notranslate"><span class="pre">conservative_rescaling</span></code> and <span class="math notranslate nohighlight">\(d_0\)</span> is the distance at <span class="math notranslate nohighlight">\(t=0\)</span>. Note that the margin is a fraction of the initial separation <em>in excess of</em> <span class="math notranslate nohighlight">\(d_\min\)</span>, not of the raw distance. <code class="docutils literal notranslate"><span class="pre">TightInclusionCCD</span></code> differs only in additionally capping the second term at <span class="math notranslate nohighlight">\(10^{-4}\)</span> (see the note below), which is why it usually reports a time of impact much closer to the exact one than <code class="docutils literal notranslate"><span class="pre">AdditiveCCD</span></code> does for the same query.</p>
 <p>The following example shows how to use the narrow phase to determine if a point is colliding with a triangle (static in this case).</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="13:2">
 <input checked type="radio" id="__tabbed_13_1" name="__tabbed_13"><input type="radio" id="__tabbed_13_2" name="__tabbed_13"><div class="tabbed-labels docutils">
@@ -2831,7 +2847,7 @@ C++</label><label class="tabbed-label" for="__tabbed_13_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/ccd/ccd.hpp&gt;</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/ccd/tight_inclusion_ccd.hpp&gt;</span>
 
 <span class="c1">// ...</span>
 
@@ -2848,10 +2864,10 @@ Python</label></div>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">t2_t1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t2_t0</span><span class="p">;</span><span class="w"> </span><span class="c1">// triangle vertex 2 at t=1</span>
 
 <span class="kt">double</span><span class="w"> </span><span class="n">toi</span><span class="p">;</span><span class="w"> </span><span class="c1">// output time of impact</span>
-<span class="kt">bool</span><span class="w"> </span><span class="n">is_colliding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipc</span><span class="o">::</span><span class="n">point_triangle_ccd</span><span class="p">(</span>
+<span class="kt">bool</span><span class="w"> </span><span class="n">is_colliding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipc</span><span class="o">::</span><span class="n">TightInclusionCCD</span><span class="p">().</span><span class="n">point_triangle_ccd</span><span class="p">(</span>
 <span class="w">    </span><span class="n">p_t0</span><span class="p">,</span><span class="w"> </span><span class="n">t0_t0</span><span class="p">,</span><span class="w"> </span><span class="n">t1_t0</span><span class="p">,</span><span class="w"> </span><span class="n">t2_t0</span><span class="p">,</span><span class="w"> </span><span class="n">p_t1</span><span class="p">,</span><span class="w"> </span><span class="n">t0_t1</span><span class="p">,</span><span class="w"> </span><span class="n">t1_t1</span><span class="p">,</span><span class="w"> </span><span class="n">t2_t1</span><span class="p">,</span><span class="w"> </span><span class="n">toi</span><span class="p">);</span>
 <span class="n">assert</span><span class="p">(</span><span class="n">is_colliding</span><span class="p">);</span>
-<span class="n">assert</span><span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">toi</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">0.5</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">1e-8</span><span class="p">);</span>
+<span class="n">assert</span><span class="p">(</span><span class="n">toi</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span><span class="w"> </span><span class="c1">// conservative estimate of the exact TOI of 0.5</span>
 </code></pre></div>
 </div>
 </div>
@@ -2873,15 +2889,35 @@ Python</label></div>
 
 <span class="c1"># returns a boolean indicating if the point is colliding with the triangle</span>
 <span class="c1"># and the time of impact (TOI)</span>
-<span class="n">is_colliding</span><span class="p">,</span> <span class="n">toi</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">point_triangle_ccd</span><span class="p">(</span>
+<span class="n">is_colliding</span><span class="p">,</span> <span class="n">toi</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">TightInclusionCCD</span><span class="p">()</span><span class="o">.</span><span class="n">point_triangle_ccd</span><span class="p">(</span>
     <span class="n">p_t0</span><span class="p">,</span> <span class="n">t0_t0</span><span class="p">,</span> <span class="n">t1_t0</span><span class="p">,</span> <span class="n">t2_t0</span><span class="p">,</span> <span class="n">p_t1</span><span class="p">,</span> <span class="n">t0_t1</span><span class="p">,</span> <span class="n">t1_t1</span><span class="p">,</span> <span class="n">t2_t1</span><span class="p">)</span>
-<span class="k">assert</span><span class="p">(</span><span class="n">is_colliding</span><span class="p">)</span>
-<span class="k">assert</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">toi</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-8</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">is_colliding</span>
+<span class="k">assert</span> <span class="n">toi</span> <span class="o">&lt;=</span> <span class="mf">0.5</span> <span class="c1"># conservative estimate of the exact TOI of 0.5</span>
 </code></pre></div>
 </div>
 </div>
 </div>
-</div><p>Alternatively, the <code class="docutils literal notranslate"><span class="pre">FaceVertexCandidate</span></code> class contains a <code class="docutils literal notranslate"><span class="pre">ccd</span></code> function that can be used to determine if the face-vertex pairing is colliding:</p>
+</div><div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>The returned time of impact is a <em>conservative</em> under-estimate, so do not test
+it for exact equality. For the query above the exact TOI is <code class="docutils literal notranslate"><span class="pre">0.5</span></code>, but the
+returned value is slightly less than that.</p>
+<p><code class="docutils literal notranslate"><span class="pre">TightInclusionCCD</span></code> achieves this primarily by inflating the <em>distance</em> at
+which the query stops rather than by scaling the resulting TOI. It runs the
+narrow-phase query with a minimum separation of</p>
+<div class="math notranslate nohighlight">
+\[d_\min + \min\left((1 - r)(d_0 - d_\min),\ 10^{-4}\right),\]</div>
+<p>where <span class="math notranslate nohighlight">\(r\)</span> is <code class="docutils literal notranslate"><span class="pre">conservative_rescaling</span></code> and <span class="math notranslate nohighlight">\(d_0\)</span> is the distance
+at <span class="math notranslate nohighlight">\(t=0\)</span>. The TOI therefore comes back early by roughly that separation
+divided by the distance travelled. Note the <span class="math notranslate nohighlight">\(10^{-4}\)</span> cap: for
+well-separated primitives it is what binds, so changing
+<code class="docutils literal notranslate"><span class="pre">conservative_rescaling</span></code> has no effect on the result.</p>
+<p>The TOI itself is multiplied by <code class="docutils literal notranslate"><span class="pre">conservative_rescaling</span></code> only in a fallback
+path, when the query above returns a TOI below
+<code class="docutils literal notranslate"><span class="pre">TightInclusionCCD::SMALL_TOI</span></code>; the query is then rerun with the true
+<span class="math notranslate nohighlight">\(d_\min\)</span> and the result scaled to keep it away from zero.</p>
+</div>
+<p>Alternatively, the <code class="docutils literal notranslate"><span class="pre">FaceVertexCandidate</span></code> class contains a <code class="docutils literal notranslate"><span class="pre">ccd</span></code> function that can be used to determine if the face-vertex pairing is colliding. It takes the <em>stencil</em> vertices (the four vertices of the face-vertex pair), which you can gather from the full vertex matrix using <code class="docutils literal notranslate"><span class="pre">CollisionStencil::dof</span></code>:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="14:2">
 <input checked type="radio" id="__tabbed_14_1" name="__tabbed_14"><input type="radio" id="__tabbed_14_2" name="__tabbed_14"><div class="tabbed-labels docutils">
 <label class="tabbed-label" for="__tabbed_14_1">
@@ -2891,24 +2927,31 @@ Python</label></div>
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipc</span><span class="o">::</span><span class="n">FaceVertexCandidate</span><span class="w"> </span><span class="n">candidate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span><span class="w"> </span><span class="c1">// face-vertex candidate</span>
 
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">edges</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">edges</span><span class="p">();</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">faces</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">faces</span><span class="p">();</span>
+
 <span class="kt">double</span><span class="w"> </span><span class="n">toi</span><span class="p">;</span><span class="w"> </span><span class="c1">// output time of impact</span>
 <span class="kt">bool</span><span class="w"> </span><span class="n">is_colliding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">candidate</span><span class="p">.</span><span class="n">ccd</span><span class="p">(</span>
-<span class="w">    </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t1</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">edges</span><span class="p">(),</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">faces</span><span class="p">(),</span><span class="w"> </span><span class="n">toi</span><span class="p">);</span>
+<span class="w">    </span><span class="n">candidate</span><span class="p">.</span><span class="n">dof</span><span class="p">(</span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">),</span>
+<span class="w">    </span><span class="n">candidate</span><span class="p">.</span><span class="n">dof</span><span class="p">(</span><span class="n">vertices_t1</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">),</span><span class="w"> </span><span class="n">toi</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">candidate</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># face-vertex candidate</span>
 
+<span class="n">edges</span><span class="p">,</span> <span class="n">faces</span> <span class="o">=</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">edges</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">faces</span>
+
 <span class="c1"># returns a boolean indicating if the point is colliding with the triangle</span>
 <span class="c1"># and the time of impact (TOI)</span>
 <span class="n">is_colliding</span><span class="p">,</span> <span class="n">toi</span> <span class="o">=</span> <span class="n">candidate</span><span class="o">.</span><span class="n">ccd</span><span class="p">(</span>
-    <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">vertices_t1</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">edges</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">faces</span><span class="p">)</span>
+    <span class="n">candidate</span><span class="o">.</span><span class="n">dof</span><span class="p">(</span><span class="n">vertices_t0</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">faces</span><span class="p">),</span>
+    <span class="n">candidate</span><span class="o">.</span><span class="n">dof</span><span class="p">(</span><span class="n">vertices_t1</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">faces</span><span class="p">))</span>
 </code></pre></div>
 </div>
 </div>
 </div>
-</div><p>The same can be done for point-edge collisions using the <code class="docutils literal notranslate"><span class="pre">point_edge_ccd</span></code> function or <code class="docutils literal notranslate"><span class="pre">EdgeVertexCandidate</span></code> class and for edge-edge collisions using the <code class="docutils literal notranslate"><span class="pre">edge_edge_ccd</span></code> function or <code class="docutils literal notranslate"><span class="pre">EdgeEdgeCandidate</span></code> class.</p>
+</div><p>The same can be done for point-edge collisions using the <code class="docutils literal notranslate"><span class="pre">NarrowPhaseCCD::point_edge_ccd</span></code> method or <code class="docutils literal notranslate"><span class="pre">EdgeVertexCandidate</span></code> class and for edge-edge collisions using the <code class="docutils literal notranslate"><span class="pre">NarrowPhaseCCD::edge_edge_ccd</span></code> method or <code class="docutils literal notranslate"><span class="pre">EdgeEdgeCandidate</span></code> class.</p>
 <h3 id="minimum-separation"><span id="minimum-separation-ccd"></span>Minimum Separation<a class="headerlink" href="#minimum-separation" title="Link to this heading">¶</a></h3>
 <p>We can also perform CCD with a minimum separation distance. This is useful when modeling thickness (see, e.g., <a class="reference internal" href="#modeling-thickness"><span class="std std-ref">Modeling Thickness</span></a>).</p>
 <p>To do this, we need to set the <code class="docutils literal notranslate"><span class="pre">min_distance</span></code> parameter when calling <code class="docutils literal notranslate"><span class="pre">is_step_collision_free</span></code> and <code class="docutils literal notranslate"><span class="pre">compute_collision_free_stepsize</span></code>. For example, we can set the minimum separation distance to <span class="math notranslate nohighlight">\(d_\min=10^{-4}\)</span>:</p>
@@ -2925,7 +2968,8 @@ Python</label></div>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">collision_free_vertices</span><span class="w"> </span><span class="o">=</span>
 <span class="w">    </span><span class="p">(</span><span class="n">vertices_t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">max_step_size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">;</span>
 <span class="n">assert</span><span class="p">(</span><span class="n">ipc</span><span class="o">::</span><span class="n">is_step_collision_free</span><span class="p">(</span>
-<span class="w">    </span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">collision_free_vertices</span><span class="p">,</span><span class="w"> </span><span class="cm">/*min_distance=*/</span><span class="mf">1e-4</span><span class="p">));</span>
+<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">collision_free_vertices</span><span class="p">,</span>
+<span class="w">    </span><span class="cm">/*min_distance=*/</span><span class="mf">1e-4</span><span class="p">));</span>
 </code></pre></div>
 </div>
 </div>
@@ -2933,10 +2977,11 @@ Python</label></div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">max_step_size</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">compute_collision_free_stepsize</span><span class="p">(</span>
         <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">vertices_t1</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
 
-<span class="n">collision_free_vertices</span> <span class="o">=</span>
-    <span class="p">(</span><span class="n">vertices_t1</span> <span class="o">-</span> <span class="n">vertices_t0</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_step_size</span> <span class="o">+</span> <span class="n">vertices_t0</span>
-<span class="k">assert</span><span class="p">(</span><span class="n">ipctk</span><span class="o">.</span><span class="n">is_step_collision_free</span><span class="p">(</span>
-    <span class="n">mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">collision_free_vertices</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">))</span>
+<span class="n">collision_free_vertices</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="n">vertices_t1</span> <span class="o">-</span> <span class="n">vertices_t0</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_step_size</span> <span class="o">+</span> <span class="n">vertices_t0</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">is_step_collision_free</span><span class="p">(</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">collision_free_vertices</span><span class="p">,</span>
+    <span class="n">min_distance</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -2962,7 +3007,7 @@ Python</label></div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Jul 30, 2026
+    Aug 05, 2026
   </span>
 
     
