@@ -9,7 +9,12 @@ void define_barrier_potential(py::module_& m)
 {
     py::class_<BarrierPotential, NormalPotential>(m, "BarrierPotential")
         .def(
-            py::init<const double, const double, const bool>(),
+            py::init([](const double dhat, const double stiffness,
+                        const bool use_physical_barrier) {
+                assert_positive(dhat, "dhat");
+                assert_positive(stiffness, "stiffness");
+                return BarrierPotential(dhat, stiffness, use_physical_barrier);
+            }),
             R"ipc_Qu8mg5v7(
             Construct a barrier potential.
 
@@ -17,12 +22,21 @@ void define_barrier_potential(py::module_& m)
                 dhat: The activation distance of the barrier.
                 stiffness: The stiffness of the barrier.
                 use_physical_barrier: Whether to use the physical barrier.
+
+            Raises:
+                ValueError: If dhat or stiffness is not positive.
             )ipc_Qu8mg5v7",
             "dhat"_a, "stiffness"_a, "use_physical_barrier"_a = false)
         .def(
-            py::init<
-                const std::shared_ptr<Barrier>, const double, const double,
-                const bool>(),
+            py::init([](std::shared_ptr<Barrier> barrier, const double dhat,
+                        const double stiffness,
+                        const bool use_physical_barrier) {
+                assert_not_none(barrier, "barrier");
+                assert_positive(dhat, "dhat");
+                assert_positive(stiffness, "stiffness");
+                return BarrierPotential(
+                    std::move(barrier), dhat, stiffness, use_physical_barrier);
+            }),
             R"ipc_Qu8mg5v7(
             Construct a barrier potential.
 
@@ -31,18 +45,40 @@ void define_barrier_potential(py::module_& m)
                 dhat: The activation distance of the barrier.
                 stiffness: The stiffness of the barrier.
                 use_physical_barrier: Whether to use the physical barrier.
+
+            Raises:
+                ValueError: If barrier is None, or dhat or stiffness is not positive.
             )ipc_Qu8mg5v7",
             "barrier"_a, "dhat"_a, "stiffness"_a,
             "use_physical_barrier"_a = false)
         .def_property(
-            "dhat", &BarrierPotential::dhat, &BarrierPotential::set_dhat,
-            "Barrier activation distance.")
+            "dhat", &BarrierPotential::dhat,
+            [](BarrierPotential& self, const double dhat) {
+                assert_positive(dhat, "dhat");
+                self.set_dhat(dhat);
+            },
+            "Barrier activation distance. Must be positive.")
+        .def_property(
+            "stiffness", &BarrierPotential::stiffness,
+            [](BarrierPotential& self, const double stiffness) {
+                assert_positive(stiffness, "stiffness");
+                self.set_stiffness(stiffness);
+            },
+            "Barrier stiffness. Must be positive.")
+        .def_property(
+            "use_physical_barrier", &BarrierPotential::use_physical_barrier,
+            &BarrierPotential::set_use_physical_barrier,
+            "Whether to use the physical barrier.")
         .def_property(
             "barrier",
             py::cpp_function(
                 &BarrierPotential::barrier, py::return_value_policy::reference),
-            &BarrierPotential::set_barrier,
-            "Barrier function used to compute the potential.");
+            [](BarrierPotential& self,
+               const std::shared_ptr<Barrier>& barrier) {
+                assert_not_none(barrier, "barrier");
+                self.set_barrier(barrier);
+            },
+            "Barrier function used to compute the potential. Must not be None.");
 }
 
 void define_smooth_potential(py::module_& m)
@@ -73,9 +109,15 @@ void define_smooth_potential(py::module_& m)
         .def_readonly("beta_t", &SmoothContactParameters::beta_t)
         .def_readonly("alpha_n", &SmoothContactParameters::alpha_n)
         .def_readonly("beta_n", &SmoothContactParameters::beta_n)
-        .def_readonly("r", &SmoothContactParameters::r);
+        .def_readonly("r", &SmoothContactParameters::r)
+        .def_property(
+            "adaptive_dhat_ratio",
+            &SmoothContactParameters::adaptive_dhat_ratio,
+            &SmoothContactParameters::set_adaptive_dhat_ratio,
+            "Ratio of the distance to the interaction set in the rest "
+            "configuration used as the per-element adaptive dhat.");
 
-    py::class_<SmoothContactPotential>(m, "SmoothPotential")
+    py::class_<SmoothContactPotential>(m, "SmoothContactPotential")
         .def(
             py::init<const SmoothContactParameters&>(),
             R"ipc_Qu8mg5v7(
