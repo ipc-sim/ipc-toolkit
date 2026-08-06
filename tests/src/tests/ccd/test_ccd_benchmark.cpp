@@ -187,27 +187,23 @@ static const std::string BENCHMARK_TAGS =
 
 TEST_CASE("Run CCD Benchmark", BENCHMARK_TAGS)
 {
-    std::shared_ptr<NarrowPhaseCCD> ccd;
-
 #ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
     SECTION("Floating-Point CCD")
     {
         fmt::print("Floating-Point CCD:\n\n");
-        ccd = std::make_shared<InexactCCD>();
+        run_benchmark(std::make_shared<InexactCCD>());
     }
 #endif
     SECTION("Tight Inclusion CCD")
     {
         fmt::print("Tight Inclusion CCD:\n\n");
-        ccd = std::make_shared<TightInclusionCCD>();
+        run_benchmark(std::make_shared<TightInclusionCCD>());
     }
     SECTION("Additive CCD")
     {
         fmt::print("Additive CCD:\n\n");
-        ccd = std::make_shared<AdditiveCCD>();
+        run_benchmark(std::make_shared<AdditiveCCD>());
     }
-
-    run_benchmark(ccd);
 }
 
 // TEST_CASE("Failing Benchmark Cases", "[ccd]")
