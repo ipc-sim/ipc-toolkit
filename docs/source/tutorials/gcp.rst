@@ -392,7 +392,7 @@ As :math:`\alpha + \beta` decreases, the support of the Heaviside function shrin
 
 Additional internal parameters that may affect behavior:
 
-- **Adaptive dhat ratio** (default ``0.5``): Controls the ratio :math:`\epsilon(x) / d_c(x, f_0)` in the adaptive barrier localization. Can be set via ``SmoothContactParameters::set_adaptive_dhat_ratio()``.
+- **Adaptive dhat ratio** (default ``0.5``): Controls the ratio :math:`\epsilon(x) / d_c(x, f_0)` in the adaptive barrier localization. Set it via ``SmoothContactParameters::set_adaptive_dhat_ratio()`` in C++ or the ``SmoothContactParameters.adaptive_dhat_ratio`` property in Python.
 - **Element measure** :math:`L`: For vertices, this is set to the average edge length around the vertex; for edges, to the edge length; for faces, :math:`L` is not needed. This determines the strength of the potential for low-dimensional contact (edge–edge, edge–vertex, vertex–vertex).
 
 Friction

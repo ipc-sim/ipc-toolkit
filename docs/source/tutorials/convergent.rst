@@ -5,7 +5,7 @@ Convergent Formulation
 
 In addition to the original implementation of :cite:t:`Li2020IPC`, we also implement the convergent formulation of :cite:t:`Li2023Convergent`.
 
-Fully enabling the convergent formulation requires to set three things: ``use_area_weighting`` and ``collision_set_type`` in ``Collisions`` (before calling ``build``) and ``use_physical_barrier`` in ``BarrierPotential``.
+Fully enabling the convergent formulation requires to set three things: ``use_area_weighting`` and ``collision_set_type`` in ``NormalCollisions`` (before calling ``build``) and ``use_physical_barrier`` in ``BarrierPotential``.
 
 .. md-tab-set::
 
@@ -13,28 +13,38 @@ Fully enabling the convergent formulation requires to set three things: ``use_ar
 
         .. code-block:: c++
 
+            ipc::NormalCollisions collisions;
             collisions.set_use_area_weighting(true);
             collisions.set_collision_set_type(
                 ipc::NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
             collisions.build(collision_mesh, vertices, dhat);
 
+            ipc::BarrierPotential barrier_potential(dhat, stiffness);
             barrier_potential.set_use_physical_barrier(true);
-            double b = barrier_potential(collisions, mesh, vertices);
+            double b = barrier_potential(collisions, collision_mesh, vertices);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
+            collisions = ipctk.NormalCollisions()
             collisions.use_area_weighting = True
             collisions.collision_set_type = \
                 ipctk.NormalCollisions.CollisionSetType.IMPROVED_MAX_APPROX
             collisions.build(collision_mesh, vertices, dhat)
 
+            barrier_potential = ipctk.BarrierPotential(dhat, stiffness)
             barrier_potential.use_physical_barrier = True
-            b = barrier_potential(collisions, mesh, vertices);
+            b = barrier_potential(collisions, collision_mesh, vertices)
 
 .. important::
     The members ``use_area_weighting`` and ``collision_set_type`` should be set before calling ``build`` for them to take effect. By default, they are ``false`` and ``IPC``.
+
+.. tip::
+    ``use_physical_barrier`` can also be set when constructing the potential:
+    ``ipc::BarrierPotential(dhat, stiffness, /*use_physical_barrier=*/true)`` in
+    C++ or ``ipctk.BarrierPotential(dhat, stiffness, use_physical_barrier=True)``
+    in Python.
 
 Technical Details
 -----------------
@@ -68,7 +78,7 @@ Applying mesh vertices as nodes (and quadrature points), we numerically integrat
 where :math:`w_{\bar{x}}` are the quadrature weights, each given by one-third of the sum of the areas (in material space) of the boundary triangles incident to :math:`\bar{x}`.
 
 .. tip::
-    The area weighted quadrature is enabled by setting ``use_area_weighting`` to ``true`` in ``Collisions``.
+    The area weighted quadrature is enabled by setting ``use_area_weighting`` to ``true`` in ``NormalCollisions``.
 
 We next need to smoothly approximate the max operator in the barrier potentials. However, common approaches such as an :math:`L^p`-norm or LogSumExp would decrease sparsity in subsequent numerical solves by increasing the stencil size per collision evaluation. We instead leverage the locality of our barrier function to approximate the max operator by removing duplicate distance pairs. Our resulting approximators for a triangulated surface is
 
@@ -86,7 +96,7 @@ where :math:`V_{\text{int}} \subseteq V` is the subset of internal surface nodes
     Comparison of the improved max approximator (right) to and exact max (left) and the direct summation (middle). For obtuse angles, the improved max approximator is tight, while for acute angles it might overestimate the max in concave regions.
 
 .. tip::
-    The improved max approximator is enabled by setting ``collision_set_type`` to ``IMPROVED_MAX_APPROX`` in ``Collisions``.
+    The improved max approximator is enabled by setting ``collision_set_type`` to ``IMPROVED_MAX_APPROX`` in ``NormalCollisions``.
 
 The corresponding discrete barrier potential is then simply
 

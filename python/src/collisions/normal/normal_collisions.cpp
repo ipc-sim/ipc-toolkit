@@ -20,6 +20,21 @@ void define_smooth_collisions(py::module_& m, const std::string& name)
     py::class_<SmoothCollisions>(m, name.c_str())
         .def(py::init())
         .def(
+            "compute_adaptive_dhat", &SmoothCollisions::compute_adaptive_dhat,
+            R"ipc_Qu8mg5v7(
+            Compute the per-element adaptive dhat from the rest configuration.
+
+            Note:
+                Must be called before build() when using use_adaptive_dhat=True.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Vertices of the collision mesh.
+                params: SmoothContactParameters.
+                broad_phase: Broad phase method.
+            )ipc_Qu8mg5v7",
+            "mesh"_a, "vertices"_a, "params"_a, "broad_phase"_a = nullptr)
+        .def(
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
