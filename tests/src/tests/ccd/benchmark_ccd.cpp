@@ -7,7 +7,6 @@
 #include <ipc/ipc.hpp>
 #include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/ccd/tight_inclusion_ccd.hpp>
-#include <ipc/utils/logger.hpp>
 
 using namespace ipc;
 
