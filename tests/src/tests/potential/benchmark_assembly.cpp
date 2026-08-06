@@ -25,6 +25,7 @@
 
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/hessian_assembler.hpp>
 #ifdef IPC_TOOLKIT_WITH_MESHFEM_SPARSE
 #include <ipc/utils/meshfem_hessian_assembler.hpp>
 #endif
@@ -392,7 +393,7 @@ TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
     fmt::print(
         "{:<20} {:>9} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} "
         "{:>10} {:>10} {:>8} {:>8} {:>8} {:>8}\n",
-        "scene", "#collis", "local(ms)", "total(ms)", "asm(ms)", "full(ms)",
+        "scene", "#collis", "local(ms)", "triplet(ms)", "asm(ms)", "full(ms)",
         "fold(ms)", "mfem(ms)", "mfblk(ms)", "mfr(ms)", "mfa(ms)", "local%",
         "asm%", "full%", "speedup");
 
@@ -414,8 +415,13 @@ TEST_CASE("Assembly cost breakdown", "[!benchmark][assembly]")
 
         const double t_local =
             median_seconds([&] { (void)local_hessians_only(scene); });
-        const double t_total = median_seconds(
-            [&] { (void)potential.hessian(collisions, mesh, X); });
+        // The triplet baseline, measured explicitly: hessian() routes through
+        // whichever backend is compiled in, so it is no longer the baseline.
+        const double t_total = median_seconds([&] {
+            TripletHessianAssembler assembler;
+            potential.assemble_hessian(collisions, mesh, X, assembler);
+            (void)assembler.get_matrix();
+        });
         const double t_full =
             median_seconds([&] { (void)mesh.to_full_dof(hess); });
         // Phase 1: fold to_full_dof into assembly.
