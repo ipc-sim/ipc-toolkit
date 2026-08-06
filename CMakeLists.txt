@@ -274,8 +274,7 @@ endif()
 # Block-accelerated Hessian assembly
 if(IPC_TOOLKIT_WITH_MESHFEM_SPARSE)
   include(meshfem_sparse)
-  # PUBLIC: the MeshFEMHessianAssembler header includes MeshFEMSparse headers.
-  target_link_libraries(ipc_toolkit PUBLIC MeshFEM::Sparse)
+  target_link_libraries(ipc_toolkit PRIVATE MeshFEM::Sparse)
 endif()
 
 if(IPC_TOOLKIT_WITH_PROFILER)

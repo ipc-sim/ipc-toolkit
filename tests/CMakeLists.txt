@@ -65,6 +65,11 @@ target_link_libraries(ipc_toolkit_tests PRIVATE finitediff::finitediff)
 include(json)
 target_link_libraries(ipc_toolkit_tests PRIVATE nlohmann_json::nlohmann_json)
 
+if(IPC_TOOLKIT_WITH_MESHFEM_SPARSE)
+  include(meshfem_sparse)
+  target_link_libraries(ipc_toolkit_tests PRIVATE MeshFEM::Sparse)
+endif()
+
 if(IPC_TOOLKIT_WITH_CUDA)
   # We need to explicitly state that we need all CUDA files in the particle
   # library to be built with -dc as the member functions could be called by
