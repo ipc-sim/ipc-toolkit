@@ -26,10 +26,30 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
         mesh_name_t0 = "private/slow-broadphase-ccd/s0.ply";
         mesh_name_t1 = "private/slow-broadphase-ccd/s1.ply";
     }
+    SECTION("Cloth-Funnel")
+    {
+        mesh_name_t0 = "cloth-funnel/227.ply";
+        mesh_name_t1 = "cloth-funnel/228.ply";
+    }
     SECTION("Cloth-ball")
     {
         mesh_name_t0 = "cloth_ball92.ply";
         mesh_name_t1 = "cloth_ball93.ply";
+    }
+    SECTION("Armadillo-Rollers")
+    {
+        mesh_name_t0 = "armadillo-rollers/326.ply";
+        mesh_name_t1 = "armadillo-rollers/327.ply";
+    }
+    SECTION("N-Body-Simulation")
+    {
+        mesh_name_t0 = "n-body-simulation/balls16_18.ply";
+        mesh_name_t1 = "n-body-simulation/balls16_19.ply";
+    }
+    SECTION("Rod-Twist")
+    {
+        mesh_name_t0 = "rod-twist/3036.ply";
+        mesh_name_t1 = "rod-twist/3037.ply";
     }
     SECTION("Puffer-Ball")
     {
@@ -39,7 +59,10 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
 
     if (!tests::load_mesh(mesh_name_t0, V0, E, F)
         || !tests::load_mesh(mesh_name_t1, V1, E, F)) {
-        SKIP("Slow broadphase CCD meshes are private");
+        SKIP(
+            fmt::format(
+                "Unable to load {} and/or {} (some meshes are private)",
+                mesh_name_t0, mesh_name_t1));
     }
 
     CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
