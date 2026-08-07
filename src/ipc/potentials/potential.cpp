@@ -135,7 +135,10 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
 
     if (collisions.empty()) {
         Eigen::VectorXd grad = Eigen::VectorXd::Zero(out_ndof);
-        return map_to_full ? mesh.to_full_dof(grad) : grad;
+        if (map_to_full) {
+            return mesh.to_full_dof(grad);
+        }
+        return grad;
     }
 
     const int dim = X.cols();
@@ -182,7 +185,10 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
         IPC_TOOLKIT_PROFILE_BLOCK("Gather Local Gradients");
         Eigen::VectorXd grad =
             gather_global_gradient(out_ndof, dim, local_grads, slot_vertex);
-        return map_to_full ? mesh.to_full_dof(grad) : grad;
+        if (map_to_full) {
+            return mesh.to_full_dof(grad);
+        }
+        return grad; // implicitly moved
     }
 
     tbb::combinable<Eigen::VectorXd> grad(Eigen::VectorXd::Zero(out_ndof));
@@ -214,7 +220,10 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
         Eigen::VectorXd combined_grad = grad.combine(
             [](const Eigen::VectorXd& a,
                const Eigen::VectorXd& b) -> Eigen::VectorXd { return a + b; });
-        return map_to_full ? mesh.to_full_dof(combined_grad) : combined_grad;
+        if (map_to_full) {
+            return mesh.to_full_dof(combined_grad);
+        }
+        return combined_grad; // implicitly moved
     }
 }
 
@@ -234,19 +243,34 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const bool fold_to_full = in_full_dof && mesh.is_selection_dof_map();
     const bool map_to_full = in_full_dof && !fold_to_full;
 
+    if (collisions.empty()) {
+        // Short-circuit: building a sparsity pattern for an empty contact set
+        // costs O(ndof) (or more) work to produce an all-zero matrix.
+        assert(X.rows() == mesh.num_vertices());
+        const int out_ndof = fold_to_full ? mesh.full_ndof() : X.size();
+        Eigen::SparseMatrix<double> hess(out_ndof, out_ndof);
+        if (map_to_full) {
+            return mesh.to_full_dof(hess);
+        }
+        return hess;
+    }
+
 #ifdef IPC_TOOLKIT_WITH_MESHFEM_SPARSE
     MeshFEMHessianAssembler assembler;
     assemble_hessian(
         collisions, mesh, X, assembler, project_hessian_to_psd, fold_to_full);
-    const Eigen::SparseMatrix<double> hess = assembler.take_matrix();
+    Eigen::SparseMatrix<double> hess = assembler.take_matrix();
 #else
     TripletHessianAssembler assembler;
     assemble_hessian(
         collisions, mesh, X, assembler, project_hessian_to_psd, fold_to_full);
-    const Eigen::SparseMatrix<double> hess = assembler.get_matrix();
+    Eigen::SparseMatrix<double> hess = assembler.get_matrix();
 #endif
 
-    return map_to_full ? mesh.to_full_dof(hess) : hess;
+    if (map_to_full) {
+        return mesh.to_full_dof(hess);
+    }
+    return hess; // implicitly moved
 }
 
 template <class TCollisions>

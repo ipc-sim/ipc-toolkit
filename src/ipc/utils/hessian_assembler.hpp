@@ -10,6 +10,7 @@
 
 #include <array>
 #include <functional>
+#include <memory>
 
 namespace ipc {
 

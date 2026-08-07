@@ -331,6 +331,11 @@ void MeshFEMHessianAssembler::begin(
     const size_t num_stencils,
     const StencilGetter& stencil)
 {
+    // Validate before dividing by dim: dim == 0 would trap.
+    if (dim != 2 && dim != 3) {
+        log_and_throw_error(
+            "MeshFEMHessianAssembler: unsupported dimension {}!", dim);
+    }
     assert(ndof % dim == 0);
     const size_t num_block_vars = size_t(ndof) / dim;
 
@@ -338,11 +343,8 @@ void MeshFEMHessianAssembler::begin(
         || m_impl->num_block_vars() != num_block_vars) {
         if (dim == 2) {
             m_impl = std::make_unique<Impl<2>>(num_block_vars);
-        } else if (dim == 3) {
-            m_impl = std::make_unique<Impl<3>>(num_block_vars);
         } else {
-            log_and_throw_error(
-                "MeshFEMHessianAssembler: unsupported dimension {}!", dim);
+            m_impl = std::make_unique<Impl<3>>(num_block_vars);
         }
     }
 
