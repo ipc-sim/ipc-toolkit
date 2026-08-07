@@ -11,12 +11,19 @@
 # sparse direct solver wrappers (which clash with Eigen 5's BLAS
 # declarations), declares -fvisibility=hidden PUBLIC, and fetches its own
 # Eigen/TBB/MeshFEMCore.
-if(TARGET MeshFEMSparse)
+if(TARGET MeshFEM::Sparse)
     return()
 endif()
 
-message(STATUS "Third-party: creating target 'MeshFEMSparse'")
+if(TARGET MeshFEMSparse)
+    # We rely on a MeshFEM::Sparse alias of MeshFEMSparse, so define that alias and return.
+    add_library(MeshFEM::Sparse ALIAS MeshFEMSparse)
+    return()
+endif()
 
+message(STATUS "Third-party: creating target 'MeshFEM::Sparse'")
+
+# Required dependencies of MeshFEMSparse:
 include(eigen)
 include(onetbb)
 find_package(Threads REQUIRED)
@@ -28,15 +35,11 @@ find_package(Threads REQUIRED)
 # MeshFEM/MeshFEMCore and MeshFEM/MeshFEMSparse once the PRs merge.
 include(CPM)
 CPMAddPackage(
-    NAME MeshFEMCore
-    URL "https://github.com/zfergus/MeshFEMCore/archive/8d0e84788189748d9e906cc7f807507a3cb4b2ef.zip"
-    URL_HASH SHA256=71fe52e49276a401ae64d692dc26aea4147b1baa636bc78082d3fd0061eb4ccb
+    URI "gh:zfergus/MeshFEMCore#8d0e84788189748d9e906cc7f807507a3cb4b2ef"
     DOWNLOAD_ONLY YES
 )
 CPMAddPackage(
-    NAME MeshFEMSparse
-    URL "https://github.com/zfergus/MeshFEMSparse/archive/15a92834189ade69ed9e00373adc3036a72cd40a.zip"
-    URL_HASH SHA256=882f3a126f59023b4d4aba6e1b96b89d5f82f2e80bfe086c1f3afd435f8e4c80
+    URI "gh:zfergus/MeshFEMSparse#15a92834189ade69ed9e00373adc3036a72cd40a"
     DOWNLOAD_ONLY YES
 )
 
