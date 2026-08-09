@@ -30,5 +30,9 @@ public:
     Matrix6d hessian(
         Eigen::ConstRef<Eigen::Vector2d> d,
         Eigen::ConstRef<Eigen::Vector4d> x) const;
+
+private:
+    double
+        m_rest_length; ///< Rest-shape edge length (quadrature weight, constant)
 };
 } // namespace ipc

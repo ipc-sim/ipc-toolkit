@@ -96,6 +96,8 @@ private:
     Eigen::MatrixX3i faces;
     Eigen::MatrixX2i edges;
     bool orientable;
+    double m_rest_weight; ///< Rest-shape vertex area measure (quadrature
+                          ///< weight, constant)
 
     bool smooth_point3_term_type(
         Eigen::ConstRef<Eigen::MatrixX3d> X,
