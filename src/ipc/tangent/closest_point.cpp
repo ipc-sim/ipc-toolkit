@@ -3079,7 +3079,7 @@ namespace autogen {
         const double t252 = t250 + t251;
         const double t253 = t249 + t252;
         const double t254 = t253 * t73;
-        const double t255 = std::pow(t27, -2);
+        const double t255 = 1.0 / (t27 * t27);
         const double t256 = 4 * t255;
         const double t257 = t256 * (t64 * t64);
         const double t258 = t159 * t233;
