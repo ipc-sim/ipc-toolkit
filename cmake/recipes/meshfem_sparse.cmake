@@ -28,18 +28,13 @@ include(eigen)
 include(onetbb)
 find_package(Threads REQUIRED)
 
-# TEMPORARY: pinned to zfergus' forks, which carry fixes submitted upstream:
-# Eigen 5 support (https://github.com/MeshFEM/MeshFEMCore/pull/1) and the
-# mishandling of empty block columns, which a contact pattern is full of
-# (https://github.com/MeshFEM/MeshFEMSparse/pull/1). Repoint to
-# MeshFEM/MeshFEMCore and MeshFEM/MeshFEMSparse once the PRs merge.
 include(CPM)
 CPMAddPackage(
-    URI "gh:zfergus/MeshFEMCore#8d0e84788189748d9e906cc7f807507a3cb4b2ef"
+    URI "gh:MeshFEM/MeshFEMCore#de0d68a16528e59fc491cf27b9f61d37ac464365"
     DOWNLOAD_ONLY YES
 )
 CPMAddPackage(
-    URI "gh:zfergus/MeshFEMSparse#15a92834189ade69ed9e00373adc3036a72cd40a"
+    URI "gh:MeshFEM/MeshFEMSparse#0a113141e8288fb1369ecfd465bc12dc09cae77a"
     DOWNLOAD_ONLY YES
 )
 
