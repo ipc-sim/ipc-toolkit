@@ -2,10 +2,25 @@
 
 #include <ipc/config.hpp> // for IPC_TOOLKIT_HOST_DEVICE
 
-#include <algorithm> // for std::clamp
-#include <cstdint>   // for uint64_t
+#include <cstdint> // for uint64_t
 
 namespace ipc {
+
+namespace detail {
+    /// @brief Clamp a double to [lo, hi] (a device-safe std::clamp).
+    ///
+    /// std::clamp cannot be called from device code: MSVC's debug STL checks
+    /// the bounds with _STL_VERIFY, which expands to __debugbreak(); nvcc's
+    /// NVVM backend then emits invalid IR ("Terminator found in the middle of a
+    /// basic block"). The comparison order matches std::clamp exactly, so the
+    /// result -- including a NaN input passing through unchanged -- is
+    /// identical.
+    IPC_TOOLKIT_HOST_DEVICE inline double
+    clamp(const double v, const double lo, const double hi)
+    {
+        return v < lo ? lo : (hi < v ? hi : v);
+    }
+} // namespace detail
 
 /// @brief Expands a 32-bit integer into 64 bits by inserting 1 zero after each bit.
 /// @param v The 32-bit integer to expand.
@@ -40,8 +55,8 @@ IPC_TOOLKIT_HOST_DEVICE inline uint64_t expand_bits_2(uint64_t v)
 IPC_TOOLKIT_HOST_DEVICE inline uint64_t morton_2D(double x, double y)
 {
     constexpr double scale = 1ULL << 32;
-    x = std::clamp(x * scale, 0.0, scale - 1);
-    y = std::clamp(y * scale, 0.0, scale - 1);
+    x = detail::clamp(x * scale, 0.0, scale - 1);
+    y = detail::clamp(y * scale, 0.0, scale - 1);
     uint64_t xx = expand_bits_1(uint64_t(x));
     uint64_t yy = expand_bits_1(uint64_t(y));
     return (xx << 1) | yy;
@@ -55,9 +70,9 @@ IPC_TOOLKIT_HOST_DEVICE inline uint64_t morton_2D(double x, double y)
 IPC_TOOLKIT_HOST_DEVICE inline uint64_t morton_3D(double x, double y, double z)
 {
     constexpr double scale = 1ULL << 21;
-    x = std::clamp(x * scale, 0.0, scale - 1);
-    y = std::clamp(y * scale, 0.0, scale - 1);
-    z = std::clamp(z * scale, 0.0, scale - 1);
+    x = detail::clamp(x * scale, 0.0, scale - 1);
+    y = detail::clamp(y * scale, 0.0, scale - 1);
+    z = detail::clamp(z * scale, 0.0, scale - 1);
     uint64_t xx = expand_bits_2(uint64_t(x));
     uint64_t yy = expand_bits_2(uint64_t(y));
     uint64_t zz = expand_bits_2(uint64_t(z));

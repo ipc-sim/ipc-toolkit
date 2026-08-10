@@ -87,6 +87,13 @@ namespace {
     // assigned) -- so the z bound is an exact, uninflated 0.0, not
     // nextafter(0 +/- inflation_radius, ...). Replicate that exactly: for
     // k >= dim, write a hard 0.0 instead of inflating.
+    //
+    // The direction arguments must be doubles: INFINITY is a float macro, so
+    // nextafter(double, INFINITY) resolves to the host-only
+    // std::nextafter<double, float> promotion template instead of CUDA's
+    // __device__ nextafter(double, double).
+    constexpr double POS_INF = std::numeric_limits<double>::infinity();
+    constexpr double NEG_INF = -POS_INF;
 
     __global__ void build_vertex_boxes_static_kernel(
         const double* __restrict__ vertices, // dim * n, row-major
@@ -104,8 +111,8 @@ namespace {
         for (int k = 0; k < 3; ++k) {
             if (k < dim) {
                 const double v = vertices[dim * i + k];
-                box_min[3 * i + k] = nextafter(v - inflation_radius, -INFINITY);
-                box_max[3 * i + k] = nextafter(v + inflation_radius, INFINITY);
+                box_min[3 * i + k] = nextafter(v - inflation_radius, NEG_INF);
+                box_max[3 * i + k] = nextafter(v + inflation_radius, POS_INF);
             } else {
                 box_min[3 * i + k] = 0.0;
                 box_max[3 * i + k] = 0.0;
@@ -135,9 +142,9 @@ namespace {
                 // monotonic so min(nextafter(a),nextafter(b)) ==
                 // nextafter(min(a,b)).
                 box_min[3 * i + k] =
-                    nextafter(fmin(a, b) - inflation_radius, -INFINITY);
+                    nextafter(fmin(a, b) - inflation_radius, NEG_INF);
                 box_max[3 * i + k] =
-                    nextafter(fmax(a, b) + inflation_radius, INFINITY);
+                    nextafter(fmax(a, b) + inflation_radius, POS_INF);
             } else {
                 box_min[3 * i + k] = 0.0;
                 box_max[3 * i + k] = 0.0;
