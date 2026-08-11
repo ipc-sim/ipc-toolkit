@@ -85,9 +85,8 @@ const std::vector<AssemblySceneSpec>& assembly_scene_specs()
     // WARNING: increasing `dhat` grows the collision set superlinearly. The
     // values below are measured (see the "Assembly scene statistics" test) and
     // span 390 -> 512k collisions. Do not raise them without checking the
-    // resulting candidate/collision count first (use the "[assembly-probe]"
-    // test): `dhat` an order of magnitude larger on `cloth_ball92.ply`
-    // exhausts memory on a 64 GB host.
+    // resulting candidate/collision count first: `dhat` an order of magnitude
+    // larger on `cloth_ball92.ply` exhausts memory on a 64 GB host.
     //
     // The simulation-frame scenes use dhat = 1e-3 * bbox diagonal.
     static const std::vector<AssemblySceneSpec> specs = {

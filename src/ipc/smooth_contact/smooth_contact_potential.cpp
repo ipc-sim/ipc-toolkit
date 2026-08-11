@@ -1,8 +1,8 @@
 #include "smooth_contact_potential.hpp"
 
+#include <ipc/utils/gradient_assembler.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
-#include <tbb/combinable.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 
@@ -42,26 +42,16 @@ Eigen::VectorXd SmoothContactPotential::gradient(
 
     const int dim = X.cols();
 
-    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
-        Eigen::VectorXd::Zero(X.size()));
-    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
-        const SmoothCollision& collision = collisions[i];
-
-        const Eigen::VectorXd local_grad =
-            this->gradient(collision, collision.dof(X));
-
-        const std::vector<index_t> vids = collision.vertex_ids();
-
-        local_gradient_to_global_gradient(
-            local_grad, vids, dim, storage.local());
-    });
-
-    Eigen::VectorXd grad;
-    grad.setZero(X.size());
-    for (const auto& local_storage : storage) {
-        grad += local_storage;
-    }
-    return grad;
+    // Smooth-contact stencils are not bounded at four vertices, so the local
+    // gradients and ids are dynamically sized; assemble_gradient therefore
+    // only takes its thread-local path here (see its @note).
+    return assemble_gradient(
+        X.size(), dim, collisions.size(),
+        [&](const size_t i) -> Eigen::VectorXd {
+            const SmoothCollision& collision = collisions[i];
+            return this->gradient(collision, collision.dof(X));
+        },
+        [&](const size_t i) { return collisions[i].vertex_ids(); });
 }
 
 Eigen::SparseMatrix<double> SmoothContactPotential::hessian(

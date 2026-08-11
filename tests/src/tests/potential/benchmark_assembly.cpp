@@ -16,14 +16,11 @@
 
 #include "assembly_scene.hpp"
 
-#include <tests/utils.hpp>
-
 #include <catch2/benchmark/catch_benchmark.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
-#include <ipc/candidates/candidates.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/hessian_assembler.hpp>
 #ifdef IPC_TOOLKIT_WITH_MESHFEM_SPARSE
@@ -38,7 +35,6 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
-#include <cstdlib>
 #include <limits>
 
 using namespace ipc;
@@ -143,67 +139,6 @@ TEST_CASE("Assembly scene statistics", "[!benchmark][assembly]")
         std::fflush(stdout);
     }
     fmt::print("\n");
-}
-
-// Safely probe a candidate scene for inclusion in `assembly_scene_specs()`.
-//
-// Building a collision set with a too-large dhat can exhaust host memory, so
-// this test (a) sizes dhat relative to the mesh's bounding-box diagonal and
-// (b) counts broad-phase candidates first, refusing to build the collision set
-// if there are too many. Run one scene per process:
-//
-//   IPC_ASSEMBLY_PROBE_MESH=puffer-ball/20.ply \
-//   IPC_ASSEMBLY_PROBE_DHAT_REL=1e-3 \
-//   ./ipc_toolkit_tests "[assembly-probe]"
-TEST_CASE("Assembly scene probe", "[.][assembly-probe]")
-{
-    const char* mesh_name = std::getenv("IPC_ASSEMBLY_PROBE_MESH");
-    if (mesh_name == nullptr) {
-        SKIP("Set IPC_ASSEMBLY_PROBE_MESH to probe a scene.");
-    }
-    const char* dhat_rel_str = std::getenv("IPC_ASSEMBLY_PROBE_DHAT_REL");
-    const double dhat_rel =
-        (dhat_rel_str != nullptr) ? std::atof(dhat_rel_str) : 1e-3;
-
-    // Above this many broad-phase candidates, do not attempt to build the
-    // collision set: candidate/collision storage grows superlinearly with dhat
-    // and has exhausted memory on a 64 GB host before.
-    constexpr size_t MAX_SAFE_CANDIDATES = 10'000'000;
-
-    Eigen::MatrixXd vertices;
-    Eigen::MatrixXi edges, faces;
-    REQUIRE(ipc::tests::load_mesh(mesh_name, vertices, edges, faces));
-
-    const double bbox_diag =
-        (vertices.colwise().maxCoeff() - vertices.colwise().minCoeff()).norm();
-    const double dhat = dhat_rel * bbox_diag;
-
-    const CollisionMesh mesh =
-        CollisionMesh::build_from_full_mesh(vertices, edges, faces);
-    vertices = mesh.vertices(vertices);
-
-    fmt::print(
-        "probe {}: V={} E={} F={} bbox_diag={:g} dhat={:g} (rel={:g})\n",
-        mesh_name, vertices.rows(), edges.rows(), faces.rows(), bbox_diag, dhat,
-        dhat_rel);
-    std::fflush(stdout);
-
-    Candidates candidates;
-    candidates.build(mesh, vertices, vertices, /*inflation_radius=*/dhat / 2);
-    fmt::print("probe {}: candidates={}\n", mesh_name, candidates.size());
-    std::fflush(stdout);
-
-    if (candidates.size() > MAX_SAFE_CANDIDATES) {
-        fmt::print(
-            "probe {}: REFUSING to build collisions (> {} candidates)\n",
-            mesh_name, MAX_SAFE_CANDIDATES);
-        return;
-    }
-
-    NormalCollisions collisions;
-    collisions.build(candidates, mesh, vertices, dhat);
-    fmt::print("probe {}: collisions={}\n", mesh_name, collisions.size());
-    std::fflush(stdout);
 }
 
 TEST_CASE("Benchmark contact Hessian assembly", "[!benchmark][assembly]")

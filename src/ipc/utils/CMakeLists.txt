@@ -3,6 +3,7 @@ set(SOURCES
   default_init_allocator.hpp
   eigen_ext.hpp
   eigen_ext.tpp
+  gradient_assembler.hpp
   hessian_assembler.cpp
   hessian_assembler.hpp
   local_to_global.hpp

@@ -3,12 +3,27 @@
 #include <ipc/collision_mesh.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/utils/gradient_assembler.hpp>
 
 #include <optional>
 #include <string>
 #include <vector>
 
 namespace ipc::tests {
+
+/// @brief Which strategy `assemble_gradient` uses for a given shape.
+///
+/// Delegates to `ipc::gradient_assembly_is_two_pass`, supplying the
+/// normal-collision stencil size.
+///
+/// @param num_collisions Number of collisions being assembled.
+/// @param out_ndof Size of the assembled gradient.
+inline bool
+assembly_is_two_pass(const size_t num_collisions, const size_t out_ndof)
+{
+    return gradient_assembly_is_two_pass(
+        NormalCollision::STENCIL_SIZE * num_collisions, out_ndof);
+}
 
 /// @brief Description of a contact scene used to benchmark assembly.
 struct AssemblySceneSpec {
