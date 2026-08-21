@@ -473,6 +473,11 @@ CollisionMesh::to_full_dof(Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     // ∇_{full} f(S * T * x_full) = Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
     // x = ∇_{collision} f(S * T * x_full); m_displacement_dof_map = S * T
+    if (m_is_selection_dof_map) {
+        logger().warn(
+            "CollisionMesh::to_full_dof is deprecated when the displacement map is purely a selection matrix. "
+            "Please migrate to the in_full_dof output variable of Potential::gradient.");
+    }
     return m_displacement_dof_map.transpose() * x;
 }
 
@@ -482,6 +487,11 @@ CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
     // ∇_{full} Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
     //      = Tᵀ * Sᵀ * [∇_{collision}² f(S * T * x_full)] * S * T
     // X = ∇_{collision}² f(S * T * x_full); m_displacement_dof_map = S * T
+    if (m_is_selection_dof_map) {
+        logger().warn(
+            "CollisionMesh::to_full_dof is deprecated when the displacement map is purely a selection matrix. "
+            "Please migrate to the in_full_dof output variable of Potential::hessian.");
+    }
     return m_displacement_dof_map.transpose() * X * m_displacement_dof_map;
 }
 
