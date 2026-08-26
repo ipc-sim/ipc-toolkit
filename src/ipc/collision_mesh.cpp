@@ -10,6 +10,7 @@
 #include <tbb/parallel_for.h>
 
 #include <algorithm>
+#include <mutex>
 
 namespace ipc {
 
@@ -466,6 +467,21 @@ Eigen::MatrixXd CollisionMesh::map_displacements(
     return m_displacement_map * full_displacements;
 }
 
+namespace {
+    /// @brief Warn (at most once per process) that to_full_dof is
+    /// unnecessary because the DOF map is a pure selection matrix.
+    void warn_to_full_dof_is_selection_dof_map(const char* caller)
+    {
+        static std::once_flag flag;
+        std::call_once(flag, [&] {
+            logger().warn(
+                "CollisionMesh::to_full_dof is deprecated when the displacement map is purely a selection matrix. "
+                "Please migrate to the in_full_dof output variable of {}.",
+                caller);
+        });
+    }
+} // namespace
+
 // ============================================================================/
 
 Eigen::VectorXd
@@ -474,9 +490,7 @@ CollisionMesh::to_full_dof(Eigen::ConstRef<Eigen::VectorXd> x) const
     // ∇_{full} f(S * T * x_full) = Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
     // x = ∇_{collision} f(S * T * x_full); m_displacement_dof_map = S * T
     if (m_is_selection_dof_map) {
-        logger().warn(
-            "CollisionMesh::to_full_dof is deprecated when the displacement map is purely a selection matrix. "
-            "Please migrate to the in_full_dof output variable of Potential::gradient.");
+        warn_to_full_dof_is_selection_dof_map("Potential::gradient");
     }
     return m_displacement_dof_map.transpose() * x;
 }
@@ -488,9 +502,7 @@ CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
     //      = Tᵀ * Sᵀ * [∇_{collision}² f(S * T * x_full)] * S * T
     // X = ∇_{collision}² f(S * T * x_full); m_displacement_dof_map = S * T
     if (m_is_selection_dof_map) {
-        logger().warn(
-            "CollisionMesh::to_full_dof is deprecated when the displacement map is purely a selection matrix. "
-            "Please migrate to the in_full_dof output variable of Potential::hessian.");
+        warn_to_full_dof_is_selection_dof_map("Potential::hessian");
     }
     return m_displacement_dof_map.transpose() * X * m_displacement_dof_map;
 }
