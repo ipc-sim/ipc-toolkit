@@ -3,6 +3,8 @@
 #include <ipc/collision_mesh.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
+#include <string>
+
 namespace ipc {
 
 /// @brief Base class for potentials.
@@ -18,6 +20,9 @@ protected:
 public:
     Potential() = default;
     virtual ~Potential() = default;
+
+    /// @brief The name of this potential (used for profiling).
+    virtual std::string name() const = 0;
 
     // -- Cumulative methods ---------------------------------------------------
 

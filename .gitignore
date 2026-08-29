@@ -675,3 +675,5 @@ CMakeGraphVizOptions.cmake
 .zed/*
 
 CLAUDE.md
+.claude
+graphify-out

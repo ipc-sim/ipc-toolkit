@@ -62,7 +62,25 @@ cmake_policy(SET CMP0114 NEW) # Support the Xcode "new build system"
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX
-        VERSION "1.6.0")
+        VERSION "2.0.0")
+
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
+  # Generate a compile_commands.json file
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+
+  # If we are on a Mac, explicitly add the sysroot to the compiler flags
+  if(CMAKE_EXPORT_COMPILE_COMMANDS AND APPLE)
+    # CMake usually finds the sysroot automatically, but if it didn't, fetch it
+    if(NOT CMAKE_OSX_SYSROOT)
+      execute_process(COMMAND xcrun --show-sdk-path
+                          OUTPUT_VARIABLE CMAKE_OSX_SYSROOT
+                          OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
+
+    # Force the -isysroot flag into the compile commands for clang-tidy
+    add_compile_options("-isysroot" "${CMAKE_OSX_SYSROOT}")
+  endif()
+endif()
 
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
@@ -82,6 +100,7 @@ option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"     
 option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
 option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
 option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
+option(IPC_TOOLKIT_WITH_TRACY                 "Enable Tracy frame profiler"                   OFF)
 
 # Advanced options
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
@@ -248,6 +267,12 @@ if(IPC_TOOLKIT_WITH_PROFILER)
   # Add nlohmann/json for the profiler
   include(json)
   target_link_libraries(ipc_toolkit PUBLIC nlohmann_json::nlohmann_json)
+endif()
+
+# Tracy profiler
+if(IPC_TOOLKIT_WITH_TRACY)
+  include(tracy)
+  target_link_libraries(ipc_toolkit PUBLIC Tracy::TracyClient)
 endif()
 
 # Extra warnings (link last for highest priority)

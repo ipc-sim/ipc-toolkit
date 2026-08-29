@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/collision_filter.hpp>
 #include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -129,6 +130,13 @@ public:
 
     /// @brief Compute the maximum rest length of all edges.
     double max_edge_length() const;
+
+    /// @brief Compute the unit normal of each face for the given vertex positions.
+    /// @note 3D only (requires triangular faces).
+    /// @param vertices The vertex positions of the collision mesh (|V| × 3).
+    /// @return The per-face unit normals (size |F|).
+    std::vector<Eigen::Vector3d>
+    face_normals(Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
     /// @brief Get the mapping from vertices to edges of the collision mesh.
     const std::vector<std::vector<index_t>>& vertices_to_edges() const
@@ -331,10 +339,10 @@ public:
     static Eigen::SparseMatrix<double> vertex_matrix_to_dof_matrix(
         const Eigen::SparseMatrix<double>& M_V, int dim);
 
-    /// A function that takes two vertex IDs and returns true if the vertices
-    /// (and faces or edges containing the vertices) can collide. By default all
-    /// primitives can collide with all other primitives.
-    std::function<bool(size_t, size_t)> can_collide = default_can_collide;
+    /// A filter for determining if two vertices (and the primitives containing
+    /// them) can collide. By default all primitives can collide with all other
+    /// primitives.
+    CollisionFilter can_collide;
 
     /// @brief Analytic planes in the scene that can be collided with.
     /// This is useful for representing infinite planes (e.g., the ground plane)
@@ -433,13 +441,6 @@ protected:
     std::vector<Eigen::SparseVector<double>> m_vertex_area_jacobian;
     /// @brief The rows of the Jacobian of the edge areas vector.
     std::vector<Eigen::SparseVector<double>> m_edge_area_jacobian;
-
-private:
-    /// @brief By default all primitives can collide with all other primitives.
-    static bool default_can_collide(size_t /*unused*/, size_t /*unused*/)
-    {
-        return true;
-    }
 };
 
 } // namespace ipc

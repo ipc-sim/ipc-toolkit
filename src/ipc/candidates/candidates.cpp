@@ -9,6 +9,7 @@
 #include <ipc/distance/point_plane.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/profiler.hpp>
 #include <ipc/utils/save_obj.hpp>
 
 #include <igl/remove_unreferenced.h>
@@ -45,6 +46,8 @@ void Candidates::build(
     const double inflation_radius,
     BroadPhase* broad_phase)
 {
+    IPC_TOOLKIT_PROFILE_BLOCK("Candidates::build(static)");
+
     std::unique_ptr<BroadPhase> default_broad_phase;
     if (broad_phase == nullptr) {
         default_broad_phase = make_default_broad_phase();
@@ -99,10 +102,9 @@ void Candidates::build(
 
         // TODO: Can we reuse the broad phase from above?
         broad_phase->clear();
-        broad_phase->can_vertices_collide = [&](size_t vi, size_t vj) {
-            // Ignore c-edge to c-edge and c-vertex to c-vertex
-            return ((vi < nCV) ^ (vj < nCV)) && mesh.can_collide(vi, vj);
-        };
+        // Ignore c-edge to c-edge and c-vertex to c-vertex
+        broad_phase->can_vertices_collide =
+            make_codim_cross_filter(nCV) & mesh.can_collide;
         broad_phase->build(V, CE, Eigen::MatrixXi(), inflation_radius);
 
         broad_phase->detect_edge_vertex_candidates(ev_candidates);
@@ -130,6 +132,8 @@ void Candidates::build(
     const double inflation_radius,
     BroadPhase* broad_phase)
 {
+    IPC_TOOLKIT_PROFILE_BLOCK("Candidates::build(dynamic)");
+
     std::unique_ptr<BroadPhase> default_broad_phase;
     if (broad_phase == nullptr) {
         default_broad_phase = make_default_broad_phase();
@@ -192,10 +196,9 @@ void Candidates::build(
 
         // TODO: Can we reuse the broad phase from above?
         broad_phase->clear();
-        broad_phase->can_vertices_collide = [&](size_t vi, size_t vj) {
-            // Ignore c-edge to c-edge and c-vertex to c-vertex
-            return ((vi < nCV) ^ (vj < nCV)) && mesh.can_collide(vi, vj);
-        };
+        // Ignore c-edge to c-edge and c-vertex to c-vertex
+        broad_phase->can_vertices_collide =
+            make_codim_cross_filter(nCV) & mesh.can_collide;
         broad_phase->build(V_t0, V_t1, CE, Eigen::MatrixXi(), inflation_radius);
 
         broad_phase->detect_edge_vertex_candidates(ev_candidates);
@@ -255,6 +258,7 @@ double Candidates::compute_collision_free_stepsize(
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
+    IPC_TOOLKIT_PROFILE_BLOCK("Candidates::compute_collision_free_stepsize");
 
     if (empty()) {
         return 1; // No possible collisions, so can take full step.
@@ -538,6 +542,41 @@ const CollisionStencil& Candidates::operator[](size_t i) const
         return pv_candidates[i];
     }
     throw std::out_of_range("Candidate index is out of range!");
+}
+
+bool Candidates::is_vertex_vertex(size_t i) const
+{
+    return i < vv_candidates.size();
+}
+
+bool Candidates::is_edge_vertex(size_t i) const
+{
+    return i >= vv_candidates.size()
+        && i < vv_candidates.size() + ev_candidates.size();
+}
+
+bool Candidates::is_edge_edge(size_t i) const
+{
+    return i >= vv_candidates.size() + ev_candidates.size()
+        && i
+        < vv_candidates.size() + ev_candidates.size() + ee_candidates.size();
+}
+
+bool Candidates::is_face_vertex(size_t i) const
+{
+    return i
+        >= vv_candidates.size() + ev_candidates.size() + ee_candidates.size()
+        && i < vv_candidates.size() + ev_candidates.size()
+            + ee_candidates.size() + fv_candidates.size();
+}
+
+bool Candidates::is_plane_vertex(size_t i) const
+{
+    return i >= vv_candidates.size() + ev_candidates.size()
+            + ee_candidates.size() + fv_candidates.size()
+        && i < vv_candidates.size() + ev_candidates.size()
+            + ee_candidates.size() + fv_candidates.size()
+            + pv_candidates.size();
 }
 
 // == Convert to subelement candidates ========================================

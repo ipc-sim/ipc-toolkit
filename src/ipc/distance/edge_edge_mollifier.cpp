@@ -19,10 +19,13 @@ Eigen::Vector<T, 12> edge_edge_mollifier_gradient_wrt_x(
         edge_edge_mollifier_threshold(ea0_rest, ea1_rest, eb0_rest, eb1_rest);
     const T ee_cross_norm_sqr = edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
     if (ee_cross_norm_sqr < eps_x) {
-        // ∇ₓ m = ∂m/∂ε ∇ₓε
+        // ∇ₓ m = ∂m/∂ε · ∇ₓε
+        // (m depends on rest positions only through eps_x, since the
+        // cross-squarednorm s is a function of POSITIONS only)
         return edge_edge_mollifier_derivative_wrt_eps_x(
                    ee_cross_norm_sqr, eps_x)
-            * edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x);
+            * edge_edge_mollifier_threshold_gradient(
+                   ea0_rest, ea1_rest, eb0_rest, eb1_rest);
     } else {
         return Eigen::Vector<T, 12>::Zero();
     }

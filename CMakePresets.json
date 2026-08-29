@@ -118,13 +118,13 @@
       "description": "Debug build with CUDA support"
     },
     {
-      "name": "test-build",
+      "name": "test",
       "configurePreset": "test",
       "displayName": "Unit Tests",
       "description": "Build for running tests"
     },
     {
-      "name": "python-build",
+      "name": "python",
       "configurePreset": "python",
       "displayName": "Python Bindings",
       "description": "Build with Python bindings enabled"

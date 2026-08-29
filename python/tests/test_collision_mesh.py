@@ -1,9 +1,9 @@
 import time
-import numpy as np
-import scipy
 
 import find_ipctk
-from ipctk import CollisionMesh, SparseCanCollide, VertexPatchesCanCollide
+import numpy as np
+import scipy
+from ipctk import CollisionMesh, make_sparse_filter, make_vertex_patches_filter
 
 
 def test_collision_mesh():
@@ -97,7 +97,8 @@ def test_can_collide():
 
     mesh = CollisionMesh(V, E)
 
-    def default_can_collide(i, j): return True
+    def default_can_collide(i, j):
+        return True
 
     patches = np.concatenate([np.zeros(4, dtype=int), np.ones(4, dtype=int)])
     print(patches.size)
@@ -114,8 +115,8 @@ def test_can_collide():
     can_collides = [
         default_can_collide,
         patches_can_collide,
-        SparseCanCollide(dict_can_collide, True),
-        VertexPatchesCanCollide(patches),
+        make_sparse_filter(dict_can_collide, True),
+        make_vertex_patches_filter(patches),
     ]
 
     for can_collide in can_collides:
@@ -125,3 +126,35 @@ def test_can_collide():
         for i in range(V.shape[0]):
             for j in range(V.shape[0]):
                 assert mesh.can_collide(i, j) == can_collide(i, j)
+
+
+def test_face_normals():
+    # Two triangles of a unit square in the z = 0 plane.
+    V = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]], dtype=float)
+    F = np.array([[0, 1, 2], [0, 2, 3]], dtype=int)
+    E = np.array([[0, 1], [1, 2], [2, 0], [2, 3], [3, 0]], dtype=int)
+
+    mesh = CollisionMesh(V, E, F)
+
+    N = mesh.face_normals(V)
+    assert N.shape == (mesh.num_faces, 3)
+    assert np.allclose(N, np.array([[0, 0, 1], [0, 0, 1]], dtype=float))
+    assert np.allclose(np.linalg.norm(N, axis=1), 1.0)
+
+    # Rotate 90° about the x-axis: +z normal ⇒ −y normal.
+    V_rot = np.column_stack((V[:, 0], -V[:, 2], V[:, 1]))
+    N_rot = mesh.face_normals(V_rot)
+    assert np.allclose(N_rot, np.array([[0, -1, 0], [0, -1, 0]], dtype=float))
+
+
+def test_face_normals_2d_raises():
+    V = np.array([[0, 0], [1, 0], [0, 1], [1, 1]], dtype=float)
+    E = np.array([[0, 1], [1, 3], [3, 2], [2, 0]], dtype=int)
+
+    mesh = CollisionMesh(V, E)
+
+    try:
+        mesh.face_normals(V)
+        assert False
+    except ValueError:
+        pass

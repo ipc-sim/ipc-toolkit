@@ -74,6 +74,8 @@ public:
         m_barrier = barrier;
     }
 
+    std::string name() const override { return "BarrierPotential"; }
+
     using Super::operator();
     using Super::gradient;
     using Super::hessian;

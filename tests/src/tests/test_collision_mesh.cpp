@@ -189,3 +189,65 @@ TEST_CASE(
 
     CHECK(actual_dof.isApprox(expected_dof));
 }
+TEST_CASE("face_normals", "[collision_mesh][face_normals]")
+{
+    // Two triangles of a unit square in the z = 0 plane, wound oppositely so
+    // their normals point in opposite directions.
+    Eigen::MatrixXd V(4, 3);
+    V << 0, 0, 0, //
+        1, 0, 0,  //
+        1, 1, 0,  //
+        0, 1, 0;  //
+
+    Eigen::MatrixXi F(2, 3);
+    F << 0, 1, 2, // CCW  ⇒ +z
+        0, 2, 3;  // CCW  ⇒ +z
+
+    Eigen::MatrixXi E(5, 2);
+    E << 0, 1, 1, 2, 2, 0, 2, 3, 3, 0;
+
+    const CollisionMesh mesh(V, E, F);
+
+    SECTION("rest positions")
+    {
+        const std::vector<Eigen::Vector3d> N = mesh.face_normals(V);
+
+        REQUIRE(N.size() == mesh.num_faces());
+        for (const Eigen::Vector3d& n : N) {
+            CHECK(n.isApprox(Eigen::Vector3d::UnitZ()));
+            CHECK(n.norm() == Catch::Approx(1.0).margin(1e-15));
+        }
+    }
+
+    SECTION("normals follow deformed positions")
+    {
+        // Rotate the mesh 90° about the x-axis: +z normal ⇒ −y normal.
+        Eigen::MatrixXd V_rot = V;
+        for (int i = 0; i < V.rows(); ++i) {
+            V_rot.row(i) << V(i, 0), -V(i, 2), V(i, 1);
+        }
+
+        const std::vector<Eigen::Vector3d> N = mesh.face_normals(V_rot);
+
+        REQUIRE(N.size() == mesh.num_faces());
+        for (const Eigen::Vector3d& n : N) {
+            CHECK(n.isApprox(-Eigen::Vector3d::UnitY()));
+        }
+    }
+
+    SECTION("winding flips the normal")
+    {
+        Eigen::MatrixXi F_flipped(2, 3);
+        F_flipped << 0, 2, 1, // reversed ⇒ −z
+            0, 3, 2;          // reversed ⇒ −z
+
+        const CollisionMesh flipped(V, E, F_flipped);
+
+        const std::vector<Eigen::Vector3d> N = flipped.face_normals(V);
+
+        REQUIRE(N.size() == flipped.num_faces());
+        for (const Eigen::Vector3d& n : N) {
+            CHECK(n.isApprox(-Eigen::Vector3d::UnitZ()));
+        }
+    }
+}

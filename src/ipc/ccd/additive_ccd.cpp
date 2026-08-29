@@ -68,11 +68,11 @@ AdditiveCCD::AdditiveCCD(
     conservative_rescaling = _conservative_rescaling;
 }
 
+template <typename DistanceSqrFunc>
 bool AdditiveCCD::additive_ccd(
     VectorMax12d x, // mutable copy
     Eigen::ConstRef<VectorMax12d> dx,
-    const std::function<double(Eigen::ConstRef<VectorMax12d>)>&
-        distance_squared,
+    const DistanceSqrFunc& distance_squared,
     const double max_disp_mag,
     double& toi,
     const double min_distance,

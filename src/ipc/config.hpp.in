@@ -20,6 +20,7 @@
 #cmakedefine IPC_TOOLKIT_WITH_ABSEIL
 #cmakedefine IPC_TOOLKIT_WITH_FILIB
 #cmakedefine IPC_TOOLKIT_WITH_PROFILER
+#cmakedefine IPC_TOOLKIT_WITH_TRACY
 // #define IPC_TOOLKIT_DEBUG_AUTODIFF
 
 namespace ipc {

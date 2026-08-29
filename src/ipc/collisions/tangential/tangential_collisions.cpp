@@ -3,6 +3,7 @@
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/friction/smooth_mu.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/profiler.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
@@ -69,6 +70,7 @@ void TangentialCollisions::build(
 {
     assert(mu_s.size() == vertices.rows());
     assert(mu_k.size() == vertices.rows());
+    IPC_TOOLKIT_PROFILE_BLOCK("TangentialCollisions::build");
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
@@ -180,6 +182,7 @@ void TangentialCollisions::build(
 {
     assert(mu_k.size() == vertices.rows());
     assert(mu_s.size() == vertices.rows());
+    IPC_TOOLKIT_PROFILE_BLOCK("TangentialCollisions::build(smooth)");
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();

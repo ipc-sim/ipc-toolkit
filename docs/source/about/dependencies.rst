@@ -93,6 +93,12 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - `github.com/nlohmann/json <https://github.com/nlohmann/json>`_
       - |:white_large_square:|
       - ``IPC_TOOLKIT_WITH_PROFILER``
+    * - Tracy
+      - Frame profiler
+      - BSD-3-Clause
+      - `github.com/wolfpld/tracy <https://github.com/wolfpld/tracy>`_
+      - |:white_large_square:|
+      - ``IPC_TOOLKIT_WITH_TRACY``
     * - rational-cpp
       - Rational arithmetic used for exact intersection checks (requires `GMP <https://gmplib.org>`_ to be installed at a system level)
       - MIT
