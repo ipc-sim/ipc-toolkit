@@ -5,6 +5,8 @@
 
 #include <Eigen/Geometry>
 
+#include <limits>
+
 namespace ipc {
 
 template <typename T>
@@ -87,10 +89,19 @@ EdgeEdgeDistanceType edge_edge_distance_type(
 {
     // Relative sin² threshold for parallelism: treat edges as parallel when
     // sin²(θ) < PARALLEL_THRESHOLD, scaled by a*c. This avoids misclassifying
-    // short nearly-collinear coplanar segments (which the old absolute
-    // threshold could not handle) and routes such cases to
+    // short nearly-collinear coplanar segments (which an absolute threshold
+    // could not handle) and routes such cases to
     // edge_edge_parallel_distance_type.
-    constexpr double PARALLEL_THRESHOLD = 2.5e-16;
+    //
+    // NOTE: u×v cancels for nearly parallel edges, leaving an absolute error of
+    // ≈ε‖u‖‖v‖ per component, so sin²(θ) cannot be resolved below ≈ε². The
+    // threshold must therefore scale with the precision of T: 2.5e-16 is tuned
+    // for double (≈1.13ε), but in single precision it sits ~57× *below* the
+    // noise floor, which would make this branch unreachable.
+    constexpr T PARALLEL_THRESHOLD = static_cast<T>(
+        2.5e-16
+        * (static_cast<double>(std::numeric_limits<T>::epsilon())
+           / std::numeric_limits<double>::epsilon()));
 
     const Eigen::Vector3<T> u = ea1 - ea0;
     const Eigen::Vector3<T> v = eb1 - eb0;
@@ -113,7 +124,7 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     }
 
     // Special handling for parallel edges
-    const double parallel_tolerance = PARALLEL_THRESHOLD * a * c;
+    const T parallel_tolerance = PARALLEL_THRESHOLD * a * c;
     if (u.cross(v).squaredNorm() < parallel_tolerance) {
         return edge_edge_parallel_distance_type(ea0, ea1, eb0, eb1);
     }

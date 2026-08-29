@@ -6,6 +6,105 @@ Release Notes
 .. role:: cmake(code)
    :language: cmake
 
+v2.0.0 (alpha)
+--------------
+
+.. warning::
+   This is an in-development alpha release. The API is not yet stable.
+
+Highlights
+~~~~~~~~~~
+
+- 💥 **[Breaking]** The distance, barrier, and normal APIs are now templated on the scalar type, adding ``float`` support alongside ``double`` (and autodiff scalars where already supported).
+- Update Tight Inclusion to ``1.1.0``, which adds a bucket depth-first-search root finder and makes it the default (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
+- Update the tutorials to match the current API, and fill the gaps in the Python bindings they depend on (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+
+Continuous Collision Detection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Update Tight Inclusion from ``1.0.6`` to ``1.1.0`` (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
+
+  - Adds a ``BUCKET_DEPTH_FIRST_SEARCH`` root-finding method, which upstream makes the default for ``edgeEdgeCCD`` and ``vertexFaceCCD``.
+  - The method is exposed in the Python ``CCDRootFindingMethod`` enum, and ``ipctk.tight_inclusion.edge_edge_ccd`` and ``point_triangle_ccd`` now default to it so the bindings match the C++ default.
+
+New Features |:rocket:|
+~~~~~~~~~~~~~~~~~~~~~~~
+
+- Expose the intersection coordinates of an edge–triangle intersection through a new :cpp:func:`ipc::edge_triangle_intersection` overload, which reports the barycentric coordinates :math:`(u, v)` on the triangle and the parameter :math:`t` along the edge (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_).
+
+  - The out-parameters are seeded to NaN and written only once an intersection is confirmed, so a ``false`` return never leaves them partially populated. They also stay NaN in the degenerate rational case, where the coordinates are not uniquely defined.
+  - Boundary hits count as intersections (the comparisons are inclusive).
+
+- Add :cpp:func:`ipc::CollisionMesh::face_normals`, computing the unit normal of each face for a given set of vertex positions (3D only) (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_).
+
+API Changes |:wrench:|
+~~~~~~~~~~~~~~~~~~~~~~
+
+- 💥 **[Breaking]** Templatize the distance functions on the scalar type.
+
+  - The free functions in ``ipc/distance/`` (``point_point_distance``, ``point_line_distance``, ``point_edge_distance``, ``line_line_distance``, ``edge_edge_distance``, ``point_plane_distance``, ``point_triangle_distance``, the ``*_distance_type`` predicates, the edge-edge mollifier, and the signed-distance variants), together with ``ipc/geometry/normal.hpp``, now take a scalar template parameter ``T`` and are instantiated for both ``float`` and ``double``.
+  - Each function gained an overload accepting any Eigen expression (blocks, maps, and rows of a matrix), so call sites no longer need to materialize an ``Eigen::Vector3d`` before calling. Existing calls that let ``T`` be deduced from their arguments continue to compile unchanged.
+  - Taking the address of one of these functions now requires naming the scalar explicitly, e.g. ``&ipc::point_edge_distance<double>`` instead of ``&ipc::point_edge_distance``.
+  - Mixed-precision calls no longer deduce: ``barrier(float_d, 0.001)`` must become ``barrier(float_d, 0.001f)``.
+
+- 💥 **[Breaking]** Templatize the barrier classes on the scalar type.
+
+  - ``ipc::Barrier`` is now an alias for the class template ``ipc::BarrierBase<T>`` (defaulting to ``double``). Deriving from ``ipc::Barrier`` and overriding ``operator()``, ``first_derivative``, ``second_derivative``, and ``units`` is unchanged.
+  - The concrete barriers are now class templates and must be spelled with explicit template arguments: ``ipc::ClampedLogBarrier<>``, ``ipc::NormalizedClampedLogBarrier<>``, ``ipc::ClampedLogSqBarrier<>``, ``ipc::CubicBarrier<>``, and ``ipc::TwoStageBarrier<>``.
+  - The free functions ``ipc::barrier``, ``ipc::barrier_first_derivative``, and ``ipc::barrier_second_derivative`` are now templates defaulting to ``double``.
+
+  The Python API is unaffected: ``ipctk`` continues to expose the ``double`` instantiations under their existing names.
+
+- Add ``float`` aliases to ``ipc/utils/eigen_ext.hpp`` (``Vector1f``, ``Vector6f``, ``Matrix6f``, ``VectorMax3f``, ``MatrixMax9f``, …) mirroring the existing ``double`` ones.
+
+Bug Fixes |:bug:|
+~~~~~~~~~~~~~~~~~
+
+- PSD-project the mollified Hessian block when the mollifier is zero (`#244 <https://github.com/ipc-sim/ipc-toolkit/pull/244>`_).
+
+  ``NormalPotential::hessian()`` early-returned the block :math:`(\text{weight} \cdot f)\nabla^2 m` for exactly parallel edges (:math:`m = 0`) *without* projection, while every other path projects. Positive weights leave the block PSD, so this was harmless until ``IMPROVED_MAX_APPROX`` introduced negative-weight collisions, which made the block negative-(semi)definite and the assembled "PSD-projected" Hessian non-PSD. Because :math:`m = 0` is a global minimum of the mollifier, :math:`\nabla^2 m` is PSD and :math:`f(d) > 0`, so projecting the scalar weight is sufficient — no eigendecomposition needed.
+
+- Scale ``PARALLEL_THRESHOLD`` in ``ipc::edge_edge_distance_type`` with the precision of the scalar type. The value tuned for ``double`` (2.5e-16 ≈ 1.13ε) sits roughly 57× *below* the cancellation noise floor of :math:`u \times v` in single precision, which made the near-parallel branch unreachable for ``float``: across 20k exactly-parallel edge pairs the ``float`` distance type disagreed with the ``double`` one 44% of the time, with distance errors up to 24× relative. The ``double`` threshold is bit-for-bit unchanged.
+- Guard the ``*_distance_type`` Eigen-expression overloads with ``std::is_class_v``. Unlike the other overloads, their return type is a non-dependent enum, so an explicit scalar argument (e.g. ``edge_edge_distance_type<double>(...)``) was not rejected by SFINAE and instead formed ``Eigen::MatrixBase<double>``, a hard error inside Eigen.
+
+Python |:snake:|
+~~~~~~~~~~~~~~~~
+
+- 💥 **[Breaking]** Rename the ``SmoothPotential`` class to ``SmoothContactPotential`` to match the C++ name (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). It had no in-tree users and the package is still a 2.0 alpha, so this is a straight rename with no alias.
+- Fill gaps that made the GCP and convergent-formulation tutorials impossible to follow from Python (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_):
+
+  - Add ``SmoothCollisions.compute_adaptive_dhat``. Without it, adaptive dhat was unreachable even though ``build()`` accepts ``use_adaptive_dhat=True`` and requires this to be called first.
+  - Add the ``SmoothContactParameters.adaptive_dhat_ratio`` property.
+  - Add the ``BarrierPotential.stiffness`` and ``.use_physical_barrier`` properties, mirroring the C++ setters.
+
+- Validate preconditions in the bindings instead of relying on the C++ ``assert``\ s, which are compiled out under ``NDEBUG`` and would let a release build silently accept a bad value (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). ``BarrierPotential`` now raises ``ValueError`` for a non-positive or NaN ``dhat``/``stiffness`` and for a null barrier.
+- Bind ``edge_triangle_intersection()``, returning an ``(intersects, u, v, t)`` tuple since Python has no out-parameters, and ``CollisionMesh.face_normals()``, returning an (#F × 3) array to match the other per-element accessors (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_). ``face_normals()`` raises ``ValueError`` on a 2D mesh rather than invoking undefined behavior.
+
+Documentation
+~~~~~~~~~~~~~
+
+- Update the tutorials to match the current API (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). Every snippet is now verified: the C++ is extracted into a compile harness checked against the real headers, and the Python is run against a built ``ipctk``.
+
+  - ``ipc::point_triangle_ccd`` and the other free narrow-phase functions are now methods on :cpp:class:`ipc::NarrowPhaseCCD` subclasses; ``<ipc/ccd/ccd.hpp>`` no longer exists.
+  - The four ``*_nonlinear_ccd`` free functions are now :cpp:class:`ipc::NonlinearCCD` methods.
+  - ``CollisionStencil::ccd`` takes stencil vertices rather than ``(vertices, edges, faces)``; use ``dof()`` to gather them.
+  - ``TangentialCollisions::build`` no longer takes ``barrier_stiffness`` — stiffness now comes from the normal potential. The stale call still compiled in C++, silently binding ``barrier_stiffness`` to ``mu_s`` and ``mu`` to ``mu_k``.
+
+- Correct the note on conservative CCD (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). :cpp:class:`ipc::TightInclusionCCD` does not scale the returned time of impact in the normal path; it inflates the minimum separation the query stops at, capped at ``1e-4``, and only scales the TOI in the fallback taken when that query returns a TOI below ``SMALL_TOI``. Because the cap usually binds, changing ``conservative_rescaling`` often has no effect at all.
+- Describe the narrow-phase alternatives accurately (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). ``InexactCCD`` is behind ``IPC_TOOLKIT_WITH_INEXACT_CCD``, which is off by default, so it is now marked opt-in. All three methods compute their margin as :math:`d_\min + (1 - r)(d_0 - d_\min)`; only :cpp:class:`ipc::TightInclusionCCD` caps the second term, which is why it reports a time of impact closer to the exact one. :cpp:class:`ipc::AdditiveCCD` is over 100× faster and reliable in practice; it does not account for rounding error in its distance computations, but the default 10% margin is large enough to avoid false negatives, at the cost of a less accurate time of impact and more false positives.
+- Add MeshFEM :cite:p:`Mohammadian2026MeshFEM` to the gallery.
+
+Refactor
+~~~~~~~~
+
+- Replace the duplicate squared-distance implementations in ``ipc/smooth_contact/distance/`` (``point_point_sqr_distance``, ``point_line_sqr_distance``, ``line_line_sqr_distance``, ``edge_edge_sqr_distance``, ``point_plane_sqr_distance``, ``point_triangle_sqr_distance``) with the now-templated functions from ``ipc/distance/``.
+
+Miscellaneous
+~~~~~~~~~~~~~
+
+- Take the ``distance_squared`` functor of the private ``AdditiveCCD::additive_ccd`` helper as a template parameter rather than a ``std::function`` (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+- Fix stale ``IPC_TOOLKIT_CCD_BENCHMARK_DIR`` and ``IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR`` references in the CMake status messages; the cache variables are ``IPC_TOOLKIT_TESTS_CCD_BENCHMARK_DIR`` and ``IPC_TOOLKIT_TESTS_NEW_CCD_BENCHMARK_DIR`` (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
+
 v1.6.0 (July 14, 2026)
 ----------------------
 

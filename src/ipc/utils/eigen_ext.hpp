@@ -4,7 +4,6 @@
 #include <Eigen/Sparse>
 
 #include <cassert>
-#include <concepts>
 
 #ifdef EIGEN_DONT_VECTORIZE
 // NOTE: Avoid error about abs casting double to int. Eigen does this
@@ -168,9 +167,9 @@ template <typename T> using MatrixMax9 = MatrixMax<T, 9, 9>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12×12
 template <typename T> using MatrixMax12 = MatrixMax<T, 12, 12>;
 
-/// @brief A dynamic size matrix with a fixed maximum size of 3×3
+/// @brief A dynamic size matrix with a fixed maximum size of 2×2
 using MatrixMax2f = MatrixMax2<float>;
-/// @brief A dynamic size matrix with a fixed maximum size of 3×3
+/// @brief A dynamic size matrix with a fixed maximum size of 2×2
 using MatrixMax2d = MatrixMax2<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3×3
 using MatrixMax3f = MatrixMax3<float>;
@@ -180,9 +179,9 @@ using MatrixMax3d = MatrixMax3<double>;
 using MatrixMax6f = MatrixMax6<float>;
 /// @brief A dynamic size matrix with a fixed maximum size of 6×6
 using MatrixMax6d = MatrixMax6<double>;
-/// @brief A dynamic size matrix with a fixed maximum size of 12×12
+/// @brief A dynamic size matrix with a fixed maximum size of 9×9
 using MatrixMax9f = MatrixMax9<float>;
-/// @brief A dynamic size matrix with a fixed maximum size of 12×12
+/// @brief A dynamic size matrix with a fixed maximum size of 9×9
 using MatrixMax9d = MatrixMax9<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12×12
 using MatrixMax12f = MatrixMax12<float>;
@@ -222,23 +221,6 @@ using HessianType = std::
     tuple<double, Eigen::Vector<double, dim>, Eigen::Matrix<double, dim, dim>>;
 
 /**@}*/
-
-/// @brief Matches any Eigen expression — stored types, blocks, maps, lazy
-/// expressions. Layer 1 wrappers accept any MatrixBase-derived type, deduce T,
-/// and forward as Eigen::ConstRef (zero-copy for blocks/stored types; evaluates
-/// lazy expressions once). Layer 1 always calls Layer 2 with explicit <T> to
-/// prevent infinite recursion (Layer 2's first template param is T, Layer 1's
-/// is DerivedXxx, so explicit-T calls unambiguously route to Layer 2).
-///
-/// Pure requires-expression: checks only members of T itself, so the compiler
-/// never attempts to form Eigen::MatrixBase<double> (which is ill-formed when T
-/// is a scalar type like double).
-// template <typename T>
-// concept EigenExpression = requires(T& t) {
-//     typename T::Scalar;
-//     { t.rows() } -> std::convertible_to<Eigen::Index>;
-//     { t.cols() } -> std::convertible_to<Eigen::Index>;
-// };
 
 /// @brief Matrix projection onto positive definite cone
 /// @param A Symmetric matrix to project

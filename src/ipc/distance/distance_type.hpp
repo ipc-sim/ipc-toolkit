@@ -2,6 +2,8 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
+#include <type_traits>
+
 namespace ipc {
 
 /// @brief Closest pair between a point and point.
@@ -105,8 +107,20 @@ EdgeEdgeDistanceType edge_edge_parallel_distance_type(
     Eigen::ConstRef<Eigen::Vector3<T>> eb1);
 
 // --- EigenExpression wrappers ---
+//
+// NOTE: The std::is_class_v guard is required. Unlike the wrappers whose
+// trailing return type mentions typename DerivedX::Scalar, these return a
+// non-dependent enum, so nothing would reject the candidate when the first
+// template argument is given explicitly as a scalar (e.g.
+// edge_edge_distance_type<double>(...)). Substitution would then form
+// Eigen::MatrixBase<double>, a hard error inside Eigen rather than a SFINAE
+// failure.
 
-template <typename DerivedP, typename DerivedE0, typename DerivedE1>
+template <
+    typename DerivedP,
+    typename DerivedE0,
+    typename DerivedE1,
+    std::enable_if_t<std::is_class_v<DerivedP>, int> = 0>
 inline PointEdgeDistanceType point_edge_distance_type(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
@@ -122,7 +136,8 @@ template <
     typename DerivedP,
     typename DerivedT0,
     typename DerivedT1,
-    typename DerivedT2>
+    typename DerivedT2,
+    std::enable_if_t<std::is_class_v<DerivedP>, int> = 0>
 inline PointTriangleDistanceType point_triangle_distance_type(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
@@ -141,7 +156,8 @@ template <
     typename DerivedEA0,
     typename DerivedEA1,
     typename DerivedEB0,
-    typename DerivedEB1>
+    typename DerivedEB1,
+    std::enable_if_t<std::is_class_v<DerivedEA0>, int> = 0>
 inline EdgeEdgeDistanceType edge_edge_distance_type(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
@@ -160,7 +176,8 @@ template <
     typename DerivedEA0,
     typename DerivedEA1,
     typename DerivedEB0,
-    typename DerivedEB1>
+    typename DerivedEB1,
+    std::enable_if_t<std::is_class_v<DerivedEA0>, int> = 0>
 inline EdgeEdgeDistanceType edge_edge_parallel_distance_type(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
