@@ -398,15 +398,16 @@ void point_line_distance_hessian_3D(
     H[80] = ((t234 * -T(2) + -t279) + t283) + t102 * (t38 + t39);
 }
 
-// clang-format off
-template void point_line_distance_gradient_2D<float>(float, float, float, float, float, float, float[6]);
-template void point_line_distance_gradient_2D<double>(double, double, double, double, double, double, double[6]);
-template void point_line_distance_gradient_3D<float>(float, float, float, float, float, float, float, float, float, float[9]);
-template void point_line_distance_gradient_3D<double>(double, double, double, double, double, double, double, double, double, double[9]);
-template void point_line_distance_hessian_2D<float>(float, float, float, float, float, float, float[36]);
-template void point_line_distance_hessian_2D<double>(double, double, double, double, double, double, double[36]);
-template void point_line_distance_hessian_3D<float>(float, float, float, float, float, float, float, float, float, float[81]);
-template void point_line_distance_hessian_3D<double>(double, double, double, double, double, double, double, double, double, double[81]);
-// clang-format on
+#define IPC_INSTANTIATE_POINT_LINE_AUTOGEN(T)                                  \
+    template void point_line_distance_gradient_2D<T>(T, T, T, T, T, T, T[6]);  \
+    template void point_line_distance_gradient_3D<T>(                          \
+        T, T, T, T, T, T, T, T, T, T[9]);                                      \
+    template void point_line_distance_hessian_2D<T>(T, T, T, T, T, T, T[36]);  \
+    template void point_line_distance_hessian_3D<T>(                           \
+        T, T, T, T, T, T, T, T, T, T[81])
+
+IPC_INSTANTIATE_POINT_LINE_AUTOGEN(float);
+IPC_INSTANTIATE_POINT_LINE_AUTOGEN(double);
+#undef IPC_INSTANTIATE_POINT_LINE_AUTOGEN
 
 } // namespace ipc::autogen

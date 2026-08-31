@@ -558,11 +558,14 @@ void point_plane_distance_hessian(
         - t125 * t193 * t203 * t205 * T(4);
 }
 
-// clang-format off
-template void point_plane_distance_gradient<float>(float, float, float, float, float, float, float, float, float, float, float, float, float[12]);
-template void point_plane_distance_gradient<double>(double, double, double, double, double, double, double, double, double, double, double, double, double[12]);
-template void point_plane_distance_hessian<float>(float, float, float, float, float, float, float, float, float, float, float, float, float[144]);
-template void point_plane_distance_hessian<double>(double, double, double, double, double, double, double, double, double, double, double, double, double[144]);
-// clang-format on
+#define IPC_INSTANTIATE_POINT_PLANE_AUTOGEN(T)                                 \
+    template void point_plane_distance_gradient<T>(                            \
+        T, T, T, T, T, T, T, T, T, T, T, T, T[12]);                            \
+    template void point_plane_distance_hessian<T>(                             \
+        T, T, T, T, T, T, T, T, T, T, T, T, T[144])
+
+IPC_INSTANTIATE_POINT_PLANE_AUTOGEN(float);
+IPC_INSTANTIATE_POINT_PLANE_AUTOGEN(double);
+#undef IPC_INSTANTIATE_POINT_PLANE_AUTOGEN
 
 } // namespace ipc::autogen

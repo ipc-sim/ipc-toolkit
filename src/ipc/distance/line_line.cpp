@@ -558,11 +558,14 @@ void line_line_distance_hessian(
     H[143] = (t53 + t98 * t98 * t156 * T(2)) + b_t522_tmp * T(4);
 }
 
-// clang-format off
-template void line_line_distance_gradient<float>(float, float, float, float, float, float, float, float, float, float, float, float, float[12]);
-template void line_line_distance_gradient<double>(double, double, double, double, double, double, double, double, double, double, double, double, double[12]);
-template void line_line_distance_hessian<float>(float, float, float, float, float, float, float, float, float, float, float, float, float[144]);
-template void line_line_distance_hessian<double>(double, double, double, double, double, double, double, double, double, double, double, double, double[144]);
-// clang-format on
+#define IPC_INSTANTIATE_LINE_LINE_AUTOGEN(T)                                   \
+    template void line_line_distance_gradient<T>(                              \
+        T, T, T, T, T, T, T, T, T, T, T, T, T[12]);                            \
+    template void line_line_distance_hessian<T>(                               \
+        T, T, T, T, T, T, T, T, T, T, T, T, T[144])
+
+IPC_INSTANTIATE_LINE_LINE_AUTOGEN(float);
+IPC_INSTANTIATE_LINE_LINE_AUTOGEN(double);
+#undef IPC_INSTANTIATE_LINE_LINE_AUTOGEN
 
 } // namespace ipc::autogen

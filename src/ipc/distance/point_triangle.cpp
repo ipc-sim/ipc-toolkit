@@ -6,8 +6,6 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
-#include <stdexcept> // std::invalid_argument
-
 namespace ipc::detail {
 
 template <typename T>
@@ -18,10 +16,12 @@ T point_triangle_distance(
     Eigen::ConstRef<Eigen::Vector3<T>> t2,
     PointTriangleDistanceType dtype)
 {
-    if constexpr (std::is_same_v<T, double> || std::is_same_v<T, float>) {
+    if constexpr (std::is_floating_point_v<T>) {
         if (dtype == PointTriangleDistanceType::AUTO) {
             dtype = point_triangle_distance_type(p, t0, t1, t2);
         }
+    } else if (dtype == PointTriangleDistanceType::AUTO) {
+        throw_auto_requires_explicit_dtype("point_triangle_distance");
     }
 
     switch (dtype) {
@@ -59,8 +59,12 @@ Eigen::Vector<T, 12> point_triangle_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3<T>> t2,
     PointTriangleDistanceType dtype)
 {
-    if (dtype == PointTriangleDistanceType::AUTO) {
-        dtype = point_triangle_distance_type(p, t0, t1, t2);
+    if constexpr (std::is_floating_point_v<T>) {
+        if (dtype == PointTriangleDistanceType::AUTO) {
+            dtype = point_triangle_distance_type(p, t0, t1, t2);
+        }
+    } else if (dtype == PointTriangleDistanceType::AUTO) {
+        throw_auto_requires_explicit_dtype("point_triangle_distance_gradient");
     }
 
     Eigen::Vector<T, 12> grad = Eigen::Vector<T, 12>::Zero();
@@ -126,8 +130,12 @@ Eigen::Matrix<T, 12, 12> point_triangle_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3<T>> t2,
     PointTriangleDistanceType dtype)
 {
-    if (dtype == PointTriangleDistanceType::AUTO) {
-        dtype = point_triangle_distance_type(p, t0, t1, t2);
+    if constexpr (std::is_floating_point_v<T>) {
+        if (dtype == PointTriangleDistanceType::AUTO) {
+            dtype = point_triangle_distance_type(p, t0, t1, t2);
+        }
+    } else if (dtype == PointTriangleDistanceType::AUTO) {
+        throw_auto_requires_explicit_dtype("point_triangle_distance_hessian");
     }
 
     Eigen::Matrix<T, 12, 12> hess = Eigen::Matrix<T, 12, 12>::Zero();

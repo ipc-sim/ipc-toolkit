@@ -16,10 +16,12 @@ T edge_edge_distance(
     Eigen::ConstRef<Eigen::Vector3<T>> eb1,
     EdgeEdgeDistanceType dtype)
 {
-    if constexpr (std::is_same_v<T, double> || std::is_same_v<T, float>) {
+    if constexpr (std::is_floating_point_v<T>) {
         if (dtype == EdgeEdgeDistanceType::AUTO) {
             dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
         }
+    } else if (dtype == EdgeEdgeDistanceType::AUTO) {
+        throw_auto_requires_explicit_dtype("edge_edge_distance");
     }
 
     switch (dtype) {
@@ -67,8 +69,12 @@ Eigen::Vector<T, 12> edge_edge_distance_gradient(
     using Vector9T = Eigen::Vector<T, 9>;
     using Vector12T = Eigen::Vector<T, 12>;
 
-    if (dtype == EdgeEdgeDistanceType::AUTO) {
-        dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    if constexpr (std::is_floating_point_v<T>) {
+        if (dtype == EdgeEdgeDistanceType::AUTO) {
+            dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+        }
+    } else if (dtype == EdgeEdgeDistanceType::AUTO) {
+        throw_auto_requires_explicit_dtype("edge_edge_distance_gradient");
     }
 
     Vector12T grad = Vector12T::Zero();
@@ -147,8 +153,12 @@ Eigen::Matrix<T, 12, 12> edge_edge_distance_hessian(
     using Matrix9T = Eigen::Matrix<T, 9, 9>;
     using Matrix12T = Eigen::Matrix<T, 12, 12>;
 
-    if (dtype == EdgeEdgeDistanceType::AUTO) {
-        dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    if constexpr (std::is_floating_point_v<T>) {
+        if (dtype == EdgeEdgeDistanceType::AUTO) {
+            dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+        }
+    } else if (dtype == EdgeEdgeDistanceType::AUTO) {
+        throw_auto_requires_explicit_dtype("edge_edge_distance_hessian");
     }
 
     Matrix12T hess = Matrix12T::Zero();
@@ -287,7 +297,6 @@ IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADGrad<12>);
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADHessian<12>);
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADGrad<13>);
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADHessian<13>);
-
 #undef IPC_INSTANTIATE_EDGE_EDGE
 #undef IPC_INSTANTIATE_EDGE_EDGE_VALUE
 
