@@ -1,5 +1,6 @@
 #include "point_triangle.hpp"
 
+#include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_plane.hpp>
 #include <ipc/distance/point_point.hpp>
@@ -7,7 +8,7 @@
 
 #include <stdexcept> // std::invalid_argument
 
-namespace ipc {
+namespace ipc::detail {
 
 template <typename T>
 T point_triangle_distance(
@@ -46,8 +47,7 @@ T point_triangle_distance(
         return point_plane_distance(p, t0, t1, t2);
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for point-triangle distance!");
+        throw_invalid_distance_type("point_triangle_distance");
     }
 }
 
@@ -112,8 +112,7 @@ Eigen::Vector<T, 12> point_triangle_distance_gradient(
         break;
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for point-triangle distance gradient!");
+        throw_invalid_distance_type("point_triangle_distance_gradient");
     }
 
     return grad;
@@ -213,24 +212,46 @@ Eigen::Matrix<T, 12, 12> point_triangle_distance_hessian(
         break;
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for point-triangle distance hessian!");
+        throw_invalid_distance_type("point_triangle_distance_hessian");
     }
 
     return hess;
 }
 
-// clang-format off
-template float point_triangle_distance<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, PointTriangleDistanceType);
-template double point_triangle_distance<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, PointTriangleDistanceType);
-template ADGrad<12> point_triangle_distance<ADGrad<12>>(Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, PointTriangleDistanceType);
-template ADHessian<12> point_triangle_distance<ADHessian<12>>(Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, PointTriangleDistanceType);
-template ADGrad<13> point_triangle_distance<ADGrad<13>>(Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, PointTriangleDistanceType);
-template ADHessian<13> point_triangle_distance<ADHessian<13>>(Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, PointTriangleDistanceType);
-template Vector12f point_triangle_distance_gradient<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, PointTriangleDistanceType);
-template Vector12d point_triangle_distance_gradient<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, PointTriangleDistanceType);
-template Matrix12f point_triangle_distance_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, PointTriangleDistanceType);
-template Matrix12d point_triangle_distance_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, PointTriangleDistanceType);
-// clang-format on
+#define IPC_INSTANTIATE_POINT_TRIANGLE(T)                                      \
+    template T point_triangle_distance<T>(                                     \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>, PointTriangleDistanceType);        \
+    template Eigen::Vector<T, 12> point_triangle_distance_gradient<T>(         \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>, PointTriangleDistanceType);        \
+    template Eigen::Matrix<T, 12, 12> point_triangle_distance_hessian<T>(      \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>, PointTriangleDistanceType)
 
-} // namespace ipc
+// Autodiff scalars: value only. Gradients/Hessians are intentionally not
+// supported for them.
+#define IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(T)                                \
+    template T point_triangle_distance<T>(                                     \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>, PointTriangleDistanceType)
+
+IPC_INSTANTIATE_POINT_TRIANGLE(float);
+IPC_INSTANTIATE_POINT_TRIANGLE(double);
+IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADGrad<12>);
+IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADHessian<12>);
+IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADGrad<13>);
+IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADHessian<13>);
+
+#undef IPC_INSTANTIATE_POINT_TRIANGLE
+#undef IPC_INSTANTIATE_POINT_TRIANGLE_VALUE
+
+} // namespace ipc::detail

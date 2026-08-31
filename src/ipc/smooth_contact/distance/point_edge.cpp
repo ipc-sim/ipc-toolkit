@@ -13,11 +13,11 @@ scalar PointEdgeDistance<scalar, dim>::point_edge_sqr_distance(
 {
     switch (dtype) {
     case PointEdgeDistanceType::P_E:
-        return point_line_distance<scalar>(p, e0, e1);
+        return point_line_distance(p, e0, e1);
     case PointEdgeDistanceType::P_E0:
-        return point_point_distance<scalar>(p, e0);
+        return point_point_distance(p, e0);
     case PointEdgeDistanceType::P_E1:
-        return point_point_distance<scalar>(p, e1);
+        return point_point_distance(p, e1);
     case PointEdgeDistanceType::AUTO:
     default:
         const Eigen::Vector<scalar, dim> t = e1 - e0;

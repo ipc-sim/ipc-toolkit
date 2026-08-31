@@ -1,13 +1,12 @@
 #include "edge_edge.hpp"
 
+#include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/line_line.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
-#include <stdexcept> // std::invalid_argument
-
-namespace ipc {
+namespace ipc::detail {
 
 template <typename T>
 T edge_edge_distance(
@@ -52,8 +51,7 @@ T edge_edge_distance(
         return line_line_distance(ea0, ea1, eb0, eb1);
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for edge-edge distance!");
+        throw_invalid_distance_type("edge_edge_distance");
     }
 }
 
@@ -131,8 +129,7 @@ Eigen::Vector<T, 12> edge_edge_distance_gradient(
         break;
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for edge-edge distance gradient!");
+        throw_invalid_distance_type("edge_edge_distance_gradient");
     }
 
     return grad;
@@ -250,26 +247,48 @@ Eigen::Matrix<T, 12, 12> edge_edge_distance_hessian(
         break;
 
     default:
-        throw std::invalid_argument(
-            "Invalid distance type for edge-edge distance hessian!");
+        throw_invalid_distance_type("edge_edge_distance_hessian");
     }
 
     return hess;
 }
 
-// clang-format off
-template float edge_edge_distance<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, EdgeEdgeDistanceType);
-template double edge_edge_distance<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, EdgeEdgeDistanceType);
-template ADGrad<9> edge_edge_distance<ADGrad<9>>(Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>>, EdgeEdgeDistanceType);
-template ADHessian<9> edge_edge_distance<ADHessian<9>>(Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>>, EdgeEdgeDistanceType);
-template ADGrad<12> edge_edge_distance<ADGrad<12>>(Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>>, EdgeEdgeDistanceType);
-template ADHessian<12> edge_edge_distance<ADHessian<12>>(Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>>, EdgeEdgeDistanceType);
-template ADGrad<13> edge_edge_distance<ADGrad<13>>(Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>>, EdgeEdgeDistanceType);
-template ADHessian<13> edge_edge_distance<ADHessian<13>>(Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>>, EdgeEdgeDistanceType);
-template Vector12f edge_edge_distance_gradient<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, EdgeEdgeDistanceType);
-template Vector12d edge_edge_distance_gradient<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, EdgeEdgeDistanceType);
-template Matrix12f edge_edge_distance_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, EdgeEdgeDistanceType);
-template Matrix12d edge_edge_distance_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, EdgeEdgeDistanceType);
-// clang-format on
+#define IPC_INSTANTIATE_EDGE_EDGE(T)                                           \
+    template T edge_edge_distance<T>(                                          \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>, EdgeEdgeDistanceType);             \
+    template Eigen::Vector<T, 12> edge_edge_distance_gradient<T>(              \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>, EdgeEdgeDistanceType);             \
+    template Eigen::Matrix<T, 12, 12> edge_edge_distance_hessian<T>(           \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>, EdgeEdgeDistanceType)
 
-} // namespace ipc
+// Autodiff scalars: value only. Gradients/Hessians are intentionally not
+// supported for them.
+#define IPC_INSTANTIATE_EDGE_EDGE_VALUE(T)                                     \
+    template T edge_edge_distance<T>(                                          \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>, EdgeEdgeDistanceType)
+
+IPC_INSTANTIATE_EDGE_EDGE(float);
+IPC_INSTANTIATE_EDGE_EDGE(double);
+IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADGrad<9>);
+IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADHessian<9>);
+IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADGrad<12>);
+IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADHessian<12>);
+IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADGrad<13>);
+IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADHessian<13>);
+
+#undef IPC_INSTANTIATE_EDGE_EDGE
+#undef IPC_INSTANTIATE_EDGE_EDGE_VALUE
+
+} // namespace ipc::detail

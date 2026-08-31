@@ -18,71 +18,27 @@ namespace autogen {
     // clang-format on
 } // namespace autogen
 
-/// @brief Compute the distance between a two infinite lines in 3D.
-/// @note The distance is actually squared distance.
-/// @warning If the lines are parallel this function returns a distance of zero.
-/// @param ea0 The first vertex of the edge defining the first line.
-/// @param ea1 The second vertex of the edge defining the first line.
-/// @param eb0 The first vertex of the edge defining the second line.
-/// @param eb1 The second vertex of the edge defining the second line.
-/// @return The distance between the two lines.
-template <typename T>
-inline T line_line_distance(
-    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb1)
-{
-    const Eigen::Vector3<T> normal = (ea1 - ea0).cross(eb1 - eb0);
-    const T line_to_line = (eb0 - ea0).dot(normal);
-    return line_to_line * line_to_line / normal.squaredNorm();
-}
-
-/// @brief Compute the gradient of the distance between a two lines in 3D.
-/// @note The distance is actually squared distance.
-/// @warning If the lines are parallel this function returns a distance of zero.
-/// @param ea0 The first vertex of the edge defining the first line.
-/// @param ea1 The second vertex of the edge defining the first line.
-/// @param eb0 The first vertex of the edge defining the second line.
-/// @param eb1 The second vertex of the edge defining the second line.
-/// @return The gradient of the distance wrt ea0, ea1, eb0, and eb1.
-template <typename T>
-inline Eigen::Vector<T, 12> line_line_distance_gradient(
-    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb1)
-{
-    Eigen::Vector<T, 12> grad;
-    autogen::line_line_distance_gradient(
-        ea0[0], ea0[1], ea0[2], ea1[0], ea1[1], ea1[2], eb0[0], eb0[1], eb0[2],
-        eb1[0], eb1[1], eb1[2], grad.data());
-    return grad;
-}
-
-/// @brief Compute the hessian of the distance between a two lines in 3D.
-/// @note The distance is actually squared distance.
-/// @warning If the lines are parallel this function returns a distance of zero.
-/// @param ea0 The first vertex of the edge defining the first line.
-/// @param ea1 The second vertex of the edge defining the first line.
-/// @param eb0 The first vertex of the edge defining the second line.
-/// @param eb1 The second vertex of the edge defining the second line.
-/// @return The hessian of the distance wrt ea0, ea1, eb0, and eb1.
-template <typename T>
-inline Eigen::Matrix<T, 12, 12> line_line_distance_hessian(
-    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb1)
-{
-    Eigen::Matrix<T, 12, 12> hess;
-    autogen::line_line_distance_hessian(
-        ea0[0], ea0[1], ea0[2], ea1[0], ea1[1], ea1[2], eb0[0], eb0[1], eb0[2],
-        eb1[0], eb1[1], eb1[2], hess.data());
-    return hess;
-}
-
-// --- EigenExpression wrappers ---
+namespace detail {
+    /// @brief Compute the distance between a two infinite lines in 3D.
+    /// @note The distance is actually squared distance.
+    /// @warning If the lines are parallel this function returns a distance of zero.
+    /// @param ea0 The first vertex of the edge defining the first line.
+    /// @param ea1 The second vertex of the edge defining the first line.
+    /// @param eb0 The first vertex of the edge defining the second line.
+    /// @param eb1 The second vertex of the edge defining the second line.
+    /// @return The distance between the two lines.
+    template <typename T>
+    inline T line_line_distance(
+        Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+        Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb1)
+    {
+        const Eigen::Vector3<T> normal = (ea1 - ea0).cross(eb1 - eb0);
+        const T line_to_line = (eb0 - ea0).dot(normal);
+        return line_to_line * line_to_line / normal.squaredNorm();
+    }
+} // namespace detail
 
 template <
     typename DerivedEA0,
@@ -90,17 +46,16 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto line_line_distance(
-    const Eigen::MatrixBase<DerivedEA0>& ea0,
-    const Eigen::MatrixBase<DerivedEA1>& ea1,
-    const Eigen::MatrixBase<DerivedEB0>& eb0,
-    const Eigen::MatrixBase<DerivedEB1>& eb1) -> typename DerivedEA0::Scalar
+    const DerivedEA0& ea0,
+    const DerivedEA1& ea1,
+    const DerivedEB0& eb0,
+    const DerivedEB1& eb1)
 {
+    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
-    return line_line_distance(
-        Eigen::Ref<const Eigen::Vector3<T>>(ea0),
-        Eigen::Ref<const Eigen::Vector3<T>>(ea1),
-        Eigen::Ref<const Eigen::Vector3<T>>(eb0),
-        Eigen::Ref<const Eigen::Vector3<T>>(eb1));
+    // NOTE: explicit <T>: the detail overload cannot deduce T from an
+    // arbitrary Eigen expression.
+    return detail::line_line_distance<T>(ea0, ea1, eb0, eb1);
 }
 
 template <
@@ -109,18 +64,17 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto line_line_distance_gradient(
-    const Eigen::MatrixBase<DerivedEA0>& ea0,
-    const Eigen::MatrixBase<DerivedEA1>& ea1,
-    const Eigen::MatrixBase<DerivedEB0>& eb0,
-    const Eigen::MatrixBase<DerivedEB1>& eb1)
-    -> Eigen::Vector<typename DerivedEA0::Scalar, 12>
+    const DerivedEA0& ea0,
+    const DerivedEA1& ea1,
+    const DerivedEB0& eb0,
+    const DerivedEB1& eb1)
 {
-    using T = typename DerivedEA0::Scalar;
-    return line_line_distance_gradient(
-        Eigen::Ref<const Eigen::Vector3<T>>(ea0),
-        Eigen::Ref<const Eigen::Vector3<T>>(ea1),
-        Eigen::Ref<const Eigen::Vector3<T>>(eb0),
-        Eigen::Ref<const Eigen::Vector3<T>>(eb1));
+    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
+    Eigen::Vector<typename DerivedEA0::Scalar, 12> grad;
+    autogen::line_line_distance_gradient(
+        ea0[0], ea0[1], ea0[2], ea1[0], ea1[1], ea1[2], eb0[0], eb0[1], eb0[2],
+        eb1[0], eb1[1], eb1[2], grad.data());
+    return grad;
 }
 
 template <
@@ -129,18 +83,17 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto line_line_distance_hessian(
-    const Eigen::MatrixBase<DerivedEA0>& ea0,
-    const Eigen::MatrixBase<DerivedEA1>& ea1,
-    const Eigen::MatrixBase<DerivedEB0>& eb0,
-    const Eigen::MatrixBase<DerivedEB1>& eb1)
-    -> Eigen::Matrix<typename DerivedEA0::Scalar, 12, 12>
+    const DerivedEA0& ea0,
+    const DerivedEA1& ea1,
+    const DerivedEB0& eb0,
+    const DerivedEB1& eb1)
 {
-    using T = typename DerivedEA0::Scalar;
-    return line_line_distance_hessian(
-        Eigen::Ref<const Eigen::Vector3<T>>(ea0),
-        Eigen::Ref<const Eigen::Vector3<T>>(ea1),
-        Eigen::Ref<const Eigen::Vector3<T>>(eb0),
-        Eigen::Ref<const Eigen::Vector3<T>>(eb1));
+    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
+    Eigen::Matrix<typename DerivedEA0::Scalar, 12, 12> hess;
+    autogen::line_line_distance_hessian(
+        ea0[0], ea0[1], ea0[2], ea1[0], ea1[1], ea1[2], eb0[0], eb0[1], eb0[2],
+        eb1[0], eb1[1], eb1[2], hess.data());
+    return hess;
 }
 
 } // namespace ipc

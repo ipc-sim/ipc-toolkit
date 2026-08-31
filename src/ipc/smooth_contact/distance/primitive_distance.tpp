@@ -19,7 +19,7 @@ public:
         const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Face, Point3>::type dtype)
     {
-        return point_triangle_distance<T>(
+        return point_triangle_distance(
             x.template tail<3>() /* point */, x.template head<3>(),
             x.template segment<3>(3), x.template segment<3>(6) /* face */,
             dtype);
@@ -55,7 +55,7 @@ public:
         const Eigen::Vector<T, N_CORE_DOFS>& x,
         typename PrimitiveDistType<Edge3, Edge3>::type dtype)
     {
-        return edge_edge_distance<T>(
+        return edge_edge_distance(
             x.template head<3>() /* edge 0 */,
             x.template segment<3>(3) /* edge 0 */,
             x.template segment<3>(6) /* edge 1 */,

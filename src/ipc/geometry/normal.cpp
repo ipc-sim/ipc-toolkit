@@ -6,35 +6,6 @@
 
 namespace ipc {
 
-template <typename T>
-std::tuple<VectorMax3<T>, MatrixMax3<T>>
-normalization_and_jacobian(Eigen::ConstRef<VectorMax3<T>> x)
-{
-    const T norm = x.norm();
-    const VectorMax3<T> xhat = x / norm;
-    const auto I = MatrixMax3<T>::Identity(x.size(), x.size());
-    const MatrixMax3<T> J = (I - (xhat * xhat.transpose())) / norm;
-    return std::make_tuple(xhat, J);
-}
-
-template <typename T>
-std::tuple<VectorMax3<T>, MatrixMax3<T>, std::array<MatrixMax3<T>, 3>>
-normalization_and_jacobian_and_hessian(Eigen::ConstRef<VectorMax3<T>> x)
-{
-    const T norm = x.norm();
-    const VectorMax3<T> xhat = x / norm;
-    const auto I = MatrixMax3<T>::Identity(x.size(), x.size());
-    const MatrixMax3<T> J = (I - (xhat * xhat.transpose())) / norm;
-
-    std::array<MatrixMax3<T>, 3> H;
-    for (int i = 0; i < x.size(); i++) {
-        H[i] = (xhat(i) * J + xhat * J.row(i) + J.col(i) * xhat.transpose())
-            / (-norm);
-    }
-
-    return std::make_tuple(xhat, J, H);
-}
-
 // --- point-line normal functions -------------------------------------------
 
 template <typename T>
@@ -409,10 +380,6 @@ Eigen::Matrix<T, 36, 12> line_line_normal_hessian(
 }
 
 // clang-format off
-template std::tuple<VectorMax3f, MatrixMax3f> normalization_and_jacobian<float>(Eigen::ConstRef<VectorMax3f>);
-template std::tuple<VectorMax3d, MatrixMax3d> normalization_and_jacobian<double>(Eigen::ConstRef<VectorMax3d>);
-template std::tuple<VectorMax3f, MatrixMax3f, std::array<MatrixMax3f, 3>> normalization_and_jacobian_and_hessian<float>(Eigen::ConstRef<VectorMax3f>);
-template std::tuple<VectorMax3d, MatrixMax3d, std::array<MatrixMax3d, 3>> normalization_and_jacobian_and_hessian<double>(Eigen::ConstRef<VectorMax3d>);
 template VectorMax3f point_line_unnormalized_normal<float>(Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>);
 template VectorMax3d point_line_unnormalized_normal<double>(Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>);
 template MatrixMax<float, 3, 9> point_line_unnormalized_normal_jacobian<float>(Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>);

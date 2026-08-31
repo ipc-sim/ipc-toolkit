@@ -8,7 +8,10 @@ using namespace ipc;
 void define_point_point_distance(py::module_& m)
 {
     m.def(
-        "point_point_distance", &point_point_distance<double>,
+        "point_point_distance",
+        [](Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1) {
+            return point_point_distance(p0, p1);
+        },
         R"ipc_Qu8mg5v7(
         Compute the distance between two points.
 
@@ -25,7 +28,10 @@ void define_point_point_distance(py::module_& m)
         "p0"_a, "p1"_a);
 
     m.def(
-        "point_point_distance_gradient", &point_point_distance_gradient<double>,
+        "point_point_distance_gradient",
+        [](Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1) {
+            return point_point_distance_gradient(p0, p1);
+        },
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between two points.
 
@@ -42,7 +48,10 @@ void define_point_point_distance(py::module_& m)
         "p0"_a, "p1"_a);
 
     m.def(
-        "point_point_distance_hessian", &point_point_distance_hessian<double>,
+        "point_point_distance_hessian",
+        [](Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1) {
+            return point_point_distance_hessian(p0, p1);
+        },
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between two points.
 

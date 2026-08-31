@@ -75,16 +75,13 @@ scalar point_face_mollifier(
     // whenever this function is nonzero the point-edge distance equals
     // the point-line distance
     return Math<scalar>::mollifier(
-               (point_line_distance<scalar>(p, e0, e1)
-                - dist_sqr)
+               (point_line_distance(p, e0, e1) - dist_sqr)
                / MOLLIFIER_THRESHOLD_EPS / dist_sqr)
         * Math<scalar>::mollifier(
-               (point_line_distance<scalar>(p, e2, e1)
-                - dist_sqr)
+               (point_line_distance(p, e2, e1) - dist_sqr)
                / MOLLIFIER_THRESHOLD_EPS / dist_sqr)
         * Math<scalar>::mollifier(
-               (point_line_distance<scalar>(p, e0, e2)
-                - dist_sqr)
+               (point_line_distance(p, e0, e2) - dist_sqr)
                / MOLLIFIER_THRESHOLD_EPS / dist_sqr);
 }
 } // namespace ipc

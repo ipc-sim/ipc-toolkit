@@ -2,6 +2,7 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
+#include <cassert>
 #include <type_traits>
 
 namespace ipc {
@@ -56,16 +57,52 @@ enum class EdgeEdgeDistanceType : uint8_t {
     AUTO
 };
 
-/// @brief Determine the closest pair between a point and edge.
-/// @param p The point.
-/// @param e0 The first vertex of the edge.
-/// @param e1 The second vertex of the edge.
-/// @return The distance type of the point-edge pair.
-template <typename T>
-PointEdgeDistanceType point_edge_distance_type(
-    Eigen::ConstRef<VectorMax3<T>> p,
-    Eigen::ConstRef<VectorMax3<T>> e0,
-    Eigen::ConstRef<VectorMax3<T>> e1);
+namespace detail {
+    /// @brief Warn about a degenerate edge.
+    /// @note Out of line to keep the logger (and spdlog) out of this header.
+    void warn_degenerate_point_edge() noexcept;
+
+    /// @brief Throw for an invalid distance type.
+    /// @note Out of line and [[noreturn]] so that constructing the exception does not consume the caller's inlining budget on the hot path.
+    [[noreturn]] void throw_invalid_distance_type(const char* function);
+
+    /// @brief Throw when AUTO is requested for a scalar that cannot resolve it.
+    [[noreturn]] void throw_auto_requires_explicit_dtype(const char* function);
+
+    /// @brief Determine the closest pair between a point and edge.
+    /// @note Prefer the ipc::point_edge_distance_type front end below, which deduces both the scalar type and the dimension.
+    /// @tparam T The scalar type.
+    /// @tparam dim The dimension (2 or 3).
+    /// @param p The point.
+    /// @param e0 The first vertex of the edge.
+    /// @param e1 The second vertex of the edge.
+    /// @return The distance type of the point-edge pair.
+    template <typename T, int dim>
+    inline PointEdgeDistanceType point_edge_distance_type(
+        const Eigen::Vector<T, dim>& p,
+        const Eigen::Vector<T, dim>& e0,
+        const Eigen::Vector<T, dim>& e1)
+    {
+        static_assert(dim == 2 || dim == 3, "point-edge is only 2D or 3D");
+
+        const Eigen::Vector<T, dim> e = e1 - e0;
+        const T e_length_sqr = e.squaredNorm();
+        if (e_length_sqr == 0) {
+            warn_degenerate_point_edge();
+            // WARNING: use an arbitrary end-point
+            return PointEdgeDistanceType::P_E0;
+        }
+
+        const T ratio = e.dot(p - e0) / e_length_sqr;
+        if (ratio < 0) {
+            return PointEdgeDistanceType::P_E0; // PP (p-e0)
+        } else if (ratio > 1) {
+            return PointEdgeDistanceType::P_E1; // PP (p-e1)
+        } else {
+            return PointEdgeDistanceType::P_E; // PE
+        }
+    }
+} // namespace detail
 
 /// @brief Determine the closest pair between a point and triangle.
 /// @param p The point.
@@ -116,20 +153,33 @@ EdgeEdgeDistanceType edge_edge_parallel_distance_type(
 // Eigen::MatrixBase<double>, a hard error inside Eigen rather than a SFINAE
 // failure.
 
-template <
-    typename DerivedP,
-    typename DerivedE0,
-    typename DerivedE1,
-    std::enable_if_t<std::is_class_v<DerivedP>, int> = 0>
+/// @brief Determine the closest pair between a point and edge.
+///
+/// Accepts any Eigen expression. The dimension is resolved at compile time when
+/// the argument type knows it and with a single branch otherwise; each argument
+/// is evaluated exactly once.
+///
+/// @param p The point.
+/// @param e0 The first vertex of the edge.
+/// @param e1 The second vertex of the edge.
+/// @return The distance type of the point-edge pair.
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline PointEdgeDistanceType point_edge_distance_type(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedE0>& e0,
-    const Eigen::MatrixBase<DerivedE1>& e1)
+    const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
 {
+    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
-    return point_edge_distance_type(
-        Eigen::Ref<const VectorMax3<T>>(p), Eigen::Ref<const VectorMax3<T>>(e0),
-        Eigen::Ref<const VectorMax3<T>>(e1));
+
+    if constexpr (dim_v<DerivedP> == 2) {
+        return detail::point_edge_distance_type<T, 2>(p, e0, e1);
+    } else if constexpr (dim_v<DerivedP> == 3) {
+        return detail::point_edge_distance_type<T, 3>(p, e0, e1);
+    } else if (p.size() == 2) {
+        return detail::point_edge_distance_type<T, 2>(p, e0, e1);
+    } else {
+        assert(p.size() == 3);
+        return detail::point_edge_distance_type<T, 3>(p, e0, e1);
+    }
 }
 
 template <

@@ -7,7 +7,10 @@ using namespace ipc;
 void define_normal(py::module_& m)
 {
     m.def(
-        "normalization_and_jacobian", &normalization_and_jacobian<double>,
+        "normalization_and_jacobian",
+        [](Eigen::ConstRef<VectorMax3d> x) {
+            return normalization_and_jacobian(x);
+        },
         R"ipc_qu8mg5v7(
         Computes the normalization and Jacobian of a vector.
 
@@ -22,7 +25,10 @@ void define_normal(py::module_& m)
         "x"_a);
 
     m.def(
-        "normalization_jacobian", &normalization_jacobian<double>,
+        "normalization_jacobian",
+        [](Eigen::ConstRef<VectorMax3d> x) {
+            return normalization_jacobian(x);
+        },
         R"ipc_qu8mg5v7(
         Computes the Jacobian of the normalization operation.
 
@@ -38,7 +44,9 @@ void define_normal(py::module_& m)
 
     m.def(
         "normalization_and_jacobian_and_hessian",
-        &normalization_and_jacobian_and_hessian<double>,
+        [](Eigen::ConstRef<VectorMax3d> x) {
+            return normalization_and_jacobian_and_hessian(x);
+        },
         R"ipc_qu8mg5v7(
         Computes the normalization, Jacobian, and Hessian of a vector.
 
@@ -53,7 +61,8 @@ void define_normal(py::module_& m)
         "x"_a);
 
     m.def(
-        "normalization_hessian", &normalization_hessian<double>,
+        "normalization_hessian",
+        [](Eigen::ConstRef<VectorMax3d> x) { return normalization_hessian(x); },
         R"ipc_qu8mg5v7(
         Computes the Hessian of the normalization operation.
 

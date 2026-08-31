@@ -86,7 +86,11 @@ void define_distance_type(py::module_& m)
         .export_values();
 
     m.def(
-        "point_edge_distance_type", &point_edge_distance_type<double>,
+        "point_edge_distance_type",
+        [](Eigen::ConstRef<VectorMax3d> p, Eigen::ConstRef<VectorMax3d> e0,
+           Eigen::ConstRef<VectorMax3d> e1) {
+            return point_edge_distance_type(p, e0, e1);
+        },
         R"ipc_Qu8mg5v7(
         Determine the closest pair between a point and edge.
 

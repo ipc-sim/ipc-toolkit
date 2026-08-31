@@ -4,37 +4,38 @@
 #include <ipc/utils/logger.hpp>
 
 #include <Eigen/Geometry>
+#include <spdlog/spdlog.h>
 
 #include <limits>
+#include <stdexcept>
+#include <string>
 
 namespace ipc {
 
-template <typename T>
-PointEdgeDistanceType point_edge_distance_type(
-    Eigen::ConstRef<VectorMax3<T>> p,
-    Eigen::ConstRef<VectorMax3<T>> e0,
-    Eigen::ConstRef<VectorMax3<T>> e1)
-{
-    assert(p.size() == 2 || p.size() == 3);
-    assert(e0.size() == 2 || e0.size() == 3);
-    assert(e1.size() == 2 || e1.size() == 3);
+namespace detail {
 
-    const VectorMax3<T> e = e1 - e0;
-    const T e_length_sqr = e.squaredNorm();
-    if (e_length_sqr == 0) {
+    void warn_degenerate_point_edge() noexcept
+    {
         logger().warn("Degenerate edge in point_edge_distance_type!");
-        return PointEdgeDistanceType::P_E0; // WARNING: use arbitrary end-point
     }
 
-    const T ratio = e.dot(p - e0) / e_length_sqr;
-    if (ratio < 0) {
-        return PointEdgeDistanceType::P_E0; // PP (p-e0)
-    } else if (ratio > 1) {
-        return PointEdgeDistanceType::P_E1; // PP (p-e1)
-    } else {
-        return PointEdgeDistanceType::P_E; // PE
+    void throw_invalid_distance_type(const char* function)
+    {
+        throw std::invalid_argument(
+            fmt::format("{}: invalid distance type", function));
     }
-}
+
+    void throw_auto_requires_explicit_dtype(const char* function)
+    {
+        throw std::invalid_argument(
+            fmt::format(
+                "{}: an explicit distance type is required for non-floating-point "
+                "scalars; the distance type cannot be determined from an "
+                "autodiff scalar",
+                function));
+    }
+
+} // namespace detail
 
 template <typename T>
 PointTriangleDistanceType point_triangle_distance_type(
@@ -45,34 +46,51 @@ PointTriangleDistanceType point_triangle_distance_type(
 {
     const Eigen::Vector3<T> normal = (t1 - t0).cross(t2 - t0);
 
-    Eigen::Matrix<T, 2, 3> basis, param;
+    // Closed form for the per-edge solve
+    //     param.col(k) = (basis * basisᵀ).ldlt().solve(basis * (p - tₖ))
+    // with basis = [eₖ; eₖ×n]. Every edge eₖ lies in the triangle's plane, so
+    // n ⊥ eₖ and the two rows of basis are orthogonal: the 2×2 Gram matrix
+    // basis·basisᵀ is diagonal, diag(eₖ·eₖ, (eₖ×n)·(eₖ×n)), and the solve
+    // collapses to two divisions. (The off-diagonal eₖ·(eₖ×n) is symbolically
+    // zero; in floating point it is O(ε)‖eₖ‖²‖n‖, and by Cramer's rule keeping
+    // it would move the solution by only O(ε) relative — below the rounding of
+    // the divisions themselves.)
+    //
+    // Eigen's LDLT solves with the pseudo-inverse of D, zeroing any component
+    // whose diagonal entry vanishes; the `> 0` guards reproduce that, so a
+    // degenerate edge (‖eₖ‖ = 0) or a degenerate triangle (n = 0) classifies as
+    // before instead of dividing by zero.
+    T along[3]; // parameter along each edge; reused by the vertex tests below
 
-    basis.row(0) = t1 - t0;
-    basis.row(1) = basis.row(0).cross(normal);
-    param.col(0) = (basis * basis.transpose()).ldlt().solve(basis * (p - t0));
-    if (param(0, 0) > 0 && param(0, 0) < 1 && param(1, 0) >= 0) {
+    // NOTE: eₖ×n points out of the triangle, so off ≥ 0 means p is on the
+    //       outer side of edge k.
+    const auto closest_to_edge = [&normal, &along](
+                                     const Eigen::Vector3<T>& e,
+                                     const Eigen::Vector3<T>& d,
+                                     const int k) -> bool {
+        const Eigen::Vector3<T> perp = e.cross(normal);
+        const T a = e.squaredNorm();
+        const T c = perp.squaredNorm();
+        along[k] = a > T(0) ? T(e.dot(d) / a) : T(0);
+        const T off = c > T(0) ? T(perp.dot(d) / c) : T(0);
+        return along[k] > T(0) && along[k] < T(1) && off >= T(0);
+    };
+
+    if (closest_to_edge(t1 - t0, p - t0, 0)) {
         return PointTriangleDistanceType::P_E0; // edge 0 is the closest
     }
-
-    basis.row(0) = t2 - t1;
-    basis.row(1) = basis.row(0).cross(normal);
-    param.col(1) = (basis * basis.transpose()).ldlt().solve(basis * (p - t1));
-    if (param(0, 1) > 0 && param(0, 1) < 1 && param(1, 1) >= 0) {
+    if (closest_to_edge(t2 - t1, p - t1, 1)) {
         return PointTriangleDistanceType::P_E1; // edge 1 is the closest
     }
-
-    basis.row(0) = t0 - t2;
-    basis.row(1) = basis.row(0).cross(normal);
-    param.col(2) = (basis * basis.transpose()).ldlt().solve(basis * (p - t2));
-    if (param(0, 2) > 0 && param(0, 2) < 1 && param(1, 2) >= 0) {
+    if (closest_to_edge(t0 - t2, p - t2, 2)) {
         return PointTriangleDistanceType::P_E2; // edge 2 is the closest
     }
 
-    if (param(0, 0) <= 0 && param(0, 2) >= 1) {
+    if (along[0] <= 0 && along[2] >= 1) {
         return PointTriangleDistanceType::P_T0; // vertex 0 is the closest
-    } else if (param(0, 1) <= 0 && param(0, 0) >= 1) {
+    } else if (along[1] <= 0 && along[0] >= 1) {
         return PointTriangleDistanceType::P_T1; // vertex 1 is the closest
-    } else if (param(0, 2) <= 0 && param(0, 1) >= 1) {
+    } else if (along[2] <= 0 && along[1] >= 1) {
         return PointTriangleDistanceType::P_T2; // vertex 2 is the closest
     } else {
         return PointTriangleDistanceType::P_T;
@@ -223,8 +241,6 @@ EdgeEdgeDistanceType edge_edge_parallel_distance_type(
 }
 
 // clang-format off
-template PointEdgeDistanceType point_edge_distance_type<float>(Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>);
-template PointEdgeDistanceType point_edge_distance_type<double>(Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>);
 template PointTriangleDistanceType point_triangle_distance_type<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
 template PointTriangleDistanceType point_triangle_distance_type<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
 template EdgeEdgeDistanceType edge_edge_distance_type<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
