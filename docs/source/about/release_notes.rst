@@ -65,6 +65,17 @@ API Changes |:wrench:|
   - Follow the distance family: fixed-size kernels in ``ipc::detail`` templated on ``<typename T, int dim>`` (or ``<typename T>`` where the function is 3D-only), behind front ends that deduce both from the argument expressions.
   - Return types are fixed-size when the argument type knows its dimension and the previous ``VectorMax``/``MatrixMax`` types otherwise.
 
+- Add SIMD batch support to the distance functions via the new ``ipc/utils/simd.hpp`` (requires ``IPC_TOOLKIT_WITH_SIMD``).
+
+  - ``Eigen::NumTraits`` is specialized for ``xsimd::batch``, and ``ipc::SimdBatch<T>`` aliases the batch type for the build's architecture. Passing ``Eigen::Vector3<ipc::SimdBatch<double>>`` evaluates one independent problem per SIMD lane, letting a caller with a structure-of-arrays layout compute several distances per call.
+  - The values, gradients, and Hessians of the point-point, point-line, point-edge, line-line, edge-edge, and point-triangle distances are instantiated for ``SimdBatch<float>`` and ``SimdBatch<double>``. Measured agreement with the scalar path is one ulp on the values; the derivatives agree to ~1e-11 relative to their own magnitude, since the two paths contract multiply-adds differently and these derivatives are ill-conditioned for near-parallel edges.
+  - 💥 **[Breaking]** ``xsimd`` and ``SIMD_CXX_FLAGS`` are now linked/applied ``PUBLIC`` rather than ``PRIVATE``. ``xsimd::default_arch`` is selected from each translation unit's own compiler flags, so a consumer built without the library's SIMD flags would name a *different* batch type than the one instantiated and fail to link. This means consumers are now compiled with the detected SIMD flags (typically ``-march=native``); disable ``IPC_TOOLKIT_WITH_SIMD`` if that is not wanted.
+  - ``AUTO`` and the ``*_distance_type`` predicates are **not** available for batch scalars and throw ``std::invalid_argument``. The distance type is a per-lane property but the predicates return a single enum, so two lanes cannot report different closest features. Resolve the distance types scalar-side and group problems by type before batching.
+
+  A caveat on the payoff: on an Apple M-series (NEON, 2 lanes per ``double``) a batched point-line sweep measured only 1.06-1.13x over the scalar loop, and 1.13-1.18x with ``float`` at 4 lanes. The compiler already auto-vectorizes a loop over independent problems, and the kernels are largely memory-bound. Wider ISAs may do better; that has not been measured.
+
+- Add ``float`` aliases to ``ipc/utils/eigen_ext.hpp`` (``Vector1f``, ``Vector6f``, ``Matrix6f``, ``VectorMax3f``, ``MatrixMax9f``, …) mirroring the existing ``double`` ones.
+
 Performance |:zap:|
 ~~~~~~~~~~~~~~~~~~~
 

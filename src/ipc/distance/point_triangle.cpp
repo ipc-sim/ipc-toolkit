@@ -5,6 +5,7 @@
 #include <ipc/distance/point_plane.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/autodiff_types.hpp>
+#include <ipc/utils/simd.hpp>
 
 namespace ipc::detail {
 
@@ -258,6 +259,14 @@ IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADGrad<12>);
 IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADHessian<12>);
 IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADGrad<13>);
 IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADHessian<13>);
+
+#ifdef IPC_TOOLKIT_WITH_SIMD
+// SIMD batches. Only an explicit distance type is supported.
+// See ipc/utils/simd.hpp for why AUTO cannot work lane-wise, and for
+// the requirement that callers match the library's SIMD build flags.
+IPC_INSTANTIATE_POINT_TRIANGLE(SimdBatch<float>);
+IPC_INSTANTIATE_POINT_TRIANGLE(SimdBatch<double>);
+#endif
 
 #undef IPC_INSTANTIATE_POINT_TRIANGLE
 #undef IPC_INSTANTIATE_POINT_TRIANGLE_VALUE

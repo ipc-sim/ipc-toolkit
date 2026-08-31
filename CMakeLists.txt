@@ -302,12 +302,16 @@ target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 
 # SIMD support
 if(IPC_TOOLKIT_WITH_SIMD)
-  # Add SIMD flags to compiler flags
-  target_compile_options(ipc_toolkit PRIVATE ${SIMD_CXX_FLAGS})
+  # Add SIMD flags to compiler flags.
+  # NOTE: PUBLIC because xsimd::default_arch is selected from each translation
+  # unit's own flags. ipc/utils/simd.hpp exposes batch types in the public API,
+  # and a consumer compiled without these flags would name a different type
+  # than the one instantiated in the library, failing to link.
+  target_compile_options(ipc_toolkit PUBLIC ${SIMD_CXX_FLAGS})
 
   # Link against cross-platform xsimd library
   include(xsimd)
-  target_link_libraries(ipc_toolkit PRIVATE xsimd::xsimd)
+  target_link_libraries(ipc_toolkit PUBLIC xsimd::xsimd)
 
   # Disable vectorization in Eigen since I've found it to have alignment issues.
   # NOTE: I don't know why this needs to be public, but it crashes if I make it private.
