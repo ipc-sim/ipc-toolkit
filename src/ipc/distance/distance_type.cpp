@@ -30,8 +30,9 @@ namespace detail {
         throw std::invalid_argument(
             fmt::format(
                 "{}: an explicit distance type is required for non-floating-point "
-                "scalars; the distance type cannot be determined from an "
-                "autodiff scalar",
+                "scalars; resolving AUTO means comparing single ordered values, "
+                "which an autodiff, SIMD batch, or interval scalar does not "
+                "provide",
                 function));
     }
 
