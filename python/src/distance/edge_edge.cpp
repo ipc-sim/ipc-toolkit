@@ -8,13 +8,7 @@ using namespace ipc;
 void define_edge_edge_distance(py::module_& m)
 {
     m.def(
-        "edge_edge_distance",
-        [](Eigen::ConstRef<Eigen::Vector3d> ea0,
-           Eigen::ConstRef<Eigen::Vector3d> ea1,
-           Eigen::ConstRef<Eigen::Vector3d> eb0,
-           Eigen::ConstRef<Eigen::Vector3d> eb1, EdgeEdgeDistanceType dtype) {
-            return edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-        },
+        "edge_edge_distance", &detail::edge_edge_distance<double>,
         R"ipc_Qu8mg5v7(
         Compute the distance between a two lines segments in 3D.
 
@@ -36,12 +30,7 @@ void define_edge_edge_distance(py::module_& m)
 
     m.def(
         "edge_edge_distance_gradient",
-        [](Eigen::ConstRef<Eigen::Vector3d> ea0,
-           Eigen::ConstRef<Eigen::Vector3d> ea1,
-           Eigen::ConstRef<Eigen::Vector3d> eb0,
-           Eigen::ConstRef<Eigen::Vector3d> eb1, EdgeEdgeDistanceType dtype) {
-            return edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype);
-        },
+        &detail::edge_edge_distance_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a two lines segments.
 
@@ -63,12 +52,7 @@ void define_edge_edge_distance(py::module_& m)
 
     m.def(
         "edge_edge_distance_hessian",
-        [](Eigen::ConstRef<Eigen::Vector3d> ea0,
-           Eigen::ConstRef<Eigen::Vector3d> ea1,
-           Eigen::ConstRef<Eigen::Vector3d> eb0,
-           Eigen::ConstRef<Eigen::Vector3d> eb1, EdgeEdgeDistanceType dtype) {
-            return edge_edge_distance_hessian(ea0, ea1, eb0, eb1, dtype);
-        },
+        &detail::edge_edge_distance_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a two lines segments.
 

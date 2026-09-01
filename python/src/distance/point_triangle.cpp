@@ -8,14 +8,7 @@ using namespace ipc;
 void define_point_triangle_distance(py::module_& m)
 {
     m.def(
-        "point_triangle_distance",
-        [](Eigen::ConstRef<Eigen::Vector3d> p,
-           Eigen::ConstRef<Eigen::Vector3d> t0,
-           Eigen::ConstRef<Eigen::Vector3d> t1,
-           Eigen::ConstRef<Eigen::Vector3d> t2,
-           PointTriangleDistanceType dtype) {
-            return point_triangle_distance(p, t0, t1, t2, dtype);
-        },
+        "point_triangle_distance", &detail::point_triangle_distance<double>,
         R"ipc_Qu8mg5v7(
         Compute the distance between a points and a triangle.
 
@@ -37,13 +30,7 @@ void define_point_triangle_distance(py::module_& m)
 
     m.def(
         "point_triangle_distance_gradient",
-        [](Eigen::ConstRef<Eigen::Vector3d> p,
-           Eigen::ConstRef<Eigen::Vector3d> t0,
-           Eigen::ConstRef<Eigen::Vector3d> t1,
-           Eigen::ConstRef<Eigen::Vector3d> t2,
-           PointTriangleDistanceType dtype) {
-            return point_triangle_distance_gradient(p, t0, t1, t2, dtype);
-        },
+        &detail::point_triangle_distance_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a points and a triangle.
 
@@ -65,13 +52,7 @@ void define_point_triangle_distance(py::module_& m)
 
     m.def(
         "point_triangle_distance_hessian",
-        [](Eigen::ConstRef<Eigen::Vector3d> p,
-           Eigen::ConstRef<Eigen::Vector3d> t0,
-           Eigen::ConstRef<Eigen::Vector3d> t1,
-           Eigen::ConstRef<Eigen::Vector3d> t2,
-           PointTriangleDistanceType dtype) {
-            return point_triangle_distance_hessian(p, t0, t1, t2, dtype);
-        },
+        &detail::point_triangle_distance_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a points and a triangle.
 
