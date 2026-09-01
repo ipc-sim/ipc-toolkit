@@ -110,35 +110,6 @@ double HighOrderContactPotential::operator()(
         for (const double v : potential_storage) {
             result += v;
         }
-
-        // OGC mode: per-vertex collision dicts (weight 1 per vertex).
-        if (!collisions.vertex_collisions_2d.empty()) {
-            std::vector<index_t> active_verts;
-            active_verts.reserve(collisions.vertex_collisions_2d.size());
-            for (const auto& [vi, _] : collisions.vertex_collisions_2d)
-                active_verts.push_back(vi);
-
-            tbb::enumerable_thread_specific<double> v_storage(0.0);
-            tbb::parallel_for(
-                tbb::blocked_range<size_t>(0, active_verts.size()),
-                [&](const tbb::blocked_range<size_t>& r) {
-                    double& total = v_storage.local();
-                    for (size_t k = r.begin(); k < r.end(); ++k) {
-                        const index_t vi = active_verts[k];
-                        const auto& dict =
-                            *collisions.vertex_collisions_2d.at(vi);
-                        const double w_vertex =
-                            params.area_weights ? (mesh.vertex_area(vi)) : 1.0;
-                        total += w_vertex
-                            * PointPotentialHelper::
-                                evaluate_potential_at_vertex_2d(
-                                     X, dict, params,
-                                     collisions.adaptive_dhat.get());
-                    }
-                });
-            for (const double v : v_storage)
-                result += v;
-        }
     } else if (mesh.dim() == 3) {
         {
             tbb::enumerable_thread_specific<double> potential_storage(0.0);
@@ -448,35 +419,6 @@ Eigen::VectorXd HighOrderContactPotential::gradient(
                     }
                 }
             });
-
-        // OGC mode: per-vertex collision dicts (weight 1 per vertex).
-        if (!collisions.vertex_collisions_2d.empty()) {
-            std::vector<index_t> active_verts;
-            active_verts.reserve(collisions.vertex_collisions_2d.size());
-            for (const auto& [vi, _] : collisions.vertex_collisions_2d)
-                active_verts.push_back(vi);
-
-            tbb::parallel_for(
-                tbb::blocked_range<size_t>(0, active_verts.size()),
-                [&](const tbb::blocked_range<size_t>& r) {
-                    Eigen::VectorXd& global_grad = storage.local();
-                    for (size_t k = r.begin(); k < r.end(); ++k) {
-                        const index_t vi = active_verts[k];
-                        const auto& dict =
-                            *collisions.vertex_collisions_2d.at(vi);
-                        const double w_vertex =
-                            params.area_weights ? (mesh.vertex_area(vi)) : 1.0;
-                        const Eigen::VectorXd local_grad =
-                            w_vertex
-                            * PointPotentialHelper::
-                                evaluate_potential_gradient_at_vertex_2d(
-                                    X, dict, params,
-                                    collisions.adaptive_dhat.get());
-                        local_gradient_to_global_gradient(
-                            local_grad, dict.vertex_ids(), dim, global_grad);
-                    }
-                });
-        }
     } else if (mesh.dim() == 3) {
         {
             using T = ADGrad<12>;
@@ -906,37 +848,6 @@ Eigen::SparseMatrix<double> HighOrderContactPotential::hessian(
                     }
                 }
             });
-
-        // OGC mode: per-vertex collision dicts (weight 1 per vertex).
-        if (!collisions.vertex_collisions_2d.empty()) {
-            std::vector<index_t> active_verts;
-            active_verts.reserve(collisions.vertex_collisions_2d.size());
-            for (const auto& [vi, _] : collisions.vertex_collisions_2d)
-                active_verts.push_back(vi);
-
-            tbb::parallel_for(
-                tbb::blocked_range<size_t>(0, active_verts.size()),
-                [&](const tbb::blocked_range<size_t>& r) {
-                    auto& hess_triplets = storage.local();
-                    for (size_t k = r.begin(); k < r.end(); ++k) {
-                        const index_t vi = active_verts[k];
-                        const auto& dict =
-                            *collisions.vertex_collisions_2d.at(vi);
-                        const double w_vertex =
-                            params.area_weights ? (mesh.vertex_area(vi)) : 1.0;
-                        const Eigen::MatrixXd local_hess =
-                            w_vertex
-                            * PointPotentialHelper::
-                                evaluate_potential_hessian_at_vertex_2d(
-                                    X, dict, params,
-                                    collisions.adaptive_dhat.get(),
-                                    project_hessian_to_psd);
-                        local_hessian_to_global_triplets(
-                            local_hess, dict.vertex_ids(), dim,
-                            *(hess_triplets.cache));
-                    }
-                });
-        }
     } else if (mesh.dim() == 3) {
         // When use_near_far is on, the per-face hessian is assembled as
         //   Term A (sum of per-stencil H(p_i))

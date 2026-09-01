@@ -202,16 +202,6 @@ AdaptiveSupport::AdaptiveSupport(
             }
         }
 
-        for (const auto& [vi, dict_ptr] : collisions.vertex_collisions_2d) {
-            const auto& dict = *dict_ptr;
-            for (int ci = 0; ci < dict.size(); ci++) {
-                auto pvids = get_primitive_vids(dict[ci]);
-                if (!pvids.empty())
-                    active_pairs.push_back(
-                        { &dict[ci], false, {}, std::move(pvids) });
-            }
-        }
-
         std::vector<bool> completed(active_pairs.size(), false);
         bool has_active = true;
         while (has_active) {

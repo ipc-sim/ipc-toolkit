@@ -36,25 +36,9 @@ public:
         size_t start,
         size_t end);
 
-    /// @brief [OGC mode] Build per-vertex collision dicts for the 2D path.
-    /// For each vertex vi in [start, end) with candidates, adds feasibility-
-    /// filtered pairs from vv_set and ve_set, all weight +1.
-    void build_vertex_collisions_ogc(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
-        const Candidates& candidates,
-        const HighOrderContactParameters& params,
-        size_t start,
-        size_t end);
-
     // -------------------------------------------------------------------------
 
     static void merge(
-        tbb::enumerable_thread_specific<HighOrderCollisionsBuilder<2>>&
-            local_storage,
-        HighOrderCollisions& merged_collisions);
-
-    static void merge_ogc(
         tbb::enumerable_thread_specific<HighOrderCollisionsBuilder<2>>&
             local_storage,
         HighOrderCollisions& merged_collisions);
@@ -67,12 +51,6 @@ public:
         std::vector<
             std::unique_ptr<HighOrderCollisionDict<PointType::EDGE, 2>>>>>
         edge_collisions_2d;
-
-    // Per-vertex collision dicts for OGC mode: each entry is {vertex_id, dict}.
-    std::vector<std::pair<
-        index_t,
-        std::unique_ptr<HighOrderCollisionDict<PointType::VERTEX, 2>>>>
-        vertex_collisions_2d;
 };
 
 template <> class HighOrderCollisionsBuilder<3> {
@@ -189,13 +167,6 @@ public:
         size_t start,
         size_t end);
 
-    /// @brief [OGC mode] Build per-vertex collision dicts for 3D using feasibility checks.
-    void build_vertex_collisions_ogc(
-        const Eigen::MatrixXd& vertices,
-        const std::vector<index_t>& vertex_indices,
-        size_t start,
-        size_t end);
-
     void build_face_collisions(
         const Eigen::MatrixXd& vertices,
         const std::vector<index_t>& face_indices,
@@ -203,15 +174,6 @@ public:
         size_t end);
 
     void build_edge_edge_collisions(
-        const Eigen::MatrixXd& vertices,
-        const std::vector<EdgeEdgeCandidate>& ee_candidates,
-        const size_t start_i,
-        const size_t end_i);
-
-    /// @brief [OGC mode] Build EE closest-point dicts using feasibility checks.
-    /// Processes QA when interior to EA (dtype ∈ EA_EB/EA_EB0/EA_EB1) and QB
-    /// when interior to EB (dtype ∈ EA_EB/EA0_EB/EA1_EB).
-    void build_edge_edge_collisions_ogc(
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeEdgeCandidate>& ee_candidates,
         const size_t start_i,

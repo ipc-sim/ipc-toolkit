@@ -205,27 +205,6 @@ namespace PointPotentialHelper {
         PSDProjectionMethod project_to_psd,
         const NearFarBarrier& nf_barrier);
 
-    // ---- 2D vertex helpers (OGC mode) ----
-
-    double evaluate_potential_at_vertex_2d(
-        const Eigen::MatrixXd& V,
-        const HighOrderCollisionDict<PointType::VERTEX, 2>& collisions,
-        const HighOrderContactParameters& params,
-        const AdaptiveSupport* adaptive);
-
-    Eigen::VectorXd evaluate_potential_gradient_at_vertex_2d(
-        const Eigen::MatrixXd& V,
-        const HighOrderCollisionDict<PointType::VERTEX, 2>& collisions,
-        const HighOrderContactParameters& params,
-        const AdaptiveSupport* adaptive);
-
-    Eigen::MatrixXd evaluate_potential_hessian_at_vertex_2d(
-        const Eigen::MatrixXd& V,
-        const HighOrderCollisionDict<PointType::VERTEX, 2>& collisions,
-        const HighOrderContactParameters& params,
-        const AdaptiveSupport* adaptive,
-        PSDProjectionMethod project_to_psd);
-
     // ---- 2D edge quadrature point helpers ----
 
     /// @brief Evaluate P(q) = sum of barrier values for all pairs in the dict.
@@ -313,24 +292,6 @@ public:
         index_t ei,
         const std::array<double, 2>& lambda,
         double dhat,
-        size_t& num_collision_pairs) const;
-
-    /// @brief [OGC mode, 2D] Build collision dict for real vertex vid.
-    /// Adds pairs only if vid is in the feasible region of the other primitive,
-    /// always with weight +1. Uses vv_set and ve_set.
-    std::unique_ptr<HighOrderCollisionDict<PointType::VERTEX, 2>>
-    build_collisions_at_vertex_ogc_2d(
-        const Eigen::MatrixXd& V,
-        index_t vid,
-        size_t& num_collision_pairs) const;
-
-    /// @brief [OGC mode, 3D] Build collision dict for real vertex vid.
-    /// Adds pairs only if vid is in the feasible region of the other primitive,
-    /// always with weight +1. Uses vf_set, ve_set, vv_set.
-    std::unique_ptr<HighOrderCollisionDict<PointType::VERTEX>>
-    build_collisions_at_vertex_ogc_3d(
-        const Eigen::MatrixXd& V,
-        index_t vid,
         size_t& num_collision_pairs) const;
 
     const CollisionMesh& mesh;

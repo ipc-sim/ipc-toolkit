@@ -8,7 +8,6 @@
 #include "ipc/distance/point_point.hpp"
 #include "ipc/distance/point_triangle.hpp"
 #include "ipc/high_order_contact/high_order_collisions_builder.hpp"
-#include "ipc/ogc/feasible_region.hpp"
 #include "ipc/utils/profile_registry.hpp"
 
 #include <algorithm>
@@ -31,16 +30,6 @@ namespace {
         }
     }
 
-    template <typename KeyType, typename ValueType>
-    void insert_pair_ogc(
-        unordered_map<KeyType, ValueType>& map, ValueType&& collision)
-    {
-        collision->weight = 1;
-        const auto key = collision->get_typed_hash();
-        if (map.find(key) == map.end()) {
-            map[key] = std::move(collision);
-        }
-    }
 } // namespace
 
 std::unique_ptr<HighOrderCollisionDict<PointType::VERTEX>>
@@ -1152,139 +1141,6 @@ Eigen::VectorXd PointPotentialHelper::evaluate_potential_gradient_at_edge_qp(
     return grad;
 }
 
-// =========================================================================
-// 2D vertex (OGC mode) — collision building
-// =========================================================================
-
-std::unique_ptr<HighOrderCollisionDict<PointType::VERTEX, 2>>
-PointPotential::build_collisions_at_vertex_ogc_2d(
-    const Eigen::MatrixXd& V,
-    const index_t vid,
-    size_t& num_collision_pairs) const
-{
-    assert(mesh.are_adjacencies_initialized());
-
-    unordered_map<std::array<index_t, 3>, std::shared_ptr<HighOrderCollision>>
-        pairs;
-    num_collision_pairs = 0;
-
-    const Eigen::RowVector2d q_pos = V.row(vid);
-    const double dhat2 = params.dhat * params.dhat;
-
-    const bool src_is_obstacle = mesh.is_obstacle_vertex(vid);
-    const bool filter_obstacles = src_is_obstacle
-        && params.integration_type
-            != HighOrderContactParameters::IntegrationType::BRUTE_FORCE;
-
-    // VV: add if vid is in the feasible region of vj
-    for (const index_t vj : candidates.vv_set(vid)) {
-        if (filter_obstacles && mesh.is_obstacle_vertex(vj))
-            continue;
-        if (!ogc::check_vertex_feasible_region(mesh, V, vid, vj))
-            continue;
-        if (point_point_distance(q_pos, V.row(vj)) >= dhat2)
-            continue;
-        ++num_collision_pairs;
-        insert_pair_ogc(
-            pairs,
-            std::shared_ptr<HighOrderCollision>(
-                std::make_shared<HighOrderCollisionTemplate<Vertex2, Vertex2>>(
-                    vid, vj, mesh)));
-    }
-
-    // VE: add if vid projects to interior of edge ej (dtype == P_E)
-    for (const index_t ej : candidates.ve_set(vid)) {
-        if (filter_obstacles && mesh.is_obstacle_edge(ej))
-            continue;
-        const index_t ea = mesh.edges()(ej, 0);
-        const index_t eb = mesh.edges()(ej, 1);
-        const auto dtype =
-            point_edge_distance_type(q_pos, V.row(ea), V.row(eb));
-        if (dtype != PointEdgeDistanceType::P_E)
-            continue;
-        if (point_edge_distance(q_pos, V.row(ea), V.row(eb), dtype) >= dhat2)
-            continue;
-        ++num_collision_pairs;
-        insert_pair_ogc(
-            pairs,
-            std::shared_ptr<HighOrderCollision>(
-                std::make_shared<HighOrderCollisionTemplate<Vertex2, Edge2P1>>(
-                    vid, ej, mesh)));
-    }
-
-    auto dict =
-        std::make_unique<HighOrderCollisionDict<PointType::VERTEX, 2>>();
-    dict->initialize(
-        std::vector<index_t> { vid }, std::vector<index_t> { vid }, pairs);
-    return dict;
-}
-
-// =========================================================================
-// 2D vertex (OGC mode) — potential evaluation
-// =========================================================================
-
-double PointPotentialHelper::evaluate_potential_at_vertex_2d(
-    const Eigen::MatrixXd& V,
-    const HighOrderCollisionDict<PointType::VERTEX, 2>& collisions,
-    const HighOrderContactParameters& params,
-    const AdaptiveSupport* adaptive)
-{
-    double potential = 0;
-    for (int ci = 0; ci < collisions.size(); ci++) {
-        const auto& cc = collisions[ci];
-        potential += cc.weight * cc(cc.dof(V), params, adaptive);
-    }
-    return potential;
-}
-
-Eigen::VectorXd PointPotentialHelper::evaluate_potential_gradient_at_vertex_2d(
-    const Eigen::MatrixXd& V,
-    const HighOrderCollisionDict<PointType::VERTEX, 2>& collisions,
-    const HighOrderContactParameters& params,
-    const AdaptiveSupport* adaptive)
-{
-    Eigen::VectorXd grad =
-        Eigen::VectorXd::Zero(collisions.vertex_ids().size() * 2);
-    for (int ci = 0; ci < collisions.size(); ci++) {
-        const auto& cc = collisions[ci];
-        Eigen::VectorXd g =
-            cc.weight * cc.gradient(cc.dof(V), params, adaptive);
-        for (index_t j = 0; j < cc.num_vertices(); j++) {
-            grad.segment<2>(
-                2 * collisions.vertex_ids_inverse(cc.vertex_id(j))) +=
-                g.segment<2>(2 * j);
-        }
-    }
-    return grad;
-}
-
-Eigen::MatrixXd PointPotentialHelper::evaluate_potential_hessian_at_vertex_2d(
-    const Eigen::MatrixXd& V,
-    const HighOrderCollisionDict<PointType::VERTEX, 2>& collisions,
-    const HighOrderContactParameters& params,
-    const AdaptiveSupport* adaptive,
-    PSDProjectionMethod project_to_psd)
-{
-    Eigen::MatrixXd H = Eigen::MatrixXd::Zero(
-        collisions.vertex_ids().size() * 2, collisions.vertex_ids().size() * 2);
-    for (int ci = 0; ci < collisions.size(); ci++) {
-        const auto& cc = collisions[ci];
-        Eigen::MatrixXd h = cc.weight * cc.hessian(cc.dof(V), params, adaptive);
-        for (index_t i = 0; i < cc.num_vertices(); i++) {
-            const index_t li = collisions.vertex_ids_inverse(cc.vertex_id(i));
-            for (index_t j = 0; j < cc.num_vertices(); j++) {
-                const index_t lj =
-                    collisions.vertex_ids_inverse(cc.vertex_id(j));
-                H.block<2, 2>(2 * li, 2 * lj) += h.block<2, 2>(2 * i, 2 * j);
-            }
-        }
-    }
-    if (project_to_psd != PSDProjectionMethod::NONE) {
-        H = ipc::project_to_psd(H, project_to_psd);
-    }
-    return H;
-}
-
 Eigen::MatrixXd PointPotentialHelper::evaluate_potential_hessian_at_edge_qp(
     VertexMatrixView<2> V_extended,
     const HighOrderCollisionDict<PointType::EDGE, 2>& collisions,
@@ -1351,101 +1207,8 @@ Eigen::MatrixXd PointPotentialHelper::evaluate_potential_hessian_at_edge_qp(
 }
 
 // =========================================================================
-// 3D vertex (OGC mode) — collision building
+// NearFarBarrier evaluation functions (3D)
 // =========================================================================
-
-std::unique_ptr<HighOrderCollisionDict<PointType::VERTEX>>
-PointPotential::build_collisions_at_vertex_ogc_3d(
-    const Eigen::MatrixXd& V,
-    const index_t vid,
-    size_t& num_collision_pairs) const
-{
-    assert(mesh.are_adjacencies_initialized());
-
-    unordered_map<std::array<index_t, 3>, std::shared_ptr<HighOrderCollision>>
-        pairs;
-    num_collision_pairs = 0;
-
-    const VertexMatrixView<3> V_view(V);
-    const Eigen::RowVector3d q_pos = V.row(vid);
-    const double dhat2 = params.dhat * params.dhat;
-
-    const bool src_is_obstacle = mesh.is_obstacle_vertex(vid);
-    const bool filter_obstacles = src_is_obstacle
-        && params.integration_type
-            != HighOrderContactParameters::IntegrationType::BRUTE_FORCE;
-
-    // VF: add if vid projects to interior of face fi (dtype == P_T)
-    for (const index_t fi : candidates.vf_set(vid)) {
-        if (filter_obstacles && mesh.is_obstacle_face(fi))
-            continue;
-        const index_t f0 = mesh.faces()(fi, 0);
-        const index_t f1 = mesh.faces()(fi, 1);
-        const index_t f2 = mesh.faces()(fi, 2);
-        const auto dtype = point_triangle_distance_type(
-            q_pos, V.row(f0), V.row(f1), V.row(f2));
-        if (dtype != PointTriangleDistanceType::P_T)
-            continue;
-        if (point_triangle_distance(
-                q_pos, V.row(f0), V.row(f1), V.row(f2), dtype)
-            >= dhat2)
-            continue;
-        ++num_collision_pairs;
-        insert_pair_ogc(
-            pairs,
-            std::shared_ptr<HighOrderCollision>(
-                std::make_shared<HighOrderCollisionTemplate<Face3P1, Vertex3>>(
-                    fi, vid, mesh)));
-    }
-
-    // VE: add if vid is in the feasible region of edge ei (cylindrical OGC
-    // region)
-    for (const index_t ei : candidates.ve_set(vid)) {
-        if (filter_obstacles && mesh.is_obstacle_edge(ei))
-            continue;
-        const index_t e0 = mesh.edges()(ei, 0);
-        const index_t e1 = mesh.edges()(ei, 1);
-        if (!ogc::check_edge_feasible_region(mesh, V, vid, ei))
-            continue;
-        if (point_edge_distance(
-                q_pos, V.row(e0), V.row(e1), PointEdgeDistanceType::P_E)
-            >= dhat2)
-            continue;
-        ++num_collision_pairs;
-        insert_pair_ogc(
-            pairs,
-            std::shared_ptr<HighOrderCollision>(
-                std::make_shared<HighOrderCollisionTemplate<Edge3P1, Vertex3>>(
-                    ei, vid, mesh)));
-    }
-
-    // VV: add if vid is in the feasible region of vj
-    for (const index_t vj : candidates.vv_set(vid)) {
-        if (filter_obstacles && mesh.is_obstacle_vertex(vj))
-            continue;
-        if (!ogc::check_vertex_feasible_region(mesh, V, vid, vj))
-            continue;
-        if (point_point_distance(q_pos, V.row(vj)) >= dhat2)
-            continue;
-        ++num_collision_pairs;
-        insert_pair_ogc(
-            pairs,
-            std::shared_ptr<HighOrderCollision>(
-                std::make_shared<HighOrderCollisionTemplate<Vertex3, Vertex3>>(
-                    vid, vj, mesh)));
-    }
-
-    auto dict = std::make_unique<HighOrderCollisionDict<PointType::VERTEX>>();
-    dict->initialize(
-        std::vector<index_t> { vid }, std::vector<index_t> { vid }, pairs);
-    return dict;
-}
-
-// =========================================================================
-// 3D EE closest point (OGC mode) — collision building
-// =========================================================================
-
-// ---- NearFarBarrier evaluation functions (3D) ----
 
 std::pair<double, double> PointPotentialHelper::
     evaluate_potential_at_vertex_with_cached_collisions_nearfar(
