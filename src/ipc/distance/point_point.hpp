@@ -69,11 +69,6 @@ namespace detail {
 /// @brief Compute the distance between two points.
 ///
 /// @note The distance is actually squared distance.
-///
-/// Accepts any Eigen expression. The dimension is resolved at compile time when
-/// the argument type knows it and with a single branch otherwise; each argument
-/// is evaluated exactly once.
-///
 /// @param p0 The first point.
 /// @param p1 The second point.
 /// @return The distance between p0 and p1.
@@ -98,11 +93,6 @@ inline auto point_point_distance(const DerivedP0& p0, const DerivedP1& p1)
 /// @brief Compute the gradient of the distance between two points.
 ///
 /// @note The distance is actually squared distance.
-///
-/// Accepts any Eigen expression. When the dimension is known at compile time
-/// the return type is the fixed-size Eigen::Vector<T, 2 * dim>; otherwise it is
-/// VectorMax6<T>.
-///
 /// @param p0 The first point.
 /// @param p1 The second point.
 /// @return The computed gradient.
@@ -129,11 +119,6 @@ point_point_distance_gradient(const DerivedP0& p0, const DerivedP1& p1)
 /// @brief Compute the hessian of the distance between two points.
 ///
 /// @note The distance is actually squared distance.
-///
-/// Accepts any Eigen expression. When the dimension is known at compile time
-/// the return type is the fixed-size Eigen::Matrix<T, 2 * dim, 2 * dim>;
-/// otherwise it is MatrixMax6<T>.
-///
 /// @param p0 The first point.
 /// @param p1 The second point.
 /// @return The computed hessian.

@@ -163,13 +163,6 @@ inline auto point_line_distance_gradient(
 /// @brief Compute the hessian of the distance between a point and line.
 ///
 /// @note The distance is actually squared distance.
-///
-/// Accepts any Eigen expression. When the dimension is known at compile time
-/// the return type is the fixed-size Eigen::Matrix<T, 3 * dim, 3 * dim>;
-/// otherwise it is MatrixMax9<T>, filled directly by the generated code
-/// (wrapping the 648-byte fixed-size result instead measured as a 7-13%
-/// regression).
-///
 /// @param p The point.
 /// @param e0 The first vertex of the edge defining the line.
 /// @param e1 The second vertex of the edge defining the line.

@@ -8,6 +8,12 @@
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
+#include <ipc/distance/edge_edge_mollifier.hpp>
+#include <ipc/distance/point_plane.hpp>
+#include <ipc/geometry/area.hpp>
+#include <ipc/tangent/closest_point.hpp>
+#include <ipc/tangent/relative_velocity.hpp>
+#include <ipc/tangent/tangent_basis.hpp>
 
 #include <Eigen/Geometry>
 
@@ -774,3 +780,146 @@ TEST_CASE("Float vs double", "[!benchmark][eigen][float]")
 #undef AT3_D
 #undef AT4
 #undef AT4_D
+
+// =============================================================================
+// Converted families: tangent basis, closest point, relative velocity, area,
+// edge-edge mollifier, point-plane. Measured old (dim-erased, double-only)
+// vs. new (two-layer, dim-templated) via interleaved A/B of two binaries.
+// The same-TU rows are identical in both binaries: the noise-floor control.
+
+namespace {
+
+double pe_cp_ref_3d(
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1)
+{
+    const Eigen::Vector3d e = e1 - e0;
+    return e.dot(p - e0) / e.squaredNorm();
+}
+
+double el_ref_3d(
+    Eigen::ConstRef<Eigen::Vector3d> e0, Eigen::ConstRef<Eigen::Vector3d> e1)
+{
+    return (e1 - e0).norm();
+}
+
+} // namespace
+
+TEST_CASE("Converted families", "[!benchmark][eigen][converted]")
+{
+    constexpr int N = 100;
+    const Eigen::MatrixXd V = Eigen::MatrixXd::Random(N, 3);
+    const Eigen::ArrayXi idx = random_indices(N);
+
+    std::vector<Eigen::Vector3d> P3(N);
+    std::vector<VectorMax3d> PN(N);
+    for (int k = 0; k < N; ++k) {
+        P3[k] = V.row(k);
+        PN[k] = V.row(k);
+    }
+
+#define R2(f) f(V.row(idx[i % IDX_M]), V.row(idx[(i + 1) % IDX_M]))
+#define R3(f)                                                                  \
+    f(V.row(idx[i % IDX_M]), V.row(idx[(i + 1) % IDX_M]),                      \
+      V.row(idx[(i + 2) % IDX_M]))
+#define R4(f)                                                                  \
+    f(V.row(idx[i % IDX_M]), V.row(idx[(i + 1) % IDX_M]),                      \
+      V.row(idx[(i + 2) % IDX_M]), V.row(idx[(i + 3) % IDX_M]))
+#define M3(f, src)                                                             \
+    f(src[idx[i % IDX_M]], src[idx[(i + 1) % IDX_M]], src[idx[(i + 2) % IDX_M]])
+
+    // --- controls (same code in both binaries) ---
+    BENCHMARK("ctl pe_closest_point Ref<Vector3d>", i)
+    {
+        return R3(pe_cp_ref_3d);
+    };
+    BENCHMARK("ctl edge_length Ref<Vector3d>", i) { return R2(el_ref_3d); };
+
+    // --- closest point ---
+    BENCHMARK("pe_closest_point rows", i)
+    {
+        return R3(point_edge_closest_point);
+    };
+    BENCHMARK("pe_closest_point Vector3d", i)
+    {
+        return M3(point_edge_closest_point, P3);
+    };
+    BENCHMARK("pe_closest_point VectorMax3d", i)
+    {
+        return M3(point_edge_closest_point, PN);
+    };
+    BENCHMARK("pe_closest_point_jacobian rows", i)
+    {
+        return R3(point_edge_closest_point_jacobian);
+    };
+    BENCHMARK("ee_closest_point rows", i)
+    {
+        return R4(edge_edge_closest_point);
+    };
+    BENCHMARK("pt_closest_point rows", i)
+    {
+        return R4(point_triangle_closest_point);
+    };
+
+    // --- tangent basis ---
+    BENCHMARK("pp_tangent_basis rows", i)
+    {
+        return R2(point_point_tangent_basis);
+    };
+    BENCHMARK("pp_tangent_basis Vector3d", i)
+    {
+        return point_point_tangent_basis(
+            P3[idx[i % IDX_M]], P3[idx[(i + 1) % IDX_M]]);
+    };
+    BENCHMARK("pe_tangent_basis rows", i)
+    {
+        return R3(point_edge_tangent_basis);
+    };
+    BENCHMARK("ee_tangent_basis rows", i)
+    {
+        return R4(edge_edge_tangent_basis);
+    };
+    BENCHMARK("pt_tangent_basis rows", i)
+    {
+        return R4(point_triangle_tangent_basis);
+    };
+
+    // --- relative velocity ---
+    BENCHMARK("pp_relative_velocity rows", i)
+    {
+        return R2(point_point_relative_velocity);
+    };
+    BENCHMARK("pp_relative_velocity VectorMax3d", i)
+    {
+        return point_point_relative_velocity(
+            PN[idx[i % IDX_M]], PN[idx[(i + 1) % IDX_M]]);
+    };
+    BENCHMARK("pp_rel_vel_jacobian(dim=3)", i)
+    {
+        return point_point_relative_velocity_jacobian(2 + (idx[i % IDX_M] & 1));
+    };
+
+    // --- area ---
+    BENCHMARK("edge_length rows", i) { return R2(edge_length); };
+    BENCHMARK("edge_length VectorMax3d", i)
+    {
+        return edge_length(PN[idx[i % IDX_M]], PN[idx[(i + 1) % IDX_M]]);
+    };
+    BENCHMARK("triangle_area rows", i) { return R3(triangle_area); };
+
+    // --- mollifier / point-plane ---
+    BENCHMARK("ee_cross_squarednorm rows", i)
+    {
+        return R4(edge_edge_cross_squarednorm);
+    };
+    BENCHMARK("point_plane_distance rows", i)
+    {
+        return R3(point_plane_distance);
+    };
+
+#undef R2
+#undef R3
+#undef R4
+#undef M3
+}

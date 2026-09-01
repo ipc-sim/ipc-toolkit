@@ -1,6 +1,6 @@
 #include "point_plane.hpp"
 
-namespace ipc {
+namespace ipc::detail {
 
 template <typename T>
 Eigen::Matrix<T, 12, 12> point_plane_signed_distance_hessian(
@@ -74,4 +74,4 @@ template Matrix12f point_plane_signed_distance_hessian<float>(Eigen::ConstRef<Ei
 template Matrix12d point_plane_signed_distance_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
 // clang-format on
 
-} // namespace ipc
+} // namespace ipc::detail

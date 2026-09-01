@@ -3,69 +3,92 @@
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
+namespace detail {
 
-template <typename T>
-Eigen::Vector<T, 12> edge_edge_mollifier_gradient_wrt_x(
-    Eigen::ConstRef<Eigen::Vector3<T>> ea0_rest,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea1_rest,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb0_rest,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb1_rest,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb1)
-{
-    const T eps_x =
-        edge_edge_mollifier_threshold(ea0_rest, ea1_rest, eb0_rest, eb1_rest);
-    const T ee_cross_norm_sqr = edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
-    if (ee_cross_norm_sqr < eps_x) {
-        // ∇ₓ m = ∂m/∂ε · ∇ₓε
-        // (m depends on rest positions only through eps_x, since the
-        // cross-squarednorm s is a function of POSITIONS only)
-        return edge_edge_mollifier_derivative_wrt_eps_x(
-                   ee_cross_norm_sqr, eps_x)
-            * edge_edge_mollifier_threshold_gradient(
-                   ea0_rest, ea1_rest, eb0_rest, eb1_rest);
-    } else {
-        return Eigen::Vector<T, 12>::Zero();
+    template <typename T>
+    Eigen::Vector<T, 12> edge_edge_mollifier_gradient_wrt_x(
+        Eigen::ConstRef<Eigen::Vector3<T>> ea0_rest,
+        Eigen::ConstRef<Eigen::Vector3<T>> ea1_rest,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb0_rest,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb1_rest,
+        Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+        Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb1)
+    {
+        const T eps_x = edge_edge_mollifier_threshold(
+            ea0_rest, ea1_rest, eb0_rest, eb1_rest);
+        const T ee_cross_norm_sqr =
+            edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
+        if (ee_cross_norm_sqr < eps_x) {
+            // ∇ₓ m = ∂m/∂ε · ∇ₓε
+            // (m depends on rest positions only through eps_x, since the
+            // cross-squarednorm s is a function of POSITIONS only)
+            return edge_edge_mollifier_derivative_wrt_eps_x(
+                       ee_cross_norm_sqr, eps_x)
+                * edge_edge_mollifier_threshold_gradient(
+                       ea0_rest, ea1_rest, eb0_rest, eb1_rest);
+        } else {
+            return Eigen::Vector<T, 12>::Zero();
+        }
     }
-}
 
-template <typename T>
-Eigen::Matrix<T, 12, 12> edge_edge_mollifier_gradient_jacobian_wrt_x(
-    Eigen::ConstRef<Eigen::Vector3<T>> ea0_rest,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea1_rest,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb0_rest,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb1_rest,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb1)
-{
-    const T eps_x =
-        edge_edge_mollifier_threshold(ea0_rest, ea1_rest, eb0_rest, eb1_rest);
-    const T ee_cross_norm_sqr = edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
-    if (ee_cross_norm_sqr < eps_x) {
-        // ∂²m/∂ε∂s (∇ₓε)(∇ᵤs(x+u))ᵀ + ∂m/∂s ∇ᵤ²s(x+u)
-        return edge_edge_mollifier_gradient_derivative_wrt_eps_x(
-                   ee_cross_norm_sqr, eps_x)
-            * edge_edge_mollifier_threshold_gradient(
-                   ea0_rest, ea1_rest, eb0_rest, eb1_rest)
-            * edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1)
-                  .transpose()
-            + edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
-            * edge_edge_cross_squarednorm_hessian(ea0, ea1, eb0, eb1);
-    } else {
-        return Eigen::Matrix<T, 12, 12>::Zero();
+    template <typename T>
+    Eigen::Matrix<T, 12, 12> edge_edge_mollifier_gradient_jacobian_wrt_x(
+        Eigen::ConstRef<Eigen::Vector3<T>> ea0_rest,
+        Eigen::ConstRef<Eigen::Vector3<T>> ea1_rest,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb0_rest,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb1_rest,
+        Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+        Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb1)
+    {
+        const T eps_x = edge_edge_mollifier_threshold(
+            ea0_rest, ea1_rest, eb0_rest, eb1_rest);
+        const T ee_cross_norm_sqr =
+            edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
+        if (ee_cross_norm_sqr < eps_x) {
+            // ∂²m/∂ε∂s (∇ₓε)(∇ᵤs(x+u))ᵀ + ∂m/∂s ∇ᵤ²s(x+u)
+            return edge_edge_mollifier_gradient_derivative_wrt_eps_x(
+                       ee_cross_norm_sqr, eps_x)
+                * edge_edge_mollifier_threshold_gradient(
+                       ea0_rest, ea1_rest, eb0_rest, eb1_rest)
+                * edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1)
+                      .transpose()
+                + ipc::edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
+                * edge_edge_cross_squarednorm_hessian(ea0, ea1, eb0, eb1);
+        } else {
+            return Eigen::Matrix<T, 12, 12>::Zero();
+        }
     }
-}
 
-// clang-format off
-template Vector12f edge_edge_mollifier_gradient_wrt_x<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
-template Vector12d edge_edge_mollifier_gradient_wrt_x<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
-template Matrix12f edge_edge_mollifier_gradient_jacobian_wrt_x<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
-template Matrix12d edge_edge_mollifier_gradient_jacobian_wrt_x<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
-// clang-format on
+#define IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER(T)                                 \
+    template Eigen::Vector<T, 12> edge_edge_mollifier_gradient_wrt_x<T>(       \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>);                                   \
+    template Eigen::Matrix<T, 12, 12>                                          \
+    edge_edge_mollifier_gradient_jacobian_wrt_x<T>(                            \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>)
+
+    IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER(float);
+    IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER(double);
+#undef IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER
+
+} // namespace detail
 
 namespace autogen {
     // This function was generated by the Symbolic Math Toolbox version 8.3.

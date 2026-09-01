@@ -1,6 +1,6 @@
 #include "line_line.hpp"
 
-namespace ipc {
+namespace ipc::detail {
 
 template <typename T>
 Eigen::Matrix<T, 12, 12> line_line_signed_distance_hessian(
@@ -75,4 +75,4 @@ template Matrix12f line_line_signed_distance_hessian<float>(Eigen::ConstRef<Eige
 template Matrix12d line_line_signed_distance_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
 // clang-format on
 
-} // namespace ipc
+} // namespace ipc::detail

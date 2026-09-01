@@ -1,6 +1,6 @@
 #include "point_line.hpp"
 
-namespace ipc {
+namespace ipc::detail {
 
 template <typename T>
 Eigen::Matrix<T, 6, 6> point_line_signed_distance_hessian(
@@ -72,4 +72,4 @@ template Eigen::Matrix<float, 6, 6> point_line_signed_distance_hessian<float>(Ei
 template Eigen::Matrix<double, 6, 6> point_line_signed_distance_hessian<double>(Eigen::ConstRef<Eigen::Vector2<double>>, Eigen::ConstRef<Eigen::Vector2<double>>, Eigen::ConstRef<Eigen::Vector2<double>>);
 // clang-format on
 
-} // namespace ipc
+} // namespace ipc::detail

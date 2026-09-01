@@ -17,127 +17,126 @@ namespace autogen {
     // clang-format on
 } // namespace autogen
 
-/// @brief Compute the distance between a point and a plane.
-/// @note The distance is actually squared distance.
-/// @param p The point.
-/// @param origin The origin of the plane.
-/// @param normal The normal of the plane.
-/// @return The distance between the point and plane.
-template <typename T>
-inline T point_plane_distance(
-    Eigen::ConstRef<Eigen::Vector3<T>> p,
-    Eigen::ConstRef<Eigen::Vector3<T>> origin,
-    Eigen::ConstRef<Eigen::Vector3<T>> normal)
-{
-    const T point_to_plane = (p - origin).dot(normal);
-    return point_to_plane * point_to_plane / normal.squaredNorm();
-}
+namespace detail {
+    /// @brief Compute the distance between a point and a plane.
+    /// @note The distance is actually squared distance.
+    /// @param p The point.
+    /// @param origin The origin of the plane.
+    /// @param normal The normal of the plane.
+    /// @return The distance between the point and plane.
+    template <typename T>
+    inline T point_plane_distance(
+        Eigen::ConstRef<Eigen::Vector3<T>> p,
+        Eigen::ConstRef<Eigen::Vector3<T>> origin,
+        Eigen::ConstRef<Eigen::Vector3<T>> normal)
+    {
+        const T point_to_plane = (p - origin).dot(normal);
+        return point_to_plane * point_to_plane / normal.squaredNorm();
+    }
 
-/// @brief Compute the distance between a point and a plane.
-/// @note The distance is actually squared distance.
-/// @param p The point.
-/// @param t0 The first vertex of the triangle.
-/// @param t1 The second vertex of the triangle.
-/// @param t2 The third vertex of the triangle.
-/// @return The distance between the point and plane.
-template <typename T>
-inline T point_plane_distance(
-    Eigen::ConstRef<Eigen::Vector3<T>> p,
-    Eigen::ConstRef<Eigen::Vector3<T>> t0,
-    Eigen::ConstRef<Eigen::Vector3<T>> t1,
-    Eigen::ConstRef<Eigen::Vector3<T>> t2)
-{
-    // Inline the (p, origin, normal) overload to avoid two-phase lookup issues
-    // with dependent argument types.
-    return point_plane_distance<T>(
-        p, t0, triangle_unnormalized_normal(t0, t1, t2));
-}
+    /// @brief Compute the distance between a point and a plane.
+    /// @note The distance is actually squared distance.
+    /// @param p The point.
+    /// @param t0 The first vertex of the triangle.
+    /// @param t1 The second vertex of the triangle.
+    /// @param t2 The third vertex of the triangle.
+    /// @return The distance between the point and plane.
+    template <typename T>
+    inline T point_plane_distance(
+        Eigen::ConstRef<Eigen::Vector3<T>> p,
+        Eigen::ConstRef<Eigen::Vector3<T>> t0,
+        Eigen::ConstRef<Eigen::Vector3<T>> t1,
+        Eigen::ConstRef<Eigen::Vector3<T>> t2)
+    {
+        // Inline the (p, origin, normal) overload to avoid two-phase lookup
+        // issues with dependent argument types.
+        return point_plane_distance<T>(
+            p, t0, triangle_unnormalized_normal(t0, t1, t2));
+    }
 
-/// @brief Compute the gradient of the distance between a point and a plane.
-/// @note The distance is actually squared distance.
-/// @param p The point.
-/// @param origin The origin of the plane.
-/// @param normal The normal of the plane.
-/// @return The gradient of the distance wrt p.
-template <typename T>
-inline Eigen::Vector3<T> point_plane_distance_gradient(
-    Eigen::ConstRef<Eigen::Vector3<T>> p,
-    Eigen::ConstRef<Eigen::Vector3<T>> origin,
-    Eigen::ConstRef<Eigen::Vector3<T>> normal)
-{
-    return (T(2) / normal.squaredNorm()) * (p - origin).dot(normal) * normal;
-}
+    /// @brief Compute the gradient of the distance between a point and a plane.
+    /// @note The distance is actually squared distance.
+    /// @param p The point.
+    /// @param origin The origin of the plane.
+    /// @param normal The normal of the plane.
+    /// @return The gradient of the distance wrt p.
+    template <typename T>
+    inline Eigen::Vector3<T> point_plane_distance_gradient(
+        Eigen::ConstRef<Eigen::Vector3<T>> p,
+        Eigen::ConstRef<Eigen::Vector3<T>> origin,
+        Eigen::ConstRef<Eigen::Vector3<T>> normal)
+    {
+        return (T(2) / normal.squaredNorm()) * (p - origin).dot(normal)
+            * normal;
+    }
 
-/// @brief Compute the gradient of the distance between a point and a plane.
-/// @note The distance is actually squared distance.
-/// @param p The point.
-/// @param t0 The first vertex of the triangle.
-/// @param t1 The second vertex of the triangle.
-/// @param t2 The third vertex of the triangle.
-/// @return The gradient of the distance wrt p, t0, t1, and t2.
-template <typename T>
-inline Eigen::Vector<T, 12> point_plane_distance_gradient(
-    Eigen::ConstRef<Eigen::Vector3<T>> p,
-    Eigen::ConstRef<Eigen::Vector3<T>> t0,
-    Eigen::ConstRef<Eigen::Vector3<T>> t1,
-    Eigen::ConstRef<Eigen::Vector3<T>> t2)
-{
-    Eigen::Vector<T, 12> grad;
-    autogen::point_plane_distance_gradient(
-        p[0], p[1], p[2], t0[0], t0[1], t0[2], t1[0], t1[1], t1[2], t2[0],
-        t2[1], t2[2], grad.data());
-    return grad;
-}
+    /// @brief Compute the gradient of the distance between a point and a plane.
+    /// @note The distance is actually squared distance.
+    /// @param p The point.
+    /// @param t0 The first vertex of the triangle.
+    /// @param t1 The second vertex of the triangle.
+    /// @param t2 The third vertex of the triangle.
+    /// @return The gradient of the distance wrt p, t0, t1, and t2.
+    template <typename T>
+    inline Eigen::Vector<T, 12> point_plane_distance_gradient(
+        Eigen::ConstRef<Eigen::Vector3<T>> p,
+        Eigen::ConstRef<Eigen::Vector3<T>> t0,
+        Eigen::ConstRef<Eigen::Vector3<T>> t1,
+        Eigen::ConstRef<Eigen::Vector3<T>> t2)
+    {
+        Eigen::Vector<T, 12> grad;
+        autogen::point_plane_distance_gradient(
+            p[0], p[1], p[2], t0[0], t0[1], t0[2], t1[0], t1[1], t1[2], t2[0],
+            t2[1], t2[2], grad.data());
+        return grad;
+    }
 
-/// @brief Compute the hessian of the distance between a point and a plane.
-/// @note The distance is actually squared distance.
-/// @param p The point.
-/// @param origin The origin of the plane.
-/// @param normal The normal of the plane.
-/// @return The hessian of the distance wrt p.
-template <typename T>
-inline Eigen::Matrix3<T> point_plane_distance_hessian(
-    Eigen::ConstRef<Eigen::Vector3<T>> p,
-    Eigen::ConstRef<Eigen::Vector3<T>> origin,
-    Eigen::ConstRef<Eigen::Vector3<T>> normal)
-{
-    return ((T(2) / normal.squaredNorm()) * normal) * normal.transpose();
-}
+    /// @brief Compute the hessian of the distance between a point and a plane.
+    /// @note The distance is actually squared distance.
+    /// @param p The point.
+    /// @param origin The origin of the plane.
+    /// @param normal The normal of the plane.
+    /// @return The hessian of the distance wrt p.
+    template <typename T>
+    inline Eigen::Matrix3<T> point_plane_distance_hessian(
+        Eigen::ConstRef<Eigen::Vector3<T>> p,
+        Eigen::ConstRef<Eigen::Vector3<T>> origin,
+        Eigen::ConstRef<Eigen::Vector3<T>> normal)
+    {
+        return ((T(2) / normal.squaredNorm()) * normal) * normal.transpose();
+    }
 
-/// @brief Compute the hessian of the distance between a point and a plane.
-/// @note The distance is actually squared distance.
-/// @param p The point.
-/// @param t0 The first vertex of the triangle.
-/// @param t1 The second vertex of the triangle.
-/// @param t2 The third vertex of the triangle.
-/// @return The hessian of the distance wrt p, t0, t1, and t2.
-template <typename T>
-inline Eigen::Matrix<T, 12, 12> point_plane_distance_hessian(
-    Eigen::ConstRef<Eigen::Vector3<T>> p,
-    Eigen::ConstRef<Eigen::Vector3<T>> t0,
-    Eigen::ConstRef<Eigen::Vector3<T>> t1,
-    Eigen::ConstRef<Eigen::Vector3<T>> t2)
-{
-    Eigen::Matrix<T, 12, 12> hess;
-    autogen::point_plane_distance_hessian(
-        p[0], p[1], p[2], t0[0], t0[1], t0[2], t1[0], t1[1], t1[2], t2[0],
-        t2[1], t2[2], hess.data());
-    return hess;
-}
-
-// --- EigenExpression wrappers ---
+    /// @brief Compute the hessian of the distance between a point and a plane.
+    /// @note The distance is actually squared distance.
+    /// @param p The point.
+    /// @param t0 The first vertex of the triangle.
+    /// @param t1 The second vertex of the triangle.
+    /// @param t2 The third vertex of the triangle.
+    /// @return The hessian of the distance wrt p, t0, t1, and t2.
+    template <typename T>
+    inline Eigen::Matrix<T, 12, 12> point_plane_distance_hessian(
+        Eigen::ConstRef<Eigen::Vector3<T>> p,
+        Eigen::ConstRef<Eigen::Vector3<T>> t0,
+        Eigen::ConstRef<Eigen::Vector3<T>> t1,
+        Eigen::ConstRef<Eigen::Vector3<T>> t2)
+    {
+        Eigen::Matrix<T, 12, 12> hess;
+        autogen::point_plane_distance_hessian(
+            p[0], p[1], p[2], t0[0], t0[1], t0[2], t1[0], t1[1], t1[2], t2[0],
+            t2[1], t2[2], hess.data());
+        return hess;
+    }
+} // namespace detail
 
 template <typename DerivedP, typename DerivedOrigin, typename DerivedNormal>
 inline auto point_plane_distance(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedOrigin>& origin,
-    const Eigen::MatrixBase<DerivedNormal>& normal) -> typename DerivedP::Scalar
+    const DerivedP& p, const DerivedOrigin& origin, const DerivedNormal& normal)
 {
+    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedOrigin, DerivedNormal);
     using T = typename DerivedP::Scalar;
-    return point_plane_distance(
-        Eigen::Ref<const Eigen::Vector3<T>>(p),
-        Eigen::Ref<const Eigen::Vector3<T>>(origin),
-        Eigen::Ref<const Eigen::Vector3<T>>(normal));
+    // NOTE: explicit <T>: the detail overload cannot deduce T from an
+    // arbitrary Eigen expression.
+    return detail::point_plane_distance<T>(p, origin, normal);
 }
 
 template <
@@ -146,31 +145,23 @@ template <
     typename DerivedT1,
     typename DerivedT2>
 inline auto point_plane_distance(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedT0>& t0,
-    const Eigen::MatrixBase<DerivedT1>& t1,
-    const Eigen::MatrixBase<DerivedT2>& t2) -> typename DerivedP::Scalar
+    const DerivedP& p,
+    const DerivedT0& t0,
+    const DerivedT1& t1,
+    const DerivedT2& t2)
 {
+    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedT0, DerivedT1, DerivedT2);
     using T = typename DerivedP::Scalar;
-    return point_plane_distance(
-        Eigen::Ref<const Eigen::Vector3<T>>(p),
-        Eigen::Ref<const Eigen::Vector3<T>>(t0),
-        Eigen::Ref<const Eigen::Vector3<T>>(t1),
-        Eigen::Ref<const Eigen::Vector3<T>>(t2));
+    return detail::point_plane_distance<T>(p, t0, t1, t2);
 }
 
 template <typename DerivedP, typename DerivedOrigin, typename DerivedNormal>
 inline auto point_plane_distance_gradient(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedOrigin>& origin,
-    const Eigen::MatrixBase<DerivedNormal>& normal)
-    -> Eigen::Vector3<typename DerivedP::Scalar>
+    const DerivedP& p, const DerivedOrigin& origin, const DerivedNormal& normal)
 {
+    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedOrigin, DerivedNormal);
     using T = typename DerivedP::Scalar;
-    return point_plane_distance_gradient(
-        Eigen::Ref<const Eigen::Vector3<T>>(p),
-        Eigen::Ref<const Eigen::Vector3<T>>(origin),
-        Eigen::Ref<const Eigen::Vector3<T>>(normal));
+    return detail::point_plane_distance_gradient<T>(p, origin, normal);
 }
 
 template <
@@ -179,32 +170,23 @@ template <
     typename DerivedT1,
     typename DerivedT2>
 inline auto point_plane_distance_gradient(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedT0>& t0,
-    const Eigen::MatrixBase<DerivedT1>& t1,
-    const Eigen::MatrixBase<DerivedT2>& t2)
-    -> Eigen::Vector<typename DerivedP::Scalar, 12>
+    const DerivedP& p,
+    const DerivedT0& t0,
+    const DerivedT1& t1,
+    const DerivedT2& t2)
 {
+    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedT0, DerivedT1, DerivedT2);
     using T = typename DerivedP::Scalar;
-    return point_plane_distance_gradient(
-        Eigen::Ref<const Eigen::Vector3<T>>(p),
-        Eigen::Ref<const Eigen::Vector3<T>>(t0),
-        Eigen::Ref<const Eigen::Vector3<T>>(t1),
-        Eigen::Ref<const Eigen::Vector3<T>>(t2));
+    return detail::point_plane_distance_gradient<T>(p, t0, t1, t2);
 }
 
 template <typename DerivedP, typename DerivedOrigin, typename DerivedNormal>
 inline auto point_plane_distance_hessian(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedOrigin>& origin,
-    const Eigen::MatrixBase<DerivedNormal>& normal)
-    -> Eigen::Matrix<typename DerivedP::Scalar, 3, 3>
+    const DerivedP& p, const DerivedOrigin& origin, const DerivedNormal& normal)
 {
+    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedOrigin, DerivedNormal);
     using T = typename DerivedP::Scalar;
-    return point_plane_distance_hessian(
-        Eigen::Ref<const Eigen::Vector3<T>>(p),
-        Eigen::Ref<const Eigen::Vector3<T>>(origin),
-        Eigen::Ref<const Eigen::Vector3<T>>(normal));
+    return detail::point_plane_distance_hessian<T>(p, origin, normal);
 }
 
 template <
@@ -213,18 +195,14 @@ template <
     typename DerivedT1,
     typename DerivedT2>
 inline auto point_plane_distance_hessian(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedT0>& t0,
-    const Eigen::MatrixBase<DerivedT1>& t1,
-    const Eigen::MatrixBase<DerivedT2>& t2)
-    -> Eigen::Matrix<typename DerivedP::Scalar, 12, 12>
+    const DerivedP& p,
+    const DerivedT0& t0,
+    const DerivedT1& t1,
+    const DerivedT2& t2)
 {
+    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedT0, DerivedT1, DerivedT2);
     using T = typename DerivedP::Scalar;
-    return point_plane_distance_hessian(
-        Eigen::Ref<const Eigen::Vector3<T>>(p),
-        Eigen::Ref<const Eigen::Vector3<T>>(t0),
-        Eigen::Ref<const Eigen::Vector3<T>>(t1),
-        Eigen::Ref<const Eigen::Vector3<T>>(t2));
+    return detail::point_plane_distance_hessian<T>(p, t0, t1, t2);
 }
 
 } // namespace ipc

@@ -154,11 +154,6 @@ EdgeEdgeDistanceType edge_edge_parallel_distance_type(
 // failure.
 
 /// @brief Determine the closest pair between a point and edge.
-///
-/// Accepts any Eigen expression. The dimension is resolved at compile time when
-/// the argument type knows it and with a single branch otherwise; each argument
-/// is evaluated exactly once.
-///
 /// @param p The point.
 /// @param e0 The first vertex of the edge.
 /// @param e1 The second vertex of the edge.
