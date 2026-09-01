@@ -15,7 +15,7 @@ v2.0.0 (alpha)
 Highlights
 ~~~~~~~~~~
 
-- 💥 **[Breaking]** The distance, barrier, and normal APIs are now templated on the scalar type, adding ``float`` support alongside ``double`` (and autodiff scalars where already supported).
+- 💥 **[Breaking]** The distance, barrier, normal, tangent-basis, closest-point, relative-velocity, and area APIs are now templated on the scalar type and — where they are dimension-agnostic — on the dimension, adding ``float`` support alongside ``double`` (and autodiff scalars where already supported). On the call sites that dominate in practice this is 1.5–4.8× faster; see Performance below.
 - Update Tight Inclusion to ``1.1.0``, which adds a bucket depth-first-search root finder and makes it the default (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
 - Update the tutorials to match the current API, and fill the gaps in the Python bindings they depend on (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
 
@@ -44,7 +44,7 @@ API Changes |:wrench:|
 
   - The free functions in ``ipc/distance/`` (``point_point_distance``, ``point_line_distance``, ``point_edge_distance``, ``line_line_distance``, ``edge_edge_distance``, ``point_plane_distance``, ``point_triangle_distance``, the ``*_distance_type`` predicates, the edge-edge mollifier, and the signed-distance variants), together with ``ipc/geometry/normal.hpp``, now take a scalar template parameter ``T`` and are instantiated for both ``float`` and ``double``.
   - Each function now accepts any Eigen expression (blocks, maps, and rows of a matrix), so call sites no longer need to materialize an ``Eigen::Vector3d`` before calling. Existing calls that let ``T`` be deduced from their arguments continue to compile unchanged.
-  - Taking the address of one of these functions is no longer possible — wrap the call in a lambda, as the Python bindings now do. See the two-layer API entry below.
+  - Taking the address of one of these functions is no longer possible; take the address of the ``ipc::detail`` kernel with its scalar named instead (``&ipc::detail::point_plane_distance<double>``), or wrap the call in a lambda when the kernel is templated on the dimension. See the two-layer API entry below.
   - Mixed-precision calls no longer deduce: ``barrier(float_d, 0.001)`` must become ``barrier(float_d, 0.001f)``.
 
 - 💥 **[Breaking]** Templatize the barrier classes on the scalar type.
@@ -64,6 +64,14 @@ API Changes |:wrench:|
   - Autodiff scalars are supported for the value functions only; passing one to a ``*_gradient``/``*_hessian`` or to a ``*_distance_type`` predicate is a compile-time or ``AUTO``-dispatch error rather than silently wrong output.
 
 - 💥 **[Breaking]** The gradients/Hessians of the point-point, point-line, and point-edge distances and the ``normalization_*`` functions now return **fixed-size** Eigen types (e.g. ``Eigen::Vector<T, 3 * dim>``) when the argument type knows its dimension at compile time, and the previous ``VectorMax``/``MatrixMax`` types otherwise. Assignments into ``VectorMax9d``-style storage compile unchanged; code binding the result with ``auto`` may now hold a fixed-size type. Taking the address of these function templates (e.g. ``&ipc::point_edge_distance_gradient<double>``) is no longer possible — wrap the call in a lambda, as the Python bindings now do.
+- 💥 **[Breaking]** Extend the two-layer design to the remaining per-collision kernels.
+
+  - ``ipc/tangent/closest_point.hpp``, ``ipc/tangent/tangent_basis.hpp``, ``ipc/tangent/relative_velocity.hpp``, and ``ipc/geometry/area.hpp`` were ``double``-only with dimension-erased ``VectorMax``/``MatrixMax`` parameters. They now follow the distance family: fixed-size kernels in ``ipc::detail`` templated on ``<typename T, int dim>`` (or ``<typename T>`` where the function is 3D-only), behind front ends that deduce both from the argument expressions. Return types are fixed-size when the argument type knows its dimension and the previous ``VectorMax``/``MatrixMax`` types otherwise.
+  - ``ipc/distance/edge_edge_mollifier.hpp``, ``ipc/distance/point_plane.hpp``, and the three ``ipc/distance/signed/`` headers already had scalar-templated kernels; they gained the deducing front ends, so a caller can now pass a row of a matrix without materializing an ``Eigen::Vector3d`` first.
+  - ``relative_velocity``'s entry points that take a runtime ``int dim`` keep that exact signature (``template <typename T = double>`` over dimension-templated kernels), so existing call sites are unaffected and ``float`` now works.
+  - No in-tree caller needed changing: the deducing front ends accept every argument type already in use. ``src/ipc/tangent/relative_velocity.cpp`` is deleted — that family is now entirely header-inline.
+  - ``ipc::detail::point_edge_closest_point_hessian`` no longer carries a stale "not implemented for 2D" note; 2D was always implemented.
+
 - Add ``float`` aliases to ``ipc/utils/eigen_ext.hpp`` (``Vector1f``, ``Vector6f``, ``Matrix6f``, ``VectorMax3f``, ``MatrixMax9f``, …) mirroring the existing ``double`` ones.
 
 Performance |:zap:|
@@ -75,6 +83,23 @@ Performance |:zap:|
 
   ``Eigen::ConstRef`` is the right default because it guarantees each argument is evaluated exactly once, but it is not free: binding an expression to a ``Ref`` materializes it into the ``Ref``'s internal buffer. For the ``line_line`` gradient and Hessian, which read only three coefficients per argument, that copy is pure cost — reading the operands in place through ``Eigen::MatrixBase<Derived>`` measured 1.16× faster when the argument is an expression such as ``V.row(a) - V.row(b)``, and no slower anywhere else. Re-evaluating a three-element expression three times is cheaper than materializing it once at this size; that trade would invert for an argument whose evaluation is expensive.
 - ``line_line_distance`` (the value function), ``edge_edge_distance``, and ``point_triangle_distance`` were converted to the same two-layer shape. This is structural rather than a speed-up (measured within the noise floor of the unchanged control benchmarks): they keep their out-of-line switch dispatch, since inlining their 9- and 7-case switches measured as a 10% regression with runtime distance types. The payoff is that internal calls between distance functions now resolve directly to the kernel with no wrapper hop, which removed 42 redundant ``ipc::`` qualifications from the edge-edge and point-triangle sources.
+- Recovering the compile-time dimension in the tangent, closest-point, relative-velocity, and area kernels is worth 1.5–4.8× on the call site that dominates in practice (a row of a column-major matrix, whose ``ColsAtCompileTime`` is ``Dynamic``). Measured by interleaved A/B of two binaries, the baseline built from a worktree at the preceding commit, with unchanged same-TU control rows at 0.99–1.00×:
+
+  .. code-block:: text
+
+                                             before    after
+      point_edge_closest_point                8.7 ns   1.8 ns   4.8x
+      point_edge_closest_point, Vector3d      4.7 ns   1.7 ns   2.8x
+      point_edge_closest_point_jacobian      14.9 ns   6.2 ns   2.4x
+      point_point_relative_velocity           5.5 ns   1.4 ns   3.9x
+      point_point_relative_velocity_jacobian  6.8 ns   1.8 ns   3.9x
+      edge_length                             4.1 ns   1.3 ns   3.1x
+      point_edge_tangent_basis                7.1 ns   4.2 ns   1.7x
+      point_triangle_tangent_basis            7.7 ns   5.0 ns   1.5x
+
+  The functions that were already fixed-size and 3D-only (``edge_edge`` and ``point_triangle`` closest point, ``triangle_area``, ``edge_edge_cross_squarednorm``, ``point_plane_distance``) measured neutral, which is the expected shape: the win is recovering the dimension, not the templating itself. One case regressed and is unresolved: ``point_point_tangent_basis`` on matrix rows measures 0.87–0.90×, while its known-dimension path improves 1.11×.
+
+- Keep small hand-written kernels header-inline and leave the wide generated (``autogen``) bodies in their translation units. This split is load-bearing rather than stylistic: with the tangent-basis and relative-velocity kernels defined out of line, the dimension-erased path paid an ``Eigen::Ref`` copy plus the ``VectorMax``/``MatrixMax`` wrap across an opaque call boundary, and ``point_edge_tangent_basis`` measured **2× slower** than before the conversion. Inlining only the small value and Jacobian kernels turned that into the numbers above.
 - Branch once on the dimension in ``EdgeVertexCandidate::compute_distance_gradient``/``_hessian`` so the statically sized kernels are selected (3.1× on the gradient).
 - Move all cold ``throw`` bodies in the distance dispatch functions out of line behind ``[[noreturn]]`` helpers; constructing the exception inline consumed the caller's inlining budget (the single largest lever found: up to 2× by itself).
 
@@ -90,6 +115,8 @@ Bug Fixes |:bug:|
 
 Python |:snake:|
 ~~~~~~~~~~~~~~~~
+
+- Bind the ``ipc::detail`` kernels directly rather than through lambdas, now that the public front ends deduce their template arguments and so have no address to take. Most registrations are ``&ipc::detail::f<double>``; ``point_plane_distance`` and its derivatives use ``py::overload_cast`` to keep both arities (plane as origin-plus-normal, or as three triangle vertices) under one Python name. The functions whose kernels are templated on the dimension keep a lambda taking ``VectorMax3d``, preserving the runtime 2D/3D dispatch they have always offered from Python. Docstrings, argument names, and signatures are unchanged.
 
 - 💥 **[Breaking]** Rename the ``SmoothPotential`` class to ``SmoothContactPotential`` to match the C++ name (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). It had no in-tree users and the package is still a 2.0 alpha, so this is a straight rename with no alias.
 - Fill gaps that made the GCP and convergent-formulation tutorials impossible to follow from Python (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_):
