@@ -151,7 +151,7 @@ public:
 
 /// @brief Normalized barrier function from [Li et al. 2023].
 template <typename BarrierT> class NormalizedBarrier : public BarrierT {
-    using T = typename BarrierT::value_type;
+    using Scalar = typename BarrierT::value_type;
 
 public:
     NormalizedBarrier() = default;
@@ -166,9 +166,9 @@ public:
     /// @param d The distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The value of the barrier function at d.
-    T operator()(const T d, const T dhat) const override
+    Scalar operator()(const Scalar d, const Scalar dhat) const override
     {
-        return BarrierT::operator()(d / dhat, T(1));
+        return BarrierT::operator()(d / dhat, Scalar(1));
     }
 
     /// @brief Derivative of the barrier function.
@@ -182,9 +182,9 @@ public:
     /// @param d The distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The derivative of the barrier wrt d.
-    T first_derivative(const T d, const T dhat) const override
+    Scalar first_derivative(const Scalar d, const Scalar dhat) const override
     {
-        return BarrierT::first_derivative(d / dhat, T(1)) / dhat;
+        return BarrierT::first_derivative(d / dhat, Scalar(1)) / dhat;
     }
 
     /// @brief Second derivative of the barrier function.
@@ -197,17 +197,17 @@ public:
     /// @param d The distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The second derivative of the barrier wrt d.
-    T second_derivative(const T d, const T dhat) const override
+    Scalar second_derivative(const Scalar d, const Scalar dhat) const override
     {
-        return BarrierT::second_derivative(d / dhat, T(1)) / (dhat * dhat);
+        return BarrierT::second_derivative(d / dhat, Scalar(1)) / (dhat * dhat);
     }
 
     /// @brief Get the units of the barrier function.
     /// @param dhat The activation distance of the barrier.
     /// @return The units of the barrier function.
-    T units(const T dhat) const override
+    Scalar units(const Scalar dhat) const override
     {
-        return T(1); // The normalized barrier is dimensionless.
+        return Scalar(1); // The normalized barrier is dimensionless.
     }
 };
 
