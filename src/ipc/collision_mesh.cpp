@@ -470,14 +470,18 @@ Eigen::MatrixXd CollisionMesh::map_displacements(
 namespace {
     /// @brief Warn (at most once per process) that to_full_dof is
     /// unnecessary because the DOF map is a pure selection matrix.
-    void warn_to_full_dof_is_selection_dof_map(const char* caller)
+    ///
+    /// @note The warning cannot know what is being mapped, so it names the
+    /// alternative rather than the caller: to_full_dof is still the only way
+    /// to map quantities that are not a potential's derivative.
+    void warn_to_full_dof_is_selection_dof_map()
     {
         static std::once_flag flag;
-        std::call_once(flag, [&] {
+        std::call_once(flag, [] {
             logger().warn(
                 "CollisionMesh::to_full_dof is deprecated when the displacement map is purely a selection matrix. "
-                "Please migrate to the in_full_dof output variable of {}.",
-                caller);
+                "If you are mapping a potential's gradient or Hessian, please migrate to the in_full_dof parameter "
+                "of Potential::gradient/Potential::hessian, which assembles directly in full-mesh DOF.");
         });
     }
 } // namespace
@@ -490,7 +494,7 @@ CollisionMesh::to_full_dof(Eigen::ConstRef<Eigen::VectorXd> x) const
     // ∇_{full} f(S * T * x_full) = Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
     // x = ∇_{collision} f(S * T * x_full); m_displacement_dof_map = S * T
     if (m_is_selection_dof_map) {
-        warn_to_full_dof_is_selection_dof_map("Potential::gradient");
+        warn_to_full_dof_is_selection_dof_map();
     }
     return m_displacement_dof_map.transpose() * x;
 }
@@ -502,7 +506,7 @@ CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
     //      = Tᵀ * Sᵀ * [∇_{collision}² f(S * T * x_full)] * S * T
     // X = ∇_{collision}² f(S * T * x_full); m_displacement_dof_map = S * T
     if (m_is_selection_dof_map) {
-        warn_to_full_dof_is_selection_dof_map("Potential::hessian");
+        warn_to_full_dof_is_selection_dof_map();
     }
     return m_displacement_dof_map.transpose() * X * m_displacement_dof_map;
 }

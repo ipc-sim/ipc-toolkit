@@ -62,6 +62,8 @@ public:
     ///
     /// The reference stays valid (and its values current) until the next
     /// begin() call; copy it to keep a snapshot.
+    ///
+    /// @throws std::runtime_error if called before the first assembly.
     const Eigen::SparseMatrix<double>& get_matrix() const;
 
     /// @brief Like get_matrix(), but moves the matrix out of the assembler.
@@ -69,6 +71,8 @@ public:
     /// Avoids a copy for one-shot use (e.g., Potential::hessian). The cached
     /// Eigen structure is invalidated; the next get_matrix()/take_matrix()
     /// rebuilds it.
+    ///
+    /// @throws std::runtime_error if called before the first assembly.
     Eigen::SparseMatrix<double> take_matrix();
 
     /// @brief Access the assembled matrix in its native block-CSC form.

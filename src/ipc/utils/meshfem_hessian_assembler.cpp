@@ -186,10 +186,33 @@ private:
         bool transposed;    ///< Whether the stored block is mirrored
     };
 
+    /// Whether the valid (non-negative) entries of `vertex_ids` are pairwise
+    /// distinct. Only used to check to_stencil()'s precondition.
+    static bool has_distinct_ids(const std::array<index_t, 4>& vertex_ids)
+    {
+        for (size_t i = 0; i < vertex_ids.size(); i++) {
+            for (size_t j = i + 1; j < vertex_ids.size(); j++) {
+                if (vertex_ids[i] >= 0 && vertex_ids[i] == vertex_ids[j]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     /// Compact the (possibly -1-padded) vertex ID array into a MeshFEM
     /// stencil of block variables.
+    ///
+    /// @note The IDs must be pairwise distinct: we scatter with
+    /// ElementHessianContribAssembler<true>, whose sorted column-merge assumes
+    /// each block variable occurs once (MeshFEMSparse ships a separate
+    /// ...SupportingStencilDuplicates for the duplicate case). A repeated ID
+    /// would silently double-count the diagonal block and pollute its strict
+    /// lower triangle. The broad phase rejects candidates that share a vertex,
+    /// so this only guards hand-built collision sets.
     static Stencil to_stencil(const std::array<index_t, 4>& vertex_ids)
     {
+        assert(has_distinct_ids(vertex_ids));
         Stencil bvars(0);
         size_t back = 0;
         for (const index_t id : vertex_ids) {
@@ -362,13 +385,21 @@ void MeshFEMHessianAssembler::add_local_hessian(
 
 const Eigen::SparseMatrix<double>& MeshFEMHessianAssembler::get_matrix() const
 {
-    assert(m_impl != nullptr);
+    if (m_impl == nullptr) {
+        log_and_throw_error(
+            "MeshFEMHessianAssembler::get_matrix() called before the first "
+            "assembly!");
+    }
     return m_impl->to_eigen();
 }
 
 Eigen::SparseMatrix<double> MeshFEMHessianAssembler::take_matrix()
 {
-    assert(m_impl != nullptr);
+    if (m_impl == nullptr) {
+        log_and_throw_error(
+            "MeshFEMHessianAssembler::take_matrix() called before the first "
+            "assembly!");
+    }
     return m_impl->take_eigen();
 }
 

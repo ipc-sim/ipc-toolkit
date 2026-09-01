@@ -211,10 +211,15 @@ public:
 
     /// @brief Whether the full ↔ collision DOF map is a pure selection matrix.
     /// This is the case unless a (non-empty) displacement map was provided at
-    /// construction. When true, to_full_dof() is equivalent to scattering
-    /// entries from collision DOF i to full DOF `dim * to_full_vertex_id(i /
-    /// dim) + i % dim`, so derivatives can be assembled directly in full-mesh
-    /// DOFs instead of applying to_full_dof() after the fact.
+    /// construction. When true, to_full_dof() is equivalent to scattering each
+    /// collision DOF to the full DOF of the same vertex and component, so
+    /// derivatives can be assembled directly in full-mesh DOFs instead of
+    /// applying to_full_dof() after the fact. The scalar index of that scatter
+    /// depends on IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT: collision DOF `i` maps
+    /// to full DOF `dim * to_full_vertex_id(i / dim) + i % dim` when the layout
+    /// is RowMajor (the default), and to `full_num_vertices() * d +
+    /// to_full_vertex_id(v)` for collision DOF `num_vertices() * d + v` when it
+    /// is ColMajor.
     bool is_selection_dof_map() const { return m_is_selection_dof_map; }
 
     // -----------------------------------------------------------------------

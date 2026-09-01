@@ -86,6 +86,8 @@ public:
 
     /// @brief Merge the thread-local caches and build the global matrix.
     /// Call once, after end(); the internal caches are consumed.
+    ///
+    /// @throws std::runtime_error if called before the first assembly.
     Eigen::SparseMatrix<double> get_matrix();
 
 private:

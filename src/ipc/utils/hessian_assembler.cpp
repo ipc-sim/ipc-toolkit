@@ -59,7 +59,11 @@ void TripletHessianAssembler::add_local_hessian(
 
 Eigen::SparseMatrix<double> TripletHessianAssembler::get_matrix()
 {
-    assert(m_storage != nullptr);
+    if (m_storage == nullptr) {
+        log_and_throw_error(
+            "TripletHessianAssembler::get_matrix() called before the "
+            "first assembly!");
+    }
     tbb::enumerable_thread_specific<LocalThreadMatStorage>& storage =
         *m_storage;
 
