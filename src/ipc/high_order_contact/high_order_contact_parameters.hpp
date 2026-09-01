@@ -1,8 +1,8 @@
 #pragma once
-#include <array>
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/utils/logger.hpp>
 
+#include <array>
 #include <atomic>
 #include <limits>
 #include <memory>

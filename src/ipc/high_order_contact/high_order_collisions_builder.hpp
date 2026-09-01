@@ -1,12 +1,12 @@
 #pragma once
 
-#include <array>
 #include <ipc/collision_mesh.hpp>
 #include <ipc/high_order_contact/high_order_collisions.hpp>
 
 #include <Eigen/Core>
 #include <tbb/enumerable_thread_specific.h>
 
+#include <array>
 #include <memory>
 
 namespace ipc {

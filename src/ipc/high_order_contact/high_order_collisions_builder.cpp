@@ -1,4 +1,3 @@
-#include <array>
 #include "high_order_collisions_builder.hpp"
 
 #include "collisions/high_order_quadrature.hpp"
@@ -9,6 +8,7 @@
 
 #include <tbb/enumerable_thread_specific.h>
 
+#include <array>
 #include <sstream>
 
 namespace ipc {

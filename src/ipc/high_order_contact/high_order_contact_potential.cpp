@@ -1,4 +1,3 @@
-#include <array>
 #include "high_order_contact_potential.hpp"
 
 #include "ipc/barrier/barrier.hpp"
@@ -19,6 +18,7 @@
 #include <tbb/parallel_for.h>
 
 #include <algorithm>
+#include <array>
 #include <unordered_map>
 
 namespace ipc {
