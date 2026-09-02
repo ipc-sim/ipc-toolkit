@@ -126,12 +126,25 @@ struct MeshFEMHessianAssembler::Impl final
             return local_hess.template block<dim, dim>(a, b);
         };
 
-        // Sorted column-merge scatter into the block-CSC value array, with
-        // per-block-column spin locks for thread safety.
-        MeshFEM::ElementHessianContribAssembler<
-            /*UseBlockMergeAlgorithm=*/true>::
-            template run</*InParallel=*/true>(
-                m_H->Ax.data(), *m_H, local_block, evars, m_vars, m_locks);
+        // Scatter into the block-CSC value array, with per-block-column spin
+        // locks for thread safety.
+        if (has_distinct_ids(vertex_ids)) {
+            // Sorted column-merge: the fast path, valid only when each block
+            // variable occurs once.
+            MeshFEM::ElementHessianContribAssembler<
+                /*UseBlockMergeAlgorithm=*/true>::
+                template run</*InParallel=*/true>(
+                    m_H->Ax.data(), *m_H, local_block, evars, m_vars, m_locks);
+        } else {
+            // Degenerate stencil (e.g., a point coincident with an endpoint of
+            // the edge it collides with): the same vertex appears twice, so
+            // several local blocks map to one global block. The column-merge
+            // scans each column once and would mis-target the repeats; this
+            // variant accumulates them instead.
+            MeshFEM::ElementHessianContribAssemblerSupportingStencilDuplicates::
+                template run</*InParallel=*/true>(
+                    m_H->Ax.data(), *m_H, local_block, evars, m_vars, m_locks);
+        }
     }
 
     // Convert the block-CSC upper-triangle matrix to a full symmetric Eigen
@@ -187,7 +200,7 @@ private:
     };
 
     /// Whether the valid (non-negative) entries of `vertex_ids` are pairwise
-    /// distinct. Only used to check to_stencil()'s precondition.
+    /// distinct, i.e., whether add() may take the column-merge fast path.
     static bool has_distinct_ids(const std::array<index_t, 4>& vertex_ids)
     {
         for (size_t i = 0; i < vertex_ids.size(); i++) {
@@ -203,16 +216,11 @@ private:
     /// Compact the (possibly -1-padded) vertex ID array into a MeshFEM
     /// stencil of block variables.
     ///
-    /// @note The IDs must be pairwise distinct: we scatter with
-    /// ElementHessianContribAssembler<true>, whose sorted column-merge assumes
-    /// each block variable occurs once (MeshFEMSparse ships a separate
-    /// ...SupportingStencilDuplicates for the duplicate case). A repeated ID
-    /// would silently double-count the diagonal block and pollute its strict
-    /// lower triangle. The broad phase rejects candidates that share a vertex,
-    /// so this only guards hand-built collision sets.
+    /// @note Repeated IDs are kept as-is: the stencil's size must match the
+    /// local Hessian's block count, and both scatter routines are indexed by
+    /// local block. add() picks the routine that handles duplicates.
     static Stencil to_stencil(const std::array<index_t, 4>& vertex_ids)
     {
-        assert(has_distinct_ids(vertex_ids));
         Stencil bvars(0);
         size_t back = 0;
         for (const index_t id : vertex_ids) {

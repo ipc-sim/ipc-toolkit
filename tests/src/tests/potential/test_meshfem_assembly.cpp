@@ -75,6 +75,55 @@ TEST_CASE(
     CHECK((actual - expected).norm() <= 1e-13 * scale);
 }
 
+TEST_CASE(
+    "MeshFEM assembly with a degenerate stencil",
+    "[potential][assembly][meshfem]")
+{
+    // A stencil can repeat a vertex -- e.g., a point coincident with an
+    // endpoint of the edge it collides with, which the friction test fixtures
+    // exercise. Several local blocks then map to one global block, which the
+    // column-merge scatter cannot express, so the assembler falls back. Drive
+    // the assemblers directly: the geometry that produces such a stencil is
+    // degenerate, but the assembly of it must still match triplets exactly.
+    const int dim = GENERATE(2, 3);
+    CAPTURE(dim);
+
+    const int ndof = 4 * dim; // four vertices
+    // Edge-vertex stencil {vertex, e0, e1} where the vertex is endpoint e0.
+    const std::array<index_t, 4> ids = { { 1, 1, 2, -1 } };
+    const int n = 3 * dim;
+
+    MatrixMax12d local_hess(n, n);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            local_hess(i, j) = (i + 1.0) * (j + 2.0);
+        }
+    }
+    // Local Hessians are symmetric; the block-CSC backend stores only the
+    // upper triangle, so an asymmetric input would not be a fair comparison.
+    local_hess = (0.5 * (local_hess + local_hess.transpose())).eval();
+    local_hess.diagonal().array() += 10.0;
+
+    const auto stencil = [&ids](const size_t) { return ids; };
+
+    TripletHessianAssembler triplet_assembler;
+    triplet_assembler.begin(ndof, dim, 1, stencil);
+    triplet_assembler.add_local_hessian(local_hess, ids);
+    triplet_assembler.end();
+    const Eigen::SparseMatrix<double> expected = triplet_assembler.get_matrix();
+
+    MeshFEMHessianAssembler meshfem_assembler;
+    meshfem_assembler.begin(ndof, dim, 1, stencil);
+    meshfem_assembler.add_local_hessian(local_hess, ids);
+    meshfem_assembler.end();
+    const Eigen::SparseMatrix<double> actual = meshfem_assembler.get_matrix();
+
+    REQUIRE(expected.norm() > 0); // guard against comparing two empty matrices
+    REQUIRE(actual.rows() == expected.rows());
+    REQUIRE(actual.cols() == expected.cols());
+    CHECK((actual - expected).norm() <= 1e-13 * expected.norm());
+}
+
 TEST_CASE("MeshFEM assembly pattern reuse", "[potential][assembly][meshfem]")
 {
     // A persistent assembler must produce correct results across repeated
