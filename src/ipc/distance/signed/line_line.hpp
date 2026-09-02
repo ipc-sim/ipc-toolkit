@@ -133,15 +133,14 @@ inline auto line_line_signed_distance(
     return detail::line_line_signed_distance<T>(ea0, ea1, eb0, eb1);
 }
 
-/// Compute the gradient of the signed line-line distance with respect to
-/// the four 3D input points: ea0, ea1, eb0, eb1.
+/// Compute the gradient of the signed line-line distance with respect to the
+/// four 3D input points: ea0, ea1, eb0, eb1.
 ///
 /// The returned gradient is a 12-vector ordered as [d/d(ea0); d/d(ea1);
 /// d/d(eb0); d/d(eb1)], where each block is a 3-vector. This function
-/// differentiates the signed distance produced by
-/// line_line_signed_distance. The gradient may be undefined or numerically
-/// unstable when the two lines are parallel or when the direction-defining
-/// points coincide.
+/// differentiates the signed distance produced by line_line_signed_distance.
+/// The gradient may be undefined or numerically unstable when the two lines are
+/// parallel or when the direction-defining points coincide.
 ///
 /// @param ea0 First point on the first line (as in line_line_signed_distance).
 /// @param ea1 Second point on the first line.
@@ -170,13 +169,13 @@ inline auto line_line_signed_distance_gradient(
 /// Compute the Hessian (second derivative) of the signed line-line distance
 /// with respect to the four 3D input points: ea0, ea1, eb0, eb1.
 ///
-/// The returned matrix is 12x12 and corresponds to the second derivatives
-/// of the scalar signed distance with respect to the stacked variable
+/// The returned matrix is 12x12 and corresponds to the second derivatives of
+/// the scalar signed distance with respect to the stacked variable
 /// [ea0; ea1; eb0; eb1]. The Hessian captures curvature information and is
-/// typically required for second-order optimization or sensitivity
-/// analysis. As with the gradient, the Hessian is undefined or numerically
-/// unstable if either input line is degenerate (coincident points) or if
-/// the lines are parallel (no unique perpendicular direction).
+/// typically required for second-order optimization or sensitivity analysis. As
+/// with the gradient, the Hessian is undefined or numerically unstable if
+/// either input line is degenerate (coincident points) or if the lines are
+/// parallel (no unique perpendicular direction).
 ///
 /// @param ea0 First point on the first line.
 /// @param ea1 Second point on the first line.

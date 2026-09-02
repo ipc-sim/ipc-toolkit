@@ -162,6 +162,7 @@ T TwoStageBarrier<T>::second_derivative(const T d, const T dhat) const
 
 // ============================================================================
 // Explicit template instantiations
+/// @cond DOXYGEN_SKIP
 template class BarrierBase<float>;
 template class BarrierBase<double>;
 template class ClampedLogBarrier<float>;
@@ -178,6 +179,7 @@ template float barrier_first_derivative(const float d, const float dhat);
 template double barrier_first_derivative(const double d, const double dhat);
 template float barrier_second_derivative(const float d, const float dhat);
 template double barrier_second_derivative(const double d, const double dhat);
+/// @endcond
 // ============================================================================
 
 } // namespace ipc
