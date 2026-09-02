@@ -74,12 +74,40 @@ jobs:
         uses: SimenB/github-actions-cpu-cores@v2
         id: cpu-cores
 
+      # FindSIMD compiles with -march=native, which bakes the building runner's
+      # ISA into every cached object file. The cache key had no CPU component,
+      # so objects built on one runner model were restored onto another and
+      # executed instructions it does not implement, failing the test step with
+      # SIGILL. Key the cache on the CPU so it only restores onto matching
+      # hardware.
+      - name: CPU fingerprint (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            CPU=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)
+            KEY=$(printf '%s' "$CPU" | sha256sum | cut -c1-12)
+          else
+            CPU=$(sysctl -n machdep.cpu.brand_string)
+            KEY=$(printf '%s' "$CPU" | shasum -a 256 | cut -c1-12)
+          fi
+          echo "CPU: $CPU"
+          echo "CPU_KEY=$KEY" >> "$GITHUB_ENV"
+
+      - name: CPU fingerprint (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1 -ExpandProperty Name
+          Write-Host "CPU: $cpu"
+          $stream = [IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes($cpu))
+          $key = (Get-FileHash -InputStream $stream -Algorithm SHA256).Hash.Substring(0, 12)
+          "CPU_KEY=$key" | Out-File -FilePath $env:GITHUB_ENV -Append
+
       - name: Cache Build
         id: cache-build
         uses: actions/cache@v5
         with:
           path: ${{ env.CACHE_PATH }}
-          key: ${{ runner.os }}-${{ matrix.config }}-cache
+          key: ${{ runner.os }}-${{ matrix.config }}-${{ env.CPU_KEY }}-cache
 
       - name: Prepare ccache
         run: |
