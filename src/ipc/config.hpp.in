@@ -21,6 +21,7 @@
 #cmakedefine IPC_TOOLKIT_WITH_FILIB
 #cmakedefine IPC_TOOLKIT_WITH_PROFILER
 #cmakedefine IPC_TOOLKIT_WITH_TRACY
+#cmakedefine IPC_TOOLKIT_WITH_MESHFEM_SPARSE
 // #define IPC_TOOLKIT_DEBUG_AUTODIFF
 
 namespace ipc {
