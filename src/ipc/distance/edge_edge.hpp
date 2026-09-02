@@ -20,7 +20,7 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
         Eigen::ConstRef<Eigen::Vector3<T>> eb1,
-        EdgeEdgeDistanceType dtype);
+        EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
     /// @brief Compute the gradient of the distance between a two lines segments.
     /// @note The distance is actually squared distance.
@@ -36,7 +36,7 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
         Eigen::ConstRef<Eigen::Vector3<T>> eb1,
-        EdgeEdgeDistanceType dtype);
+        EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
     /// @brief Compute the hessian of the distance between a two lines segments.
     /// @note The distance is actually squared distance.
@@ -52,58 +52,79 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
         Eigen::ConstRef<Eigen::Vector3<T>> eb1,
-        EdgeEdgeDistanceType dtype);
+        EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 } // namespace detail
 
 // --- EigenExpression wrappers ---
 
+/// @brief Compute the distance between two lines segments in 3D.
+/// @note The distance is actually squared distance.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @param dtype The point edge distance type to compute.
+/// @return The distance between the two edges.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_distance(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_distance<T>(ea0, ea1, eb0, eb1, dtype);
 }
 
+/// @brief Compute the gradient of the distance between a two lines segments.
+/// @note The distance is actually squared distance.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @param dtype The point edge distance type to compute.
+/// @return The gradient of the distance wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_distance_gradient(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_distance_gradient<T>(ea0, ea1, eb0, eb1, dtype);
 }
 
+/// @brief Compute the hessian of the distance between a two lines segments.
+/// @note The distance is actually squared distance.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @param dtype The point edge distance type to compute.
+/// @return The hessian of the distance wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_distance_hessian(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
     EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_distance_hessian<T>(ea0, ea1, eb0, eb1, dtype);
 }

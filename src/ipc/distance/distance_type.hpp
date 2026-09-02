@@ -102,46 +102,46 @@ namespace detail {
             return PointEdgeDistanceType::P_E; // PE
         }
     }
+
+    /// @brief Determine the closest pair between a point and triangle.
+    /// @param p The point.
+    /// @param t0 The first vertex of the triangle.
+    /// @param t1 The second vertex of the triangle.
+    /// @param t2 The third vertex of the triangle.
+    /// @return The distance type of the point-triangle pair.
+    template <typename T>
+    PointTriangleDistanceType point_triangle_distance_type(
+        Eigen::ConstRef<Eigen::Vector3<T>> p,
+        Eigen::ConstRef<Eigen::Vector3<T>> t0,
+        Eigen::ConstRef<Eigen::Vector3<T>> t1,
+        Eigen::ConstRef<Eigen::Vector3<T>> t2);
+
+    /// @brief Determine the closest pair between two edges.
+    /// @param ea0 The first vertex of the first edge.
+    /// @param ea1 The second vertex of the first edge.
+    /// @param eb0 The first vertex of the second edge.
+    /// @param eb1 The second vertex of the second edge.
+    /// @return The distance type of the edge-edge pair.
+    template <typename T>
+    EdgeEdgeDistanceType edge_edge_distance_type(
+        Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+        Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb1);
+
+    /// @brief Determine the closest pair between two parallel edges.
+    /// @param ea0 The first vertex of the first edge.
+    /// @param ea1 The second vertex of the first edge.
+    /// @param eb0 The first vertex of the second edge.
+    /// @param eb1 The second vertex of the second edge.
+    /// @return The distance type of the edge-edge pair.
+    template <typename T>
+    EdgeEdgeDistanceType edge_edge_parallel_distance_type(
+        Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+        Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+        Eigen::ConstRef<Eigen::Vector3<T>> eb1);
 } // namespace detail
-
-/// @brief Determine the closest pair between a point and triangle.
-/// @param p The point.
-/// @param t0 The first vertex of the triangle.
-/// @param t1 The second vertex of the triangle.
-/// @param t2 The third vertex of the triangle.
-/// @return The distance type of the point-triangle pair.
-template <typename T>
-PointTriangleDistanceType point_triangle_distance_type(
-    Eigen::ConstRef<Eigen::Vector3<T>> p,
-    Eigen::ConstRef<Eigen::Vector3<T>> t0,
-    Eigen::ConstRef<Eigen::Vector3<T>> t1,
-    Eigen::ConstRef<Eigen::Vector3<T>> t2);
-
-/// @brief Determine the closest pair between two edges.
-/// @param ea0 The first vertex of the first edge.
-/// @param ea1 The second vertex of the first edge.
-/// @param eb0 The first vertex of the second edge.
-/// @param eb1 The second vertex of the second edge.
-/// @return The distance type of the edge-edge pair.
-template <typename T>
-EdgeEdgeDistanceType edge_edge_distance_type(
-    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb1);
-
-/// @brief Determine the closest pair between two parallel edges.
-/// @param ea0 The first vertex of the first edge.
-/// @param ea1 The second vertex of the first edge.
-/// @param eb0 The first vertex of the second edge.
-/// @param eb1 The second vertex of the second edge.
-/// @return The distance type of the edge-edge pair.
-template <typename T>
-EdgeEdgeDistanceType edge_edge_parallel_distance_type(
-    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb1);
 
 // --- EigenExpression wrappers ---
 //
@@ -160,9 +160,10 @@ EdgeEdgeDistanceType edge_edge_parallel_distance_type(
 /// @return The distance type of the point-edge pair.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline PointEdgeDistanceType point_edge_distance_type(
-    const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
 
     if constexpr (dim_v<DerivedP> == 2) {
@@ -177,6 +178,12 @@ inline PointEdgeDistanceType point_edge_distance_type(
     }
 }
 
+/// @brief Determine the closest pair between a point and triangle.
+/// @param p The point.
+/// @param t0 The first vertex of the triangle.
+/// @param t1 The second vertex of the triangle.
+/// @param t2 The third vertex of the triangle.
+/// @return The distance type of the point-triangle pair.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -190,13 +197,15 @@ inline PointTriangleDistanceType point_triangle_distance_type(
     const Eigen::MatrixBase<DerivedT2>& t2)
 {
     using T = typename DerivedP::Scalar;
-    return point_triangle_distance_type(
-        Eigen::Ref<const Eigen::Vector3<T>>(p),
-        Eigen::Ref<const Eigen::Vector3<T>>(t0),
-        Eigen::Ref<const Eigen::Vector3<T>>(t1),
-        Eigen::Ref<const Eigen::Vector3<T>>(t2));
+    return detail::point_triangle_distance_type<T>(p, t0, t1, t2);
 }
 
+/// @brief Determine the closest pair between two edges.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @return The distance type of the edge-edge pair.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -210,13 +219,15 @@ inline EdgeEdgeDistanceType edge_edge_distance_type(
     const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
     using T = typename DerivedEA0::Scalar;
-    return edge_edge_distance_type(
-        Eigen::Ref<const Eigen::Vector3<T>>(ea0),
-        Eigen::Ref<const Eigen::Vector3<T>>(ea1),
-        Eigen::Ref<const Eigen::Vector3<T>>(eb0),
-        Eigen::Ref<const Eigen::Vector3<T>>(eb1));
+    return detail::edge_edge_distance_type<T>(ea0, ea1, eb0, eb1);
 }
 
+/// @brief Determine the closest pair between two parallel edges.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @return The distance type of the edge-edge pair.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -230,11 +241,7 @@ inline EdgeEdgeDistanceType edge_edge_parallel_distance_type(
     const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
     using T = typename DerivedEA0::Scalar;
-    return edge_edge_parallel_distance_type(
-        Eigen::Ref<const Eigen::Vector3<T>>(ea0),
-        Eigen::Ref<const Eigen::Vector3<T>>(ea1),
-        Eigen::Ref<const Eigen::Vector3<T>>(eb0),
-        Eigen::Ref<const Eigen::Vector3<T>>(eb1));
+    return detail::edge_edge_parallel_distance_type<T>(ea0, ea1, eb0, eb1);
 }
 
 } // namespace ipc

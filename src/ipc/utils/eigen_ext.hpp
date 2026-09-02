@@ -223,39 +223,6 @@ using HessianType = std::
 
 /**@}*/
 
-/// @brief True iff `T` is an Eigen expression (a stored matrix, block, map, or
-/// lazy expression) rather than a scalar.
-///
-/// A pure detection trait: it inspects only members of `T` itself, so it never
-/// instantiates `Eigen::MatrixBase<T>` — which is ill-formed when `T` is a
-/// scalar such as `double` or an autodiff type.
-template <typename T, typename = void>
-inline constexpr bool is_eigen_expression_v = false;
-
-template <typename T>
-inline constexpr bool is_eigen_expression_v<
-    T,
-    std::void_t<
-        typename T::Scalar,
-        decltype(std::declval<const T&>().rows()),
-        decltype(std::declval<const T&>().cols())>> = true;
-
-/// @brief True iff every `Ts` is an Eigen expression.
-template <typename... Ts>
-inline constexpr bool are_eigen_expressions_v =
-    (is_eigen_expression_v<Ts> && ...);
-
-/// @brief Assert that every deduced argument type is an Eigen expression.
-///
-/// Place this as the first statement of an Eigen front end so that an explicit
-/// scalar template argument produces one readable diagnostic instead of a wall
-/// of Eigen internals.
-#define IPC_ASSERT_EIGEN_ARGS(...)                                             \
-    static_assert(                                                             \
-        ::ipc::are_eigen_expressions_v<__VA_ARGS__>,                           \
-        "Pass Eigen vectors or expressions; the scalar type is deduced from "  \
-        "the arguments. Write f(a, b, ...), not f<double>(a, b, ...).")
-
 /// @brief Compile-time dimension of an Eigen vector expression, or
 /// `Eigen::Dynamic` if it is not known until run time.
 ///

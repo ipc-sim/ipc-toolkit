@@ -97,9 +97,10 @@ namespace detail {
 /// @param e1 The second vertex of the edge.
 /// @return The length of the edge.
 template <typename DerivedE0, typename DerivedE1>
-inline auto edge_length(const DerivedE0& e0, const DerivedE1& e1)
+inline auto edge_length(
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedE0, DerivedE1);
     using T = typename DerivedE0::Scalar;
 
     if constexpr (dim_v<DerivedE0> == 2) {
@@ -119,9 +120,10 @@ inline auto edge_length(const DerivedE0& e0, const DerivedE1& e1)
 /// @param e1 The second vertex of the edge.
 /// @return The gradient of the edge's length wrt e0, and e1.
 template <typename DerivedE0, typename DerivedE1>
-inline auto edge_length_gradient(const DerivedE0& e0, const DerivedE1& e1)
+inline auto edge_length_gradient(
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedE0, DerivedE1);
     using T = typename DerivedE0::Scalar;
 
     if constexpr (dim_v<DerivedE0> == 2) {
@@ -145,10 +147,11 @@ inline auto edge_length_gradient(const DerivedE0& e0, const DerivedE1& e1)
 /// @param t2 The third vertex of the triangle.
 /// @return The area of the triangle.
 template <typename DerivedT0, typename DerivedT1, typename DerivedT2>
-inline auto
-triangle_area(const DerivedT0& t0, const DerivedT1& t1, const DerivedT2& t2)
+inline auto triangle_area(
+    const Eigen::MatrixBase<DerivedT0>& t0,
+    const Eigen::MatrixBase<DerivedT1>& t1,
+    const Eigen::MatrixBase<DerivedT2>& t2)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedT0, DerivedT1, DerivedT2);
     // NOTE: explicit <T>: the detail overload cannot deduce T from an
     // arbitrary Eigen expression.
     using T = typename DerivedT0::Scalar;
@@ -165,9 +168,10 @@ triangle_area(const DerivedT0& t0, const DerivedT1& t1, const DerivedT2& t2)
 /// @return The gradient of the triangle's area t0, t1, and t2.
 template <typename DerivedT0, typename DerivedT1, typename DerivedT2>
 inline auto triangle_area_gradient(
-    const DerivedT0& t0, const DerivedT1& t1, const DerivedT2& t2)
+    const Eigen::MatrixBase<DerivedT0>& t0,
+    const Eigen::MatrixBase<DerivedT1>& t1,
+    const Eigen::MatrixBase<DerivedT2>& t2)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedT0, DerivedT1, DerivedT2);
     using T = typename DerivedT0::Scalar;
     return detail::triangle_area_gradient<T>(t0, t1, t2);
 }

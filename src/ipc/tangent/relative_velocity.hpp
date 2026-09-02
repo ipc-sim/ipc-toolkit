@@ -256,10 +256,10 @@ namespace detail {
 /// @param dp1 Velocity of the second point
 /// @return The relative velocity of the two points
 template <typename DerivedDP0, typename DerivedDP1>
-inline auto
-point_point_relative_velocity(const DerivedDP0& dp0, const DerivedDP1& dp1)
+inline auto point_point_relative_velocity(
+    const Eigen::MatrixBase<DerivedDP0>& dp0,
+    const Eigen::MatrixBase<DerivedDP1>& dp1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedDP0, DerivedDP1);
     using T = typename DerivedDP0::Scalar;
     assert(dp0.size() == dp1.size());
 
@@ -322,12 +322,11 @@ inline VectorMax<T, 18> point_point_relative_velocity_dx_dbeta(const int dim)
 /// @return The relative velocity of the point and the edge
 template <typename DerivedDP, typename DerivedDE0, typename DerivedDE1>
 inline auto point_edge_relative_velocity(
-    const DerivedDP& dp,
-    const DerivedDE0& de0,
-    const DerivedDE1& de1,
+    const Eigen::MatrixBase<DerivedDP>& dp,
+    const Eigen::MatrixBase<DerivedDE0>& de0,
+    const Eigen::MatrixBase<DerivedDE1>& de1,
     const typename DerivedDP::Scalar alpha)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedDP, DerivedDE0, DerivedDE1);
     using T = typename DerivedDP::Scalar;
     assert(dp.size() == de0.size() && dp.size() == de1.size());
 
@@ -406,14 +405,12 @@ template <
     typename DerivedDEB1,
     typename DerivedCoords>
 inline auto edge_edge_relative_velocity(
-    const DerivedDEA0& dea0,
-    const DerivedDEA1& dea1,
-    const DerivedDEB0& deb0,
-    const DerivedDEB1& deb1,
-    const DerivedCoords& coords)
+    const Eigen::MatrixBase<DerivedDEA0>& dea0,
+    const Eigen::MatrixBase<DerivedDEA1>& dea1,
+    const Eigen::MatrixBase<DerivedDEB0>& deb0,
+    const Eigen::MatrixBase<DerivedDEB1>& deb1,
+    const Eigen::MatrixBase<DerivedCoords>& coords)
 {
-    IPC_ASSERT_EIGEN_ARGS(
-        DerivedDEA0, DerivedDEA1, DerivedDEB0, DerivedDEB1, DerivedCoords);
     using T = typename DerivedDEA0::Scalar;
     // NOTE: explicit <T>: the detail overload cannot deduce T from an
     // arbitrary Eigen expression.
@@ -425,9 +422,9 @@ inline auto edge_edge_relative_velocity(
 /// @param coords Two parametric coordinates of the closest points on the edges
 /// @return The relative velocity Jacobian du/dx
 template <typename DerivedCoords>
-inline auto edge_edge_relative_velocity_jacobian(const DerivedCoords& coords)
+inline auto edge_edge_relative_velocity_jacobian(
+    const Eigen::MatrixBase<DerivedCoords>& coords)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedCoords);
     using T = typename DerivedCoords::Scalar;
     return detail::edge_edge_relative_velocity_jacobian<T>(coords);
 }
@@ -444,9 +441,9 @@ inline auto edge_edge_relative_velocity_jacobian(const DerivedCoords& coords)
 /// @param coords Two parametric coordinates of the closest points on the edges
 /// @return The vectorized tensor of d²u/dxdβ
 template <typename DerivedCoords>
-inline auto edge_edge_relative_velocity_dx_dbeta(const DerivedCoords& coords)
+inline auto edge_edge_relative_velocity_dx_dbeta(
+    const Eigen::MatrixBase<DerivedCoords>& coords)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedCoords);
     using T = typename DerivedCoords::Scalar;
     return detail::edge_edge_relative_velocity_dx_dbeta<T>(coords);
 }
@@ -468,14 +465,12 @@ template <
     typename DerivedDT2,
     typename DerivedCoords>
 inline auto point_triangle_relative_velocity(
-    const DerivedDP& dp,
-    const DerivedDT0& dt0,
-    const DerivedDT1& dt1,
-    const DerivedDT2& dt2,
-    const DerivedCoords& coords)
+    const Eigen::MatrixBase<DerivedDP>& dp,
+    const Eigen::MatrixBase<DerivedDT0>& dt0,
+    const Eigen::MatrixBase<DerivedDT1>& dt1,
+    const Eigen::MatrixBase<DerivedDT2>& dt2,
+    const Eigen::MatrixBase<DerivedCoords>& coords)
 {
-    IPC_ASSERT_EIGEN_ARGS(
-        DerivedDP, DerivedDT0, DerivedDT1, DerivedDT2, DerivedCoords);
     using T = typename DerivedDP::Scalar;
     return detail::point_triangle_relative_velocity<T>(
         dp, dt0, dt1, dt2, coords);
@@ -485,10 +480,9 @@ inline auto point_triangle_relative_velocity(
 /// @param coords Barycentric coordinates of the closest point on the triangle
 /// @return The relative velocity Jacobian du/dx
 template <typename DerivedCoords>
-inline auto
-point_triangle_relative_velocity_jacobian(const DerivedCoords& coords)
+inline auto point_triangle_relative_velocity_jacobian(
+    const Eigen::MatrixBase<DerivedCoords>& coords)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedCoords);
     using T = typename DerivedCoords::Scalar;
     return detail::point_triangle_relative_velocity_jacobian<T>(coords);
 }
@@ -505,10 +499,9 @@ point_triangle_relative_velocity_jacobian(const DerivedCoords& coords)
 /// @param coords Baricentric coordinates of the closest point on the triangle
 /// @return The vectorized tensor of d²u/dxdβ
 template <typename DerivedCoords>
-inline auto
-point_triangle_relative_velocity_dx_dbeta(const DerivedCoords& coords)
+inline auto point_triangle_relative_velocity_dx_dbeta(
+    const Eigen::MatrixBase<DerivedCoords>& coords)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedCoords);
     using T = typename DerivedCoords::Scalar;
     return detail::point_triangle_relative_velocity_dx_dbeta<T>(coords);
 }

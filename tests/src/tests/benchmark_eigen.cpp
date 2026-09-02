@@ -131,8 +131,10 @@ pp_ref_maxN(Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1)
 /// @brief The shared fixed-size body. Always inlined, so any difference
 /// measured below comes from the parameter type, not from this.
 template <int N, typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline double
-pl_body(const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
+inline double pl_body(
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
     if constexpr (N == 2) {
         const Eigen::Vector2d e = e1 - e0;
@@ -171,8 +173,10 @@ double pl_ref_3d(
 /// @brief Fixed-size stand-in for point_edge_distance_type. Matches the
 /// library apart from the degenerate-edge logger call, which never fires here.
 template <int N, typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline PointEdgeDistanceType
-pe_type_body(const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
+inline PointEdgeDistanceType pe_type_body(
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
     const Eigen::Vector<double, N> e = e1 - e0;
     const double e_length_sqr = e.squaredNorm();
@@ -191,9 +195,9 @@ pe_type_body(const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
 /// @brief The shared fixed-size body, as pl_body but with the dtype dispatch.
 template <int N, typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline double pe_body(
-    const DerivedP& p,
-    const DerivedE0& e0,
-    const DerivedE1& e1,
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1,
     PointEdgeDistanceType dtype)
 {
     if (dtype == PointEdgeDistanceType::AUTO) {

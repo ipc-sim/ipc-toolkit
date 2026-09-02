@@ -267,12 +267,11 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_cross_squarednorm(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1)
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     // NOTE: explicit <T>: the detail overload cannot deduce T from an
     // arbitrary Eigen expression.
@@ -292,12 +291,11 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_cross_squarednorm_gradient(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1)
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_cross_squarednorm_gradient<T>(ea0, ea1, eb0, eb1);
 }
@@ -315,12 +313,11 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_cross_squarednorm_hessian(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1)
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_cross_squarednorm_hessian<T>(ea0, ea1, eb0, eb1);
 }
@@ -341,13 +338,12 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_mollifier(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
     const typename DerivedEA0::Scalar eps_x)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_mollifier<T>(ea0, ea1, eb0, eb1, eps_x);
 }
@@ -365,13 +361,12 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_mollifier_gradient(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
     const typename DerivedEA0::Scalar eps_x)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_mollifier_gradient<T>(ea0, ea1, eb0, eb1, eps_x);
 }
@@ -389,13 +384,12 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_mollifier_hessian(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
     const typename DerivedEA0::Scalar eps_x)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_mollifier_hessian<T>(ea0, ea1, eb0, eb1, eps_x);
 }
@@ -421,18 +415,15 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_mollifier_gradient_wrt_x(
-    const DerivedEA0Rest& ea0_rest,
-    const DerivedEA1Rest& ea1_rest,
-    const DerivedEB0Rest& eb0_rest,
-    const DerivedEB1Rest& eb1_rest,
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1)
+    const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
+    const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
+    const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,
+    const Eigen::MatrixBase<DerivedEB1Rest>& eb1_rest,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    IPC_ASSERT_EIGEN_ARGS(
-        DerivedEA0Rest, DerivedEA1Rest, DerivedEB0Rest, DerivedEB1Rest,
-        DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0Rest::Scalar;
     return detail::edge_edge_mollifier_gradient_wrt_x<T>(
         ea0_rest, ea1_rest, eb0_rest, eb1_rest, ea0, ea1, eb0, eb1);
@@ -461,18 +452,15 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_mollifier_gradient_jacobian_wrt_x(
-    const DerivedEA0Rest& ea0_rest,
-    const DerivedEA1Rest& ea1_rest,
-    const DerivedEB0Rest& eb0_rest,
-    const DerivedEB1Rest& eb1_rest,
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1)
+    const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
+    const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
+    const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,
+    const Eigen::MatrixBase<DerivedEB1Rest>& eb1_rest,
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    IPC_ASSERT_EIGEN_ARGS(
-        DerivedEA0Rest, DerivedEA1Rest, DerivedEB0Rest, DerivedEB1Rest,
-        DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0Rest::Scalar;
     return detail::edge_edge_mollifier_gradient_jacobian_wrt_x<T>(
         ea0_rest, ea1_rest, eb0_rest, eb1_rest, ea0, ea1, eb0, eb1);
@@ -493,13 +481,11 @@ template <
     typename DerivedEB0Rest,
     typename DerivedEB1Rest>
 inline auto edge_edge_mollifier_threshold(
-    const DerivedEA0Rest& ea0_rest,
-    const DerivedEA1Rest& ea1_rest,
-    const DerivedEB0Rest& eb0_rest,
-    const DerivedEB1Rest& eb1_rest)
+    const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
+    const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
+    const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,
+    const Eigen::MatrixBase<DerivedEB1Rest>& eb1_rest)
 {
-    IPC_ASSERT_EIGEN_ARGS(
-        DerivedEA0Rest, DerivedEA1Rest, DerivedEB0Rest, DerivedEB1Rest);
     using T = typename DerivedEA0Rest::Scalar;
     return detail::edge_edge_mollifier_threshold<T>(
         ea0_rest, ea1_rest, eb0_rest, eb1_rest);
@@ -521,13 +507,11 @@ template <
     typename DerivedEB0Rest,
     typename DerivedEB1Rest>
 inline auto edge_edge_mollifier_threshold_gradient(
-    const DerivedEA0Rest& ea0_rest,
-    const DerivedEA1Rest& ea1_rest,
-    const DerivedEB0Rest& eb0_rest,
-    const DerivedEB1Rest& eb1_rest)
+    const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
+    const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
+    const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,
+    const Eigen::MatrixBase<DerivedEB1Rest>& eb1_rest)
 {
-    IPC_ASSERT_EIGEN_ARGS(
-        DerivedEA0Rest, DerivedEA1Rest, DerivedEB0Rest, DerivedEB1Rest);
     using T = typename DerivedEA0Rest::Scalar;
     return detail::edge_edge_mollifier_threshold_gradient<T>(
         ea0_rest, ea1_rest, eb0_rest, eb1_rest);

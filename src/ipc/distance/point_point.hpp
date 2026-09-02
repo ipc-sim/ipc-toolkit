@@ -73,9 +73,10 @@ namespace detail {
 /// @param p1 The second point.
 /// @return The distance between p0 and p1.
 template <typename DerivedP0, typename DerivedP1>
-inline auto point_point_distance(const DerivedP0& p0, const DerivedP1& p1)
+inline auto point_point_distance(
+    const Eigen::MatrixBase<DerivedP0>& p0,
+    const Eigen::MatrixBase<DerivedP1>& p1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP0, DerivedP1);
     using T = typename DerivedP0::Scalar;
 
     if constexpr (dim_v<DerivedP0> == 2) {
@@ -97,10 +98,10 @@ inline auto point_point_distance(const DerivedP0& p0, const DerivedP1& p1)
 /// @param p1 The second point.
 /// @return The computed gradient.
 template <typename DerivedP0, typename DerivedP1>
-inline auto
-point_point_distance_gradient(const DerivedP0& p0, const DerivedP1& p1)
+inline auto point_point_distance_gradient(
+    const Eigen::MatrixBase<DerivedP0>& p0,
+    const Eigen::MatrixBase<DerivedP1>& p1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP0, DerivedP1);
     using T = typename DerivedP0::Scalar;
     if constexpr (dim_v<DerivedP0> == 2) {
         return detail::point_point_distance_gradient<T, 2>(p0, p1);
@@ -123,10 +124,10 @@ point_point_distance_gradient(const DerivedP0& p0, const DerivedP1& p1)
 /// @param p1 The second point.
 /// @return The computed hessian.
 template <typename DerivedP0, typename DerivedP1>
-inline auto
-point_point_distance_hessian(const DerivedP0& p0, const DerivedP1& p1)
+inline auto point_point_distance_hessian(
+    const Eigen::MatrixBase<DerivedP0>& p0,
+    const Eigen::MatrixBase<DerivedP1>& p1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP0, DerivedP1);
     using T = typename DerivedP0::Scalar;
     if constexpr (dim_v<DerivedP0> == 2) {
         return detail::point_point_distance_hessian<T, 2>(p0, p1);

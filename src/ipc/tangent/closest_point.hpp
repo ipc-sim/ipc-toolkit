@@ -386,9 +386,10 @@ namespace detail {
 /// @return barycentric coordinates of the closest point
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_edge_closest_point(
-    const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
 
     if constexpr (dim_v<DerivedP> == 2) {
@@ -410,9 +411,10 @@ inline auto point_edge_closest_point(
 /// @return Jacobian of the closest point
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_edge_closest_point_jacobian(
-    const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
 
     if constexpr (dim_v<DerivedP> == 2) {
@@ -436,9 +438,10 @@ inline auto point_edge_closest_point_jacobian(
 /// @return Hessian of the closest point
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_edge_closest_point_hessian(
-    const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
 
     if constexpr (dim_v<DerivedP> == 2) {
@@ -478,12 +481,11 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_closest_point(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1)
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_closest_point<T>(ea0, ea1, eb0, eb1);
 }
@@ -503,12 +505,11 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_closest_point_jacobian(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1)
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_closest_point_jacobian<T>(ea0, ea1, eb0, eb1);
 }
@@ -528,12 +529,11 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_closest_point_hessian(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1)
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_closest_point_hessian<T>(ea0, ea1, eb0, eb1);
 }
@@ -556,12 +556,11 @@ template <
     typename DerivedT1,
     typename DerivedT2>
 inline auto point_triangle_closest_point(
-    const DerivedP& p,
-    const DerivedT0& t0,
-    const DerivedT1& t1,
-    const DerivedT2& t2)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedT0>& t0,
+    const Eigen::MatrixBase<DerivedT1>& t1,
+    const Eigen::MatrixBase<DerivedT2>& t2)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedT0, DerivedT1, DerivedT2);
     using T = typename DerivedP::Scalar;
     return detail::point_triangle_closest_point<T>(p, t0, t1, t2);
 }
@@ -581,12 +580,11 @@ template <
     typename DerivedT1,
     typename DerivedT2>
 inline auto point_triangle_closest_point_jacobian(
-    const DerivedP& p,
-    const DerivedT0& t0,
-    const DerivedT1& t1,
-    const DerivedT2& t2)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedT0>& t0,
+    const Eigen::MatrixBase<DerivedT1>& t1,
+    const Eigen::MatrixBase<DerivedT2>& t2)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedT0, DerivedT1, DerivedT2);
     using T = typename DerivedP::Scalar;
     return detail::point_triangle_closest_point_jacobian<T>(p, t0, t1, t2);
 }
@@ -606,12 +604,11 @@ template <
     typename DerivedT1,
     typename DerivedT2>
 inline auto point_triangle_closest_point_hessian(
-    const DerivedP& p,
-    const DerivedT0& t0,
-    const DerivedT1& t1,
-    const DerivedT2& t2)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedT0>& t0,
+    const Eigen::MatrixBase<DerivedT1>& t1,
+    const Eigen::MatrixBase<DerivedT2>& t2)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedT0, DerivedT1, DerivedT2);
     using T = typename DerivedP::Scalar;
     return detail::point_triangle_closest_point_hessian<T>(p, t0, t1, t2);
 }

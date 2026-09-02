@@ -8,35 +8,30 @@
 
 #include <limits>
 #include <stdexcept>
-#include <string>
 
-namespace ipc {
+namespace ipc::detail {
 
-namespace detail {
+void warn_degenerate_point_edge() noexcept
+{
+    logger().warn("Degenerate edge in point_edge_distance_type!");
+}
 
-    void warn_degenerate_point_edge() noexcept
-    {
-        logger().warn("Degenerate edge in point_edge_distance_type!");
-    }
+void throw_invalid_distance_type(const char* function)
+{
+    throw std::invalid_argument(
+        fmt::format("{}: invalid distance type", function));
+}
 
-    void throw_invalid_distance_type(const char* function)
-    {
-        throw std::invalid_argument(
-            fmt::format("{}: invalid distance type", function));
-    }
-
-    void throw_auto_requires_explicit_dtype(const char* function)
-    {
-        throw std::invalid_argument(
-            fmt::format(
-                "{}: an explicit distance type is required for non-floating-point "
-                "scalars; resolving AUTO means comparing single ordered values, "
-                "which an autodiff, SIMD batch, or interval scalar does not "
-                "provide",
-                function));
-    }
-
-} // namespace detail
+void throw_auto_requires_explicit_dtype(const char* function)
+{
+    throw std::invalid_argument(
+        fmt::format(
+            "{}: an explicit distance type is required for non-floating-point "
+            "scalars; resolving AUTO means comparing single ordered values, "
+            "which an autodiff, SIMD batch, or interval scalar does not "
+            "provide",
+            function));
+}
 
 template <typename T>
 PointTriangleDistanceType point_triangle_distance_type(
@@ -250,4 +245,4 @@ template EdgeEdgeDistanceType edge_edge_parallel_distance_type<float>(Eigen::Con
 template EdgeEdgeDistanceType edge_edge_parallel_distance_type<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
 // clang-format on
 
-} // namespace ipc
+} // namespace ipc::detail

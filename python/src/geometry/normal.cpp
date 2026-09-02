@@ -77,7 +77,7 @@ void define_normal(py::module_& m)
         "x"_a);
 
     m.def(
-        "cross_product_matrix", &cross_product_matrix<double>,
+        "cross_product_matrix", &detail::cross_product_matrix<double>,
         R"ipc_qu8mg5v7(
         Cross product matrix for 3D vectors.
 
@@ -92,7 +92,8 @@ void define_normal(py::module_& m)
         "v"_a);
 
     m.def(
-        "cross_product_matrix_jacobian", &cross_product_matrix_jacobian<double>,
+        "cross_product_matrix_jacobian",
+        &detail::cross_product_matrix_jacobian<double>,
         R"ipc_qu8mg5v7(
         Computes the Jacobian of the cross product matrix.
         Returns
@@ -102,7 +103,7 @@ void define_normal(py::module_& m)
 
     m.def(
         "point_line_unnormalized_normal",
-        &point_line_unnormalized_normal<double>,
+        &detail::point_line_unnormalized_normal<double>,
         R"ipc_qu8mg5v7(
         Computes the unnormalized normal vector of a point-line pair.
 
@@ -119,7 +120,7 @@ void define_normal(py::module_& m)
         "p"_a, "e0"_a, "e1"_a);
 
     m.def(
-        "point_line_normal", &point_line_normal<double>,
+        "point_line_normal", &detail::point_line_normal<double>,
         R"ipc_qu8mg5v7(
         Computes the normal vector of a point-line pair.
 
@@ -137,7 +138,7 @@ void define_normal(py::module_& m)
 
     m.def(
         "point_line_unnormalized_normal_jacobian",
-        &point_line_unnormalized_normal_jacobian<double>,
+        &detail::point_line_unnormalized_normal_jacobian<double>,
         R"ipc_qu8mg5v7(
         Computes the Jacobian of the unnormalized normal vector of a point-line pair.
 
@@ -154,7 +155,8 @@ void define_normal(py::module_& m)
         "p"_a, "e0"_a, "e1"_a);
 
     m.def(
-        "triangle_unnormalized_normal", &triangle_unnormalized_normal<double>,
+        "triangle_unnormalized_normal",
+        &detail::triangle_unnormalized_normal<double>,
         R"ipc_qu8mg5v7(
         Computes the unnormalized normal vector of a triangle.
 
@@ -171,7 +173,7 @@ void define_normal(py::module_& m)
         "a"_a, "b"_a, "c"_a);
 
     m.def(
-        "triangle_normal", &triangle_normal<double>,
+        "triangle_normal", &detail::triangle_normal<double>,
         R"ipc_qu8mg5v7(
         Computes the normal vector of a triangle.
 
@@ -189,7 +191,7 @@ void define_normal(py::module_& m)
 
     m.def(
         "triangle_unnormalized_normal_jacobian",
-        &triangle_unnormalized_normal_jacobian<double>,
+        &detail::triangle_unnormalized_normal_jacobian<double>,
         R"ipc_qu8mg5v7(
         Computes the Jacobian of the unnormalized normal vector of a triangle.
 
@@ -207,7 +209,7 @@ void define_normal(py::module_& m)
 
     m.def(
         "triangle_unnormalized_normal_hessian",
-        &triangle_unnormalized_normal_hessian<double>,
+        &detail::triangle_unnormalized_normal_hessian<double>,
         R"ipc_qu8mg5v7(
         Computes the Hessian of the unnormalized normal vector of a triangle.
 
@@ -224,7 +226,7 @@ void define_normal(py::module_& m)
         "a"_a, "b"_a, "c"_a);
 
     m.def(
-        "triangle_normal_jacobian", &triangle_normal_jacobian<double>,
+        "triangle_normal_jacobian", &detail::triangle_normal_jacobian<double>,
         R"ipc_qu8mg5v7(
         Computes the Jacobian of the normal vector of a triangle.
 
@@ -241,7 +243,7 @@ void define_normal(py::module_& m)
         "a"_a, "b"_a, "c"_a);
 
     m.def(
-        "triangle_normal_hessian", &triangle_normal_hessian<double>,
+        "triangle_normal_hessian", &detail::triangle_normal_hessian<double>,
         R"ipc_qu8mg5v7(
         Computes the Hessian of the normal vector of a triangle.
 
@@ -258,7 +260,8 @@ void define_normal(py::module_& m)
         "a"_a, "b"_a, "c"_a);
 
     m.def(
-        "line_line_unnormalized_normal", &line_line_unnormalized_normal<double>,
+        "line_line_unnormalized_normal",
+        &detail::line_line_unnormalized_normal<double>,
         R"ipc_qu8mg5v7(
         Computes the unnormalized normal vector of two lines.
 
@@ -276,7 +279,7 @@ void define_normal(py::module_& m)
         "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
-        "line_line_normal", &line_line_normal<double>,
+        "line_line_normal", &detail::line_line_normal<double>,
         R"ipc_qu8mg5v7(
         Computes the normal vector of two lines.
 
@@ -295,7 +298,7 @@ void define_normal(py::module_& m)
 
     m.def(
         "line_line_unnormalized_normal_jacobian",
-        &line_line_unnormalized_normal_jacobian<double>,
+        &detail::line_line_unnormalized_normal_jacobian<double>,
         R"ipc_qu8mg5v7(
         Computes the Jacobian of the unnormalized normal vector of two lines.
 
@@ -313,7 +316,7 @@ void define_normal(py::module_& m)
         "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
-        "line_line_normal_jacobian", &line_line_normal_jacobian<double>,
+        "line_line_normal_jacobian", &detail::line_line_normal_jacobian<double>,
         R"ipc_qu8mg5v7(
         Computes the Jacobian of the normal vector of two lines.
 
@@ -332,7 +335,7 @@ void define_normal(py::module_& m)
 
     m.def(
         "line_line_unnormalized_normal_hessian",
-        &line_line_unnormalized_normal_hessian<double>,
+        &detail::line_line_unnormalized_normal_hessian<double>,
         R"ipc_qu8mg5v7(
         Computes the Hessian of the unnormalized normal vector of two lines.
 
@@ -350,7 +353,7 @@ void define_normal(py::module_& m)
         "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
-        "line_line_normal_hessian", &line_line_normal_hessian<double>,
+        "line_line_normal_hessian", &detail::line_line_normal_hessian<double>,
         R"ipc_qu8mg5v7(
         Computes the Hessian of the normal vector of two lines.
 

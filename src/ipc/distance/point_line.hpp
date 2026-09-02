@@ -111,10 +111,11 @@ namespace detail {
 /// @param e1 The second vertex of the edge defining the line.
 /// @return The distance between the point and line.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto
-point_line_distance(const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
+inline auto point_line_distance(
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
 
     if constexpr (dim_v<DerivedP> == 2) {
@@ -137,9 +138,10 @@ point_line_distance(const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
 /// @return The gradient of the distance wrt p, e0, and e1.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_distance_gradient(
-    const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
     if constexpr (dim_v<DerivedP> == 2) {
         return detail::point_line_distance_gradient<T, 2>(p, e0, e1);
@@ -169,9 +171,10 @@ inline auto point_line_distance_gradient(
 /// @return The hessian of the distance wrt p, e0, and e1.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_line_distance_hessian(
-    const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
     if constexpr (dim_v<DerivedP> == 2) {
         return detail::point_line_distance_hessian<T, 2>(p, e0, e1);

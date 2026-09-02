@@ -25,7 +25,7 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1,
-        PointEdgeDistanceType dtype)
+        PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
     {
         static_assert(dim == 2 || dim == 3, "point-edge is only 2D or 3D");
 
@@ -66,7 +66,7 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1,
-        PointEdgeDistanceType dtype)
+        PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
     {
         static_assert(dim == 2 || dim == 3, "point-edge is only 2D or 3D");
 
@@ -118,7 +118,7 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1,
-        PointEdgeDistanceType dtype);
+        PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO);
 } // namespace detail
 
 /// @brief Compute the distance between a point and edge in 2D or 3D.
@@ -130,12 +130,11 @@ namespace detail {
 /// @return The distance between the point and edge.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_edge_distance(
-    const DerivedP& p,
-    const DerivedE0& e0,
-    const DerivedE1& e1,
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1,
     PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
 
     if constexpr (dim_v<DerivedP> == 2) {
@@ -159,12 +158,11 @@ inline auto point_edge_distance(
 /// @return The gradient of the distance wrt p, e0, and e1.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_edge_distance_gradient(
-    const DerivedP& p,
-    const DerivedE0& e0,
-    const DerivedE1& e1,
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1,
     PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
     if constexpr (dim_v<DerivedP> == 2) {
         return detail::point_edge_distance_gradient<T, 2>(p, e0, e1, dtype);
@@ -189,12 +187,11 @@ inline auto point_edge_distance_gradient(
 /// @return The hessian of the distance wrt p, e0, and e1.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_edge_distance_hessian(
-    const DerivedP& p,
-    const DerivedE0& e0,
-    const DerivedE1& e1,
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1,
     PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
     if constexpr (dim_v<DerivedP> == 2) {
         return detail::point_edge_distance_hessian<T, 2>(p, e0, e1, dtype);

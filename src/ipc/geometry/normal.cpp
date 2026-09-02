@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-namespace ipc {
+namespace ipc::detail {
 
 // --- point-line normal functions -------------------------------------------
 
@@ -400,4 +400,4 @@ template Eigen::Matrix<float, 36, 12> line_line_normal_hessian<float>(Eigen::Con
 template Eigen::Matrix<double, 36, 12> line_line_normal_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
 // clang-format on
 
-} // namespace ipc
+} // namespace ipc::detail

@@ -9,8 +9,10 @@ Eigen::Matrix<T, 6, 6> point_line_signed_distance_hessian(
     Eigen::ConstRef<Eigen::Vector2<T>> e1)
 {
     // Precompute normal's Jacobian and Hessian
-    const Eigen::Matrix<T, 2, 6> jac_n = point_line_normal_jacobian(p, e0, e1);
-    const Eigen::Matrix<T, 12, 6> hess_n = point_line_normal_hessian(p, e0, e1);
+    const Eigen::Matrix<T, 2, 6> jac_n =
+        point_line_normal_jacobian<T>(p, e0, e1);
+    const Eigen::Matrix<T, 12, 6> hess_n =
+        point_line_normal_hessian<T>(p, e0, e1);
     // Vector from e0 to p
     const Eigen::Vector2<T> v = p - e0;
 

@@ -204,9 +204,10 @@ namespace detail {
 /// @param p1 Second point
 /// @return A 3x2 matrix whose columns are the basis vectors.
 template <typename DerivedP0, typename DerivedP1>
-inline auto point_point_tangent_basis(const DerivedP0& p0, const DerivedP1& p1)
+inline auto point_point_tangent_basis(
+    const Eigen::MatrixBase<DerivedP0>& p0,
+    const Eigen::MatrixBase<DerivedP1>& p1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP0, DerivedP1);
     using T = typename DerivedP0::Scalar;
     assert(p0.size() == p1.size());
 
@@ -229,10 +230,10 @@ inline auto point_point_tangent_basis(const DerivedP0& p0, const DerivedP1& p1)
 /// @param p1 Second point
 /// @return A (3*2)x6 matrix whose columns are the basis vectors.
 template <typename DerivedP0, typename DerivedP1>
-inline auto
-point_point_tangent_basis_jacobian(const DerivedP0& p0, const DerivedP1& p1)
+inline auto point_point_tangent_basis_jacobian(
+    const Eigen::MatrixBase<DerivedP0>& p0,
+    const Eigen::MatrixBase<DerivedP1>& p1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP0, DerivedP1);
     using T = typename DerivedP0::Scalar;
     assert(p0.size() == p1.size());
 
@@ -260,9 +261,10 @@ point_point_tangent_basis_jacobian(const DerivedP0& p0, const DerivedP1& p1)
 /// @return A 3x2 matrix whose columns are the basis vectors.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_edge_tangent_basis(
-    const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
     assert(p.size() == e0.size() && p.size() == e1.size());
 
@@ -287,9 +289,10 @@ inline auto point_edge_tangent_basis(
 /// @return A (3*2)x9 matrix whose columns are the basis vectors.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 inline auto point_edge_tangent_basis_jacobian(
-    const DerivedP& p, const DerivedE0& e0, const DerivedE1& e1)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedE0, DerivedE1);
     using T = typename DerivedP::Scalar;
     assert(p.size() == e0.size() && p.size() == e1.size());
 
@@ -322,12 +325,11 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_tangent_basis(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1)
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     // NOTE: explicit <T>: the detail overload cannot deduce T from an
     // arbitrary Eigen expression.
@@ -346,12 +348,11 @@ template <
     typename DerivedEB0,
     typename DerivedEB1>
 inline auto edge_edge_tangent_basis_jacobian(
-    const DerivedEA0& ea0,
-    const DerivedEA1& ea1,
-    const DerivedEB0& eb0,
-    const DerivedEB1& eb1)
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedEA0, DerivedEA1, DerivedEB0, DerivedEB1);
     using T = typename DerivedEA0::Scalar;
     return detail::edge_edge_tangent_basis_jacobian<T>(ea0, ea1, eb0, eb1);
 }
@@ -379,12 +380,11 @@ template <
     typename DerivedT1,
     typename DerivedT2>
 inline auto point_triangle_tangent_basis(
-    const DerivedP& p,
-    const DerivedT0& t0,
-    const DerivedT1& t1,
-    const DerivedT2& t2)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedT0>& t0,
+    const Eigen::MatrixBase<DerivedT1>& t1,
+    const Eigen::MatrixBase<DerivedT2>& t2)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedT0, DerivedT1, DerivedT2);
     using T = typename DerivedP::Scalar;
     return detail::point_triangle_tangent_basis<T>(p, t0, t1, t2);
 }
@@ -401,12 +401,11 @@ template <
     typename DerivedT1,
     typename DerivedT2>
 inline auto point_triangle_tangent_basis_jacobian(
-    const DerivedP& p,
-    const DerivedT0& t0,
-    const DerivedT1& t1,
-    const DerivedT2& t2)
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedT0>& t0,
+    const Eigen::MatrixBase<DerivedT1>& t1,
+    const Eigen::MatrixBase<DerivedT2>& t2)
 {
-    IPC_ASSERT_EIGEN_ARGS(DerivedP, DerivedT0, DerivedT1, DerivedT2);
     using T = typename DerivedP::Scalar;
     return detail::point_triangle_tangent_basis_jacobian<T>(p, t0, t1, t2);
 }
