@@ -2186,28 +2186,35 @@ Default dependencies of the <code class="docutils literal notranslate"><span cla
 <td><p>✅</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_FILIB</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>nlohmann/json</p></td>
+<tr class="row-even"><td><p>MeshFEMSparse</p></td>
+<td><p>Block-CSC data structures for fast Hessian assembly (see <a class="desctype reference internal" href="../cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssemblerE" title="ipc::MeshFEMHessianAssembler (C++ class) — HessianAssembler backed by MeshFEMSparse's block-CSC data structures (Mohammadian et al."><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ipc::MeshFEMHessianAssembler</span></code></a>)</p></td>
+<td><p>MIT</p></td>
+<td><p><a class="reference external" href="https://github.com/MeshFEM/MeshFEMSparse">github.com/MeshFEM/MeshFEMSparse</a></p></td>
+<td><p>✅</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_MESHFEM_SPARSE</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>nlohmann/json</p></td>
 <td><p>JSON parsing for profiler and tests</p></td>
 <td><p>MIT</p></td>
 <td><p><a class="reference external" href="https://github.com/nlohmann/json">github.com/nlohmann/json</a></p></td>
 <td><p>⬜</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_PROFILER</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>Tracy</p></td>
+<tr class="row-even"><td><p>Tracy</p></td>
 <td><p>Frame profiler</p></td>
 <td><p>BSD-3-Clause</p></td>
 <td><p><a class="reference external" href="https://github.com/wolfpld/tracy">github.com/wolfpld/tracy</a></p></td>
 <td><p>⬜</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_TRACY</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>rational-cpp</p></td>
+<tr class="row-odd"><td><p>rational-cpp</p></td>
 <td><p>Rational arithmetic used for exact intersection checks (requires <a class="reference external" href="https://gmplib.org">GMP</a> to be installed at a system level)</p></td>
 <td><p>MIT</p></td>
 <td><p><a class="reference external" href="https://github.io/zfergus/rational-cpp">github.io/zfergus/rational-cpp</a></p></td>
 <td><p>⬜</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>Etienne Vouga’s Collision Detection Library</p></td>
+<tr class="row-even"><td><p>Etienne Vouga’s Collision Detection Library</p></td>
 <td><p>Inexact CCD (included for comparison with the original IPC library)</p></td>
 <td><p>???</p></td>
 <td><p><a class="reference external" href="https://github.com/evouga/collisiondetection">github.com/evouga/collisiondetection</a></p></td>
@@ -2217,6 +2224,10 @@ Default dependencies of the <code class="docutils literal notranslate"><span cla
 </tbody>
 </table>
 <p>Some of these libraries are enabled by default, and some are not. You can enable or disable them by passing the appropriate CMake option when you configure the IPC Toolkit build.</p>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">MeshFEMSparse</span></code> (and its transitive dependency <code class="docutils literal notranslate"><span class="pre">MeshFEMCore</span></code>) is downloaded source-only and compiled into a minimal static library (matrix data structures and assembly routines; no sparse direct solvers). When enabled (the default), <a class="reference internal" href="../cpp-api/potentials/Potential.html#_CPPv4NK3ipc9Potential7hessianERK11TCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEK19PSDProjectionMethodKb" title="ipc::Potential::hessian (C++ function) — Compute the hessian of the potential."><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ipc::Potential::hessian()</span></code></a> assembles through the block-CSC backend — several times faster than the triplet-based assembly, with identical results up to floating-point summation order — and a <a class="desctype reference internal" href="../cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssemblerE" title="ipc::MeshFEMHessianAssembler (C++ class) — HessianAssembler backed by MeshFEMSparse's block-CSC data structures (Mohammadian et al."><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ipc::MeshFEMHessianAssembler</span></code></a> held across <a class="reference internal" href="../cpp-api/potentials/Potential.html#_CPPv4NK3ipc9Potential16assemble_hessianERK11TCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEER16HessianAssemblerK19PSDProjectionMethodKb" title="ipc::Potential::assemble_hessian (C++ function) — Assemble the Hessian of the potential using a custom assembler."><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ipc::Potential::assemble_hessian()</span></code></a> calls additionally reuses the sparsity pattern between assemblies. It requires <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT=RowMajor</span></code> (the default; the option is automatically disabled otherwise).</p>
+</div>
 <div class="warning admonition">
 <p class="admonition-title">Warning</p>
 <p><code class="docutils literal notranslate"><span class="pre">filib</span></code> is licensed under <a class="reference external" href="https://github.com/zfergus/filib/blob/main/LICENSE">LGPL-2.1</a> and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynamic linkage requires copying the <code class="docutils literal notranslate"><span class="pre">.so</span></code>/<code class="docutils literal notranslate"><span class="pre">.dylib</span></code>/<code class="docutils literal notranslate"><span class="pre">.dll</span></code> file to the binary directory or system path. To enable this, set the CMake option <code class="docutils literal notranslate"><span class="pre">FILIB_BUILD_SHARED_LIBS</span></code> to <code class="docutils literal notranslate"><span class="pre">ON</span></code> and add this CMake code to copy the shared library object to the binary directory:</p>
@@ -2309,7 +2320,7 @@ Default dependencies of the <code class="docutils literal notranslate"><span cla
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Aug 07, 2026
+    Sep 02, 2026
   </span>
 
     

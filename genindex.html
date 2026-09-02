@@ -2803,10 +2803,10 @@
 </li>
       <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.are_adjacencies_initialized">are_adjacencies_initialized() (ipctk.CollisionMesh method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.are_area_jacobians_initialized">are_area_jacobians_initialized() (ipctk.CollisionMesh method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/utils.html#_CPPv4I0E9ArrayMax2">ArrayMax2 (C++ type)</a>
 </li>
       <li><a href="cpp-api/utils.html#_CPPv410ArrayMax2d">ArrayMax2d (C++ type)</a>
@@ -2835,6 +2835,12 @@
 
       <ul>
         <li><a href="python-api/interval.html#ipctk.filib.Interval.asinh">(ipctk.filib.Interval method)</a>
+</li>
+      </ul></li>
+      <li><a href="python-api/potentials.html#ipctk.NormalPotential.assemble_hessian">assemble_hessian() (ipctk.NormalPotential method)</a>
+
+      <ul>
+        <li><a href="python-api/potentials.html#ipctk.TangentialPotential.assemble_hessian">(ipctk.TangentialPotential method)</a>
 </li>
       </ul></li>
       <li><a href="python-api/interval.html#ipctk.filib.atan">atan() (in module ipctk.filib)</a>
@@ -3729,6 +3735,8 @@
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh16is_orient_vertexEK7index_t">ipc::CollisionMesh::is_orient_vertex (C++ function)</a>
 </li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh20is_selection_dof_mapEv">ipc::CollisionMesh::is_selection_dof_map (C++ function)</a>
+</li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh21is_vertex_on_boundaryEK7index_t">ipc::CollisionMesh::is_vertex_on_boundary (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh13m_codim_edgesE">ipc::CollisionMesh::m_codim_edges (C++ member)</a>
@@ -3762,6 +3770,8 @@
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh17m_is_codim_vertexE">ipc::CollisionMesh::m_is_codim_vertex (C++ member)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh18m_is_orient_vertexE">ipc::CollisionMesh::m_is_orient_vertex (C++ member)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh22m_is_selection_dof_mapE">ipc::CollisionMesh::m_is_selection_dof_map (C++ member)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh23m_is_vertex_on_boundaryE">ipc::CollisionMesh::m_is_vertex_on_boundary (C++ member)</a>
 </li>
@@ -4269,6 +4279,18 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc8HashGrid12vertex_itemsE">ipc::HashGrid::vertex_items (C++ member)</a>
 </li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc16HessianAssemblerE">ipc::HessianAssembler (C++ class)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc16HessianAssembler17add_local_hessianERK12MatrixMax12dRKNSt5arrayI7index_tXL4EEEE">ipc::HessianAssembler::add_local_hessian (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc16HessianAssembler5beginEii6size_tRK13StencilGetter">ipc::HessianAssembler::begin (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc16HessianAssembler3endEv">ipc::HessianAssembler::end (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc16HessianAssembler13StencilGetterE">ipc::HessianAssembler::StencilGetter (C++ type)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc16HessianAssemblerD0Ev">ipc::HessianAssembler::~HessianAssembler (C++ function)</a>
+</li>
       <li><a href="cpp-api/ccd.html#_CPPv4N3ipc25inexact_point_edge_ccd_2DEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEERdKd">ipc::inexact_point_edge_ccd_2D (C++ function)</a>
 </li>
       <li><a href="cpp-api/barrier/index.html#_CPPv4N3ipc25initial_barrier_stiffnessEKdRK7BarrierKdKdN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEERdKdKd">ipc::initial_barrier_stiffness (C++ function)</a>
@@ -4309,8 +4331,6 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH16ConstructionInfo16visitation_countE">ipc::LBVH::ConstructionInfo::visitation_count (C++ member)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH17ConstructionInfosE">ipc::LBVH::ConstructionInfos (C++ type)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4I0EN3ipc4LBVH17detect_candidatesEvRK5NodesRK15RightmostLeavesRKNSt8functionIFb6size_t6size_tEEERNSt6vectorI9CandidateEE">ipc::LBVH::detect_candidates (C++ function)</a>, <a href="cpp-api/broad_phase.html#_CPPv4I0_b_bEN3ipc4LBVH17detect_candidatesEvRK5NodesRK5NodesRK15RightmostLeavesRKNSt8functionIFb6size_t6size_tEEERNSt6vectorI9CandidateEE">[1]</a>
@@ -4371,6 +4391,8 @@
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH17MortonCodeElement11morton_codeE">ipc::LBVH::MortonCodeElement::morton_code (C++ member)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVH18MortonCodeElementsE">ipc::LBVH::MortonCodeElements (C++ type)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4NK3ipc4LBVH4nameEv">ipc::LBVH::name (C++ function)</a>
@@ -4418,6 +4440,118 @@
       <li><a href="cpp-api/interval.html#_CPPv4N3ipc11MatrixMax3IE">ipc::MatrixMax3I (C++ type)</a>
 </li>
       <li><a href="cpp-api/interval.html#_CPPv4N3ipc8MatrixXIE">ipc::MatrixXI (C++ type)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssemblerE">ipc::MeshFEMHessianAssembler (C++ class)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler17add_local_hessianERK12MatrixMax12dRKNSt5arrayI7index_tXL4EEEE">ipc::MeshFEMHessianAssembler::add_local_hessian (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler25assume_unchanged_stencilsEv">ipc::MeshFEMHessianAssembler::assume_unchanged_stencils (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler5beginEii6size_tRK13StencilGetter">ipc::MeshFEMHessianAssembler::begin (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler12block_matrixEv">ipc::MeshFEMHessianAssembler::block_matrix (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler3endEv">ipc::MeshFEMHessianAssembler::end (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler10get_matrixEv">ipc::MeshFEMHessianAssembler::get_matrix (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4I_iEN3ipc23MeshFEMHessianAssembler4ImplE">ipc::MeshFEMHessianAssembler::Impl (C++ struct)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl3addERK12MatrixMax12dRKNSt5arrayI7index_tXL4EEEE">ipc::MeshFEMHessianAssembler::Impl::add (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler4Impl12block_matrixEv">ipc::MeshFEMHessianAssembler::Impl::block_matrix (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl10BlockEntryE">ipc::MeshFEMHessianAssembler::Impl::BlockEntry (C++ struct)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl10BlockEntry3rowE">ipc::MeshFEMHessianAssembler::Impl::BlockEntry::row (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl10BlockEntry3srcE">ipc::MeshFEMHessianAssembler::Impl::BlockEntry::src (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl10BlockEntry10transposedE">ipc::MeshFEMHessianAssembler::Impl::BlockEntry::transposed (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler4Impl21build_eigen_structureEv">ipc::MeshFEMHessianAssembler::Impl::build_eigen_structure (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler4Impl9dimensionEv">ipc::MeshFEMHessianAssembler::Impl::dimension (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler4Impl17fill_eigen_valuesEv">ipc::MeshFEMHessianAssembler::Impl::fill_eigen_values (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl16has_distinct_idsERKNSt5arrayI7index_tXL4EEEE">ipc::MeshFEMHessianAssembler::Impl::has_distinct_ids (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl4ImplEK6size_t">ipc::MeshFEMHessianAssembler::Impl::Impl (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl11m_assemblerE">ipc::MeshFEMHessianAssembler::Impl::m_assembler (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl23m_eigen_structure_validE">ipc::MeshFEMHessianAssembler::Impl::m_eigen_structure_valid (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl3m_HE">ipc::MeshFEMHessianAssembler::Impl::m_H (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl7m_locksE">ipc::MeshFEMHessianAssembler::Impl::m_locks (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl3m_ME">ipc::MeshFEMHessianAssembler::Impl::m_M (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl14m_num_stencilsE">ipc::MeshFEMHessianAssembler::Impl::m_num_stencils (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl15m_sym_col_startE">ipc::MeshFEMHessianAssembler::Impl::m_sym_col_start (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl13m_sym_entriesE">ipc::MeshFEMHessianAssembler::Impl::m_sym_entries (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl6m_varsE">ipc::MeshFEMHessianAssembler::Impl::m_vars (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl1NE">ipc::MeshFEMHessianAssembler::Impl::N (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler4Impl14num_block_varsEv">ipc::MeshFEMHessianAssembler::Impl::num_block_vars (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl7StencilE">ipc::MeshFEMHessianAssembler::Impl::Stencil (C++ type)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl10take_eigenEv">ipc::MeshFEMHessianAssembler::Impl::take_eigen (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler4Impl8to_eigenEv">ipc::MeshFEMHessianAssembler::Impl::to_eigen (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl10to_stencilERKNSt5arrayI7index_tXL4EEEE">ipc::MeshFEMHessianAssembler::Impl::to_stencil (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl14update_patternEK6size_tRK13StencilGetterK6size_tKb">ipc::MeshFEMHessianAssembler::Impl::update_pattern (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler4Impl12VarStructureE">ipc::MeshFEMHessianAssembler::Impl::VarStructure (C++ type)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler8ImplBaseE">ipc::MeshFEMHessianAssembler::ImplBase (C++ struct)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler8ImplBase3addERK12MatrixMax12dRKNSt5arrayI7index_tXL4EEEE">ipc::MeshFEMHessianAssembler::ImplBase::add (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler8ImplBase12block_matrixEv">ipc::MeshFEMHessianAssembler::ImplBase::block_matrix (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler8ImplBase9dimensionEv">ipc::MeshFEMHessianAssembler::ImplBase::dimension (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler8ImplBase14num_block_varsEv">ipc::MeshFEMHessianAssembler::ImplBase::num_block_vars (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler8ImplBase10take_eigenEv">ipc::MeshFEMHessianAssembler::ImplBase::take_eigen (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler8ImplBase8to_eigenEv">ipc::MeshFEMHessianAssembler::ImplBase::to_eigen (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler8ImplBase14update_patternE6size_tRK13StencilGetter6size_tb">ipc::MeshFEMHessianAssembler::ImplBase::update_pattern (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler8ImplBaseD0Ev">ipc::MeshFEMHessianAssembler::ImplBase::~ImplBase (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler27m_assume_unchanged_stencilsE">ipc::MeshFEMHessianAssembler::m_assume_unchanged_stencils (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler6m_implE">ipc::MeshFEMHessianAssembler::m_impl (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler16m_reused_patternE">ipc::MeshFEMHessianAssembler::m_reused_pattern (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler23m_stale_block_toleranceE">ipc::MeshFEMHessianAssembler::m_stale_block_tolerance (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler23MeshFEMHessianAssemblerEv">ipc::MeshFEMHessianAssembler::MeshFEMHessianAssembler (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler14reused_patternEv">ipc::MeshFEMHessianAssembler::reused_pattern (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler29set_assume_unchanged_stencilsEKb">ipc::MeshFEMHessianAssembler::set_assume_unchanged_stencils (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler25set_stale_block_toleranceEK6size_t">ipc::MeshFEMHessianAssembler::set_stale_block_tolerance (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4NK3ipc23MeshFEMHessianAssembler21stale_block_toleranceEv">ipc::MeshFEMHessianAssembler::stale_block_tolerance (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssembler11take_matrixEv">ipc::MeshFEMHessianAssembler::take_matrix (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssemblerD0Ev">ipc::MeshFEMHessianAssembler::~MeshFEMHessianAssembler (C++ function)</a>
 </li>
       <li><a href="cpp-api/ccd.html#_CPPv4N3ipc14NarrowPhaseCCDE">ipc::NarrowPhaseCCD (C++ class)</a>
 </li>
@@ -4743,9 +4877,11 @@
 </li>
       <li><a href="cpp-api/potentials/Potential.html#_CPPv4I0EN3ipc9PotentialE">ipc::Potential (C++ class)</a>
 </li>
-      <li><a href="cpp-api/potentials/Potential.html#_CPPv4NK3ipc9Potential8gradientERK10TCollisionN5Eigen8ConstRefI11VectorMaxNdEE">ipc::Potential::gradient (C++ function)</a>, <a href="cpp-api/potentials/Potential.html#_CPPv4NK3ipc9Potential8gradientERK11TCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE">[1]</a>
+      <li><a href="cpp-api/potentials/Potential.html#_CPPv4NK3ipc9Potential16assemble_hessianERK11TCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEER16HessianAssemblerK19PSDProjectionMethodKb">ipc::Potential::assemble_hessian (C++ function)</a>
 </li>
-      <li><a href="cpp-api/potentials/Potential.html#_CPPv4NK3ipc9Potential7hessianERK10TCollisionN5Eigen8ConstRefI11VectorMaxNdEEK19PSDProjectionMethod">ipc::Potential::hessian (C++ function)</a>, <a href="cpp-api/potentials/Potential.html#_CPPv4NK3ipc9Potential7hessianERK11TCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEK19PSDProjectionMethod">[1]</a>
+      <li><a href="cpp-api/potentials/Potential.html#_CPPv4NK3ipc9Potential8gradientERK10TCollisionN5Eigen8ConstRefI11VectorMaxNdEE">ipc::Potential::gradient (C++ function)</a>, <a href="cpp-api/potentials/Potential.html#_CPPv4NK3ipc9Potential8gradientERK11TCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKb">[1]</a>
+</li>
+      <li><a href="cpp-api/potentials/Potential.html#_CPPv4NK3ipc9Potential7hessianERK10TCollisionN5Eigen8ConstRefI11VectorMaxNdEEK19PSDProjectionMethod">ipc::Potential::hessian (C++ function)</a>, <a href="cpp-api/potentials/Potential.html#_CPPv4NK3ipc9Potential7hessianERK11TCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEK19PSDProjectionMethodKb">[1]</a>
 </li>
       <li><a href="cpp-api/potentials/Potential.html#_CPPv4N3ipc9Potential11MatrixMaxNdE">ipc::Potential::MatrixMaxNd (C++ type)</a>
 </li>
@@ -5135,6 +5271,24 @@
 </li>
       <li><a href="cpp-api/ccd.html#_CPPv4N3ipc17TightInclusionCCD9toleranceE">ipc::TightInclusionCCD::tolerance (C++ member)</a>
 </li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23TripletHessianAssemblerE">ipc::TripletHessianAssembler (C++ class)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23TripletHessianAssembler17add_local_hessianERK12MatrixMax12dRKNSt5arrayI7index_tXL4EEEE">ipc::TripletHessianAssembler::add_local_hessian (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23TripletHessianAssembler5beginEii6size_tRK13StencilGetter">ipc::TripletHessianAssembler::begin (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23TripletHessianAssembler3endEv">ipc::TripletHessianAssembler::end (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23TripletHessianAssembler10get_matrixEv">ipc::TripletHessianAssembler::get_matrix (C++ function)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23TripletHessianAssembler5m_dimE">ipc::TripletHessianAssembler::m_dim (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23TripletHessianAssembler6m_ndofE">ipc::TripletHessianAssembler::m_ndof (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23TripletHessianAssembler9m_storageE">ipc::TripletHessianAssembler::m_storage (C++ member)</a>
+</li>
+      <li><a href="cpp-api/utils.html#_CPPv4N3ipc23TripletHessianAssembler23TripletHessianAssemblerEv">ipc::TripletHessianAssembler::TripletHessianAssembler (C++ function)</a>
+</li>
       <li><a href="cpp-api/barrier/TwoStageBarrier.html#_CPPv4N3ipc15TwoStageBarrierE">ipc::TwoStageBarrier (C++ class)</a>
 </li>
       <li><a href="cpp-api/barrier/TwoStageBarrier.html#_CPPv4NK3ipc15TwoStageBarrier16first_derivativeEKdKd">ipc::TwoStageBarrier::first_derivative (C++ function)</a>
@@ -5237,6 +5391,8 @@
       <li><a href="python-api/normal_collisions.html#ipctk.NormalCollision.is_mollified">is_mollified() (ipctk.NormalCollision method)</a>
 </li>
       <li><a href="python-api/normal_collisions.html#ipctk.NormalCollisions.is_plane_vertex">is_plane_vertex() (ipctk.NormalCollisions method)</a>
+</li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.is_selection_dof_map">is_selection_dof_map (ipctk.CollisionMesh property)</a>
 </li>
       <li><a href="python-api/ccd.html#ipctk.is_step_collision_free">is_step_collision_free() (in module ipctk)</a>
 

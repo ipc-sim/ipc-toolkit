@@ -946,6 +946,16 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#reusing-the-hessian-assembler" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/simulation.rst#reusing-the-hessian-assembler (reference label)"><span>Reusing the Hessian Assembler</span></span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2119,6 +2129,16 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#reusing-the-hessian-assembler" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/tutorials/simulation.rst#reusing-the-hessian-assembler (reference label)"><span>Reusing the Hessian Assembler</span></span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2176,9 +2196,9 @@ Python</label></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;bunny.msh&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"bunny.msh"</span><span class="p">)</span>
 <span class="n">full_rest_positions</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">points</span>
-<span class="n">tets</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;tetra&quot;</span><span class="p">]</span>
+<span class="n">tets</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">"tetra"</span><span class="p">]</span>
 
 <span class="n">faces</span> <span class="o">=</span> <span class="n">igl</span><span class="o">.</span><span class="n">boundary_facets</span><span class="p">(</span><span class="n">tets</span><span class="p">)</span>  <span class="c1"># pip install libigl</span>
 <span class="n">edges</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">faces</span><span class="p">)</span>         <span class="c1"># same as igl.edges</span>
@@ -2283,12 +2303,44 @@ Python</label></div>
 </div>
 </div>
 </div>
-</div><h3 id="codimensional-vertices">Codimensional Vertices<a class="headerlink" href="#codimensional-vertices" title="Link to this heading">¶</a></h3>
-<p>In some cases, the collision mesh vertices are not the same as the surface vertices of the volumetric mesh vertices. One such case is when simulating codimensional vertices in conjunction with shell or volumetric meshes. In this case, simply calling <code class="docutils literal notranslate"><span class="pre">build_from_full_mesh</span></code> will not work as it will ignore the vertices that are not connected to any boundary edge. Instead, you can build a vector of booleans that indicate which vertices are on the surface and pass it to the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> constructor.</p>
+</div><p>If only the full DOF derivatives are required, the optional <code class="docutils literal notranslate"><span class="pre">in_full_dof</span></code> parameter requests them directly rather than mapping after the fact. The stencil indices are remapped during assembly, so the gradient is scattered into full DOF as it is accumulated and the Hessian avoids the two sparse matrix products performed by <code class="docutils literal notranslate"><span class="pre">to_full_dof</span></code>:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="4:2">
 <input checked type="radio" id="__tabbed_4_1" name="__tabbed_4"><input type="radio" id="__tabbed_4_2" name="__tabbed_4"><div class="tabbed-labels docutils">
 <label class="tabbed-label" for="__tabbed_4_1">
 C++</label><label class="tabbed-label" for="__tabbed_4_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">grad_full</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">B</span><span class="p">.</span><span class="n">gradient</span><span class="p">(</span>
+<span class="w">    </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="cm">/*in_full_dof=*/</span><span class="nb">true</span><span class="p">);</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">hess_full</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">B</span><span class="p">.</span><span class="n">hessian</span><span class="p">(</span>
+<span class="w">    </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ipc</span><span class="o">::</span><span class="n">PSDProjectionMethod</span><span class="o">::</span><span class="n">NONE</span><span class="p">,</span><span class="w"> </span><span class="cm">/*in_full_dof=*/</span><span class="nb">true</span><span class="p">);</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">grad_full</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span>
+    <span class="n">collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">in_full_dof</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">hess_full</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span>
+    <span class="n">collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">in_full_dof</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><p>The results agree with <code class="docutils literal notranslate"><span class="pre">collision_mesh.to_full_dof(...)</span></code> up to the order in which the local contributions are summed.</p>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>Remapping the indices is only valid when the map from collision to full DOF is a pure selection, which holds for any collision mesh constructed without a displacement map. Use <code class="docutils literal notranslate"><span class="pre">collision_mesh.is_selection_dof_map()</span></code> to query this. When a displacement map is present, <code class="docutils literal notranslate"><span class="pre">in_full_dof</span></code> still returns the correct result, but it does so by applying <code class="docutils literal notranslate"><span class="pre">to_full_dof</span></code> internally and therefore offers no advantage.</p>
+</div>
+<h3 id="codimensional-vertices">Codimensional Vertices<a class="headerlink" href="#codimensional-vertices" title="Link to this heading">¶</a></h3>
+<p>In some cases, the collision mesh vertices are not the same as the surface vertices of the volumetric mesh vertices. One such case is when simulating codimensional vertices in conjunction with shell or volumetric meshes. In this case, simply calling <code class="docutils literal notranslate"><span class="pre">build_from_full_mesh</span></code> will not work as it will ignore the vertices that are not connected to any boundary edge. Instead, you can build a vector of booleans that indicate which vertices are on the surface and pass it to the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> constructor.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2">
+<input checked type="radio" id="__tabbed_5_1" name="__tabbed_5"><input type="radio" id="__tabbed_5_2" name="__tabbed_5"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_5_1">
+C++</label><label class="tabbed-label" for="__tabbed_5_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -2332,10 +2384,10 @@ Python</label></div>
 </div>
 </div><h3 id="nonlinear-bases-and-curved-meshes">Nonlinear Bases and Curved Meshes<a class="headerlink" href="#nonlinear-bases-and-curved-meshes" title="Link to this heading">¶</a></h3>
 <p>While IPC cannot directly handle nonlinear finite element bases and/or curved meshes, <span class="bibtex-citation" id="id2">Ferguson <em>et al.</em> [<a class="reference internal" href="references.html#id7" title="Zachary Ferguson, Pranav Jain, Denis Zorin, Teseo Schneider, and Daniele Panozzo. High-order incremental potential contact for elastodynamic simulation on curved meshes. In ACM SIGGRAPH 2023 Conference Proceedings, SIGGRAPH '23. New York, NY, USA, 2023. Association for Computing Machinery. https://zferg.us/research/high-order-ipc/.">2023</a>]</span> show that displacements and forces can be transferred between a finite element mesh and a collision proxy through the use of a linear map. Given this linear map as a matrix, we can use the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> class to map between the full and surface DOF.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="5:2">
-<input checked type="radio" id="__tabbed_5_1" name="__tabbed_5"><input type="radio" id="__tabbed_5_2" name="__tabbed_5"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_5_1">
-C++</label><label class="tabbed-label" for="__tabbed_5_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2">
+<input checked type="radio" id="__tabbed_6_1" name="__tabbed_6"><input type="radio" id="__tabbed_6_2" name="__tabbed_6"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_6_1">
+C++</label><label class="tabbed-label" for="__tabbed_6_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -2348,7 +2400,7 @@ Python</label></div>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">proxy_rest_positions</span><span class="p">;</span>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="w"> </span><span class="n">proxy_edges</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_faces</span><span class="p">;</span>
 <span class="c1">// Load the proxy mesh from a file</span>
-<span class="n">igl</span><span class="o">::</span><span class="n">read_triangle_mesh</span><span class="p">(</span><span class="s">&quot;proxy.ply&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_faces</span><span class="p">);</span>
+<span class="n">igl</span><span class="o">::</span><span class="n">read_triangle_mesh</span><span class="p">(</span><span class="s">"proxy.ply"</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_faces</span><span class="p">);</span>
 <span class="n">igl</span><span class="o">::</span><span class="n">edges</span><span class="p">(</span><span class="n">proxy_faces</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_edges</span><span class="p">);</span>
 <span class="c1">// Or build it from the volumetric mesh</span>
 
@@ -2362,15 +2414,15 @@ Python</label></div>
 </div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># Finite element mesh</span>
-<span class="n">fe_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;mesh.msh&quot;</span><span class="p">)</span>
+<span class="n">fe_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"mesh.msh"</span><span class="p">)</span>
 <span class="n">fe_rest_positions</span> <span class="o">=</span> <span class="n">fe_mesh</span><span class="o">.</span><span class="n">points</span>
-<span class="n">tets</span> <span class="o">=</span> <span class="n">fe_mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;tetra&quot;</span><span class="p">]</span>
+<span class="n">tets</span> <span class="o">=</span> <span class="n">fe_mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">"tetra"</span><span class="p">]</span>
 
 <span class="c1"># Collision proxy mesh</span>
 <span class="c1"># Load the proxy mesh from a file</span>
-<span class="n">proxy_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;proxy.ply&quot;</span><span class="p">)</span>
+<span class="n">proxy_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"proxy.ply"</span><span class="p">)</span>
 <span class="n">proxy_rest_positions</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">points</span>
-<span class="n">proxy_faces</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;triangle&quot;</span><span class="p">]</span>
+<span class="n">proxy_faces</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">"triangle"</span><span class="p">]</span>
 <span class="n">proxy_edges</span> <span class="o">=</span> <span class="n">igl</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">proxy_faces</span><span class="p">)</span>
 <span class="c1"># or build it from the volumetric mesh ...</span>
 
@@ -2391,10 +2443,10 @@ Python</label></div>
 <h2 id="positive-semi-definite-projection">Positive Semi-Definite Projection<a class="headerlink" href="#positive-semi-definite-projection" title="Link to this heading">¶</a></h2>
 <p>As described by <span class="bibtex-citation" id="id3">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>, the Hessian of the potentials can be indefinite. This is problematic when using the Hessian in a Newton step <span class="bibtex-citation" id="id4">[<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">Li <em>et al.</em>, 2020</a>]</span>.
 To remedy this, we can project the Hessian onto the positive semidefinite (PSD) cone. To do this set the optional parameter <code class="docutils literal notranslate"><span class="pre">project_hessian_to_psd</span></code> in <code class="docutils literal notranslate"><span class="pre">Potential::hessian</span></code> to one of the following.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="6:2">
-<input checked type="radio" id="__tabbed_6_1" name="__tabbed_6"><input type="radio" id="__tabbed_6_2" name="__tabbed_6"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_6_1">
-C++</label><label class="tabbed-label" for="__tabbed_6_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2">
+<input checked type="radio" id="__tabbed_7_1" name="__tabbed_7"><input type="radio" id="__tabbed_7_2" name="__tabbed_7"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_7_1">
+C++</label><label class="tabbed-label" for="__tabbed_7_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -2422,6 +2474,79 @@ Python</label></div>
 </div>
 </div>
 </div>
+</div><h2 id="reusing-the-hessian-assembler">Reusing the Hessian Assembler<a class="headerlink" href="#reusing-the-hessian-assembler" title="Link to this heading">¶</a></h2>
+<p>Each call to <code class="docutils literal notranslate"><span class="pre">Potential::hessian</span></code> constructs a sparse matrix from scratch. Except on small scenes, evaluating the local Hessians accounts for a minority of the cost; the bulk is spent determining where each local contribution belongs in the global matrix. A Newton solve repeats that work every iteration, even though the contact set typically changes little between iterations.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Potential::assemble_hessian</span></code> accepts the assembler as a parameter, allowing a single instance to persist across the solve and retain its sparsity pattern:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2">
+<input checked type="radio" id="__tabbed_8_1" name="__tabbed_8"><input type="radio" id="__tabbed_8_2" name="__tabbed_8"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_8_1">
+C++</label><label class="tabbed-label" for="__tabbed_8_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// A single assembler for the entire solve, rather than one per iteration.</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">MeshFEMHessianAssembler</span><span class="w"> </span><span class="n">assembler</span><span class="p">;</span>
+
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">max_iterations</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ... update vertices and rebuild the collision set ...</span>
+
+<span class="w">    </span><span class="n">B</span><span class="p">.</span><span class="n">assemble_hessian</span><span class="p">(</span>
+<span class="w">        </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">assembler</span><span class="p">,</span>
+<span class="w">        </span><span class="n">ipc</span><span class="o">::</span><span class="n">PSDProjectionMethod</span><span class="o">::</span><span class="n">CLAMP</span><span class="p">,</span><span class="w"> </span><span class="cm">/*in_full_dof=*/</span><span class="nb">true</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Valid until the next assembly; copy it to retain it longer.</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">hess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">assembler</span><span class="p">.</span><span class="n">get_matrix</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// ... solve for the Newton direction, line search, etc. ...</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># A single assembler for the entire solve, rather than one per iteration.</span>
+<span class="n">assembler</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">MeshFEMHessianAssembler</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iterations</span><span class="p">):</span>
+    <span class="c1"># ... update vertices and rebuild the collision set ...</span>
+
+    <span class="n">B</span><span class="o">.</span><span class="n">assemble_hessian</span><span class="p">(</span>
+        <span class="n">collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">assembler</span><span class="p">,</span>
+        <span class="n">ipctk</span><span class="o">.</span><span class="n">PSDProjectionMethod</span><span class="o">.</span><span class="n">CLAMP</span><span class="p">,</span> <span class="n">in_full_dof</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">hess</span> <span class="o">=</span> <span class="n">assembler</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">()</span>
+
+    <span class="c1"># ... solve for the Newton direction, line search, etc. ...</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><p>The first call traverses the collision stencils and builds a block sparsity pattern, allocating one <span class="math notranslate nohighlight">\(d \times d\)</span> block per interacting vertex pair instead of one entry per scalar. Subsequent calls compare the new stencils against the cached pattern. A newly active contact introduces a block the pattern does not contain and therefore forces a rebuild. A separating contact merely leaves behind a block that assembles to zero, which consumes some memory but does not alter the matrix, so the pattern is retained provided no more than <code class="docutils literal notranslate"><span class="pre">stale_block_tolerance</span></code> blocks have become stale.</p>
+<p>The assembled matrix is symmetric and stored with only its upper triangle; <code class="docutils literal notranslate"><span class="pre">get_matrix()</span></code> mirrors it into a full Eigen matrix, reusing the cached structure whenever the pattern is unchanged. Solvers that consume block CSC directly can instead call <code class="docutils literal notranslate"><span class="pre">block_matrix()</span></code> to obtain MeshFEM’s representation and avoid the conversion. Because our header only forward declares that type, such callers must include <code class="docutils literal notranslate"><span class="pre">&lt;MeshFEMSparse/BlockCSCHessian.hh&gt;</span></code> themselves.</p>
+<p>When reassembling without modifying the collision set, for example under a different stiffness or PSD projection, the comparison itself can also be skipped:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="9:2">
+<input checked type="radio" id="__tabbed_9_1" name="__tabbed_9"><input type="radio" id="__tabbed_9_2" name="__tabbed_9"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_9_1">
+C++</label><label class="tabbed-label" for="__tabbed_9_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">assembler</span><span class="p">.</span><span class="n">set_assume_unchanged_stencils</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">assembler</span><span class="o">.</span><span class="n">assume_unchanged_stencils</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><div class="warning admonition">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">assume_unchanged_stencils</span></code> is an unchecked assertion. If the stencils did change while their count remained equal, assembly reads past the end of the pattern. Debug builds verify the assumption; release builds do not.</p>
+</div>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">MeshFEMHessianAssembler</span></code> requires the toolkit to be built with <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_MESHFEM_SPARSE</span></code> (enabled by default, and the backend <code class="docutils literal notranslate"><span class="pre">Potential::hessian</span></code> uses internally). <code class="docutils literal notranslate"><span class="pre">TripletHessianAssembler</span></code> is always available and reproduces the historical behavior of <code class="docutils literal notranslate"><span class="pre">hessian</span></code>, accumulating thread-local triplets and merging them with <code class="docutils literal notranslate"><span class="pre">setFromTriplets</span></code>. It maintains no sparsity pattern, so reusing an instance of it confers no benefit.</p>
 </div>
 
 
@@ -2443,7 +2568,7 @@ Python</label></div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Aug 07, 2026
+    Sep 02, 2026
   </span>
 
     
