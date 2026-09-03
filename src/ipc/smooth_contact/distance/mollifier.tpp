@@ -2,6 +2,8 @@
 
 #include "mollifier.hpp"
 
+#include <ipc/distance/point_line.hpp>
+
 namespace ipc {
 template <typename scalar, int dim>
 scalar point_edge_mollifier(
@@ -73,16 +75,13 @@ scalar point_face_mollifier(
     // whenever this function is nonzero the point-edge distance equals
     // the point-line distance
     return Math<scalar>::mollifier(
-               (PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, e0, e1)
-                - dist_sqr)
+               (point_line_distance(p, e0, e1) - dist_sqr)
                / MOLLIFIER_THRESHOLD_EPS / dist_sqr)
         * Math<scalar>::mollifier(
-               (PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, e2, e1)
-                - dist_sqr)
+               (point_line_distance(p, e2, e1) - dist_sqr)
                / MOLLIFIER_THRESHOLD_EPS / dist_sqr)
         * Math<scalar>::mollifier(
-               (PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, e0, e2)
-                - dist_sqr)
+               (point_line_distance(p, e0, e2) - dist_sqr)
                / MOLLIFIER_THRESHOLD_EPS / dist_sqr);
 }
 } // namespace ipc

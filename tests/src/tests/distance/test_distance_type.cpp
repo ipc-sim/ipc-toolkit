@@ -509,3 +509,60 @@ TEST_CASE(
         CHECK(dist == Catch::Approx(expected).margin(1e-10));
     }
 }
+TEST_CASE(
+    "Degenerate point-triangle distance types",
+    "[distance][distance-type][point-triangle][degenerate]")
+{
+    // Pins the degenerate-triangle behavior of point_triangle_distance_type.
+    // The closed-form solve guards its divisions with `a > 0` / `c > 0`,
+    // reproducing Eigen's LDLT pseudo-inverse handling of zero diagonal
+    // entries; dropping those guards would make every case below produce NaN
+    // parameters and silently fall through to P_T.
+    using PTDT = PointTriangleDistanceType;
+    const Eigen::Vector3d o(0, 0, 0), x(1, 0, 0), y(0, 1, 0);
+
+    struct Case {
+        const char* name;
+        Eigen::Vector3d p, t0, t1, t2;
+        PTDT expected;
+    };
+    const Case cases[] = {
+        { "all vertices coincide", { 0.5, 0.5, 0.5 }, o, o, o, PTDT::P_T },
+        { "edge 0 zero (t0 == t1)", { 0.5, 0.5, 0 }, o, o, y, PTDT::P_E1 },
+        { "edge 1 zero (t1 == t2)", { 0.5, 0.5, 0 }, o, x, x, PTDT::P_E0 },
+        { "edge 2 zero (t2 == t0)", { 0.5, 0.5, 0 }, o, x, o, PTDT::P_E0 },
+        { "collinear, p over edge 0",
+          { 0.5, 1, 0 },
+          o,
+          x,
+          { 2, 0, 0 },
+          PTDT::P_E0 },
+        { "collinear, p past t2", { 3, 1, 0 }, o, x, { 2, 0, 0 }, PTDT::P_T2 },
+        { "collinear, p before t0",
+          { -1, 1, 0 },
+          o,
+          x,
+          { 2, 0, 0 },
+          PTDT::P_T0 },
+        { "p exactly on t0", o, o, x, y, PTDT::P_T0 },
+        { "p exactly at centroid",
+          { 1.0 / 3.0, 1.0 / 3.0, 0 },
+          o,
+          x,
+          y,
+          PTDT::P_T },
+        { "p exactly on edge 0 midpoint", { 0.5, 0, 0 }, o, x, y, PTDT::P_E0 },
+        { "interior at scale 1e-20",
+          Eigen::Vector3d(1.0 / 3.0, 1.0 / 3.0, 0) * 1e-20, o, x * 1e-20,
+          y * 1e-20, PTDT::P_T },
+        { "interior at scale 1e+20",
+          Eigen::Vector3d(1.0 / 3.0, 1.0 / 3.0, 0) * 1e20, o, x * 1e20,
+          y * 1e20, PTDT::P_T },
+    };
+
+    for (const Case& c : cases) {
+        CAPTURE(c.name);
+        CHECK(
+            point_triangle_distance_type(c.p, c.t0, c.t1, c.t2) == c.expected);
+    }
+}

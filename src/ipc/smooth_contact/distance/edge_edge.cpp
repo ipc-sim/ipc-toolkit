@@ -1,5 +1,8 @@
 #include "edge_edge.hpp"
 
+#include <ipc/distance/line_line.hpp>
+#include <ipc/distance/point_line.hpp>
+#include <ipc/distance/point_point.hpp>
 #include <ipc/tangent/closest_point.hpp>
 
 #include <unsupported/Eigen/KroneckerProduct>
@@ -216,70 +219,6 @@ line_line_closest_point_pairs_hessian(
 }
 
 template <typename scalar>
-scalar line_line_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<scalar>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<scalar>> eb1)
-{
-    const Eigen::Vector3<scalar> normal = (ea1 - ea0).cross(eb1 - eb0);
-    const scalar line_to_line = (eb0 - ea0).dot(normal);
-    return line_to_line * line_to_line / normal.squaredNorm();
-}
-
-template <typename scalar>
-scalar edge_edge_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<scalar>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<scalar>> eb1,
-    EdgeEdgeDistanceType dtype)
-{
-    if constexpr (std::is_same<double, scalar>::value) {
-        if (dtype == EdgeEdgeDistanceType::AUTO) {
-            dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
-        }
-    }
-
-    switch (dtype) {
-    case EdgeEdgeDistanceType::EA0_EB0:
-        return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(ea0, eb0);
-
-    case EdgeEdgeDistanceType::EA0_EB1:
-        return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(ea0, eb1);
-
-    case EdgeEdgeDistanceType::EA1_EB0:
-        return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(ea1, eb0);
-
-    case EdgeEdgeDistanceType::EA1_EB1:
-        return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(ea1, eb1);
-
-    case EdgeEdgeDistanceType::EA_EB0:
-        return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(
-            eb0, ea0, ea1);
-
-    case EdgeEdgeDistanceType::EA_EB1:
-        return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(
-            eb1, ea0, ea1);
-
-    case EdgeEdgeDistanceType::EA0_EB:
-        return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(
-            ea0, eb0, eb1);
-
-    case EdgeEdgeDistanceType::EA1_EB:
-        return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(
-            ea1, eb0, eb1);
-
-    case EdgeEdgeDistanceType::EA_EB:
-        return line_line_sqr_distance<scalar>(ea0, ea1, eb0, eb1);
-
-    default:
-        throw std::invalid_argument(
-            "Invalid distance type for edge-edge distance!");
-    }
-}
-
-template <typename scalar>
 Eigen::Vector3<scalar> line_line_closest_point_direction(
     Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
     Eigen::ConstRef<Eigen::Vector3<scalar>> ea1,
@@ -371,6 +310,12 @@ Eigen::Vector3<scalar> edge_edge_closest_point_direction(
     }
 }
 
+/// @brief Computes the position of two closest points on two edges
+/// @param ea0 Vertex 0 of edge 0
+/// @param ea1 Vertex 1 of edge 0
+/// @param eb0 Vertex 0 of edge 1
+/// @param eb1 Vertex 1 of edge 1
+/// @param dtype Edge-edge distance type
 template <typename scalar>
 Eigen::Matrix<scalar, 3, 2> edge_edge_closest_point_pairs(
     Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
@@ -480,49 +425,6 @@ template Eigen::Vector3<ADGrad<13>> edge_edge_closest_point_direction(
     Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> eb1,
     EdgeEdgeDistanceType dtype);
 template Eigen::Vector3<ADHessian<13>> edge_edge_closest_point_direction(
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> eb1,
-    EdgeEdgeDistanceType dtype);
-
-template double edge_edge_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3d> ea0,
-    Eigen::ConstRef<Eigen::Vector3d> ea1,
-    Eigen::ConstRef<Eigen::Vector3d> eb0,
-    Eigen::ConstRef<Eigen::Vector3d> eb1,
-    EdgeEdgeDistanceType dtype);
-template ADGrad<9> edge_edge_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<9>>> eb1,
-    EdgeEdgeDistanceType dtype);
-template ADHessian<9> edge_edge_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<9>>> eb1,
-    EdgeEdgeDistanceType dtype);
-template ADGrad<12> edge_edge_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> eb1,
-    EdgeEdgeDistanceType dtype);
-template ADHessian<12> edge_edge_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> eb1,
-    EdgeEdgeDistanceType dtype);
-template ADGrad<13> edge_edge_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<ADGrad<13>>> eb1,
-    EdgeEdgeDistanceType dtype);
-template ADHessian<13> edge_edge_sqr_distance(
     Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> ea0,
     Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> ea1,
     Eigen::ConstRef<Eigen::Vector3<ADHessian<13>>> eb0,

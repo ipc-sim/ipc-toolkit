@@ -18,26 +18,27 @@
 using namespace ipc;
 
 /// @warning This implementation will not work with dmin > 0
-class PhysicalBarrier : public NormalizedClampedLogBarrier {
+template <typename T = double>
+class PhysicalBarrier : public NormalizedClampedLogBarrier<T> {
 public:
     PhysicalBarrier(const bool _use_dist_sqr) : use_dist_sqr(_use_dist_sqr) { }
 
     double operator()(const double d, const double dhat) const override
     {
         return (use_dist_sqr ? sqrt(dhat) : dhat)
-            * NormalizedClampedLogBarrier::operator()(d, dhat);
+            * NormalizedClampedLogBarrier<T>::operator()(d, dhat);
     }
 
     double first_derivative(const double d, const double dhat) const override
     {
         return (use_dist_sqr ? sqrt(dhat) : dhat)
-            * NormalizedClampedLogBarrier::first_derivative(d, dhat);
+            * NormalizedClampedLogBarrier<T>::first_derivative(d, dhat);
     }
 
     double second_derivative(const double d, const double dhat) const override
     {
         return (use_dist_sqr ? sqrt(dhat) : dhat)
-            * NormalizedClampedLogBarrier::second_derivative(d, dhat);
+            * NormalizedClampedLogBarrier<T>::second_derivative(d, dhat);
     }
 
 private:
@@ -411,22 +412,25 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     std::unique_ptr<ipc::Barrier> barrier;
     SECTION("Original")
     {
-        barrier = std::make_unique<ipc::ClampedLogBarrier>();
+        barrier = std::make_unique<ipc::ClampedLogBarrier<>>();
     }
     SECTION("Normalized")
     {
-        barrier = std::make_unique<ipc::NormalizedClampedLogBarrier>();
+        barrier = std::make_unique<ipc::NormalizedClampedLogBarrier<>>();
     }
     SECTION("Physical")
     {
-        barrier = std::make_unique<PhysicalBarrier>(use_dist_sqr);
+        barrier = std::make_unique<PhysicalBarrier<>>(use_dist_sqr);
     }
     SECTION("ClampedLogSq")
     {
-        barrier = std::make_unique<ipc::ClampedLogSqBarrier>();
+        barrier = std::make_unique<ipc::ClampedLogSqBarrier<>>();
     }
-    SECTION("Cubic") { barrier = std::make_unique<ipc::CubicBarrier>(); }
-    SECTION("TwoStage") { barrier = std::make_unique<ipc::TwoStageBarrier>(); }
+    SECTION("Cubic") { barrier = std::make_unique<ipc::CubicBarrier<>>(); }
+    SECTION("TwoStage")
+    {
+        barrier = std::make_unique<ipc::TwoStageBarrier<>>();
+    }
 
     if (use_dist_sqr) {
         d_vec *= d;

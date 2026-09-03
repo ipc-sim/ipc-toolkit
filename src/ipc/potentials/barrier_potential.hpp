@@ -138,7 +138,8 @@ protected:
         const double distance_squared, const double dmin = 0) const override;
 
     /// @brief The barrier function used to compute the potential.
-    std::shared_ptr<Barrier> m_barrier = std::make_shared<ClampedLogBarrier>();
+    std::shared_ptr<Barrier> m_barrier =
+        std::make_shared<ClampedLogBarrier<>>();
 
     /// @brief The activation distance of the barrier.
     double m_dhat;

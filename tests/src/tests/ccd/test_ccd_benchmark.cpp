@@ -7,7 +7,7 @@
 #include <ipc/ccd/additive_ccd.hpp>
 #include <ipc/ccd/inexact_ccd.hpp>
 
-#include <fmt/format.h>
+#include <spdlog/spdlog.h>
 #include <igl/Timer.h>
 #include <ccd_io/read_ccd_queries.hpp>
 

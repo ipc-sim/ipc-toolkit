@@ -7,7 +7,11 @@ using namespace ipc;
 void define_point_line_distance(py::module_& m)
 {
     m.def(
-        "point_line_distance", &point_line_distance,
+        "point_line_distance",
+        [](Eigen::ConstRef<VectorMax3d> p, Eigen::ConstRef<VectorMax3d> e0,
+           Eigen::ConstRef<VectorMax3d> e1) {
+            return point_line_distance(p, e0, e1);
+        },
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and line in 2D or 3D.
 
@@ -25,7 +29,11 @@ void define_point_line_distance(py::module_& m)
         "p"_a, "e0"_a, "e1"_a);
 
     m.def(
-        "point_line_distance_gradient", &point_line_distance_gradient,
+        "point_line_distance_gradient",
+        [](Eigen::ConstRef<VectorMax3d> p, Eigen::ConstRef<VectorMax3d> e0,
+           Eigen::ConstRef<VectorMax3d> e1) {
+            return point_line_distance_gradient(p, e0, e1);
+        },
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and line.
 
@@ -43,7 +51,11 @@ void define_point_line_distance(py::module_& m)
         "p"_a, "e0"_a, "e1"_a);
 
     m.def(
-        "point_line_distance_hessian", &point_line_distance_hessian,
+        "point_line_distance_hessian",
+        [](Eigen::ConstRef<VectorMax3d> p, Eigen::ConstRef<VectorMax3d> e0,
+           Eigen::ConstRef<VectorMax3d> e1) {
+            return point_line_distance_hessian(p, e0, e1);
+        },
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and line.
 

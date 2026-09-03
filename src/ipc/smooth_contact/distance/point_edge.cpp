@@ -5,28 +5,6 @@
 
 namespace ipc {
 template <typename scalar, int dim>
-scalar PointEdgeDistance<scalar, dim>::point_point_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector<scalar, dim>> a,
-    Eigen::ConstRef<Eigen::Vector<scalar, dim>> b)
-{
-    return (a - b).squaredNorm();
-}
-
-template <typename scalar, int dim>
-scalar PointEdgeDistance<scalar, dim>::point_line_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector<scalar, dim>> p,
-    Eigen::ConstRef<Eigen::Vector<scalar, dim>> e0,
-    Eigen::ConstRef<Eigen::Vector<scalar, dim>> e1)
-{
-    if constexpr (dim == 2) {
-        return Math<scalar>::sqr(Math<scalar>::cross2(e0 - p, e1 - p))
-            / (e1 - e0).squaredNorm();
-    } else {
-        return (e0 - p).cross(e1 - p).squaredNorm() / (e1 - e0).squaredNorm();
-    }
-}
-
-template <typename scalar, int dim>
 scalar PointEdgeDistance<scalar, dim>::point_edge_sqr_distance(
     Eigen::ConstRef<Eigen::Vector<scalar, dim>> p,
     Eigen::ConstRef<Eigen::Vector<scalar, dim>> e0,
@@ -35,11 +13,11 @@ scalar PointEdgeDistance<scalar, dim>::point_edge_sqr_distance(
 {
     switch (dtype) {
     case PointEdgeDistanceType::P_E:
-        return point_line_sqr_distance(p, e0, e1);
+        return point_line_distance(p, e0, e1);
     case PointEdgeDistanceType::P_E0:
-        return point_point_sqr_distance(p, e0);
+        return point_point_distance(p, e0);
     case PointEdgeDistanceType::P_E1:
-        return point_point_sqr_distance(p, e1);
+        return point_point_distance(p, e1);
     case PointEdgeDistanceType::AUTO:
     default:
         const Eigen::Vector<scalar, dim> t = e1 - e0;

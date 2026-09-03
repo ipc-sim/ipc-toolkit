@@ -5,21 +5,6 @@
 namespace ipc {
 
 template <typename T>
-T point_plane_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3<T>> p,
-    Eigen::ConstRef<Eigen::Vector3<T>> f0,
-    Eigen::ConstRef<Eigen::Vector3<T>> f1,
-    Eigen::ConstRef<Eigen::Vector3<T>> f2);
-
-template <typename T>
-T point_triangle_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3<T>> p,
-    Eigen::ConstRef<Eigen::Vector3<T>> t0,
-    Eigen::ConstRef<Eigen::Vector3<T>> t1,
-    Eigen::ConstRef<Eigen::Vector3<T>> t2,
-    PointTriangleDistanceType dtype);
-
-template <typename T>
 Eigen::Vector3<T> point_plane_closest_point_direction(
     Eigen::ConstRef<Eigen::Vector3<T>> p,
     Eigen::ConstRef<Eigen::Vector3<T>> f0,

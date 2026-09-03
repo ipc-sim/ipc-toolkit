@@ -5,21 +5,6 @@
 namespace ipc {
 
 template <typename T>
-T line_line_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb1);
-
-template <typename T>
-T edge_edge_sqr_distance(
-    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
-    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
-    Eigen::ConstRef<Eigen::Vector3<T>> eb1,
-    EdgeEdgeDistanceType dtype);
-
-template <typename T>
 Eigen::Vector3<T> line_line_closest_point_direction(
     Eigen::ConstRef<Eigen::Vector3<T>> ea0,
     Eigen::ConstRef<Eigen::Vector3<T>> ea1,
