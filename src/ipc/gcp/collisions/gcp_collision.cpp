@@ -5,24 +5,24 @@
 namespace ipc {
 
 // clang-format off
-template <> CollisionType GcpCollisionTemplate<Point2, Point2>::type() const { return CollisionType::VERTEX_VERTEX; }
-template <> CollisionType GcpCollisionTemplate<Point3, Point3>::type() const { return CollisionType::VERTEX_VERTEX; }
-template <> CollisionType GcpCollisionTemplate<Edge2, Point2>::type() const { return CollisionType::EDGE_VERTEX; }
-template <> CollisionType GcpCollisionTemplate<Edge3, Point3>::type() const { return CollisionType::EDGE_VERTEX; }
-template <> CollisionType GcpCollisionTemplate<Face, Point3>::type() const { return CollisionType::FACE_VERTEX; }
-template <> CollisionType GcpCollisionTemplate<Edge3, Edge3>::type() const { return CollisionType::EDGE_EDGE; }
+template <> CollisionType GCPCollisionTemplate<Point2, Point2>::type() const { return CollisionType::VERTEX_VERTEX; }
+template <> CollisionType GCPCollisionTemplate<Point3, Point3>::type() const { return CollisionType::VERTEX_VERTEX; }
+template <> CollisionType GCPCollisionTemplate<Edge2, Point2>::type() const { return CollisionType::EDGE_VERTEX; }
+template <> CollisionType GCPCollisionTemplate<Edge3, Point3>::type() const { return CollisionType::EDGE_VERTEX; }
+template <> CollisionType GCPCollisionTemplate<Face, Point3>::type() const { return CollisionType::FACE_VERTEX; }
+template <> CollisionType GCPCollisionTemplate<Edge3, Edge3>::type() const { return CollisionType::EDGE_EDGE; }
 // clang-format on
 
 // clang-format off
-template <> std::string GcpCollisionTemplate<Point2, Point2>::name() const { return "vert-vert"; }
-template <> std::string GcpCollisionTemplate<Point3, Point3>::name() const { return "vert-vert"; }
-template <> std::string GcpCollisionTemplate<Edge2, Point2>::name() const { return "edge-vert"; }
-template <> std::string GcpCollisionTemplate<Edge3, Point3>::name() const { return "edge-vert"; }
-template <> std::string GcpCollisionTemplate<Face, Point3>::name() const { return "face-vert"; }
-template <> std::string GcpCollisionTemplate<Edge3, Edge3>::name() const { return "edge-edge"; }
+template <> std::string GCPCollisionTemplate<Point2, Point2>::name() const { return "vert-vert"; }
+template <> std::string GCPCollisionTemplate<Point3, Point3>::name() const { return "vert-vert"; }
+template <> std::string GCPCollisionTemplate<Edge2, Point2>::name() const { return "edge-vert"; }
+template <> std::string GCPCollisionTemplate<Edge3, Point3>::name() const { return "edge-vert"; }
+template <> std::string GCPCollisionTemplate<Face, Point3>::name() const { return "face-vert"; }
+template <> std::string GCPCollisionTemplate<Edge3, Edge3>::name() const { return "edge-edge"; }
 // clang-format on
 
-Eigen::VectorXd GcpCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
+Eigen::VectorXd GCPCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
     const int DIM = X.cols();
     Eigen::VectorXd x(num_vertices() * DIM);
@@ -41,7 +41,7 @@ Eigen::VectorXd GcpCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-auto GcpCollisionTemplate<PrimitiveA, PrimitiveB>::get_core_indices() const
+auto GCPCollisionTemplate<PrimitiveA, PrimitiveB>::get_core_indices() const
     -> Eigen::Vector<int, N_CORE_DOFS>
 {
     Eigen::Vector<int, N_CORE_DOFS> core_indices;
@@ -54,15 +54,15 @@ auto GcpCollisionTemplate<PrimitiveA, PrimitiveB>::get_core_indices() const
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-GcpCollisionTemplate<PrimitiveA, PrimitiveB>::GcpCollisionTemplate(
+GCPCollisionTemplate<PrimitiveA, PrimitiveB>::GCPCollisionTemplate(
     index_t _primitive0,
     index_t _primitive1,
-    GcpCollisionTemplate<PrimitiveA, PrimitiveB>::DTYPE dtype,
+    GCPCollisionTemplate<PrimitiveA, PrimitiveB>::DTYPE dtype,
     const CollisionMesh& mesh,
-    const GcpParameters& params,
+    const GCPParameters& params,
     const double _dhat,
     Eigen::ConstRef<Eigen::MatrixXd> V)
-    : GcpCollision(_primitive0, _primitive1, _dhat, mesh)
+    : GCPCollision(_primitive0, _primitive1, _dhat, mesh)
 {
     VectorMax3d d =
         PrimitiveDistance<PrimitiveA, PrimitiveB>::compute_closest_direction(
@@ -103,9 +103,9 @@ GcpCollisionTemplate<PrimitiveA, PrimitiveB>::GcpCollisionTemplate(
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-double GcpCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
+double GCPCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const GcpParameters& params) const
+    const GCPParameters& params) const
 {
     Eigen::Vector<double, N_CORE_POINTS * DIM> x;
     x << positions.head(PrimitiveA::N_CORE_POINTS * DIM),
@@ -142,9 +142,9 @@ double GcpCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-auto GcpCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
+auto GCPCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const GcpParameters& params) const
+    const GCPParameters& params) const
     -> VectorMax<double, ELEMENT_SIZE>
 {
     const auto core_indices = get_core_indices();
@@ -256,9 +256,9 @@ auto GcpCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-auto GcpCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
+auto GCPCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const GcpParameters& params) const
+    const GCPParameters& params) const
     -> MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
 {
     const auto core_indices = get_core_indices();
@@ -470,7 +470,7 @@ auto GcpCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
 // ---- distance ----
 
 template <typename PrimitiveA, typename PrimitiveB>
-double GcpCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
+double GCPCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     VectorMax<double, ELEMENT_SIZE> positions = dof(vertices);
@@ -485,7 +485,7 @@ double GcpCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-auto GcpCollisionTemplate<PrimitiveA, PrimitiveB>::core_vertex_ids() const
+auto GCPCollisionTemplate<PrimitiveA, PrimitiveB>::core_vertex_ids() const
     -> std::array<index_t, N_CORE_DOFS>
 {
     std::array<index_t, N_CORE_DOFS> vids {};
@@ -497,11 +497,11 @@ auto GcpCollisionTemplate<PrimitiveA, PrimitiveB>::core_vertex_ids() const
 }
 
 // Note: Primitive pair order cannot change
-template class GcpCollisionTemplate<Edge2, Point2>;
-template class GcpCollisionTemplate<Point2, Point2>;
+template class GCPCollisionTemplate<Edge2, Point2>;
+template class GCPCollisionTemplate<Point2, Point2>;
 
-template class GcpCollisionTemplate<Edge3, Point3>;
-template class GcpCollisionTemplate<Edge3, Edge3>;
-template class GcpCollisionTemplate<Point3, Point3>;
-template class GcpCollisionTemplate<Face, Point3>;
+template class GCPCollisionTemplate<Edge3, Point3>;
+template class GCPCollisionTemplate<Edge3, Edge3>;
+template class GCPCollisionTemplate<Point3, Point3>;
+template class GCPCollisionTemplate<Face, Point3>;
 } // namespace ipc

@@ -28,16 +28,16 @@ namespace ipc {
 /// approach suffers near shared features, where barrier derivatives blow up
 /// as distance -> 0.
 ///
-/// Value/gradient/Hessian are computed by the same EspCollision::
+/// Value/gradient/Hessian are computed by the same ESPCollision::
 /// operator()/gradient()/hessian() used by the production
-/// EspPotential, just evaluated for a virtual point
+/// ESPPotential, just evaluated for a virtual point
 /// (id == V.rows()) instead of a real mesh vertex, via VertexMatrixView.
 ///
 /// A single fixed params.dhat is used everywhere; AdaptiveSupport
 /// (per-primitive dhat) is not supported.
 ///
 /// @tparam dim Spatial dimension of the mesh, 2 or 3.
-template <int dim> class ArbitraryPointPotential {
+template <int dim> class ArbitraryPointESP {
     static_assert(dim == 2 || dim == 3, "dim must be 2 or 3");
 
 public:
@@ -49,8 +49,8 @@ public:
     using Hessian = Eigen::Matrix<double, dim, dim>;
 
     /// @throws std::runtime_error if mesh.dim() != dim.
-    ArbitraryPointPotential(
-        const CollisionMesh& mesh, EspParameters params);
+    ArbitraryPointESP(
+        const CollisionMesh& mesh, ESPParameters params);
 
     /// @brief Rebuild the underlying broad-phase index. O(n log n). Call
     /// once per vertex configuration, before any operator()/gradient()/
@@ -89,16 +89,16 @@ private:
     /// (id == V.rows()) instead of a real one or an edge quadrature point,
     /// and candidates sourced from point_bvh instead of
     /// Candidates::vv_set/ve_set/vf_set.
-    std::unique_ptr<EspCollisionDict<PointType::VERTEX, dim>>
+    std::unique_ptr<ESPCollisionDict<PointType::VERTEX, dim>>
     build_collisions_at_point(
         Eigen::ConstRef<Eigen::MatrixXd> V, Eigen::ConstRef<Point> q) const;
 
     const CollisionMesh& mesh;
-    EspParameters params;
+    ESPParameters params;
     ArbitraryPointBVH point_bvh;
 };
 
-extern template class ArbitraryPointPotential<2>;
-extern template class ArbitraryPointPotential<3>;
+extern template class ArbitraryPointESP<2>;
+extern template class ArbitraryPointESP<3>;
 
 } // namespace ipc

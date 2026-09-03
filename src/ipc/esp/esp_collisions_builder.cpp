@@ -14,13 +14,13 @@
 
 namespace ipc {
 
-using IntegrationType = EspParameters::IntegrationType;
+using IntegrationType = ESPParameters::IntegrationType;
 
-void EspCollisionsBuilder<2>::build_edge_collisions(
+void ESPCollisionsBuilder<2>::build_edge_collisions(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const Candidates& candidates,
-    const EspParameters& params,
+    const ESPParameters& params,
     size_t start,
     size_t end)
 {
@@ -48,7 +48,7 @@ void EspCollisionsBuilder<2>::build_edge_collisions(
         }
 
         const double dhat = params.dhat;
-        std::vector<std::unique_ptr<EspCollisionDict<PointType::EDGE, 2>>>
+        std::vector<std::unique_ptr<ESPCollisionDict<PointType::EDGE, 2>>>
             qp_dicts;
         qp_dicts.reserve(rule.size());
         bool has_any = false;
@@ -68,10 +68,10 @@ void EspCollisionsBuilder<2>::build_edge_collisions(
     }
 }
 
-void EspCollisionsBuilder<2>::merge(
-    tbb::enumerable_thread_specific<EspCollisionsBuilder<2>>&
+void ESPCollisionsBuilder<2>::merge(
+    tbb::enumerable_thread_specific<ESPCollisionsBuilder<2>>&
         local_storage,
-    EspCollisions& merged_collisions)
+    ESPCollisions& merged_collisions)
 {
     size_t total_pairs = 0;
 
@@ -93,10 +93,10 @@ void EspCollisionsBuilder<2>::merge(
 
 // ============================================================================
 
-std::shared_ptr<EspCollision>
-EspCollisionsBuilder<3>::reduce_point_triangle_collision(
+std::shared_ptr<ESPCollision>
+ESPCollisionsBuilder<3>::reduce_point_triangle_collision(
     const FaceVertexCandidate& candidate,
-    const EspParameters& params,
+    const ESPParameters& params,
     const CollisionMesh& mesh,
     const VertexMatrixView<3>& vertices,
     PointTriangleDistanceType dtype)
@@ -127,45 +127,45 @@ EspCollisionsBuilder<3>::reduce_point_triangle_collision(
 
     switch (dtype) {
     case PointTriangleDistanceType::P_T0:
-        return std::make_shared<EspCollisionTemplate<Vertex3, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
             t0, vi, mesh);
 
     case PointTriangleDistanceType::P_T1:
-        return std::make_shared<EspCollisionTemplate<Vertex3, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
             t1, vi, mesh);
 
     case PointTriangleDistanceType::P_T2:
-        return std::make_shared<EspCollisionTemplate<Vertex3, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
             t2, vi, mesh);
 
     case PointTriangleDistanceType::P_E0:
-        return std::make_shared<EspCollisionTemplate<Edge3P1, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Edge3P1, Vertex3>>(
             e0, vi, mesh);
 
     case PointTriangleDistanceType::P_E1:
-        return std::make_shared<EspCollisionTemplate<Edge3P1, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Edge3P1, Vertex3>>(
             e1, vi, mesh);
 
     case PointTriangleDistanceType::P_E2:
-        return std::make_shared<EspCollisionTemplate<Edge3P1, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Edge3P1, Vertex3>>(
             e2, vi, mesh);
 
     case PointTriangleDistanceType::P_T:
-        return std::make_shared<EspCollisionTemplate<Face3P1, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Face3P1, Vertex3>>(
             fi, vi, mesh);
 
     case PointTriangleDistanceType::AUTO:
     default:
         assert(false);
-        return std::make_shared<EspCollisionTemplate<Face3P1, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Face3P1, Vertex3>>(
             fi, vi, mesh);
     }
 }
 
-std::shared_ptr<EspCollision>
-EspCollisionsBuilder<3>::reduce_point_edge_collision(
+std::shared_ptr<ESPCollision>
+ESPCollisionsBuilder<3>::reduce_point_edge_collision(
     const EdgeVertexCandidate& candidate,
-    const EspParameters& params,
+    const ESPParameters& params,
     const CollisionMesh& mesh,
     const VertexMatrixView<3>& vertices,
     PointEdgeDistanceType dtype)
@@ -189,17 +189,17 @@ EspCollisionsBuilder<3>::reduce_point_edge_collision(
 
     switch (dtype) {
     case PointEdgeDistanceType::P_E0:
-        return std::make_shared<EspCollisionTemplate<Vertex3, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
             t0, vi, mesh);
     case PointEdgeDistanceType::P_E1:
-        return std::make_shared<EspCollisionTemplate<Vertex3, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
             t1, vi, mesh);
     case PointEdgeDistanceType::P_E:
-        return std::make_shared<EspCollisionTemplate<Edge3P1, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Edge3P1, Vertex3>>(
             ei, vi, mesh);
     default:
         assert(false);
-        return std::make_shared<EspCollisionTemplate<Edge3P1, Vertex3>>(
+        return std::make_shared<ESPCollisionTemplate<Edge3P1, Vertex3>>(
             ei, vi, mesh);
     }
 }
@@ -210,7 +210,7 @@ EspCollisionsBuilder<3>::reduce_point_edge_collision(
 QuadratureCollisionsBuilder::QuadratureCollisionsBuilder(
     const CollisionMesh& mesh,
     const Candidates& candidates,
-    const EspParameters& params)
+    const ESPParameters& params)
     : point_potential(
           std::make_shared<PointPotential>(mesh, candidates, params))
 {
@@ -225,20 +225,20 @@ QuadratureCollisionsBuilder::QuadratureCollisionsBuilder(
     vertex_collisions.clear();
     for (const auto& cc : other.vertex_collisions) {
         vertex_collisions.push_back(
-            std::make_unique<EspCollisionDict<PointType::VERTEX>>(*cc));
+            std::make_unique<ESPCollisionDict<PointType::VERTEX>>(*cc));
     }
     edge_edge_collisions.clear();
     for (const auto& cc : other.edge_edge_collisions) {
         edge_edge_collisions.push_back(
-            std::make_unique<EspCollisionDict<PointType::EDGE>>(*cc));
+            std::make_unique<ESPCollisionDict<PointType::EDGE>>(*cc));
     }
     face_collisions.clear();
     for (const auto& [fi, dicts] : other.face_collisions) {
-        std::vector<std::unique_ptr<EspCollisionDict<PointType::FACE>>>
+        std::vector<std::unique_ptr<ESPCollisionDict<PointType::FACE>>>
             copied;
         for (const auto& d : dicts) {
             copied.push_back(
-                std::make_unique<EspCollisionDict<PointType::FACE>>(*d));
+                std::make_unique<ESPCollisionDict<PointType::FACE>>(*d));
         }
         face_collisions.push_back({ fi, std::move(copied) });
     }
@@ -250,20 +250,20 @@ QuadratureCollisionsBuilder::operator=(const QuadratureCollisionsBuilder& other)
     vertex_collisions.clear();
     for (const auto& cc : other.vertex_collisions) {
         vertex_collisions.push_back(
-            std::make_unique<EspCollisionDict<PointType::VERTEX>>(*cc));
+            std::make_unique<ESPCollisionDict<PointType::VERTEX>>(*cc));
     }
     edge_edge_collisions.clear();
     for (const auto& cc : other.edge_edge_collisions) {
         edge_edge_collisions.push_back(
-            std::make_unique<EspCollisionDict<PointType::EDGE>>(*cc));
+            std::make_unique<ESPCollisionDict<PointType::EDGE>>(*cc));
     }
     face_collisions.clear();
     for (const auto& [fi, dicts] : other.face_collisions) {
-        std::vector<std::unique_ptr<EspCollisionDict<PointType::FACE>>>
+        std::vector<std::unique_ptr<ESPCollisionDict<PointType::FACE>>>
             copied;
         for (const auto& d : dicts) {
             copied.push_back(
-                std::make_unique<EspCollisionDict<PointType::FACE>>(*d));
+                std::make_unique<ESPCollisionDict<PointType::FACE>>(*d));
         }
         face_collisions.push_back({ fi, std::move(copied) });
     }
@@ -277,7 +277,7 @@ void QuadratureCollisionsBuilder::build_vertex_collisions(
     const size_t end_i)
 {
     const CollisionMesh& mesh = point_potential->mesh;
-    const EspParameters& params = point_potential->params;
+    const ESPParameters& params = point_potential->params;
     for (size_t i = start_i; i < end_i; i++) {
         const index_t vi = vertex_indices[i];
         if (params.integration_type == IntegrationType::NO_OBST
@@ -322,7 +322,7 @@ void QuadratureCollisionsBuilder::build_face_collisions(
     if (face_quad_rule.empty())
         return;
 
-    const EspParameters& params = point_potential->params;
+    const ESPParameters& params = point_potential->params;
     for (size_t i = start_i; i < end_i; i++) {
         const index_t fi = face_indices[i];
         if (params.integration_type == IntegrationType::NO_OBST
@@ -347,7 +347,7 @@ void QuadratureCollisionsBuilder::build_face_collisions(
                 continue;
         }
 
-        std::vector<std::unique_ptr<EspCollisionDict<PointType::FACE>>>
+        std::vector<std::unique_ptr<ESPCollisionDict<PointType::FACE>>>
             per_qp_dicts;
         per_qp_dicts.reserve(face_quad_rule.size());
         bool any_nonempty = false;
@@ -376,7 +376,7 @@ void QuadratureCollisionsBuilder::build_edge_edge_collisions(
     const size_t start_i,
     const size_t end_i)
 {
-    const EspParameters& params = point_potential->params;
+    const ESPParameters& params = point_potential->params;
     const CollisionMesh& mesh = point_potential->mesh;
 
     // Returns true if edge e (which is an obstacle) has at least one
@@ -434,7 +434,7 @@ void QuadratureCollisionsBuilder::build_edge_edge_collisions(
             continue;
         }
 
-        // EspPotential only ever evaluates dicts whose stored
+        // ESPPotential only ever evaluates dicts whose stored
         // dtype is EA_EB (see the `if (dtype != EA_EB) continue;` guards in
         // esp_potential.cpp). All other edge-edge distance
         // types are captured through vertex_collisions at the relevant
@@ -479,7 +479,7 @@ void QuadratureCollisionsBuilder::build_edge_edge_collisions(
 
 void QuadratureCollisionsBuilder::merge(
     tbb::enumerable_thread_specific<QuadratureCollisionsBuilder>& local_storage,
-    EspCollisions& merged_collisions)
+    ESPCollisions& merged_collisions)
 {
     // Reserve space
     size_t total_v = 0, total_ee = 0, total_f = 0;
@@ -497,7 +497,7 @@ void QuadratureCollisionsBuilder::merge(
             merged_collisions.vertex_collisions.insert(
                 std::make_pair<
                     index_t,
-                    std::unique_ptr<EspCollisionDict<PointType::VERTEX>>>(
+                    std::unique_ptr<ESPCollisionDict<PointType::VERTEX>>>(
                     cc->primitive_id(), std::move(cc)));
         }
         for (auto& cc : storage.edge_edge_collisions) {

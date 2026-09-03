@@ -93,8 +93,8 @@ public:
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const GcpCollisions& collisions,
-        const GcpParameters& params,
+        const GCPCollisions& collisions,
+        const GCPParameters& params,
         const double normal_stiffness,
         Eigen::ConstRef<Eigen::VectorXd> mu_s,
         Eigen::ConstRef<Eigen::VectorXd> mu_k,
@@ -113,8 +113,8 @@ public:
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const EspCollisions& collisions,
-        const EspParameters& params,
+        const ESPCollisions& collisions,
+        const ESPParameters& params,
         const double normal_stiffness,
         Eigen::ConstRef<Eigen::VectorXd> mu_s,
         Eigen::ConstRef<Eigen::VectorXd> mu_k,

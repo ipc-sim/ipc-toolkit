@@ -416,10 +416,10 @@ void check_smooth_friction_force_jacobian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
-    const GcpCollisions& collisions,
+    const GCPCollisions& collisions,
     const double mu,
     const double epsv_times_h,
-    const GcpParameters& params,
+    const GCPParameters& params,
     const double barrier_stiffness,
     const bool recompute_collisions)
 {
@@ -496,31 +496,31 @@ void check_smooth_friction_force_jacobian(
     auto create_smooth_collision = [&](const CollisionMesh& fd_mesh,
                                        const Eigen::MatrixXd&
                                            fd_lagged_positions) {
-        GcpCollisions fd_collisions;
+        GCPCollisions fd_collisions;
         assert(friction_collisions.size() == 1);
 
         auto cc = friction_collisions[0].gcp_collision;
-        std::shared_ptr<GcpCollision> fd_cc;
+        std::shared_ptr<GCPCollision> fd_cc;
         if (dim == 3) {
             if (cc->type() == CollisionType::EDGE_EDGE) {
-                fd_cc = std::make_shared<GcpCollisionTemplate<Edge3, Edge3>>(
+                fd_cc = std::make_shared<GCPCollisionTemplate<Edge3, Edge3>>(
                     (*cc)[0], (*cc)[1],
                     PrimitiveDistType<Edge3, Edge3>::type::AUTO, fd_mesh,
                     params, dhat, fd_lagged_positions);
             } else if (cc->type() == CollisionType::EDGE_VERTEX) {
                 fd_cc =
-                    std::make_shared<GcpCollisionTemplate<Edge3, Point3>>(
+                    std::make_shared<GCPCollisionTemplate<Edge3, Point3>>(
                         (*cc)[0], (*cc)[1],
                         PrimitiveDistType<Edge3, Point3>::type::AUTO, fd_mesh,
                         params, dhat, fd_lagged_positions);
             } else if (cc->type() == CollisionType::VERTEX_VERTEX) {
                 fd_cc =
-                    std::make_shared<GcpCollisionTemplate<Point3, Point3>>(
+                    std::make_shared<GCPCollisionTemplate<Point3, Point3>>(
                         (*cc)[0], (*cc)[1],
                         PrimitiveDistType<Point3, Point3>::type::AUTO, fd_mesh,
                         params, dhat, fd_lagged_positions);
             } else if (cc->type() == CollisionType::FACE_VERTEX) {
-                fd_cc = std::make_shared<GcpCollisionTemplate<Face, Point3>>(
+                fd_cc = std::make_shared<GCPCollisionTemplate<Face, Point3>>(
                     (*cc)[0], (*cc)[1],
                     PrimitiveDistType<Face, Point3>::type::AUTO, fd_mesh,
                     params, dhat, fd_lagged_positions);
@@ -530,13 +530,13 @@ void check_smooth_friction_force_jacobian(
         } else {
             if (cc->type() == CollisionType::EDGE_VERTEX) {
                 fd_cc =
-                    std::make_shared<GcpCollisionTemplate<Edge2, Point2>>(
+                    std::make_shared<GCPCollisionTemplate<Edge2, Point2>>(
                         (*cc)[0], (*cc)[1],
                         PrimitiveDistType<Edge2, Point2>::type::AUTO, fd_mesh,
                         params, dhat, fd_lagged_positions);
             } else if (cc->type() == CollisionType::VERTEX_VERTEX) {
                 fd_cc =
-                    std::make_shared<GcpCollisionTemplate<Point2, Point2>>(
+                    std::make_shared<GCPCollisionTemplate<Point2, Point2>>(
                         (*cc)[0], (*cc)[1],
                         PrimitiveDistType<Point2, Point2>::type::AUTO, fd_mesh,
                         params, dhat, fd_lagged_positions);
@@ -557,7 +557,7 @@ void check_smooth_friction_force_jacobian(
     //    Eigen::VectorXd::Zero(X.size());
     //    {
     //        auto cc = create_smooth_collision(mesh, lagged_positions);
-    //        GcpPotential<GcpCollisions> potential(params);
+    //        GCPPotential<GCPCollisions> potential(params);
     //        Eigen::VectorXd g = potential.gradient(cc, mesh,
     //        lagged_positions); Eigen::SparseMatrix<double> h =
     //        potential.hessian(cc, mesh, lagged_positions);
@@ -573,7 +573,7 @@ void check_smooth_friction_force_jacobian(
     //        auto fd_cc = create_smooth_collision(fd_mesh,
     //        fd_lagged_positions);
 
-    //        GcpPotential<GcpCollisions> potential(params);
+    //        GCPPotential<GCPCollisions> potential(params);
     //        return potential.gradient(fd_cc, fd_mesh,
     //        fd_lagged_positions).norm();
     //    };
@@ -717,7 +717,7 @@ void check_smooth_friction_force_jacobian(
 TEST_CASE(
     "Smooth friction force jacobian 2D", "[friction-smooth][force-jacobian]")
 {
-    GcpFrictionData data = smooth_friction_data_generator_2d();
+    GCPFrictionData data = smooth_friction_data_generator_2d();
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
         data;
 
@@ -739,10 +739,10 @@ void check_esp_friction_force_jacobian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
-    const EspCollisions& collisions,
+    const ESPCollisions& collisions,
     const double mu,
     const double epsv_times_h,
-    const EspParameters& params,
+    const ESPParameters& params,
     const double normal_stiffness,
     const bool normalize_weights = true)
 {
@@ -800,7 +800,7 @@ TEST_CASE(
     const double epsv_times_h = 1.;
     const double normal_stiffness = 1.;
     const bool normalize_weights = GENERATE(true, false);
-    const EspParameters params(dhat, 1., 2);
+    const ESPParameters params(dhat, 1., 2);
 
     // Two close 2D rectangles (gap ~0.2 < dhat=0.6)
     Eigen::MatrixXd V0(8, 2), V1;
@@ -813,7 +813,7 @@ TEST_CASE(
         std::vector<bool>(V0.rows(), true), std::vector<bool>(V0.rows(), false),
         V0, E, F);
 
-    EspCollisions collisions;
+    ESPCollisions collisions;
     collisions.build(mesh, V0, params);
     REQUIRE(!collisions.empty());
 
@@ -862,7 +862,7 @@ TEST_CASE(
     // quad_order=0 uses vertex-only collisions (no face_quad_rule needed).
     // quad_order=1 with face_quad_rule set uses face quadrature.
     const int quad_order = GENERATE(0, 1);
-    EspParameters params(dhat, 1., quad_order);
+    ESPParameters params(dhat, 1., quad_order);
     if (quad_order > 0) {
         params.face_quad_rule = GENERATE_COPY(
             make_vertex_quad_rule(), make_vertex_plus_centroid_quad_rule());
@@ -873,7 +873,7 @@ TEST_CASE(
 
     const Eigen::MatrixXd Ut = Eigen::MatrixXd::Zero(X.rows(), X.cols());
     CollisionMesh mesh(X, E, F);
-    EspCollisions collisions;
+    ESPCollisions collisions;
     collisions.build(mesh, X + Ut, params);
     REQUIRE(!collisions.empty());
 
@@ -899,7 +899,7 @@ TEST_CASE(
         "skipped in debug mode");
 #endif
 
-    GcpFrictionData data = smooth_friction_data_generator_3d();
+    GCPFrictionData data = smooth_friction_data_generator_3d();
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
         data;
 
@@ -974,7 +974,7 @@ TEST_CASE(
     SKIP("'Smooth friction force jacobian 3D' test is skipped in debug mode");
 #endif
 
-    GcpFrictionData data = smooth_friction_data_generator_3d();
+    GCPFrictionData data = smooth_friction_data_generator_3d();
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
         data;
 

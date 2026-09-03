@@ -12,61 +12,61 @@ namespace ipc {
 namespace PointPotentialHelper {
     double evaluate_potential_at_vertex_with_cached_collisions(
         const Eigen::MatrixXd& V,
-        const EspCollisionDict<PointType::VERTEX>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::VERTEX>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive);
 
     Eigen::VectorXd
     evaluate_potential_gradient_at_vertex_with_cached_collisions(
         const Eigen::MatrixXd& V,
-        const EspCollisionDict<PointType::VERTEX>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::VERTEX>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive);
 
     Eigen::MatrixXd evaluate_potential_hessian_at_vertex_with_cached_collisions(
         const Eigen::MatrixXd& V,
-        const EspCollisionDict<PointType::VERTEX>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::VERTEX>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         PSDProjectionMethod project_to_psd);
 
     std::pair<double, double>
     evaluate_potential_at_vertex_with_cached_collisions_nearfar(
         const Eigen::MatrixXd& V,
-        const EspCollisionDict<PointType::VERTEX>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::VERTEX>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const NearFarBarrier& nf_barrier);
 
     std::pair<Eigen::VectorXd, Eigen::VectorXd>
     evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
         const Eigen::MatrixXd& V,
-        const EspCollisionDict<PointType::VERTEX>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::VERTEX>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const NearFarBarrier& nf_barrier);
 
     std::pair<Eigen::MatrixXd, Eigen::MatrixXd>
     evaluate_potential_hessian_at_vertex_with_cached_collisions_nearfar(
         const Eigen::MatrixXd& V,
-        const EspCollisionDict<PointType::VERTEX>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::VERTEX>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         PSDProjectionMethod project_to_psd,
         const NearFarBarrier& nf_barrier);
 
     double evaluate_potential_at_edge_edge_closest_point_with_cached_collisions(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::EDGE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::EDGE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         EdgeEdgeDistanceType dtype);
 
     double
     evaluate_potential_at_edge_edge_closest_point_with_cached_collisions_near(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::EDGE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::EDGE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         EdgeEdgeDistanceType dtype,
         const NearFarBarrier& nf_barrier);
@@ -82,8 +82,8 @@ namespace PointPotentialHelper {
         Eigen::VectorXd>
     evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::EDGE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::EDGE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         Eigen::ConstRef<Eigen::Vector3<ADType>> q);
 
@@ -94,8 +94,8 @@ namespace PointPotentialHelper {
         Eigen::VectorXd>
     evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions_near(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::EDGE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::EDGE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         Eigen::ConstRef<Eigen::Vector3<ADType>> q,
         const NearFarBarrier& nf_barrier);
@@ -103,62 +103,62 @@ namespace PointPotentialHelper {
     Eigen::MatrixXd
     evaluate_potential_hessian_at_edge_edge_closest_point_with_cached_collisions(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::EDGE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::EDGE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> q);
 
     Eigen::MatrixXd
     evaluate_potential_hessian_at_edge_edge_closest_point_with_cached_collisions_near(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::EDGE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::EDGE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> q,
         const NearFarBarrier& nf_barrier);
 
     double evaluate_potential_at_face_center_with_cached_collisions(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::FACE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::FACE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive);
 
     std::pair<double, double>
     evaluate_potential_at_face_center_with_cached_collisions_nearfar(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::FACE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::FACE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const NearFarBarrier& nf_barrier);
 
     Eigen::VectorXd
     evaluate_potential_gradient_at_face_center_with_cached_collisions(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::FACE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::FACE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive);
 
     Eigen::MatrixXd
     evaluate_potential_hessian_at_face_center_with_cached_collisions(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::FACE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::FACE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         PSDProjectionMethod project_to_psd);
 
     std::pair<Eigen::VectorXd, Eigen::VectorXd>
     evaluate_potential_gradient_at_face_center_with_cached_collisions_nearfar(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::FACE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::FACE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const NearFarBarrier& nf_barrier);
 
     std::pair<Eigen::MatrixXd, Eigen::MatrixXd>
     evaluate_potential_hessian_at_face_center_with_cached_collisions_nearfar(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::FACE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::FACE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         PSDProjectionMethod project_to_psd,
         const NearFarBarrier& nf_barrier);
@@ -170,8 +170,8 @@ namespace PointPotentialHelper {
     Eigen::VectorXd
     evaluate_potential_gradient_at_face_interior_point_with_cached_collisions(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::FACE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::FACE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const std::array<double, 3>& lambda);
 
@@ -180,8 +180,8 @@ namespace PointPotentialHelper {
     Eigen::MatrixXd
     evaluate_potential_hessian_at_face_interior_point_with_cached_collisions(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::FACE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::FACE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const std::array<double, 3>& lambda,
         PSDProjectionMethod project_to_psd);
@@ -189,8 +189,8 @@ namespace PointPotentialHelper {
     std::pair<Eigen::VectorXd, Eigen::VectorXd>
     evaluate_potential_gradient_at_face_interior_point_with_cached_collisions_nearfar(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::FACE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::FACE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const std::array<double, 3>& lambda,
         const NearFarBarrier& nf_barrier);
@@ -198,8 +198,8 @@ namespace PointPotentialHelper {
     std::pair<Eigen::MatrixXd, Eigen::MatrixXd>
     evaluate_potential_hessian_at_face_interior_point_with_cached_collisions_nearfar(
         VertexMatrixView<3> V_extended,
-        const EspCollisionDict<PointType::FACE>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::FACE>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const std::array<double, 3>& lambda,
         PSDProjectionMethod project_to_psd,
@@ -213,8 +213,8 @@ namespace PointPotentialHelper {
     /// @param params Contact parameters.
     double evaluate_potential_at_edge_qp(
         VertexMatrixView<2> V_extended,
-        const EspCollisionDict<PointType::EDGE, 2>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::EDGE, 2>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive);
 
     /// @brief Gradient of P(q) w.r.t. all real vertices, using chain rule
@@ -222,8 +222,8 @@ namespace PointPotentialHelper {
     /// @param lambda Barycentric coords of QP on the edge: q = lambda[0]*e0 + lambda[1]*e1.
     Eigen::VectorXd evaluate_potential_gradient_at_edge_qp(
         VertexMatrixView<2> V_extended,
-        const EspCollisionDict<PointType::EDGE, 2>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::EDGE, 2>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const std::array<double, 2>& lambda);
 
@@ -231,8 +231,8 @@ namespace PointPotentialHelper {
     /// @param lambda Barycentric coords of QP on the edge: q = lambda[0]*e0 + lambda[1]*e1.
     Eigen::MatrixXd evaluate_potential_hessian_at_edge_qp(
         VertexMatrixView<2> V_extended,
-        const EspCollisionDict<PointType::EDGE, 2>& collisions,
-        const EspParameters& params,
+        const ESPCollisionDict<PointType::EDGE, 2>& collisions,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const std::array<double, 2>& lambda,
         PSDProjectionMethod project_to_psd);
@@ -245,7 +245,7 @@ public:
     PointPotential(
         const CollisionMesh& mesh_,
         const Candidates& candidates_,
-        const EspParameters params_,
+        const ESPParameters params_,
         const AdaptiveSupport* adaptive_ = nullptr)
         : mesh(mesh_)
         , candidates(candidates_)
@@ -254,13 +254,13 @@ public:
     {
     }
 
-    std::unique_ptr<EspCollisionDict<PointType::VERTEX>>
+    std::unique_ptr<ESPCollisionDict<PointType::VERTEX>>
     build_collisions_at_vertex(
         const Eigen::MatrixXd& V,
         index_t vid,
         size_t& num_collision_pairs) const;
 
-    std::unique_ptr<EspCollisionDict<PointType::EDGE>>
+    std::unique_ptr<ESPCollisionDict<PointType::EDGE>>
     build_collisions_at_edge_edge_closest_point(
         const Eigen::MatrixXd& V,
         index_t e0,
@@ -268,13 +268,13 @@ public:
         EdgeEdgeDistanceType dtype,
         size_t& num_collision_pairs) const;
 
-    std::unique_ptr<EspCollisionDict<PointType::FACE>>
+    std::unique_ptr<ESPCollisionDict<PointType::FACE>>
     build_collisions_at_face_center(
         const Eigen::MatrixXd& V,
         index_t fid,
         size_t& num_collision_pairs) const;
 
-    std::unique_ptr<EspCollisionDict<PointType::FACE>>
+    std::unique_ptr<ESPCollisionDict<PointType::FACE>>
     build_collisions_at_face_interior_point(
         const Eigen::MatrixXd& V,
         index_t fid,
@@ -286,7 +286,7 @@ public:
     /// @param ei Source edge index.
     /// @param lambda Barycentric coords of QP: q = lambda[0]*e0 + lambda[1]*e1.
     /// @param dhat Distance threshold for this edge.
-    std::unique_ptr<EspCollisionDict<PointType::EDGE, 2>>
+    std::unique_ptr<ESPCollisionDict<PointType::EDGE, 2>>
     build_collisions_at_edge_qp(
         const Eigen::MatrixXd& V,
         index_t ei,
@@ -296,7 +296,7 @@ public:
 
     const CollisionMesh& mesh;
     const Candidates& candidates;
-    const EspParameters params;
+    const ESPParameters params;
     const AdaptiveSupport* adaptive;
 };
 } // namespace ipc

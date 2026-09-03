@@ -8,8 +8,8 @@
 
 namespace ipc {
 
-double GcpPotential::operator()(
-    const GcpCollisions& collisions,
+double GCPPotential::operator()(
+    const GCPCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
@@ -29,8 +29,8 @@ double GcpPotential::operator()(
     return storage.combine([](double a, double b) { return a + b; });
 }
 
-Eigen::VectorXd GcpPotential::gradient(
-    const GcpCollisions& collisions,
+Eigen::VectorXd GCPPotential::gradient(
+    const GCPCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
@@ -48,14 +48,14 @@ Eigen::VectorXd GcpPotential::gradient(
     return assemble_gradient(
         X.size(), dim, collisions.size(),
         [&](const size_t i) -> Eigen::VectorXd {
-            const GcpCollision& collision = collisions[i];
+            const GCPCollision& collision = collisions[i];
             return this->gradient(collision, collision.dof(X));
         },
         [&](const size_t i) { return collisions[i].vertex_ids(); });
 }
 
-Eigen::SparseMatrix<double> GcpPotential::hessian(
-    const GcpCollisions& collisions,
+Eigen::SparseMatrix<double> GCPPotential::hessian(
+    const GCPCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X,
     const PSDProjectionMethod project_hessian_to_psd) const
@@ -74,7 +74,7 @@ Eigen::SparseMatrix<double> GcpPotential::hessian(
     tbb::enumerable_thread_specific<LocalThreadMatStorage> storage(
         LocalThreadMatStorage(buffer_size, ndof, ndof));
     tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
-        const GcpCollision& collision = collisions[i];
+        const GCPCollision& collision = collisions[i];
 
         const Eigen::MatrixXd local_hess = this->hessian(
             collisions[i], collisions[i].dof(X), project_hessian_to_psd);
@@ -164,22 +164,22 @@ Eigen::SparseMatrix<double> GcpPotential::hessian(
     return hess;
 }
 
-double GcpPotential::operator()(
-    const GcpCollision& collision,
+double GCPPotential::operator()(
+    const GCPCollision& collision,
     Eigen::ConstRef<Eigen::VectorXd> positions) const
 {
     return collision.weight * collision(positions, params);
 }
 
-Eigen::VectorXd GcpPotential::gradient(
-    const GcpCollision& collision,
+Eigen::VectorXd GCPPotential::gradient(
+    const GCPCollision& collision,
     Eigen::ConstRef<Eigen::VectorXd> positions) const
 {
     return collision.weight * collision.gradient(positions, params);
 }
 
-Eigen::MatrixXd GcpPotential::hessian(
-    const GcpCollision& collision,
+Eigen::MatrixXd GCPPotential::hessian(
+    const GCPCollision& collision,
     Eigen::ConstRef<Eigen::VectorXd> positions,
     const PSDProjectionMethod project_hessian_to_psd) const
 {

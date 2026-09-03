@@ -16,7 +16,7 @@ struct FaceQuadPoint {
 };
 using FaceQuadRule = std::vector<FaceQuadPoint>;
 
-struct EspParameters {
+struct ESPParameters {
     enum class IntegrationType {
         BRUTE_FORCE, ///< Integrate all pairs with no obstacle filtering
         NORMAL, ///< Filter obstacle-obstacle pairs; skip primitives with only
@@ -24,7 +24,7 @@ struct EspParameters {
         NO_OBST ///< Skip obstacle sources entirely, may miss collisions!
     };
 
-    EspParameters(
+    ESPParameters(
         const double _dhat,
         const double _dbar_factor = 1.0,
         const int _quad_order = 1,

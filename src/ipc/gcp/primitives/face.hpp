@@ -16,7 +16,7 @@ public:
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<VectorMax3d> d,
-        const GcpParameters& params);
+        const GCPParameters& params);
 
     int n_vertices() const override;
     int n_dofs() const override { return n_vertices() * DIM; }

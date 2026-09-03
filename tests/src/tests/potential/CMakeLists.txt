@@ -1,7 +1,7 @@
 set(SOURCES
   # Tests
   test_adhesion_potentials.cpp
-  test_arbitrary_point_potential.cpp
+  test_arbitrary_point_esp.cpp
   test_barrier_potential.cpp
   test_gcp_potential.cpp
   test_esp_potential.cpp

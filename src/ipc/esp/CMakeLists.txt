@@ -3,8 +3,8 @@ set(SOURCES
   adaptive_support.hpp
   arbitrary_point_bvh.cpp
   arbitrary_point_bvh.hpp
-  arbitrary_point_potential.cpp
-  arbitrary_point_potential.hpp
+  arbitrary_point_esp.cpp
+  arbitrary_point_esp.hpp
   esp_collisions.cpp
   esp_collisions.hpp
   esp_collisions_builder.cpp

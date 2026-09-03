@@ -15,7 +15,7 @@ namespace {
         const std::shared_ptr<TCollision> pair,
         unordered_map<std::pair<index_t, index_t>, std::shared_ptr<TCollision>>&
             cc_to_id,
-        std::vector<std::shared_ptr<GcpCollision>>& collisions)
+        std::vector<std::shared_ptr<GCPCollision>>& collisions)
     {
         assert(pair != nullptr);
         if (pair->is_active()
@@ -30,7 +30,7 @@ namespace {
     template <int dim, typename TCollision>
     void add_collision(
         const std::shared_ptr<TCollision> pair,
-        std::vector<std::shared_ptr<GcpCollision>>& collisions)
+        std::vector<std::shared_ptr<GCPCollision>>& collisions)
     {
         assert(pair != nullptr);
         if (pair->is_active()) {
@@ -39,11 +39,11 @@ namespace {
     }
 } // namespace
 
-void GcpCollisionsBuilder<2>::add_edge_vertex_collisions(
+void GCPCollisionsBuilder<2>::add_edge_vertex_collisions(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
-    const GcpParameters& params,
+    const GCPParameters& params,
     const std::function<double(const index_t)>& vert_dhat,
     const std::function<double(const index_t)>& edge_dhat,
     const size_t start_i,
@@ -57,8 +57,8 @@ void GcpCollisionsBuilder<2>::add_edge_vertex_collisions(
             vertices.row(mesh.edges()(ei, 1)));
 
         if (pe_dtype == PointEdgeDistanceType::P_E) {
-            add_collision<2, GcpCollisionTemplate<Edge2, Point2>>(
-                std::make_shared<GcpCollisionTemplate<Edge2, Point2>>(
+            add_collision<2, GCPCollisionTemplate<Edge2, Point2>>(
+                std::make_shared<GCPCollisionTemplate<Edge2, Point2>>(
                     ei, vi, pe_dtype, mesh, params,
                     std::min(edge_dhat(ei), vert_dhat(vi)), vertices),
                 vert_edge_2_to_id, collisions);
@@ -71,8 +71,8 @@ void GcpCollisionsBuilder<2>::add_edge_vertex_collisions(
             if ((vertices.row(vi) - vertices.row(vj)).norm() >= dhat) {
                 continue;
             }
-            add_collision<2, GcpCollisionTemplate<Point2, Point2>>(
-                std::make_shared<GcpCollisionTemplate<Point2, Point2>>(
+            add_collision<2, GCPCollisionTemplate<Point2, Point2>>(
+                std::make_shared<GCPCollisionTemplate<Point2, Point2>>(
                     std::min<index_t>(vi, vj), std::max<index_t>(vi, vj),
                     PointPointDistanceType::P_P, mesh, params, dhat, vertices),
                 vert_vert_2_to_id, collisions);
@@ -82,11 +82,11 @@ void GcpCollisionsBuilder<2>::add_edge_vertex_collisions(
 
 // ============================================================================
 
-void GcpCollisionsBuilder<3>::add_edge_edge_collisions(
+void GCPCollisionsBuilder<3>::add_edge_edge_collisions(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<EdgeEdgeCandidate>& candidates,
-    const GcpParameters& params,
+    const GCPParameters& params,
     const std::function<double(const index_t)>& vert_dhat,
     const std::function<double(const index_t)>& edge_dhat,
     const size_t start_i,
@@ -109,19 +109,19 @@ void GcpCollisionsBuilder<3>::add_edge_edge_collisions(
             continue;
         }
 
-        add_collision<3, GcpCollisionTemplate<Edge3, Edge3>>(
-            std::make_shared<GcpCollisionTemplate<Edge3, Edge3>>(
+        add_collision<3, GCPCollisionTemplate<Edge3, Edge3>>(
+            std::make_shared<GCPCollisionTemplate<Edge3, Edge3>>(
                 std::min(eai, ebi), std::max(eai, ebi), actual_dtype, mesh,
                 params, std::min(edge_dhat(eai), edge_dhat(ebi)), vertices),
             collisions);
     }
 }
 
-void GcpCollisionsBuilder<3>::add_face_vertex_collisions(
+void GCPCollisionsBuilder<3>::add_face_vertex_collisions(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<FaceVertexCandidate>& candidates,
-    const GcpParameters& params,
+    const GCPParameters& params,
     const std::function<double(const index_t)>& vert_dhat,
     const std::function<double(const index_t)>& edge_dhat,
     const std::function<double(const index_t)>& face_dhat,
@@ -145,8 +145,8 @@ void GcpCollisionsBuilder<3>::add_face_vertex_collisions(
         }
 
         if (pt_dtype == PointTriangleDistanceType::P_T) {
-            add_collision<3, GcpCollisionTemplate<Face, Point3>>(
-                std::make_shared<GcpCollisionTemplate<Face, Point3>>(
+            add_collision<3, GCPCollisionTemplate<Face, Point3>>(
+                std::make_shared<GCPCollisionTemplate<Face, Point3>>(
                     fi, vi, pt_dtype, mesh, params,
                     std::min(face_dhat(fi), vert_dhat(vi)), vertices),
                 collisions);
@@ -158,8 +158,8 @@ void GcpCollisionsBuilder<3>::add_face_vertex_collisions(
             if ((vertices.row(vi) - vertices.row(vj)).norm() >= dhat) {
                 continue;
             }
-            add_collision<3, GcpCollisionTemplate<Point3, Point3>>(
-                std::make_shared<GcpCollisionTemplate<Point3, Point3>>(
+            add_collision<3, GCPCollisionTemplate<Point3, Point3>>(
+                std::make_shared<GCPCollisionTemplate<Point3, Point3>>(
                     std::min<index_t>(vi, vj), std::max<index_t>(vi, vj),
                     PointPointDistanceType::P_P, mesh, params, dhat, vertices),
                 vert_vert_3_to_id, collisions);
@@ -181,26 +181,26 @@ void GcpCollisionsBuilder<3>::add_face_vertex_collisions(
                 continue;
             }
 
-            add_collision<3, GcpCollisionTemplate<Edge3, Point3>>(
-                std::make_shared<GcpCollisionTemplate<Edge3, Point3>>(
+            add_collision<3, GCPCollisionTemplate<Edge3, Point3>>(
+                std::make_shared<GCPCollisionTemplate<Edge3, Point3>>(
                     eid, vi, pe_dtype, mesh, params, dhat, vertices),
                 edge_vert_3_to_id, collisions);
         }
     }
 }
 
-void GcpCollisionsBuilder<3>::merge(
-    const tbb::enumerable_thread_specific<GcpCollisionsBuilder<3>>&
+void GCPCollisionsBuilder<3>::merge(
+    const tbb::enumerable_thread_specific<GCPCollisionsBuilder<3>>&
         local_storage,
-    GcpCollisions& merged_collisions)
+    GCPCollisions& merged_collisions)
 {
     unordered_map<
         std::pair<index_t, index_t>,
-        std::shared_ptr<GcpCollisionTemplate<Point3, Point3>>>
+        std::shared_ptr<GCPCollisionTemplate<Point3, Point3>>>
         vert_vert_3_to_id;
     unordered_map<
         std::pair<index_t, index_t>,
-        std::shared_ptr<GcpCollisionTemplate<Edge3, Point3>>>
+        std::shared_ptr<GCPCollisionTemplate<Edge3, Point3>>>
         edge_vert_3_to_id;
 
     // size up the hash items
@@ -250,18 +250,18 @@ void GcpCollisionsBuilder<3>::merge(
         edge_edge_count);
 }
 
-void GcpCollisionsBuilder<2>::merge(
-    const tbb::enumerable_thread_specific<GcpCollisionsBuilder<2>>&
+void GCPCollisionsBuilder<2>::merge(
+    const tbb::enumerable_thread_specific<GCPCollisionsBuilder<2>>&
         local_storage,
-    GcpCollisions& merged_collisions)
+    GCPCollisions& merged_collisions)
 {
     unordered_map<
         std::pair<index_t, index_t>,
-        std::shared_ptr<GcpCollisionTemplate<Point2, Point2>>>
+        std::shared_ptr<GCPCollisionTemplate<Point2, Point2>>>
         vert_vert_2_to_id;
     unordered_map<
         std::pair<index_t, index_t>,
-        std::shared_ptr<GcpCollisionTemplate<Edge2, Point2>>>
+        std::shared_ptr<GCPCollisionTemplate<Edge2, Point2>>>
         vert_edge_2_to_id;
 
     // size up the hash items

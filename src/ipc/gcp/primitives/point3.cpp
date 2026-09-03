@@ -11,7 +11,7 @@ Point3::Point3(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     Eigen::ConstRef<VectorMax3d> d,
-    const GcpParameters& params)
+    const GCPParameters& params)
     : Primitive(id, params)
 {
     orientable =
@@ -406,7 +406,7 @@ bool Point3::smooth_point3_term_type(
 GradientType<-1> Point3::smooth_point3_term_gradient(
     Eigen::ConstRef<Eigen::RowVector3d> direc,
     Eigen::ConstRef<Eigen::MatrixX3d> X,
-    const GcpParameters& params) const
+    const GCPParameters& params) const
 {
     const int n_dofs = (X.rows() + 1) * 3;
     const int n_neighbor_dofs = n_neighbors * 3;
@@ -453,7 +453,7 @@ GradientType<-1> Point3::smooth_point3_term_gradient(
 HessianType<-1> Point3::smooth_point3_term_hessian(
     Eigen::ConstRef<Eigen::RowVector3d> direc,
     Eigen::ConstRef<Eigen::MatrixX3d> X,
-    const GcpParameters& params) const
+    const GCPParameters& params) const
 {
     const int n_dofs = (X.rows() + 1) * 3;
     const int n_neighbor_dofs = n_neighbors * 3;

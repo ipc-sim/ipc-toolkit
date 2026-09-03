@@ -48,8 +48,8 @@ namespace {
     }
 } // namespace
 
-double EspPotential::operator()(
-    const EspCollisions& collisions,
+double ESPPotential::operator()(
+    const ESPCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
@@ -343,7 +343,7 @@ double EspPotential::operator()(
             for (const auto& n : fq_point_storage) {
                 total_fq_points += n;
             }
-            logger().debug("[EspPotential] face quadrature points
+            logger().debug("[ESPPotential] face quadrature points
             evaluated: {}", total_fq_points);
             */
 
@@ -357,8 +357,8 @@ double EspPotential::operator()(
     return result;
 }
 
-Eigen::VectorXd EspPotential::gradient(
-    const EspCollisions& collisions,
+Eigen::VectorXd ESPPotential::gradient(
+    const ESPCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
@@ -436,7 +436,7 @@ Eigen::VectorXd EspPotential::gradient(
                     // Pass 1: collect all quadrature contributions for this
                     // face
                     struct EEGradEntry {
-                        const EspCollisionDict<PointType::EDGE>* dict;
+                        const ESPCollisionDict<PointType::EDGE>* dict;
                         double mol_val;
                         Eigen::Vector<double, 12> mol_grad;
                         double P;
@@ -545,7 +545,7 @@ Eigen::VectorXd EspPotential::gradient(
                                     mollifier_order_for_barrier(
                                         params.barrier));
 
-                                const EspCollisionDict<PointType::EDGE>&
+                                const ESPCollisionDict<PointType::EDGE>&
                                     dict = *(iter->second);
 
                                 VertexMatrixView<3> X_extended(
@@ -778,8 +778,8 @@ Eigen::VectorXd EspPotential::gradient(
     return grad;
 }
 
-Eigen::SparseMatrix<double> EspPotential::hessian(
-    const EspCollisions& collisions,
+Eigen::SparseMatrix<double> ESPPotential::hessian(
+    const ESPCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X,
     const PSDProjectionMethod project_hessian_to_psd) const
@@ -880,7 +880,7 @@ Eigen::SparseMatrix<double> EspPotential::hessian(
                     // Pass 1: collect all quadrature contributions for this
                     // face
                     struct EEHessEntry {
-                        const EspCollisionDict<PointType::EDGE>* dict;
+                        const ESPCollisionDict<PointType::EDGE>* dict;
                         double mol_val;
                         Eigen::Vector<double, 12> mol_grad; // on primary_dofs
                         Eigen::Matrix<double, 12, 12>
@@ -996,7 +996,7 @@ Eigen::SparseMatrix<double> EspPotential::hessian(
                                     mollifier_order_for_barrier(
                                         params.barrier));
 
-                                const EspCollisionDict<PointType::EDGE>&
+                                const ESPCollisionDict<PointType::EDGE>&
                                     dict = *(iter->second);
 
                                 VertexMatrixView<3> X_extended(
@@ -1706,22 +1706,22 @@ Eigen::SparseMatrix<double> EspPotential::hessian(
     return hess;
 }
 
-double EspPotential::operator()(
-    const EspCollision& collision,
+double ESPPotential::operator()(
+    const ESPCollision& collision,
     Eigen::ConstRef<Eigen::VectorXd> positions) const
 {
     return collision.weight * collision(positions, params);
 }
 
-Eigen::VectorXd EspPotential::gradient(
-    const EspCollision& collision,
+Eigen::VectorXd ESPPotential::gradient(
+    const ESPCollision& collision,
     Eigen::ConstRef<Eigen::VectorXd> positions) const
 {
     return collision.weight * collision.gradient(positions, params);
 }
 
-Eigen::MatrixXd EspPotential::hessian(
-    const EspCollision& collision,
+Eigen::MatrixXd ESPPotential::hessian(
+    const ESPCollision& collision,
     Eigen::ConstRef<Eigen::VectorXd> positions,
     const PSDProjectionMethod project_hessian_to_psd) const
 {

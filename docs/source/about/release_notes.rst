@@ -171,11 +171,11 @@ Bug Fixes |:bug:|
 Python |:snake:|
 ~~~~~~~~~~~~~~~~
 
-- 💥 **[Breaking]** Rename the ``GcpPotential`` class to ``GcpPotential`` to match the C++ name (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+- 💥 **[Breaking]** Rename the ``GCPPotential`` class to ``GCPPotential`` to match the C++ name (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
 - Fill gaps that made the GCP and convergent-formulation tutorials impossible to follow from Python (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_):
 
-  - Add ``GcpCollisions.compute_adaptive_dhat``. Without it, adaptive dhat was unreachable even though ``build()`` accepts ``use_adaptive_dhat=True`` and requires this to be called first.
-  - Add the ``GcpParameters.adaptive_dhat_ratio`` property.
+  - Add ``GCPCollisions.compute_adaptive_dhat``. Without it, adaptive dhat was unreachable even though ``build()`` accepts ``use_adaptive_dhat=True`` and requires this to be called first.
+  - Add the ``GCPParameters.adaptive_dhat_ratio`` property.
   - Add the ``BarrierPotential.stiffness`` and ``.use_physical_barrier`` properties, mirroring the C++ setters.
 
 - Validate preconditions in the bindings instead of relying on the C++ ``assert``\ s, which are compiled out under ``NDEBUG`` and would let a release build silently accept a bad value (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). ``BarrierPotential`` now raises ``ValueError`` for a non-positive or NaN ``dhat``/``stiffness`` and for a null barrier.

@@ -25,7 +25,7 @@ Face::Face(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     Eigen::ConstRef<VectorMax3d> d,
-    const GcpParameters& params)
+    const GCPParameters& params)
     : Primitive(id, params)
 {
     m_vertex_ids = { { mesh.faces()(id, 0), mesh.faces()(id, 1),

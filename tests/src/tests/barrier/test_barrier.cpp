@@ -293,7 +293,7 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
 
 TEST_CASE("point term derivatives", "[deriv]")
 {
-    ipc::GcpParameters params(1, 1, 1, 0.01, 0, 2);
+    ipc::GCPParameters params(1, 1, 1, 0.01, 0, 2);
 
     Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
@@ -384,7 +384,7 @@ TEST_CASE("point term derivatives", "[deriv]")
 
 TEST_CASE("point term normal derivatives", "[deriv]")
 {
-    ipc::GcpParameters params(1, 1, 1, 1, 0, 2);
+    ipc::GCPParameters params(1, 1, 1, 1, 0, 2);
 
     Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,

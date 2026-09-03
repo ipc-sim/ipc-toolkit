@@ -22,7 +22,7 @@ public:
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<VectorMax3d> d,
-        const GcpParameters& params);
+        const GCPParameters& params);
 
     /// @brief Get the number of vertices (edge endpoints + face-opposite vertices)
     int n_vertices() const override { return m_vertex_ids.size(); }

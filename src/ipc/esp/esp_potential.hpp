@@ -10,17 +10,17 @@ namespace ipc {
 
 // Flag to control parallelism in potential evaluation
 
-class EspPotential {
+class ESPPotential {
 public:
-    EspPotential(
-        const EspParameters& _params,
+    ESPPotential(
+        const ESPParameters& _params,
         const bool _use_near_far = true)
         : params(_params)
         , use_near_far(_use_near_far)
     {
     }
 
-    virtual ~EspPotential() = default;
+    virtual ~ESPPotential() = default;
 
     // -- Cumulative methods ---------------------------------------------------
 
@@ -30,7 +30,7 @@ public:
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
     /// @returns The potential for a set of collisions.
     double operator()(
-        const EspCollisions& collisions,
+        const ESPCollisions& collisions,
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> X) const;
 
@@ -40,7 +40,7 @@ public:
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
     /// @returns The gradient of the potential w.r.t. X. This will have a size of |X|.
     Eigen::VectorXd gradient(
-        const EspCollisions& collisions,
+        const ESPCollisions& collisions,
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> X) const;
 
@@ -51,7 +51,7 @@ public:
     /// @param project_hessian_to_psd Make sure the hessian is positive semi-definite.
     /// @returns The Hessian of the potential w.r.t. X. This will have a size of |X|×|X|.
     virtual Eigen::SparseMatrix<double> hessian(
-        const EspCollisions& collisions,
+        const ESPCollisions& collisions,
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> X,
         const PSDProjectionMethod project_hessian_to_psd =
@@ -64,7 +64,7 @@ public:
     /// @param positions The collision stencil's positions.
     /// @return The potential.
     double operator()(
-        const EspCollision& collision,
+        const ESPCollision& collision,
         Eigen::ConstRef<Eigen::VectorXd> positions) const;
 
     /// @brief Compute the gradient of the potential for a single collision.
@@ -72,7 +72,7 @@ public:
     /// @param positions The collision stencil's positions.
     /// @return The gradient of the potential.
     Eigen::VectorXd gradient(
-        const EspCollision& collision,
+        const ESPCollision& collision,
         Eigen::ConstRef<Eigen::VectorXd> positions) const;
 
     /// @brief Compute the hessian of the potential for a single collision.
@@ -80,7 +80,7 @@ public:
     /// @param positions The collision stencil's positions.
     /// @return The hessian of the potential.
     Eigen::MatrixXd hessian(
-        const EspCollision& collision,
+        const ESPCollision& collision,
         Eigen::ConstRef<Eigen::VectorXd> positions,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const;
@@ -95,7 +95,7 @@ public:
 
 protected:
     /// @brief GCP parameters for collision potential
-    EspParameters params;
+    ESPParameters params;
     /// @brief Whether to normalize quadrature weights so they sum to 1
     const bool use_near_far;
 

@@ -28,7 +28,7 @@ namespace {
         Eigen::ConstRef<Eigen::Vector2d> direc,
         Eigen::ConstRef<Eigen::Vector2d> e0,
         Eigen::ConstRef<Eigen::Vector2d> e1,
-        const GcpParameters& params,
+        const GCPParameters& params,
         const bool orientable)
     {
         const Eigen::Vector2d dn = -direc.normalized();
@@ -60,7 +60,7 @@ namespace {
         Eigen::ConstRef<Eigen::Vector2<scalar>> direc,
         Eigen::ConstRef<Eigen::Vector2<scalar>> e0,
         Eigen::ConstRef<Eigen::Vector2<scalar>> e1,
-        const GcpParameters& params,
+        const GCPParameters& params,
         const bool orientable)
     {
         const Eigen::Vector2<scalar> dn = -direc.normalized();
@@ -91,7 +91,7 @@ namespace {
         Eigen::ConstRef<Eigen::Vector2<scalar>> v,
         Eigen::ConstRef<Eigen::Vector2<scalar>> direc,
         Eigen::ConstRef<Eigen::Vector2<scalar>> e0,
-        const GcpParameters& params)
+        const GCPParameters& params)
     {
         const Eigen::Vector2<scalar> dn = -direc.normalized();
         const Eigen::Vector2<scalar> t0 = e0 - v;
@@ -108,7 +108,7 @@ Point2::Point2(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     Eigen::ConstRef<VectorMax3d> d,
-    const GcpParameters& params)
+    const GCPParameters& params)
     : Primitive(id, params)
 {
     orientable = mesh.is_orient_vertex(id);

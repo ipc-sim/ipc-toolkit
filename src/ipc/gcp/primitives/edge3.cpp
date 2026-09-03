@@ -15,7 +15,7 @@ Edge3::Edge3(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     Eigen::ConstRef<VectorMax3d> d,
-    const GcpParameters& params)
+    const GCPParameters& params)
     : Primitive(id, params)
 {
     orientable =

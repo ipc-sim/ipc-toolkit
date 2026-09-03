@@ -14,17 +14,17 @@
 
 namespace ipc {
 
-template <int dim> class GcpCollisionsBuilder;
+template <int dim> class GCPCollisionsBuilder;
 
-template <> class GcpCollisionsBuilder<2> {
+template <> class GCPCollisionsBuilder<2> {
 public:
-    GcpCollisionsBuilder() { }
+    GCPCollisionsBuilder() { }
 
     void add_edge_vertex_collisions(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<EdgeVertexCandidate>& candidates,
-        const GcpParameters& params,
+        const GCPParameters& params,
         const std::function<double(const index_t)>& vert_dhat,
         const std::function<double(const index_t)>& edge_dhat,
         const size_t start_i,
@@ -33,35 +33,35 @@ public:
     // -------------------------------------------------------------------------
 
     static void merge(
-        const tbb::enumerable_thread_specific<GcpCollisionsBuilder<2>>&
+        const tbb::enumerable_thread_specific<GCPCollisionsBuilder<2>>&
             local_storage,
-        GcpCollisions& merged_collisions);
+        GCPCollisions& merged_collisions);
 
     // Constructed collisions
-    std::vector<std::shared_ptr<GcpCollision>> collisions;
+    std::vector<std::shared_ptr<GCPCollision>> collisions;
 
     // -------------------------------------------------------------------------
 
     // Store the indices to pairs to avoid duplicates.
     unordered_map<
         std::pair<index_t, index_t>,
-        std::shared_ptr<GcpCollisionTemplate<Point2, Point2>>>
+        std::shared_ptr<GCPCollisionTemplate<Point2, Point2>>>
         vert_vert_2_to_id;
     unordered_map<
         std::pair<index_t, index_t>,
-        std::shared_ptr<GcpCollisionTemplate<Edge2, Point2>>>
+        std::shared_ptr<GCPCollisionTemplate<Edge2, Point2>>>
         vert_edge_2_to_id;
 };
 
-template <> class GcpCollisionsBuilder<3> {
+template <> class GCPCollisionsBuilder<3> {
 public:
-    GcpCollisionsBuilder() { }
+    GCPCollisionsBuilder() { }
 
     void add_edge_edge_collisions(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<EdgeEdgeCandidate>& candidates,
-        const GcpParameters& params,
+        const GCPParameters& params,
         const std::function<double(const index_t)>& vert_dhat,
         const std::function<double(const index_t)>& edge_dhat,
         const size_t start_i,
@@ -71,7 +71,7 @@ public:
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<FaceVertexCandidate>& candidates,
-        const GcpParameters& params,
+        const GCPParameters& params,
         const std::function<double(const index_t)>& vert_dhat,
         const std::function<double(const index_t)>& edge_dhat,
         const std::function<double(const index_t)>& face_dhat,
@@ -81,12 +81,12 @@ public:
     // -------------------------------------------------------------------------
 
     static void merge(
-        const tbb::enumerable_thread_specific<GcpCollisionsBuilder<3>>&
+        const tbb::enumerable_thread_specific<GCPCollisionsBuilder<3>>&
             local_storage,
-        GcpCollisions& merged_collisions);
+        GCPCollisions& merged_collisions);
 
     // Constructed collisions
-    std::vector<std::shared_ptr<GcpCollision>> collisions;
+    std::vector<std::shared_ptr<GCPCollision>> collisions;
 
     // -------------------------------------------------------------------------
 
@@ -94,11 +94,11 @@ public:
     // and Edge-Edge
     unordered_map<
         std::pair<index_t, index_t>,
-        std::shared_ptr<GcpCollisionTemplate<Point3, Point3>>>
+        std::shared_ptr<GCPCollisionTemplate<Point3, Point3>>>
         vert_vert_3_to_id;
     unordered_map<
         std::pair<index_t, index_t>,
-        std::shared_ptr<GcpCollisionTemplate<Edge3, Point3>>>
+        std::shared_ptr<GCPCollisionTemplate<Edge3, Point3>>>
         edge_vert_3_to_id;
 };
 

@@ -297,17 +297,17 @@ GCP is implemented as separate collision and potential classes. A basic example 
             double beta_n = 0.0;    // exterior direction constraint offset
             int r = 2;              // barrier exponent (dimension - 1)
 
-            ipc::GcpParameters params(dhat, alpha_t, beta_t, alpha_n, beta_n, r);
+            ipc::GCPParameters params(dhat, alpha_t, beta_t, alpha_n, beta_n, r);
 
             // Build collision set
             bool use_adaptive_dhat = true;
-            ipc::GcpCollisions collisions;
+            ipc::GCPCollisions collisions;
             if (use_adaptive_dhat)
                 collisions.compute_adaptive_dhat(collision_mesh, vertices, params);
             collisions.build(collision_mesh, vertices, params, use_adaptive_dhat);
 
             // Compute potential
-            ipc::GcpPotential barrier_potential(params);
+            ipc::GCPPotential barrier_potential(params);
             double b = barrier_potential(collisions, collision_mesh, vertices);
 
             // Compute gradient
@@ -331,17 +331,17 @@ GCP is implemented as separate collision and potential classes. A basic example 
             beta_n = 0.0      # exterior direction constraint offset
             r = 2             # barrier exponent (dimension - 1)
 
-            params = ipctk.GcpParameters(dhat, alpha_t, beta_t, alpha_n, beta_n, r)
+            params = ipctk.GCPParameters(dhat, alpha_t, beta_t, alpha_n, beta_n, r)
 
             # Build collision set
             use_adaptive_dhat = True
-            collisions = ipctk.GcpCollisions()
+            collisions = ipctk.GCPCollisions()
             if use_adaptive_dhat:
                 collisions.compute_adaptive_dhat(collision_mesh, vertices, params)
             collisions.build(collision_mesh, vertices, params, use_adaptive_dhat)
 
             # Compute potential
-            barrier_potential = ipctk.GcpPotential(params)
+            barrier_potential = ipctk.GCPPotential(params)
             b = barrier_potential(collisions, collision_mesh, vertices)
 
             # Compute gradient
@@ -351,15 +351,15 @@ GCP is implemented as separate collision and potential classes. A basic example 
             hess = barrier_potential.hessian(collisions, collision_mesh, vertices)
 
 .. important::
-    If ``use_adaptive_dhat`` is true, make sure to call ``GcpCollisions::compute_adaptive_dhat()`` **before** ``GcpCollisions::build()``. Adaptive :math:`\hat{d}` computes per-element barrier extents based on the rest configuration to guarantee zero potential (and zero forces) in the undeformed state.
+    If ``use_adaptive_dhat`` is true, make sure to call ``GCPCollisions::compute_adaptive_dhat()`` **before** ``GCPCollisions::build()``. Adaptive :math:`\hat{d}` computes per-element barrier extents based on the rest configuration to guarantee zero potential (and zero forces) in the undeformed state.
 
 .. note::
-    Unlike ``NormalCollisions`` in IPC, ``GcpCollisions`` must be rebuilt whenever vertex positions change, because the interaction set depends on the current geometry (normals, tangents, and distances).
+    Unlike ``NormalCollisions`` in IPC, ``GCPCollisions`` must be rebuilt whenever vertex positions change, because the interaction set depends on the current geometry (normals, tangents, and distances).
 
 Parameter Choices
 -----------------
 
-The ``GcpParameters`` structure contains the following parameters:
+The ``GCPParameters`` structure contains the following parameters:
 
 .. list-table::
    :header-rows: 1
@@ -392,7 +392,7 @@ As :math:`\alpha + \beta` decreases, the support of the Heaviside function shrin
 
 Additional internal parameters that may affect behavior:
 
-- **Adaptive dhat ratio** (default ``0.5``): Controls the ratio :math:`\epsilon(x) / d_c(x, f_0)` in the adaptive barrier localization. Set it via ``GcpParameters::set_adaptive_dhat_ratio()`` in C++ or the ``GcpParameters.adaptive_dhat_ratio`` property in Python.
+- **Adaptive dhat ratio** (default ``0.5``): Controls the ratio :math:`\epsilon(x) / d_c(x, f_0)` in the adaptive barrier localization. Set it via ``GCPParameters::set_adaptive_dhat_ratio()`` in C++ or the ``GCPParameters.adaptive_dhat_ratio`` property in Python.
 - **Element measure** :math:`L`: For vertices, this is set to the average edge length around the vertex; for edges, to the edge length; for faces, :math:`L` is not needed. This determines the strength of the potential for low-dimensional contact (edge–edge, edge–vertex, vertex–vertex).
 
 Friction

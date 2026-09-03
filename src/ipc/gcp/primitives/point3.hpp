@@ -16,7 +16,7 @@ public:
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<VectorMax3d> d,
-        const GcpParameters& params);
+        const GCPParameters& params);
 
     Point3(
         const index_t id,
@@ -55,12 +55,12 @@ public:
     GradientType<-1> smooth_point3_term_gradient(
         Eigen::ConstRef<Eigen::RowVector3d> direc,
         Eigen::ConstRef<Eigen::MatrixX3d> X,
-        const GcpParameters& params) const;
+        const GCPParameters& params) const;
 
     HessianType<-1> smooth_point3_term_hessian(
         Eigen::ConstRef<Eigen::RowVector3d> direc,
         Eigen::ConstRef<Eigen::MatrixX3d> X,
-        const GcpParameters& params) const;
+        const GCPParameters& params) const;
 
     GradientType<-1> smooth_point3_term_tangent_gradient(
         Eigen::ConstRef<Eigen::RowVector3d> direc,

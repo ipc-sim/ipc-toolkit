@@ -14,13 +14,13 @@ namespace ipc {
 AdaptiveSupport::AdaptiveSupport(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
-    const EspParameters& params)
+    const ESPParameters& params)
     : m_mesh(&mesh)
 {
     const int nv = mesh.num_vertices();
     m_values.setConstant(nv, params.dhat);
 
-    EspCollisions collisions;
+    ESPCollisions collisions;
     collisions.build(mesh, rest_positions, params);
 
     if (collisions.empty())
@@ -31,7 +31,7 @@ AdaptiveSupport::AdaptiveSupport(
     // those listed in the dict's primary_vertex_ids. Virtual vertices
     // (id >= nv) are skipped.
     auto get_primitive_vids =
-        [&](const EspCollision& cc) -> std::vector<index_t> {
+        [&](const ESPCollision& cc) -> std::vector<index_t> {
         std::vector<index_t> pvids;
         for (int i = 0; i < cc.num_vertices(); i++) {
             const index_t vid = cc.vertex_id(i);
@@ -44,7 +44,7 @@ AdaptiveSupport::AdaptiveSupport(
 
     if (mesh.dim() == 3) {
         struct ActivePair {
-            const EspCollision* cc;
+            const ESPCollision* cc;
             bool needs_extended;
             Eigen::RowVector3d qp_pos;
             std::vector<index_t> primitive_vids;
@@ -172,7 +172,7 @@ AdaptiveSupport::AdaptiveSupport(
 
     } else if (mesh.dim() == 2) {
         struct ActivePair2D {
-            const EspCollision* cc;
+            const ESPCollision* cc;
             bool needs_extended;
             Eigen::RowVector2d qp_pos;
             std::vector<index_t> primitive_vids;

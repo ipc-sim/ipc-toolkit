@@ -172,13 +172,13 @@ class TestBarrierPotentialProperties(unittest.TestCase):
         self.assertNotEqual(off(*args), on(*args))
 
 
-class TestGcpParameters(unittest.TestCase):
+class TestGCPParameters(unittest.TestCase):
     def test_adaptive_dhat_ratio_default(self):
-        params = ipctk.GcpParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
+        params = ipctk.GCPParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
         self.assertEqual(params.adaptive_dhat_ratio, 0.5)
 
     def test_adaptive_dhat_ratio_roundtrip(self):
-        params = ipctk.GcpParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
+        params = ipctk.GCPParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
         for ratio in (0.1, 0.25, 0.9):
             params.adaptive_dhat_ratio = ratio
             self.assertEqual(params.adaptive_dhat_ratio, ratio)
@@ -196,9 +196,9 @@ class TestGcpParameters(unittest.TestCase):
 
         counts = []
         for ratio in (0.1, 0.5, 0.9):
-            params = ipctk.GcpParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
+            params = ipctk.GCPParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
             params.adaptive_dhat_ratio = ratio
-            collisions = ipctk.GcpCollisions()
+            collisions = ipctk.GCPCollisions()
             collisions.compute_adaptive_dhat(mesh, rest, params)
             collisions.build(mesh, deformed, params, True)
             counts.append(len(collisions))
@@ -208,16 +208,16 @@ class TestGcpParameters(unittest.TestCase):
         self.assertLess(counts[1], counts[2], f"not monotonic: {counts}")
 
 
-class TestGcpCollisionsAdaptiveDhat(unittest.TestCase):
+class TestGCPCollisionsAdaptiveDhat(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.mesh, cls.rest = two_cubes()
-        cls.params = ipctk.GcpParameters(
+        cls.params = ipctk.GCPParameters(
             DHAT, 0.5, 0.0, 0.1, 0.0, 2)
-        cls.potential = ipctk.GcpPotential(cls.params)
+        cls.potential = ipctk.GCPPotential(cls.params)
 
     def _build(self, use_adaptive_dhat):
-        collisions = ipctk.GcpCollisions()
+        collisions = ipctk.GCPCollisions()
         if use_adaptive_dhat:
             collisions.compute_adaptive_dhat(self.mesh, self.rest, self.params)
         collisions.build(self.mesh, self.rest, self.params, use_adaptive_dhat)
@@ -244,20 +244,20 @@ class TestGcpCollisionsAdaptiveDhat(unittest.TestCase):
         np.testing.assert_array_equal(gradient, np.zeros_like(gradient))
 
     def test_broad_phase_argument_accepted(self):
-        collisions = ipctk.GcpCollisions()
+        collisions = ipctk.GCPCollisions()
         collisions.compute_adaptive_dhat(
             self.mesh, self.rest, self.params, ipctk.LBVH())
 
 
-class TestGcpPotentialNaming(unittest.TestCase):
-    """The Python class was previously exposed as "GcpPotential", which did
+class TestGCPPotentialNaming(unittest.TestCase):
+    """The Python class was previously exposed as "GCPPotential", which did
     not match the C++ name. Guard the rename in both directions."""
 
     def test_matches_cpp_name(self):
-        self.assertTrue(hasattr(ipctk, "GcpPotential"))
+        self.assertTrue(hasattr(ipctk, "GCPPotential"))
 
     def test_old_name_removed(self):
-        self.assertFalse(hasattr(ipctk, "GcpPotential"))
+        self.assertFalse(hasattr(ipctk, "GCPPotential"))
 
 
 if __name__ == "__main__":

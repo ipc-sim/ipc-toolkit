@@ -10,7 +10,7 @@ Edge<DIM>::Edge(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     Eigen::ConstRef<VectorMax3d> d,
-    const GcpParameters& params)
+    const GCPParameters& params)
     : Primitive(id, params)
 {
     m_vertex_ids = { { mesh.edges()(id, 0), mesh.edges()(id, 1) } };

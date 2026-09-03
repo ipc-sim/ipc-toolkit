@@ -65,9 +65,9 @@ T eval_barrier_ad(const ipc::Barrier& b, const T& dist, const T& dhat)
 template <typename T>
 T eval_ev3d_energy_ad(
     Eigen::ConstRef<
-        ipc::VectorMax<double, ipc::EspCollision::ELEMENT_SIZE>>
+        ipc::VectorMax<double, ipc::ESPCollision::ELEMENT_SIZE>>
         positions,
-    const ipc::EspParameters& params,
+    const ipc::ESPParameters& params,
     const ipc::AdaptiveSupport& adaptive,
     ipc::index_t edge_id)
 {
@@ -81,9 +81,9 @@ T eval_ev3d_energy_ad(
         p[i] = T(positions[6 + i], 6 + i);
     }
 
-    // EspCollisionTemplate<Edge3P1, Vertex3> is constructed only when
+    // ESPCollisionTemplate<Edge3P1, Vertex3> is constructed only when
     // the closest point is in the interior of the edge (P_E in
-    // EspCollisionsBuilder<3>::reduce_point_edge_collision); endpoint
+    // ESPCollisionsBuilder<3>::reduce_point_edge_collision); endpoint
     // cases are reduced to Vertex3-Vertex3. So we always use the interior
     // projection here.
     const Vec3T t_edge = e1 - e0;
@@ -104,9 +104,9 @@ T eval_ev3d_energy_ad(
 template <typename T>
 T eval_fv3d_energy_ad(
     Eigen::ConstRef<
-        ipc::VectorMax<double, ipc::EspCollision::ELEMENT_SIZE>>
+        ipc::VectorMax<double, ipc::ESPCollision::ELEMENT_SIZE>>
         positions,
-    const ipc::EspParameters& params,
+    const ipc::ESPParameters& params,
     const ipc::AdaptiveSupport& adaptive,
     ipc::index_t face_id)
 {
@@ -121,9 +121,9 @@ T eval_fv3d_energy_ad(
         p[i] = T(positions[9 + i], 9 + i);
     }
 
-    // EspCollisionTemplate<Face3P1, Vertex3> is constructed only when
+    // ESPCollisionTemplate<Face3P1, Vertex3> is constructed only when
     // the closest point is in the interior of the triangle (P_T in
-    // EspCollisionsBuilder<3>::reduce_point_triangle_collision); edge
+    // ESPCollisionsBuilder<3>::reduce_point_triangle_collision); edge
     // and vertex cases reduce to Edge3P1-Vertex3 / Vertex3-Vertex3. So we
     // always use the interior 2x2 solve here.
     const Vec3T e0t = f1 - f0, e1t = f2 - f0, dp = p - f0;
@@ -151,9 +151,9 @@ T eval_fv3d_energy_ad(
 template <typename T>
 T eval_ve2d_energy_ad(
     Eigen::ConstRef<
-        ipc::VectorMax<double, ipc::EspCollision::ELEMENT_SIZE>>
+        ipc::VectorMax<double, ipc::ESPCollision::ELEMENT_SIZE>>
         positions,
-    const ipc::EspParameters& params,
+    const ipc::ESPParameters& params,
     const ipc::AdaptiveSupport& adaptive,
     ipc::index_t edge_id)
 {
@@ -167,7 +167,7 @@ T eval_ve2d_energy_ad(
         e1[i] = T(positions[4 + i], 4 + i);
     }
 
-    // EspCollisionTemplate<Vertex2, Edge2P1> is constructed only when
+    // ESPCollisionTemplate<Vertex2, Edge2P1> is constructed only when
     // the closest point is in the interior of the edge (the 2D edge-QP
     // builder in quadrature_potential.cpp routes endpoint cases to
     // Vertex2-Vertex2). So we always use the interior projection here.
@@ -191,60 +191,60 @@ namespace ipc {
 // ---- type ----
 
 template <>
-EspCollisionType
-EspCollisionTemplate<Vertex3, Vertex3>::type() const
+ESPCollisionType
+ESPCollisionTemplate<Vertex3, Vertex3>::type() const
 {
-    return EspCollisionType::VERTEX_VERTEX;
+    return ESPCollisionType::VERTEX_VERTEX;
 }
 template <>
-EspCollisionType
-EspCollisionTemplate<Edge3P1, Vertex3>::type() const
+ESPCollisionType
+ESPCollisionTemplate<Edge3P1, Vertex3>::type() const
 {
-    return EspCollisionType::EDGE_VERTEX;
+    return ESPCollisionType::EDGE_VERTEX;
 }
 template <>
-EspCollisionType
-EspCollisionTemplate<Face3P1, Vertex3>::type() const
+ESPCollisionType
+ESPCollisionTemplate<Face3P1, Vertex3>::type() const
 {
-    return EspCollisionType::FACE_VERTEX;
+    return ESPCollisionType::FACE_VERTEX;
 }
 template <>
-EspCollisionType
-EspCollisionTemplate<Vertex2, Vertex2>::type() const
+ESPCollisionType
+ESPCollisionTemplate<Vertex2, Vertex2>::type() const
 {
-    return EspCollisionType::VERTEX_VERTEX;
+    return ESPCollisionType::VERTEX_VERTEX;
 }
 template <>
-EspCollisionType
-EspCollisionTemplate<Vertex2, Edge2P1>::type() const
+ESPCollisionType
+ESPCollisionTemplate<Vertex2, Edge2P1>::type() const
 {
-    return EspCollisionType::EDGE_VERTEX;
+    return ESPCollisionType::EDGE_VERTEX;
 }
 
 // ---- name ----
 
 template <>
-std::string EspCollisionTemplate<Vertex3, Vertex3>::name() const
+std::string ESPCollisionTemplate<Vertex3, Vertex3>::name() const
 {
     return "vv_3d";
 }
 template <>
-std::string EspCollisionTemplate<Edge3P1, Vertex3>::name() const
+std::string ESPCollisionTemplate<Edge3P1, Vertex3>::name() const
 {
     return "ev_3d";
 }
 template <>
-std::string EspCollisionTemplate<Face3P1, Vertex3>::name() const
+std::string ESPCollisionTemplate<Face3P1, Vertex3>::name() const
 {
     return "fv_3d";
 }
 template <>
-std::string EspCollisionTemplate<Vertex2, Vertex2>::name() const
+std::string ESPCollisionTemplate<Vertex2, Vertex2>::name() const
 {
     return "vv_2d_pt";
 }
 template <>
-std::string EspCollisionTemplate<Vertex2, Edge2P1>::name() const
+std::string ESPCollisionTemplate<Vertex2, Edge2P1>::name() const
 {
     return "ev_2d_pt";
 }
@@ -252,7 +252,7 @@ std::string EspCollisionTemplate<Vertex2, Edge2P1>::name() const
 // ---- constructors ----
 
 template <typename PrimitiveA, typename PrimitiveB>
-EspCollisionTemplate<PrimitiveA, PrimitiveB>::EspCollisionTemplate(
+ESPCollisionTemplate<PrimitiveA, PrimitiveB>::ESPCollisionTemplate(
     index_t _primitive0, index_t _primitive1, const CollisionMesh& mesh)
     : primitive_a(_primitive0, mesh)
     , primitive_b(_primitive1, mesh)
@@ -263,7 +263,7 @@ EspCollisionTemplate<PrimitiveA, PrimitiveB>::EspCollisionTemplate(
 }
 
 template <>
-EspCollisionTemplate<Vertex3, Vertex3>::EspCollisionTemplate(
+ESPCollisionTemplate<Vertex3, Vertex3>::ESPCollisionTemplate(
     index_t _primitive0, index_t _primitive1, const CollisionMesh& mesh)
     : primitive_a(std::min(_primitive0, _primitive1), mesh)
     , primitive_b(std::max(_primitive0, _primitive1), mesh)
@@ -274,7 +274,7 @@ EspCollisionTemplate<Vertex3, Vertex3>::EspCollisionTemplate(
 
 template <typename PrimitiveA, typename PrimitiveB>
 index_t
-EspCollisionTemplate<PrimitiveA, PrimitiveB>::vertex_id(index_t i) const
+ESPCollisionTemplate<PrimitiveA, PrimitiveB>::vertex_id(index_t i) const
 {
     if (i < (index_t)primitive_a.n_vertices()) {
         return primitive_a.vertex_ids()[i];
@@ -287,18 +287,18 @@ EspCollisionTemplate<PrimitiveA, PrimitiveB>::vertex_id(index_t i) const
 // ---- generic stubs ----
 
 template <typename PrimitiveA, typename PrimitiveB>
-double EspCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
+double ESPCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> /*positions*/,
-    const EspParameters& /*params*/,
+    const ESPParameters& /*params*/,
     const AdaptiveSupport* /*adaptive*/) const
 {
     return 0;
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-auto EspCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
+auto ESPCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> /*positions*/,
-    const EspParameters& /*params*/,
+    const ESPParameters& /*params*/,
     const AdaptiveSupport* /*adaptive*/) const
     -> VectorMax<double, ELEMENT_SIZE>
 {
@@ -306,9 +306,9 @@ auto EspCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-auto EspCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
+auto ESPCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> /*positions*/,
-    const EspParameters& /*params*/,
+    const ESPParameters& /*params*/,
     const AdaptiveSupport* /*adaptive*/) const
     -> MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
 {
@@ -317,7 +317,7 @@ auto EspCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-double EspCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
+double ESPCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> /*vertices*/) const
 {
     log_and_throw_error("Not implemented");
@@ -327,7 +327,7 @@ double EspCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
 // ---- 3D specializations ----
 
 template <>
-double EspCollisionTemplate<Vertex3, Vertex3>::compute_distance(
+double ESPCollisionTemplate<Vertex3, Vertex3>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     const int n_verts = vertices.rows();
@@ -340,7 +340,7 @@ double EspCollisionTemplate<Vertex3, Vertex3>::compute_distance(
 }
 
 template <>
-double EspCollisionTemplate<Edge3P1, Vertex3>::compute_distance(
+double ESPCollisionTemplate<Edge3P1, Vertex3>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     const int n_verts = vertices.rows();
@@ -354,7 +354,7 @@ double EspCollisionTemplate<Edge3P1, Vertex3>::compute_distance(
 }
 
 template <>
-double EspCollisionTemplate<Edge3P1, Edge3P1>::compute_distance(
+double ESPCollisionTemplate<Edge3P1, Edge3P1>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     const int n_verts = vertices.rows();
@@ -368,7 +368,7 @@ double EspCollisionTemplate<Edge3P1, Edge3P1>::compute_distance(
 }
 
 template <>
-double EspCollisionTemplate<Face3P1, Vertex3>::compute_distance(
+double ESPCollisionTemplate<Face3P1, Vertex3>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     const int n_verts = vertices.rows();
@@ -382,9 +382,9 @@ double EspCollisionTemplate<Face3P1, Vertex3>::compute_distance(
 }
 
 template <>
-double EspCollisionTemplate<Vertex3, Vertex3>::operator()(
+double ESPCollisionTemplate<Vertex3, Vertex3>::operator()(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const
 {
     const double dist =
@@ -397,9 +397,9 @@ double EspCollisionTemplate<Vertex3, Vertex3>::operator()(
 }
 
 template <>
-double EspCollisionTemplate<Edge3P1, Vertex3>::operator()(
+double ESPCollisionTemplate<Edge3P1, Vertex3>::operator()(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const
 {
     assert(
@@ -416,7 +416,7 @@ double EspCollisionTemplate<Edge3P1, Vertex3>::operator()(
     } else
         eps = params.dhat;
     // Edge3P1-Vertex3 is constructed only at interior P_E (see
-    // EspCollisionsBuilder<3>::reduce_point_edge_collision).
+    // ESPCollisionsBuilder<3>::reduce_point_edge_collision).
     const double dist = sqrt(point_edge_distance(
         positions.template segment<3>(6), positions.template head<3>(),
         positions.template segment<3>(3)));
@@ -425,9 +425,9 @@ double EspCollisionTemplate<Edge3P1, Vertex3>::operator()(
 }
 
 template <>
-double EspCollisionTemplate<Face3P1, Vertex3>::operator()(
+double ESPCollisionTemplate<Face3P1, Vertex3>::operator()(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const
 {
     assert(
@@ -446,7 +446,7 @@ double EspCollisionTemplate<Face3P1, Vertex3>::operator()(
     } else
         eps = params.dhat;
     // Face3P1-Vertex3 is constructed only at interior P_T (see
-    // EspCollisionsBuilder<3>::reduce_point_triangle_collision).
+    // ESPCollisionsBuilder<3>::reduce_point_triangle_collision).
     const double dist = sqrt(point_triangle_distance(
         positions.template segment<3>(9), positions.template head<3>(),
         positions.template segment<3>(3), positions.template segment<3>(6)));
@@ -455,9 +455,9 @@ double EspCollisionTemplate<Face3P1, Vertex3>::operator()(
 }
 
 template <>
-auto EspCollisionTemplate<Vertex3, Vertex3>::gradient(
+auto ESPCollisionTemplate<Vertex3, Vertex3>::gradient(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const -> VectorMax<double, ELEMENT_SIZE>
 {
     assert(positions.size() == 6);
@@ -476,9 +476,9 @@ auto EspCollisionTemplate<Vertex3, Vertex3>::gradient(
 }
 
 template <>
-auto EspCollisionTemplate<Edge3P1, Vertex3>::gradient(
+auto ESPCollisionTemplate<Edge3P1, Vertex3>::gradient(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const -> VectorMax<double, ELEMENT_SIZE>
 {
     assert(positions.size() == 9);
@@ -512,9 +512,9 @@ auto EspCollisionTemplate<Edge3P1, Vertex3>::gradient(
 }
 
 template <>
-auto EspCollisionTemplate<Face3P1, Vertex3>::gradient(
+auto ESPCollisionTemplate<Face3P1, Vertex3>::gradient(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const -> VectorMax<double, ELEMENT_SIZE>
 {
     assert(positions.size() == 12);
@@ -550,9 +550,9 @@ auto EspCollisionTemplate<Face3P1, Vertex3>::gradient(
 }
 
 template <>
-auto EspCollisionTemplate<Vertex3, Vertex3>::hessian(
+auto ESPCollisionTemplate<Vertex3, Vertex3>::hessian(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const
     -> MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
 {
@@ -574,9 +574,9 @@ auto EspCollisionTemplate<Vertex3, Vertex3>::hessian(
 }
 
 template <>
-auto EspCollisionTemplate<Edge3P1, Vertex3>::hessian(
+auto ESPCollisionTemplate<Edge3P1, Vertex3>::hessian(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const
     -> MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
 {
@@ -616,9 +616,9 @@ auto EspCollisionTemplate<Edge3P1, Vertex3>::hessian(
 }
 
 template <>
-auto EspCollisionTemplate<Face3P1, Vertex3>::hessian(
+auto ESPCollisionTemplate<Face3P1, Vertex3>::hessian(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const
     -> MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
 {
@@ -664,9 +664,9 @@ auto EspCollisionTemplate<Face3P1, Vertex3>::hessian(
 
 template <>
 std::pair<double, double>
-EspCollisionTemplate<Vertex3, Vertex3>::operator_nearfar(
+ESPCollisionTemplate<Vertex3, Vertex3>::operator_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive,
     const NearFarBarrier* nf_barrier) const
 {
@@ -681,9 +681,9 @@ EspCollisionTemplate<Vertex3, Vertex3>::operator_nearfar(
 
 template <>
 std::pair<double, double>
-EspCollisionTemplate<Edge3P1, Vertex3>::operator_nearfar(
+ESPCollisionTemplate<Edge3P1, Vertex3>::operator_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive,
     const NearFarBarrier* nf_barrier) const
 {
@@ -698,9 +698,9 @@ EspCollisionTemplate<Edge3P1, Vertex3>::operator_nearfar(
 
 template <>
 std::pair<double, double>
-EspCollisionTemplate<Face3P1, Vertex3>::operator_nearfar(
+ESPCollisionTemplate<Face3P1, Vertex3>::operator_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive,
     const NearFarBarrier* nf_barrier) const
 {
@@ -716,11 +716,11 @@ EspCollisionTemplate<Face3P1, Vertex3>::operator_nearfar(
 
 template <>
 std::pair<
-    VectorMax<double, EspCollision::ELEMENT_SIZE>,
-    VectorMax<double, EspCollision::ELEMENT_SIZE>>
-EspCollisionTemplate<Vertex3, Vertex3>::gradient_nearfar(
+    VectorMax<double, ESPCollision::ELEMENT_SIZE>,
+    VectorMax<double, ESPCollision::ELEMENT_SIZE>>
+ESPCollisionTemplate<Vertex3, Vertex3>::gradient_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive,
     const NearFarBarrier* nf_barrier) const
 {
@@ -736,7 +736,7 @@ EspCollisionTemplate<Vertex3, Vertex3>::gradient_nearfar(
         nf_barrier->first_derivative_far(dist, eps) / (dist * 2.);
     Vector6d g = point_point_distance_gradient(
         positions.template head<3>(), positions.template tail<3>());
-    VectorMax<double, EspCollision::ELEMENT_SIZE> g_near(6), g_far(6);
+    VectorMax<double, ESPCollision::ELEMENT_SIZE> g_near(6), g_far(6);
     g_near.head(6) = deriv_near * g;
     g_far.head(6) = deriv_far * g;
     return { g_near, g_far };
@@ -744,11 +744,11 @@ EspCollisionTemplate<Vertex3, Vertex3>::gradient_nearfar(
 
 template <>
 std::pair<
-    VectorMax<double, EspCollision::ELEMENT_SIZE>,
-    VectorMax<double, EspCollision::ELEMENT_SIZE>>
-EspCollisionTemplate<Edge3P1, Vertex3>::gradient_nearfar(
+    VectorMax<double, ESPCollision::ELEMENT_SIZE>,
+    VectorMax<double, ESPCollision::ELEMENT_SIZE>>
+ESPCollisionTemplate<Edge3P1, Vertex3>::gradient_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive,
     const NearFarBarrier* nf_barrier) const
 {
@@ -773,7 +773,7 @@ EspCollisionTemplate<Edge3P1, Vertex3>::gradient_nearfar(
     Vector9d g_far = deriv_far * g;
     g_near = g_near({ 3, 4, 5, 6, 7, 8, 0, 1, 2 }).eval();
     g_far = g_far({ 3, 4, 5, 6, 7, 8, 0, 1, 2 }).eval();
-    VectorMax<double, EspCollision::ELEMENT_SIZE> result_near(9),
+    VectorMax<double, ESPCollision::ELEMENT_SIZE> result_near(9),
         result_far(9);
     result_near.head(9) = g_near;
     result_far.head(9) = g_far;
@@ -782,11 +782,11 @@ EspCollisionTemplate<Edge3P1, Vertex3>::gradient_nearfar(
 
 template <>
 std::pair<
-    VectorMax<double, EspCollision::ELEMENT_SIZE>,
-    VectorMax<double, EspCollision::ELEMENT_SIZE>>
-EspCollisionTemplate<Face3P1, Vertex3>::gradient_nearfar(
+    VectorMax<double, ESPCollision::ELEMENT_SIZE>,
+    VectorMax<double, ESPCollision::ELEMENT_SIZE>>
+ESPCollisionTemplate<Face3P1, Vertex3>::gradient_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive,
     const NearFarBarrier* nf_barrier) const
 {
@@ -814,7 +814,7 @@ EspCollisionTemplate<Face3P1, Vertex3>::gradient_nearfar(
     Vector12d g_far = deriv_far * g;
     g_near = g_near({ 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2 }).eval();
     g_far = g_far({ 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2 }).eval();
-    VectorMax<double, EspCollision::ELEMENT_SIZE> result_near(12),
+    VectorMax<double, ESPCollision::ELEMENT_SIZE> result_near(12),
         result_far(12);
     result_near.head(12) = g_near;
     result_far.head(12) = g_far;
@@ -825,15 +825,15 @@ template <>
 std::pair<
     MatrixMax<
         double,
-        EspCollision::ELEMENT_SIZE,
-        EspCollision::ELEMENT_SIZE>,
+        ESPCollision::ELEMENT_SIZE,
+        ESPCollision::ELEMENT_SIZE>,
     MatrixMax<
         double,
-        EspCollision::ELEMENT_SIZE,
-        EspCollision::ELEMENT_SIZE>>
-EspCollisionTemplate<Vertex3, Vertex3>::hessian_nearfar(
+        ESPCollision::ELEMENT_SIZE,
+        ESPCollision::ELEMENT_SIZE>>
+ESPCollisionTemplate<Vertex3, Vertex3>::hessian_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive,
     const NearFarBarrier* nf_barrier) const
 {
@@ -860,8 +860,8 @@ EspCollisionTemplate<Vertex3, Vertex3>::hessian_nearfar(
     Matrix6d hess_near = g * deriv2_near * g.transpose() + h * deriv1_near;
     Matrix6d hess_far = g * deriv2_far * g.transpose() + h * deriv1_far;
     MatrixMax<
-        double, EspCollision::ELEMENT_SIZE,
-        EspCollision::ELEMENT_SIZE>
+        double, ESPCollision::ELEMENT_SIZE,
+        ESPCollision::ELEMENT_SIZE>
         result_near(6, 6), result_far(6, 6);
     result_near.block<6, 6>(0, 0) = hess_near;
     result_far.block<6, 6>(0, 0) = hess_far;
@@ -872,15 +872,15 @@ template <>
 std::pair<
     MatrixMax<
         double,
-        EspCollision::ELEMENT_SIZE,
-        EspCollision::ELEMENT_SIZE>,
+        ESPCollision::ELEMENT_SIZE,
+        ESPCollision::ELEMENT_SIZE>,
     MatrixMax<
         double,
-        EspCollision::ELEMENT_SIZE,
-        EspCollision::ELEMENT_SIZE>>
-EspCollisionTemplate<Edge3P1, Vertex3>::hessian_nearfar(
+        ESPCollision::ELEMENT_SIZE,
+        ESPCollision::ELEMENT_SIZE>>
+ESPCollisionTemplate<Edge3P1, Vertex3>::hessian_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive,
     const NearFarBarrier* nf_barrier) const
 {
@@ -916,8 +916,8 @@ EspCollisionTemplate<Edge3P1, Vertex3>::hessian_nearfar(
     hess_near = hess_near(reorder, reorder).eval();
     hess_far = hess_far(reorder, reorder).eval();
     MatrixMax<
-        double, EspCollision::ELEMENT_SIZE,
-        EspCollision::ELEMENT_SIZE>
+        double, ESPCollision::ELEMENT_SIZE,
+        ESPCollision::ELEMENT_SIZE>
         result_near(9, 9), result_far(9, 9);
     result_near.block<9, 9>(0, 0) = hess_near;
     result_far.block<9, 9>(0, 0) = hess_far;
@@ -928,15 +928,15 @@ template <>
 std::pair<
     MatrixMax<
         double,
-        EspCollision::ELEMENT_SIZE,
-        EspCollision::ELEMENT_SIZE>,
+        ESPCollision::ELEMENT_SIZE,
+        ESPCollision::ELEMENT_SIZE>,
     MatrixMax<
         double,
-        EspCollision::ELEMENT_SIZE,
-        EspCollision::ELEMENT_SIZE>>
-EspCollisionTemplate<Face3P1, Vertex3>::hessian_nearfar(
+        ESPCollision::ELEMENT_SIZE,
+        ESPCollision::ELEMENT_SIZE>>
+ESPCollisionTemplate<Face3P1, Vertex3>::hessian_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive,
     const NearFarBarrier* nf_barrier) const
 {
@@ -976,8 +976,8 @@ EspCollisionTemplate<Face3P1, Vertex3>::hessian_nearfar(
     hess_near = hess_near(reorder, reorder).eval();
     hess_far = hess_far(reorder, reorder).eval();
     MatrixMax<
-        double, EspCollision::ELEMENT_SIZE,
-        EspCollision::ELEMENT_SIZE>
+        double, ESPCollision::ELEMENT_SIZE,
+        ESPCollision::ELEMENT_SIZE>
         result_near(12, 12), result_far(12, 12);
     result_near.block<12, 12>(0, 0) = hess_near;
     result_far.block<12, 12>(0, 0) = hess_far;
@@ -989,7 +989,7 @@ EspCollisionTemplate<Face3P1, Vertex3>::hessian_nearfar(
 // positions layout VE: [q_x, q_y, e0_x, e0_y, e1_x, e1_y]
 
 template <>
-double EspCollisionTemplate<Vertex2, Vertex2>::compute_distance(
+double ESPCollisionTemplate<Vertex2, Vertex2>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     const int n = vertices.rows();
@@ -1000,7 +1000,7 @@ double EspCollisionTemplate<Vertex2, Vertex2>::compute_distance(
 }
 
 template <>
-double EspCollisionTemplate<Vertex2, Edge2P1>::compute_distance(
+double ESPCollisionTemplate<Vertex2, Edge2P1>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     const int n = vertices.rows();
@@ -1012,9 +1012,9 @@ double EspCollisionTemplate<Vertex2, Edge2P1>::compute_distance(
 }
 
 template <>
-double EspCollisionTemplate<Vertex2, Vertex2>::operator()(
+double ESPCollisionTemplate<Vertex2, Vertex2>::operator()(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const
 {
     const double dist =
@@ -1027,9 +1027,9 @@ double EspCollisionTemplate<Vertex2, Vertex2>::operator()(
 }
 
 template <>
-double EspCollisionTemplate<Vertex2, Edge2P1>::operator()(
+double ESPCollisionTemplate<Vertex2, Edge2P1>::operator()(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const
 {
     assert(
@@ -1055,9 +1055,9 @@ double EspCollisionTemplate<Vertex2, Edge2P1>::operator()(
 }
 
 template <>
-auto EspCollisionTemplate<Vertex2, Vertex2>::gradient(
+auto ESPCollisionTemplate<Vertex2, Vertex2>::gradient(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const -> VectorMax<double, ELEMENT_SIZE>
 {
     const double dist =
@@ -1073,9 +1073,9 @@ auto EspCollisionTemplate<Vertex2, Vertex2>::gradient(
 }
 
 template <>
-auto EspCollisionTemplate<Vertex2, Edge2P1>::gradient(
+auto ESPCollisionTemplate<Vertex2, Edge2P1>::gradient(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const -> VectorMax<double, ELEMENT_SIZE>
 {
     assert(
@@ -1106,9 +1106,9 @@ auto EspCollisionTemplate<Vertex2, Edge2P1>::gradient(
 }
 
 template <>
-auto EspCollisionTemplate<Vertex2, Vertex2>::hessian(
+auto ESPCollisionTemplate<Vertex2, Vertex2>::hessian(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const
     -> MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
 {
@@ -1129,9 +1129,9 @@ auto EspCollisionTemplate<Vertex2, Vertex2>::hessian(
 }
 
 template <>
-auto EspCollisionTemplate<Vertex2, Edge2P1>::hessian(
+auto ESPCollisionTemplate<Vertex2, Edge2P1>::hessian(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const EspParameters& params,
+    const ESPParameters& params,
     const AdaptiveSupport* adaptive) const
     -> MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
 {
@@ -1169,10 +1169,10 @@ auto EspCollisionTemplate<Vertex2, Edge2P1>::hessian(
 
 // ---- explicit instantiations ----
 
-template class EspCollisionTemplate<Vertex3, Vertex3>;
-template class EspCollisionTemplate<Edge3P1, Vertex3>;
-template class EspCollisionTemplate<Face3P1, Vertex3>;
-template class EspCollisionTemplate<Vertex2, Vertex2>;
-template class EspCollisionTemplate<Vertex2, Edge2P1>;
+template class ESPCollisionTemplate<Vertex3, Vertex3>;
+template class ESPCollisionTemplate<Edge3P1, Vertex3>;
+template class ESPCollisionTemplate<Face3P1, Vertex3>;
+template class ESPCollisionTemplate<Vertex2, Vertex2>;
+template class ESPCollisionTemplate<Vertex2, Edge2P1>;
 
 } // namespace ipc

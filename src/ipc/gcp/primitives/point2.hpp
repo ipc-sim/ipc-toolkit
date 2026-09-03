@@ -16,7 +16,7 @@ public:
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<VectorMax3d> d,
-        const GcpParameters& params);
+        const GCPParameters& params);
 
     Point2(
         const index_t id,

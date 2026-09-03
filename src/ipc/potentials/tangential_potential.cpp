@@ -618,7 +618,7 @@ Eigen::SparseMatrix<double> TangentialPotential::gcp_force_jacobian(
     Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
     Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
     Eigen::ConstRef<Eigen::MatrixXd> velocities,
-    const GcpParameters& params,
+    const GCPParameters& params,
     const DiffWRT wrt,
     const double dmin,
     const bool no_mu) const

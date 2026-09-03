@@ -18,10 +18,10 @@ void define_smooth_collision_template(py::module_& m, const std::string& name)
 
 void define_smooth_collisions(py::module_& m, const std::string& name)
 {
-    py::class_<GcpCollisions>(m, name.c_str())
+    py::class_<GCPCollisions>(m, name.c_str())
         .def(py::init())
         .def(
-            "compute_adaptive_dhat", &GcpCollisions::compute_adaptive_dhat,
+            "compute_adaptive_dhat", &GCPCollisions::compute_adaptive_dhat,
             R"ipc_Qu8mg5v7(
             Compute the per-element adaptive dhat from the rest configuration.
 
@@ -31,7 +31,7 @@ void define_smooth_collisions(py::module_& m, const std::string& name)
             Parameters:
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                params: GcpParameters.
+                params: GCPParameters.
                 broad_phase: Broad phase method.
             )ipc_Qu8mg5v7",
             "mesh"_a, "vertices"_a, "params"_a, "broad_phase"_a = nullptr)
@@ -39,15 +39,15 @@ void define_smooth_collisions(py::module_& m, const std::string& name)
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
-                const GcpParameters, const bool, BroadPhase*>(
-                &GcpCollisions::build),
+                const GCPParameters, const bool, BroadPhase*>(
+                &GCPCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the barrier potential.
 
             Parameters:
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                param: GcpParameters.
+                param: GCPParameters.
                 use_adaptive_dhat: If the adaptive dhat should be used.
                 broad_phase: Broad phase method.
             )ipc_Qu8mg5v7",
@@ -55,7 +55,7 @@ void define_smooth_collisions(py::module_& m, const std::string& name)
             "broad_phase"_a = nullptr)
         .def(
             "compute_minimum_distance",
-            &GcpCollisions::compute_minimum_distance,
+            &GCPCollisions::compute_minimum_distance,
             R"ipc_Qu8mg5v7(
             Computes the minimum distance between any non-adjacent elements.
 
@@ -68,15 +68,15 @@ void define_smooth_collisions(py::module_& m, const std::string& name)
             )ipc_Qu8mg5v7",
             "mesh"_a, "vertices"_a)
         .def(
-            "__len__", &GcpCollisions::size, "Get the number of collisions.")
+            "__len__", &GCPCollisions::size, "Get the number of collisions.")
         .def(
-            "empty", &GcpCollisions::empty,
+            "empty", &GCPCollisions::empty,
             "Get if the collision set is empty.")
-        .def("clear", &GcpCollisions::clear, "Clear the collision set.")
+        .def("clear", &GCPCollisions::clear, "Clear the collision set.")
         .def(
             "__getitem__",
-            [](GcpCollisions& self, size_t i) ->
-            typename GcpCollisions::value_type& { return self[i]; },
+            [](GCPCollisions& self, size_t i) ->
+            typename GCPCollisions::value_type& { return self[i]; },
             py::return_value_policy::reference,
             R"ipc_Qu8mg5v7(
             Get a reference to collision at index i.
@@ -89,30 +89,30 @@ void define_smooth_collisions(py::module_& m, const std::string& name)
             )ipc_Qu8mg5v7",
             "i"_a)
         .def(
-            "to_string", &GcpCollisions::to_string, "mesh"_a, "vertices"_a,
+            "to_string", &GCPCollisions::to_string, "mesh"_a, "vertices"_a,
             "param"_a)
         .def(
-            "n_candidates", &GcpCollisions::n_candidates,
+            "n_candidates", &GCPCollisions::n_candidates,
             "Get the number of candidates.");
 }
 
 void define_esp_collisions(py::module_& m)
 {
-    py::class_<EspCollisions>(m, "EspCollisions")
+    py::class_<ESPCollisions>(m, "ESPCollisions")
         .def(py::init())
         .def(
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
-                const EspParameters, const bool,
-                const BroadPhase*>(&EspCollisions::build),
+                const ESPParameters, const bool,
+                const BroadPhase*>(&ESPCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the potential.
 
             Parameters:
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                param: EspParameters.
+                param: ESPParameters.
                 use_adaptive_dhat: If the adaptive dhat should be used.
                 broad_phase: Broad phase method.
             )ipc_Qu8mg5v7",
@@ -121,7 +121,7 @@ void define_esp_collisions(py::module_& m)
             py::arg("broad_phase") = nullptr)
         .def(
             "compute_minimum_distance",
-            &EspCollisions::compute_minimum_distance,
+            &ESPCollisions::compute_minimum_distance,
             R"ipc_Qu8mg5v7(
             Computes the minimum distance between any non-adjacent elements.
 
@@ -134,16 +134,16 @@ void define_esp_collisions(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"))
         .def(
-            "__len__", &EspCollisions::size,
+            "__len__", &ESPCollisions::size,
             "Get the number of collisions.")
         .def(
-            "empty", &EspCollisions::empty,
+            "empty", &ESPCollisions::empty,
             "Get if the collision set is empty.")
-        .def("clear", &EspCollisions::clear, "Clear the collision set.")
+        .def("clear", &ESPCollisions::clear, "Clear the collision set.")
         .def(
             "__getitem__",
-            [](EspCollisions& self, size_t i) ->
-            typename EspCollisions::value_type& { return self[i]; },
+            [](ESPCollisions& self, size_t i) ->
+            typename ESPCollisions::value_type& { return self[i]; },
             py::return_value_policy::reference,
             R"ipc_Qu8mg5v7(
             Get a reference to collision at index i.
@@ -156,10 +156,10 @@ void define_esp_collisions(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("i"))
         .def(
-            "to_string", &EspCollisions::to_string, py::arg("mesh"),
+            "to_string", &ESPCollisions::to_string, py::arg("mesh"),
             py::arg("vertices"), py::arg("param"))
         .def(
-            "n_candidates", &EspCollisions::n_candidates,
+            "n_candidates", &ESPCollisions::n_candidates,
             "Get the number of candidates.");
 }
 
@@ -340,10 +340,10 @@ void define_normal_collisions(py::module_& m)
         .def_readwrite("fv_collisions", &NormalCollisions::fv_collisions)
         .def_readwrite("pv_collisions", &NormalCollisions::pv_collisions);
 
-    py::class_<GcpCollision>(m, "GcpCollision2")
-        .def("n_dofs", &GcpCollision::n_dofs, "Get the degree of freedom")
+    py::class_<GCPCollision>(m, "GCPCollision2")
+        .def("n_dofs", &GCPCollision::n_dofs, "Get the degree of freedom")
         .def(
-            "__call__", &GcpCollision::operator(),
+            "__call__", &GCPCollision::operator(),
             R"ipc_Qu8mg5v7(
             Compute the potential.
 
@@ -357,7 +357,7 @@ void define_normal_collisions(py::module_& m)
             "positions"_a, "params"_a)
         .def(
             "__getitem__",
-            [](GcpCollision& self, size_t i) -> long { return self[i]; },
+            [](GCPCollision& self, size_t i) -> long { return self[i]; },
             R"ipc_Qu8mg5v7(
             Get primitive id.
 
@@ -370,13 +370,13 @@ void define_normal_collisions(py::module_& m)
             "i"_a);
 
     define_smooth_collision_template<
-        GcpCollisionTemplate<Edge2, Point2>, GcpCollision>(
+        GCPCollisionTemplate<Edge2, Point2>, GCPCollision>(
         m, "Edge2Point2Collision");
     define_smooth_collision_template<
-        GcpCollisionTemplate<Point2, Point2>, GcpCollision>(
+        GCPCollisionTemplate<Point2, Point2>, GCPCollision>(
         m, "Point2Point2Collision");
 
-    define_smooth_collisions(m, "GcpCollisions");
+    define_smooth_collisions(m, "GCPCollisions");
 
     define_esp_collisions(m);
 }

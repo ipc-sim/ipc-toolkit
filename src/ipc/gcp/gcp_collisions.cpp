@@ -17,10 +17,10 @@
 
 namespace ipc {
 
-void GcpCollisions::compute_adaptive_dhat(
+void GCPCollisions::compute_adaptive_dhat(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices, // set to zero for rest pose
-    const GcpParameters params,
+    const GCPParameters params,
     BroadPhase* broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -112,10 +112,10 @@ void GcpCollisions::compute_adaptive_dhat(
     }
 }
 
-void GcpCollisions::build(
+void GCPCollisions::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const GcpParameters params,
+    const GCPParameters params,
     const bool use_adaptive_dhat,
     BroadPhase* broad_phase)
 {
@@ -128,11 +128,11 @@ void GcpCollisions::build(
     this->build(m_candidates, mesh, vertices, params, use_adaptive_dhat);
 }
 
-void GcpCollisions::build(
+void GCPCollisions::build(
     const Candidates& candidates,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const GcpParameters params,
+    const GCPParameters params,
     const bool use_adaptive_dhat)
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -164,8 +164,8 @@ void GcpCollisions::build(
     };
 
     if (mesh.dim() == 2) {
-        tbb::enumerable_thread_specific<GcpCollisionsBuilder<2>> storage {
-            GcpCollisionsBuilder<2>()
+        tbb::enumerable_thread_specific<GCPCollisionsBuilder<2>> storage {
+            GCPCollisionsBuilder<2>()
         };
 
         tbb::parallel_for(
@@ -177,10 +177,10 @@ void GcpCollisions::build(
                     edge_dhat, r.begin(), r.end());
             });
 
-        GcpCollisionsBuilder<2>::merge(storage, *this);
+        GCPCollisionsBuilder<2>::merge(storage, *this);
     } else {
-        tbb::enumerable_thread_specific<GcpCollisionsBuilder<3>> storage {
-            GcpCollisionsBuilder<3>()
+        tbb::enumerable_thread_specific<GCPCollisionsBuilder<3>> storage {
+            GCPCollisionsBuilder<3>()
         };
 
         tbb::parallel_for(
@@ -201,17 +201,17 @@ void GcpCollisions::build(
                     edge_dhat, face_dhat, r.begin(), r.end());
             });
 
-        GcpCollisionsBuilder<3>::merge(storage, *this);
+        GCPCollisionsBuilder<3>::merge(storage, *this);
     }
     m_candidates = candidates;
 }
 
 // ============================================================================
-size_t GcpCollisions::size() const { return collisions.size(); }
-bool GcpCollisions::empty() const { return collisions.empty(); }
-void GcpCollisions::clear() { collisions.clear(); }
+size_t GCPCollisions::size() const { return collisions.size(); }
+bool GCPCollisions::empty() const { return collisions.empty(); }
+void GCPCollisions::clear() { collisions.clear(); }
 
-GcpCollision& GcpCollisions::operator[](size_t i)
+GCPCollision& GCPCollisions::operator[](size_t i)
 {
     if (i < collisions.size()) {
         return *collisions[i];
@@ -219,7 +219,7 @@ GcpCollision& GcpCollisions::operator[](size_t i)
     throw std::out_of_range("Collision index is out of range!");
 }
 
-const GcpCollision& GcpCollisions::operator[](size_t i) const
+const GCPCollision& GCPCollisions::operator[](size_t i) const
 {
     if (i < collisions.size()) {
         return *collisions[i];
@@ -227,10 +227,10 @@ const GcpCollision& GcpCollisions::operator[](size_t i) const
     throw std::out_of_range("Collision index is out of range!");
 }
 
-std::string GcpCollisions::to_string(
+std::string GCPCollisions::to_string(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const GcpParameters& params) const
+    const GCPParameters& params) const
 {
     std::stringstream ss;
     for (const auto& cc : collisions) {
@@ -247,7 +247,7 @@ std::string GcpCollisions::to_string(
 }
 
 // NOTE: Actually distance squared
-double GcpCollisions::compute_minimum_distance(
+double GCPCollisions::compute_minimum_distance(
     const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -274,7 +274,7 @@ double GcpCollisions::compute_minimum_distance(
     return storage.combine([](double a, double b) { return std::min(a, b); });
 }
 
-double GcpCollisions::compute_active_minimum_distance(
+double GCPCollisions::compute_active_minimum_distance(
     const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());

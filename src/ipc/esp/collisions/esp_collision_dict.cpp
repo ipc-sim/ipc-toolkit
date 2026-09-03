@@ -3,12 +3,12 @@
 
 namespace ipc {
 template <PointType pType, int DIM>
-void EspCollisionDict<pType, DIM>::initialize(
+void ESPCollisionDict<pType, DIM>::initialize(
     const std::vector<index_t>& primitive_ids,
     const std::vector<index_t>& primary_vertex_ids,
     const unordered_map<
         std::array<index_t, 3>,
-        std::shared_ptr<EspCollision>>& map)
+        std::shared_ptr<ESPCollision>>& map)
 {
     assert(primary_vertex_ids.size() <= m_primary_vertex_ids.size());
     for (int i = 0; i < primary_vertex_ids.size(); i++) {
@@ -76,36 +76,36 @@ void EspCollisionDict<pType, DIM>::initialize(
     // Convert unordered_map to typed vectors
     for (const auto& [key, val] : map) {
         switch (val->type()) {
-        case EspCollisionType::VERTEX_VERTEX:
+        case ESPCollisionType::VERTEX_VERTEX:
             if constexpr (DIM == 2) {
                 auto ptr = std::dynamic_pointer_cast<
-                    EspCollisionTemplate<Vertex2, Vertex2>>(val);
+                    ESPCollisionTemplate<Vertex2, Vertex2>>(val);
                 assert(ptr);
                 vv_collisions.push_back(*ptr);
             } else {
                 auto ptr = std::dynamic_pointer_cast<
-                    EspCollisionTemplate<Vertex3, Vertex3>>(val);
+                    ESPCollisionTemplate<Vertex3, Vertex3>>(val);
                 assert(ptr);
                 vv_collisions.push_back(*ptr);
             }
             break;
-        case EspCollisionType::EDGE_VERTEX:
+        case ESPCollisionType::EDGE_VERTEX:
             if constexpr (DIM == 2) {
                 auto ptr = std::dynamic_pointer_cast<
-                    EspCollisionTemplate<Vertex2, Edge2P1>>(val);
+                    ESPCollisionTemplate<Vertex2, Edge2P1>>(val);
                 assert(ptr);
                 ev_collisions.push_back(*ptr);
             } else {
                 auto ptr = std::dynamic_pointer_cast<
-                    EspCollisionTemplate<Edge3P1, Vertex3>>(val);
+                    ESPCollisionTemplate<Edge3P1, Vertex3>>(val);
                 assert(ptr);
                 ev_collisions.push_back(*ptr);
             }
             break;
-        case EspCollisionType::FACE_VERTEX:
+        case ESPCollisionType::FACE_VERTEX:
             if constexpr (DIM == 3) {
                 auto ptr = std::dynamic_pointer_cast<
-                    EspCollisionTemplate<Face3P1, Vertex3>>(val);
+                    ESPCollisionTemplate<Face3P1, Vertex3>>(val);
                 assert(ptr);
                 fv_collisions.push_back(*ptr);
             } else {
@@ -120,15 +120,15 @@ void EspCollisionDict<pType, DIM>::initialize(
 }
 
 template <PointType pType, int DIM>
-EspCollision& EspCollisionDict<pType, DIM>::operator[](int i)
+ESPCollision& ESPCollisionDict<pType, DIM>::operator[](int i)
 {
-    return const_cast<EspCollision&>(
-        static_cast<const EspCollisionDict&>(*this)[i]);
+    return const_cast<ESPCollision&>(
+        static_cast<const ESPCollisionDict&>(*this)[i]);
 }
 
 template <PointType pType, int DIM>
-const EspCollision&
-EspCollisionDict<pType, DIM>::operator[](int i) const
+const ESPCollision&
+ESPCollisionDict<pType, DIM>::operator[](int i) const
 {
     if (i < vv_collisions.size()) {
         return vv_collisions[i];
@@ -149,26 +149,26 @@ EspCollisionDict<pType, DIM>::operator[](int i) const
 
 template <PointType pType, int DIM>
 const std::vector<index_t>&
-EspCollisionDict<pType, DIM>::vertex_ids() const
+ESPCollisionDict<pType, DIM>::vertex_ids() const
 {
     return m_vertex_ids;
 }
 
 template <PointType pType, int DIM>
 const std::vector<index_t>&
-EspCollisionDict<pType, DIM>::primary_dofs() const
+ESPCollisionDict<pType, DIM>::primary_dofs() const
 {
     return m_primary_dofs;
 }
 
 template <PointType pType, int DIM>
-const std::vector<index_t>& EspCollisionDict<pType, DIM>::dofs() const
+const std::vector<index_t>& ESPCollisionDict<pType, DIM>::dofs() const
 {
     return m_dofs;
 }
 
 template <PointType pType, int DIM>
-index_t EspCollisionDict<pType, DIM>::vertex_ids_inverse(index_t id) const
+index_t ESPCollisionDict<pType, DIM>::vertex_ids_inverse(index_t id) const
 {
     auto iter = m_vertex_ids_inverse.find(id);
     if (iter == m_vertex_ids_inverse.end()) {
@@ -177,9 +177,9 @@ index_t EspCollisionDict<pType, DIM>::vertex_ids_inverse(index_t id) const
     return iter->second;
 }
 
-template class EspCollisionDict<PointType::VERTEX>;
-template class EspCollisionDict<PointType::EDGE>;
-template class EspCollisionDict<PointType::FACE>;
-template class EspCollisionDict<PointType::EDGE, 2>;
-template class EspCollisionDict<PointType::VERTEX, 2>;
+template class ESPCollisionDict<PointType::VERTEX>;
+template class ESPCollisionDict<PointType::EDGE>;
+template class ESPCollisionDict<PointType::FACE>;
+template class ESPCollisionDict<PointType::EDGE, 2>;
+template class ESPCollisionDict<PointType::VERTEX, 2>;
 } // namespace ipc

@@ -5,7 +5,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <ipc/esp/arbitrary_point_potential.hpp>
+#include <ipc/esp/arbitrary_point_esp.hpp>
 
 #include <finitediff.hpp>
 
@@ -81,12 +81,12 @@ struct Fixture2D {
 } // namespace
 
 TEST_CASE(
-    "Arbitrary Point Potential: zero beyond dhat",
-    "[esp_potential],[arbitrary_point_potential]")
+    "Arbitrary Point ESP: zero beyond dhat",
+    "[esp_potential],[arbitrary_point_esp]")
 {
     Fixture fx;
-    EspParameters params(fx.dhat);
-    ArbitraryPointPotential<3> potential(fx.mesh, params);
+    ESPParameters params(fx.dhat);
+    ArbitraryPointESP<3> potential(fx.mesh, params);
     potential.update(fx.V);
 
     const Eigen::RowVector3d far_point =
@@ -98,12 +98,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Arbitrary Point Potential: FD gradient/hessian at an off-mesh point",
-    "[esp_potential],[arbitrary_point_potential]")
+    "Arbitrary Point ESP: FD gradient/hessian at an off-mesh point",
+    "[esp_potential],[arbitrary_point_esp]")
 {
     Fixture fx;
-    EspParameters params(fx.dhat);
-    ArbitraryPointPotential<3> potential(fx.mesh, params);
+    ESPParameters params(fx.dhat);
+    ArbitraryPointESP<3> potential(fx.mesh, params);
     potential.update(fx.V);
 
     const Eigen::RowVector3d q = fx.near_surface_point();
@@ -144,12 +144,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Arbitrary Point Potential: evaluate() matches operator()/gradient()/hessian()",
-    "[esp_potential],[arbitrary_point_potential]")
+    "Arbitrary Point ESP: evaluate() matches operator()/gradient()/hessian()",
+    "[esp_potential],[arbitrary_point_esp]")
 {
     Fixture fx;
-    EspParameters params(fx.dhat);
-    ArbitraryPointPotential<3> potential(fx.mesh, params);
+    ESPParameters params(fx.dhat);
+    ArbitraryPointESP<3> potential(fx.mesh, params);
     potential.update(fx.V);
 
     // Sweep from just outside dhat down through the surface to well inside
@@ -184,12 +184,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Arbitrary Point Potential 2D: zero beyond dhat",
-    "[esp_potential],[arbitrary_point_potential]")
+    "Arbitrary Point ESP 2D: zero beyond dhat",
+    "[esp_potential],[arbitrary_point_esp]")
 {
     Fixture2D fx;
-    EspParameters params(fx.dhat);
-    ArbitraryPointPotential<2> potential(fx.mesh, params);
+    ESPParameters params(fx.dhat);
+    ArbitraryPointESP<2> potential(fx.mesh, params);
     potential.update(fx.V);
 
     const Eigen::RowVector2d far_point(0.5, -10 * fx.dhat);
@@ -200,12 +200,12 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Arbitrary Point Potential 2D: FD gradient/hessian at an off-mesh point",
-    "[esp_potential],[arbitrary_point_potential]")
+    "Arbitrary Point ESP 2D: FD gradient/hessian at an off-mesh point",
+    "[esp_potential],[arbitrary_point_esp]")
 {
     Fixture2D fx;
-    EspParameters params(fx.dhat);
-    ArbitraryPointPotential<2> potential(fx.mesh, params);
+    ESPParameters params(fx.dhat);
+    ArbitraryPointESP<2> potential(fx.mesh, params);
     potential.update(fx.V);
 
     // Both an edge-interior closest feature and a corner, where the two
@@ -251,8 +251,8 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Arbitrary Point Potential 2D: corner value is a single vertex-vertex term",
-    "[esp_potential],[arbitrary_point_potential]")
+    "Arbitrary Point ESP 2D: corner value is a single vertex-vertex term",
+    "[esp_potential],[arbitrary_point_esp]")
 {
     // Outside the convex corner at V.row(0), both incident edges reduce to
     // that corner vertex (+1 each) and the direct vertex term contributes -1,
@@ -262,8 +262,8 @@ TEST_CASE(
     // backwards leaves 3 terms or 0, both of which still pass a finite
     // difference check.
     Fixture2D fx;
-    EspParameters params(fx.dhat);
-    ArbitraryPointPotential<2> potential(fx.mesh, params);
+    ESPParameters params(fx.dhat);
+    ArbitraryPointESP<2> potential(fx.mesh, params);
     potential.update(fx.V);
 
     for (const double frac : { 0.2, 0.5, 0.9 }) {

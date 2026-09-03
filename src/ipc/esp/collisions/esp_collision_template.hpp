@@ -9,9 +9,9 @@ namespace ipc {
 
 /// @brief Templated class for various types of contact pairs
 template <typename PrimitiveA, typename PrimitiveB>
-class EspCollisionTemplate : public EspCollision {
+class ESPCollisionTemplate : public ESPCollision {
 public:
-    using Super = EspCollision;
+    using Super = ESPCollision;
     static constexpr int N_CORE_POINTS =
         PrimitiveA::N_CORE_POINTS + PrimitiveB::N_CORE_POINTS;
     static constexpr int DIM = PrimitiveA::DIM;
@@ -20,10 +20,10 @@ public:
     static constexpr int N_CORE_DOFS = N_CORE_POINTS * DIM;
     static constexpr int ELEMENT_SIZE = Super::ELEMENT_SIZE;
 
-    EspCollisionTemplate(
+    ESPCollisionTemplate(
         index_t primitive0, index_t primitive1, const CollisionMesh& mesh);
 
-    virtual ~EspCollisionTemplate() = default;
+    virtual ~ESPCollisionTemplate() = default;
 
     std::string name() const override;
 
@@ -31,7 +31,7 @@ public:
     {
         return primitive_a.n_dofs() + primitive_b.n_dofs();
     }
-    EspCollisionType type() const override;
+    ESPCollisionType type() const override;
 
     std::pair<index_t, index_t> get_hash() const override
     {
@@ -67,17 +67,17 @@ public:
 
     double operator()(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const EspParameters& params,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive = nullptr) const override;
 
     VectorMax<double, ELEMENT_SIZE> gradient(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const EspParameters& params,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive = nullptr) const override;
 
     MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hessian(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const EspParameters& params,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive = nullptr) const override;
 
     double
@@ -85,7 +85,7 @@ public:
 
     std::pair<double, double> operator_nearfar(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const EspParameters& params,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const NearFarBarrier* nf_barrier) const override
     {
@@ -95,7 +95,7 @@ public:
     std::pair<VectorMax<double, ELEMENT_SIZE>, VectorMax<double, ELEMENT_SIZE>>
     gradient_nearfar(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const EspParameters& params,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const NearFarBarrier* nf_barrier) const override
     {
@@ -109,7 +109,7 @@ public:
         MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>>
     hessian_nearfar(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const EspParameters&,
+        const ESPParameters&,
         const AdaptiveSupport*,
         const NearFarBarrier*) const override
     {
@@ -126,12 +126,12 @@ private:
 
 // Keep old name as alias for backward compatibility within this codebase
 template <typename PrimitiveA, typename PrimitiveB>
-using EspCollision3DTemplate =
-    EspCollisionTemplate<PrimitiveA, PrimitiveB>;
+using ESPCollision3DTemplate =
+    ESPCollisionTemplate<PrimitiveA, PrimitiveB>;
 
 // 2D alias (for use with 2D primitives)
 template <typename PrimitiveA, typename PrimitiveB>
-using EspCollision2DTemplate =
-    EspCollisionTemplate<PrimitiveA, PrimitiveB>;
+using ESPCollision2DTemplate =
+    ESPCollisionTemplate<PrimitiveA, PrimitiveB>;
 
 } // namespace ipc

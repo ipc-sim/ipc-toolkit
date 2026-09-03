@@ -85,7 +85,7 @@ void define_barrier_potential(py::module_& m)
 
 void define_smooth_potential(py::module_& m)
 {
-    py::class_<GcpParameters>(m, "GcpParameters")
+    py::class_<GCPParameters>(m, "GCPParameters")
         .def(
             py::init<
                 const double, const double, const double, const double,
@@ -106,22 +106,22 @@ void define_smooth_potential(py::module_& m)
                 dhat, alpha_t, beta_t, r
             )ipc_Qu8mg5v7",
             "dhat"_a, "alpha_t"_a, "beta_t"_a, "r"_a)
-        .def_readonly("dhat", &GcpParameters::dhat)
-        .def_readonly("alpha_t", &GcpParameters::alpha_t)
-        .def_readonly("beta_t", &GcpParameters::beta_t)
-        .def_readonly("alpha_n", &GcpParameters::alpha_n)
-        .def_readonly("beta_n", &GcpParameters::beta_n)
-        .def_readonly("r", &GcpParameters::r)
+        .def_readonly("dhat", &GCPParameters::dhat)
+        .def_readonly("alpha_t", &GCPParameters::alpha_t)
+        .def_readonly("beta_t", &GCPParameters::beta_t)
+        .def_readonly("alpha_n", &GCPParameters::alpha_n)
+        .def_readonly("beta_n", &GCPParameters::beta_n)
+        .def_readonly("r", &GCPParameters::r)
         .def_property(
             "adaptive_dhat_ratio",
-            &GcpParameters::adaptive_dhat_ratio,
-            &GcpParameters::set_adaptive_dhat_ratio,
+            &GCPParameters::adaptive_dhat_ratio,
+            &GCPParameters::set_adaptive_dhat_ratio,
             "Ratio of the distance to the interaction set in the rest "
             "configuration used as the per-element adaptive dhat.");
 
-    py::class_<GcpPotential>(m, "GcpPotential")
+    py::class_<GCPPotential>(m, "GCPPotential")
         .def(
-            py::init<const GcpParameters&>(),
+            py::init<const GCPParameters&>(),
             R"ipc_Qu8mg5v7(
             Construct a smooth barrier potential.
 
@@ -132,9 +132,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "__call__",
             py::overload_cast<
-                const GcpCollisions&, const CollisionMesh&,
+                const GCPCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>>(
-                &ipc::GcpPotential::operator(), py::const_),
+                &ipc::GCPPotential::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the barrier potential for a set of collisions.
 
@@ -150,9 +150,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "gradient",
             py::overload_cast<
-                const GcpCollisions&, const CollisionMesh&,
+                const GCPCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>>(
-                &ipc::GcpPotential::gradient, py::const_),
+                &ipc::GCPPotential::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the barrier potential.
 
@@ -168,9 +168,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const GcpCollisions&, const CollisionMesh&,
+                const GCPCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>, const PSDProjectionMethod>(
-                &ipc::GcpPotential::hessian, py::const_),
+                &ipc::GCPPotential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the barrier potential.
 
@@ -188,8 +188,8 @@ void define_smooth_potential(py::module_& m)
         .def(
             "__call__",
             py::overload_cast<
-                const GcpCollision&, Eigen::ConstRef<Eigen::VectorXd>>(
-                &ipc::GcpPotential::operator(), py::const_),
+                const GCPCollision&, Eigen::ConstRef<Eigen::VectorXd>>(
+                &ipc::GCPPotential::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the potential for a single collision.
 
@@ -204,8 +204,8 @@ void define_smooth_potential(py::module_& m)
         .def(
             "gradient",
             py::overload_cast<
-                const GcpCollision&, Eigen::ConstRef<Eigen::VectorXd>>(
-                &GcpPotential::gradient, py::const_),
+                const GCPCollision&, Eigen::ConstRef<Eigen::VectorXd>>(
+                &GCPPotential::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the potential for a single collision.
 
@@ -220,9 +220,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const GcpCollision&, Eigen::ConstRef<Eigen::VectorXd>,
+                const GCPCollision&, Eigen::ConstRef<Eigen::VectorXd>,
                 const PSDProjectionMethod>(
-                &GcpPotential::hessian, py::const_),
+                &GCPPotential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential for a single collision.
 
@@ -239,19 +239,19 @@ void define_smooth_potential(py::module_& m)
 
 void define_esp_potential(py::module& m)
 {
-    py::enum_<EspParameters::IntegrationType>(m, "IntegrationType")
+    py::enum_<ESPParameters::IntegrationType>(m, "IntegrationType")
         .value(
             "BRUTE_FORCE",
-            EspParameters::IntegrationType::BRUTE_FORCE)
-        .value("NORMAL", EspParameters::IntegrationType::NORMAL)
-        .value("NO_OBST", EspParameters::IntegrationType::NO_OBST)
+            ESPParameters::IntegrationType::BRUTE_FORCE)
+        .value("NORMAL", ESPParameters::IntegrationType::NORMAL)
+        .value("NO_OBST", ESPParameters::IntegrationType::NO_OBST)
         .export_values();
 
-    py::class_<EspParameters>(m, "EspParameters")
+    py::class_<ESPParameters>(m, "ESPParameters")
         .def(
             py::init<
                 const double, const double, const int,
-                EspParameters::IntegrationType>(),
+                ESPParameters::IntegrationType>(),
             R"ipc_Qu8mg5v7(
             Construct parameter set for ESP contact.
 
@@ -261,16 +261,16 @@ void define_esp_potential(py::module& m)
             py::arg("dhat"), py::arg("dbar_factor") = 1.0,
             py::arg("quad_order") = 1,
             py::arg("integration_type") =
-                EspParameters::IntegrationType::NO_OBST)
-        .def_readonly("dhat", &EspParameters::dhat)
-        .def_readonly("dbar", &EspParameters::dbar)
-        .def_readonly("quad_order", &EspParameters::quad_order)
+                ESPParameters::IntegrationType::NO_OBST)
+        .def_readonly("dhat", &ESPParameters::dhat)
+        .def_readonly("dbar", &ESPParameters::dbar)
+        .def_readonly("quad_order", &ESPParameters::quad_order)
         .def_readonly(
-            "integration_type", &EspParameters::integration_type);
+            "integration_type", &ESPParameters::integration_type);
 
-    py::class_<EspPotential>(m, "EspPotential")
+    py::class_<ESPPotential>(m, "ESPPotential")
         .def(
-            py::init<const EspParameters&>(),
+            py::init<const ESPParameters&>(),
             R"ipc_Qu8mg5v7(
             Construct a smooth barrier potential.
 
@@ -281,9 +281,9 @@ void define_esp_potential(py::module& m)
         .def(
             "__call__",
             py::overload_cast<
-                const EspCollisions&, const CollisionMesh&,
+                const ESPCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>>(
-                &ipc::EspPotential::operator(), py::const_),
+                &ipc::ESPPotential::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the barrier potential for a set of collisions.
 
@@ -299,9 +299,9 @@ void define_esp_potential(py::module& m)
         .def(
             "gradient",
             py::overload_cast<
-                const EspCollisions&, const CollisionMesh&,
+                const ESPCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>>(
-                &ipc::EspPotential::gradient, py::const_),
+                &ipc::ESPPotential::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the barrier potential.
 
@@ -317,9 +317,9 @@ void define_esp_potential(py::module& m)
         .def(
             "hessian",
             py::overload_cast<
-                const EspCollisions&, const CollisionMesh&,
+                const ESPCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>, const PSDProjectionMethod>(
-                &ipc::EspPotential::hessian, py::const_),
+                &ipc::ESPPotential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the barrier potential.
 

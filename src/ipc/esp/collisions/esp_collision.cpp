@@ -8,7 +8,7 @@
 
 namespace ipc {
 
-std::vector<index_t> EspCollision::vertex_ids() const
+std::vector<index_t> ESPCollision::vertex_ids() const
 {
     std::vector<index_t> ids;
     ids.reserve(num_vertices());
@@ -19,7 +19,7 @@ std::vector<index_t> EspCollision::vertex_ids() const
 }
 
 Eigen::VectorXd
-EspCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
+ESPCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
     const int DIM = X.cols();
     Eigen::VectorXd x(num_vertices() * DIM);
@@ -37,7 +37,7 @@ EspCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
     return x;
 }
 
-Eigen::VectorXd EspCollision::dof(VertexMatrixView<3> X_extended) const
+Eigen::VectorXd ESPCollision::dof(VertexMatrixView<3> X_extended) const
 {
     Eigen::VectorXd x(num_vertices() * 3);
     for (int i = 0; i < num_vertices(); i++) {
@@ -47,7 +47,7 @@ Eigen::VectorXd EspCollision::dof(VertexMatrixView<3> X_extended) const
     return x;
 }
 
-Eigen::VectorXd EspCollision::dof(VertexMatrixView<2> X_extended) const
+Eigen::VectorXd ESPCollision::dof(VertexMatrixView<2> X_extended) const
 {
     Eigen::VectorXd x(num_vertices() * 2);
     for (int i = 0; i < num_vertices(); i++) {

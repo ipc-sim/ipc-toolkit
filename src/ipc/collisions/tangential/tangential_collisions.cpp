@@ -188,8 +188,8 @@ void TangentialCollisions::build(
 void TangentialCollisions::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const GcpCollisions& collisions,
-    const GcpParameters& params,
+    const GCPCollisions& collisions,
+    const GCPParameters& params,
     const double normal_stiffness,
     Eigen::ConstRef<Eigen::VectorXd> mu_s,
     Eigen::ConstRef<Eigen::VectorXd> mu_k,
@@ -217,7 +217,7 @@ void TangentialCollisions::build(
         if (mesh.dim() == 3) {
             TangentialCollision* ptr = nullptr;
             if (const auto* const cvv = dynamic_cast<
-                    const GcpCollisionTemplate<Point3, Point3>*>(&cc)) {
+                    const GCPCollisionTemplate<Point3, Point3>*>(&cc)) {
                 Eigen::VectorXd collision_points = cvv->core_dof(vertices);
                 FC_vv.emplace_back(
                     VertexVertexNormalCollision(
@@ -231,7 +231,7 @@ void TangentialCollisions::build(
                 ptr = &(FC_vv.back());
             } else if (
                 const auto* const cev =
-                    dynamic_cast<const GcpCollisionTemplate<Edge3, Point3>*>(
+                    dynamic_cast<const GCPCollisionTemplate<Edge3, Point3>*>(
                         &cc)) {
                 Eigen::VectorXd collision_points = cev->core_dof(vertices);
                 collision_points =
@@ -257,7 +257,7 @@ void TangentialCollisions::build(
                 ptr = &(FC_ev.back());
             } else if (
                 const auto* const cee =
-                    dynamic_cast<const GcpCollisionTemplate<Edge3, Edge3>*>(
+                    dynamic_cast<const GCPCollisionTemplate<Edge3, Edge3>*>(
                         &cc)) {
                 Eigen::VectorXd collision_points = cee->core_dof(vertices);
                 const auto vert_ids = cee->core_vertex_ids();
@@ -296,7 +296,7 @@ void TangentialCollisions::build(
                 ptr = &(FC_ee.back());
             } else if (
                 const auto* const cfv =
-                    dynamic_cast<const GcpCollisionTemplate<Face, Point3>*>(
+                    dynamic_cast<const GCPCollisionTemplate<Face, Point3>*>(
                         &cc)) {
                 Eigen::VectorXd collision_points = cfv->core_dof(vertices);
                 collision_points =
@@ -327,7 +327,7 @@ void TangentialCollisions::build(
         } else {
             TangentialCollision* ptr = nullptr;
             if (const auto* const cvv = dynamic_cast<
-                    const GcpCollisionTemplate<Point2, Point2>*>(&cc)) {
+                    const GCPCollisionTemplate<Point2, Point2>*>(&cc)) {
                 Eigen::VectorXd collision_points = cvv->core_dof(vertices);
                 FC_vv.emplace_back(
                     VertexVertexNormalCollision(
@@ -341,7 +341,7 @@ void TangentialCollisions::build(
                 ptr = &(FC_vv.back());
             } else if (
                 const auto* const cev =
-                    dynamic_cast<const GcpCollisionTemplate<Edge2, Point2>*>(
+                    dynamic_cast<const GCPCollisionTemplate<Edge2, Point2>*>(
                         &cc)) {
                 Eigen::VectorXd collision_points = cev->core_dof(vertices);
                 collision_points =
@@ -438,8 +438,8 @@ void TangentialCollisions::update_lagged_anisotropic_friction_coefficients(
 void TangentialCollisions::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const EspCollisions& collisions,
-    const EspParameters& params,
+    const ESPCollisions& collisions,
+    const ESPParameters& params,
     const double normal_stiffness,
     Eigen::ConstRef<Eigen::VectorXd> mu_s,
     Eigen::ConstRef<Eigen::VectorXd> mu_k,
@@ -472,18 +472,18 @@ void TangentialCollisions::build(
             GaussLobatto::get_rule(params.quad_order);
         const index_t n_verts = vertices.rows();
 
-        auto compute_contact_force_2d = [&](const EspCollision& cc,
+        auto compute_contact_force_2d = [&](const ESPCollision& cc,
                                             const VertexMatrixView<2>& V_ext,
                                             const double outer_w) -> double {
             const Eigen::VectorXd positions = cc.dof(V_ext);
             double d2 = 0;
             switch (cc.type()) {
-            case EspCollisionType::VERTEX_VERTEX:
+            case ESPCollisionType::VERTEX_VERTEX:
                 d2 = point_point_distance(
                     Eigen::Vector2d(positions.segment<2>(0)),
                     Eigen::Vector2d(positions.segment<2>(2)));
                 break;
-            case EspCollisionType::EDGE_VERTEX:
+            case ESPCollisionType::EDGE_VERTEX:
                 d2 = point_edge_distance(
                     Eigen::Vector2d(positions.segment<2>(0)),
                     Eigen::Vector2d(positions.segment<2>(2)),
@@ -523,7 +523,7 @@ void TangentialCollisions::build(
                         continue;
 
                     switch (cc.type()) {
-                    case EspCollisionType::VERTEX_VERTEX: {
+                    case ESPCollisionType::VERTEX_VERTEX: {
                         // One vertex is virtual (n_verts), other is real.
                         // Elevate to EdgeVertex: edge ei vs the real vertex.
                         const index_t v0 = cc.vertex_id(0);
@@ -544,7 +544,7 @@ void TangentialCollisions::build(
                         assign_ev_mu(FC_ev.back());
                         break;
                     }
-                    case EspCollisionType::EDGE_VERTEX: {
+                    case ESPCollisionType::EDGE_VERTEX: {
                         // Virtual vertex on edge ei vs real edge ej.
                         // Distribute to the two endpoints of ej weighted by
                         // the projection parameter u (parallel to 3D face
@@ -601,24 +601,24 @@ void TangentialCollisions::build(
         //
         // Uses the scalar derivative of the log-barrier w.r.t. distance,
         // scaled by outer quadrature weight and barrier stiffness.
-        auto compute_contact_force = [&](const EspCollision& cc,
+        auto compute_contact_force = [&](const ESPCollision& cc,
                                          const VertexMatrixView<3>& V_ext,
                                          const double outer_w) -> double {
             const Eigen::VectorXd positions = cc.dof(V_ext);
             double d2 = 0;
             switch (cc.type()) {
-            case EspCollisionType::VERTEX_VERTEX:
+            case ESPCollisionType::VERTEX_VERTEX:
                 d2 = point_point_distance(
                     Eigen::Vector3d(positions.segment<3>(0)),
                     Eigen::Vector3d(positions.segment<3>(3)));
                 break;
-            case EspCollisionType::EDGE_VERTEX:
+            case ESPCollisionType::EDGE_VERTEX:
                 d2 = point_edge_distance(
                     Eigen::Vector3d(positions.segment<3>(6)),
                     Eigen::Vector3d(positions.segment<3>(0)),
                     Eigen::Vector3d(positions.segment<3>(3)));
                 break;
-            case EspCollisionType::FACE_VERTEX:
+            case ESPCollisionType::FACE_VERTEX:
                 d2 = point_triangle_distance(
                     Eigen::Vector3d(positions.segment<3>(9)),
                     Eigen::Vector3d(positions.segment<3>(0)),
@@ -750,7 +750,7 @@ void TangentialCollisions::build(
                         continue;
 
                     switch (cc.type()) {
-                    case EspCollisionType::VERTEX_VERTEX: {
+                    case ESPCollisionType::VERTEX_VERTEX: {
                         const index_t v0 = cc[0];
                         const index_t v1 = cc[1];
                         Vector6d cp;
@@ -768,7 +768,7 @@ void TangentialCollisions::build(
                         FC_vv.back().mu_k = blend_mu(mu_k(v0i), mu_k(v1i));
                         break;
                     }
-                    case EspCollisionType::EDGE_VERTEX: {
+                    case ESPCollisionType::EDGE_VERTEX: {
                         const index_t edge_id = cc[0];
                         const index_t vert_id = cc[1];
                         const index_t ea0 = edges(edge_id, 0);
@@ -786,7 +786,7 @@ void TangentialCollisions::build(
                         assign_ev_mu(FC_ev.back());
                         break;
                     }
-                    case EspCollisionType::FACE_VERTEX: {
+                    case ESPCollisionType::FACE_VERTEX: {
                         const index_t face_id = cc[0];
                         const index_t vert_id = cc[1];
                         const index_t f0 = faces(face_id, 0);
@@ -827,7 +827,7 @@ void TangentialCollisions::build(
             const index_t e00 = edges(e0, 0), e01 = edges(e0, 1);
             const index_t e10 = edges(e1, 0), e11 = edges(e1, 1);
 
-            // The HO potential only contributes for EA_EB; skip otherwise so
+            // The ESP potential only contributes for EA_EB; skip otherwise so
             // friction matches exactly.
             if (dtype != EdgeEdgeDistanceType::EA_EB)
                 continue;
@@ -846,7 +846,7 @@ void TangentialCollisions::build(
                 + vertices.row(e00);
             VertexMatrixView<3> V_ext(vertices, virtual_pos);
 
-            // HO potential outer factor for an edge-edge dict (for each face
+            // ESP potential outer factor for an edge-edge dict (for each face
             // f containing edge e0): area_f/9 * mollifier. Since the mollifier
             // depends only on the four edge endpoints (not f), it factors out
             // and the per-dict outer weight is mollifier * sum_{f∋e0} area_f/9.
@@ -875,7 +875,7 @@ void TangentialCollisions::build(
                     continue;
 
                 switch (cc.type()) {
-                case EspCollisionType::VERTEX_VERTEX: {
+                case ESPCollisionType::VERTEX_VERTEX: {
                     // One vertex is virtual (n_verts), the other is real.
                     // Elevate to EdgeVertex: edge e0 contains the virtual
                     // vertex, paired with the real vertex.
@@ -898,7 +898,7 @@ void TangentialCollisions::build(
                     assign_ev_mu(FC_ev.back());
                     break;
                 }
-                case EspCollisionType::EDGE_VERTEX: {
+                case ESPCollisionType::EDGE_VERTEX: {
                     // Real edge (cc[0]) vs virtual vertex (cc[1]) on e0.
                     // Elevate to EdgeEdge: edge e0 vs the real edge.
                     const index_t other_e = cc[0];
@@ -933,7 +933,7 @@ void TangentialCollisions::build(
                     assign_ee_mu(FC_ee.back());
                     break;
                 }
-                case EspCollisionType::FACE_VERTEX: {
+                case ESPCollisionType::FACE_VERTEX: {
                     // Real face (cc[0]) vs virtual vertex on edge e0.
                     // No EdgeFace tangential type exists; resolve via the
                     // point-triangle distance type and elevate to EV (when
@@ -1031,7 +1031,7 @@ void TangentialCollisions::build(
             const index_t f0 = faces(fi, 0);
             const index_t f1 = faces(fi, 1);
             const index_t f2 = faces(fi, 2);
-            // HO potential outer face weight (optionally normalized).
+            // ESP potential outer face weight (optionally normalized).
             const double face_w = face_scale(fi);
 
             for (size_t qi = 0; qi < dicts.size(); qi++) {
@@ -1045,7 +1045,7 @@ void TangentialCollisions::build(
                     + qp.lambda[2] * vertices.row(f2);
                 VertexMatrixView<3> V_ext(vertices, virtual_pos);
 
-                // HO potential per-quadrature factor: area/9 * qp.weight.
+                // ESP potential per-quadrature factor: area/9 * qp.weight.
                 const double fq_outer_w = face_w * qp.weight;
 
                 for (int j = 0; j < dict_ptr->size(); j++) {
@@ -1056,7 +1056,7 @@ void TangentialCollisions::build(
                         continue;
 
                     switch (cc.type()) {
-                    case EspCollisionType::VERTEX_VERTEX: {
+                    case ESPCollisionType::VERTEX_VERTEX: {
                         // One vertex is virtual (on face fi), other is real.
                         // Elevate to FaceVertex: face fi paired with the
                         // real vertex.
@@ -1080,7 +1080,7 @@ void TangentialCollisions::build(
                         assign_fv_mu(FC_fv.back());
                         break;
                     }
-                    case EspCollisionType::EDGE_VERTEX: {
+                    case ESPCollisionType::EDGE_VERTEX: {
                         // Real edge (cc[0]) vs virtual vertex on face fi.
                         // Distribute the sub-collision's contact force to
                         // the two edge endpoints using the projection
@@ -1123,7 +1123,7 @@ void TangentialCollisions::build(
                         emit_fv(oe1, w1);
                         break;
                     }
-                    case EspCollisionType::FACE_VERTEX: {
+                    case ESPCollisionType::FACE_VERTEX: {
                         // Real face (cc[0]) vs virtual vertex on face fi.
                         // Distribute the sub-collision's contact force to
                         // the three cube-face vertices using barycentric

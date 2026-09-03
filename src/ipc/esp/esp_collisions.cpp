@@ -92,11 +92,11 @@ namespace {
     }
 } // namespace
 
-void EspCollisions::build(
+void ESPCollisions::build(
     const Candidates& candidates,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const EspParameters params)
+    const ESPParameters params)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
@@ -108,19 +108,19 @@ void EspCollisions::build(
         // require them).
         const_cast<Candidates&>(candidates).convert_candidates_to_sets();
 
-        tbb::enumerable_thread_specific<EspCollisionsBuilder<2>> storage {
-            EspCollisionsBuilder<2>()
+        tbb::enumerable_thread_specific<ESPCollisionsBuilder<2>> storage {
+            ESPCollisionsBuilder<2>()
         };
 
         // Standard mode: loop over all edges with per-QP collision dicts.
         tbb::parallel_for(
             tbb::blocked_range<size_t>(0, mesh.num_edges()),
             [&](const tbb::blocked_range<size_t>& r) {
-                EspCollisionsBuilder<2>& local_storage = storage.local();
+                ESPCollisionsBuilder<2>& local_storage = storage.local();
                 local_storage.build_edge_collisions(
                     mesh, vertices, candidates, params, r.begin(), r.end());
             });
-        EspCollisionsBuilder<2>::merge(storage, *this);
+        ESPCollisionsBuilder<2>::merge(storage, *this);
     } else {
         // Compute vertex mask: which vertices to process.
         std::vector<bool> vertex_mask(mesh.num_vertices(), false);
@@ -226,19 +226,19 @@ void EspCollisions::build(
         "ho.candidates.total", static_cast<double>(candidates.size()));
 }
 
-std::unique_ptr<AdaptiveSupport> EspCollisions::compute_adaptive_dhat(
+std::unique_ptr<AdaptiveSupport> ESPCollisions::compute_adaptive_dhat(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const EspParameters& params)
+    const ESPParameters& params)
 {
     return std::make_unique<AdaptiveSupport>(mesh, vertices, params);
 }
 
-void EspCollisions::build(
+void ESPCollisions::build(
     const Candidates& _candidates,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const EspParameters params,
+    const ESPParameters params,
     const AdaptiveSupport* adaptive)
 {
     adaptive_dhat =
@@ -246,10 +246,10 @@ void EspCollisions::build(
     this->build(_candidates, mesh, vertices, params);
 }
 
-void EspCollisions::build(
+void ESPCollisions::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const EspParameters params,
+    const ESPParameters params,
     BroadPhase* broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -269,10 +269,10 @@ void EspCollisions::build(
     this->build(m_candidates, mesh, vertices, params);
 }
 
-void EspCollisions::build(
+void ESPCollisions::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const EspParameters params,
+    const ESPParameters params,
     const AdaptiveSupport* adaptive,
     BroadPhase* broad_phase)
 {
@@ -293,7 +293,7 @@ void EspCollisions::build(
 }
 
 // ============================================================================
-size_t EspCollisions::size() const
+size_t ESPCollisions::size() const
 {
     size_t size = 0;
     for (const auto& cc : vertex_collisions) {
@@ -314,12 +314,12 @@ size_t EspCollisions::size() const
     }
     return size;
 }
-bool EspCollisions::empty() const
+bool ESPCollisions::empty() const
 {
     return vertex_collisions.empty() && edge_edge_collisions.empty()
         && face_collisions.empty() && edge_collisions_2d.empty();
 }
-void EspCollisions::clear()
+void ESPCollisions::clear()
 {
     vertex_collisions.clear();
     edge_edge_collisions.clear();
@@ -327,10 +327,10 @@ void EspCollisions::clear()
     edge_collisions_2d.clear();
 }
 
-std::string EspCollisions::to_string(
+std::string ESPCollisions::to_string(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const EspParameters& params) const
+    const ESPParameters& params) const
 {
     std::stringstream ss;
 
@@ -383,7 +383,7 @@ std::string EspCollisions::to_string(
 }
 
 // NOTE: Actually distance squared
-double EspCollisions::compute_minimum_distance(
+double ESPCollisions::compute_minimum_distance(
     const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -414,7 +414,7 @@ double EspCollisions::compute_minimum_distance(
     return storage.combine([](double a, double b) { return std::min(a, b); });
 }
 
-std::map<size_t, size_t> EspCollisions::edge_id_count_distribution() const
+std::map<size_t, size_t> ESPCollisions::edge_id_count_distribution() const
 {
     unordered_map<index_t, size_t> counts;
     for (const auto& [key, _] : edge_edge_collisions) {
@@ -429,7 +429,7 @@ std::map<size_t, size_t> EspCollisions::edge_id_count_distribution() const
 }
 
 Eigen::VectorXd
-EspCollisions::edge_collision_counts(size_t num_edges) const
+ESPCollisions::edge_collision_counts(size_t num_edges) const
 {
     Eigen::VectorXd counts = Eigen::VectorXd::Zero(num_edges);
     for (const auto& [key, _] : edge_edge_collisions) {

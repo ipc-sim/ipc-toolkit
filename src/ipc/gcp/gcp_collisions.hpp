@@ -15,19 +15,19 @@
 #include <vector>
 
 namespace ipc {
-class GcpCollisions {
+class GCPCollisions {
 public:
     /// @brief The type of the collisions.
-    using value_type = GcpCollision;
+    using value_type = GCPCollision;
 
 public:
-    GcpCollisions() = default;
-    virtual ~GcpCollisions() = default;
+    GCPCollisions() = default;
+    virtual ~GCPCollisions() = default;
 
     void compute_adaptive_dhat(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const GcpParameters params,
+        const GCPParameters params,
         BroadPhase* broad_phase = nullptr);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
@@ -37,7 +37,7 @@ public:
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const GcpParameters params,
+        const GCPParameters params,
         const bool use_adaptive_dhat = false,
         BroadPhase* broad_phase = nullptr);
 
@@ -49,7 +49,7 @@ public:
         const Candidates& _candidates,
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const GcpParameters params,
+        const GCPParameters params,
         const bool use_adaptive_dhat = false);
 
     // ------------------------------------------------------------------------
@@ -66,12 +66,12 @@ public:
     /// @brief Get a reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A reference to the collision.
-    GcpCollision& operator[](size_t i);
+    GCPCollision& operator[](size_t i);
 
     /// @brief Get a const reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A const reference to the collision.
-    const GcpCollision& operator[](size_t i) const;
+    const GCPCollision& operator[](size_t i) const;
 
     /// @brief Compute minimum distance between all contact candidates
     /// @param mesh The collision mesh.
@@ -93,7 +93,7 @@ public:
     std::string to_string(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const GcpParameters& params) const;
+        const GCPParameters& params) const;
 
     /// @brief Get per-vertex dhat value when dhat is adaptive
     double get_vert_dhat(int vert_id) const
@@ -138,7 +138,7 @@ public:
 
 public:
     /// @brief (active) collision pairs
-    std::vector<std::shared_ptr<GcpCollision>> collisions;
+    std::vector<std::shared_ptr<GCPCollision>> collisions;
 
     /// @brief per-vertex adaptive dhat
     Eigen::VectorXd vert_adaptive_dhat;

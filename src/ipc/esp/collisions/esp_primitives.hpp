@@ -15,14 +15,14 @@ namespace ipc {
  * vertices and edges) involved in a ESP contact. Derived classes
  * are responsible for implementing the specific logic for their geometry type.
  */
-class EspPrimitive {
+class ESPPrimitive {
 public:
     constexpr static int MAX_NUM_VERTS = 3;
-    EspPrimitive(const index_t id) : m_id(id) { }
+    ESPPrimitive(const index_t id) : m_id(id) { }
 
-    virtual ~EspPrimitive() = default;
+    virtual ~ESPPrimitive() = default;
 
-    bool operator==(const EspPrimitive& other) const
+    bool operator==(const ESPPrimitive& other) const
     {
         return id() == other.id();
     }
@@ -77,7 +77,7 @@ namespace {
 } // namespace
 
 /// @brief 2D vertex primitive with neighbor storage, for OGC.
-class Vertex2ogc : public EspPrimitive {
+class Vertex2ogc : public ESPPrimitive {
 public:
     static constexpr int N_CORE_POINTS = 1;
     static constexpr int N_POINTS = 1;
@@ -86,7 +86,7 @@ public:
 
     Vertex2ogc(
         const index_t id, const CollisionMesh& mesh, const Eigen::MatrixXd& V)
-        : EspPrimitive(id)
+        : ESPPrimitive(id)
     {
         n_verts = 0;
         m_vertex_ids[n_verts++] = id;
@@ -103,7 +103,7 @@ private:
     int n_verts;
 };
 
-class Edge2P1 : public EspPrimitive {
+class Edge2P1 : public ESPPrimitive {
 public:
     static constexpr int N_CORE_POINTS = 2;
     static constexpr int N_POINTS = 2;
@@ -111,7 +111,7 @@ public:
     static constexpr int N_DOFS = N_POINTS * DIM;
 
     Edge2P1(const index_t id, const CollisionMesh& mesh)
-        : EspPrimitive(id)
+        : ESPPrimitive(id)
     {
         m_vertex_ids[0] = mesh.edges()(id, 0);
         m_vertex_ids[1] = mesh.edges()(id, 1);
@@ -122,7 +122,7 @@ public:
 };
 
 /// @brief Simple 2D vertex primitive (single vertex, no neighbor storage).
-class Vertex2 : public EspPrimitive {
+class Vertex2 : public ESPPrimitive {
 public:
     static constexpr int N_CORE_POINTS = 1;
     static constexpr int N_POINTS = 1;
@@ -130,7 +130,7 @@ public:
     static constexpr int N_DOFS = N_POINTS * DIM;
 
     Vertex2(const index_t id, const CollisionMesh& /*mesh*/)
-        : EspPrimitive(id)
+        : ESPPrimitive(id)
     {
         m_vertex_ids[0] = id;
     }
@@ -139,7 +139,7 @@ public:
     int n_dofs() const override { return N_DOFS; }
 };
 
-class Vertex3 : public EspPrimitive {
+class Vertex3 : public ESPPrimitive {
 public:
     static constexpr int N_CORE_POINTS = 1;
     static constexpr int N_POINTS = 1;
@@ -147,7 +147,7 @@ public:
     static constexpr int N_DOFS = N_POINTS * DIM;
 
     Vertex3(const index_t id, const CollisionMesh& mesh)
-        : EspPrimitive(id)
+        : ESPPrimitive(id)
     {
         m_vertex_ids[0] = id;
     }
@@ -156,7 +156,7 @@ public:
     int n_dofs() const override { return n_vertices() * DIM; }
 };
 
-class Edge3P1 : public EspPrimitive {
+class Edge3P1 : public ESPPrimitive {
 public:
     static constexpr int N_CORE_POINTS = 2;
     static constexpr int N_POINTS = 2;
@@ -164,7 +164,7 @@ public:
     static constexpr int N_DOFS = N_POINTS * DIM;
 
     Edge3P1(const index_t id, const CollisionMesh& mesh)
-        : EspPrimitive(id)
+        : ESPPrimitive(id)
     {
         m_vertex_ids[0] = mesh.edges()(id, 0);
         m_vertex_ids[1] = mesh.edges()(id, 1);
@@ -174,7 +174,7 @@ public:
     int n_dofs() const override { return n_vertices() * DIM; }
 };
 
-class Face3P1 : public EspPrimitive {
+class Face3P1 : public ESPPrimitive {
 public:
     static constexpr int N_CORE_POINTS = 3;
     static constexpr int N_POINTS = 3;
@@ -182,7 +182,7 @@ public:
     static constexpr int N_DOFS = N_POINTS * DIM;
 
     Face3P1(const index_t id, const CollisionMesh& mesh)
-        : EspPrimitive(id)
+        : ESPPrimitive(id)
     {
         m_vertex_ids[0] = mesh.faces()(id, 0);
         m_vertex_ids[1] = mesh.faces()(id, 1);

@@ -18,7 +18,7 @@ public:
     AdaptiveSupport(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
-        const EspParameters& params);
+        const ESPParameters& params);
 
     /// Get dhat value at a vertex.
     double vertex(index_t vertex_id) const;

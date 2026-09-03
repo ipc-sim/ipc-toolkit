@@ -31,18 +31,18 @@ TEST_CASE("Smooth barrier potential codim", "[gcp_potential]")
 
     CollisionMesh mesh;
 
-    GcpCollisions collisions;
+    GCPCollisions collisions;
     mesh = CollisionMesh(
         std::vector<bool>(vertices.rows(), true),
         std::vector<bool>(vertices.rows(), false), vertices, edges, faces);
 
-    GcpParameters params(dhat, 0.85, 0.5, 0.95, 0.6, 2);
+    GCPParameters params(dhat, 0.85, 0.5, 0.95, 0.6, 2);
     collisions.build(mesh, vertices, params, false, method.get());
     CAPTURE(dhat, method);
     CHECK(!collisions.empty());
     CHECK(!has_intersections(mesh, vertices));
 
-    GcpPotential potential(params);
+    GCPPotential potential(params);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
     // -------------------------------------------------------------------------
@@ -143,7 +143,7 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
 
     CollisionMesh mesh;
 
-    GcpCollisions collisions;
+    GCPCollisions collisions;
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(
             std::vector<bool>(vertices.rows(), true),
@@ -158,7 +158,7 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
         vertices = mesh.vertices(vertices);
     }
 
-    GcpParameters params(dhat, 0.85, 0.5, 0.95, 0.6, 2);
+    GCPParameters params(dhat, 0.85, 0.5, 0.95, 0.6, 2);
     params.set_adaptive_dhat_ratio(min_dist_ratio);
     collisions.compute_adaptive_dhat(mesh, vertices, params, method.get());
     collisions.build(mesh, vertices, params, adaptive_dhat, method.get());
@@ -166,7 +166,7 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
     CHECK(!collisions.empty());
     CHECK(!has_intersections(mesh, vertices));
 
-    GcpPotential potential(params);
+    GCPPotential potential(params);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
     // -------------------------------------------------------------------------
@@ -254,9 +254,9 @@ TEST_CASE("Smooth barrier potential real sim 2D C^2", "[gcp_potential]")
     // std::cout << "\n" <<  vertices << "\n" << edges << "\n";
 
     CollisionMesh mesh;
-    GcpParameters params(dhat, 0.9, -0.05, 0.95, 0.05, 1);
+    GCPParameters params(dhat, 0.9, -0.05, 0.95, 0.05, 1);
     params.set_adaptive_dhat_ratio(min_dist_ratio);
-    GcpCollisions collisions;
+    GCPCollisions collisions;
     mesh = CollisionMesh(
         std::vector<bool>(vertices.rows(), true),
         std::vector<bool>(vertices.rows(), orientable), vertices, edges, faces);
@@ -269,7 +269,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^2", "[gcp_potential]")
 
     CHECK(!has_intersections(mesh, vertices));
 
-    GcpPotential potential(params);
+    GCPPotential potential(params);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
     // -------------------------------------------------------------------------
@@ -346,9 +346,9 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[gcp_potential]")
     // std::cout << "\n" <<  vertices << "\n" << edges << "\n";
 
     CollisionMesh mesh;
-    GcpParameters params(dhat, 0.9, -0.05, 0.95, 0.05, 1);
+    GCPParameters params(dhat, 0.9, -0.05, 0.95, 0.05, 1);
     params.set_adaptive_dhat_ratio(min_dist_ratio);
-    GcpCollisions collisions;
+    GCPCollisions collisions;
     mesh = CollisionMesh(vertices, edges, faces);
     collisions.compute_adaptive_dhat(mesh, vertices, params, method.get());
     collisions.build(mesh, vertices, params, adaptive_dhat, method.get());
@@ -360,7 +360,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[gcp_potential]")
 
     CHECK(!has_intersections(mesh, vertices));
 
-    GcpPotential potential(params);
+    GCPPotential potential(params);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
     // -------------------------------------------------------------------------

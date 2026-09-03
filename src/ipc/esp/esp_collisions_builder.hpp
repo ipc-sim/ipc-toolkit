@@ -11,16 +11,16 @@
 
 namespace ipc {
 
-template <int dim> class EspCollisionsBuilder;
+template <int dim> class ESPCollisionsBuilder;
 class PointPotential;
 class QuadratureCollisionsBuilder;
 
-template <> class EspCollisionsBuilder<2> {
+template <> class ESPCollisionsBuilder<2> {
 public:
-    EspCollisionsBuilder() = default;
+    ESPCollisionsBuilder() = default;
     // Copy creates an empty builder (used by tbb::enumerable_thread_specific).
-    EspCollisionsBuilder(const EspCollisionsBuilder&)
-        : EspCollisionsBuilder()
+    ESPCollisionsBuilder(const ESPCollisionsBuilder&)
+        : ESPCollisionsBuilder()
     {
     }
 
@@ -32,16 +32,16 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const Candidates& candidates,
-        const EspParameters& params,
+        const ESPParameters& params,
         size_t start,
         size_t end);
 
     // -------------------------------------------------------------------------
 
     static void merge(
-        tbb::enumerable_thread_specific<EspCollisionsBuilder<2>>&
+        tbb::enumerable_thread_specific<ESPCollisionsBuilder<2>>&
             local_storage,
-        EspCollisions& merged_collisions);
+        ESPCollisions& merged_collisions);
 
     // Per-edge QP collision dicts: each entry is {edge_id, [dict_qp0, ...]}.
     // Stored as a vector of pairs (not a map) so structured-binding iteration
@@ -49,24 +49,24 @@ public:
     std::vector<std::pair<
         index_t,
         std::vector<
-            std::unique_ptr<EspCollisionDict<PointType::EDGE, 2>>>>>
+            std::unique_ptr<ESPCollisionDict<PointType::EDGE, 2>>>>>
         edge_collisions_2d;
 };
 
-template <> class EspCollisionsBuilder<3> {
+template <> class ESPCollisionsBuilder<3> {
 public:
-    EspCollisionsBuilder() { }
+    ESPCollisionsBuilder() { }
 
-    static std::shared_ptr<EspCollision> reduce_point_triangle_collision(
+    static std::shared_ptr<ESPCollision> reduce_point_triangle_collision(
         const FaceVertexCandidate& candidate,
-        const EspParameters& params,
+        const ESPParameters& params,
         const CollisionMesh& mesh,
         const VertexMatrixView<3>& vertices,
         PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO);
 
-    static std::shared_ptr<EspCollision> reduce_point_edge_collision(
+    static std::shared_ptr<ESPCollision> reduce_point_edge_collision(
         const EdgeVertexCandidate& candidate,
-        const EspParameters& params,
+        const ESPParameters& params,
         const CollisionMesh& mesh,
         const VertexMatrixView<3>& vertices,
         PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO);
@@ -75,7 +75,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<FaceVertexCandidate>& candidates,
-        const EspParameters& params,
+        const ESPParameters& params,
         const size_t start_i,
         const size_t end_i);
 
@@ -83,7 +83,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeVertexCandidate>& candidates,
-        const EspParameters& params,
+        const ESPParameters& params,
         const size_t start_i,
         const size_t end_i);
 
@@ -91,7 +91,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<VertexVertexCandidate>& candidates,
-        const EspParameters& params,
+        const ESPParameters& params,
         const size_t start_i,
         const size_t end_i);
 
@@ -102,7 +102,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<std::array<index_t, 3>>& candidates,
-        const EspParameters& params,
+        const ESPParameters& params,
         const double dhat,
         const size_t start_i,
         const size_t end_i);
@@ -111,7 +111,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<std::array<index_t, 3>>& candidates,
-        const EspParameters& params,
+        const ESPParameters& params,
         const double dhat,
         const size_t start_i,
         const size_t end_i);
@@ -120,7 +120,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<std::array<index_t, 3>>& candidates,
-        const EspParameters& params,
+        const ESPParameters& params,
         const double dhat,
         const size_t start_i,
         const size_t end_i);
@@ -128,12 +128,12 @@ public:
     /*/// -------------------------------------------------------------------------
 
     static void merge(
-        const tbb::enumerable_thread_specific<EspCollisionsBuilder<3>>&
+        const tbb::enumerable_thread_specific<ESPCollisionsBuilder<3>>&
             local_storage,
-        EspCollisions& merged_collisions);
+        ESPCollisions& merged_collisions);
 
     // Constructed collisions
-    std::vector<std::shared_ptr<EspCollision>> collisions;
+    std::vector<std::shared_ptr<ESPCollision>> collisions;
 
     // -------------------------------------------------------------------------
 
@@ -152,7 +152,7 @@ public:
     QuadratureCollisionsBuilder(
         const CollisionMesh& mesh,
         const Candidates& candidates,
-        const EspParameters& params);
+        const ESPParameters& params);
     QuadratureCollisionsBuilder(QuadratureCollisionsBuilder&&) = default;
     QuadratureCollisionsBuilder&
     operator=(QuadratureCollisionsBuilder&&) = default;
@@ -182,17 +182,17 @@ public:
     static void merge(
         tbb::enumerable_thread_specific<QuadratureCollisionsBuilder>&
             local_storage,
-        EspCollisions& merged_collisions);
+        ESPCollisions& merged_collisions);
 
     // Local storage
-    std::vector<std::unique_ptr<EspCollisionDict<PointType::VERTEX>>>
+    std::vector<std::unique_ptr<ESPCollisionDict<PointType::VERTEX>>>
         vertex_collisions;
-    std::vector<std::unique_ptr<EspCollisionDict<PointType::EDGE>>>
+    std::vector<std::unique_ptr<ESPCollisionDict<PointType::EDGE>>>
         edge_edge_collisions;
     // face_collisions[i] = {fid, [dict_for_qp0, dict_for_qp1, ...]}
     std::vector<std::pair<
         index_t,
-        std::vector<std::unique_ptr<EspCollisionDict<PointType::FACE>>>>>
+        std::vector<std::unique_ptr<ESPCollisionDict<PointType::FACE>>>>>
         face_collisions;
 
     size_t num_collision_pairs = 0;

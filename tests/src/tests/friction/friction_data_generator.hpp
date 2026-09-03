@@ -22,24 +22,24 @@ Eigen::VectorXd GeomSpaced(int num, double start, double stop);
 
 FrictionData friction_data_generator();
 
-struct GcpFrictionData {
+struct GCPFrictionData {
     Eigen::MatrixXd V0;
     Eigen::MatrixXd V1;
     Eigen::MatrixXi E;
     Eigen::MatrixXi F;
-    ipc::GcpCollisions collisions;
+    ipc::GCPCollisions collisions;
     double mu;
     double epsv_times_h;
-    ipc::GcpParameters p;
+    ipc::GCPParameters p;
     double barrier_stiffness;
 };
 
-GcpFrictionData smooth_friction_data_generator_2d();
-GcpFrictionData smooth_friction_data_generator_3d();
+GCPFrictionData smooth_friction_data_generator_2d();
+GCPFrictionData smooth_friction_data_generator_3d();
 
 /// Scene geometry for "ESP friction force jacobian 3D" tests.
 /// Sections: "point-triangle", "point-edge", "point-point".
-struct EspFrictionSceneData3D {
+struct ESPFrictionSceneData3D {
     Eigen::MatrixXd X;
     Eigen::MatrixXi E;
     Eigen::MatrixXi F;
@@ -47,4 +47,4 @@ struct EspFrictionSceneData3D {
     std::vector<int> upper_vertices;
 };
 
-EspFrictionSceneData3D esp_friction_scene_generator_3d(double d);
+ESPFrictionSceneData3D esp_friction_scene_generator_3d(double d);

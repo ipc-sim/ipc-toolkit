@@ -14,12 +14,12 @@ enum class CollisionType : uint8_t {
 };
 
 /// @brief Contact pair class for Geometric Contact Potential.
-/// @note Unlike NormalCollision, GcpCollision has to be reconstructed whenever vertices change position
-class GcpCollision {
+/// @note Unlike NormalCollision, GCPCollision has to be reconstructed whenever vertices change position
+class GCPCollision {
 public:
     static constexpr int ELEMENT_SIZE = 3 * MAX_VERT_3D;
 
-    GcpCollision(
+    GCPCollision(
         const index_t _primitive0,
         const index_t _primitive1,
         const double _dhat,
@@ -30,7 +30,7 @@ public:
     {
     }
 
-    virtual ~GcpCollision() = default;
+    virtual ~GCPCollision() = default;
 
     /// @brief Check if this contact pair is active (depending on both orientation and distance)
     bool is_active() const { return m_is_active; }
@@ -82,25 +82,25 @@ public:
     /// @brief Compute the value of the GCP potential
     virtual double operator()(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const GcpParameters& params) const = 0;
+        const GCPParameters& params) const = 0;
 
     /// @brief Compute the gradient of the GCP potential wrt. vertices involved
     virtual VectorMax<double, ELEMENT_SIZE> gradient(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const GcpParameters& params) const = 0;
+        const GCPParameters& params) const = 0;
 
     /// @brief Compute the Hessian of the GCP potential wrt. vertices involved
     virtual MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hessian(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const GcpParameters& params) const = 0;
+        const GCPParameters& params) const = 0;
 
-    bool operator==(const GcpCollision& other) const
+    bool operator==(const GCPCollision& other) const
     {
         return (
             primitive0 == other.primitive0 && primitive1 == other.primitive1);
     }
 
-    bool operator!=(const GcpCollision& other) const
+    bool operator!=(const GCPCollision& other) const
     {
         return !(*this == other);
     }
@@ -132,9 +132,9 @@ protected:
 
 /// @brief Templated class for various types of contact pairs
 template <typename PrimitiveA, typename PrimitiveB>
-class GcpCollisionTemplate : public GcpCollision {
+class GCPCollisionTemplate : public GCPCollision {
 public:
-    using Super = GcpCollision;
+    using Super = GCPCollision;
     /// @brief Distance type of the contact pair
     using DTYPE = typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type;
     /// @brief Number of points needed to compute the distance between two primitives
@@ -146,16 +146,16 @@ public:
     static constexpr int N_CORE_DOFS = N_CORE_POINTS * DIM;
     static constexpr int ELEMENT_SIZE = Super::ELEMENT_SIZE;
 
-    GcpCollisionTemplate(
+    GCPCollisionTemplate(
         index_t primitive0,
         index_t primitive1,
         DTYPE dtype,
         const CollisionMesh& mesh,
-        const GcpParameters& params,
+        const GCPParameters& params,
         const double dhat,
         Eigen::ConstRef<Eigen::MatrixXd> V);
 
-    virtual ~GcpCollisionTemplate() = default;
+    virtual ~GCPCollisionTemplate() = default;
 
     std::string name() const override;
 
@@ -187,7 +187,7 @@ public:
     /// @return GCP potential value
     double operator()(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const GcpParameters& params) const override;
+        const GCPParameters& params) const override;
 
     /// @brief Compute the potential gradient wrt. positions
     /// @param positions Vertex positions
@@ -195,7 +195,7 @@ public:
     /// @return GCP potential gradient
     VectorMax<double, ELEMENT_SIZE> gradient(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const GcpParameters& params) const override;
+        const GCPParameters& params) const override;
 
     /// @brief Compute the potential Hessian wrt. positions
     /// @param positions Vertex positions
@@ -203,7 +203,7 @@ public:
     /// @return GCP potential Hessian
     MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hessian(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const GcpParameters& params) const override;
+        const GCPParameters& params) const override;
 
     // ---- distance ----
 

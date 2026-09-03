@@ -16,7 +16,7 @@ namespace ipc {
  */
 class Primitive {
 public:
-    Primitive(const index_t id, const GcpParameters& params)
+    Primitive(const index_t id, const GCPParameters& params)
         : m_params(params)
         , m_id(id)
     {
@@ -39,7 +39,7 @@ public:
 
 protected:
     /// @brief GCP parameters
-    const GcpParameters m_params;
+    const GCPParameters m_params;
     /// @brief Vertex IDs on this primitive
     std::vector<index_t> m_vertex_ids;
     /// @brief Vertex/Edge/Face ID of this primitive

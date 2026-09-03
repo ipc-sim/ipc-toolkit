@@ -6,14 +6,14 @@
 
 namespace ipc {
 
-class GcpPotential {
+class GCPPotential {
 public:
-    GcpPotential(const GcpParameters& _params)
+    GCPPotential(const GCPParameters& _params)
         : params(_params)
     {
     }
 
-    virtual ~GcpPotential() = default;
+    virtual ~GCPPotential() = default;
 
     // -- Cumulative methods ---------------------------------------------------
 
@@ -23,7 +23,7 @@ public:
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
     /// @returns The potential for a set of collisions.
     double operator()(
-        const GcpCollisions& collisions,
+        const GCPCollisions& collisions,
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> X) const;
 
@@ -33,7 +33,7 @@ public:
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
     /// @returns The gradient of the potential w.r.t. X. This will have a size of X.size().
     Eigen::VectorXd gradient(
-        const GcpCollisions& collisions,
+        const GCPCollisions& collisions,
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> X) const;
 
@@ -44,7 +44,7 @@ public:
     /// @param project_hessian_to_psd Make sure the hessian is positive semi-definite.
     /// @returns The Hessian of the potential w.r.t. X. This will have a size of X.size() by X.size().
     virtual Eigen::SparseMatrix<double> hessian(
-        const GcpCollisions& collisions,
+        const GCPCollisions& collisions,
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> X,
         const PSDProjectionMethod project_hessian_to_psd =
@@ -57,7 +57,7 @@ public:
     /// @param positions The collision stencil's positions.
     /// @return The potential.
     double operator()(
-        const GcpCollision& collision,
+        const GCPCollision& collision,
         Eigen::ConstRef<Eigen::VectorXd> positions) const;
 
     /// @brief Compute the gradient of the potential for a single collision.
@@ -65,7 +65,7 @@ public:
     /// @param positions The collision stencil's positions.
     /// @return The gradient of the potential.
     Eigen::VectorXd gradient(
-        const GcpCollision& collision,
+        const GCPCollision& collision,
         Eigen::ConstRef<Eigen::VectorXd> positions) const;
 
     /// @brief Compute the hessian of the potential for a single collision.
@@ -73,14 +73,14 @@ public:
     /// @param positions The collision stencil's positions.
     /// @return The hessian of the potential.
     Eigen::MatrixXd hessian(
-        const GcpCollision& collision,
+        const GCPCollision& collision,
         Eigen::ConstRef<Eigen::VectorXd> positions,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const;
 
 protected:
     /// @brief GCP parameters for collision potential
-    GcpParameters params;
+    GCPParameters params;
 };
 
 } // namespace ipc

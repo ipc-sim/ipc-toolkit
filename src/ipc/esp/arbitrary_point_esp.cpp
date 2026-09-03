@@ -1,4 +1,4 @@
-#include "arbitrary_point_potential.hpp"
+#include "arbitrary_point_esp.hpp"
 
 #include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/face_vertex.hpp>
@@ -44,7 +44,7 @@ namespace {
         }
     }
 
-    // 2D counterpart of EspCollisionsBuilder<3>::
+    // 2D counterpart of ESPCollisionsBuilder<3>::
     // reduce_point_edge_collision (esp_collisions_builder.cpp), which
     // only exists on the <3> specialization: classify which sub-feature of
     // edge ei the query's closest point falls on and emit the
@@ -54,10 +54,10 @@ namespace {
     // Query vertex first in both templates, matching the convention of the
     // 2D edge-QP builder in quadrature_potential.cpp; Vertex2-Edge2P1's
     // evaluators assume that layout ([q, e0, e1]).
-    std::shared_ptr<EspCollision> reduce_point_edge_collision_2d(
+    std::shared_ptr<ESPCollision> reduce_point_edge_collision_2d(
         const index_t ei,
         const index_t vid,
-        const EspParameters& params,
+        const ESPParameters& params,
         const CollisionMesh& mesh,
         const VertexMatrixView<2>& vertices)
     {
@@ -76,13 +76,13 @@ namespace {
         switch (dtype) {
         case PointEdgeDistanceType::P_E0:
             return std::make_shared<
-                EspCollisionTemplate<Vertex2, Vertex2>>(vid, e0, mesh);
+                ESPCollisionTemplate<Vertex2, Vertex2>>(vid, e0, mesh);
         case PointEdgeDistanceType::P_E1:
             return std::make_shared<
-                EspCollisionTemplate<Vertex2, Vertex2>>(vid, e1, mesh);
+                ESPCollisionTemplate<Vertex2, Vertex2>>(vid, e1, mesh);
         case PointEdgeDistanceType::P_E:
             return std::make_shared<
-                EspCollisionTemplate<Vertex2, Edge2P1>>(vid, ei, mesh);
+                ESPCollisionTemplate<Vertex2, Edge2P1>>(vid, ei, mesh);
         default:
             assert(false);
             return nullptr;
@@ -92,27 +92,27 @@ namespace {
 } // namespace
 
 template <int dim>
-ArbitraryPointPotential<dim>::ArbitraryPointPotential(
-    const CollisionMesh& _mesh, EspParameters _params)
+ArbitraryPointESP<dim>::ArbitraryPointESP(
+    const CollisionMesh& _mesh, ESPParameters _params)
     : mesh(_mesh)
     , params(std::move(_params))
 {
     if (mesh.dim() != dim) {
         log_and_throw_error(
-            "ArbitraryPointPotential<{}> requires a {}D mesh (got {}D)!", dim,
+            "ArbitraryPointESP<{}> requires a {}D mesh (got {}D)!", dim,
             dim, mesh.dim());
     }
 }
 
 template <int dim>
-void ArbitraryPointPotential<dim>::update(Eigen::ConstRef<Eigen::MatrixXd> V)
+void ArbitraryPointESP<dim>::update(Eigen::ConstRef<Eigen::MatrixXd> V)
 {
     point_bvh.update(V, mesh);
 }
 
 template <int dim>
-std::unique_ptr<EspCollisionDict<PointType::VERTEX, dim>>
-ArbitraryPointPotential<dim>::build_collisions_at_point(
+std::unique_ptr<ESPCollisionDict<PointType::VERTEX, dim>>
+ArbitraryPointESP<dim>::build_collisions_at_point(
     Eigen::ConstRef<Eigen::MatrixXd> V, Eigen::ConstRef<Point> q) const
 {
     using VertexP = std::conditional_t<dim == 2, Vertex2, Vertex3>;
@@ -123,7 +123,7 @@ ArbitraryPointPotential<dim>::build_collisions_at_point(
     std::vector<index_t> vertex_ids, edge_ids, face_ids;
     point_bvh.query_point(q, params.dhat, vertex_ids, edge_ids, face_ids);
 
-    unordered_map<std::array<index_t, 3>, std::shared_ptr<EspCollision>>
+    unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>>
         pairs;
 
     // Inclusion-exclusion over codimension: every primitive whose offset
@@ -136,8 +136,8 @@ ArbitraryPointPotential<dim>::build_collisions_at_point(
     // integers in insert_pair() above.
     if constexpr (dim == 3) {
         for (const index_t fi : face_ids) {
-            if (std::shared_ptr<EspCollision> pair =
-                    EspCollisionsBuilder<3>::
+            if (std::shared_ptr<ESPCollision> pair =
+                    ESPCollisionsBuilder<3>::
                         reduce_point_triangle_collision(
                             FaceVertexCandidate(fi, vid), params, mesh,
                             V_view)) {
@@ -146,8 +146,8 @@ ArbitraryPointPotential<dim>::build_collisions_at_point(
             }
         }
         for (const index_t ei : edge_ids) {
-            if (std::shared_ptr<EspCollision> pair =
-                    EspCollisionsBuilder<3>::reduce_point_edge_collision(
+            if (std::shared_ptr<ESPCollision> pair =
+                    ESPCollisionsBuilder<3>::reduce_point_edge_collision(
                         EdgeVertexCandidate(ei, vid), params, mesh, V_view)) {
                 pair->weight = -1;
                 insert_pair(pairs, std::move(pair));
@@ -158,7 +158,7 @@ ArbitraryPointPotential<dim>::build_collisions_at_point(
         // faces take in 3D and there is no face loop (mesh.faces() is empty
         // and the face BVH is never built).
         for (const index_t ei : edge_ids) {
-            if (std::shared_ptr<EspCollision> pair =
+            if (std::shared_ptr<ESPCollision> pair =
                     reduce_point_edge_collision_2d(
                         ei, vid, params, mesh, V_view)) {
                 insert_pair(pairs, std::move(pair));
@@ -181,8 +181,8 @@ ArbitraryPointPotential<dim>::build_collisions_at_point(
         if ((V.row(vi) - q).squaredNorm() >= params.dhat * params.dhat) {
             continue;
         }
-        std::shared_ptr<EspCollision> pair =
-            std::make_shared<EspCollisionTemplate<VertexP, VertexP>>(
+        std::shared_ptr<ESPCollision> pair =
+            std::make_shared<ESPCollisionTemplate<VertexP, VertexP>>(
                 vid, vi, mesh);
         if constexpr (dim == 2) {
             pair->weight = -1;
@@ -191,14 +191,14 @@ ArbitraryPointPotential<dim>::build_collisions_at_point(
     }
 
     auto collisions =
-        std::make_unique<EspCollisionDict<PointType::VERTEX, dim>>();
+        std::make_unique<ESPCollisionDict<PointType::VERTEX, dim>>();
     collisions->initialize(
         std::vector<index_t> { vid }, std::vector<index_t> { vid }, pairs);
     return collisions;
 }
 
 template <int dim>
-double ArbitraryPointPotential<dim>::operator()(
+double ArbitraryPointESP<dim>::operator()(
     Eigen::ConstRef<Eigen::MatrixXd> V, Eigen::ConstRef<Point> q) const
 {
     const auto collisions = build_collisions_at_point(V, q);
@@ -213,7 +213,7 @@ double ArbitraryPointPotential<dim>::operator()(
 }
 
 template <int dim>
-auto ArbitraryPointPotential<dim>::gradient(
+auto ArbitraryPointESP<dim>::gradient(
     Eigen::ConstRef<Eigen::MatrixXd> V, Eigen::ConstRef<Point> q) const
     -> Gradient
 {
@@ -239,7 +239,7 @@ auto ArbitraryPointPotential<dim>::gradient(
 }
 
 template <int dim>
-auto ArbitraryPointPotential<dim>::hessian(
+auto ArbitraryPointESP<dim>::hessian(
     Eigen::ConstRef<Eigen::MatrixXd> V, Eigen::ConstRef<Point> q) const
     -> Hessian
 {
@@ -269,7 +269,7 @@ auto ArbitraryPointPotential<dim>::hessian(
 }
 
 template <int dim>
-auto ArbitraryPointPotential<dim>::evaluate(
+auto ArbitraryPointESP<dim>::evaluate(
     Eigen::ConstRef<Eigen::MatrixXd> V, Eigen::ConstRef<Point> q) const
     -> std::tuple<double, Gradient, Hessian>
 {
@@ -311,7 +311,7 @@ auto ArbitraryPointPotential<dim>::evaluate(
              H.template block<dim, dim>(dim * q_local, dim * q_local) };
 }
 
-template class ArbitraryPointPotential<2>;
-template class ArbitraryPointPotential<3>;
+template class ArbitraryPointESP<2>;
+template class ArbitraryPointESP<3>;
 
 } // namespace ipc

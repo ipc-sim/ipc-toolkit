@@ -19,29 +19,29 @@ enum class PointType : std::uint8_t { VERTEX, EDGE, FACE };
 /// CollisionMesh, the ID of a virtual vertex is always #n_verts, i.e.
 /// immediately after all real vertices.
 /// @tparam DIM Spatial dimension (2 or 3). Default is 3.
-template <PointType pType, int DIM = 3> class EspCollisionDict {
+template <PointType pType, int DIM = 3> class ESPCollisionDict {
 public:
     static constexpr int dim = DIM;
 
     // Collision pair types depend on dimension.
     using VVType = std::conditional_t<
         DIM == 2,
-        EspCollisionTemplate<Vertex2, Vertex2>,
-        EspCollisionTemplate<Vertex3, Vertex3>>;
+        ESPCollisionTemplate<Vertex2, Vertex2>,
+        ESPCollisionTemplate<Vertex3, Vertex3>>;
     using EVType = std::conditional_t<
         DIM == 2,
-        EspCollisionTemplate<Vertex2, Edge2P1>,
-        EspCollisionTemplate<Edge3P1, Vertex3>>;
+        ESPCollisionTemplate<Vertex2, Edge2P1>,
+        ESPCollisionTemplate<Edge3P1, Vertex3>>;
 
-    EspCollisionDict() = default;
-    ~EspCollisionDict() = default;
+    ESPCollisionDict() = default;
+    ~ESPCollisionDict() = default;
 
     void initialize(
         const std::vector<index_t>& primitive_ids,
         const std::vector<index_t>& primary_vertex_ids,
         const unordered_map<
             std::array<index_t, 3>,
-            std::shared_ptr<EspCollision>>& map);
+            std::shared_ptr<ESPCollision>>& map);
 
     const std::array<index_t, 4>& primary_vertex_ids() const
     {
@@ -58,8 +58,8 @@ public:
             + fv_collisions.size();
     }
 
-    EspCollision& operator[](int i);
-    const EspCollision& operator[](int i) const;
+    ESPCollision& operator[](int i);
+    const ESPCollision& operator[](int i) const;
 
     template <
         PointType T = pType,
@@ -106,7 +106,7 @@ public:
 private:
     std::vector<VVType> vv_collisions;
     std::vector<EVType> ev_collisions;
-    std::vector<EspCollisionTemplate<Face3P1, Vertex3>>
+    std::vector<ESPCollisionTemplate<Face3P1, Vertex3>>
         fv_collisions; // unused in DIM=2
 
     std::array<index_t, 2> m_primitive_ids { { -1, -1 } };

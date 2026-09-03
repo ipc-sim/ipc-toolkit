@@ -12,7 +12,7 @@
 
 namespace ipc {
 
-enum class EspCollisionType : uint8_t {
+enum class ESPCollisionType : uint8_t {
     EDGE_VERTEX = 0,
     VERTEX_VERTEX = 1,
     FACE_VERTEX = 2,
@@ -22,15 +22,15 @@ enum class EspCollisionType : uint8_t {
 };
 
 /// @brief Contact pair class for Geometric Contact Potential.
-/// @note Unlike NormalCollision, EspCollision has to be reconstructed whenever vertices change position
-class EspCollision {
+/// @note Unlike NormalCollision, ESPCollision has to be reconstructed whenever vertices change position
+class ESPCollision {
 public:
     static constexpr int MAX_VERT_3D = 20 * 2;
     static constexpr int ELEMENT_SIZE = 3 * MAX_VERT_3D;
 
-    EspCollision() = default;
+    ESPCollision() = default;
 
-    virtual ~EspCollision() = default;
+    virtual ~ESPCollision() = default;
 
     /// @brief Name of the contact pair type
     virtual std::string name() const = 0;
@@ -39,7 +39,7 @@ public:
     virtual int n_dofs() const = 0;
 
     /// @brief Contact pair type
-    virtual EspCollisionType type() const = 0;
+    virtual ESPCollisionType type() const = 0;
 
     virtual std::array<index_t, 3> get_typed_hash() const = 0;
 
@@ -93,27 +93,27 @@ public:
     /// @brief Compute the value of the GCP potential
     virtual double operator()(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const EspParameters& params,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive = nullptr) const = 0;
 
     /// @brief Compute the gradient of the GCP potential wrt. vertices involved
     virtual VectorMax<double, ELEMENT_SIZE> gradient(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const EspParameters& params,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive = nullptr) const = 0;
 
     /// @brief Compute the Hessian of the GCP potential wrt. vertices involved
     virtual MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> hessian(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const EspParameters& params,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive = nullptr) const = 0;
 
-    bool operator==(const EspCollision& other) const
+    bool operator==(const ESPCollision& other) const
     {
         return ((*this)[0] == other[0] && (*this)[1] == other[1]);
     }
 
-    bool operator!=(const EspCollision& other) const
+    bool operator!=(const ESPCollision& other) const
     {
         return !(*this == other);
     }
@@ -124,7 +124,7 @@ public:
 
     virtual std::pair<double, double> operator_nearfar(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const EspParameters& params,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const NearFarBarrier* nf_barrier) const
     {
@@ -135,7 +135,7 @@ public:
         pair<VectorMax<double, ELEMENT_SIZE>, VectorMax<double, ELEMENT_SIZE>>
         gradient_nearfar(
             Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-            const EspParameters& params,
+            const ESPParameters& params,
             const AdaptiveSupport* adaptive,
             const NearFarBarrier* nf_barrier) const
     {
@@ -149,7 +149,7 @@ public:
         MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>>
     hessian_nearfar(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const EspParameters& params,
+        const ESPParameters& params,
         const AdaptiveSupport* adaptive,
         const NearFarBarrier* nf_barrier) const
     {

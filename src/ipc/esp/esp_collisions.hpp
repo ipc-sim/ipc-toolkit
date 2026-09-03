@@ -11,17 +11,17 @@
 #include <map>
 
 namespace ipc {
-class EspCollisions {
+class ESPCollisions {
 public:
-    EspCollisions() = default;
-    virtual ~EspCollisions() = default;
+    ESPCollisions() = default;
+    virtual ~ESPCollisions() = default;
 
     /// @brief Compute per-vertex adaptive dhat values. The returned object can
     ///        be passed to build() to avoid recomputing it on every rebuild.
     static std::unique_ptr<AdaptiveSupport> compute_adaptive_dhat(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const EspParameters& params);
+        const ESPParameters& params);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param mesh The collision mesh.
@@ -30,7 +30,7 @@ public:
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const EspParameters params,
+        const ESPParameters params,
         BroadPhase* broad_phase = nullptr);
 
     /// @brief Build using a pre-computed AdaptiveSupport (copied internally;
@@ -38,7 +38,7 @@ public:
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const EspParameters params,
+        const ESPParameters params,
         const AdaptiveSupport* adaptive,
         BroadPhase* broad_phase = nullptr);
 
@@ -50,14 +50,14 @@ public:
         const Candidates& _candidates,
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const EspParameters params);
+        const ESPParameters params);
 
     /// @brief Build from candidates using a pre-computed AdaptiveSupport (copied internally).
     void build(
         const Candidates& _candidates,
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const EspParameters params,
+        const ESPParameters params,
         const AdaptiveSupport* adaptive);
 
     // ------------------------------------------------------------------------
@@ -83,7 +83,7 @@ public:
     std::string to_string(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const EspParameters& params) const;
+        const ESPParameters& params) const;
 
     /// @brief Number of contact candidates
     int n_candidates() const { return m_candidates.size(); }
@@ -110,19 +110,19 @@ public:
     // vertex_collisions[vi] provides the contact set for vertex vi
     unordered_map<
         index_t,
-        std::unique_ptr<EspCollisionDict<PointType::VERTEX>>>
+        std::unique_ptr<ESPCollisionDict<PointType::VERTEX>>>
         vertex_collisions;
     // edge_edge_collisions[(ei, ej)] provides the contact set for the closest
     // point on ei, between edge ei and ej.
     unordered_map<
         std::pair<index_t, index_t>,
-        std::unique_ptr<EspCollisionDict<PointType::EDGE>>>
+        std::unique_ptr<ESPCollisionDict<PointType::EDGE>>>
         edge_edge_collisions;
     // face_collisions[fi][qi] provides the contact set for quadrature point qi
     // of face fi
     unordered_map<
         index_t,
-        std::vector<std::unique_ptr<EspCollisionDict<PointType::FACE>>>>
+        std::vector<std::unique_ptr<ESPCollisionDict<PointType::FACE>>>>
         face_collisions;
 
     /// @brief collision sets for 2D quadrature
@@ -131,7 +131,7 @@ public:
     unordered_map<
         index_t,
         std::vector<
-            std::unique_ptr<EspCollisionDict<PointType::EDGE, 2>>>>
+            std::unique_ptr<ESPCollisionDict<PointType::EDGE, 2>>>>
         edge_collisions_2d;
 
     /// @brief Total number of collision pairs counted across all quadrature build functions
