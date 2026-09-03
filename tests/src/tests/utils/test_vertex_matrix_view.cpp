@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
-#include <ipc/high_order_contact/collisions/vertex_matrix_view.hpp>
+#include <ipc/esp/collisions/vertex_matrix_view.hpp>
 
 using namespace ipc;
 using Catch::Approx;

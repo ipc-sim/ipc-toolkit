@@ -7,7 +7,7 @@
 
 #include <igl/edges.h>
 #include <ipc/distance/distance_type.hpp>
-#include <ipc/smooth_contact/smooth_collisions.hpp>
+#include <ipc/gcp/gcp_collisions.hpp>
 
 Eigen::VectorXd LogSpaced(int num, double start, double stop, double base)
 {
@@ -149,9 +149,9 @@ FrictionData friction_data_generator()
 
 using namespace ipc;
 
-SmoothFrictionData smooth_friction_data_generator_3d()
+GcpFrictionData smooth_friction_data_generator_3d()
 {
-    SmoothFrictionData data;
+    GcpFrictionData data;
 
     auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
         data;
@@ -169,7 +169,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
     barrier_stiffness = 1.; // 100;
 #endif
 
-    params = SmoothContactParameters(dhat, 0.8, 0, 1, 0, 2);
+    params = GcpParameters(dhat, 0.8, 0, 1, 0, 2);
     const double max_d = dhat * 0.9;
     const double min_d = dhat * 0.1;
     const double d = GENERATE_COPY(range(min_d, max_d, max_d / 10));
@@ -197,7 +197,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<SmoothCollisionTemplate<Face, Point3>>(
+            std::make_shared<GcpCollisionTemplate<Face, Point3>>(
                 0, 0, PointTriangleDistanceType::P_T, mesh, params, dhat, V0));
     }
     SECTION("edge-edge")
@@ -245,7 +245,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<SmoothCollisionTemplate<Edge3, Edge3>>(
+            std::make_shared<GcpCollisionTemplate<Edge3, Edge3>>(
                 e0, e1, EdgeEdgeDistanceType::EA_EB, mesh, params, dhat, V0));
     }
     SECTION("point-edge")
@@ -282,7 +282,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<SmoothCollisionTemplate<Edge3, Point3>>(
+            std::make_shared<GcpCollisionTemplate<Edge3, Point3>>(
                 e, 0, PointEdgeDistanceType::AUTO, mesh, params, dhat, V0));
     }
     SECTION("point-point")
@@ -307,16 +307,16 @@ SmoothFrictionData smooth_friction_data_generator_3d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<SmoothCollisionTemplate<Point3, Point3>>(
+            std::make_shared<GcpCollisionTemplate<Point3, Point3>>(
                 0, 1, PointPointDistanceType::AUTO, mesh, params, dhat, V0));
     }
 
     return data;
 }
 
-SmoothFrictionData smooth_friction_data_generator_2d()
+GcpFrictionData smooth_friction_data_generator_2d()
 {
-    SmoothFrictionData data;
+    GcpFrictionData data;
 
     auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
         data;
@@ -334,7 +334,7 @@ SmoothFrictionData smooth_friction_data_generator_2d()
     barrier_stiffness = 1.; // 100;
 #endif
 
-    params = SmoothContactParameters(dhat, 0.8, 0, 1, 0, 2);
+    params = GcpParameters(dhat, 0.8, 0, 1, 0, 2);
     const double max_d = dhat * 0.9;
     const double min_d = dhat * 0.1;
     const double d = GENERATE_COPY(range(min_d, max_d, max_d / 10));
@@ -364,7 +364,7 @@ SmoothFrictionData smooth_friction_data_generator_2d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<SmoothCollisionTemplate<Edge2, Point2>>(
+            std::make_shared<GcpCollisionTemplate<Edge2, Point2>>(
                 e, 0, PointEdgeDistanceType::AUTO, mesh, params, dhat, V0));
     }
     SECTION("point-point 2D")
@@ -387,16 +387,16 @@ SmoothFrictionData smooth_friction_data_generator_2d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<SmoothCollisionTemplate<Point2, Point2>>(
+            std::make_shared<GcpCollisionTemplate<Point2, Point2>>(
                 0, 1, PointPointDistanceType::AUTO, mesh, params, dhat, V0));
     }
 
     return data;
 }
 
-HighOrderFrictionSceneData3D high_order_friction_scene_generator_3d(double d)
+EspFrictionSceneData3D esp_friction_scene_generator_3d(double d)
 {
-    HighOrderFrictionSceneData3D data;
+    EspFrictionSceneData3D data;
     auto& [X, E, F, upper_vertices] = data;
 
     SECTION("point-triangle")

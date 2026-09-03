@@ -6,7 +6,7 @@
 
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/geometry/normal.hpp>
-#include <ipc/smooth_contact/primitives/point3.hpp>
+#include <ipc/gcp/primitives/point3.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 #include <ipc/math/math.hpp>
 
@@ -293,7 +293,7 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
 
 TEST_CASE("point term derivatives", "[deriv]")
 {
-    ipc::SmoothContactParameters params(1, 1, 1, 0.01, 0, 2);
+    ipc::GcpParameters params(1, 1, 1, 0.01, 0, 2);
 
     Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
@@ -384,7 +384,7 @@ TEST_CASE("point term derivatives", "[deriv]")
 
 TEST_CASE("point term normal derivatives", "[deriv]")
 {
-    ipc::SmoothContactParameters params(1, 1, 1, 1, 0, 2);
+    ipc::GcpParameters params(1, 1, 1, 1, 0, 2);
 
     Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,

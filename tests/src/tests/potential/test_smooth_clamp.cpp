@@ -4,7 +4,7 @@
 #include <array>
 #include <cmath>
 
-#include <ipc/high_order_contact/smooth_clamp.hpp>
+#include <ipc/esp/smooth_clamp.hpp>
 
 using Catch::Approx;
 using ipc::kSmoothClampEps;

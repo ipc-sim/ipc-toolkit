@@ -89,7 +89,7 @@ void BroadPhase::detect_collision_candidates(
         detect_edge_edge_candidates(candidates.ee_candidates);
         detect_face_vertex_candidates(candidates.fv_candidates);
 
-        // These are needed for high order contact
+        // These are needed for ESP contact
         if (all_types) {
             detect_vertex_vertex_candidates(candidates.vv_candidates);
             detect_edge_face_candidates(candidates.ef_candidates);

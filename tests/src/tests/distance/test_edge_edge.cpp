@@ -8,9 +8,9 @@
 #include <ipc/collision_mesh.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/edge_edge.hpp>
-#include <ipc/smooth_contact/primitives/edge3.hpp>
-#include <ipc/smooth_contact/distance/primitive_distance.hpp>
-#include <ipc/smooth_contact/distance/point_edge.hpp>
+#include <ipc/gcp/primitives/edge3.hpp>
+#include <ipc/gcp/distance/primitive_distance.hpp>
+#include <ipc/gcp/distance/point_edge.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <finitediff.hpp>
@@ -465,7 +465,7 @@ struct Edge3TestFixture {
         const Eigen::Vector3d& e1,
         const Eigen::MatrixX3d& face_verts, // nf x 3
         const Eigen::Vector3d& dn,
-        const SmoothContactParameters& params,
+        const GcpParameters& params,
         bool orient)
     {
         const int nf = static_cast<int>(face_verts.rows());
@@ -667,7 +667,7 @@ TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
     SECTION("2 neighbors, VARIANT")
     {
         const double alpha_n = 0.85, beta_n = 0.2;
-        SmoothContactParameters params { 1e-3, 1, 0, alpha_n, beta_n, 2 };
+        GcpParameters params { 1e-3, 1, 0, alpha_n, beta_n, 2 };
 
         Eigen::Vector3d f0(0.4, 0.3, GENERATE(take(10, random(-0.2, 0.2))));
         Eigen::Vector3d f1(0.6, -0.2, GENERATE(take(10, random(-0.2, 0.2))));
@@ -688,7 +688,7 @@ TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
     SECTION("1 neighbor, VARIANT")
     {
         const double alpha_n = 0.85, beta_n = 0.2;
-        SmoothContactParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
+        GcpParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
 
         Eigen::Vector3d f0(0.4, 0.3, GENERATE(take(5, random(-0.2, 0.2))));
 
@@ -709,7 +709,7 @@ TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
         // The normal-term functions expect direction = -d.normalized(), so we
         // pass neg_dn = -dn below.
         const double alpha_n = 0.85, beta_n = 0.2;
-        SmoothContactParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
+        GcpParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
         Eigen::Vector3d neg_dn = -dn;
 
         // Face normals for the fixture winding are:
@@ -746,7 +746,7 @@ TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
     SECTION("non-orientable edge (early-return path)")
     {
         const double alpha_n = 0.85, beta_n = 0.2;
-        SmoothContactParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
+        GcpParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
 
         Eigen::Vector3d f0(0.4, 0.3, 0.1), f1(0.6, -0.2, 0.1);
 
@@ -770,7 +770,7 @@ TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
         // and normal_sum >= 1 at construction, forcing all normal types to
         // ONE.
         const double alpha_n = 0.5, beta_n = 0.1;
-        SmoothContactParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
+        GcpParameters params(1e-3, 1, 0, alpha_n, beta_n, 2);
 
         // Place face vertices far from z=0 in the +y direction, so that the
         // face normals point nearly purely in +z (aligned with dn).
@@ -800,7 +800,7 @@ TEST_CASE("Edge tangent term", "[distance][edge-edge][gradient]")
     // With dn=(0,0,1), t=(0, y, z), we need z/|t| ∈ (0, 1) ⇒ z > 0.
     // ONE when dn·t/|t| <= 0 ⇒ z <= 0.
     const double alpha_t = 1.0, beta_t = 0.0;
-    SmoothContactParameters params(1e-3, alpha_t, beta_t, 0.85, 0.2, 2);
+    GcpParameters params(1e-3, alpha_t, beta_t, 0.85, 0.2, 2);
 
     const Eigen::Vector3d e0(0, 0, 0), e1(1, 0, 0), dn(0, 0, 1);
 

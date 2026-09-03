@@ -1,9 +1,9 @@
 #include <common.hpp>
 
 #include <ipc/potentials/barrier_potential.hpp>
-#include <ipc/smooth_contact/smooth_contact_potential.hpp>
-#include <ipc/high_order_contact/high_order_contact_potential.hpp>
-#include <ipc/high_order_contact/quadrature_potential.hpp>
+#include <ipc/gcp/gcp_potential.hpp>
+#include <ipc/esp/esp_potential.hpp>
+#include <ipc/esp/quadrature_potential.hpp>
 
 using namespace ipc;
 
@@ -85,7 +85,7 @@ void define_barrier_potential(py::module_& m)
 
 void define_smooth_potential(py::module_& m)
 {
-    py::class_<SmoothContactParameters>(m, "SmoothContactParameters")
+    py::class_<GcpParameters>(m, "GcpParameters")
         .def(
             py::init<
                 const double, const double, const double, const double,
@@ -106,22 +106,22 @@ void define_smooth_potential(py::module_& m)
                 dhat, alpha_t, beta_t, r
             )ipc_Qu8mg5v7",
             "dhat"_a, "alpha_t"_a, "beta_t"_a, "r"_a)
-        .def_readonly("dhat", &SmoothContactParameters::dhat)
-        .def_readonly("alpha_t", &SmoothContactParameters::alpha_t)
-        .def_readonly("beta_t", &SmoothContactParameters::beta_t)
-        .def_readonly("alpha_n", &SmoothContactParameters::alpha_n)
-        .def_readonly("beta_n", &SmoothContactParameters::beta_n)
-        .def_readonly("r", &SmoothContactParameters::r)
+        .def_readonly("dhat", &GcpParameters::dhat)
+        .def_readonly("alpha_t", &GcpParameters::alpha_t)
+        .def_readonly("beta_t", &GcpParameters::beta_t)
+        .def_readonly("alpha_n", &GcpParameters::alpha_n)
+        .def_readonly("beta_n", &GcpParameters::beta_n)
+        .def_readonly("r", &GcpParameters::r)
         .def_property(
             "adaptive_dhat_ratio",
-            &SmoothContactParameters::adaptive_dhat_ratio,
-            &SmoothContactParameters::set_adaptive_dhat_ratio,
+            &GcpParameters::adaptive_dhat_ratio,
+            &GcpParameters::set_adaptive_dhat_ratio,
             "Ratio of the distance to the interaction set in the rest "
             "configuration used as the per-element adaptive dhat.");
 
-    py::class_<SmoothContactPotential>(m, "SmoothContactPotential")
+    py::class_<GcpPotential>(m, "GcpPotential")
         .def(
-            py::init<const SmoothContactParameters&>(),
+            py::init<const GcpParameters&>(),
             R"ipc_Qu8mg5v7(
             Construct a smooth barrier potential.
 
@@ -132,9 +132,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "__call__",
             py::overload_cast<
-                const SmoothCollisions&, const CollisionMesh&,
+                const GcpCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>>(
-                &ipc::SmoothContactPotential::operator(), py::const_),
+                &ipc::GcpPotential::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the barrier potential for a set of collisions.
 
@@ -150,9 +150,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "gradient",
             py::overload_cast<
-                const SmoothCollisions&, const CollisionMesh&,
+                const GcpCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>>(
-                &ipc::SmoothContactPotential::gradient, py::const_),
+                &ipc::GcpPotential::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the barrier potential.
 
@@ -168,9 +168,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const SmoothCollisions&, const CollisionMesh&,
+                const GcpCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>, const PSDProjectionMethod>(
-                &ipc::SmoothContactPotential::hessian, py::const_),
+                &ipc::GcpPotential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the barrier potential.
 
@@ -188,8 +188,8 @@ void define_smooth_potential(py::module_& m)
         .def(
             "__call__",
             py::overload_cast<
-                const SmoothCollision&, Eigen::ConstRef<Eigen::VectorXd>>(
-                &ipc::SmoothContactPotential::operator(), py::const_),
+                const GcpCollision&, Eigen::ConstRef<Eigen::VectorXd>>(
+                &ipc::GcpPotential::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the potential for a single collision.
 
@@ -204,8 +204,8 @@ void define_smooth_potential(py::module_& m)
         .def(
             "gradient",
             py::overload_cast<
-                const SmoothCollision&, Eigen::ConstRef<Eigen::VectorXd>>(
-                &SmoothContactPotential::gradient, py::const_),
+                const GcpCollision&, Eigen::ConstRef<Eigen::VectorXd>>(
+                &GcpPotential::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the potential for a single collision.
 
@@ -220,9 +220,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const SmoothCollision&, Eigen::ConstRef<Eigen::VectorXd>,
+                const GcpCollision&, Eigen::ConstRef<Eigen::VectorXd>,
                 const PSDProjectionMethod>(
-                &SmoothContactPotential::hessian, py::const_),
+                &GcpPotential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential for a single collision.
 
@@ -237,23 +237,23 @@ void define_smooth_potential(py::module_& m)
             "project_hessian_to_psd"_a = PSDProjectionMethod::NONE);
 }
 
-void define_high_order_potential(py::module& m)
+void define_esp_potential(py::module& m)
 {
-    py::enum_<HighOrderContactParameters::IntegrationType>(m, "IntegrationType")
+    py::enum_<EspParameters::IntegrationType>(m, "IntegrationType")
         .value(
             "BRUTE_FORCE",
-            HighOrderContactParameters::IntegrationType::BRUTE_FORCE)
-        .value("NORMAL", HighOrderContactParameters::IntegrationType::NORMAL)
-        .value("NO_OBST", HighOrderContactParameters::IntegrationType::NO_OBST)
+            EspParameters::IntegrationType::BRUTE_FORCE)
+        .value("NORMAL", EspParameters::IntegrationType::NORMAL)
+        .value("NO_OBST", EspParameters::IntegrationType::NO_OBST)
         .export_values();
 
-    py::class_<HighOrderContactParameters>(m, "HighOrderContactParameters")
+    py::class_<EspParameters>(m, "EspParameters")
         .def(
             py::init<
                 const double, const double, const int,
-                HighOrderContactParameters::IntegrationType>(),
+                EspParameters::IntegrationType>(),
             R"ipc_Qu8mg5v7(
-            Construct parameter set for high-order contact.
+            Construct parameter set for ESP contact.
 
             Parameters:
                 dhat, dbar_factor, quad_order, integration_type
@@ -261,16 +261,16 @@ void define_high_order_potential(py::module& m)
             py::arg("dhat"), py::arg("dbar_factor") = 1.0,
             py::arg("quad_order") = 1,
             py::arg("integration_type") =
-                HighOrderContactParameters::IntegrationType::NO_OBST)
-        .def_readonly("dhat", &HighOrderContactParameters::dhat)
-        .def_readonly("dbar", &HighOrderContactParameters::dbar)
-        .def_readonly("quad_order", &HighOrderContactParameters::quad_order)
+                EspParameters::IntegrationType::NO_OBST)
+        .def_readonly("dhat", &EspParameters::dhat)
+        .def_readonly("dbar", &EspParameters::dbar)
+        .def_readonly("quad_order", &EspParameters::quad_order)
         .def_readonly(
-            "integration_type", &HighOrderContactParameters::integration_type);
+            "integration_type", &EspParameters::integration_type);
 
-    py::class_<HighOrderContactPotential>(m, "HighOrderContactPotential")
+    py::class_<EspPotential>(m, "EspPotential")
         .def(
-            py::init<const HighOrderContactParameters&>(),
+            py::init<const EspParameters&>(),
             R"ipc_Qu8mg5v7(
             Construct a smooth barrier potential.
 
@@ -281,9 +281,9 @@ void define_high_order_potential(py::module& m)
         .def(
             "__call__",
             py::overload_cast<
-                const HighOrderCollisions&, const CollisionMesh&,
+                const EspCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>>(
-                &ipc::HighOrderContactPotential::operator(), py::const_),
+                &ipc::EspPotential::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the barrier potential for a set of collisions.
 
@@ -299,9 +299,9 @@ void define_high_order_potential(py::module& m)
         .def(
             "gradient",
             py::overload_cast<
-                const HighOrderCollisions&, const CollisionMesh&,
+                const EspCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>>(
-                &ipc::HighOrderContactPotential::gradient, py::const_),
+                &ipc::EspPotential::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the barrier potential.
 
@@ -317,9 +317,9 @@ void define_high_order_potential(py::module& m)
         .def(
             "hessian",
             py::overload_cast<
-                const HighOrderCollisions&, const CollisionMesh&,
+                const EspCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>, const PSDProjectionMethod>(
-                &ipc::HighOrderContactPotential::hessian, py::const_),
+                &ipc::EspPotential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the barrier potential.
 

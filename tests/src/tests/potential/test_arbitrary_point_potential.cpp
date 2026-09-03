@@ -5,7 +5,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <ipc/high_order_contact/arbitrary_point_potential.hpp>
+#include <ipc/esp/arbitrary_point_potential.hpp>
 
 #include <finitediff.hpp>
 
@@ -82,10 +82,10 @@ struct Fixture2D {
 
 TEST_CASE(
     "Arbitrary Point Potential: zero beyond dhat",
-    "[high_order_potential],[arbitrary_point_potential]")
+    "[esp_potential],[arbitrary_point_potential]")
 {
     Fixture fx;
-    HighOrderContactParameters params(fx.dhat);
+    EspParameters params(fx.dhat);
     ArbitraryPointPotential<3> potential(fx.mesh, params);
     potential.update(fx.V);
 
@@ -99,10 +99,10 @@ TEST_CASE(
 
 TEST_CASE(
     "Arbitrary Point Potential: FD gradient/hessian at an off-mesh point",
-    "[high_order_potential],[arbitrary_point_potential]")
+    "[esp_potential],[arbitrary_point_potential]")
 {
     Fixture fx;
-    HighOrderContactParameters params(fx.dhat);
+    EspParameters params(fx.dhat);
     ArbitraryPointPotential<3> potential(fx.mesh, params);
     potential.update(fx.V);
 
@@ -145,10 +145,10 @@ TEST_CASE(
 
 TEST_CASE(
     "Arbitrary Point Potential: evaluate() matches operator()/gradient()/hessian()",
-    "[high_order_potential],[arbitrary_point_potential]")
+    "[esp_potential],[arbitrary_point_potential]")
 {
     Fixture fx;
-    HighOrderContactParameters params(fx.dhat);
+    EspParameters params(fx.dhat);
     ArbitraryPointPotential<3> potential(fx.mesh, params);
     potential.update(fx.V);
 
@@ -185,10 +185,10 @@ TEST_CASE(
 
 TEST_CASE(
     "Arbitrary Point Potential 2D: zero beyond dhat",
-    "[high_order_potential],[arbitrary_point_potential]")
+    "[esp_potential],[arbitrary_point_potential]")
 {
     Fixture2D fx;
-    HighOrderContactParameters params(fx.dhat);
+    EspParameters params(fx.dhat);
     ArbitraryPointPotential<2> potential(fx.mesh, params);
     potential.update(fx.V);
 
@@ -201,10 +201,10 @@ TEST_CASE(
 
 TEST_CASE(
     "Arbitrary Point Potential 2D: FD gradient/hessian at an off-mesh point",
-    "[high_order_potential],[arbitrary_point_potential]")
+    "[esp_potential],[arbitrary_point_potential]")
 {
     Fixture2D fx;
-    HighOrderContactParameters params(fx.dhat);
+    EspParameters params(fx.dhat);
     ArbitraryPointPotential<2> potential(fx.mesh, params);
     potential.update(fx.V);
 
@@ -252,7 +252,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Arbitrary Point Potential 2D: corner value is a single vertex-vertex term",
-    "[high_order_potential],[arbitrary_point_potential]")
+    "[esp_potential],[arbitrary_point_potential]")
 {
     // Outside the convex corner at V.row(0), both incident edges reduce to
     // that corner vertex (+1 each) and the direct vertex term contributes -1,
@@ -262,7 +262,7 @@ TEST_CASE(
     // backwards leaves 3 terms or 0, both of which still pass a finite
     // difference check.
     Fixture2D fx;
-    HighOrderContactParameters params(fx.dhat);
+    EspParameters params(fx.dhat);
     ArbitraryPointPotential<2> potential(fx.mesh, params);
     potential.update(fx.V);
 
