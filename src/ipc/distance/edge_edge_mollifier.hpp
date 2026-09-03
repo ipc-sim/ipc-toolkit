@@ -2,6 +2,8 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
+#include <cmath>
+
 namespace ipc {
 
 // Symbolically generated derivatives
@@ -44,7 +46,7 @@ inline T edge_edge_mollifier_gradient(const T x, const T eps_x)
 {
     if (x < eps_x) {
         const T one_div_eps_x = T(1) / eps_x;
-        return T(2) * one_div_eps_x * fma(-one_div_eps_x, x, T(1));
+        return T(2) * one_div_eps_x * std::fma(-one_div_eps_x, x, T(1));
     } else {
         return T(0);
     }
