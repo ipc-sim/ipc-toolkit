@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/simd.hpp>
 
 #include <cassert>
 
@@ -25,7 +26,7 @@ namespace detail {
             dim == 2 || dim == 3, "point-point tangent basis is only 2D or 3D");
 
         if constexpr (dim == 2) {
-            const Eigen::Vector2<T> p0_to_p1 = (p1 - p0).normalized();
+            const Eigen::Vector2<T> p0_to_p1 = normalized(p1 - p0);
             return Eigen::Vector2<T>(-p0_to_p1.y(), p0_to_p1.x());
         } else {
             const Eigen::Vector3<T> p0_to_p1 = p1 - p0;
@@ -35,8 +36,23 @@ namespace detail {
             const Eigen::Vector3<T> cross_y =
                 Eigen::Vector3<T>::UnitY().cross(p0_to_p1);
 
+            // Prefer whichever reference axis is least parallel to the pair.
+            // A batch cannot answer that with one bool, so it builds both
+            // bases and blends them per-lane.
             Eigen::Matrix<T, 3, 2> basis;
-            if (cross_x.squaredNorm() > cross_y.squaredNorm()) {
+            if constexpr (is_simd_batch_v<T>) {
+                Eigen::Matrix<T, 3, 2> basis_x, basis_y;
+                basis_x.col(0) = normalized(cross_x);
+                basis_x.col(1) = normalized(p0_to_p1.cross(cross_x));
+                basis_y.col(0) = normalized(cross_y);
+                basis_y.col(1) = normalized(p0_to_p1.cross(cross_y));
+
+                const auto prefer_x =
+                    cross_x.squaredNorm() > cross_y.squaredNorm();
+                for (Eigen::Index i = 0; i < basis.size(); ++i) {
+                    basis(i) = select(prefer_x, basis_x(i), basis_y(i));
+                }
+            } else if (cross_x.squaredNorm() > cross_y.squaredNorm()) {
                 basis.col(0) = cross_x.normalized();
                 basis.col(1) = p0_to_p1.cross(cross_x).normalized();
             } else {
@@ -80,13 +96,13 @@ namespace detail {
             dim == 2 || dim == 3, "point-edge tangent basis is only 2D or 3D");
 
         if constexpr (dim == 2) {
-            return (e1 - e0).normalized();
+            return normalized(e1 - e0);
         } else {
             const Eigen::Vector3<T> e = e1 - e0;
 
             Eigen::Matrix<T, 3, 2> basis;
-            basis.col(0) = e.normalized();
-            basis.col(1) = e.cross(Eigen::Vector3<T>(p - e0)).normalized();
+            basis.col(0) = normalized(e);
+            basis.col(1) = normalized(e.cross(p - e0));
             return basis;
         }
     }
@@ -124,14 +140,16 @@ namespace detail {
         const Eigen::Vector3<T> ea = ea1 - ea0; // Edge A direction
         const Eigen::Vector3<T> normal = ea.cross(eb1 - eb0);
         // The normal will be zero if the edges are parallel (i.e. coplanar).
-        assert(normal.norm() != 0);
+        if constexpr (std::is_floating_point_v<T>) {
+            assert(normal.norm() != 0);
+        }
 
         Eigen::Matrix<T, 3, 2> basis;
         // The first basis vector is along edge A.
-        basis.col(0) = ea.normalized();
+        basis.col(0) = normalized(ea);
         // The second basis vector is orthogonal to the first and the edge-edge
         // normal.
-        basis.col(1) = normal.cross(ea).normalized();
+        basis.col(1) = normalized(normal.cross(ea));
         return basis;
     }
 
@@ -168,15 +186,17 @@ namespace detail {
     {
         const Eigen::Vector3<T> e0 = t1 - t0;
         const Eigen::Vector3<T> normal = e0.cross(t2 - t0);
-        assert(normal.norm() != 0);
+        if constexpr (std::is_floating_point_v<T>) {
+            assert(normal.norm() != 0);
+        }
 
         Eigen::Matrix<T, 3, 2> basis;
 
         // The first basis vector is along first edge of the triangle.
-        basis.col(0) = e0.normalized();
+        basis.col(0) = normalized(e0);
         // The second basis vector is orthogonal to the first and the triangle
         // normal.
-        basis.col(1) = normal.cross(e0).normalized();
+        basis.col(1) = normalized(normal.cross(e0));
 
         return basis;
     }

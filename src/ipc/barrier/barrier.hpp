@@ -338,6 +338,7 @@ public:
      *
      * \f\[
      *     b(d) = \begin{cases}
+     *         \infty & d \le 0\\
      *         -\frac{\hat{d}^2}{4} \left(\ln\left(\frac{2d}{\hat{d}}\right) -
      *         \tfrac{1}{2}\right) & d < \frac{\hat{d}}{2}\\
      *         \tfrac{1}{2} (\hat{d} - d)^2 & d < \hat{d}\\
@@ -356,7 +357,8 @@ public:
      *
      * \f\[
      *     b'(d) = \begin{cases}
-     *         -\frac{\hat{d}}{4d} & d < \frac{\hat{d}}{2}\\
+     *         0 & d \le 0\\
+     *         -\frac{\hat{d}^2}{4d} & d < \frac{\hat{d}}{2}\\
      *         d - \hat{d} & d < \hat{d}\\
      *         0 & d \ge \hat{d}
      *     \end{cases}
@@ -373,7 +375,8 @@ public:
      *
      * \f\[
      *     b''(d) = \begin{cases}
-     *         \frac{\hat{d}}{4d^2} & d < \frac{\hat{d}}{2}\\
+     *         0 & d \le 0\\
+     *         \frac{\hat{d}^2}{4d^2} & d < \frac{\hat{d}}{2}\\
      *         1 & d < \hat{d}\\
      *         0 & d \ge \hat{d}
      *     \end{cases}

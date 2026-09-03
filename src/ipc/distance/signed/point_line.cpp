@@ -1,5 +1,7 @@
 #include "point_line.hpp"
 
+#include <ipc/utils/simd.hpp>
+
 namespace ipc::detail {
 
 template <typename T>
@@ -34,7 +36,9 @@ Eigen::Matrix<T, 6, 6> point_line_signed_distance_hessian(
     // Extract 2x2 Jacobian blocks for e₀ and e₁
     // Note: ∇ n has columns 0-1 (p), 2-3 (e₀), 4-5 (e₁).
     // Normal usually doesn't depend on p, so block(0,0) is zero.
-    assert(bool(jac_n.template leftCols<2>().isZero()));
+    if constexpr (std::is_floating_point_v<T>) {
+        assert(bool(jac_n.template leftCols<2>().isZero()));
+    }
     const auto J_e0 = jac_n.template middleCols<2>(2);
     const auto J_e1 = jac_n.template rightCols<2>();
 
@@ -69,9 +73,19 @@ Eigen::Matrix<T, 6, 6> point_line_signed_distance_hessian(
     return hess;
 }
 
-// clang-format off
-template Eigen::Matrix<float, 6, 6> point_line_signed_distance_hessian<float>(Eigen::ConstRef<Eigen::Vector2<float>>, Eigen::ConstRef<Eigen::Vector2<float>>, Eigen::ConstRef<Eigen::Vector2<float>>);
-template Eigen::Matrix<double, 6, 6> point_line_signed_distance_hessian<double>(Eigen::ConstRef<Eigen::Vector2<double>>, Eigen::ConstRef<Eigen::Vector2<double>>, Eigen::ConstRef<Eigen::Vector2<double>>);
-// clang-format on
+#define IPC_INSTANTIATE_POINT_LINE_SIGNED_DISTANCE_HESSIAN(T)                  \
+    template Eigen::Matrix<T, 6, 6> point_line_signed_distance_hessian<T>(     \
+        Eigen::ConstRef<Eigen::Vector2<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector2<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector2<T>>)
+
+IPC_INSTANTIATE_POINT_LINE_SIGNED_DISTANCE_HESSIAN(float);
+IPC_INSTANTIATE_POINT_LINE_SIGNED_DISTANCE_HESSIAN(double);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_POINT_LINE_SIGNED_DISTANCE_HESSIAN(SimdBatch<float>);
+IPC_INSTANTIATE_POINT_LINE_SIGNED_DISTANCE_HESSIAN(SimdBatch<double>);
+#endif
+
+#undef IPC_INSTANTIATE_POINT_LINE_SIGNED_DISTANCE_HESSIAN
 
 } // namespace ipc::detail

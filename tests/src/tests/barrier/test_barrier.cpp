@@ -13,7 +13,9 @@
 #include <finitediff.hpp>
 #include <igl/edges.h>
 
+#include <cmath>
 #include <memory>
+#include <vector>
 
 using namespace ipc;
 
@@ -502,4 +504,75 @@ TEST_CASE("Physical barrier", "[barrier]")
 
     CHECK(
         b_original_second_derivative == Catch::Approx(b_new_second_derivative));
+}
+TEST_CASE("Barrier penetration convention", "[barrier]")
+{
+    // Every log-based barrier must resolve d <= 0 (penetration) to +inf, and
+    // its derivatives to 0, rather than producing NaN or a finite value with
+    // the wrong sign. TwoStageBarrier regressed on this: with no d <= 0 guard
+    // its log term returned NaN for d < 0, and its first derivative flipped
+    // sign, reporting an attractive force at penetration.
+    const double dhat = 1e-2;
+    const double d = GENERATE(-1e-1, -1e-2, -1e-4, 0.0);
+    CAPTURE(d, dhat);
+
+    std::vector<std::shared_ptr<ipc::Barrier>> barriers = {
+        std::make_shared<ipc::ClampedLogBarrier<>>(),
+        std::make_shared<ipc::ClampedLogSqBarrier<>>(),
+        std::make_shared<ipc::TwoStageBarrier<>>(),
+    };
+
+    for (const auto& barrier : barriers) {
+        const double b = (*barrier)(d, dhat);
+        const double db = barrier->first_derivative(d, dhat);
+        const double d2b = barrier->second_derivative(d, dhat);
+        CAPTURE(b, db, d2b);
+
+        CHECK(!std::isnan(b));
+        CHECK(!std::isnan(db));
+        CHECK(!std::isnan(d2b));
+
+        CHECK(std::isinf(b));
+        CHECK(b > 0);
+        CHECK(db == 0.0);
+        CHECK(d2b == 0.0);
+    }
+}
+
+TEST_CASE("Barrier stage boundaries", "[barrier]")
+{
+    // The select_lazy cascades are ordered by increasing d, so each case is
+    // bounded below by the previous one. That makes the choice of < vs <= the
+    // only thing deciding which case an exact boundary lands in -- and
+    // TwoStageBarrier's second derivative is discontinuous at dhat, so a
+    // boundary that slipped one case over would change the value there.
+    const double dhat = 1e-2;
+
+    SECTION("d == dhat is inactive for every barrier")
+    {
+        const ipc::ClampedLogBarrier<> clamped_log;
+        const ipc::ClampedLogSqBarrier<> clamped_log_sq;
+        const ipc::CubicBarrier<> cubic;
+        const ipc::TwoStageBarrier<> two_stage;
+
+        for (const ipc::Barrier* barrier :
+             { static_cast<const ipc::Barrier*>(&clamped_log),
+               static_cast<const ipc::Barrier*>(&clamped_log_sq),
+               static_cast<const ipc::Barrier*>(&cubic),
+               static_cast<const ipc::Barrier*>(&two_stage) }) {
+            CHECK((*barrier)(dhat, dhat) == 0.0);
+            CHECK(barrier->first_derivative(dhat, dhat) == 0.0);
+            CHECK(barrier->second_derivative(dhat, dhat) == 0.0);
+        }
+    }
+
+    SECTION("d == dhat/2 is the quadratic stage of TwoStageBarrier")
+    {
+        const ipc::TwoStageBarrier<> two_stage;
+        const double d = 0.5 * dhat;
+        CHECK(
+            two_stage(d, dhat) == Catch::Approx(0.5 * (dhat - d) * (dhat - d)));
+        CHECK(two_stage.first_derivative(d, dhat) == Catch::Approx(d - dhat));
+        CHECK(two_stage.second_derivative(d, dhat) == 1.0);
+    }
 }

@@ -1,8 +1,8 @@
 #include "tangent_basis.hpp"
 
-#include <Eigen/Geometry>
+#include <ipc/utils/simd.hpp>
 
-#include <cmath>
+#include <Eigen/Geometry>
 
 namespace ipc::detail {
 
@@ -111,6 +111,12 @@ IPC_INSTANTIATE_TANGENT_BASIS_ND(float, 2);
 IPC_INSTANTIATE_TANGENT_BASIS_ND(float, 3);
 IPC_INSTANTIATE_TANGENT_BASIS_ND(double, 2);
 IPC_INSTANTIATE_TANGENT_BASIS_ND(double, 3);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_TANGENT_BASIS_ND(SimdBatch<float>, 2);
+IPC_INSTANTIATE_TANGENT_BASIS_ND(SimdBatch<float>, 3);
+IPC_INSTANTIATE_TANGENT_BASIS_ND(SimdBatch<double>, 2);
+IPC_INSTANTIATE_TANGENT_BASIS_ND(SimdBatch<double>, 3);
+#endif
 
 #undef IPC_INSTANTIATE_TANGENT_BASIS_ND
 
@@ -138,6 +144,10 @@ IPC_INSTANTIATE_TANGENT_BASIS_ND(double, 3);
 
 IPC_INSTANTIATE_TANGENT_BASIS_3D(float);
 IPC_INSTANTIATE_TANGENT_BASIS_3D(double);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_TANGENT_BASIS_3D(SimdBatch<float>);
+IPC_INSTANTIATE_TANGENT_BASIS_3D(SimdBatch<double>);
+#endif
 
 #undef IPC_INSTANTIATE_TANGENT_BASIS_3D
 
@@ -149,7 +159,7 @@ namespace {
     /// @brief Compute the power of 1.5 of a number.
     /// @param x Number to compute the power of 1.5
     /// @return x^(1.5)
-    template <typename T> inline T pow_1_5(T x) { return x * std::sqrt(x); }
+    template <typename T> inline T pow_1_5(T x) { return x * ipc::sqrt(x); }
 } // namespace
 
 // J is (2×4) flattened in column-major order
@@ -164,7 +174,7 @@ void point_point_tangent_basis_2D_jacobian(
     const T t4 = t2 + t3;
     const T t5 = t0 * t1 / pow_1_5(t4);
     const T t6 = -t5;
-    const T t7 = T(1) / std::sqrt(t4);
+    const T t7 = T(1) / ipc::sqrt(t4);
     const T t8 = T(1) / t4;
     const T t9 = t2 * t8 - 1;
     const T t10 = t3 * t8 - 1;
@@ -189,65 +199,66 @@ void point_point_tangent_basis_3D_jacobian(
     const T t3 = t2 * t2;
     const T t4 = p0_y - p1_y;
     const T t5 = t4 * t4;
-    const bool t6 = (t1 + t3) < (t3 + t5);
+    const auto t6 = (t1 + t3) < (t3 + t5);
     const T t7 = -t2;
-    const T t8 = t6 ? 0 : t7;
-    const T t9 = (t6 ? 0 : t3) + (t6 ? t3 : 0) + (t6 ? t5 : t1);
+    const T t8 = select(t6, T(0), t7);
+    const T t9 =
+        select(t6, T(0), t3) + select(t6, t3, T(0)) + select(t6, t5, t1);
     const T t10 = T(1) / pow_1_5(t9);
-    const T t11 = T(0.5) * (t6 ? 0 : (2 * t0));
+    const T t11 = T(0.5) * select(t6, T(0), T(2) * t0);
     const T t12 = t10 * t11;
-    const T t13 = t6 ? t2 : 0;
-    const T t14 = T(1) / std::sqrt(t9);
-    const T t15 = t6 ? 0 : 1;
+    const T t13 = select(t6, t2, T(0));
+    const T t14 = T(1) / ipc::sqrt(t9);
+    const T t15 = select(t6, T(0), T(1));
     const T t16 = -t4;
-    const T t17 = t6 ? t16 : t0;
+    const T t17 = select(t6, t16, t0);
     const T t18 = T(1) / t9;
     const T t19 = t17 * t18;
     const T t20 = t0 * t13 - t4 * t8;
     const T t21 = -t20;
-    const bool t22 = t1 + (t7 * t7) < (t16 * t16) + t3;
-    const T t23 = t22 ? 0 : t7;
+    const auto t22 = t1 + (t7 * t7) < (t16 * t16) + t3;
+    const T t23 = select(t22, T(0), t7);
     const T t24 = -t0;
-    const T t25 = t22 ? t16 : t0;
+    const T t25 = select(t22, t16, t0);
     const T t26 = -t23 * t7 + t24 * t25;
     const T t27 = -t13 * t2 + t17 * t4;
     const T t28 = -t27;
     const T t29 = t21 * t21 + t26 * t26 + t28 * t28;
-    const T t30 = T(1) / std::sqrt(t29);
+    const T t30 = T(1) / ipc::sqrt(t29);
     const T t31 = t15 * t4;
     const T t32 = T(1) / t29;
-    const T t33 = t22 ? t2 : 0;
+    const T t33 = select(t22, t2, T(0));
     const T t34 = -t16 * t23 + t24 * t33;
     const T t35 = t33 * t34;
     const T t36 = t16 * t25 - t33 * t7;
-    const T t37 = t22 ? 0 : 1;
+    const T t37 = select(t22, T(0), T(1));
     const T t38 = t16 * t37;
     const T t39 = t24 * t37;
     const T t40 = -t25;
     const T t41 = -t26;
     const T t42 = t32 * (-t35 + t36 * t38 + t41 * (-t39 - t40));
-    const T t43 = T(0.5) * (t6 ? (2 * t4) : 0);
+    const T t43 = T(0.5) * select(t6, T(2) * t4, T(0));
     const T t44 = t10 * t43;
-    const T t45 = t6 ? -1 : 0;
+    const T t45 = select(t6, T(-1), T(0));
     const T t46 = -t0 * t17 + t2 * t8;
     const T t47 = t20 * t20 + t27 * t27 + t46 * t46;
-    const T t48 = T(1) / std::sqrt(t47);
+    const T t48 = T(1) / ipc::sqrt(t47);
     const T t49 = T(1) / t47;
     const T t50 = t0 * t45;
     const T t51 = t17 + t4 * t45;
-    const T t52 = t22 ? (-1) : 0;
+    const T t52 = select(t22, T(-1), T(0));
     const T t53 = t24 * t52;
     const T t54 = t32 * (t23 * t34 + t36 * (t16 * t52 + t40) - t41 * t53);
     const T t55 = -t8;
-    const T t56 = t6 ? 0 : -1;
+    const T t56 = select(t6, T(0), T(-1));
     const T t57 = T(0.5) * t8;
     const T t58 = 2 * t2;
-    const T t59 = t18 * ((t22 ? 0 : t58) + (t22 ? t58 : 0));
-    const T t60 = t6 ? 1 : 0;
+    const T t59 = t18 * (select(t22, T(0), t58) + select(t22, t58, T(0)));
+    const T t60 = select(t6, T(1), T(0));
     const T t61 = T(0.5) * t13;
     const T t62 = T(0.5) * t10 * t17;
-    const T t63 = t22 ? 1 : 0;
-    const T t64 = t22 ? 0 : -1;
+    const T t63 = select(t22, T(1), T(0));
+    const T t64 = select(t22, T(0), T(-1));
     const T t65 = t16 * t64;
     const T t66 = -t33 + t63 * t7;
     const T t67 = t28 * t32;
@@ -255,18 +266,18 @@ void point_point_tangent_basis_3D_jacobian(
     const T t69 = t2 * t56 + t8;
     const T t70 = t21 * (t4 * t56 - t68) + t26 * t69 - t28 * t66;
     const T t71 = t4 * t56;
-    const T t72 = t6 ? 0 : (2 * t24);
+    const T t72 = select(t6, T(0), T(2) * t24);
     const T t73 = t10 * t72;
     const T t74 = T(0.5) * t19;
     const T t75 = t24 * t64 + t25;
     const T t76 = t35 + t36 * t65 - t41 * t75;
-    const T t77 = t6 ? (2 * t16) : 0;
+    const T t77 = select(t6, T(2) * t16, T(0));
     const T t78 = t10 * t77;
     const T t79 = -t17 + t4 * t60;
     const T t80 = t0 * t46 * t60 - t20 * t8 - t27 * t79;
     const T t81 = t20 * t49;
     const T t82 = 2 * t7;
-    const T t83 = t18 * ((t22 ? 0 : t82) + (t22 ? t82 : 0));
+    const T t83 = t18 * (select(t22, T(0), t82) + select(t22, t82, T(0)));
     const T t84 = t33 + t52 * t7;
     const T t85 = t15 * t2;
     const T t86 = t21 * (t15 * t4 - t50) - t26 * (-t55 - t85) - t28 * t84;
@@ -284,7 +295,7 @@ void point_point_tangent_basis_3D_jacobian(
     J[11] = t30 * (-t21 * t54 - t55);
     J[12] = t14 * (t56 - t57 * t59);
     J[13] = t14 * (-t59 * t61 + t60);
-    J[14] = -t62 * ((t6 ? 0 : t58) + (t6 ? t58 : 0));
+    J[14] = -t62 * (select(t6, T(0), t58) + select(t6, t58, T(0)));
     J[15] = -t30
         * (t66
            + t67
@@ -306,7 +317,7 @@ void point_point_tangent_basis_3D_jacobian(
     J[29] = -t48 * (t8 + t80 * t81);
     J[30] = t14 * (t15 - t57 * t83);
     J[31] = t14 * (t45 - t61 * t83);
-    J[32] = -t62 * ((t6 ? 0 : t82) + (t6 ? t82 : 0));
+    J[32] = -t62 * (select(t6, T(0), t82) + select(t6, t82, T(0)));
     J[33] = -t30
         * (t67 * (t34 * (-t38 + t53) - t36 * t84 + t41 * (t23 + t37 * t7))
            + t84);
@@ -324,10 +335,10 @@ void point_edge_tangent_basis_2D_jacobian(
     const T t2 = e0_y - e1_y;
     const T t3 = t2 * t2;
     const T t4 = t1 + t3;
-    const T t5 = T(1) / std::sqrt(t4);
+    const T t5 = T(1) / ipc::sqrt(t4);
     const T t6 = T(1) / t4;
     const T t7 = t1 * t6 - 1;
-    const T t8 = t0 * t2 / (t4 * std::sqrt(t4));
+    const T t8 = t0 * t2 / (t4 * ipc::sqrt(t4));
     const T t9 = t3 * t6 - 1;
     const T t10 = -t8;
     J[0] = 0;
@@ -384,7 +395,7 @@ void point_edge_tangent_basis_3D_jacobian(
     const T t23 = T(1) / pow_1_5(t22);
     const T t24 = t19 * t23;
     const T t25 = t17 * t17 + t21;
-    const T t26 = T(1) / std::sqrt(t25);
+    const T t26 = T(1) / ipc::sqrt(t25);
     const T t27 = -t5;
     const T t28 = -t1;
     const T t29 = t11 * t27 - t15 * t28;
@@ -393,7 +404,7 @@ void point_edge_tangent_basis_3D_jacobian(
     const T t32 = t17 * t31;
     const T t33 = -e0_z;
     const T t34 = e1_z + t33;
-    const T t35 = T(1) / std::sqrt(t22);
+    const T t35 = T(1) / ipc::sqrt(t22);
     const T t36 = -e0_y;
     const T t37 = T(1) / t22;
     const T t38 = t37 * t8;
@@ -411,7 +422,7 @@ void point_edge_tangent_basis_3D_jacobian(
     const T t50 = t1 * t1;
     const T t51 = t10 * t10;
     const T t52 = t49 + t50 + t51;
-    const T t53 = T(1) / std::sqrt(t52);
+    const T t53 = T(1) / ipc::sqrt(t52);
     const T t54 = T(1) / t52;
     const T t55 = t49 * t54 - 1;
     const T t56 = T(1) / pow_1_5(t52);
@@ -516,7 +527,7 @@ void edge_edge_tangent_basis_jacobian(
     const T t5 = t4 * t4;
     const T t6 = t3 + t5;
     const T t7 = t1 + t6;
-    const T t8 = T(1) / std::sqrt(t7);
+    const T t8 = T(1) / ipc::sqrt(t7);
     const T t9 = T(1) / t7;
     const T t10 = t3 * t9 - 1;
     const T t11 = T(1) / pow_1_5(t7);
@@ -558,7 +569,7 @@ void edge_edge_tangent_basis_jacobian(
     const T t47 = t44 + t46;
     const T t48 = -t20 * t26 + t27 * t47;
     const T t49 = t33 * t33 + t43 * t43 + t48 * t48;
-    const T t50 = T(1) / std::sqrt(t49);
+    const T t50 = T(1) / ipc::sqrt(t49);
     const T t51 = t27 * t29;
     const T t52 = -t51;
     const T t53 = T(1) / t49;
@@ -573,7 +584,7 @@ void edge_edge_tangent_basis_jacobian(
     const T t61 = t0 * t41 + t2 * t25;
     const T t62 = t0 * t37 + t25 * t4;
     const T t63 = t42 * t42 + t61 * t61 + t62 * t62;
-    const T t64 = T(1) / std::sqrt(t63);
+    const T t64 = T(1) / ipc::sqrt(t63);
     const T t65 = 2 * t34;
     const T t66 = t36 + t65;
     const T t67 = T(1) / t63;
@@ -743,7 +754,7 @@ void point_triangle_tangent_basis_jacobian(
     const T t5 = t4 * t4;
     const T t6 = t3 + t5;
     const T t7 = t1 + t6;
-    const T t8 = (T(1) / std::sqrt(t7));
+    const T t8 = (T(1) / ipc::sqrt(t7));
     const T t9 = T(1) / t7;
     const T t10 = t3 * t9 - 1;
     const T t11 = T(1) / pow_1_5(t7);
@@ -786,7 +797,7 @@ void point_triangle_tangent_basis_jacobian(
     const T t48 = t45 + t47;
     const T t49 = -t24 * t27 + t28 * t48;
     const T t50 = t35 * t35 + t44 * t44 + t49 * t49;
-    const T t51 = T(1) / std::sqrt(t50);
+    const T t51 = T(1) / ipc::sqrt(t50);
     const T t52 = t17 + t1_z;
     const T t53 = -t52;
     const T t54 = t1_y + t30;
@@ -803,7 +814,7 @@ void point_triangle_tangent_basis_jacobian(
     const T t65 = t0 * t42 + t2 * t26;
     const T t66 = t0 * t39 + t26 * t4;
     const T t67 = t43 * t43 + t65 * t65 + t66 * t66;
-    const T t68 = T(1) / std::sqrt(t67);
+    const T t68 = T(1) / ipc::sqrt(t67);
     const T t69 = t18 * t2;
     const T t70 = t22 * t4;
     const T t71 = -t70;
@@ -946,6 +957,10 @@ void point_triangle_tangent_basis_jacobian(
 
 IPC_INSTANTIATE_TANGENT_BASIS_AUTOGEN(float);
 IPC_INSTANTIATE_TANGENT_BASIS_AUTOGEN(double);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_TANGENT_BASIS_AUTOGEN(SimdBatch<float>);
+IPC_INSTANTIATE_TANGENT_BASIS_AUTOGEN(SimdBatch<double>);
+#endif
 
 #undef IPC_INSTANTIATE_TANGENT_BASIS_AUTOGEN
 

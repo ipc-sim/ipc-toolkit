@@ -1,5 +1,7 @@
 #include "line_line.hpp"
 
+#include <ipc/utils/simd.hpp>
+
 namespace ipc::detail {
 
 template <typename T>
@@ -70,9 +72,20 @@ Eigen::Matrix<T, 12, 12> line_line_signed_distance_hessian(
     return hess;
 }
 
-// clang-format off
-template Matrix12f line_line_signed_distance_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
-template Matrix12d line_line_signed_distance_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
-// clang-format on
+#define IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN(T)                   \
+    template Eigen::Matrix<T, 12, 12> line_line_signed_distance_hessian<T>(    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>)
+
+IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN(float);
+IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN(double);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN(SimdBatch<float>);
+IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN(SimdBatch<double>);
+#endif
+
+#undef IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN
 
 } // namespace ipc::detail
