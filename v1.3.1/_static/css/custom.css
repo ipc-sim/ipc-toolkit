@@ -76,6 +76,14 @@ table.autosummary {
     font-size: 0.75rem !important;
 }
 
+/* Compress the padding inside table cells for the custom class */
+.tight-table th,
+.tight-table td {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    line-height: 1.2 !important;
+}
+
 /* ── Gallery Grid ── */
 .gallery-grid {
     display: grid;

@@ -64,9 +64,9 @@ Functions
 Function Details
 ----------------
 
-.. doxygenfunction:: barrier(const double, const double)
-.. doxygenfunction:: barrier_first_derivative
-.. doxygenfunction:: barrier_second_derivative
+.. doxygenfunction:: barrier(const T d, const T dhat)
+.. doxygenfunction:: barrier_first_derivative(const T d, const T dhat)
+.. doxygenfunction:: barrier_second_derivative(const T d, const T dhat)
 
 Barrier Force Magnitude
 ~~~~~~~~~~~~~~~~~~~~~~~
