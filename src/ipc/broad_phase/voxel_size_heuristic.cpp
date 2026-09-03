@@ -1,5 +1,6 @@
 #include "voxel_size_heuristic.hpp"
 
+#include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/logger.hpp>
 
 #include <igl/median.h>
@@ -9,9 +10,6 @@ namespace ipc {
 namespace {
     // Avoid unused variable warnings
     inline void check_success(bool success) { assert(success); }
-
-    // Faster than std::pow(x, 2)
-    inline double sqr(double x) { return x * x; }
 } // namespace
 
 double suggest_good_voxel_size(

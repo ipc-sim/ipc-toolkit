@@ -1,36 +1,14 @@
 #pragma once
 
+// Everything here needs Eigen (via eigen_ext.hpp), and math.tpp below pulls in
+// the autodiff scalars. Consumers that only want the scalar helpers or the
+// Heaviside types should include those headers directly and skip both costs.
 #include <ipc/config.hpp>
-#include <ipc/utils/autodiff_types.hpp>
+#include <ipc/math/heaviside_type.hpp>
+#include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
-
-enum class HeavisideType : uint8_t { ZERO = 0, ONE = 1, VARIANT = 2 };
-
-struct OrientationTypes {
-
-    static HeavisideType
-    compute_type(const double val, const double alpha, const double beta);
-
-    int size() const { return m_size; }
-    void set_size(const int size);
-    const HeavisideType& tangent_type(const int i) const
-    {
-        return tangent_types[i];
-    }
-    const HeavisideType& normal_type(const int i) const
-    {
-        return normal_types[i];
-    }
-    HeavisideType& tangent_type(const int i) { return tangent_types[i]; }
-    HeavisideType& normal_type(const int i) { return normal_types[i]; }
-
-    int m_size = 0;
-    std::vector<HeavisideType> tangent_types, normal_types;
-};
-
-constexpr double MOLLIFIER_THRESHOLD_EPS = 1e-2;
 
 template <typename T> struct Math {
     Math() = delete;
@@ -40,8 +18,8 @@ template <typename T> struct Math {
     // NOTE: Define these in the class definition to allow inlining
     static double sign(const double x) { return x >= 0 ? 1.0 : -1.0; }
     static T abs(const T& x) { return x >= 0 ? x : -x; }
-    static T sqr(const T& x) { return x * x; }
-    static T cubic(const T& x) { return x * x * x; }
+    static T sqr(const T& x) { return ipc::sqr(x); }
+    static T cubic(const T& x) { return ipc::cubic(x); }
 
     static T cubic_spline(const T& x);
     static double cubic_spline_grad(const double x);
