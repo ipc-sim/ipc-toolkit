@@ -182,7 +182,7 @@ TEST_CASE(
     "[high_order_potential], [high_order_potential_3d]")
 {
     auto stats =
-        ee_limit_fd_sweep(std::make_shared<NormalizedClampedLogBarrier>());
+        ee_limit_fd_sweep(std::make_shared<NormalizedClampedLogBarrier<>>());
     CHECK(stats.all_finite);
     REQUIRE(stats.max_abs_P < 2);
     REQUIRE(stats.max_abs_g < 200);
@@ -1133,16 +1133,16 @@ TEST_CASE("NearFarBarrier decomposition", "[high_order_potential][barrier]")
 
     switch (type) {
     case BarrierType::ClampedLog:
-        run_test(ClampedLogBarrier());
+        run_test(ClampedLogBarrier<>());
         break;
     case BarrierType::ClampedLogSq:
-        run_test(ClampedLogSqBarrier());
+        run_test(ClampedLogSqBarrier<>());
         break;
     case BarrierType::Cubic:
-        run_test(CubicBarrier());
+        run_test(CubicBarrier<>());
         break;
     case BarrierType::TwoStage:
-        run_test(TwoStageBarrier());
+        run_test(TwoStageBarrier<>());
         break;
     case BarrierType::InversePower1:
         run_test(InversePowerBarrier(1.0));

@@ -59,7 +59,7 @@ struct HighOrderContactParameters {
 
     /// Barrier function used in 3D collision evaluation.
     std::shared_ptr<Barrier> barrier =
-        std::make_shared<NormalizedClampedLogBarrier>();
+        std::make_shared<NormalizedClampedLogBarrier<>>();
     const int quad_order;
     bool area_weights;
     const IntegrationType integration_type;

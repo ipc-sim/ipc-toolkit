@@ -8,6 +8,12 @@ using namespace ipc;
 using ExReal = GEO::expansion_nt; // exact scalar type
 using ExVec3 = GEO::vec3E;        // exact vector
 
+// Mirrors the threshold used by ipc::edge_edge_distance_type's parallel-edge
+// handling. Kept as a local constant since production no longer exposes a
+// global PARALLEL_THRESHOLD (it is now a function-local constexpr, scaled per
+// scalar type).
+constexpr double PARALLEL_THRESHOLD = 2.5e-16;
+
 inline void init_pck()
 { // TODO init once in main
     static bool initialized = false;

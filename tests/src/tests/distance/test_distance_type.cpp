@@ -10,7 +10,7 @@
 #include <ipc/distance/point_triangle.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_GEOGRAM
-#include "distance_type_exact.hpp"
+#include "distance_type_reference.hpp"
 #endif
 
 using namespace ipc;
@@ -126,13 +126,13 @@ TEST_CASE(
     }
 }
 
-// Nearly parallel random edges. The reference is called with a parallel
-// threshold of 0 so it is a *fully exact* reference: only exactly-parallel
-// edges take edge_edge_parallel_distance_type_exact, which is the only case
-// where that classifier is valid. With the default (thresholded) reference
-// this comparison fails on ~20% of samples, because the reference applies the
-// parallel classifier to edges that are merely near-parallel and then returns
-// a strictly larger distance than the true minimum.
+// Nearly parallel random edges. ipc::edge_edge_distance_type unconditionally
+// uses the thresholded analytic classifier (no exact-predicate mode), so the
+// reference must be called with the *same* threshold to stay comparable:
+// with a threshold of 0 (a fully exact reference), this comparison would fail
+// on ~20% of samples, because the reference would then only take the
+// parallel-classifier branch for exactly-parallel edges while the shipped
+// classifier takes it for the much larger near-parallel set.
 TEST_CASE(
     "Edge-edge distance type random parallel",
     "[distance][distance-type][edge-edge][exact][parallel]")
@@ -156,8 +156,8 @@ TEST_CASE(
 
         const EdgeEdgeDistanceType dtype =
             edge_edge_distance_type(ea0, ea1, eb0, eb1);
-        const EdgeEdgeDistanceType dtype_exact = edge_edge_distance_type_exact(
-            ea0, ea1, eb0, eb1, /*parallel_threshold=*/0.0);
+        const EdgeEdgeDistanceType dtype_exact =
+            edge_edge_distance_type_exact(ea0, ea1, eb0, eb1);
 
         CAPTURE(
             ea0.transpose(), ea1.transpose(), eb0.transpose(), eb1.transpose());

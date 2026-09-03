@@ -14,7 +14,7 @@ TEST_CASE(
     "Point-triangle normal force magnitude",
     "[friction][point-triangle][normal_force_magnitude]")
 {
-    const ClampedLogBarrier barrier;
+    const ClampedLogBarrier<> barrier;
     Eigen::Vector3d p(0, 1e-4, 0), t0(-1, 0, 1), t1(1, 0, 1), t2(0, 0, -1);
 
     const double dhat = 1e-3, barrier_stiffness = 1e2;
@@ -43,7 +43,7 @@ TEST_CASE(
     "Edge-edge normal force magnitude",
     "[friction][point-triangle][normal_force_magnitude]")
 {
-    const ClampedLogBarrier barrier;
+    const ClampedLogBarrier<> barrier;
     Eigen::Vector3d ea0(-1, -1e-4, 0), ea1(1, -1e-4, 0);
     Eigen::Vector3d eb0(0, 1e-4, -1), eb1(0, 1e-4, 1);
 
@@ -73,7 +73,7 @@ TEST_CASE(
     "Point-edge normal force magnitude",
     "[friction][point-triangle][normal_force_magnitude]")
 {
-    const ClampedLogBarrier barrier;
+    const ClampedLogBarrier<> barrier;
     Eigen::Vector3d p(0, 1e-4, 0), e0(-1, 0, 0), e1(1, 0, 0);
 
     const double dhat = 1e-3, barrier_stiffness = 1e2;
@@ -101,7 +101,7 @@ TEST_CASE(
     "Point-point normal force magnitude",
     "[friction][point-triangle][normal_force_magnitude]")
 {
-    const ClampedLogBarrier barrier;
+    const ClampedLogBarrier<> barrier;
     Eigen::Vector3d p0(0, 0, 0), p1(0, 0, 1e-4);
 
     const double dhat = 1e-3, barrier_stiffness = 1e2;
@@ -128,7 +128,7 @@ TEST_CASE(
     "Point-edge normal force magnitude (2D)",
     "[friction][point-triangle][normal_force_magnitude]")
 {
-    const ClampedLogBarrier barrier;
+    const ClampedLogBarrier<> barrier;
     Eigen::Vector2d p(0, 1e-4), e0(-1, 0), e1(1, 0);
     const double dhat = 1e-3, barrier_stiffness = 1e2;
 
@@ -155,7 +155,7 @@ TEST_CASE(
     "Point-point normal force magnitude (2D)",
     "[friction][point-triangle][normal_force_magnitude][2D]")
 {
-    const ClampedLogBarrier barrier;
+    const ClampedLogBarrier<> barrier;
     Eigen::Vector2d p0(0, 0), p1(0, 1e-4);
     const double dhat = 1e-3, barrier_stiffness = 1e2;
 

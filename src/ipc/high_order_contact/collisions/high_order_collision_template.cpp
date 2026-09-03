@@ -36,11 +36,11 @@ T eval_barrier_ad(const ipc::Barrier& b, const T& dist, const T& dhat)
     if (scalar_val(dist) >= scalar_val(dhat))
         return T(0.0);
 
-    if (dynamic_cast<const NormalizedClampedLogBarrier*>(&b)) {
+    if (dynamic_cast<const NormalizedClampedLogBarrier<>*>(&b)) {
         const T t = dist / dhat;
         return -(t - 1.0) * (t - 1.0) * log(t);
     }
-    if (dynamic_cast<const ClampedLogBarrier*>(&b)) {
+    if (dynamic_cast<const ClampedLogBarrier<>*>(&b)) {
         return -(dist - dhat) * (dist - dhat) * log(dist / dhat);
     }
     if (const auto* ipb = dynamic_cast<const InversePowerBarrier*>(&b)) {

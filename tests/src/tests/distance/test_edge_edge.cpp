@@ -260,13 +260,22 @@ TEST_CASE(
         std::swap(e10, e11);
     }
 
+    // These edges are collinear (or nearly so, for the small |e0y| cases),
+    // so the thresholded parallel-edge classifier may resolve the shared
+    // closest endpoints as EA*_EB (edge-interior-vs-vertex) rather than
+    // vertex-vertex: the "interior" side degenerates to the same endpoint,
+    // so the returned distance is unaffected either way (checked below).
     EdgeEdgeDistanceType dtype = edge_edge_distance_type(e00, e01, e10, e11);
     CAPTURE(dtype);
     REQUIRE(
         ((dtype == EdgeEdgeDistanceType::EA0_EB0)
          || (dtype == EdgeEdgeDistanceType::EA0_EB1)
          || (dtype == EdgeEdgeDistanceType::EA1_EB0)
-         || (dtype == EdgeEdgeDistanceType::EA1_EB1)));
+         || (dtype == EdgeEdgeDistanceType::EA1_EB1)
+         || (dtype == EdgeEdgeDistanceType::EA0_EB)
+         || (dtype == EdgeEdgeDistanceType::EA1_EB)
+         || (dtype == EdgeEdgeDistanceType::EA_EB0)
+         || (dtype == EdgeEdgeDistanceType::EA_EB1)));
 
     double distance = edge_edge_distance(e00, e01, e10, e11);
     double expected_distance = point_point_distance(

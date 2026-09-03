@@ -50,15 +50,20 @@ T edge_edge_distance(
         return point_line_distance(ea1, eb0, eb1);
 
     case EdgeEdgeDistanceType::EA_EB: {
-        const Eigen::Vector3d normal = (ea1 - ea0).cross(eb1 - eb0);
-        if (normal.squaredNorm() > 1e-20)
+        if constexpr (std::is_floating_point_v<T>) {
+            const Eigen::Vector3<T> normal = (ea1 - ea0).cross(eb1 - eb0);
+            if (normal.squaredNorm() > 1e-20) {
+                return line_line_distance(ea0, ea1, eb0, eb1);
+            } else {
+                return std::min(
+                    { point_line_distance(eb0, ea0, ea1),
+                      point_line_distance(eb1, ea0, ea1),
+                      point_line_distance(ea0, eb0, eb1),
+                      point_line_distance(ea1, eb0, eb1) });
+            }
+        } else {
             return line_line_distance(ea0, ea1, eb0, eb1);
-        else
-            return std::min(
-                { point_line_distance(eb0, ea0, ea1),
-                  point_line_distance(eb1, ea0, ea1),
-                  point_line_distance(ea0, eb0, eb1),
-                  point_line_distance(ea1, eb0, eb1) });
+        }
     }
 
     default:
