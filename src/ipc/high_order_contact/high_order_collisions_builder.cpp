@@ -2,6 +2,7 @@
 
 #include "collisions/high_order_quadrature.hpp"
 
+#include <ipc/distance/distance_type_exact.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/high_order_contact/quadrature_potential.hpp>
@@ -114,7 +115,7 @@ HighOrderCollisionsBuilder<3>::reduce_point_triangle_collision(
     assert(vi != t0 && vi != t1 && vi != t2);
 
     if (dtype == PointTriangleDistanceType::AUTO) {
-        dtype = point_triangle_distance_type(
+        dtype = point_triangle_distance_type_exact(
             vertices(vi), vertices(t0), vertices(t1), vertices(t2));
     }
 
@@ -176,8 +177,8 @@ HighOrderCollisionsBuilder<3>::reduce_point_edge_collision(
     const index_t t1 = mesh.edges()(ei, 1);
 
     if (dtype == PointEdgeDistanceType::AUTO) {
-        dtype =
-            point_edge_distance_type(vertices(vi), vertices(t0), vertices(t1));
+        dtype = point_edge_distance_type_exact(
+            vertices(vi), vertices(t0), vertices(t1));
     }
 
     const double dist_sqr =
@@ -421,7 +422,7 @@ void QuadratureCollisionsBuilder::build_edge_edge_collisions(
             continue;
         }
 
-        const auto dtype = edge_edge_distance_type(
+        const auto dtype = edge_edge_distance_type_exact(
             vertices.row(ea), vertices.row(eb), vertices.row(ec),
             vertices.row(ed));
 

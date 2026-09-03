@@ -8,7 +8,7 @@ using namespace ipc;
 void define_point_triangle_distance(py::module_& m)
 {
     m.def(
-        "point_triangle_distance", &point_triangle_distance,
+        "point_triangle_distance", &detail::point_triangle_distance<double>,
         R"ipc_Qu8mg5v7(
         Compute the distance between a points and a triangle.
 
@@ -29,7 +29,8 @@ void define_point_triangle_distance(py::module_& m)
         "dtype"_a = PointTriangleDistanceType::AUTO);
 
     m.def(
-        "point_triangle_distance_gradient", &point_triangle_distance_gradient,
+        "point_triangle_distance_gradient",
+        &detail::point_triangle_distance_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a points and a triangle.
 
@@ -50,7 +51,8 @@ void define_point_triangle_distance(py::module_& m)
         "dtype"_a = PointTriangleDistanceType::AUTO);
 
     m.def(
-        "point_triangle_distance_hessian", &point_triangle_distance_hessian,
+        "point_triangle_distance_hessian",
+        &detail::point_triangle_distance_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a points and a triangle.
 

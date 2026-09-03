@@ -87,6 +87,12 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - `github.com/zfergus/filib <https://github.com/zfergus/filib>`_
       - |:white_check_mark:|
       - ``IPC_TOOLKIT_WITH_FILIB``
+    * - MeshFEMSparse
+      - Block-CSC data structures for fast Hessian assembly (see :cpp:class:`ipc::MeshFEMHessianAssembler`)
+      - MIT
+      - `github.com/MeshFEM/MeshFEMSparse <https://github.com/MeshFEM/MeshFEMSparse>`_
+      - |:white_check_mark:|
+      - ``IPC_TOOLKIT_WITH_MESHFEM_SPARSE``
     * - nlohmann/json
       - JSON parsing for profiler and tests
       - MIT
@@ -113,6 +119,9 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - ``IPC_TOOLKIT_WITH_INEXACT_CCD``
 
 Some of these libraries are enabled by default, and some are not. You can enable or disable them by passing the appropriate CMake option when you configure the IPC Toolkit build.
+
+.. note::
+    ``MeshFEMSparse`` (and its transitive dependency ``MeshFEMCore``) is downloaded source-only and compiled into a minimal static library (matrix data structures and assembly routines; no sparse direct solvers). When enabled (the default), :cpp:func:`ipc::Potential::hessian` assembles through the block-CSC backend — several times faster than the triplet-based assembly, with identical results up to floating-point summation order — and a :cpp:class:`ipc::MeshFEMHessianAssembler` held across :cpp:func:`ipc::Potential::assemble_hessian` calls additionally reuses the sparsity pattern between assemblies. It requires ``IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT=RowMajor`` (the default; the option is automatically disabled otherwise).
 
 .. warning::
     ``filib`` is licensed under `LGPL-2.1 <https://github.com/zfergus/filib/blob/main/LICENSE>`_ and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynamic linkage requires copying the ``.so``/``.dylib``/``.dll`` file to the binary directory or system path. To enable this, set the CMake option ``FILIB_BUILD_SHARED_LIBS`` to ``ON`` and add this CMake code to copy the shared library object to the binary directory:

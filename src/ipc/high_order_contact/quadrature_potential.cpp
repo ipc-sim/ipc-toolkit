@@ -2,7 +2,7 @@
 
 #include "absl/strings/internal/str_format/extension.h"
 #include "ipc/candidates/candidates.hpp"
-#include "ipc/distance/distance_type.hpp"
+#include "ipc/distance/distance_type_exact.hpp"
 #include "ipc/distance/edge_edge.hpp"
 #include "ipc/distance/point_edge.hpp"
 #include "ipc/distance/point_point.hpp"
@@ -263,7 +263,7 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
             if (filter_obstacles_e && mesh.is_obstacle_edge(other_e))
                 continue;
 
-            auto dtype2 = point_edge_distance_type(
+            auto dtype2 = point_edge_distance_type_exact(
                 V_(vid), V_(mesh.edges()(other_e, 0)),
                 V_(mesh.edges()(other_e, 1)));
 
@@ -317,7 +317,7 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
             if (filter_obstacles_e && mesh.is_obstacle_face(other_f))
                 continue;
 
-            auto dtype2 = point_triangle_distance_type(
+            auto dtype2 = point_triangle_distance_type_exact(
                 V_(vid), V_(mesh.faces()(other_f, 0)),
                 V_(mesh.faces()(other_f, 1)), V_(mesh.faces()(other_f, 2)));
 
@@ -1051,7 +1051,7 @@ PointPotential::build_collisions_at_edge_qp(
         if (filter_obstacles && mesh.is_obstacle_edge(ej))
             continue;
         const auto dtype =
-            point_edge_distance_type(q_pos, V.row(ea), V.row(eb));
+            point_edge_distance_type_exact(q_pos, V.row(ea), V.row(eb));
         if (dtype == PointEdgeDistanceType::P_E0) {
             if (point_point_distance(q_pos, V.row(ea)) >= dhat2)
                 continue;

@@ -8,7 +8,11 @@ using namespace ipc;
 void define_point_edge_distance(py::module_& m)
 {
     m.def(
-        "point_edge_distance", &point_edge_distance,
+        "point_edge_distance",
+        [](Eigen::ConstRef<VectorMax3d> p, Eigen::ConstRef<VectorMax3d> e0,
+           Eigen::ConstRef<VectorMax3d> e1, PointEdgeDistanceType dtype) {
+            return point_edge_distance(p, e0, e1, dtype);
+        },
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and edge in 2D or 3D.
 
@@ -27,7 +31,11 @@ void define_point_edge_distance(py::module_& m)
         "p"_a, "e0"_a, "e1"_a, "dtype"_a = PointEdgeDistanceType::AUTO);
 
     m.def(
-        "point_edge_distance_gradient", &point_edge_distance_gradient,
+        "point_edge_distance_gradient",
+        [](Eigen::ConstRef<VectorMax3d> p, Eigen::ConstRef<VectorMax3d> e0,
+           Eigen::ConstRef<VectorMax3d> e1, PointEdgeDistanceType dtype) {
+            return point_edge_distance_gradient(p, e0, e1, dtype);
+        },
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and edge.
 
@@ -46,7 +54,11 @@ void define_point_edge_distance(py::module_& m)
         "p"_a, "e0"_a, "e1"_a, "dtype"_a = PointEdgeDistanceType::AUTO);
 
     m.def(
-        "point_edge_distance_hessian", &point_edge_distance_hessian,
+        "point_edge_distance_hessian",
+        [](Eigen::ConstRef<VectorMax3d> p, Eigen::ConstRef<VectorMax3d> e0,
+           Eigen::ConstRef<VectorMax3d> e1, PointEdgeDistanceType dtype) {
+            return point_edge_distance_hessian(p, e0, e1, dtype);
+        },
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and edge.
 

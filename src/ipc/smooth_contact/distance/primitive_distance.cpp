@@ -5,7 +5,6 @@
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
-#include <ipc/smooth_contact/distance/edge_edge.hpp>
 #include <ipc/smooth_contact/distance/point_edge.hpp>
 #include <ipc/smooth_contact/distance/point_face.hpp>
 

@@ -1,5 +1,5 @@
 #include "pair_distance.hpp"
-#include <ipc/distance/distance_type.hpp>
+#include <ipc/distance/distance_type_exact.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -21,7 +21,7 @@ public:
     static PairDistType<Edge3P1, Edge3P1>::type compute_distance_type(Eigen::ConstRef<Eigen::Vector<T, N_DOFS>> X)
     {
         if constexpr (std::is_same_v<T, double>)
-            return edge_edge_distance_type(
+            return edge_edge_distance_type_exact(
             X.template head<3>() /* edge 0 */,
                 X.template segment<3>(3) /* edge 0 */,
                 X.template segment<3>(6) /* edge 1 */,
@@ -100,7 +100,7 @@ public:
     static PairDistType<Vertex3, Edge3P1>::type compute_distance_type(Eigen::ConstRef<Eigen::Vector<T, N_DOFS>> X)
     {
         if constexpr (std::is_same_v<T, double>)
-            return point_edge_distance_type(
+            return point_edge_distance_type_exact(
                 X.template head<3>(),
                 X.template segment<3>(3),
                 X.template segment<3>(6));
@@ -154,7 +154,7 @@ public:
         Eigen::ConstRef<Eigen::Vector<T, DIM>> f1 = X.template segment<3>(6);
         Eigen::ConstRef<Eigen::Vector<T, DIM>> f2 = X.template segment<3>(9);
         if constexpr (std::is_same_v<T, double>)
-            return point_triangle_distance_type(
+            return point_triangle_distance_type_exact(
                 v, f0, f1, f2);
         else
             return PointTriangleDistanceType::AUTO;

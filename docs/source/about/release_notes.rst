@@ -6,6 +6,212 @@ Release Notes
 .. role:: cmake(code)
    :language: cmake
 
+v2.0.0 (alpha)
+--------------
+
+.. warning::
+   This is an in-development alpha release. The API is not yet stable.
+
+Highlights
+~~~~~~~~~~
+
+- Contact Hessian assembly is now block-accelerated. Local per-collision Hessians scatter straight into MeshFEMSparse :cite:p:`Mohammadian2026MeshFEM` block-CSC storage, and the full-mesh DOF map is folded into that scatter instead of being applied afterwards. Callers do not have to change anything to benefit: on Puffer-Ball (512k collisions) assembling a Hessian goes from 918 ms to 46 ms (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+- Templated distance, barrier, normal, tangent-basis, closest-point, relative-velocity, and area functions on the scalar type and dimension. This adds ``float`` support alongside ``double`` (and autodiff scalars where already supported). This is 1.5–4.8× faster for select functons; see Performance below (`#249 <https://github.com/ipc-sim/ipc-toolkit/pull/249>`_).
+- Update Tight Inclusion to ``1.1.0``, which adds a bucket depth-first-search root finder and makes it the default (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
+- Update the tutorials to match the current API, and fill the gaps in the Python bindings they depend on (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+
+New Features |:rocket:|
+~~~~~~~~~~~~~~~~~~~~~~~
+
+- Expose the intersection coordinates of an edge–triangle intersection through a new :cpp:func:`ipc::edge_triangle_intersection` overload, which reports the barycentric coordinates :math:`(u, v)` on the triangle and the parameter :math:`t` along the edge (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_).
+- Add :cpp:func:`ipc::CollisionMesh::face_normals`, computing the unit normal of each face for a given set of vertex positions (3D only) (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_).
+
+API Changes |:wrench:|
+~~~~~~~~~~~~~~~~~~~~~~
+
+- Update Tight Inclusion from ``1.0.6`` to ``1.1.0`` (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
+
+  - Adds a ``BUCKET_DEPTH_FIRST_SEARCH`` root-finding method, which upstream makes the default for ``edgeEdgeCCD`` and ``vertexFaceCCD``.
+  - The method is exposed in the Python ``CCDRootFindingMethod`` enum, and ``ipctk.tight_inclusion.edge_edge_ccd`` and ``point_triangle_ccd`` now default to it so the bindings match the C++ default.
+
+- ``Potential::gradient`` and ``Potential::hessian`` take a new ``in_full_dof`` flag, folding the full-mesh DOF map into assembly (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_). Non-selection DOF maps fall back internally, so the flag is always safe to pass.
+- Add a ``HessianAssembler`` interface separating local derivative evaluation from global matrix construction (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+
+  - The previous triplet path lives on unchanged as ``TripletHessianAssembler`` and remains the fallback when the option is off.
+  - Hold a ``MeshFEMHessianAssembler`` across ``Potential::hessian`` calls to get sparsity-pattern reuse, or call ``block_matrix()`` for the native block-CSC matrix if your solver can consume it.
+
+- Move gradient assembly into a shared ``ipc::assemble_gradient`` (``ipc/utils/gradient_assembler.hpp``) that all five gradient-producing potentials route through (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+
+- Templatize the distance functions on the scalar type.
+
+  - The free functions now take a scalar template parameter ``T`` and are instantiated for both ``float`` and ``double``.
+  - The distance functions are now a two-layer API.
+
+    - The concrete kernels moved into ``ipc::detail`` and are templated on the scalar and the dimension (``template <typename T, int dim>``, or just ``<typename T>`` for the 3D-only).
+    - The public names in ``ipc`` are thin front ends templated on the argument expression types. They deduce ``T``, dispatch on the compile-time dimension when the arguments know it, and fall back to a single runtime branch on ``size()`` otherwise. Existing calls are unaffected.
+
+  - Autodiff scalars are supported for the value functions only; passing one to a ``*_gradient``/``*_hessian`` or to a ``*_distance_type`` predicate is a compile-time or ``AUTO``-dispatch error rather than silently wrong output.
+  - 💥 **[Breaking]** Mixed-precision calls no longer deduce: ``barrier(float_d, 0.001)`` must become ``barrier(float_d, 0.001f)``.
+  - 💥 **[Breaking]** The gradients/Hessians of the point-point, point-line, and point-edge distances and the ``normalization_*`` functions now return **fixed-size** Eigen types (e.g. ``Eigen::Vector<T, 3 * dim>``) when the argument type knows its dimension at compile time, and the previous ``VectorMax``/``MatrixMax`` types otherwise.
+
+- Templatize the barrier classes on the scalar type.
+
+  - ``ipc::Barrier`` is now an alias for the class template ``ipc::BarrierBase<T>`` (defaulting to ``double``).
+  - 💥 **[Breaking]** The concrete barriers are now class templates and must be spelled with explicit template arguments (e.g., ``ipc::ClampedLogBarrier<>``).
+  - The free functions ``ipc::barrier``, ``ipc::barrier_first_derivative``, and ``ipc::barrier_second_derivative`` are now templates defaulting to ``double``.
+
+- Templatize the tangent functions
+
+  - Follow the distance family: fixed-size kernels in ``ipc::detail`` templated on ``<typename T, int dim>`` (or ``<typename T>`` where the function is 3D-only), behind front ends that deduce both from the argument expressions.
+  - Return types are fixed-size when the argument type knows its dimension and the previous ``VectorMax``/``MatrixMax`` types otherwise.
+
+Performance |:zap:|
+~~~~~~~~~~~~~~~~~~~
+
+- Assemble the contact Hessian into MeshFEMSparse :cite:p:`Mohammadian2026MeshFEM` block-CSC storage rather than triplets, and fold the mesh's DOF map into that scatter (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+
+  Evaluating the local per-collision Hessians was only 2–8% of ``Potential::hessian`` across the eight benchmark scenes; the rest was building triplets, sorting them inside ``setFromTriplets``, and multiplying by the selection matrix twice in ``to_full_dof``.
+
+  .. figure:: https://github.com/user-attachments/assets/fdfb0d8f-e3ad-459f-88ae-bd2fea9b64a8
+     :align: center
+
+     Hessian assembly by stage. ``to_full_dof`` is absent from every MeshFEM bar because it is folded into the scatter, and local evaluation grows from a sliver to roughly half the bar — on the largest scenes the arithmetic is now the majority of the cost. Benchmarked on Apple Silicon, AppleClang 21, Release; median of three runs.
+
+- The speed-up comes from four independent steps, each measured against the triplet baseline in the same run (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+
+  .. figure:: https://github.com/user-attachments/assets/32709ba8-4365-4826-a8e8-17d4abf7d71d
+     :align: center
+
+     Ablation of the four steps, applied successively. Benchmarked on Apple Silicon, AppleClang 21, Release; median of three runs.
+
+  1. Fold ``to_full_dof`` into assembly (1.2–1.8×). When the DOF map is a plain selection matrix — which holds unless a custom displacement map was supplied — stencil vertex IDs are remapped during assembly and the two sparse products disappear. Non-selection maps fall back internally, so passing the new ``in_full_dof`` flag is always safe.
+  2. Assemble into block-CSC rather than triplets (2.6–15.3×). A block sparsity pattern is built from the collision stencils, then local Hessians scatter into the value array through a sorted column-merge with per-column locks — no triplet construction and no ``setFromTriplets`` sort.
+  3. Reuse the pattern across assemblies (3.2–24.8×). One assembler held across a Newton solve detects contact-set changes and rebuilds only when it must.
+  4. Skip change detection when the caller asserts the set is unchanged (3.8–30.9×).
+
+  Most of the win lands before any reuse. Reuse pays where pattern construction dominates and adds almost nothing on Rod-Twist, where detection costs about what a rebuild does — which is what the opt-in fast path in step 4 exists for.
+
+- Share one gradient-assembly routine across all vector-assembly paths, picking its strategy per call from the problem shape (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+
+  Sparse contact buffers the local gradients in parallel and scatters them serially, costing one add per stencil slot; dense contact keeps per-thread accumulators and reduces them in parallel over DOF blocks. The crossover sits at roughly ``out_ndof`` > 4 × collisions.
+
+  .. figure:: https://github.com/user-attachments/assets/aceb3cb7-367f-4266-8493-7b6a4685ed01
+     :align: center
+
+     Gradient assembly, before and after, with the strategy selected per scene. Benchmarked on Apple Silicon, AppleClang 21, Release; median of three runs.
+
+- Replace the three 2×2 LDLT solves in ``ipc::point_triangle_distance_type`` with a closed form (`#249 <https://github.com/ipc-sim/ipc-toolkit/pull/249>`_).
+
+  - Each edge lies in the triangle's plane, so the 2×2 Gram matrix is diagonal and the solve collapses to two guarded divisions.
+  - Measured 10–13× faster standalone (104 → 8.6 ns) and 7.3× on the full AUTO distance query (93 → 12.8 ns).
+  - An error study over 10.8 million configurations (uniform, needle, cap, near-collinear, degenerate, in-plane, and coordinate scales from 1e-50 to 1e+50) found zero classification changes outside triangles collinear to within 1e-11 of their own edge length.
+
+- Dim-templated fixed-size kernels behind expression-templated front ends for the point-point, point-line, and point-edge distance functions and their gradients/Hessians, and for the ``normalization_*`` family (`#249 <https://github.com/ipc-sim/ipc-toolkit/pull/249>`_).
+
+  - ``point_line_distance`` 8.2 → 2.3 ns (3.5×), ``point_edge_distance`` 18.1 → 5.2 ns (3.5×), ``point_point_distance_hessian`` up to 5×, ``normalization_and_jacobian`` 3.4×.
+  - Mark small functions inline in the the header.
+
+- Recovering the compile-time dimension in the tangent, closest-point, relative-velocity, and area kernels is worth 1.5–4.8× on the call site that dominates in practice (`#249 <https://github.com/ipc-sim/ipc-toolkit/pull/249>`_):
+
+  .. list-table::
+     :widths: 40 15 15 15
+     :header-rows: 1
+     :align: center
+     :class: tight-table
+
+     * - Benchmark
+       - Before
+       - After
+       - Speedup
+     * - point_edge_closest_point
+       - 8.7 ns
+       - 1.8 ns
+       - 4.8x
+     * - point_edge_closest_point, Vector3d
+       - 4.7 ns
+       - 1.7 ns
+       - 2.8x
+     * - point_edge_closest_point_jacobian
+       - 14.9 ns
+       - 6.2 ns
+       - 2.4x
+     * - point_point_relative_velocity
+       - 5.5 ns
+       - 1.4 ns
+       - 3.9x
+     * - point_point_relative_velocity_jacobian
+       - 6.8 ns
+       - 1.8 ns
+       - 3.9x
+     * - edge_length
+       - 4.1 ns
+       - 1.3 ns
+       - 3.1x
+     * - point_edge_tangent_basis
+       - 7.1 ns
+       - 4.2 ns
+       - 1.7x
+     * - point_triangle_tangent_basis
+       - 7.7 ns
+       - 5.0 ns
+       - 1.5x
+
+- Branch once on the dimension in ``EdgeVertexCandidate::compute_distance_gradient``/``_hessian`` so the statically sized kernels are selected (3.1× on the gradient).
+- Move all cold ``throw`` bodies in the distance dispatch functions out of line behind ``[[noreturn]]`` helpers; constructing the exception inline consumed the caller's inlining budget (the single largest lever found: up to 2× by itself).
+
+Bug Fixes |:bug:|
+~~~~~~~~~~~~~~~~~
+
+- PSD-project the mollified Hessian block when the mollifier is zero (`#244 <https://github.com/ipc-sim/ipc-toolkit/pull/244>`_).
+
+  - ``NormalPotential::hessian()`` early-returned the block :math:`(\text{weight} \cdot f)\nabla^2 m` for exactly parallel edges (:math:`m = 0`) *without* projection, while every other path projects.
+  - Positive weights leave the block PSD, so this was harmless until ``IMPROVED_MAX_APPROX`` introduced negative-weight collisions, which made the block negative-(semi)definite and the assembled "PSD-projected" Hessian non-PSD.
+  - Because :math:`m = 0` is a global minimum of the mollifier, :math:`\nabla^2 m` is PSD and :math:`f(d) > 0`, so projecting the scalar weight is sufficient — no eigendecomposition needed.
+
+Python |:snake:|
+~~~~~~~~~~~~~~~~
+
+- 💥 **[Breaking]** Rename the ``SmoothPotential`` class to ``SmoothContactPotential`` to match the C++ name (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+- Fill gaps that made the GCP and convergent-formulation tutorials impossible to follow from Python (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_):
+
+  - Add ``SmoothCollisions.compute_adaptive_dhat``. Without it, adaptive dhat was unreachable even though ``build()`` accepts ``use_adaptive_dhat=True`` and requires this to be called first.
+  - Add the ``SmoothContactParameters.adaptive_dhat_ratio`` property.
+  - Add the ``BarrierPotential.stiffness`` and ``.use_physical_barrier`` properties, mirroring the C++ setters.
+
+- Validate preconditions in the bindings instead of relying on the C++ ``assert``\ s, which are compiled out under ``NDEBUG`` and would let a release build silently accept a bad value (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). ``BarrierPotential`` now raises ``ValueError`` for a non-positive or NaN ``dhat``/``stiffness`` and for a null barrier.
+- Bind ``edge_triangle_intersection()``, returning an ``(intersects, u, v, t)`` tuple since Python has no out-parameters, and ``CollisionMesh.face_normals()``, returning an (#F × 3) array to match the other per-element accessors (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_). ``face_normals()`` raises ``ValueError`` on a 2D mesh rather than invoking undefined behavior.
+
+Documentation
+~~~~~~~~~~~~~
+
+- Update the tutorials to match the current API (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). Every snippet is now verified: the C++ is extracted into a compile harness checked against the real headers, and the Python is run against a built ``ipctk``.
+
+  - ``ipc::point_triangle_ccd`` and the other free narrow-phase functions are now methods on :cpp:class:`ipc::NarrowPhaseCCD` subclasses; ``<ipc/ccd/ccd.hpp>`` no longer exists.
+  - The four ``*_nonlinear_ccd`` free functions are now :cpp:class:`ipc::NonlinearCCD` methods.
+  - ``CollisionStencil::ccd`` takes stencil vertices rather than ``(vertices, edges, faces)``; use ``dof()`` to gather them.
+  - ``TangentialCollisions::build`` no longer takes ``barrier_stiffness`` — stiffness now comes from the normal potential. The stale call still compiled in C++, silently binding ``barrier_stiffness`` to ``mu_s`` and ``mu`` to ``mu_k``.
+
+- Correct the note on conservative CCD (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). :cpp:class:`ipc::TightInclusionCCD` does not scale the returned time of impact in the normal path; it inflates the minimum separation the query stops at, capped at ``1e-4``, and only scales the TOI in the fallback taken when that query returns a TOI below ``SMALL_TOI``. Because the cap usually binds, changing ``conservative_rescaling`` often has no effect at all.
+- Describe the narrow-phase alternatives accurately (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+
+  - ``InexactCCD`` is behind ``IPC_TOOLKIT_WITH_INEXACT_CCD``, which is off by default, so it is now marked opt-in.
+  - All three methods compute their margin as :math:`d_\min + (1 - r)(d_0 - d_\min)`; only :cpp:class:`ipc::TightInclusionCCD` caps the second term, which is why it reports a time of impact closer to the exact one.
+  - :cpp:class:`ipc::AdditiveCCD` is over 100× faster and reliable in practice; it does not account for rounding error in its distance computations, but the default 10% margin is large enough to avoid false negatives, at the cost of a less accurate time of impact and more false positives.
+
+- Add MeshFEM :cite:p:`Mohammadian2026MeshFEM` to the gallery.
+
+Refactor
+~~~~~~~~
+
+- Replace the duplicate squared-distance implementations in ``ipc/smooth_contact/distance/`` (``point_point_sqr_distance``, ``point_line_sqr_distance``, ``line_line_sqr_distance``, ``edge_edge_sqr_distance``, ``point_plane_sqr_distance``, ``point_triangle_sqr_distance``) with the now-templated functions from ``ipc/distance/``.
+
+Miscellaneous
+~~~~~~~~~~~~~
+
+- Add ``MeshFEMCore`` and ``MeshFEMSparse`` :cite:p:`Mohammadian2026MeshFEM` as dependencies, fetched with CPM (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_). Both are MIT licensed and build as small static targets — matrix data structures and assembly routines, without sparse direct solvers.
+- Take the ``distance_squared`` functor of the private ``AdditiveCCD::additive_ccd`` helper as a template parameter rather than a ``std::function`` (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+- Fix stale ``IPC_TOOLKIT_CCD_BENCHMARK_DIR`` and ``IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR`` references in the CMake status messages; the cache variables are ``IPC_TOOLKIT_TESTS_CCD_BENCHMARK_DIR`` and ``IPC_TOOLKIT_TESTS_NEW_CCD_BENCHMARK_DIR`` (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
+
 v1.6.0 (July 14, 2026)
 ----------------------
 

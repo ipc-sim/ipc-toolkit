@@ -9,9 +9,9 @@ void define_point_plane_distance(py::module_& m)
     m.def(
         "point_plane_distance",
         py::overload_cast<
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>>(&point_plane_distance),
+            Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>,
+            Eigen::ConstRef<Eigen::Vector3d>>(
+            &detail::point_plane_distance<double>),
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and a plane.
 
@@ -31,10 +31,9 @@ void define_point_plane_distance(py::module_& m)
     m.def(
         "point_plane_distance",
         py::overload_cast<
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>>(&point_plane_distance),
+            Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>,
+            Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>>(
+            &detail::point_plane_distance<double>),
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and a plane.
 
@@ -55,10 +54,9 @@ void define_point_plane_distance(py::module_& m)
     m.def(
         "point_plane_distance_gradient",
         py::overload_cast<
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>>(
-            &point_plane_distance_gradient),
+            Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>,
+            Eigen::ConstRef<Eigen::Vector3d>>(
+            &detail::point_plane_distance_gradient<double>),
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and a plane.
 
@@ -78,11 +76,9 @@ void define_point_plane_distance(py::module_& m)
     m.def(
         "point_plane_distance_gradient",
         py::overload_cast<
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>>(
-            &point_plane_distance_gradient),
+            Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>,
+            Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>>(
+            &detail::point_plane_distance_gradient<double>),
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and a plane.
 
@@ -103,10 +99,9 @@ void define_point_plane_distance(py::module_& m)
     m.def(
         "point_plane_distance_hessian",
         py::overload_cast<
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>>(
-            &point_plane_distance_hessian),
+            Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>,
+            Eigen::ConstRef<Eigen::Vector3d>>(
+            &detail::point_plane_distance_hessian<double>),
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and a plane.
 
@@ -126,11 +121,9 @@ void define_point_plane_distance(py::module_& m)
     m.def(
         "point_plane_distance_hessian",
         py::overload_cast<
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>>(
-            &point_plane_distance_hessian),
+            Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>,
+            Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>>(
+            &detail::point_plane_distance_hessian<double>),
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and a plane.
 

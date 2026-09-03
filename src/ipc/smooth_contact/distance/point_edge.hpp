@@ -2,11 +2,11 @@
 
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_line.hpp>
+#include <ipc/distance/point_point.hpp>
 #include <ipc/math/math.hpp>
 #include <ipc/smooth_contact/common.hpp>
 #include <ipc/utils/autodiff_types.hpp>
-
-#include <iostream>
 
 namespace ipc {
 template <typename T, int dim> class PointEdgeDistance {

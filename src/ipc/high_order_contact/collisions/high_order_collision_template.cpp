@@ -1,5 +1,6 @@
 #include "high_order_collision_template.hpp"
 
+#include <ipc/distance/distance_type_exact.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_point.hpp>
@@ -402,7 +403,7 @@ double HighOrderCollisionTemplate<Edge3P1, Vertex3>::operator()(
     const AdaptiveSupport* adaptive) const
 {
     assert(
-        point_edge_distance_type(
+        point_edge_distance_type_exact(
             positions.template segment<3>(6), positions.template head<3>(),
             positions.template segment<3>(3))
         == PointEdgeDistanceType::P_E);
@@ -430,7 +431,7 @@ double HighOrderCollisionTemplate<Face3P1, Vertex3>::operator()(
     const AdaptiveSupport* adaptive) const
 {
     assert(
-        point_triangle_distance_type(
+        point_triangle_distance_type_exact(
             positions.template segment<3>(9), positions.template head<3>(),
             positions.template segment<3>(3), positions.template segment<3>(6))
         == PointTriangleDistanceType::P_T);
@@ -482,7 +483,7 @@ auto HighOrderCollisionTemplate<Edge3P1, Vertex3>::gradient(
 {
     assert(positions.size() == 9);
     assert(
-        point_edge_distance_type(
+        point_edge_distance_type_exact(
             positions.template segment<3>(6), positions.template head<3>(),
             positions.template segment<3>(3))
         == PointEdgeDistanceType::P_E);
@@ -518,7 +519,7 @@ auto HighOrderCollisionTemplate<Face3P1, Vertex3>::gradient(
 {
     assert(positions.size() == 12);
     assert(
-        point_triangle_distance_type(
+        point_triangle_distance_type_exact(
             positions.template segment<3>(9), positions.template head<3>(),
             positions.template segment<3>(3), positions.template segment<3>(6))
         == PointTriangleDistanceType::P_T);
@@ -581,7 +582,7 @@ auto HighOrderCollisionTemplate<Edge3P1, Vertex3>::hessian(
 {
     assert(positions.size() == 9);
     assert(
-        point_edge_distance_type(
+        point_edge_distance_type_exact(
             positions.template segment<3>(6), positions.template head<3>(),
             positions.template segment<3>(3))
         == PointEdgeDistanceType::P_E);
@@ -623,7 +624,7 @@ auto HighOrderCollisionTemplate<Face3P1, Vertex3>::hessian(
 {
     assert(positions.size() == 12);
     assert(
-        point_triangle_distance_type(
+        point_triangle_distance_type_exact(
             positions.template segment<3>(9), positions.template head<3>(),
             positions.template segment<3>(3), positions.template segment<3>(6))
         == PointTriangleDistanceType::P_T);
@@ -752,7 +753,7 @@ HighOrderCollisionTemplate<Edge3P1, Vertex3>::gradient_nearfar(
     const NearFarBarrier* nf_barrier) const
 {
     assert(positions.size() == 9);
-    auto dtype = point_edge_distance_type(
+    auto dtype = point_edge_distance_type_exact(
         positions.template segment<3>(6), positions.template head<3>(),
         positions.template segment<3>(3));
     const double dist = sqrt(point_edge_distance(
@@ -790,7 +791,7 @@ HighOrderCollisionTemplate<Face3P1, Vertex3>::gradient_nearfar(
     const NearFarBarrier* nf_barrier) const
 {
     assert(positions.size() == 12);
-    auto dtype = point_triangle_distance_type(
+    auto dtype = point_triangle_distance_type_exact(
         positions.template segment<3>(9), positions.template head<3>(),
         positions.template segment<3>(3), positions.template segment<3>(6));
     const double dist = sqrt(point_triangle_distance(
@@ -884,7 +885,7 @@ HighOrderCollisionTemplate<Edge3P1, Vertex3>::hessian_nearfar(
     const NearFarBarrier* nf_barrier) const
 {
     assert(positions.size() == 9);
-    auto dtype = point_edge_distance_type(
+    auto dtype = point_edge_distance_type_exact(
         positions.template segment<3>(6), positions.template head<3>(),
         positions.template segment<3>(3));
     const double dist = sqrt(point_edge_distance(
@@ -940,7 +941,7 @@ HighOrderCollisionTemplate<Face3P1, Vertex3>::hessian_nearfar(
     const NearFarBarrier* nf_barrier) const
 {
     assert(positions.size() == 12);
-    auto dtype = point_triangle_distance_type(
+    auto dtype = point_triangle_distance_type_exact(
         positions.template segment<3>(9), positions.template head<3>(),
         positions.template segment<3>(3), positions.template segment<3>(6));
     const double dist = sqrt(point_triangle_distance(
@@ -1032,7 +1033,7 @@ double HighOrderCollisionTemplate<Vertex2, Edge2P1>::operator()(
     const AdaptiveSupport* adaptive) const
 {
     assert(
-        point_edge_distance_type(
+        point_edge_distance_type_exact(
             positions.template head<2>(), positions.template segment<2>(2),
             positions.template segment<2>(4))
         == PointEdgeDistanceType::P_E);
@@ -1078,7 +1079,7 @@ auto HighOrderCollisionTemplate<Vertex2, Edge2P1>::gradient(
     const AdaptiveSupport* adaptive) const -> VectorMax<double, ELEMENT_SIZE>
 {
     assert(
-        point_edge_distance_type(
+        point_edge_distance_type_exact(
             positions.template head<2>(), positions.template segment<2>(2),
             positions.template segment<2>(4))
         == PointEdgeDistanceType::P_E);
@@ -1135,7 +1136,7 @@ auto HighOrderCollisionTemplate<Vertex2, Edge2P1>::hessian(
     -> MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>
 {
     assert(
-        point_edge_distance_type(
+        point_edge_distance_type_exact(
             positions.template head<2>(), positions.template segment<2>(2),
             positions.template segment<2>(4))
         == PointEdgeDistanceType::P_E);

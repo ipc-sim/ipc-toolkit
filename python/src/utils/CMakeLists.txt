@@ -1,5 +1,6 @@
 set(SOURCES
   eigen_ext.cpp
+  hessian_assembler.cpp
   logger.cpp
   profiler.cpp
   thread_limiter.cpp

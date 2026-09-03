@@ -1,8 +1,8 @@
 #include "friction_potential.hpp"
 
+#include <ipc/utils/gradient_assembler.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
-#include <tbb/combinable.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 
@@ -55,25 +55,17 @@ Eigen::VectorXd TangentialPotential::force(
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
-    tbb::combinable<Eigen::VectorXd> storage(
-        Eigen::VectorXd::Zero(velocities.size()));
-
-    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
-        const auto& collision = collisions[i];
-
-        const VectorMax12d local_force = force(
-            collision, collision.dof(rest_positions, edges, faces),
-            collision.dof(lagged_displacements, edges, faces),
-            collision.dof(velocities, edges, faces), //
-            normal_potential, dmin, no_mu);
-
-        local_gradient_to_global_gradient(
-            local_force, collision.vertex_ids(mesh.edges(), mesh.faces()), dim,
-            storage.local());
-    });
-
-    return storage.combine([](const Eigen::VectorXd& a,
-                              const Eigen::VectorXd& b) { return a + b; });
+    return assemble_gradient(
+        velocities.size(), dim, collisions.size(),
+        [&](const size_t i) -> VectorMax12d {
+            const auto& collision = collisions[i];
+            return force(
+                collision, collision.dof(rest_positions, edges, faces),
+                collision.dof(lagged_displacements, edges, faces),
+                collision.dof(velocities, edges, faces), //
+                normal_potential, dmin, no_mu);
+        },
+        [&](const size_t i) { return collisions[i].vertex_ids(edges, faces); });
 }
 
 Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
@@ -608,24 +600,16 @@ Eigen::VectorXd TangentialPotential::smooth_contact_force(
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
-    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
-        Eigen::VectorXd::Zero(velocities.size()));
-
-    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
-        const auto& collision = collisions[i];
-
-        const VectorMaxNd local_force = smooth_contact_force(
-            collision, collision.dof(rest_positions, edges, faces),
-            collision.dof(lagged_displacements, edges, faces),
-            collision.dof(velocities, edges, faces), no_mu);
-
-        local_gradient_to_global_gradient(
-            local_force, collision.vertex_ids(mesh.edges(), mesh.faces()), dim,
-            storage.local());
-    });
-
-    return storage.combine([](const Eigen::VectorXd& a,
-                              const Eigen::VectorXd& b) { return a + b; });
+    return assemble_gradient(
+        velocities.size(), dim, collisions.size(),
+        [&](const size_t i) -> VectorMaxNd {
+            const auto& collision = collisions[i];
+            return smooth_contact_force(
+                collision, collision.dof(rest_positions, edges, faces),
+                collision.dof(lagged_displacements, edges, faces),
+                collision.dof(velocities, edges, faces), no_mu);
+        },
+        [&](const size_t i) { return collisions[i].vertex_ids(edges, faces); });
 }
 
 Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(

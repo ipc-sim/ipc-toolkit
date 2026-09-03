@@ -1,6 +1,8 @@
 set(SOURCES
   distance_type.cpp
   distance_type.hpp
+  distance_type_exact.cpp
+  distance_type_exact.hpp
   edge_edge.cpp
   edge_edge.hpp
   edge_edge_mollifier.cpp
@@ -13,7 +15,6 @@ set(SOURCES
   point_line.hpp
   point_plane.cpp
   point_plane.hpp
-  point_point.cpp
   point_point.hpp
   point_triangle.cpp
   point_triangle.hpp

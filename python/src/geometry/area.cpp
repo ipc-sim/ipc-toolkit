@@ -8,7 +8,10 @@ using namespace ipc;
 void define_area(py::module_& m)
 {
     m.def(
-        "edge_length_gradient", &edge_length_gradient,
+        "edge_length_gradient",
+        [](Eigen::ConstRef<VectorMax3d> e0, Eigen::ConstRef<VectorMax3d> e1) {
+            return edge_length_gradient(e0, e1);
+        },
         R"ipc_Qu8mg5v7(
         Compute the gradient of an edge's length.
 
@@ -22,7 +25,7 @@ void define_area(py::module_& m)
         "e0"_a, "e1"_a);
 
     m.def(
-        "triangle_area_gradient", &triangle_area_gradient,
+        "triangle_area_gradient", &detail::triangle_area_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the area of a triangle.
 

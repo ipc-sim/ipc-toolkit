@@ -102,6 +102,7 @@ option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD meth
 option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
 option(IPC_TOOLKIT_WITH_GEOGRAM               "Use geogram for predicates / expansion types"  ON)
 option(IPC_TOOLKIT_WITH_TRACY                 "Enable Tracy frame profiler"                   OFF)
+option(IPC_TOOLKIT_WITH_MESHFEM_SPARSE        "Use MeshFEMSparse for block-accelerated assembly" ON)
 
 # Advanced options
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
@@ -118,7 +119,7 @@ if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
-### Configuration
+# Configuration
 set(IPC_TOOLKIT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/ipc")
 set(IPC_TOOLKIT_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src")
 
@@ -152,7 +153,17 @@ if(IPC_TOOLKIT_WITH_CUDA)
   enable_language(CUDA)
 endif()
 
-## SIMD support
+# MeshFEMSparse block assembly requires per-vertex blocks in the derivative
+# layout, i.e., the default RowMajor ([x0, y0, z0, x1, ...]) ordering.
+# Shadow the cache entry with a normal variable rather than forcing the cache
+# off, so that switching the layout back to RowMajor re-enables MeshFEMSparse
+# instead of leaving the build directory permanently disabled.
+if(IPC_TOOLKIT_WITH_MESHFEM_SPARSE AND NOT IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT STREQUAL "RowMajor")
+  message(WARNING "MeshFEMSparse assembly requires IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT=RowMajor. Continuing without MeshFEMSparse.")
+  set(IPC_TOOLKIT_WITH_MESHFEM_SPARSE OFF)
+endif()
+
+# SIMD support
 if(IPC_TOOLKIT_WITH_SIMD)
   # Figure out SIMD support
   message(STATUS "Testing SIMD capabilities...")
@@ -270,6 +281,12 @@ if(IPC_TOOLKIT_WITH_GEOGRAM)
   target_link_libraries(ipc_toolkit PUBLIC geogram::geogram)
 endif()
 
+# Block-accelerated Hessian assembly
+if(IPC_TOOLKIT_WITH_MESHFEM_SPARSE)
+  include(meshfem_sparse)
+  target_link_libraries(ipc_toolkit PRIVATE MeshFEM::Sparse)
+endif()
+
 if(IPC_TOOLKIT_WITH_PROFILER)
   # Add nlohmann/json for the profiler
   include(json)
@@ -290,7 +307,7 @@ target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 # Compiler options
 ################################################################################
 
-## SIMD support
+# SIMD support
 if(IPC_TOOLKIT_WITH_SIMD)
   # Add SIMD flags to compiler flags
   target_compile_options(ipc_toolkit PRIVATE ${SIMD_CXX_FLAGS})
