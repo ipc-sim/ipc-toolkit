@@ -188,8 +188,7 @@ void print_compare_nonzero(
                 abs_diff / std::max(std::abs(A(i, j)), std::abs(B(i, j)));
 
             const double tol =
-                std::max({ std::abs(A(i, j)), std::abs(B(i, j)), double(1.0) })
-                * 1e-5;
+                std::max({ std::abs(A(i, j)), std::abs(B(i, j)), 1.0 }) * 1e-5;
 
             if ((A(i, j) != 0 || B(i, j) != 0)
                 && (!print_only_different || abs_diff > tol)) {

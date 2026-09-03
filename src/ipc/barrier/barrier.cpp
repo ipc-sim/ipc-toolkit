@@ -20,7 +20,7 @@ template <typename T> T barrier(const T d, const T dhat)
     }
     // b(d) = -(d-d̂)²ln(d / d̂)
     const T d_minus_dhat = (d - dhat);
-    return -d_minus_dhat * d_minus_dhat * log(d / dhat);
+    return -d_minus_dhat * d_minus_dhat * std::log(d / dhat);
 }
 
 template <typename T> T barrier_first_derivative(const T d, const T dhat)
@@ -32,7 +32,7 @@ template <typename T> T barrier_first_derivative(const T d, const T dhat)
     // b'(d) = -2(d - d̂)ln(d / d̂) - (d-d̂)²(1 / d)
     //       = (d - d̂) * (-2ln(d/d̂) - (d - d̂) / d)
     //       = (d̂ - d) * (2ln(d/d̂) - d̂/d + 1)
-    return (dhat - d) * (2 * log(d / dhat) - dhat / d + 1);
+    return (dhat - d) * (2 * std::log(d / dhat) - dhat / d + 1);
 }
 
 template <typename T> T barrier_second_derivative(const T d, const T dhat)
@@ -41,7 +41,7 @@ template <typename T> T barrier_second_derivative(const T d, const T dhat)
         return T(0);
     }
     const T dhat_d = dhat / d;
-    return (dhat_d + 2) * dhat_d - 2 * log(d / dhat) - 3;
+    return (dhat_d + 2) * dhat_d - 2 * std::log(d / dhat) - 3;
 }
 
 // ============================================================================
@@ -57,7 +57,7 @@ T ClampedLogSqBarrier<T>::operator()(const T d, const T dhat) const
     }
     // b(d) = (d-d̂)²ln²(d / d̂)
     const T d_minus_dhat = (d - dhat);
-    const T log_d_dhat = log(d / dhat);
+    const T log_d_dhat = std::log(d / dhat);
     return d_minus_dhat * d_minus_dhat * log_d_dhat * log_d_dhat;
 }
 
@@ -71,7 +71,7 @@ T ClampedLogSqBarrier<T>::first_derivative(const T d, const T dhat) const
     // b'(d) = 2 (d - d̂) ln²(d / d̂) + 2 (d - d̂)² ln(d / d̂) / d
     //       = 2 (d - d̂) ln(d / d̂) [ln(d / d̂) + (d - d̂) / d]
     const T d_minus_dhat = (d - dhat);
-    const T log_d_dhat = log(d / dhat);
+    const T log_d_dhat = std::log(d / dhat);
     return T(2) * d_minus_dhat * log_d_dhat * (log_d_dhat + d_minus_dhat / d);
 }
 
@@ -82,7 +82,7 @@ T ClampedLogSqBarrier<T>::second_derivative(const T d, const T dhat) const
         return T(0);
     }
     const T t0 = dhat - d;
-    const T t1 = log(d / dhat);
+    const T t1 = std::log(d / dhat);
     const T t2 = (t0 * t0) / (d * d);
     return T(2) * ((t1 * t1) - (t1 - T(1)) * t2 - T(4) * t1 * t0 / d);
 }

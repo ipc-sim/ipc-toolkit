@@ -219,7 +219,7 @@ MatrixMax<T, 27, 9> point_line_normal_hessian(
 namespace {
     template <typename T>
     void set_cross_product_matrix_jacobian(
-        Eigen::Ref<Eigen::Matrix<T, 9, 3>> Jx, double chain_rule = 1.0)
+        Eigen::Ref<Eigen::Matrix<T, 9, 3>> Jx, T chain_rule = T(1.0))
     {
         Jx(2, 1) = Jx(3, 2) = Jx(7, 0) = -chain_rule;
         Jx(1, 2) = Jx(5, 0) = Jx(6, 1) = chain_rule;
