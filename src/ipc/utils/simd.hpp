@@ -1,10 +1,10 @@
 #pragma once
 
 #include <ipc/config.hpp>
+#include <ipc/math/scalar_math.hpp>
 
 #include <Eigen/Core>
 
-#include <cmath>
 #include <limits>
 #include <type_traits>
 #include <utility>
@@ -71,18 +71,6 @@ inline auto select_lazy(const Mask& mask, F&& value, Rest&&... rest)
     } else {
         return select(mask, value(), select_lazy(std::forward<Rest>(rest)...));
     }
-}
-
-/// @brief `sqrt` for any scalar the library templates on.
-///
-/// The block-scope using-declaration is what makes this work: unqualified
-/// lookup stops at it (so this does not recurse), while ADL still reaches
-/// `xsimd::sqrt` for a batch and TinyAD's hidden friend for an autodiff
-/// scalar.
-template <typename T> inline T sqrt(const T& x)
-{
-    using std::sqrt;
-    return sqrt(x);
 }
 
 } // namespace ipc

@@ -122,7 +122,10 @@ else()
     # GCC 6.1 #
     ###########
 
-    -Wnull-dereference
+    # -Wnull-dereference is added below, but only for non-GCC compilers: GCC
+    # has a long-standing history of false positives on inlined Eigen
+    # expression-template code (e.g. https://gcc.gnu.org/PR94867, seen from
+    # GCC 8 through at least GCC 14).
     -fdelete-null-pointer-checks
     -Wduplicated-cond
     -Wmisleading-indentation
@@ -172,6 +175,10 @@ else()
 
     -Wno-redundant-decls
   )
+
+  if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND IPC_TOOLKIT_WARNING_FLAGS -Wnull-dereference)
+  endif()
 endif()
 
 add_library(ipc_toolkit_warnings INTERFACE)

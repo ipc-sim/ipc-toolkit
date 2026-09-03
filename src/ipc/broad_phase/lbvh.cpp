@@ -474,7 +474,11 @@ namespace {
                 std::array<float, batch_t::size>
                     buffer {};
 
+#if defined(__clang__)
 #pragma unroll
+#elif defined(__GNUC__)
+#pragma GCC unroll 16
+#endif
             // 2. Fill the buffer, respecting the actual number of queries
             for (size_t i = 0; i < batch_t::size; ++i) {
                 buffer[i] = (i < n_queries) ? F(static_cast<int>(i)) : 0.0f;

@@ -22,7 +22,7 @@ TEST_CASE("Dihedral angle and gradient", "[angle][dihedral]")
     Eigen::Vector3d x2(0.5, 0, 0);
     Eigen::Vector3d x3(-0.5, 0, 0);
 
-    double expected_angle;
+    double expected_angle = 0;
     SECTION("Various angles")
     {
         const double rot = deg2rad(

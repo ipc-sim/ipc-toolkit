@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {

@@ -8,8 +8,6 @@
 #include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/simd.hpp>
 
-#include <cmath>
-
 namespace ipc {
 
 // Each barrier is one select_lazy cascade, ordered by increasing d so it
