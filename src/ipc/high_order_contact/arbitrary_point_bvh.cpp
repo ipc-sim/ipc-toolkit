@@ -1,5 +1,8 @@
 #include "arbitrary_point_bvh.hpp"
 
+#include <cassert>
+#include <vector>
+
 namespace ipc {
 
 namespace {
@@ -8,11 +11,19 @@ namespace {
     /// `radius` centered at p, for use with LBVH::Node::intersects().
     /// Only aabb_min/aabb_max are meaningful; the union fields are unused
     /// by intersects() but are set to keep the node well-defined.
-    LBVH::Node point_query_node(const Eigen::RowVector3d& p, double radius)
+    ///
+    /// A 2D point is padded to (x, y, 0), which is what AABB does to 2D
+    /// primitives (it stores Array3d and zero-fills the unused component),
+    /// so the resulting z range [-radius, radius] straddles the tree's.
+    LBVH::Node
+    point_query_node(Eigen::ConstRef<RowVectorMax3d> p, double radius)
     {
+        Eigen::Array3d c = Eigen::Array3d::Zero();
+        c.head(p.size()) = p.transpose().array();
+
         LBVH::Node n;
-        n.aabb_min = (p.array() - radius).cast<float>();
-        n.aabb_max = (p.array() + radius).cast<float>();
+        n.aabb_min = (c - radius).cast<float>();
+        n.aabb_max = (c + radius).cast<float>();
         n.primitive_id = -1;
         n.is_inner_marker = 0;
         return n;
@@ -29,6 +40,16 @@ namespace {
         std::vector<index_t>& hits)
     {
         if (bvh.empty()) {
+            return;
+        }
+
+        // A single-primitive tree is one node, and that node is a leaf, so
+        // the descend-from-an-inner-root loop below would read the union's
+        // left/right through a leaf. Easy to hit in 2D (a one-edge mesh).
+        if (bvh.size() == 1) {
+            if (bvh[0].intersects(query)) {
+                hits.push_back(bvh[0].primitive_id);
+            }
             return;
         }
 
@@ -81,7 +102,7 @@ void ArbitraryPointBVH::update(
 }
 
 void ArbitraryPointBVH::query_point(
-    Eigen::ConstRef<Eigen::RowVector3d> q,
+    Eigen::ConstRef<RowVectorMax3d> q,
     double radius,
     std::vector<index_t>& vertex_ids,
     std::vector<index_t>& edge_ids,

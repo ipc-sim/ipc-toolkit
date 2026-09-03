@@ -30,13 +30,14 @@ public:
     /// @brief Find real mesh primitives whose (uninflated) AABB is within
     /// `radius` of q, i.e. intersects a box of half-width `radius` centered
     /// at q. Broad-phase only: callers still need to check exact distances.
-    /// @param q Query point.
+    /// @param q Query point (2D or 3D, matching the mesh).
     /// @param radius Half-width of the query box around q.
     /// @param[out] vertex_ids Real vertex ids found nearby.
     /// @param[out] edge_ids Real edge ids found nearby.
-    /// @param[out] face_ids Real face ids found nearby.
+    /// @param[out] face_ids Real face ids found nearby. Always empty in 2D,
+    ///   where mesh.faces() is empty and no face tree is built.
     void query_point(
-        Eigen::ConstRef<Eigen::RowVector3d> q,
+        Eigen::ConstRef<RowVectorMax3d> q,
         double radius,
         std::vector<index_t>& vertex_ids,
         std::vector<index_t>& edge_ids,
