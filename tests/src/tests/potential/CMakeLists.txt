@@ -12,6 +12,7 @@ set(SOURCES
   # Benchmarks
   benchmark_assembly.cpp
   benchmark_gradient_assembly.cpp
+  benchmark_simd_barrier_potential.cpp
 
   # Utilities
   assembly_scene.cpp
