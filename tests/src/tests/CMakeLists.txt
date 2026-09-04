@@ -13,6 +13,7 @@ set(SOURCES
   benchmark_eigen.cpp
 
   # Utilities
+  simd_utils.hpp
   utils.cpp
   utils.hpp
 )

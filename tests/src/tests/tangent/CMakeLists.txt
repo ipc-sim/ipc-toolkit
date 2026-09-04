@@ -2,6 +2,7 @@ set(SOURCES
   # Tests
   test_closest_point.cpp
   test_relative_velocity.cpp
+  test_simd_relative_velocity.cpp
   test_simd_tangent_basis.cpp
   test_tangent_basis.cpp
 

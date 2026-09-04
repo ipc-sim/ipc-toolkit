@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include <ipc/utils/simd.hpp>
+#include <tests/simd_utils.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_SIMD
 
@@ -8,43 +8,23 @@
 
 #include <Eigen/Geometry>
 
+#include <array>
 #include <cmath>
 #include <string>
-#include <vector>
 
 using namespace ipc;
+using namespace ipc::tests;
 
 namespace {
 
-using Batch = SimdBatch<double>;
-constexpr int L = int(Batch::size);
-
 /// @brief The threshold of two unit-length rest edges.
 constexpr double EPS_X = 1e-3;
-
-/// @brief The batch and scalar paths differ only in how the compiler contracts
-/// multiply-adds. As in the other SIMD tests, the tolerance is relative to the
-/// magnitude of the whole result: the mollifier derivatives scale as 1/eps_x
-/// and 1/eps_x², so a per-entry absolute tolerance would be meaningless.
-constexpr double TOL = 1e-9;
 
 /// @brief Angles between the two edges placing a lane on either side of the
 /// mollifier threshold: exactly parallel, mollified, just inside the
 /// threshold, and inactive. The mollifier activates at sin²θ < eps_x, i.e.
 /// θ < 0.0316 rad for unit rest edges.
-const std::vector<double> THETAS = { 0.0, 0.02, 0.0316, 0.4 };
-
-/// @brief Fill the lanes from `THETAS` starting at `offset`. A batch may hold
-/// fewer lanes than there are cases, so the caller sweeps the offset to reach
-/// every one.
-std::vector<double> lane_thetas(const int offset)
-{
-    std::vector<double> thetas(L);
-    for (int l = 0; l < L; ++l) {
-        thetas[l] = THETAS[(l + offset) % THETAS.size()];
-    }
-    return thetas;
-}
+constexpr std::array<double, 4> THETAS = { 0.0, 0.02, 0.0316, 0.4 };
 
 /// @brief A lane-dependent rotation, so the gradients are not mostly zeros the
 /// way an axis-aligned configuration would make them.
@@ -78,54 +58,6 @@ Config config(const double theta, const int l)
     return { R * ea0 + t, R * ea1 + t, R * eb0 + t, R * eb1 + t };
 }
 
-/// @brief Pack the k-th coordinate of L problems into one batch.
-Eigen::Vector3<Batch> pack(const std::vector<Eigen::Vector3d>& v)
-{
-    Eigen::Vector3<Batch> out;
-    for (int k = 0; k < 3; ++k) {
-        std::vector<double> tmp(L);
-        for (int l = 0; l < L; ++l) {
-            tmp[l] = v[l][k];
-        }
-        out[k] = Batch::load_unaligned(tmp.data());
-    }
-    return out;
-}
-
-void check_lane(
-    const std::string& name,
-    const int offset,
-    const int l,
-    const double got,
-    const double want)
-{
-    const double scale = std::max(1.0, std::abs(want));
-    CAPTURE(name, offset, l, got, want, scale);
-    CHECK(std::abs(got - want) <= TOL * scale);
-}
-
-/// @brief Compare a batch-valued matrix against the scalar result per lane.
-template <typename BatchMatrix, typename ScalarOf>
-void check_lanes(
-    const std::string& name,
-    const int offset,
-    const BatchMatrix& batched,
-    ScalarOf&& scalar_of)
-{
-    for (int l = 0; l < L; ++l) {
-        const auto want = scalar_of(l);
-        REQUIRE(batched.rows() == want.rows());
-        REQUIRE(batched.cols() == want.cols());
-        // One scale for the whole result: entries of a mollifier Hessian are
-        // cancellations of much larger terms.
-        const double scale = std::max(1.0, want.array().abs().maxCoeff());
-        for (Eigen::Index i = 0; i < want.size(); ++i) {
-            CAPTURE(name, offset, l, i, scale);
-            CHECK(std::abs(batched(i).get(l) - want(i)) <= TOL * scale);
-        }
-    }
-}
-
 } // namespace
 
 TEST_CASE(
@@ -133,45 +65,44 @@ TEST_CASE(
     "[distance][mollifier][simd]")
 {
     // x straddling eps_x, so one batch carries mollified and inactive lanes.
-    const std::vector<double> region_xs = { 0.0, 0.1 * EPS_X, 0.9 * EPS_X,
-                                            2.0 * EPS_X };
+    constexpr std::array<double, 4> REGION_XS = { 0.0, 0.1 * EPS_X, 0.9 * EPS_X,
+                                                  2.0 * EPS_X };
 
-    for (int offset = 0; offset < int(region_xs.size()); ++offset) {
-        std::vector<double> xs(L);
-        for (int l = 0; l < L; ++l) {
-            xs[l] = region_xs[(l + offset) % region_xs.size()];
-        }
+    const auto check = [&](const std::string& name, auto&& scalar_fn,
+                           auto&& batch_fn) {
+        check_swept_lanes(
+            name, REGION_XS, [&](double x) { return scalar_fn(x, EPS_X); },
+            [&](Batch x) { return batch_fn(x, Batch(EPS_X)); });
+    };
 
-        const Batch x = Batch::load_unaligned(xs.data());
-        const Batch eps_x(EPS_X);
-
-        const Batch m = edge_edge_mollifier(x, eps_x);
-        const Batch dm = edge_edge_mollifier_gradient(x, eps_x);
-        const Batch d2m = edge_edge_mollifier_hessian(x, eps_x);
-        const Batch dm_deps =
-            edge_edge_mollifier_derivative_wrt_eps_x(x, eps_x);
-        const Batch d2m_deps =
-            edge_edge_mollifier_gradient_derivative_wrt_eps_x(x, eps_x);
-
-        for (int l = 0; l < L; ++l) {
-            check_lane(
-                "mollifier", offset, l, m.get(l),
-                edge_edge_mollifier(xs[l], EPS_X));
-            check_lane(
-                "gradient", offset, l, dm.get(l),
-                edge_edge_mollifier_gradient(xs[l], EPS_X));
-            check_lane(
-                "hessian", offset, l, d2m.get(l),
-                edge_edge_mollifier_hessian(xs[l], EPS_X));
-            check_lane(
-                "derivative_wrt_eps_x", offset, l, dm_deps.get(l),
-                edge_edge_mollifier_derivative_wrt_eps_x(xs[l], EPS_X));
-            check_lane(
-                "gradient_derivative_wrt_eps_x", offset, l, d2m_deps.get(l),
-                edge_edge_mollifier_gradient_derivative_wrt_eps_x(
-                    xs[l], EPS_X));
-        }
-    }
+    check(
+        "mollifier",
+        [](double x, double e) { return edge_edge_mollifier(x, e); },
+        [](Batch x, Batch e) { return edge_edge_mollifier(x, e); });
+    check(
+        "gradient",
+        [](double x, double e) { return edge_edge_mollifier_gradient(x, e); },
+        [](Batch x, Batch e) { return edge_edge_mollifier_gradient(x, e); });
+    check(
+        "hessian",
+        [](double x, double e) { return edge_edge_mollifier_hessian(x, e); },
+        [](Batch x, Batch e) { return edge_edge_mollifier_hessian(x, e); });
+    check(
+        "derivative_wrt_eps_x",
+        [](double x, double e) {
+            return edge_edge_mollifier_derivative_wrt_eps_x(x, e);
+        },
+        [](Batch x, Batch e) {
+            return edge_edge_mollifier_derivative_wrt_eps_x(x, e);
+        });
+    check(
+        "gradient_derivative_wrt_eps_x",
+        [](double x, double e) {
+            return edge_edge_mollifier_gradient_derivative_wrt_eps_x(x, e);
+        },
+        [](Batch x, Batch e) {
+            return edge_edge_mollifier_gradient_derivative_wrt_eps_x(x, e);
+        });
 }
 
 TEST_CASE(
@@ -179,13 +110,13 @@ TEST_CASE(
     "[distance][mollifier][simd]")
 {
     for (int offset = 0; offset < int(THETAS.size()); ++offset) {
-        const std::vector<double> thetas = lane_thetas(offset);
+        const Lanes thetas = lane_cases(THETAS, offset);
+        const std::string at = " (offset " + std::to_string(offset) + ")";
 
-        std::vector<Config> configs(L);
-        std::vector<Eigen::Vector3d> EA0(L), EA1(L), EB0(L), EB1(L);
+        Points<3> EA0, EA1, EB0, EB1;
         // The rest configuration is the same geometry at theta = 0: both edges
         // are unit length, so the threshold is exactly EPS_X on every lane.
-        std::vector<Eigen::Vector3d> RA0(L), RA1(L), RB0(L), RB1(L);
+        Points<3> RA0, RA1, RB0, RB1;
         for (int l = 0; l < L; ++l) {
             const Config c = config(thetas[l], l);
             EA0[l] = c.ea0, EA1[l] = c.ea1, EB0[l] = c.eb0, EB1[l] = c.eb1;
@@ -200,31 +131,34 @@ TEST_CASE(
         const Batch eps_x(EPS_X);
 
         // The threshold itself must agree before anything built on it does.
-        const Batch eps_x_batch =
-            edge_edge_mollifier_threshold(ra0, ra1, rb0, rb1);
-        const Batch x_batch = edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
-        const Batch m_batch = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
-        for (int l = 0; l < L; ++l) {
-            check_lane(
-                "threshold", offset, l, eps_x_batch.get(l),
-                edge_edge_mollifier_threshold(RA0[l], RA1[l], RB0[l], RB1[l]));
-            check_lane(
-                "cross_squarednorm", offset, l, x_batch.get(l),
-                edge_edge_cross_squarednorm(EA0[l], EA1[l], EB0[l], EB1[l]));
-            check_lane(
-                "mollifier", offset, l, m_batch.get(l),
-                edge_edge_mollifier(EA0[l], EA1[l], EB0[l], EB1[l], EPS_X));
-        }
+        check_scalar_lanes(
+            "threshold" + at, edge_edge_mollifier_threshold(ra0, ra1, rb0, rb1),
+            [&](int l) {
+                return edge_edge_mollifier_threshold(
+                    RA0[l], RA1[l], RB0[l], RB1[l]);
+            });
+        check_scalar_lanes(
+            "cross_squarednorm" + at,
+            edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1), [&](int l) {
+                return edge_edge_cross_squarednorm(
+                    EA0[l], EA1[l], EB0[l], EB1[l]);
+            });
+        check_scalar_lanes(
+            "mollifier" + at, edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x),
+            [&](int l) {
+                return edge_edge_mollifier(
+                    EA0[l], EA1[l], EB0[l], EB1[l], EPS_X);
+            });
 
         check_lanes(
-            "cross_squarednorm_gradient", offset,
+            "cross_squarednorm_gradient" + at,
             edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1),
             [&](int l) {
                 return edge_edge_cross_squarednorm_gradient(
                     EA0[l], EA1[l], EB0[l], EB1[l]);
             });
         check_lanes(
-            "cross_squarednorm_hessian", offset,
+            "cross_squarednorm_hessian" + at,
             edge_edge_cross_squarednorm_hessian(ea0, ea1, eb0, eb1),
             [&](int l) {
                 return edge_edge_cross_squarednorm_hessian(
@@ -232,28 +166,28 @@ TEST_CASE(
             });
 
         check_lanes(
-            "mollifier_gradient", offset,
+            "mollifier_gradient" + at,
             edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x),
             [&](int l) {
                 return edge_edge_mollifier_gradient(
                     EA0[l], EA1[l], EB0[l], EB1[l], EPS_X);
             });
         check_lanes(
-            "mollifier_hessian", offset,
+            "mollifier_hessian" + at,
             edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x), [&](int l) {
                 return edge_edge_mollifier_hessian(
                     EA0[l], EA1[l], EB0[l], EB1[l], EPS_X);
             });
 
         check_lanes(
-            "threshold_gradient", offset,
+            "threshold_gradient" + at,
             edge_edge_mollifier_threshold_gradient(ra0, ra1, rb0, rb1),
             [&](int l) {
                 return edge_edge_mollifier_threshold_gradient(
                     RA0[l], RA1[l], RB0[l], RB1[l]);
             });
         check_lanes(
-            "mollifier_gradient_wrt_x", offset,
+            "mollifier_gradient_wrt_x" + at,
             edge_edge_mollifier_gradient_wrt_x(
                 ra0, ra1, rb0, rb1, ea0, ea1, eb0, eb1),
             [&](int l) {
@@ -262,7 +196,7 @@ TEST_CASE(
                     EB1[l]);
             });
         check_lanes(
-            "mollifier_gradient_jacobian_wrt_x", offset,
+            "mollifier_gradient_jacobian_wrt_x" + at,
             edge_edge_mollifier_gradient_jacobian_wrt_x(
                 ra0, ra1, rb0, rb1, ea0, ea1, eb0, eb1),
             [&](int l) {

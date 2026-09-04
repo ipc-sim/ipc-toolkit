@@ -11,6 +11,7 @@ set(SOURCES
   test_point_triangle.cpp
   test_simd_distance.cpp
   test_simd_edge_edge_mollifier.cpp
+  test_simd_signed_distance.cpp
   test_signed_distance.cpp
 
   # Benchmarks
