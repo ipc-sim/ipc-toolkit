@@ -1,7 +1,5 @@
 #include "edge_edge_mollifier.hpp"
 
-#include <ipc/utils/eigen_ext.hpp>
-
 namespace ipc {
 namespace detail {
 
@@ -20,17 +18,21 @@ namespace detail {
             ea0_rest, ea1_rest, eb0_rest, eb1_rest);
         const T ee_cross_norm_sqr =
             edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
-        if (ee_cross_norm_sqr < eps_x) {
-            // ∇ₓ m = ∂m/∂ε · ∇ₓε
-            // (m depends on rest positions only through eps_x, since the
-            // cross-squarednorm s is a function of POSITIONS only)
-            return edge_edge_mollifier_derivative_wrt_eps_x(
-                       ee_cross_norm_sqr, eps_x)
-                * edge_edge_mollifier_threshold_gradient(
-                       ea0_rest, ea1_rest, eb0_rest, eb1_rest);
-        } else {
-            return Eigen::Vector<T, 12>::Zero();
+
+        if constexpr (!is_simd_batch_v<T>) {
+            // Shortcut for the common case of the mollifier being inactive.
+            if (ee_cross_norm_sqr >= eps_x) {
+                return Eigen::Vector<T, 12>::Zero();
+            }
         }
+
+        // ∇ₓ m = ∂m/∂ε · ∇ₓε
+        // (m depends on rest positions only through eps_x, since the
+        // cross-squarednorm s is a function of POSITIONS only)
+        return edge_edge_mollifier_derivative_wrt_eps_x(
+                   ee_cross_norm_sqr, eps_x)
+            * edge_edge_mollifier_threshold_gradient(
+                   ea0_rest, ea1_rest, eb0_rest, eb1_rest);
     }
 
     template <typename T>
@@ -48,19 +50,23 @@ namespace detail {
             ea0_rest, ea1_rest, eb0_rest, eb1_rest);
         const T ee_cross_norm_sqr =
             edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
-        if (ee_cross_norm_sqr < eps_x) {
-            // ∂²m/∂ε∂s (∇ₓε)(∇ᵤs(x+u))ᵀ + ∂m/∂s ∇ᵤ²s(x+u)
-            return edge_edge_mollifier_gradient_derivative_wrt_eps_x(
-                       ee_cross_norm_sqr, eps_x)
-                * edge_edge_mollifier_threshold_gradient(
-                       ea0_rest, ea1_rest, eb0_rest, eb1_rest)
-                * edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1)
-                      .transpose()
-                + ipc::edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
-                * edge_edge_cross_squarednorm_hessian(ea0, ea1, eb0, eb1);
-        } else {
-            return Eigen::Matrix<T, 12, 12>::Zero();
+
+        if constexpr (!is_simd_batch_v<T>) {
+            // Shortcut for the common case of the mollifier being inactive.
+            if (ee_cross_norm_sqr >= eps_x) {
+                return Eigen::Matrix<T, 12, 12>::Zero();
+            }
         }
+
+        // ∂²m/∂ε∂s (∇ₓε)(∇ᵤs(x+u))ᵀ + ∂m/∂s ∇ᵤ²s(x+u)
+        return edge_edge_mollifier_gradient_derivative_wrt_eps_x(
+                   ee_cross_norm_sqr, eps_x)
+            * edge_edge_mollifier_threshold_gradient(
+                   ea0_rest, ea1_rest, eb0_rest, eb1_rest)
+            * edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1)
+                  .transpose()
+            + ipc::edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
+            * edge_edge_cross_squarednorm_hessian(ea0, ea1, eb0, eb1);
     }
 
 #define IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER(T)                                 \
@@ -86,6 +92,10 @@ namespace detail {
 
     IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER(float);
     IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER(double);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+    IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER(SimdBatch<float>);
+    IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER(SimdBatch<double>);
+#endif
 #undef IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER
 
 } // namespace detail
@@ -406,7 +416,7 @@ namespace autogen {
         const auto t1 = eb0x - eb1x;
         const auto t2 = eb0y - eb1y;
         const auto t3 = eb0z - eb1z;
-        const auto t4 = 2 * scale;
+        const auto t4 = T(2) * scale;
         const auto t5 = t4 * ((t1 * t1) + (t2 * t2) + (t3 * t3));
         const auto t6 = t0 * t5;
         const auto t7 = ea0y - ea1y;
@@ -431,14 +441,21 @@ namespace autogen {
         grad[11] = -t14;
     }
 
-    // clang-format off
-    template void edge_edge_cross_squarednorm_gradient<float>(float, float, float, float, float, float, float, float, float, float, float, float, float[12]);
-    template void edge_edge_cross_squarednorm_gradient<double>(double, double, double, double, double, double, double, double, double, double, double, double, double[12]);
-    template void edge_edge_cross_squarednorm_hessian<float>(float, float, float, float, float, float, float, float, float, float, float, float, float[144]);
-    template void edge_edge_cross_squarednorm_hessian<double>(double, double, double, double, double, double, double, double, double, double, double, double, double[144]);
-    template void edge_edge_mollifier_threshold_gradient<float>(float, float, float, float, float, float, float, float, float, float, float, float, float[12], float);
-    template void edge_edge_mollifier_threshold_gradient<double>(double, double, double, double, double, double, double, double, double, double, double, double, double[12], double);
-    // clang-format on
+#define IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER_AUTOGEN(T)                         \
+    template void edge_edge_cross_squarednorm_gradient<T>(                     \
+        T, T, T, T, T, T, T, T, T, T, T, T, T[12]);                            \
+    template void edge_edge_cross_squarednorm_hessian<T>(                      \
+        T, T, T, T, T, T, T, T, T, T, T, T, T[144]);                           \
+    template void edge_edge_mollifier_threshold_gradient<T>(                   \
+        T, T, T, T, T, T, T, T, T, T, T, T, T[12], T)
+
+    IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER_AUTOGEN(float);
+    IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER_AUTOGEN(double);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+    IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER_AUTOGEN(SimdBatch<float>);
+    IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER_AUTOGEN(SimdBatch<double>);
+#endif
+#undef IPC_INSTANTIATE_EDGE_EDGE_MOLLIFIER_AUTOGEN
 
 } // namespace autogen
 } // namespace ipc

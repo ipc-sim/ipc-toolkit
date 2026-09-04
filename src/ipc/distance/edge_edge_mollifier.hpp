@@ -2,6 +2,7 @@
 
 #include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/simd.hpp>
 
 namespace ipc {
 
@@ -28,12 +29,13 @@ namespace autogen {
 /// @return The mollifier coefficient to premultiply the edge-edge distance.
 template <typename T> inline T edge_edge_mollifier(const T x, const T eps_x)
 {
-    if (x < eps_x) {
-        const T x_div_eps_x = x / eps_x;
-        return (-x_div_eps_x + T(2)) * x_div_eps_x;
-    } else {
-        return T(1);
-    }
+    return select_lazy(
+        x < eps_x,
+        [&] {
+            const T x_div_eps_x = x / eps_x;
+            return (-x_div_eps_x + T(2)) * x_div_eps_x;
+        },
+        [&] { return T(1); });
 }
 
 /// @brief The gradient of the mollifier function for edge-edge distance.
@@ -43,12 +45,13 @@ template <typename T> inline T edge_edge_mollifier(const T x, const T eps_x)
 template <typename T>
 inline T edge_edge_mollifier_gradient(const T x, const T eps_x)
 {
-    if (x < eps_x) {
-        const T one_div_eps_x = T(1) / eps_x;
-        return T(2) * one_div_eps_x * fma(-one_div_eps_x, x, T(1));
-    } else {
-        return T(0);
-    }
+    return select_lazy(
+        x < eps_x,
+        [&] {
+            const T one_div_eps_x = T(1) / eps_x;
+            return T(2) * one_div_eps_x * fma(-one_div_eps_x, x, T(1));
+        },
+        [&] { return T(0); });
 }
 
 /// @brief The derivative of the mollifier function for edge-edge distance wrt
@@ -60,8 +63,10 @@ inline T edge_edge_mollifier_gradient(const T x, const T eps_x)
 template <typename T>
 inline T edge_edge_mollifier_derivative_wrt_eps_x(const T x, const T eps_x)
 {
-    return x < eps_x ? (T(2) * x * (-eps_x + x) / (eps_x * eps_x * eps_x))
-                     : T(0);
+    return select_lazy(
+        x < eps_x,
+        [&] { return T(2) * x * (-eps_x + x) / (eps_x * eps_x * eps_x); },
+        [&] { return T(0); });
 }
 
 /// @brief The hessian of the mollifier function for edge-edge distance.
@@ -71,11 +76,9 @@ inline T edge_edge_mollifier_derivative_wrt_eps_x(const T x, const T eps_x)
 template <typename T>
 inline T edge_edge_mollifier_hessian(const T x, const T eps_x)
 {
-    if (x < eps_x) {
-        return T(-2) / (eps_x * eps_x);
-    } else {
-        return T(0);
-    }
+    return select_lazy(
+        x < eps_x, [&] { return T(-2) / (eps_x * eps_x); },
+        [&] { return T(0); });
 }
 
 /// @brief The derivative of the gradient of the mollifier function for
@@ -88,8 +91,10 @@ template <typename T>
 inline T
 edge_edge_mollifier_gradient_derivative_wrt_eps_x(const T x, const T eps_x)
 {
-    return x < eps_x ? (T(2) * (-eps_x + T(2) * x) / (eps_x * eps_x * eps_x))
-                     : T(0);
+    return select_lazy(
+        x < eps_x,
+        [&] { return T(2) * (-eps_x + T(2) * x) / (eps_x * eps_x * eps_x); },
+        [&] { return T(0); });
 }
 
 // --- Fixed-size kernels ---------------------------------------------------
@@ -145,15 +150,8 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector3<T>> eb1,
         const T eps_x)
     {
-        const T ee_cross_norm_sqr =
-            edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
-        if (ee_cross_norm_sqr < eps_x) {
-            // NOTE: ipc:: qualification: the scalar overload is hidden by the
-            // same-named kernel in this namespace.
-            return ipc::edge_edge_mollifier(ee_cross_norm_sqr, eps_x);
-        } else {
-            return T(1);
-        }
+        return ipc::edge_edge_mollifier(
+            edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1), eps_x);
     }
 
     /// @note Prefer the ipc::edge_edge_mollifier_gradient front end.
@@ -167,12 +165,14 @@ namespace detail {
     {
         const T ee_cross_norm_sqr =
             edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
-        if (ee_cross_norm_sqr < eps_x) {
-            return ipc::edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
-                * edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1);
-        } else {
-            return Eigen::Vector<T, 12>::Zero();
+        if constexpr (!is_simd_batch_v<T>) {
+            // Shortcut for the common case of the mollifier being inactive.
+            if (ee_cross_norm_sqr >= eps_x) {
+                return Eigen::Vector<T, 12>::Zero();
+            }
         }
+        return ipc::edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
+            * edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1);
     }
 
     /// @note Prefer the ipc::edge_edge_mollifier_hessian front end.
@@ -186,18 +186,20 @@ namespace detail {
     {
         const T ee_cross_norm_sqr =
             edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
-        if (ee_cross_norm_sqr < eps_x) {
-            const Eigen::Vector<T, 12> grad =
-                edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1);
-
-            return (ipc::edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
-                    * edge_edge_cross_squarednorm_hessian(ea0, ea1, eb0, eb1))
-                + ((ipc::edge_edge_mollifier_hessian(ee_cross_norm_sqr, eps_x)
-                    * grad)
-                   * grad.transpose());
-        } else {
-            return Eigen::Matrix<T, 12, 12>::Zero();
+        if constexpr (!is_simd_batch_v<T>) {
+            // Shortcut for the common case of the mollifier being inactive.
+            if (ee_cross_norm_sqr >= eps_x) {
+                return Eigen::Matrix<T, 12, 12>::Zero();
+            }
         }
+        const Eigen::Vector<T, 12> grad =
+            edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1);
+
+        return (ipc::edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
+                * edge_edge_cross_squarednorm_hessian(ea0, ea1, eb0, eb1))
+            + ((ipc::edge_edge_mollifier_hessian(ee_cross_norm_sqr, eps_x)
+                * grad)
+               * grad.transpose());
     }
 
     /// @note Prefer the ipc::edge_edge_mollifier_gradient_wrt_x front end.
