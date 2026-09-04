@@ -676,3 +676,4 @@ CMakeGraphVizOptions.cmake
 
 .claude
 graphify-out
+__cmake_systeminformation
