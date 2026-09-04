@@ -1,6 +1,6 @@
-#include <ipc/candidates/plane_vertex.hpp>
-
 #include <common.hpp>
+
+#include <ipc/candidates/plane_vertex.hpp>
 
 using namespace ipc;
 

@@ -4,8 +4,43 @@
 #include <ipc/smooth_contact/common.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
+#include <Eigen/SVD>
+
 namespace ipc {
 namespace {
+
+    // Rotation-variant SVD for a fixed-size square matrix. Folds any reflection
+    // into the smallest singular value so that U and V are proper rotations
+    // (det = +1), following the standard signed SVD.
+    template <int dim>
+    void svd_rv(
+        const Eigen::Matrix<double, dim, dim>& A,
+        Eigen::Matrix<double, dim, dim>& U,
+        Eigen::Matrix<double, dim, dim>& V,
+        Eigen::Vector<double, dim>& sigma)
+    {
+        using MatrixType = Eigen::Matrix<double, dim, dim>;
+        // Compute-time U/V options (runtime options are deprecated in Eigen).
+        constexpr int ComputeFullUV = Eigen::ComputeFullU | Eigen::ComputeFullV;
+
+        Eigen::JacobiSVD<MatrixType, ComputeFullUV> svd(A);
+
+        U = svd.matrixU();
+        V = svd.matrixV();
+        sigma = svd.singularValues();
+
+        MatrixType L = MatrixType::Identity();
+        L(dim - 1, dim - 1) = (U * V.transpose()).determinant();
+
+        const double detU = U.determinant();
+        const double detV = V.determinant();
+        if (detU < 0 && detV > 0) {
+            U = U * L;
+        } else if (detU > 0 && detV < 0) {
+            V = V * L;
+        }
+        sigma = L * sigma;
+    }
 
     /*
         Mathematica script
@@ -19,6 +54,23 @@ namespace {
     */
 
 } // namespace
+
+MatrixMax3d nearest_rotation(Eigen::ConstRef<MatrixMax3d> A)
+{
+    assert(A.rows() == A.cols());
+    if (A.rows() == 2) {
+        Eigen::Matrix2d U, V;
+        Eigen::Vector2d sigma;
+        svd_rv<2>(Eigen::Matrix2d(A), U, V, sigma);
+        return U * V.transpose();
+    } else {
+        assert(A.rows() == 3);
+        Eigen::Matrix3d U, V;
+        Eigen::Vector3d sigma;
+        svd_rv<3>(Eigen::Matrix3d(A), U, V, sigma);
+        return U * V.transpose();
+    }
+}
 
 HeavisideType OrientationTypes::compute_type(
     const double val, const double alpha, const double beta)

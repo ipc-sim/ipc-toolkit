@@ -83,13 +83,34 @@ if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
 endif()
 
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-  option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
-  option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
+  # Generate a compile_commands.json file
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ${CLO_IPC_TOPLEVEL_PROJECT})
+
+  # If we are on a Mac, explicitly add the sysroot to the compiler flags
+  if(CMAKE_EXPORT_COMPILE_COMMANDS AND APPLE)
+    # CMake usually finds the sysroot automatically, but if it didn't, fetch it
+    if(NOT CMAKE_OSX_SYSROOT)
+      execute_process(COMMAND xcrun --show-sdk-path
+                          OUTPUT_VARIABLE CMAKE_OSX_SYSROOT
+                          OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
+
+    # Force the -isysroot flag into the compile commands for clang-tidy
+    add_compile_options("-isysroot" "${CMAKE_OSX_SYSROOT}")
+  endif()
+endif()
+
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
+  option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"          ON)
+  option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings"    OFF)
+  option(IPC_TOOLKIT_BUILD_DEMO   "Build the demo simulator"  ON)
 else()
-  # If this is not the top-level project, we don't want to build tests or Python
-  # bindings. This is useful for projects that use IPC Toolkit as a submodule.
-  set(IPC_TOOLKIT_BUILD_TESTS  OFF CACHE BOOL "Build unit-tests"      FORCE)
-  set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings" FORCE)
+  # If this is not the top-level project, we don't want to build tests, Python
+  # bindings, or the demo simulator. This is useful for projects that use IPC
+  # Toolkit as a submodule.
+  set(IPC_TOOLKIT_BUILD_TESTS  OFF CACHE BOOL "Build unit-tests"          FORCE)
+  set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings"     FORCE)
+  set(IPC_TOOLKIT_BUILD_DEMO   OFF CACHE BOOL "Build the demo simulator"  FORCE)
 endif()
 
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
@@ -98,6 +119,7 @@ option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle inters
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
 option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
+option(IPC_TOOLKIT_WITH_GLTF                  "Enable glTF I/O (tinygltf)"                    OFF)
 option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
 option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
 option(IPC_TOOLKIT_WITH_TRACY                 "Enable Tracy frame profiler"                   OFF)
@@ -243,6 +265,12 @@ include(tinyad)
 # TODO: Make this a private dependency once we stop exposing TinyAD types in the public API.
 target_link_libraries(ipc_toolkit PUBLIC TinyAD::TinyAD)
 
+# TinyGLTF
+if(IPC_TOOLKIT_WITH_GLTF)
+  include(tinygltf)
+  target_link_libraries(ipc_toolkit PRIVATE tinygltf::tinygltf)
+endif()
+
 # CCD
 if(IPC_TOOLKIT_WITH_INEXACT_CCD)
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
@@ -323,6 +351,16 @@ endif()
 target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 
 ################################################################################
+# Demo simulator (application-side code: solver, problem glue, stepping loop)
+################################################################################
+
+# Added before the tests and Python bindings so both can optionally include
+# the demo's tests and bindings.
+if(IPC_TOOLKIT_BUILD_DEMO)
+  add_subdirectory(demo)
+endif()
+
+################################################################################
 # Tests
 ################################################################################
 
@@ -348,6 +386,17 @@ if(IPC_TOOLKIT_WITH_CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     --coverage
     -fprofile-update=atomic
   )
+  if(IPC_TOOLKIT_BUILD_DEMO)
+    target_compile_options(ipc_toolkit_demo PRIVATE
+      -g         # generate debug info
+      --coverage # sets all required flags
+      -fprofile-update=atomic
+    )
+    target_link_options(ipc_toolkit_demo PUBLIC
+      --coverage
+      -fprofile-update=atomic
+    )
+  endif()
 endif()
 
 ################################################################################

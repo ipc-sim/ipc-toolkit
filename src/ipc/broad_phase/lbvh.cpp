@@ -801,6 +801,112 @@ void LBVH::detect_face_face_candidates(
 }
 
 // ============================================================================
+// Two-tree (inter-BVH) queries.
+//
+// The other BVH is used as the source (its leaves are iterated) and this BVH
+// is the target (its tree is traversed), so this BVH should be the one with
+// more primitives to take advantage of the log(n) traversal. The
+// rightmost_leaves argument is only used for triangular (self-collision)
+// traversal, so an empty vector is passed here.
+
+void LBVH::detect_vertex_vertex_candidates(
+    const LBVH& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<VertexVertexCandidate>& candidates) const
+{
+    if (!has_vertices() || !other.has_vertices()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK(
+        "LBVH::detect_vertex_vertex_candidates(two-tree)");
+
+    detect_candidates<VertexVertexCandidate, /*swap_order=*/true>(
+        other.vertex_bvh, vertex_bvh, /*rightmost_leaves=*/ {}, can_collide,
+        candidates);
+}
+
+void LBVH::detect_edge_vertex_candidates(
+    const LBVH& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<EdgeVertexCandidate>& candidates) const
+{
+    if (!has_edges() || !other.has_vertices()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_edge_vertex_candidates(two-tree)");
+
+    detect_candidates<EdgeVertexCandidate, /*swap_order=*/true>(
+        other.vertex_bvh, edge_bvh, /*rightmost_leaves=*/ {}, can_collide,
+        candidates);
+}
+
+void LBVH::detect_vertex_edge_candidates(
+    const LBVH& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<EdgeVertexCandidate>& candidates) const
+{
+    if (!has_vertices() || !other.has_edges()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_vertex_edge_candidates(two-tree)");
+
+    detect_candidates<EdgeVertexCandidate, /*swap_order=*/false>(
+        other.edge_bvh, vertex_bvh, /*rightmost_leaves=*/ {}, can_collide,
+        candidates);
+}
+
+void LBVH::detect_edge_edge_candidates(
+    const LBVH& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<EdgeEdgeCandidate>& candidates) const
+{
+    if (!has_edges() || !other.has_edges()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_edge_edge_candidates(two-tree)");
+
+    detect_candidates<EdgeEdgeCandidate, /*swap_order=*/true>(
+        other.edge_bvh, edge_bvh, /*rightmost_leaves=*/ {}, can_collide,
+        candidates);
+}
+
+void LBVH::detect_face_vertex_candidates(
+    const LBVH& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<FaceVertexCandidate>& candidates) const
+{
+    if (!has_faces() || !other.has_vertices()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_face_vertex_candidates(two-tree)");
+
+    detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
+        other.vertex_bvh, face_bvh, /*rightmost_leaves=*/ {}, can_collide,
+        candidates);
+}
+
+void LBVH::detect_vertex_face_candidates(
+    const LBVH& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<FaceVertexCandidate>& candidates) const
+{
+    if (!has_vertices() || !other.has_faces()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_vertex_face_candidates(two-tree)");
+
+    detect_candidates<FaceVertexCandidate, /*swap_order=*/false>(
+        other.face_bvh, vertex_bvh, /*rightmost_leaves=*/ {}, can_collide,
+        candidates);
+}
+
+// ============================================================================
 
 bool LBVH::can_edge_vertex_collide(size_t ei, size_t vi) const
 {

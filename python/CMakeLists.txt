@@ -9,6 +9,17 @@ target_include_directories(ipctk PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 target_link_libraries(ipctk PRIVATE ipc::toolkit)
 
+# Demo simulator bindings (optional; exposed as the ipctk.demo submodule)
+if(IPC_TOOLKIT_BUILD_DEMO)
+  target_sources(ipctk PRIVATE "${PROJECT_SOURCE_DIR}/demo/python/simulator.cpp")
+  target_link_libraries(ipctk PRIVATE ipc::toolkit::demo)
+  target_compile_definitions(ipctk PRIVATE IPCTK_WITH_DEMO)
+
+  # nlohmann::json <-> Python dict conversion for the solver parameters
+  include(pybind11_json)
+  target_link_libraries(ipctk PRIVATE pybind11::json)
+endif()
+
 # libigl (binding igl::edges)
 include(libigl)
 target_link_libraries(ipctk PRIVATE igl::core igl::predicates)
@@ -41,4 +52,9 @@ endif()
 # Folder name for IDE
 set_target_properties(ipctk PROPERTIES FOLDER "SRC")
 get_target_property(IPCTK_SOURCES ipctk SOURCES)
+# The demo bindings live outside python/ (demo/python/); group them separately
+list(FILTER IPCTK_SOURCES EXCLUDE REGEX "/demo/python/")
 source_group(TREE "${PROJECT_SOURCE_DIR}/python" FILES ${IPCTK_SOURCES})
+if(IPC_TOOLKIT_BUILD_DEMO)
+  source_group("Source Files\\demo" FILES "${PROJECT_SOURCE_DIR}/demo/python/simulator.cpp")
+endif()
