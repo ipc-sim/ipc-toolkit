@@ -14,12 +14,13 @@
 // and distance type, then packed into an array-of-structures-of-arrays layout
 // with one collision per lane, so a batch load is one contiguous read.
 //
-// The edge-edge mollifier is *not* applied by any variant: its
-// implementation branches on a scalar `if` and is only instantiated for
-// `float`/`double`, so a batch cannot evaluate it. The scene report below
-// says how many edge-edge collisions are actually mollified (m < 1); for the
-// rest the mollified and unmollified derivatives are identical, which is what
-// the check against the library path relies on.
+// The edge-edge mollifier is *not* applied by any variant. It is instantiated
+// for batch scalars, so a batch could now evaluate it; leaving it out keeps
+// the four variants on the same arithmetic as when the numbers were first
+// taken. The scene report below says how many edge-edge collisions are
+// actually mollified (m < 1); for the rest the mollified and unmollified
+// derivatives are identical, which is what the check against the library path
+// relies on.
 //
 // The float variants come in two flavours. "float" converts the scene's
 // coordinates as they are. "float (rescaled)" first re-centers each stencil
@@ -55,6 +56,7 @@
 #include <spdlog/fmt/fmt.h>
 
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -84,8 +86,21 @@ template <typename R, typename A> struct ScalarTraits<xsimd::batch<R, A>> {
     using Batch = xsimd::batch<R, A>;
     using Real = R;
     static constexpr int LANES = int(Batch::size);
-    static Batch load(const Real* p) { return Batch::load_unaligned(p); }
-    static void store(Real* p, const Batch& v) { v.store_unaligned(p); }
+    // Aligned: every caller reads/writes a whole number of lanes into a
+    // PackedVector, whose allocator supplies the architecture's alignment.
+    // The asserts check that rather than assume it -- an aligned load off a
+    // misaligned address happens to work on some instruction sets and faults
+    // on others, so it cannot be validated by running on one machine.
+    static Batch load(const Real* p)
+    {
+        assert(xsimd::is_aligned<A>(p));
+        return Batch::load_aligned(p);
+    }
+    static void store(Real* p, const Batch& v)
+    {
+        assert(xsimd::is_aligned<A>(p));
+        v.store_aligned(p);
+    }
     static double reduce_add(const Batch& v)
     {
         return double(xsimd::reduce_add(v));
@@ -237,16 +252,36 @@ struct GroupSpec {
 /// `x[b*3*NV*L + comp*L + lane]`, i.e. within a block each of the 3·NV
 /// coordinates is stored contiguously across lanes. For L = 1 this is the
 /// plain per-collision DOF vector `CollisionStencil::dof` returns.
+#ifdef IPC_TOOLKIT_WITH_SIMD
+/// @brief Allocator giving a packed buffer the alignment a batch load wants.
+///
+/// `xsimd::default_allocator` falls back to `std::allocator` on an
+/// architecture with no alignment requirement, so this is safe either way.
+template <typename R> using PackedAllocator = xsimd::default_allocator<R>;
+#else
+template <typename R> using PackedAllocator = std::allocator<R>;
+#endif
+
+/// @brief A packed buffer, aligned for `load_aligned`/`store_aligned`.
+///
+/// Every batch load and store below is at an offset that is a whole number of
+/// lanes into one of these -- and one lane's width times the lane count *is*
+/// the architecture's alignment -- so an aligned base makes every access
+/// aligned. That matters here rather than in the tests: an unaligned load can
+/// cost throughput on some instruction sets, which is the very thing this
+/// benchmark measures.
+template <typename R> using PackedVector = std::vector<R, PackedAllocator<R>>;
+
 template <typename R> struct PackedGroup {
     Kind kind = Kind::VV;
     int dtype = 0;
     size_t n = 0;       ///< Real collisions.
     size_t nblocks = 0; ///< ceil(n / L).
     int lanes = 1;
-    std::vector<R> x; ///< nblocks * 3*NV * L
-    std::vector<R> w; ///< nblocks * L; zero on padding lanes.
-    std::vector<R> grad_out;
-    std::vector<R> hess_out;
+    PackedVector<R> x; ///< nblocks * 3*NV * L
+    PackedVector<R> w; ///< nblocks * L; zero on padding lanes.
+    PackedVector<R> grad_out;
+    PackedVector<R> hess_out;
 
     int nv() const { return num_vertices(kind); }
     int ndof() const { return 3 * nv(); }
