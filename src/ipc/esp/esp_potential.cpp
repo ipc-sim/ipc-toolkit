@@ -545,8 +545,8 @@ Eigen::VectorXd ESPPotential::gradient(
                                     mollifier_order_for_barrier(
                                         params.barrier));
 
-                                const ESPCollisionDict<PointType::EDGE>&
-                                    dict = *(iter->second);
+                                const ESPCollisionDict<PointType::EDGE>& dict =
+                                    *(iter->second);
 
                                 VertexMatrixView<3> X_extended(
                                     X, ee_closest_point);
@@ -996,8 +996,8 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                     mollifier_order_for_barrier(
                                         params.barrier));
 
-                                const ESPCollisionDict<PointType::EDGE>&
-                                    dict = *(iter->second);
+                                const ESPCollisionDict<PointType::EDGE>& dict =
+                                    *(iter->second);
 
                                 VertexMatrixView<3> X_extended(
                                     X, ee_closest_point);

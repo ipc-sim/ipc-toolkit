@@ -69,8 +69,7 @@ void ESPCollisionsBuilder<2>::build_edge_collisions(
 }
 
 void ESPCollisionsBuilder<2>::merge(
-    tbb::enumerable_thread_specific<ESPCollisionsBuilder<2>>&
-        local_storage,
+    tbb::enumerable_thread_specific<ESPCollisionsBuilder<2>>& local_storage,
     ESPCollisions& merged_collisions)
 {
     size_t total_pairs = 0;
@@ -234,8 +233,7 @@ QuadratureCollisionsBuilder::QuadratureCollisionsBuilder(
     }
     face_collisions.clear();
     for (const auto& [fi, dicts] : other.face_collisions) {
-        std::vector<std::unique_ptr<ESPCollisionDict<PointType::FACE>>>
-            copied;
+        std::vector<std::unique_ptr<ESPCollisionDict<PointType::FACE>>> copied;
         for (const auto& d : dicts) {
             copied.push_back(
                 std::make_unique<ESPCollisionDict<PointType::FACE>>(*d));
@@ -259,8 +257,7 @@ QuadratureCollisionsBuilder::operator=(const QuadratureCollisionsBuilder& other)
     }
     face_collisions.clear();
     for (const auto& [fi, dicts] : other.face_collisions) {
-        std::vector<std::unique_ptr<ESPCollisionDict<PointType::FACE>>>
-            copied;
+        std::vector<std::unique_ptr<ESPCollisionDict<PointType::FACE>>> copied;
         for (const auto& d : dicts) {
             copied.push_back(
                 std::make_unique<ESPCollisionDict<PointType::FACE>>(*d));

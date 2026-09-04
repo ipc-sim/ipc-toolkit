@@ -19,8 +19,7 @@ template <> class ESPCollisionsBuilder<2> {
 public:
     ESPCollisionsBuilder() = default;
     // Copy creates an empty builder (used by tbb::enumerable_thread_specific).
-    ESPCollisionsBuilder(const ESPCollisionsBuilder&)
-        : ESPCollisionsBuilder()
+    ESPCollisionsBuilder(const ESPCollisionsBuilder&) : ESPCollisionsBuilder()
     {
     }
 
@@ -39,8 +38,7 @@ public:
     // -------------------------------------------------------------------------
 
     static void merge(
-        tbb::enumerable_thread_specific<ESPCollisionsBuilder<2>>&
-            local_storage,
+        tbb::enumerable_thread_specific<ESPCollisionsBuilder<2>>& local_storage,
         ESPCollisions& merged_collisions);
 
     // Per-edge QP collision dicts: each entry is {edge_id, [dict_qp0, ...]}.
@@ -48,8 +46,7 @@ public:
     // gives mutable references, enabling std::move in merge().
     std::vector<std::pair<
         index_t,
-        std::vector<
-            std::unique_ptr<ESPCollisionDict<PointType::EDGE, 2>>>>>
+        std::vector<std::unique_ptr<ESPCollisionDict<PointType::EDGE, 2>>>>>
         edge_collisions_2d;
 };
 

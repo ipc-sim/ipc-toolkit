@@ -758,8 +758,7 @@ TangentialPotential::VectorMaxNd TangentialPotential::gcp_force(
         * mu_f1_over_norm_tau * T * tau_aniso;
 }
 
-TangentialPotential::MatrixMaxNd
-TangentialPotential::gcp_force_jacobian_unit(
+TangentialPotential::MatrixMaxNd TangentialPotential::gcp_force_jacobian_unit(
     const TangentialCollision& collision,
     Eigen::ConstRef<VectorMaxNd> lagged_positions, // = x + u^t
     Eigen::ConstRef<VectorMaxNd> velocities,       // = v

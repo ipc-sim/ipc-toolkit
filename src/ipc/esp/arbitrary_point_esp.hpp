@@ -49,8 +49,7 @@ public:
     using Hessian = Eigen::Matrix<double, dim, dim>;
 
     /// @throws std::runtime_error if mesh.dim() != dim.
-    ArbitraryPointESP(
-        const CollisionMesh& mesh, ESPParameters params);
+    ArbitraryPointESP(const CollisionMesh& mesh, ESPParameters params);
 
     /// @brief Rebuild the underlying broad-phase index. O(n log n). Call
     /// once per vertex configuration, before any operator()/gradient()/

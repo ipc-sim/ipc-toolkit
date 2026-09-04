@@ -75,14 +75,14 @@ namespace {
 
         switch (dtype) {
         case PointEdgeDistanceType::P_E0:
-            return std::make_shared<
-                ESPCollisionTemplate<Vertex2, Vertex2>>(vid, e0, mesh);
+            return std::make_shared<ESPCollisionTemplate<Vertex2, Vertex2>>(
+                vid, e0, mesh);
         case PointEdgeDistanceType::P_E1:
-            return std::make_shared<
-                ESPCollisionTemplate<Vertex2, Vertex2>>(vid, e1, mesh);
+            return std::make_shared<ESPCollisionTemplate<Vertex2, Vertex2>>(
+                vid, e1, mesh);
         case PointEdgeDistanceType::P_E:
-            return std::make_shared<
-                ESPCollisionTemplate<Vertex2, Edge2P1>>(vid, ei, mesh);
+            return std::make_shared<ESPCollisionTemplate<Vertex2, Edge2P1>>(
+                vid, ei, mesh);
         default:
             assert(false);
             return nullptr;
@@ -99,8 +99,8 @@ ArbitraryPointESP<dim>::ArbitraryPointESP(
 {
     if (mesh.dim() != dim) {
         log_and_throw_error(
-            "ArbitraryPointESP<{}> requires a {}D mesh (got {}D)!", dim,
-            dim, mesh.dim());
+            "ArbitraryPointESP<{}> requires a {}D mesh (got {}D)!", dim, dim,
+            mesh.dim());
     }
 }
 
@@ -123,8 +123,7 @@ ArbitraryPointESP<dim>::build_collisions_at_point(
     std::vector<index_t> vertex_ids, edge_ids, face_ids;
     point_bvh.query_point(q, params.dhat, vertex_ids, edge_ids, face_ids);
 
-    unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>>
-        pairs;
+    unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>> pairs;
 
     // Inclusion-exclusion over codimension: every primitive whose offset
     // region can contain q contributes a term signed (-1)^(codim-1) -- in 3D
@@ -137,10 +136,8 @@ ArbitraryPointESP<dim>::build_collisions_at_point(
     if constexpr (dim == 3) {
         for (const index_t fi : face_ids) {
             if (std::shared_ptr<ESPCollision> pair =
-                    ESPCollisionsBuilder<3>::
-                        reduce_point_triangle_collision(
-                            FaceVertexCandidate(fi, vid), params, mesh,
-                            V_view)) {
+                    ESPCollisionsBuilder<3>::reduce_point_triangle_collision(
+                        FaceVertexCandidate(fi, vid), params, mesh, V_view)) {
                 // Weight stays at the class default (+1).
                 insert_pair(pairs, std::move(pair));
             }

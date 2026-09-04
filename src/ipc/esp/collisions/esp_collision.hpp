@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include "../adaptive_support.hpp"
 #include "esp_primitives.hpp"
 #include "vertex_matrix_view.hpp"
@@ -9,6 +8,8 @@
 #include <ipc/esp/esp_parameters.hpp>
 #include <ipc/math/math.hpp>
 #include <ipc/utils/autodiff_types.hpp>
+
+#include <array>
 
 namespace ipc {
 

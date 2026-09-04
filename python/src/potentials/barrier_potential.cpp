@@ -113,8 +113,7 @@ void define_smooth_potential(py::module_& m)
         .def_readonly("beta_n", &GCPParameters::beta_n)
         .def_readonly("r", &GCPParameters::r)
         .def_property(
-            "adaptive_dhat_ratio",
-            &GCPParameters::adaptive_dhat_ratio,
+            "adaptive_dhat_ratio", &GCPParameters::adaptive_dhat_ratio,
             &GCPParameters::set_adaptive_dhat_ratio,
             "Ratio of the distance to the interaction set in the rest "
             "configuration used as the per-element adaptive dhat.");
@@ -221,8 +220,7 @@ void define_smooth_potential(py::module_& m)
             "hessian",
             py::overload_cast<
                 const GCPCollision&, Eigen::ConstRef<Eigen::VectorXd>,
-                const PSDProjectionMethod>(
-                &GCPPotential::hessian, py::const_),
+                const PSDProjectionMethod>(&GCPPotential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential for a single collision.
 
@@ -240,9 +238,7 @@ void define_smooth_potential(py::module_& m)
 void define_esp_potential(py::module& m)
 {
     py::enum_<ESPParameters::IntegrationType>(m, "IntegrationType")
-        .value(
-            "BRUTE_FORCE",
-            ESPParameters::IntegrationType::BRUTE_FORCE)
+        .value("BRUTE_FORCE", ESPParameters::IntegrationType::BRUTE_FORCE)
         .value("NORMAL", ESPParameters::IntegrationType::NORMAL)
         .value("NO_OBST", ESPParameters::IntegrationType::NO_OBST)
         .export_values();
@@ -265,8 +261,7 @@ void define_esp_potential(py::module& m)
         .def_readonly("dhat", &ESPParameters::dhat)
         .def_readonly("dbar", &ESPParameters::dbar)
         .def_readonly("quad_order", &ESPParameters::quad_order)
-        .def_readonly(
-            "integration_type", &ESPParameters::integration_type);
+        .def_readonly("integration_type", &ESPParameters::integration_type);
 
     py::class_<ESPPotential>(m, "ESPPotential")
         .def(

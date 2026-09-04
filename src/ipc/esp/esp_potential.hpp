@@ -12,9 +12,7 @@ namespace ipc {
 
 class ESPPotential {
 public:
-    ESPPotential(
-        const ESPParameters& _params,
-        const bool _use_near_far = true)
+    ESPPotential(const ESPParameters& _params, const bool _use_near_far = true)
         : params(_params)
         , use_near_far(_use_near_far)
     {

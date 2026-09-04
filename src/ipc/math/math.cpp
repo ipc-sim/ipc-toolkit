@@ -1,7 +1,7 @@
 #include "math.hpp"
 
-#include <ipc/geometry/normal.hpp>
 #include <ipc/gcp/common.hpp>
+#include <ipc/geometry/normal.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
 namespace ipc {

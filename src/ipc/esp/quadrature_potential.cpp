@@ -38,8 +38,7 @@ PointPotential::build_collisions_at_vertex(
     const index_t vid,
     size_t& num_collision_pairs) const
 {
-    unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>>
-        pairs;
+    unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>> pairs;
     num_collision_pairs = 0;
 
     const auto& v_set = candidates.vv_set(vid);
@@ -201,8 +200,7 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
     }
 #endif
 
-    unordered_map<std::array<int, 3>, std::shared_ptr<ESPCollision>>
-        pairs;
+    unordered_map<std::array<int, 3>, std::shared_ptr<ESPCollision>> pairs;
     num_collision_pairs = 0;
 
     if (edge_edge_distance(
@@ -277,27 +275,27 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
 
             switch (dtype2) {
             case PointEdgeDistanceType::P_E0: {
-                auto pair = std::make_shared<
-                    ESPCollisionTemplate<Vertex3, Vertex3>>(
-                    vid, mesh.edges()(other_e, 0), mesh);
+                auto pair =
+                    std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
+                        vid, mesh.edges()(other_e, 0), mesh);
                 ++num_collision_pairs;
                 pair->weight = -1;
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
             case PointEdgeDistanceType::P_E1: {
-                auto pair = std::make_shared<
-                    ESPCollisionTemplate<Vertex3, Vertex3>>(
-                    vid, mesh.edges()(other_e, 1), mesh);
+                auto pair =
+                    std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
+                        vid, mesh.edges()(other_e, 1), mesh);
                 ++num_collision_pairs;
                 pair->weight = -1;
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
             case PointEdgeDistanceType::P_E: {
-                auto pair = std::make_shared<
-                    ESPCollisionTemplate<Edge3P1, Vertex3>>(
-                    other_e, vid, mesh);
+                auto pair =
+                    std::make_shared<ESPCollisionTemplate<Edge3P1, Vertex3>>(
+                        other_e, vid, mesh);
                 ++num_collision_pairs;
                 pair->weight = -1;
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
@@ -333,57 +331,57 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
             switch (dtype2) {
             case PointTriangleDistanceType::P_T0: {
                 ++num_collision_pairs;
-                auto pair = std::make_shared<
-                    ESPCollisionTemplate<Vertex3, Vertex3>>(
-                    vid, mesh.faces()(other_f, 0), mesh);
+                auto pair =
+                    std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
+                        vid, mesh.faces()(other_f, 0), mesh);
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
             case PointTriangleDistanceType::P_T1: {
                 ++num_collision_pairs;
-                auto pair = std::make_shared<
-                    ESPCollisionTemplate<Vertex3, Vertex3>>(
-                    vid, mesh.faces()(other_f, 1), mesh);
+                auto pair =
+                    std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
+                        vid, mesh.faces()(other_f, 1), mesh);
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
             case PointTriangleDistanceType::P_T2: {
                 ++num_collision_pairs;
-                auto pair = std::make_shared<
-                    ESPCollisionTemplate<Vertex3, Vertex3>>(
-                    vid, mesh.faces()(other_f, 2), mesh);
+                auto pair =
+                    std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
+                        vid, mesh.faces()(other_f, 2), mesh);
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
             case PointTriangleDistanceType::P_E0: {
                 ++num_collision_pairs;
-                auto pair = std::make_shared<
-                    ESPCollisionTemplate<Edge3P1, Vertex3>>(
-                    mesh.faces_to_edges()(other_f, 0), vid, mesh);
+                auto pair =
+                    std::make_shared<ESPCollisionTemplate<Edge3P1, Vertex3>>(
+                        mesh.faces_to_edges()(other_f, 0), vid, mesh);
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
             case PointTriangleDistanceType::P_E1: {
                 ++num_collision_pairs;
-                auto pair = std::make_shared<
-                    ESPCollisionTemplate<Edge3P1, Vertex3>>(
-                    mesh.faces_to_edges()(other_f, 1), vid, mesh);
+                auto pair =
+                    std::make_shared<ESPCollisionTemplate<Edge3P1, Vertex3>>(
+                        mesh.faces_to_edges()(other_f, 1), vid, mesh);
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
             case PointTriangleDistanceType::P_E2: {
                 ++num_collision_pairs;
-                auto pair = std::make_shared<
-                    ESPCollisionTemplate<Edge3P1, Vertex3>>(
-                    mesh.faces_to_edges()(other_f, 2), vid, mesh);
+                auto pair =
+                    std::make_shared<ESPCollisionTemplate<Edge3P1, Vertex3>>(
+                        mesh.faces_to_edges()(other_f, 2), vid, mesh);
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
             case PointTriangleDistanceType::P_T: {
                 ++num_collision_pairs;
-                auto pair = std::make_shared<
-                    ESPCollisionTemplate<Face3P1, Vertex3>>(
-                    other_f, vid, mesh);
+                auto pair =
+                    std::make_shared<ESPCollisionTemplate<Face3P1, Vertex3>>(
+                        other_f, vid, mesh);
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
@@ -579,8 +577,7 @@ PointPotential::build_collisions_at_face_center(
         / 3.;
     VertexMatrixView<3> V_(V, face_center);
 
-    unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>>
-        pairs;
+    unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>> pairs;
     num_collision_pairs = 0;
 
     const auto& v_set = candidates.fv_set(fid);
@@ -599,9 +596,8 @@ PointPotential::build_collisions_at_face_center(
 
     for (const auto& other_e : e_set) {
         ++num_collision_pairs;
-        if (auto pair =
-                ESPCollisionsBuilder<3>::reduce_point_edge_collision(
-                    EdgeVertexCandidate(other_e, vid), params, mesh, V_)) {
+        if (auto pair = ESPCollisionsBuilder<3>::reduce_point_edge_collision(
+                EdgeVertexCandidate(other_e, vid), params, mesh, V_)) {
             pair->weight = -1;
             insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
         }
@@ -642,8 +638,7 @@ PointPotential::build_collisions_at_face_interior_point(
         + lambda[2] * V.row(mesh.faces()(fid, 2));
     VertexMatrixView<3> V_(V, q_pos);
 
-    unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>>
-        pairs;
+    unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>> pairs;
     num_collision_pairs = 0;
 
     const auto& v_set = candidates.fv_set(fid);
@@ -724,9 +719,8 @@ PointPotential::build_collisions_at_face_interior_point(
                 || mesh.edges()(other_e, 1) == corner_vertex))
             continue;
         ++num_collision_pairs;
-        if (auto pair =
-                ESPCollisionsBuilder<3>::reduce_point_edge_collision(
-                    EdgeVertexCandidate(other_e, vid), params, mesh, V_)) {
+        if (auto pair = ESPCollisionsBuilder<3>::reduce_point_edge_collision(
+                EdgeVertexCandidate(other_e, vid), params, mesh, V_)) {
             pair->weight = -1;
             insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
         }
@@ -1016,8 +1010,7 @@ PointPotential::build_collisions_at_edge_qp(
         && params.integration_type
             != ESPParameters::IntegrationType::BRUTE_FORCE;
 
-    unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>>
-        pairs;
+    unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>> pairs;
     num_collision_pairs = 0;
     const double dhat2 = dhat * dhat;
 
@@ -1059,8 +1052,7 @@ PointPotential::build_collisions_at_edge_qp(
             insert_pair(
                 pairs,
                 std::shared_ptr<ESPCollision>(
-                    std::make_shared<
-                        ESPCollisionTemplate<Vertex2, Vertex2>>(
+                    std::make_shared<ESPCollisionTemplate<Vertex2, Vertex2>>(
                         virtual_vid, ea, mesh)));
         } else if (dtype == PointEdgeDistanceType::P_E1) {
             if (point_point_distance(q_pos, V.row(eb)) >= dhat2)
@@ -1069,8 +1061,7 @@ PointPotential::build_collisions_at_edge_qp(
             insert_pair(
                 pairs,
                 std::shared_ptr<ESPCollision>(
-                    std::make_shared<
-                        ESPCollisionTemplate<Vertex2, Vertex2>>(
+                    std::make_shared<ESPCollisionTemplate<Vertex2, Vertex2>>(
                         virtual_vid, eb, mesh)));
         } else {
             if (point_edge_distance(q_pos, V.row(ea), V.row(eb), dtype)
@@ -1080,8 +1071,7 @@ PointPotential::build_collisions_at_edge_qp(
             insert_pair(
                 pairs,
                 std::shared_ptr<ESPCollision>(
-                    std::make_shared<
-                        ESPCollisionTemplate<Vertex2, Edge2P1>>(
+                    std::make_shared<ESPCollisionTemplate<Vertex2, Edge2P1>>(
                         virtual_vid, ej, mesh)));
         }
     }

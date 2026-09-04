@@ -18,8 +18,7 @@ std::vector<index_t> ESPCollision::vertex_ids() const
     return ids;
 }
 
-Eigen::VectorXd
-ESPCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
+Eigen::VectorXd ESPCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
     const int DIM = X.cols();
     Eigen::VectorXd x(num_vertices() * DIM);

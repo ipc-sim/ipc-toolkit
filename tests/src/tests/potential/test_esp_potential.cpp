@@ -300,11 +300,9 @@ TEST_CASE(
 }
 
 #if defined(NDEBUG) && !defined(WIN32)
-static std::string tagsopt =
-    "[esp_potential], [esp_potential_3d]";
+static std::string tagsopt = "[esp_potential], [esp_potential_3d]";
 #else
-static std::string tagsopt =
-    "[.][esp_potential], [.][esp_potential_3d]";
+static std::string tagsopt = "[.][esp_potential], [.][esp_potential_3d]";
 #endif
 
 TEST_CASE("Convergent Quadrature Gradient and Hessian Expensive", tagsopt)
@@ -392,8 +390,7 @@ TEST_CASE(
     REQUIRE(H.norm() == 0);
 }
 
-TEST_CASE(
-    "Number of Pairs", "[esp_potential], [esp_potential_3d]")
+TEST_CASE("Number of Pairs", "[esp_potential], [esp_potential_3d]")
 {
     double dhat = -1;
     std::string mesh_name;
@@ -424,8 +421,7 @@ TEST_CASE(
         ESPParameters params(dhat, 1., 0);
         collisions.build(mesh, vertices, params);
 
-        std::cout << "ESP collision size " << collisions.size()
-                  << std::endl;
+        std::cout << "ESP collision size " << collisions.size() << std::endl;
     }
 
     {
@@ -519,8 +515,7 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Convergent Quadrature Face Hessian",
-    "[esp_potential], [esp_potential_3d]")
+    "Convergent Quadrature Face Hessian", "[esp_potential], [esp_potential_3d]")
 {
     const auto method = make_default_broad_phase();
     auto [V, E, F, mesh] = load_wrapped_sphere();
@@ -654,8 +649,7 @@ TEST_CASE(
 
     ESPCollisions collisions;
     collisions.build(candidates, mesh, V, params, adaptive.get());
-    std::cerr << "ESPCollisions after build: " << collisions.size()
-              << "\n";
+    std::cerr << "ESPCollisions after build: " << collisions.size() << "\n";
 
     REQUIRE(!collisions.empty());
     REQUIRE(!has_intersections(mesh, V));
@@ -692,9 +686,7 @@ TEST_CASE(
 
 // 2D TESTS //
 
-TEST_CASE(
-    "ESP potential codim",
-    "[esp_potential], [esp_potential_2d]")
+TEST_CASE("ESP potential codim", "[esp_potential], [esp_potential_2d]")
 {
     const auto method = make_default_broad_phase();
     double dhat = 2;
@@ -750,9 +742,7 @@ TEST_CASE(
     CHECK((hess - fhess).norm() / hess.norm() < 1e-3);
 }
 
-TEST_CASE(
-    "ESP potential 2D no forces",
-    "[esp_potential], [esp_potential_2d]")
+TEST_CASE("ESP potential 2D no forces", "[esp_potential], [esp_potential_2d]")
 {
     const auto method = make_default_broad_phase();
     Eigen::MatrixXd V;
@@ -1026,8 +1016,7 @@ TEST_CASE(
 // project_hessian_to_psd is set. The non-normalized branch uses local PSD
 // projection which trivially yields a PSD assembly.
 TEST_CASE(
-    "Convergent Quadrature Hessian PSD",
-    "[esp_potential], [esp_potential_3d]")
+    "Convergent Quadrature Hessian PSD", "[esp_potential], [esp_potential_3d]")
 {
     auto [V, E, F, mesh] = load_wrapped_sphere();
 
@@ -1285,9 +1274,7 @@ TEST_CASE(
 
 // Same check for the 3D face-quadrature variant: ESP quadrature points
 // inside each face must also yield a PSD assembly under combined projection.
-TEST_CASE(
-    "Face Quadrature Hessian PSD",
-    "[esp_potential], [esp_potential_3d]")
+TEST_CASE("Face Quadrature Hessian PSD", "[esp_potential], [esp_potential_3d]")
 {
     auto [V, E, F, mesh] = load_wrapped_sphere();
 

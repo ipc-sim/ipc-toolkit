@@ -144,8 +144,7 @@ double GCPCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
 template <typename PrimitiveA, typename PrimitiveB>
 auto GCPCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-    const GCPParameters& params) const
-    -> VectorMax<double, ELEMENT_SIZE>
+    const GCPParameters& params) const -> VectorMax<double, ELEMENT_SIZE>
 {
     const auto core_indices = get_core_indices();
 

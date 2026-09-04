@@ -1,9 +1,10 @@
 #pragma once
-#include <array>
 #include "esp_collision.hpp"
 #include "esp_primitives.hpp"
 
 #include <ipc/barrier/barrier.hpp>
+
+#include <array>
 
 namespace ipc {
 
@@ -126,12 +127,10 @@ private:
 
 // Keep old name as alias for backward compatibility within this codebase
 template <typename PrimitiveA, typename PrimitiveB>
-using ESPCollision3DTemplate =
-    ESPCollisionTemplate<PrimitiveA, PrimitiveB>;
+using ESPCollision3DTemplate = ESPCollisionTemplate<PrimitiveA, PrimitiveB>;
 
 // 2D alias (for use with 2D primitives)
 template <typename PrimitiveA, typename PrimitiveB>
-using ESPCollision2DTemplate =
-    ESPCollisionTemplate<PrimitiveA, PrimitiveB>;
+using ESPCollision2DTemplate = ESPCollisionTemplate<PrimitiveA, PrimitiveB>;
 
 } // namespace ipc

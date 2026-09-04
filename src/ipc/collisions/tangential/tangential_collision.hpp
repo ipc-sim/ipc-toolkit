@@ -1,8 +1,8 @@
 #pragma once
 
 #include <ipc/friction/smooth_friction_mollifier.hpp>
-#include <ipc/potentials/normal_potential.hpp>
 #include <ipc/gcp/collisions/gcp_collision.hpp>
+#include <ipc/potentials/normal_potential.hpp>
 #include <ipc/tangent/relative_velocity.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 

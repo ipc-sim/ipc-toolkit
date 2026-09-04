@@ -67,8 +67,7 @@ void define_smooth_collisions(py::module_& m, const std::string& name)
                 The minimum distance between any non-adjacent elements.
             )ipc_Qu8mg5v7",
             "mesh"_a, "vertices"_a)
-        .def(
-            "__len__", &GCPCollisions::size, "Get the number of collisions.")
+        .def("__len__", &GCPCollisions::size, "Get the number of collisions.")
         .def(
             "empty", &GCPCollisions::empty,
             "Get if the collision set is empty.")
@@ -104,8 +103,8 @@ void define_esp_collisions(py::module_& m)
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
-                const ESPParameters, const bool,
-                const BroadPhase*>(&ESPCollisions::build),
+                const ESPParameters, const bool, const BroadPhase*>(
+                &ESPCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the potential.
 
@@ -133,9 +132,7 @@ void define_esp_collisions(py::module_& m)
                 The minimum distance between any non-adjacent elements.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"))
-        .def(
-            "__len__", &ESPCollisions::size,
-            "Get the number of collisions.")
+        .def("__len__", &ESPCollisions::size, "Get the number of collisions.")
         .def(
             "empty", &ESPCollisions::empty,
             "Get if the collision set is empty.")

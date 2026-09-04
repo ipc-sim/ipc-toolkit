@@ -1,14 +1,14 @@
-#include <array>
 #include "esp_collision_dict.hpp"
+
+#include <array>
 
 namespace ipc {
 template <PointType pType, int DIM>
 void ESPCollisionDict<pType, DIM>::initialize(
     const std::vector<index_t>& primitive_ids,
     const std::vector<index_t>& primary_vertex_ids,
-    const unordered_map<
-        std::array<index_t, 3>,
-        std::shared_ptr<ESPCollision>>& map)
+    const unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>>&
+        map)
 {
     assert(primary_vertex_ids.size() <= m_primary_vertex_ids.size());
     for (int i = 0; i < primary_vertex_ids.size(); i++) {
@@ -127,8 +127,7 @@ ESPCollision& ESPCollisionDict<pType, DIM>::operator[](int i)
 }
 
 template <PointType pType, int DIM>
-const ESPCollision&
-ESPCollisionDict<pType, DIM>::operator[](int i) const
+const ESPCollision& ESPCollisionDict<pType, DIM>::operator[](int i) const
 {
     if (i < vv_collisions.size()) {
         return vv_collisions[i];
@@ -148,15 +147,13 @@ ESPCollisionDict<pType, DIM>::operator[](int i) const
 }
 
 template <PointType pType, int DIM>
-const std::vector<index_t>&
-ESPCollisionDict<pType, DIM>::vertex_ids() const
+const std::vector<index_t>& ESPCollisionDict<pType, DIM>::vertex_ids() const
 {
     return m_vertex_ids;
 }
 
 template <PointType pType, int DIM>
-const std::vector<index_t>&
-ESPCollisionDict<pType, DIM>::primary_dofs() const
+const std::vector<index_t>& ESPCollisionDict<pType, DIM>::primary_dofs() const
 {
     return m_primary_dofs;
 }

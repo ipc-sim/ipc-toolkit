@@ -1,10 +1,11 @@
 #pragma once
 
-#include <array>
 #include <ipc/collision_mesh.hpp>
 #include <ipc/esp/esp_parameters.hpp>
 #include <ipc/math/span.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+
+#include <array>
 
 namespace ipc {
 
@@ -110,8 +111,7 @@ public:
     static constexpr int DIM = 2;
     static constexpr int N_DOFS = N_POINTS * DIM;
 
-    Edge2P1(const index_t id, const CollisionMesh& mesh)
-        : ESPPrimitive(id)
+    Edge2P1(const index_t id, const CollisionMesh& mesh) : ESPPrimitive(id)
     {
         m_vertex_ids[0] = mesh.edges()(id, 0);
         m_vertex_ids[1] = mesh.edges()(id, 1);
@@ -129,8 +129,7 @@ public:
     static constexpr int DIM = 2;
     static constexpr int N_DOFS = N_POINTS * DIM;
 
-    Vertex2(const index_t id, const CollisionMesh& /*mesh*/)
-        : ESPPrimitive(id)
+    Vertex2(const index_t id, const CollisionMesh& /*mesh*/) : ESPPrimitive(id)
     {
         m_vertex_ids[0] = id;
     }
@@ -146,8 +145,7 @@ public:
     static constexpr int DIM = 3;
     static constexpr int N_DOFS = N_POINTS * DIM;
 
-    Vertex3(const index_t id, const CollisionMesh& mesh)
-        : ESPPrimitive(id)
+    Vertex3(const index_t id, const CollisionMesh& mesh) : ESPPrimitive(id)
     {
         m_vertex_ids[0] = id;
     }
@@ -163,8 +161,7 @@ public:
     static constexpr int DIM = 3;
     static constexpr int N_DOFS = N_POINTS * DIM;
 
-    Edge3P1(const index_t id, const CollisionMesh& mesh)
-        : ESPPrimitive(id)
+    Edge3P1(const index_t id, const CollisionMesh& mesh) : ESPPrimitive(id)
     {
         m_vertex_ids[0] = mesh.edges()(id, 0);
         m_vertex_ids[1] = mesh.edges()(id, 1);
@@ -181,8 +178,7 @@ public:
     static constexpr int DIM = 3;
     static constexpr int N_DOFS = N_POINTS * DIM;
 
-    Face3P1(const index_t id, const CollisionMesh& mesh)
-        : ESPPrimitive(id)
+    Face3P1(const index_t id, const CollisionMesh& mesh) : ESPPrimitive(id)
     {
         m_vertex_ids[0] = mesh.faces()(id, 0);
         m_vertex_ids[1] = mesh.faces()(id, 1);

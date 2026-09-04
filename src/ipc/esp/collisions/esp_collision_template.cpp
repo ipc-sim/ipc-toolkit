@@ -64,8 +64,7 @@ T eval_barrier_ad(const ipc::Barrier& b, const T& dist, const T& dhat)
 // positions order: [e0 (0:3), e1 (3:6), vertex (6:9)]
 template <typename T>
 T eval_ev3d_energy_ad(
-    Eigen::ConstRef<
-        ipc::VectorMax<double, ipc::ESPCollision::ELEMENT_SIZE>>
+    Eigen::ConstRef<ipc::VectorMax<double, ipc::ESPCollision::ELEMENT_SIZE>>
         positions,
     const ipc::ESPParameters& params,
     const ipc::AdaptiveSupport& adaptive,
@@ -103,8 +102,7 @@ T eval_ev3d_energy_ad(
 // positions order: [f0 (0:3), f1 (3:6), f2 (6:9), vertex (9:12)]
 template <typename T>
 T eval_fv3d_energy_ad(
-    Eigen::ConstRef<
-        ipc::VectorMax<double, ipc::ESPCollision::ELEMENT_SIZE>>
+    Eigen::ConstRef<ipc::VectorMax<double, ipc::ESPCollision::ELEMENT_SIZE>>
         positions,
     const ipc::ESPParameters& params,
     const ipc::AdaptiveSupport& adaptive,
@@ -150,8 +148,7 @@ T eval_fv3d_energy_ad(
 // positions order: [q (0:2), e0 (2:4), e1 (4:6)]
 template <typename T>
 T eval_ve2d_energy_ad(
-    Eigen::ConstRef<
-        ipc::VectorMax<double, ipc::ESPCollision::ELEMENT_SIZE>>
+    Eigen::ConstRef<ipc::VectorMax<double, ipc::ESPCollision::ELEMENT_SIZE>>
         positions,
     const ipc::ESPParameters& params,
     const ipc::AdaptiveSupport& adaptive,
@@ -191,60 +188,50 @@ namespace ipc {
 // ---- type ----
 
 template <>
-ESPCollisionType
-ESPCollisionTemplate<Vertex3, Vertex3>::type() const
+ESPCollisionType ESPCollisionTemplate<Vertex3, Vertex3>::type() const
 {
     return ESPCollisionType::VERTEX_VERTEX;
 }
 template <>
-ESPCollisionType
-ESPCollisionTemplate<Edge3P1, Vertex3>::type() const
+ESPCollisionType ESPCollisionTemplate<Edge3P1, Vertex3>::type() const
 {
     return ESPCollisionType::EDGE_VERTEX;
 }
 template <>
-ESPCollisionType
-ESPCollisionTemplate<Face3P1, Vertex3>::type() const
+ESPCollisionType ESPCollisionTemplate<Face3P1, Vertex3>::type() const
 {
     return ESPCollisionType::FACE_VERTEX;
 }
 template <>
-ESPCollisionType
-ESPCollisionTemplate<Vertex2, Vertex2>::type() const
+ESPCollisionType ESPCollisionTemplate<Vertex2, Vertex2>::type() const
 {
     return ESPCollisionType::VERTEX_VERTEX;
 }
 template <>
-ESPCollisionType
-ESPCollisionTemplate<Vertex2, Edge2P1>::type() const
+ESPCollisionType ESPCollisionTemplate<Vertex2, Edge2P1>::type() const
 {
     return ESPCollisionType::EDGE_VERTEX;
 }
 
 // ---- name ----
 
-template <>
-std::string ESPCollisionTemplate<Vertex3, Vertex3>::name() const
+template <> std::string ESPCollisionTemplate<Vertex3, Vertex3>::name() const
 {
     return "vv_3d";
 }
-template <>
-std::string ESPCollisionTemplate<Edge3P1, Vertex3>::name() const
+template <> std::string ESPCollisionTemplate<Edge3P1, Vertex3>::name() const
 {
     return "ev_3d";
 }
-template <>
-std::string ESPCollisionTemplate<Face3P1, Vertex3>::name() const
+template <> std::string ESPCollisionTemplate<Face3P1, Vertex3>::name() const
 {
     return "fv_3d";
 }
-template <>
-std::string ESPCollisionTemplate<Vertex2, Vertex2>::name() const
+template <> std::string ESPCollisionTemplate<Vertex2, Vertex2>::name() const
 {
     return "vv_2d_pt";
 }
-template <>
-std::string ESPCollisionTemplate<Vertex2, Edge2P1>::name() const
+template <> std::string ESPCollisionTemplate<Vertex2, Edge2P1>::name() const
 {
     return "ev_2d_pt";
 }
@@ -273,8 +260,7 @@ ESPCollisionTemplate<Vertex3, Vertex3>::ESPCollisionTemplate(
 // ---- vertex_id ----
 
 template <typename PrimitiveA, typename PrimitiveB>
-index_t
-ESPCollisionTemplate<PrimitiveA, PrimitiveB>::vertex_id(index_t i) const
+index_t ESPCollisionTemplate<PrimitiveA, PrimitiveB>::vertex_id(index_t i) const
 {
     if (i < (index_t)primitive_a.n_vertices()) {
         return primitive_a.vertex_ids()[i];
@@ -773,8 +759,7 @@ ESPCollisionTemplate<Edge3P1, Vertex3>::gradient_nearfar(
     Vector9d g_far = deriv_far * g;
     g_near = g_near({ 3, 4, 5, 6, 7, 8, 0, 1, 2 }).eval();
     g_far = g_far({ 3, 4, 5, 6, 7, 8, 0, 1, 2 }).eval();
-    VectorMax<double, ESPCollision::ELEMENT_SIZE> result_near(9),
-        result_far(9);
+    VectorMax<double, ESPCollision::ELEMENT_SIZE> result_near(9), result_far(9);
     result_near.head(9) = g_near;
     result_far.head(9) = g_far;
     return { result_near, result_far };
@@ -823,14 +808,8 @@ ESPCollisionTemplate<Face3P1, Vertex3>::gradient_nearfar(
 
 template <>
 std::pair<
-    MatrixMax<
-        double,
-        ESPCollision::ELEMENT_SIZE,
-        ESPCollision::ELEMENT_SIZE>,
-    MatrixMax<
-        double,
-        ESPCollision::ELEMENT_SIZE,
-        ESPCollision::ELEMENT_SIZE>>
+    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>,
+    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>>
 ESPCollisionTemplate<Vertex3, Vertex3>::hessian_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
@@ -859,9 +838,7 @@ ESPCollisionTemplate<Vertex3, Vertex3>::hessian_nearfar(
         positions.template head<3>(), positions.template tail<3>());
     Matrix6d hess_near = g * deriv2_near * g.transpose() + h * deriv1_near;
     Matrix6d hess_far = g * deriv2_far * g.transpose() + h * deriv1_far;
-    MatrixMax<
-        double, ESPCollision::ELEMENT_SIZE,
-        ESPCollision::ELEMENT_SIZE>
+    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>
         result_near(6, 6), result_far(6, 6);
     result_near.block<6, 6>(0, 0) = hess_near;
     result_far.block<6, 6>(0, 0) = hess_far;
@@ -870,14 +847,8 @@ ESPCollisionTemplate<Vertex3, Vertex3>::hessian_nearfar(
 
 template <>
 std::pair<
-    MatrixMax<
-        double,
-        ESPCollision::ELEMENT_SIZE,
-        ESPCollision::ELEMENT_SIZE>,
-    MatrixMax<
-        double,
-        ESPCollision::ELEMENT_SIZE,
-        ESPCollision::ELEMENT_SIZE>>
+    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>,
+    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>>
 ESPCollisionTemplate<Edge3P1, Vertex3>::hessian_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
@@ -915,9 +886,7 @@ ESPCollisionTemplate<Edge3P1, Vertex3>::hessian_nearfar(
     std::vector<int> reorder { 3, 4, 5, 6, 7, 8, 0, 1, 2 };
     hess_near = hess_near(reorder, reorder).eval();
     hess_far = hess_far(reorder, reorder).eval();
-    MatrixMax<
-        double, ESPCollision::ELEMENT_SIZE,
-        ESPCollision::ELEMENT_SIZE>
+    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>
         result_near(9, 9), result_far(9, 9);
     result_near.block<9, 9>(0, 0) = hess_near;
     result_far.block<9, 9>(0, 0) = hess_far;
@@ -926,14 +895,8 @@ ESPCollisionTemplate<Edge3P1, Vertex3>::hessian_nearfar(
 
 template <>
 std::pair<
-    MatrixMax<
-        double,
-        ESPCollision::ELEMENT_SIZE,
-        ESPCollision::ELEMENT_SIZE>,
-    MatrixMax<
-        double,
-        ESPCollision::ELEMENT_SIZE,
-        ESPCollision::ELEMENT_SIZE>>
+    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>,
+    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>>
 ESPCollisionTemplate<Face3P1, Vertex3>::hessian_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
@@ -975,9 +938,7 @@ ESPCollisionTemplate<Face3P1, Vertex3>::hessian_nearfar(
     std::vector<int> reorder { 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2 };
     hess_near = hess_near(reorder, reorder).eval();
     hess_far = hess_far(reorder, reorder).eval();
-    MatrixMax<
-        double, ESPCollision::ELEMENT_SIZE,
-        ESPCollision::ELEMENT_SIZE>
+    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>
         result_near(12, 12), result_far(12, 12);
     result_near.block<12, 12>(0, 0) = hess_near;
     result_far.block<12, 12>(0, 0) = hess_far;

@@ -11,8 +11,8 @@
 #include <vector>
 
 namespace ipc {
-// M_PI is not standard C++: MSVC only defines it when _USE_MATH_DEFINES is set before
-// <cmath>, which a consumer of this header cannot be relied on to do.
+// M_PI is not standard C++: MSVC only defines it when _USE_MATH_DEFINES is set
+// before <cmath>, which a consumer of this header cannot be relied on to do.
 static constexpr double pi_v = 3.14159265358979323846;
 
 void lobatto_compute(int n, std::vector<double>& x, std::vector<double>& w);

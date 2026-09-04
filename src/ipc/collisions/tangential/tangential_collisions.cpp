@@ -6,14 +6,14 @@
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
-#include <ipc/friction/smooth_mu.hpp>
 #include <ipc/esp/collisions/esp_quadrature.hpp>
 #include <ipc/esp/collisions/vertex_matrix_view.hpp>
 #include <ipc/esp/esp_parameters.hpp>
 #include <ipc/esp/esp_potential.hpp>
+#include <ipc/friction/smooth_mu.hpp>
+#include <ipc/gcp/distance/edge_edge.hpp>
 #include <ipc/math/math.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
-#include <ipc/gcp/distance/edge_edge.hpp>
 #include <ipc/tangent/closest_point.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/logger.hpp>
@@ -216,8 +216,9 @@ void TangentialCollisions::build(
 
         if (mesh.dim() == 3) {
             TangentialCollision* ptr = nullptr;
-            if (const auto* const cvv = dynamic_cast<
-                    const GCPCollisionTemplate<Point3, Point3>*>(&cc)) {
+            if (const auto* const cvv =
+                    dynamic_cast<const GCPCollisionTemplate<Point3, Point3>*>(
+                        &cc)) {
                 Eigen::VectorXd collision_points = cvv->core_dof(vertices);
                 FC_vv.emplace_back(
                     VertexVertexNormalCollision(
@@ -326,8 +327,9 @@ void TangentialCollisions::build(
             }
         } else {
             TangentialCollision* ptr = nullptr;
-            if (const auto* const cvv = dynamic_cast<
-                    const GCPCollisionTemplate<Point2, Point2>*>(&cc)) {
+            if (const auto* const cvv =
+                    dynamic_cast<const GCPCollisionTemplate<Point2, Point2>*>(
+                        &cc)) {
                 Eigen::VectorXd collision_points = cvv->core_dof(vertices);
                 FC_vv.emplace_back(
                     VertexVertexNormalCollision(

@@ -97,15 +97,13 @@ scalar half_edge_edge_mollifier(
     const scalar dist_sqr = edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype);
     const scalar db = dist_sqr * MOLLIFIER_THRESHOLD_EPS;
     scalar a = Math<scalar>::mollifier(
-              (PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(
-                   ea0, eb0, eb1)
-               - dist_sqr)
-              / db);
+        (PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(ea0, eb0, eb1)
+         - dist_sqr)
+        / db);
     scalar b = Math<scalar>::mollifier(
-              (PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(
-                   ea1, eb0, eb1)
-               - dist_sqr)
-              / db);
+        (PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(ea1, eb0, eb1)
+         - dist_sqr)
+        / db);
 
     // Using uv to mollify may be less stable than using pure distance
     // scalar uv = closest_point_uv(ea0, ea1, eb0, eb1, dtype);

@@ -8,10 +8,7 @@ namespace ipc {
 
 class GCPPotential {
 public:
-    GCPPotential(const GCPParameters& _params)
-        : params(_params)
-    {
-    }
+    GCPPotential(const GCPParameters& _params) : params(_params) { }
 
     virtual ~GCPPotential() = default;
 

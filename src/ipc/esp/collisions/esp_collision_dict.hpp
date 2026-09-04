@@ -1,10 +1,11 @@
 #pragma once
-#include <cstdint>
-#include <array>
 #include "esp_collision_template.hpp"
 
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
+
+#include <array>
+#include <cstdint>
 
 namespace ipc {
 

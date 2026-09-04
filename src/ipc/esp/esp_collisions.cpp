@@ -428,8 +428,7 @@ std::map<size_t, size_t> ESPCollisions::edge_id_count_distribution() const
     return distribution;
 }
 
-Eigen::VectorXd
-ESPCollisions::edge_collision_counts(size_t num_edges) const
+Eigen::VectorXd ESPCollisions::edge_collision_counts(size_t num_edges) const
 {
     Eigen::VectorXd counts = Eigen::VectorXd::Zero(num_edges);
     for (const auto& [key, _] : edge_edge_collisions) {

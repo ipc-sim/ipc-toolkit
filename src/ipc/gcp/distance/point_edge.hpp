@@ -4,8 +4,8 @@
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
-#include <ipc/math/math.hpp>
 #include <ipc/gcp/common.hpp>
+#include <ipc/math/math.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 
 namespace ipc {
