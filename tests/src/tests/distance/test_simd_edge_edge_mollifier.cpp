@@ -24,7 +24,7 @@ constexpr double EPS_X = 1e-3;
 /// mollifier threshold: exactly parallel, mollified, just inside the
 /// threshold, and inactive. The mollifier activates at sin²θ < eps_x, i.e.
 /// θ < 0.0316 rad for unit rest edges.
-constexpr std::array<double, 4> THETAS = { 0.0, 0.02, 0.0316, 0.4 };
+constexpr std::array<double, 4> THETAS = { { 0.0, 0.02, 0.0316, 0.4 } };
 
 /// @brief A lane-dependent rotation, so the gradients are not mostly zeros the
 /// way an axis-aligned configuration would make them.
@@ -65,8 +65,9 @@ TEST_CASE(
     "[distance][mollifier][simd]")
 {
     // x straddling eps_x, so one batch carries mollified and inactive lanes.
-    constexpr std::array<double, 4> REGION_XS = { 0.0, 0.1 * EPS_X, 0.9 * EPS_X,
-                                                  2.0 * EPS_X };
+    constexpr std::array<double, 4> REGION_XS = {
+        { 0.0, 0.1 * EPS_X, 0.9 * EPS_X, 2.0 * EPS_X }
+    };
 
     const auto check = [&](const std::string& name, auto&& scalar_fn,
                            auto&& batch_fn) {

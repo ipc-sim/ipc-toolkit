@@ -73,7 +73,7 @@ TEST_CASE("SIMD test lane_cases wraps round-robin", "[utils][simd]")
 {
     // Two cases and (usually) more lanes, so the wrap is exercised whatever
     // the batch width; the offset rotates which case each lane gets.
-    const std::array<double, 2> cases = { 10.0, 20.0 };
+    const std::array<double, 2> cases = { { 10.0, 20.0 } };
 
     for (int offset = 0; offset < 2; ++offset) {
         CAPTURE(offset);

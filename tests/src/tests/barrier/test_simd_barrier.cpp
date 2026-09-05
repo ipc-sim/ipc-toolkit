@@ -17,7 +17,7 @@ namespace {
 /// d >= dhat (inactive) -- every branch of every barrier.
 std::array<double, 4> regions(const double dhat)
 {
-    return { -0.1 * dhat, 0.1 * dhat, 0.7 * dhat, 1.5 * dhat };
+    return { { -0.1 * dhat, 0.1 * dhat, 0.7 * dhat, 1.5 * dhat } };
 }
 
 /// @brief The barriers take two arguments, so bind dhat and sweep d.
