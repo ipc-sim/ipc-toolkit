@@ -1,8 +1,7 @@
 #pragma once
 
 #include <ipc/utils/eigen_ext.hpp>
-
-#include <Eigen/Cholesky>
+#include <ipc/utils/simd.hpp>
 
 #include <array>
 #include <cassert>
@@ -140,10 +139,46 @@ namespace detail {
     /// The 1e-10 bound is tuned for double, so scale it by the relative
     /// precision of T; otherwise the float instantiation would be held to a
     /// double-precision bound.
+    /// We go through `scalar_of_t` because a batch has no
+    /// `std::numeric_limits` specialization, so the bound has to come from its
+    /// lane type.
     template <typename T>
     inline constexpr double CLOSEST_POINT_RESIDUAL_TOL = 1e-10
-        * (static_cast<double>(std::numeric_limits<T>::epsilon())
+        * (static_cast<double>(std::numeric_limits<scalar_of_t<T>>::epsilon())
            / std::numeric_limits<double>::epsilon());
+
+    /// @brief Solves `Ax = b` for a 2x2 symmetric positive-definite matrix `A`.
+    ///
+    /// We write this out manually instead of calling `A.ldlt().solve(b)`
+    /// because Eigen's LDLT uses pivoting. Pivoting requires branching based on
+    /// matrix values, which breaks vectorization since different batch lanes
+    /// can't easily take different control flow paths.
+    ///
+    /// The entire implementation is just Cramer's rule. We chose this over a
+    /// hand-written pivoted LDLT because testing showed that accuracy is
+    /// limited by the conditioning of `A`, not the algorithm. Across random SPD
+    /// matrices, Cramer's rule, our manual LDLT, and Eigen's LDLT all perform
+    /// within 2x of each other. On realistic edge-edge Gram matrices, they
+    /// agree to three significant figures down to tiny angles (1e-4 rad).
+    /// Ultimately, Cramer's rule wins because it's completely branchless and
+    /// avoids per-lane blending.
+    ///
+    /// @warning `A` must be nonsingular. If `det == 0`, it returns a non-finite
+    ///          result rather than throwing an error. This is safe here because
+    ///          callers only use this for interior-interior distances, which
+    ///          naturally excludes the parallel edges and degenerate triangles
+    ///          that cause singularities. The residual asserts at the call
+    ///          sites act as our safety net.
+    template <typename T>
+    inline Eigen::Vector2<T> solve_spd_2x2(
+        Eigen::ConstRef<Eigen::Matrix2<T>> A,
+        Eigen::ConstRef<Eigen::Vector2<T>> b)
+    {
+        const T det = A(0, 0) * A(1, 1) - A(0, 1) * A(1, 0);
+        return Eigen::Vector2<T>(
+            (A(1, 1) * b[0] - A(0, 1) * b[1]) / det,
+            (A(0, 0) * b[1] - A(1, 0) * b[0]) / det);
+    }
 
     // ========================================================================
     // Point - Edge
@@ -251,8 +286,8 @@ namespace detail {
         rhs[0] = -eb_to_ea.dot(ea);
         rhs[1] = eb_to_ea.dot(eb);
 
-        const Eigen::Vector2<T> x = A.ldlt().solve(rhs);
-        assert((A * x - rhs).norm() < CLOSEST_POINT_RESIDUAL_TOL<T>);
+        const Eigen::Vector2<T> x = solve_spd_2x2<T>(A, rhs);
+        assert(all_of((A * x - rhs).norm() < T(CLOSEST_POINT_RESIDUAL_TOL<T>)));
         return x;
     }
 
@@ -324,8 +359,8 @@ namespace detail {
         basis.row(1) = Eigen::RowVector3<T>(t2 - t0); // edge 1
         const Eigen::Matrix2<T> A = basis * basis.transpose();
         const Eigen::Vector2<T> b = basis * (p - t0);
-        const Eigen::Vector2<T> x = A.ldlt().solve(b);
-        assert((A * x - b).norm() < CLOSEST_POINT_RESIDUAL_TOL<T>);
+        const Eigen::Vector2<T> x = solve_spd_2x2<T>(A, b);
+        assert(all_of((A * x - b).norm() < T(CLOSEST_POINT_RESIDUAL_TOL<T>)));
         return x;
     }
 

@@ -18,6 +18,30 @@ namespace ipc {
 /// Specialized below, where the batch type itself is available.
 template <typename T> inline constexpr bool is_simd_batch_v = false;
 
+/// @brief The scalar behind `T`: `T` itself, or a batch's lane type.
+///
+/// We need this because a batch has no `std::numeric_limits` specialization.
+/// Whenever we want a scalar's limits (an epsilon, an infinity) for a type we
+/// template on, we have to ask the lane type instead of `T` itself.
+template <typename T, bool = is_simd_batch_v<T>> struct ScalarOf {
+    using type = T;
+};
+template <typename T> struct ScalarOf<T, true> {
+    using type = typename T::value_type;
+};
+template <typename T> using scalar_of_t = typename ScalarOf<T>::type;
+
+/// @brief Whether `mask` holds for every lane.
+///
+/// This is the scalar counterpart of `xsimd::all`. A batch answers a
+/// comparison per-lane, but an `assert` needs a single `bool`, so `all_of`
+/// collapses the two cases and lets one check compile for both.
+///
+/// We overload on the two argument types rather than relying on ADL to find
+/// `xsimd::all`. The tradeoff is a little duplication in exchange for keeping
+/// a name this generic from matching arbitrary types elsewhere in `ipc`.
+inline bool all_of(const bool mask) { return mask; }
+
 /// @brief Pick between `a` and `b`.
 ///
 /// The scalar counterpart of `xsimd::select`, which ADL finds for a batch
@@ -30,11 +54,7 @@ template <typename T> inline T select(const bool mask, const T& a, const T& b)
 /// @brief `+infinity` for any scalar the library templates on.
 template <typename T> inline T infinity()
 {
-    if constexpr (is_simd_batch_v<T>) {
-        return T(std::numeric_limits<typename T::value_type>::infinity());
-    } else {
-        return std::numeric_limits<T>::infinity();
-    }
+    return T(std::numeric_limits<scalar_of_t<T>>::infinity());
 }
 
 /// @brief A first-match-wins cascade of cases:
@@ -158,6 +178,13 @@ template <typename T> using SimdBatch = xsimd::batch<T, xsimd::default_arch>;
 
 template <typename T, typename A>
 inline constexpr bool is_simd_batch_v<xsimd::batch<T, A>> = true;
+
+/// @brief Whether `mask` holds for every lane of a batch.
+template <typename T, typename A>
+inline bool all_of(const xsimd::batch_bool<T, A>& mask)
+{
+    return xsimd::all(mask);
+}
 
 } // namespace ipc
 
