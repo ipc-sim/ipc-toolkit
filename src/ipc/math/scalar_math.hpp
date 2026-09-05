@@ -48,6 +48,29 @@ template <typename T> inline T fma(const T& x, const T& y, const T& z)
     return fma(x, y, z);
 }
 
+/// @brief `abs` for any scalar the library templates on.
+///
+/// We need this instead of `Math<T>::abs`, which picks the sign with a
+/// ternary. A ternary asks the scalar to answer `x >= 0` with one `bool`,
+/// which a batch cannot do: its lanes may disagree. `xsimd::abs` clears the
+/// sign bit per-lane instead, and the block-scope using-declaration above is
+/// what lets ADL reach it.
+template <typename T> inline T abs(const T& x)
+{
+    using std::abs;
+    return abs(x);
+}
+
+/// @brief `atan2` for any scalar the library templates on.
+///
+/// Same block-scope using-declaration trick as `sqrt`/`log` above. Note the
+/// argument order matches `std::atan2(y, x)` — the sine-like argument first.
+template <typename T> inline T atan2(const T& y, const T& x)
+{
+    using std::atan2;
+    return atan2(y, x);
+}
+
 constexpr double MOLLIFIER_THRESHOLD_EPS = 1e-2;
 
 } // namespace ipc

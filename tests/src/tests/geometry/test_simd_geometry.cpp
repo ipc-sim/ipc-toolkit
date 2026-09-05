@@ -4,6 +4,7 @@
 
 #ifdef IPC_TOOLKIT_WITH_SIMD
 
+#include <ipc/geometry/angle.hpp>
 #include <ipc/geometry/area.hpp>
 #include <ipc/geometry/normal.hpp>
 
@@ -248,6 +249,35 @@ TEST_CASE(
     check_lanes(
         "triangle_area_gradient", triangle_area_gradient(a, b, c),
         [&](int l) { return triangle_area_gradient(A[l], B[l], C[l]).eval(); });
+}
+
+TEST_CASE(
+    "SIMD batch dihedral angle matches the scalar one lane-wise",
+    "[angle][simd]")
+{
+    // Random points give each lane a different fold angle, which is what the
+    // atan2 and its derivatives branch on internally.
+    const Points<3> X0 = random_points<3>(11), X1 = random_points<3>(12),
+                    X2 = random_points<3>(13), X3 = random_points<3>(14);
+
+    const Eigen::Vector3<Batch> x0 = pack(X0), x1 = pack(X1), x2 = pack(X2),
+                                x3 = pack(X3);
+
+    check_scalar_lanes(
+        "dihedral_angle", dihedral_angle(x0, x1, x2, x3),
+        [&](int l) { return dihedral_angle(X0[l], X1[l], X2[l], X3[l]); });
+
+    check_lanes(
+        "dihedral_angle_gradient", dihedral_angle_gradient(x0, x1, x2, x3),
+        [&](int l) {
+            return dihedral_angle_gradient(X0[l], X1[l], X2[l], X3[l]).eval();
+        });
+
+    check_lanes(
+        "dihedral_angle_hessian", dihedral_angle_hessian(x0, x1, x2, x3),
+        [&](int l) {
+            return dihedral_angle_hessian(X0[l], X1[l], X2[l], X3[l]).eval();
+        });
 }
 
 #endif
