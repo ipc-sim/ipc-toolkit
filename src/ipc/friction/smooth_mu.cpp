@@ -2,10 +2,14 @@
 
 namespace ipc {
 
-// The anisotropic helpers stay `double`-only, unlike the scalar μ functions in
-// the header. Their branches test the *material* -- whether an ellipse axis is
-// set at all, whether the caller disabled μ -- rather than the per-problem
-// speed, so there is nothing here a batch would evaluate per-lane.
+// The anisotropic helpers stay `double`-only for now, unlike the scalar μ
+// functions in the header, because no batch caller exists for them yet. Two of
+// them do branch per collision: `anisotropic_x_from_tau_aniso` guards a
+// vanishing tangential velocity and `anisotropic_mu_eff_f` is a function of
+// its direction. A batch friction path with anisotropic μ would therefore need
+// to template those two as well. Only `anisotropic_mu_eff_from_tau_aniso`
+// tests the material alone -- whether an ellipse axis is set, whether the
+// caller disabled μ -- and can stay scalar regardless.
 
 std::pair<double, double> anisotropic_mu_eff_f(
     Eigen::ConstRef<Eigen::Vector2d> tau_dir,

@@ -61,8 +61,9 @@ TEST_CASE("Spline derivatives", "[deriv]")
         double deriv_ad = y_ad.grad(0);
         double hess_ad = y_ad.Hess(0);
 
-        CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
-        CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
+        CHECK(
+            std::abs(deriv_ad - deriv) < 1e-14 * std::max(1., std::abs(deriv)));
+        CHECK(std::abs(hess_ad - hess) < 1e-12 * std::max(1., std::abs(hess)));
     }
 }
 
@@ -80,8 +81,9 @@ TEST_CASE("Heaviside derivatives", "[deriv]")
         double deriv_ad = y_ad.grad(0);
         double hess_ad = y_ad.Hess(0);
 
-        CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
-        CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
+        CHECK(
+            std::abs(deriv_ad - deriv) < 1e-14 * std::max(1., std::abs(deriv)));
+        CHECK(std::abs(hess_ad - hess) < 1e-12 * std::max(1., std::abs(hess)));
     }
 }
 
@@ -102,8 +104,9 @@ TEST_CASE("Inv barrier derivatives", "[deriv]")
         double deriv_ad = y_ad.grad(0);
         double hess_ad = y_ad.Hess(0);
 
-        CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
-        CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
+        CHECK(
+            std::abs(deriv_ad - deriv) < 1e-14 * std::max(1., std::abs(deriv)));
+        CHECK(std::abs(hess_ad - hess) < 1e-12 * std::max(1., std::abs(hess)));
     }
 
     ScalarBase::setVariableCount(3);
@@ -238,7 +241,7 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
         // hess_ad.topLeftCorner(6, 6).setZero();
         // y_ad = T(y_ad.val, y_ad.grad, hess_ad);
 
-        CHECK(abs(y - y_ad.val) <= 1e-12);
+        CHECK(std::abs(y - y_ad.val) <= 1e-12);
         CHECK((grad - y_ad.grad).norm() <= 1e-12);
         CHECK((hess - y_ad.Hess).norm() <= 1e-10);
     }

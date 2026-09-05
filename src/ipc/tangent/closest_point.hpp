@@ -149,35 +149,45 @@ namespace detail {
 
     /// @brief Solves `Ax = b` for a 2x2 symmetric positive-definite matrix `A`.
     ///
-    /// We write this out manually instead of calling `A.ldlt().solve(b)`
-    /// because Eigen's LDLT uses pivoting. Pivoting requires branching based on
-    /// matrix values, which breaks vectorization since different batch lanes
-    /// can't easily take different control flow paths.
+    /// We implement this manually using Cramer's rule instead of
+    /// `A.ldlt().solve(b)` because Eigen's LDLT uses pivoting, which introduces
+    /// branching and breaks vectorization. Testing shows Cramer's rule provides
+    /// comparable accuracy to both Eigen's and manual LDLT implementations, as
+    /// accuracy is limited by `A`'s conditioning rather than the algorithm.
+    /// Thus, Cramer's rule wins by being completely branchless.
     ///
-    /// The entire implementation is just Cramer's rule. We chose this over a
-    /// hand-written pivoted LDLT because testing showed that accuracy is
-    /// limited by the conditioning of `A`, not the algorithm. Across random SPD
-    /// matrices, Cramer's rule, our manual LDLT, and Eigen's LDLT all perform
-    /// within 2x of each other. On realistic edge-edge Gram matrices, they
-    /// agree to three significant figures down to tiny angles (1e-4 rad).
-    /// Ultimately, Cramer's rule wins because it's completely branchless and
-    /// avoids per-lane blending.
+    /// `A` is a Gram matrix (`basis · basisᵀ`), so it is positive semidefinite.
+    /// A computed `det(A) <= 0` indicates rounding error on a singular matrix
+    /// (e.g., degenerate geometry). To avoid NaNs, we treat this as singular
+    /// and branchlessly return 0 (matching Eigen's LDLT pseudo-inverse
+    /// behavior). Internal callers exclude degenerate cases and will never hit
+    /// this path.
     ///
-    /// @warning `A` must be nonsingular. If `det == 0`, it returns a non-finite
-    ///          result rather than throwing an error. This is safe here because
-    ///          callers only use this for interior-interior distances, which
-    ///          naturally excludes the parallel edges and degenerate triangles
-    ///          that cause singularities. The residual asserts at the call
-    ///          sites act as our safety net.
+    /// Debug builds check the solve residual using a relative bound (since
+    /// Cramer's rule is not backward stable), exempting these purposely zeroed
+    /// singular systems.
+    ///
+    /// @tparam T The scalar type.
+    /// @param A The 2x2 SPD matrix.
+    /// @param b The right-hand side vector.
+    /// @return The solution vector `x`.
     template <typename T>
     inline Eigen::Vector2<T> solve_spd_2x2(
         Eigen::ConstRef<Eigen::Matrix2<T>> A,
         Eigen::ConstRef<Eigen::Vector2<T>> b)
     {
         const T det = A(0, 0) * A(1, 1) - A(0, 1) * A(1, 0);
-        return Eigen::Vector2<T>(
-            (A(1, 1) * b[0] - A(0, 1) * b[1]) / det,
-            (A(0, 0) * b[1] - A(1, 0) * b[0]) / det);
+        const auto is_nonsingular = det > T(0);
+        const T inv_det = select(is_nonsingular, T(1) / det, T(0));
+        const Eigen::Vector2<T> x(
+            (A(1, 1) * b[0] - A(0, 1) * b[1]) * inv_det,
+            (A(0, 0) * b[1] - A(1, 0) * b[0]) * inv_det);
+#ifndef NDEBUG
+        const T scale = A.norm() * x.norm() + b.norm();
+        const T tol = literal<T>(CLOSEST_POINT_RESIDUAL_TOL<T>);
+        assert(all_of(det <= T(0) || (A * x - b).norm() <= tol * scale));
+#endif
+        return x;
     }
 
     // ========================================================================
@@ -286,9 +296,7 @@ namespace detail {
         rhs[0] = -eb_to_ea.dot(ea);
         rhs[1] = eb_to_ea.dot(eb);
 
-        const Eigen::Vector2<T> x = solve_spd_2x2<T>(A, rhs);
-        assert(all_of((A * x - rhs).norm() < T(CLOSEST_POINT_RESIDUAL_TOL<T>)));
-        return x;
+        return solve_spd_2x2<T>(A, rhs);
     }
 
     /// @brief Compute the Jacobian of the closest points between two edges.
@@ -359,9 +367,7 @@ namespace detail {
         basis.row(1) = Eigen::RowVector3<T>(t2 - t0); // edge 1
         const Eigen::Matrix2<T> A = basis * basis.transpose();
         const Eigen::Vector2<T> b = basis * (p - t0);
-        const Eigen::Vector2<T> x = solve_spd_2x2<T>(A, b);
-        assert(all_of((A * x - b).norm() < T(CLOSEST_POINT_RESIDUAL_TOL<T>)));
-        return x;
+        return solve_spd_2x2<T>(A, b);
     }
 
     /// @brief Compute the Jacobian of the closest point on the triangle.

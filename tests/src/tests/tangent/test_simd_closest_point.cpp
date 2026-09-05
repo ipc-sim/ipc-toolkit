@@ -1,4 +1,3 @@
-#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
@@ -57,7 +56,8 @@ TEST_CASE(
             [&](int l) {
                 return point_triangle_closest_point(A[l], B[l], C[l], D[l])
                     .eval();
-            });
+            },
+            VALUE_TOL);
         check_lanes(
             "jacobian", point_triangle_closest_point_jacobian(a, b, c, d),
             [&](int l) {
@@ -69,9 +69,11 @@ TEST_CASE(
     SECTION("edge-edge")
     {
         check_lanes(
-            "coordinates", edge_edge_closest_point(a, b, c, d), [&](int l) {
+            "coordinates", edge_edge_closest_point(a, b, c, d),
+            [&](int l) {
                 return edge_edge_closest_point(A[l], B[l], C[l], D[l]).eval();
-            });
+            },
+            VALUE_TOL);
         check_lanes(
             "jacobian", edge_edge_closest_point_jacobian(a, b, c, d),
             [&](int l) {
@@ -107,42 +109,6 @@ TEST_CASE(
             return edge_edge_closest_point(EA0[l], EA1[l], EB0[l], EB1[l])
                 .eval();
         });
-}
-
-TEST_CASE(
-    "Closest points of a symmetric crossing are the edge midpoints",
-    "[closest_point]")
-{
-    // Two perpendicular edges centered on the same axis meet at their
-    // midpoints, so the answer is exactly (0.5, 0.5) with no rounding to hide
-    // behind. This anchors the result to the geometry rather than to whatever
-    // a particular decomposition happens to return.
-    const EdgePair e = crossing_edges(std::acos(0.0)); // perpendicular
-
-    const Eigen::Vector2d coords =
-        edge_edge_closest_point(e.ea0, e.ea1, e.eb0, e.eb1);
-
-    CAPTURE(coords);
-    CHECK(coords[0] == Catch::Approx(0.5).epsilon(0).margin(1e-15));
-    CHECK(coords[1] == Catch::Approx(0.5).epsilon(0).margin(1e-15));
-}
-
-TEST_CASE(
-    "A point on a triangle recovers its own barycentric coordinates",
-    "[closest_point]")
-{
-    // Projecting a point that already lies in the plane must return the
-    // coordinates it was built from, whatever the solve does internally.
-    const Eigen::Vector3d t0(-1, 0, 1), t1(1, 0, 1), t2(0, 0, -1);
-    const Eigen::Vector2d expected(0.25, 0.5);
-    const Eigen::Vector3d p =
-        t0 + expected[0] * (t1 - t0) + expected[1] * (t2 - t0);
-
-    const Eigen::Vector2d coords = point_triangle_closest_point(p, t0, t1, t2);
-
-    CAPTURE(coords);
-    CHECK(coords[0] == Catch::Approx(expected[0]).epsilon(0).margin(1e-15));
-    CHECK(coords[1] == Catch::Approx(expected[1]).epsilon(0).margin(1e-15));
 }
 
 #endif

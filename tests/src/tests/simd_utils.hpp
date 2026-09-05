@@ -113,6 +113,19 @@ template <int dim> inline Points<dim> random_points(const int seed)
     return v;
 }
 
+/// @brief `cases` scaled by `s`, for a case list written as multiples of a
+/// threshold (speeds as multiples of eps_v, distances as multiples of dhat).
+template <std::size_t N>
+inline std::array<double, N>
+scaled(const std::array<double, N>& cases, const double s)
+{
+    std::array<double, N> out {};
+    for (std::size_t i = 0; i < N; ++i) {
+        out[i] = cases[i] * s;
+    }
+    return out;
+}
+
 /// @brief Assign `cases` round-robin to the `L` lanes, starting at `offset`.
 ///
 /// A batch may hold fewer lanes than there are cases, so a test sweeps the
@@ -216,6 +229,21 @@ void check_swept_lanes(
             CHECK(actual[l] == approx(scalar_fn(xs[l]), tol));
         }
     }
+}
+
+/// @brief `check_swept_lanes` for a function of the swept value and fixed
+/// parameters. One generic callable serves both paths: the scalar call gets the
+/// parameters as `double`s and the batch call gets them broadcast to a `Batch`.
+template <typename Container, typename Fn, typename... Params>
+void check_swept_lanes_with(
+    const std::string& name,
+    const Container& cases,
+    Fn&& f,
+    const Params... params)
+{
+    check_swept_lanes(
+        name, cases, [&](const double x) { return f(x, params...); },
+        [&](const Batch& x) { return f(x, Batch(params)...); });
 }
 
 } // namespace ipc::tests

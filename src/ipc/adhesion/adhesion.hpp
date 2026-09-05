@@ -209,22 +209,24 @@ inline T smooth_mu_a0(const T y, const T mu_s, const T mu_k, const T eps_a)
         y <= T(0), [&] { return T(0); }, //
         mu_s == mu_k || y >= eps_a,
         [&] {
-            const T c = T(11 / 48.) * eps_a * delta_mu;
+            const T c = literal<T>(11 / 48.) * eps_a * delta_mu;
             return mu_k * tangential_adhesion_f0(y, eps_a) - c;
         },
         y < T(0.5) * eps_a,
         [&] {
             return y * z
-                * (z * (z * (T(1) - T(0.4) * z) * delta_mu - mu_s / T(3))
+                * (z
+                       * (z * (T(1) - literal<T>(0.4) * z) * delta_mu
+                          - mu_s / T(3))
                    + mu_s);
         },
         [&] {
             return y * z
                 * (z
-                       * (z * (T(0.4) * z - T(2)) * delta_mu + T(3) * mu_k
-                          - T(10.0 / 3.0) * mu_s)
+                       * (z * (literal<T>(0.4) * z - T(2)) * delta_mu
+                          + T(3) * mu_k - literal<T>(10.0 / 3.0) * mu_s)
                    - mu_k + T(2) * mu_s)
-                + T(3.0 / 80.0) * eps_a * delta_mu;
+                + literal<T>(3.0 / 80.0) * eps_a * delta_mu;
         });
 }
 

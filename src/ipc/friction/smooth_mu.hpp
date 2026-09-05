@@ -81,17 +81,21 @@ inline T smooth_mu_f0(const T y, const T mu_s, const T mu_k, const T eps_v)
         abs_y < T(0.5) * eps_v,
         [&] {
             return y * z
-                * (z * (z * (T(1) - T(0.4) * z) * delta_mu - mu_s / T(3))
+                * (z
+                       * (z * (T(1) - literal<T>(0.4) * z) * delta_mu
+                          - mu_s / T(3))
                    + mu_s)
-                + T(9.0 / 16.0) * eps_v * mu_k - T(11.0 / 48.0) * eps_v * mu_s;
+                + literal<T>(9.0 / 16.0) * eps_v * mu_k
+                - literal<T>(11.0 / 48.0) * eps_v * mu_s;
         },
         [&] {
             return y * z
                 * (z
-                       * (z * (T(0.4) * z - T(2)) * delta_mu
-                          + (T(3) * mu_k - T(10.0 / 3.0) * mu_s))
+                       * (z * (literal<T>(0.4) * z - T(2)) * delta_mu
+                          + (T(3) * mu_k - literal<T>(10.0 / 3.0) * mu_s))
                    + (T(2) * mu_s - mu_k))
-                + T(0.6) * eps_v * mu_k - T(4.0 / 15.0) * eps_v * mu_s;
+                + literal<T>(0.6) * eps_v * mu_k
+                - literal<T>(4.0 / 15.0) * eps_v * mu_s;
         });
 }
 

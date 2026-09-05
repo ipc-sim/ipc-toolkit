@@ -13,6 +13,23 @@
 using namespace ipc;
 using namespace ipc::tests;
 
+namespace {
+
+/// @brief Speeds as multiples of eps_a, landing a lane in each piece: at rest,
+/// either side of the half-threshold the smooth-μ formulas split on, just
+/// inside, exactly at, and past the threshold.
+constexpr std::array<double, 7> NONNEGATIVE_MULTIPLES = {
+    { 0.0, 0.25, 0.49, 0.5, 0.75, 1.0, 2.5 }
+};
+
+/// @brief The same speeds plus a negative one. The tangential adhesion
+/// functions clamp at y <= 0 rather than mirroring on |y|, so the negative
+/// entry checks that clamp.
+constexpr std::array<double, 8> MULTIPLES = { { -1.0, 0.0, 0.25, 0.49, 0.5,
+                                                0.75, 1.0, 2.5 } };
+
+} // namespace
+
 TEST_CASE(
     "SIMD batch normal adhesion matches the scalar one lane-wise",
     "[adhesion][normal_adhesion][simd]")
@@ -28,12 +45,7 @@ TEST_CASE(
                                            DHAT_A, 3e-3,   1.0 };
 
     auto check = [&](const std::string& name, auto&& f) {
-        check_swept_lanes(
-            name, DS,
-            [&](const double d) { return f(d, DHAT_P, DHAT_A, max_slope); },
-            [&](const Batch& d) {
-                return f(d, Batch(DHAT_P), Batch(DHAT_A), Batch(max_slope));
-            });
+        check_swept_lanes_with(name, DS, f, DHAT_P, DHAT_A, max_slope);
     };
 
     check("potential", [](auto d, auto dhat_p, auto dhat_a, auto a2) {
@@ -55,28 +67,29 @@ TEST_CASE(
 {
     const double eps_a = GENERATE(1e-3, 0.1, 1.0);
 
-    // Speeds as multiples of eps_a. These functions clamp at y <= 0 rather than
-    // mirroring on |y|, so the negative entry checks that clamp; zero is where
-    // the `1/y` branch is singular, which only a batch evaluates.
-    constexpr std::array<double, 8> MULTIPLES = { -1.0, 0.0,  0.25, 0.49,
-                                                  0.5,  0.75, 1.0,  2.5 };
-    std::array<double, MULTIPLES.size()> ys {};
-    for (size_t i = 0; i < ys.size(); ++i) {
-        ys[i] = MULTIPLES[i] * eps_a;
-    }
-
-    auto check = [&](const std::string& name, auto&& f) {
-        check_swept_lanes(
-            name, ys, [&](const double y) { return f(y, eps_a); },
-            [&](const Batch& y) { return f(y, Batch(eps_a)); });
+    auto check = [&](const std::string& name, const auto& ys, auto&& f) {
+        check_swept_lanes_with(name, ys, f, eps_a);
     };
 
-    check("f0", [](auto y, auto e) { return tangential_adhesion_f0(y, e); });
-    check("f1", [](auto y, auto e) { return tangential_adhesion_f1(y, e); });
-    check("f2", [](auto y, auto e) { return tangential_adhesion_f2(y, e); });
-    check("f1_over_x", [](auto y, auto e) {
+    const auto ys = scaled(MULTIPLES, eps_a);
+    check(
+        "f0", ys, [](auto y, auto e) { return tangential_adhesion_f0(y, e); });
+    check(
+        "f1", ys, [](auto y, auto e) { return tangential_adhesion_f1(y, e); });
+    check(
+        "f2", ys, [](auto y, auto e) { return tangential_adhesion_f2(y, e); });
+    check("f1_over_x", ys, [](auto y, auto e) {
         return tangential_adhesion_f1_over_x(y, e);
     });
+
+    // This one asserts y >= 0, so it gets the non-negative speeds only. Zero is
+    // where its `1/y` branch is singular: the scalar path returns -inf there,
+    // and the batch, which evaluates that branch on every lane, has to agree.
+    check(
+        "f2_x_minus_f1_over_x3", scaled(NONNEGATIVE_MULTIPLES, eps_a),
+        [](auto y, auto e) {
+            return tangential_adhesion_f2_x_minus_f1_over_x3(y, e);
+        });
 }
 
 TEST_CASE(
@@ -92,19 +105,10 @@ TEST_CASE(
     const double mu_s = mus.first, mu_k = mus.second;
 
     // Non-negative only: smooth_mu_a2_x_minus_mu_a1_over_x3 asserts y >= 0.
-    constexpr std::array<double, 7> MULTIPLES = { 0.0,  0.25, 0.49, 0.5,
-                                                  0.75, 1.0,  2.5 };
-    std::array<double, MULTIPLES.size()> ys {};
-    for (size_t i = 0; i < ys.size(); ++i) {
-        ys[i] = MULTIPLES[i] * eps_a;
-    }
+    const auto ys = scaled(NONNEGATIVE_MULTIPLES, eps_a);
 
     auto check = [&](const std::string& name, auto&& f) {
-        check_swept_lanes(
-            name, ys, [&](const double y) { return f(y, mu_s, mu_k, eps_a); },
-            [&](const Batch& y) {
-                return f(y, Batch(mu_s), Batch(mu_k), Batch(eps_a));
-            });
+        check_swept_lanes_with(name, ys, f, mu_s, mu_k, eps_a);
     };
 
     check("a0", [](auto y, auto s, auto k, auto e) {

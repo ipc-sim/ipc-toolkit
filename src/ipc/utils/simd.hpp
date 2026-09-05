@@ -31,6 +31,17 @@ template <typename T> struct ScalarOf<T, true> {
 };
 template <typename T> using scalar_of_t = typename ScalarOf<T>::type;
 
+/// @brief `T(c)` for a constant written as a `double` literal.
+///
+/// We round `c` to the lane type first. For a `float` batch, `T(0.4)` is a
+/// constructor call receiving a `double`, an implicit narrowing that
+/// `-Wfloat-conversion` reports at every instantiation. For a plain scalar this
+/// is the explicit cast the code would have written anyway.
+template <typename T> inline T literal(const double c)
+{
+    return T(static_cast<scalar_of_t<T>>(c));
+}
+
 /// @brief Whether `mask` holds for every lane.
 ///
 /// This is the scalar counterpart of `xsimd::all`. A batch answers a

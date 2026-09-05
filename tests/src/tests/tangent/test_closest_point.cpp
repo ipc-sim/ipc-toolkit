@@ -52,8 +52,10 @@ TEST_CASE("Edge-edge closest point", "[friction][edge-edge][closest_point]")
     Eigen::Vector2d barycentric_coords =
         edge_edge_closest_point(ea0, ea1, eb0, eb1);
     CAPTURE(barycentric_coords);
-    CHECK(barycentric_coords[0] == Catch::Approx(0.5));
-    CHECK(barycentric_coords[1] == Catch::Approx(0.5));
+    // Perpendicular edges centered on the same axis meet at their midpoints,
+    // so the answer is exactly (0.5, 0.5) with no rounding to hide behind.
+    CHECK(barycentric_coords[0] == Catch::Approx(0.5).epsilon(0).margin(1e-15));
+    CHECK(barycentric_coords[1] == Catch::Approx(0.5).epsilon(0).margin(1e-15));
 
     // test Jacobian
     Eigen::Matrix<double, 2, 12> J =

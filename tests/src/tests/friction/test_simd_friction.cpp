@@ -27,15 +27,6 @@ constexpr std::array<double, 11> Y_MULTIPLES = { -2.0, -1.0, -0.75, -0.25,
                                                  0.0,  0.25, 0.49,  0.5,
                                                  0.75, 1.0,  2.0 };
 
-std::array<double, Y_MULTIPLES.size()> speeds(const double eps_v)
-{
-    std::array<double, Y_MULTIPLES.size()> ys {};
-    for (size_t i = 0; i < ys.size(); ++i) {
-        ys[i] = Y_MULTIPLES[i] * eps_v;
-    }
-    return ys;
-}
-
 } // namespace
 
 TEST_CASE(
@@ -43,12 +34,10 @@ TEST_CASE(
     "[friction][mollifier][simd]")
 {
     const double eps_v = GENERATE(1e-3, 0.1, 1.0);
-    const auto ys = speeds(eps_v);
+    const auto ys = scaled(Y_MULTIPLES, eps_v);
 
     auto check = [&](const std::string& name, auto&& f) {
-        check_swept_lanes(
-            name, ys, [&](const double y) { return f(y, eps_v); },
-            [&](const Batch& y) { return f(y, Batch(eps_v)); });
+        check_swept_lanes_with(name, ys, f, eps_v);
     };
 
     check("f0", [](auto y, auto e) { return smooth_friction_f0(y, e); });
@@ -74,14 +63,10 @@ TEST_CASE(
         std::pair { 0.5, 0.5 }, std::pair { 0.5, 0.1 }, std::pair { 0.1, 0.5 });
     const double mu_s = mus.first, mu_k = mus.second;
 
-    const auto ys = speeds(eps_v);
+    const auto ys = scaled(Y_MULTIPLES, eps_v);
 
     auto check = [&](const std::string& name, auto&& f) {
-        check_swept_lanes(
-            name, ys, [&](const double y) { return f(y, mu_s, mu_k, eps_v); },
-            [&](const Batch& y) {
-                return f(y, Batch(mu_s), Batch(mu_k), Batch(eps_v));
-            });
+        check_swept_lanes_with(name, ys, f, mu_s, mu_k, eps_v);
     };
 
     check("mu", [](auto y, auto s, auto k, auto e) {

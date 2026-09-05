@@ -17,7 +17,7 @@ namespace autogen {
         T v01, T v02, T v03, T v11, T v12, T v13, T v21, T v22, T v23, T v31, T v32, T v33, T H[144]);
     template <typename T>
     void edge_edge_mollifier_threshold_gradient(
-        T ea0x, T ea0y, T ea0z, T ea1x, T ea1y, T ea1z, T eb0x, T eb0y, T eb0z, T eb1x, T eb1y, T eb1z, T grad[12], T scale = T(1e-3));
+        T ea0x, T ea0y, T ea0z, T ea1x, T ea1y, T ea1z, T eb0x, T eb0y, T eb0z, T eb1x, T eb1y, T eb1z, T grad[12], T scale = literal<T>(1e-3));
     // clang-format on
 } // namespace autogen
 
@@ -235,7 +235,7 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector3<T>> eb0_rest,
         Eigen::ConstRef<Eigen::Vector3<T>> eb1_rest)
     {
-        return T(1e-3) * (ea0_rest - ea1_rest).squaredNorm()
+        return literal<T>(1e-3) * (ea0_rest - ea1_rest).squaredNorm()
             * (eb0_rest - eb1_rest).squaredNorm();
     }
 
@@ -251,7 +251,7 @@ namespace detail {
         autogen::edge_edge_mollifier_threshold_gradient(
             ea0_rest[0], ea0_rest[1], ea0_rest[2], ea1_rest[0], ea1_rest[1],
             ea1_rest[2], eb0_rest[0], eb0_rest[1], eb0_rest[2], eb1_rest[0],
-            eb1_rest[1], eb1_rest[2], grad.data(), /*scale=*/T(1e-3));
+            eb1_rest[1], eb1_rest[2], grad.data(), /*scale=*/literal<T>(1e-3));
         return grad;
     }
 } // namespace detail
