@@ -40,6 +40,27 @@ cd build/test && ctest --verbose -R "test_name_pattern"
 ./build/test/ipc_toolkit_tests "[tag]"
 ```
 
+### Benchmarks
+
+Benchmarks are hidden Catch2 cases tagged `[!benchmark]`, so they don't run by
+default — but a tag filter like `"[simd]"` *will* pull them in alongside the
+unit tests. Exclude them explicitly when you only want correctness:
+
+```bash
+./build/test/ipc_toolkit_tests "[simd] ~[!benchmark]"
+```
+
+**Never take benchmark numbers from a `test`/`debug` build.** Those presets are
+`CMAKE_BUILD_TYPE=Debug`, where the templated kernels aren't inlined and the
+asserts are live, so the results are meaningless — and misleading, since the
+SIMD paths lean hardest on inlining and lose the most. Build a Release
+configuration with tests enabled and benchmark that instead:
+
+```bash
+cmake -S . -B build/benchmark -DCMAKE_BUILD_TYPE=Release -DIPC_TOOLKIT_BUILD_TESTS=ON
+cmake --build build/benchmark -j 8
+```
+
 ## Code Style
 
 - **Formatter:** clang-format, WebKit-based style, **80-character column limit**. Pre-commit hooks enforce this — always run before committing:
