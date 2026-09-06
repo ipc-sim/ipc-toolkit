@@ -42,58 +42,34 @@ API Changes |:wrench:|
 
 - Move gradient assembly into a shared ``ipc::assemble_gradient`` (``ipc/utils/gradient_assembler.hpp``) that all five gradient-producing potentials route through (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
 
-- Templatize the distance functions on the scalar type.
+- Templatize the distance, tangent, friction, adhesion, and geometry functions on the scalar type.
 
-  - The free functions now take a scalar template parameter ``T`` and are instantiated for both ``float`` and ``double``.
-  - The distance functions are now a two-layer API.
+  - Functions now take a scalar template parameter ``T`` and are instantiated for ``float``, ``double``, ``xsimd::batch<float>``, and ``xsimd::batch<double>`` types.
+  - 💥 **[Breaking]** Mixed-precision calls no longer deduce: ``barrier(float_d, 0.001)`` must become ``barrier(float_d, 0.001f)``.
+  - 💥 **[Breaking]** The gradients/Hessians of the point-point, point-line, and point-edge distances and the ``normalization_*`` functions now return **fixed-size** Eigen types (e.g. ``Eigen::Vector<T, 3 * dim>``) when the argument type knows its dimension at compile time, and the previous ``VectorMax``/``MatrixMax`` types otherwise.
+  - The functions are now a two-layer API.
 
     - The concrete kernels moved into ``ipc::detail`` and are templated on the scalar and the dimension (``template <typename T, int dim>``, or just ``<typename T>`` for the 3D-only).
     - The public names in ``ipc`` are thin front ends templated on the argument expression types. They deduce ``T``, dispatch on the compile-time dimension when the arguments know it, and fall back to a single runtime branch on ``size()`` otherwise. Existing calls are unaffected.
 
   - Autodiff scalars are supported for the value functions only; passing one to a ``*_gradient``/``*_hessian`` or to a ``*_distance_type`` predicate is a compile-time or ``AUTO``-dispatch error rather than silently wrong output.
-  - 💥 **[Breaking]** Mixed-precision calls no longer deduce: ``barrier(float_d, 0.001)`` must become ``barrier(float_d, 0.001f)``.
-  - 💥 **[Breaking]** The gradients/Hessians of the point-point, point-line, and point-edge distances and the ``normalization_*`` functions now return **fixed-size** Eigen types (e.g. ``Eigen::Vector<T, 3 * dim>``) when the argument type knows its dimension at compile time, and the previous ``VectorMax``/``MatrixMax`` types otherwise.
+  - ``AUTO`` and the ``*_distance_type`` predicates are **not** available for batch scalars and throw ``std::invalid_argument``. The distance type is a per-lane property but the predicates return a single enum, so two lanes cannot report different closest features. Resolve the distance types scalar-side and group problems by type before batching.
+  - ``edge_edge_closest_point`` and ``point_triangle_closest_point`` solve their 2×2 symmetric positive-definite system in closed form instead of with ``A.ldlt().solve()``, whose pivot is scalar control flow a batch cannot take per-lane.
+
+    - Solve using Cramer's rule, which is a closed form for 2×2 systems. The determinant is computed in Kahan's fused multiply-add form to recover the rounding error of one product, so the solution stays accurate even when the two products cancel badly.
+    - The pivot in ``LDLT`` loses the same digits as the naive determinant, so it is no more accurate than the closed form.
+    - Measured against the exact solution of the same double inputs, the closed form and ``LDLT`` stay within about 2× of each other on well-conditioned systems, but at 1e-4 rad the closed form is accurate to 4e-17 relative where ``LDLT`` reaches only 2e-9.
 
 - Templatize the barrier classes on the scalar type.
 
   - ``ipc::Barrier`` is now an alias for the class template ``ipc::BarrierBase<T>`` (defaulting to ``double``).
   - 💥 **[Breaking]** The concrete barriers are now class templates and must be spelled with explicit template arguments (e.g., ``ipc::ClampedLogBarrier<>``).
   - The free functions ``ipc::barrier``, ``ipc::barrier_first_derivative``, and ``ipc::barrier_second_derivative`` are now templates defaulting to ``double``.
+  - Replace ``if``/``else``` branches in the barrier functions with ``select_lazy`` cascades, so a batch may carry lanes on either side of ``dhat``. Single scalar inputs still only evaluate the active branch.
 
-- Templatize the tangent functions
+- Add ``ipc::numext`` namespace containing an override for ``sqrt``, ``abs``, ``log``, ``fma``, and ``atan2``. For ``float`` and ``double`` they call ``std::``; for ``xsimd::batch<T>`` they call the corresponding ``xsimd`` function. This allows the templated distance and barrier functions to call ``numext::sqrt`` and friends without knowing whether they are operating on scalars or batches.
+- 💥 **[Breaking]** ``xsimd`` and ``SIMD_CXX_FLAGS`` are now linked/applied ``PUBLIC`` rather than ``PRIVATE``. ``xsimd::default_arch`` is selected from each translation unit's own compiler flags, so a consumer built without the library's SIMD flags would name a *different* batch type than the one instantiated and fail to link. This means consumers are now compiled with the detected SIMD flags (typically ``-march=native``); disable ``IPC_TOOLKIT_WITH_SIMD`` if that is not wanted.
 
-  - Follow the distance family: fixed-size kernels in ``ipc::detail`` templated on ``<typename T, int dim>`` (or ``<typename T>`` where the function is 3D-only), behind front ends that deduce both from the argument expressions.
-  - Return types are fixed-size when the argument type knows its dimension and the previous ``VectorMax``/``MatrixMax`` types otherwise.
-
-- Templatize the friction, adhesion, and dihedral-angle functions on the scalar type.
-
-  - The smooth friction mollifier, the smooth-μ family, and the adhesion functions (normal adhesion and its derivatives, the tangential-adhesion mollifiers, and the ``smooth_mu_a*`` variants) now take a scalar template parameter ``T``. These were hardcoded ``double``, which is what previously ruled out a batch-capable friction or adhesion path.
-  - ``smooth_friction_mollifier.cpp`` and ``adhesion.cpp`` are gone; both headers are header-only templates now, following ``edge_edge_mollifier.hpp``.
-  - ``dihedral_angle`` and its gradient/Hessian follow the distance family's two-layer split: ``ipc::detail`` kernels templated on ``<typename T>`` (3D-only) and instantiated for ``float``, ``double``, and both batch types, behind front ends that deduce ``T``. Existing calls are unaffected.
-  - The anisotropic-friction helpers (``anisotropic_mu_eff_f``, ``anisotropic_x_from_tau_aniso``, ``anisotropic_mu_eff_from_tau_aniso``) stay ``double``-only for now, since no batch caller exists for them yet. The first two do depend on the per-collision tangential velocity, so a batch friction path with anisotropic μ would need to template them as well; only ``anisotropic_mu_eff_from_tau_aniso`` tests the material alone.
-  - Add ``ipc::numext::abs`` and ``ipc::numext::atan2`` to ``ipc/math/scalar_math.hpp``, alongside ``fma``, ``log`` and ``sqrt``. ``Math<T>::abs`` picks the sign with a ternary, which asks a batch for one ``bool`` its lanes may disagree on; ``numext::abs`` reaches ``xsimd::abs``, which clears the sign bit per-lane instead. These forwarders sit in ``ipc::numext`` rather than ``ipc``, following ``Eigen::numext``: they carry names (``abs``, ``log``, ``sqrt``) that would otherwise join the overload set of anyone writing ``using namespace ipc;``. ``ipc::sqr``, ``ipc::cubic`` and ``ipc::MOLLIFIER_THRESHOLD_EPS`` stay at ``ipc`` scope.
-  - 💥 **[Breaking]** As with the distance functions, mixed-precision calls no longer deduce: every argument must share one scalar type, so ``smooth_mu(float_y, 0.5, 0.3, 0.001)`` must become ``smooth_mu(float_y, 0.5f, 0.3f, 0.001f)``.
-
-- Add SIMD batch support to the distance functions via the new ``ipc/utils/simd.hpp`` (requires ``IPC_TOOLKIT_WITH_SIMD``).
-
-  - ``Eigen::NumTraits`` is specialized for ``xsimd::batch``, and ``ipc::SimdBatch<T>`` aliases the batch type for the build's architecture. Passing ``Eigen::Vector3<ipc::SimdBatch<double>>`` evaluates one independent problem per SIMD lane, letting a caller with a structure-of-arrays layout compute several distances per call.
-  - The values, gradients, and Hessians of the point-point, point-line, point-edge, line-line, edge-edge, and point-triangle distances are instantiated for ``SimdBatch<float>`` and ``SimdBatch<double>``. Measured agreement with the scalar path is one ulp on the values; the derivatives agree to ~1e-11 relative to their own magnitude, since the two paths contract multiply-adds differently and these derivatives are ill-conditioned for near-parallel edges.
-  - The barrier functions and classes (``barrier``, ``ClampedLogBarrier``, ``ClampedLogSqBarrier``, ``CubicBarrier``, ``TwoStageBarrier``), the tangent bases and their Jacobians, the closest-point Jacobians/Hessians, the unnormalized-normal Jacobians/Hessians, the signed-distance Hessians, and the triangle-area gradient are instantiated for batch scalars as well.
-  - The edge-edge mollifier is instantiated for batch scalars too: the mollifier and its gradient/Hessian, their derivatives with respect to the threshold, the threshold and its gradient, and the edge-edge cross-product squared norm with its gradient/Hessian.
-  - The friction mollifier, smooth-μ, adhesion, and dihedral-angle functions accept batch scalars. Their piecewise branches are ``select_lazy`` cascades, so one batch may carry lanes on either side of ``ε_v``/``ε_a``/``d̂ₚ``. Several of the inactive branches divide by ``y``, which a batch evaluates even on a lane where ``y == 0``; the blend is a per-lane select, so it discards the resulting infinity rather than propagating it into a NaN.
-  - The ``mu_s == mu_k`` test opening most smooth-μ functions is a fast path, not a special case: when the coefficients are equal the general formulas reduce to the same value, so a batch blending across that mask stays correct. It still buys a scalar caller the cheaper formula in the common single-coefficient setting.
-  - The normalized normals (``point_line_normal``, ``triangle_normal``, ``line_line_normal``) use ``ipc::normalized`` instead of Eigen's ``normalized()``, which makes them and the values/gradients of the ``point_line``, ``line_line``, and ``point_plane`` signed distances usable with batch scalars (previously only the signed-distance Hessians were).
-  - ``edge_length_gradient`` asserts its non-degeneracy only for a plain scalar, so it accepts batch scalars as well.
-  - The relative-velocity functions (values, Jacobians, and ``dx_dbeta`` tensors for point-point, point-edge, edge-edge, and point-triangle, in 2D and 3D) were already batch-compatible and are now covered by tests, agreeing with the scalar path to 1e-14 relative.
-  - ``edge_edge_closest_point`` and ``point_triangle_closest_point`` solve their 2×2 symmetric positive-definite system in closed form instead of with ``A.ldlt().solve()``, whose pivot is scalar control flow a batch cannot take per-lane. They complete the batch coverage of the closest-point functions, whose Jacobians and Hessians were already instantiated. The determinant uses Kahan's fused form, recovering the rounding error of one product with ``fma`` so that it stays accurate no matter how badly the two products cancel. That cancellation, not the algorithm, is what limits accuracy as the edges approach parallel, and it limits ``LDLT`` equally: its second pivot ``a11 - a01²/a00`` loses the same digits the naive determinant does. Measured against the exact solution of the same double inputs, the closed form and ``LDLT`` stay within about 2× of each other on well-conditioned systems, but at 1e-4 rad the closed form is accurate to 4e-17 relative where ``LDLT`` reaches only 2e-9. On hardware with no fused multiply-add the determinant degrades to the naive expression rather than misbehaving.
-  - Functions that pick a case from the values themselves — a barrier clamping at ``d̂``, the 3D point-point tangent basis choosing a reference axis — evaluate every case for a batch and blend the results per-lane, so one batch may carry lanes in different cases. The scalar instantiations keep their original early-return form and are unchanged.
-  - ``ipc::normalized(v)`` replaces ``v.normalized()`` in the tangent bases: Eigen's own ``normalized()`` guards a zero-length vector with an ``if``, which a batch cannot answer with one ``bool``. It applies the same rule per-lane and defers to Eigen for scalars.
-  - 💥 **[Breaking]** ``xsimd`` and ``SIMD_CXX_FLAGS`` are now linked/applied ``PUBLIC`` rather than ``PRIVATE``. ``xsimd::default_arch`` is selected from each translation unit's own compiler flags, so a consumer built without the library's SIMD flags would name a *different* batch type than the one instantiated and fail to link. This means consumers are now compiled with the detected SIMD flags (typically ``-march=native``); disable ``IPC_TOOLKIT_WITH_SIMD`` if that is not wanted.
-  - ``AUTO`` and the ``*_distance_type`` predicates are **not** available for batch scalars and throw ``std::invalid_argument``. The distance type is a per-lane property but the predicates return a single enum, so two lanes cannot report different closest features. Resolve the distance types scalar-side and group problems by type before batching.
-
-  A caveat on the payoff: on an Apple M-series (NEON, 2 lanes per ``double``) a batched point-line sweep measured only 1.06-1.13x over the scalar loop, and 1.13-1.18x with ``float`` at 4 lanes. The compiler already auto-vectorizes a loop over independent problems, and the kernels are largely memory-bound. Wider ISAs may do better; that has not been measured.
-
-- Add ``float`` aliases to ``ipc/utils/eigen_ext.hpp`` (``Vector1f``, ``Vector6f``, ``Matrix6f``, ``VectorMax3f``, ``MatrixMax9f``, …) mirroring the existing ``double`` ones.
 
 Performance |:zap:|
 ~~~~~~~~~~~~~~~~~~~
