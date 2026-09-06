@@ -4,7 +4,7 @@ Dependencies
 .. figure:: /_static/graphviz/dependencies.svg
    :align: center
 
-   Default dependencies of the ``ipc::toolkit`` library. Excludes CUDA and Python bindings.
+   Default dependencies of the ``ipc::toolkit`` library. Edge colour is the link scope; a dashed edge marks an optional dependency, enabled by default but controlled by an ``IPC_TOOLKIT_WITH_*`` CMake option. Dependencies that are off by default are omitted. Excludes CUDA and Python bindings.
 
 The IPC Toolkit depends on a handful of third-party libraries, which are used to provide various functionality.
 
