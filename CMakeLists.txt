@@ -343,7 +343,14 @@ endif()
 
 if(IPC_TOOLKIT_WITH_CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   # Add required flags (GCC & LLVM/Clang)
-  target_compile_options(ipc_toolkit PRIVATE
+  # NOTE: PUBLIC, so the tests are instrumented too. Much of the library is
+  # header-only templates, which are only instantiated in the translation unit
+  # that calls them. With these flags PRIVATE the tests compile uninstrumented,
+  # so a header exercised solely by tests records no coverage at all and reads
+  # as untested. That is also why the workflow strips "*tests/*" from the
+  # report afterwards -- it only has something to strip if tests are built with
+  # these flags.
+  target_compile_options(ipc_toolkit PUBLIC
     -g         # generate debug info
     --coverage # sets all required flags
     -fprofile-update=atomic
