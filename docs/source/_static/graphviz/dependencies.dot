@@ -2,7 +2,10 @@ digraph "IPC Toolkit Dependencies" {
     bgcolor = "transparent";
     splines = ortho;
     layout = dot;
-    nodesep = 0.2;
+    // 0.28 rather than 0.2: with less separation the ortho router has no room
+    // to turn igl_predicates -> igl_core and hairpins it into igl_core's west
+    // side, putting the arrowhead on top of the predicates node.
+    nodesep = 0.28;
     ranksep = 0.5;
     node [fontname = "Menlo"; style = filled; penwidth = 2;];
     edge [penwidth = 2; fontname = "Menlo";];
