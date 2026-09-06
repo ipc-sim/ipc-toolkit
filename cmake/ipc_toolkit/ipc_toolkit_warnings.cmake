@@ -47,6 +47,7 @@ else()
     -Wpointer-arith
     -Wformat=2
     -Wuninitialized
+    -Wno-maybe-uninitialized
     -Wcast-qual
     -Wmissing-noreturn
     -Wmissing-format-attribute
@@ -178,6 +179,13 @@ else()
 
   if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     list(APPEND IPC_TOOLKIT_WARNING_FLAGS -Wnull-dereference)
+  endif()
+
+  # GCC 16 mis-analyzes TBB's enumerable_thread_specific. GCC <= 15 and Clang
+  # are clean, so only suppress it where it fires.
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+     AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16)
+    list(APPEND IPC_TOOLKIT_WARNING_FLAGS -Wno-array-bounds)
   endif()
 endif()
 
