@@ -84,12 +84,23 @@ TEST_CASE(
 
     SECTION("edge-edge")
     {
+        // These coordinates get the derivative bound, not VALUE_TOL. The two
+        // segments here are unconstrained in both direction and offset, so
+        // the closest points routinely land far off the ends of both: a
+        // coordinate of 20+ is an ordinary draw, not a degenerate one. Such a
+        // coordinate is an amplification of the inputs, and the batch and
+        // scalar paths contract multiply-adds differently, so their agreement
+        // is bounded by the conditioning of the 2x2 solve rather than by a
+        // rounding step on the answer. That is the same reason the
+        // deliberately near-parallel test below uses this bound. A lane that
+        // is structurally wrong still differs by order of its own magnitude,
+        // far above this.
         check_lanes(
             "coordinates", edge_edge_closest_point(a, b, c, d),
             [&](int l) {
                 return edge_edge_closest_point(A[l], B[l], C[l], D[l]).eval();
             },
-            VALUE_TOL);
+            DERIVATIVE_TOL);
         check_lanes(
             "jacobian", edge_edge_closest_point_jacobian(a, b, c, d),
             [&](int l) {
