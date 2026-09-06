@@ -41,8 +41,8 @@ TEST_CASE(
     // Distances landing in each piece: the quadratic below d̂ₚ, the second
     // quadratic between d̂ₚ and d̂ₐ, and the inactive region past d̂ₐ -- plus the
     // two breakpoints themselves, where the pieces must agree.
-    constexpr std::array<double, 7> DS = { 0.0,    0.5e-3, DHAT_P, 1.5e-3,
-                                           DHAT_A, 3e-3,   1.0 };
+    constexpr std::array<double, 7> DS = { { 0.0, 0.5e-3, DHAT_P, 1.5e-3,
+                                             DHAT_A, 3e-3, 1.0 } };
 
     auto check = [&](const std::string& name, auto&& f) {
         check_swept_lanes_with(name, DS, f, DHAT_P, DHAT_A, max_slope);

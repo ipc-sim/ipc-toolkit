@@ -23,9 +23,9 @@ namespace {
 /// carries the sign. Zero is in the list because that is where the `1/y`
 /// branches are singular: the scalar path never takes them there, while a batch
 /// evaluates them anyway and must blend the infinity away.
-constexpr std::array<double, 11> Y_MULTIPLES = { -2.0, -1.0, -0.75, -0.25,
-                                                 0.0,  0.25, 0.49,  0.5,
-                                                 0.75, 1.0,  2.0 };
+constexpr std::array<double, 11> Y_MULTIPLES = {
+    { -2.0, -1.0, -0.75, -0.25, 0.0, 0.25, 0.49, 0.5, 0.75, 1.0, 2.0 }
+};
 
 } // namespace
 

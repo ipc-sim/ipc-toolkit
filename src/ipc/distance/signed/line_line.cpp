@@ -28,7 +28,8 @@ Eigen::Matrix<T, 12, 12> line_line_signed_distance_hessian(
     // Contract the normal Hessian (3x12x12) with vector v (3x1).
     // This computes (v ⋅ d²n/dx²).
     // The result is a 1x12x12 vector, which maps to the 12x12 Hessian matrix.
-    hess = (hess_n.reshaped(3, 144).transpose() * v).reshaped(12, 12);
+    hess = (hess_n.reshaped(Eigen::fix<3>, Eigen::fix<144>).transpose() * v)
+               .reshaped(Eigen::fix<12>, Eigen::fix<12>);
 
     // ---------------------------------------------------------
     // 2. Add Jacobian Terms (Product Rule Corrections)

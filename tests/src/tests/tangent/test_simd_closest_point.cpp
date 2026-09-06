@@ -91,7 +91,7 @@ TEST_CASE(
     // parallel. That is the regime where the solve is worst conditioned, and
     // so where a batch and a scalar are most likely to drift apart. Rotating
     // the offset puts a different angle in each lane on every pass.
-    constexpr std::array<double, 4> THETAS = { 1.0, 0.1, 1e-2, 1e-3 };
+    constexpr std::array<double, 4> THETAS = { { 1.0, 0.1, 1e-2, 1e-3 } };
     const int offset = GENERATE(range(0, 4));
 
     const Lanes thetas = lane_cases(THETAS, offset);

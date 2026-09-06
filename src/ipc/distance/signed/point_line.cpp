@@ -25,7 +25,8 @@ Eigen::Matrix<T, 6, 6> point_line_signed_distance_hessian(
     // ---------------------------------------------------------
     // Contract the normal Hessian (2x36) with vector v (2x1).
     // Result is 1x36, mapped to 6x6.
-    hess = (hess_n.reshaped(2, 36).transpose() * v).reshaped(6, 6);
+    hess = (hess_n.reshaped(Eigen::fix<2>, Eigen::fix<36>).transpose() * v)
+               .reshaped(Eigen::fix<6>, Eigen::fix<6>);
 
     // ---------------------------------------------------------
     // 2. Add Jacobian Terms (Product Rule Corrections)
