@@ -1,6 +1,7 @@
 #include "normal_collisions.hpp"
 
 #include <ipc/collisions/normal/normal_collisions_builder.hpp>
+#include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/profiler.hpp>
 
@@ -12,10 +13,6 @@
 #include <stdexcept> // std::out_of_range
 
 namespace ipc {
-
-namespace {
-    inline double sqr(double x) { return x * x; }
-} // namespace
 
 void NormalCollisions::build(
     const CollisionMesh& mesh,

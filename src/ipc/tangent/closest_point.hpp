@@ -1,8 +1,7 @@
 #pragma once
 
 #include <ipc/utils/eigen_ext.hpp>
-
-#include <Eigen/Cholesky>
+#include <ipc/utils/simd.hpp>
 
 #include <array>
 #include <cassert>
@@ -140,10 +139,70 @@ namespace detail {
     /// The 1e-10 bound is tuned for double, so scale it by the relative
     /// precision of T; otherwise the float instantiation would be held to a
     /// double-precision bound.
+    /// We go through `scalar_of_t` because a batch has no
+    /// `std::numeric_limits` specialization, so the bound has to come from its
+    /// lane type.
     template <typename T>
     inline constexpr double CLOSEST_POINT_RESIDUAL_TOL = 1e-10
-        * (static_cast<double>(std::numeric_limits<T>::epsilon())
+        * (static_cast<double>(std::numeric_limits<scalar_of_t<T>>::epsilon())
            / std::numeric_limits<double>::epsilon());
+
+    /// @brief Solves `Ax = b` for a 2x2 symmetric positive-definite matrix `A`.
+    ///
+    /// We implement this manually using Cramer's rule instead of
+    /// `A.ldlt().solve(b)` because Eigen's LDLT uses pivoting, which introduces
+    /// branching and breaks vectorization. Testing shows Cramer's rule provides
+    /// comparable accuracy to both Eigen's and manual LDLT implementations, as
+    /// accuracy is limited by `A`'s conditioning rather than the algorithm.
+    /// Thus, Cramer's rule wins by being completely branchless.
+    ///
+    /// `A` is a Gram matrix (`basis · basisᵀ`), so it is positive semidefinite.
+    /// A computed `det(A) <= 0` indicates rounding error on a singular matrix
+    /// (e.g., degenerate geometry). To avoid NaNs, we treat this as singular
+    /// and branchlessly return 0 (matching Eigen's LDLT pseudo-inverse
+    /// behavior). Internal callers exclude degenerate cases and will never hit
+    /// this path.
+    ///
+    /// Debug builds check the solve residual using a relative bound (since
+    /// Cramer's rule is not backward stable), exempting these purposely zeroed
+    /// singular systems.
+    ///
+    /// @tparam T The scalar type.
+    /// @param A The 2x2 SPD matrix.
+    /// @param b The right-hand side vector.
+    /// @return The solution vector `x`.
+    template <typename T>
+    inline Eigen::Vector2<T> solve_spd_2x2(
+        Eigen::ConstRef<Eigen::Matrix2<T>> A,
+        Eigen::ConstRef<Eigen::Vector2<T>> b)
+    {
+        // Kahan's 2x2 determinant. The naive `a00*a11 - a01*a10` cancels
+        // catastrophically as the edges approach parallel, which is exactly
+        // where we care: both products round to nearly the same number and the
+        // subtraction keeps only the low bits, so the relative error in `det`
+        // grows with the conditioning. Here `bc` is the rounded product and
+        // `bc_err` the error that rounding dropped, which `fma` recovers
+        // because it rounds once instead of twice. Adding it back gives a
+        // `det` good to a couple of ulp however badly the two products cancel.
+        //
+        // On an architecture with no hardware FMA, xsimd falls back to a plain
+        // `x * y + z`; `bc_err` is then zero and this degrades to the naive
+        // expression rather than misbehaving.
+        const T bc = A(0, 1) * A(1, 0);
+        const T bc_err = ipc::numext::fma(A(0, 1), A(1, 0), -bc);
+        const T det = ipc::numext::fma(A(0, 0), A(1, 1), -bc) - bc_err;
+        const auto is_nonsingular = det > T(0);
+        const T inv_det = select(is_nonsingular, T(1) / det, T(0));
+        const Eigen::Vector2<T> x(
+            (A(1, 1) * b[0] - A(0, 1) * b[1]) * inv_det,
+            (A(0, 0) * b[1] - A(1, 0) * b[0]) * inv_det);
+#ifndef NDEBUG
+        const T scale = A.norm() * x.norm() + b.norm();
+        const T tol = literal<T>(CLOSEST_POINT_RESIDUAL_TOL<T>);
+        assert(all_of(det <= T(0) || (A * x - b).norm() <= tol * scale));
+#endif
+        return x;
+    }
 
     // ========================================================================
     // Point - Edge
@@ -251,9 +310,7 @@ namespace detail {
         rhs[0] = -eb_to_ea.dot(ea);
         rhs[1] = eb_to_ea.dot(eb);
 
-        const Eigen::Vector2<T> x = A.ldlt().solve(rhs);
-        assert((A * x - rhs).norm() < CLOSEST_POINT_RESIDUAL_TOL<T>);
-        return x;
+        return solve_spd_2x2<T>(A, rhs);
     }
 
     /// @brief Compute the Jacobian of the closest points between two edges.
@@ -324,9 +381,7 @@ namespace detail {
         basis.row(1) = Eigen::RowVector3<T>(t2 - t0); // edge 1
         const Eigen::Matrix2<T> A = basis * basis.transpose();
         const Eigen::Vector2<T> b = basis * (p - t0);
-        const Eigen::Vector2<T> x = A.ldlt().solve(b);
-        assert((A * x - b).norm() < CLOSEST_POINT_RESIDUAL_TOL<T>);
-        return x;
+        return solve_spd_2x2<T>(A, b);
     }
 
     /// @brief Compute the Jacobian of the closest point on the triangle.

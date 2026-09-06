@@ -3,6 +3,7 @@ set(SOURCES
   test_local_to_global.cpp
   test_matrixcache.cpp
   test_profiler.cpp
+  test_simd_utils.cpp
   test_utils.cpp
 
   # Benchmarks

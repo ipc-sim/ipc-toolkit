@@ -1,5 +1,7 @@
 #include "closest_point.hpp"
 
+#include <ipc/utils/simd.hpp>
+
 namespace ipc::autogen {
 // hess is (6×6) flattened in column-major order
 template <typename T>
@@ -4387,6 +4389,10 @@ void point_triangle_closest_point_hessian_1(
 
 IPC_INSTANTIATE_CLOSEST_POINT_AUTOGEN(float);
 IPC_INSTANTIATE_CLOSEST_POINT_AUTOGEN(double);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_CLOSEST_POINT_AUTOGEN(SimdBatch<float>);
+IPC_INSTANTIATE_CLOSEST_POINT_AUTOGEN(SimdBatch<double>);
+#endif
 #undef IPC_INSTANTIATE_CLOSEST_POINT_AUTOGEN
 
 } // namespace ipc::autogen

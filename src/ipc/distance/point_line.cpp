@@ -1,6 +1,7 @@
 #include "point_line.hpp"
 
 #include <ipc/config.hpp>
+#include <ipc/utils/simd.hpp>
 
 namespace ipc::autogen {
 
@@ -408,6 +409,11 @@ void point_line_distance_hessian_3D(
 
 IPC_INSTANTIATE_POINT_LINE_AUTOGEN(float);
 IPC_INSTANTIATE_POINT_LINE_AUTOGEN(double);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_POINT_LINE_AUTOGEN(SimdBatch<float>);
+IPC_INSTANTIATE_POINT_LINE_AUTOGEN(SimdBatch<double>);
+#endif
+
 #undef IPC_INSTANTIATE_POINT_LINE_AUTOGEN
 
 } // namespace ipc::autogen

@@ -5,6 +5,7 @@
 #include <Eigen/Geometry>
 
 #include <cassert>
+#include <type_traits>
 
 namespace ipc {
 
@@ -48,7 +49,11 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1)
     {
         static_assert(dim == 2 || dim == 3, "edges are only 2D or 3D");
-        assert((e1 - e0).norm() != 0);
+        // A degenerate edge divides by zero below. A batch cannot answer that
+        // with one bool, so it is only asserted for a plain scalar.
+        if constexpr (std::is_floating_point_v<T>) {
+            assert((e1 - e0).norm() != 0);
+        }
 
         // ∇ ‖e₁ - e₀‖
         Eigen::Vector<T, 2 * dim> grad;

@@ -5,6 +5,7 @@
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/autodiff_types.hpp>
+#include <ipc/utils/simd.hpp>
 
 namespace ipc::detail {
 
@@ -297,6 +298,11 @@ IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADGrad<12>);
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADHessian<12>);
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADGrad<13>);
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADHessian<13>);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_EDGE_EDGE(SimdBatch<float>);
+IPC_INSTANTIATE_EDGE_EDGE(SimdBatch<double>);
+#endif
+
 #undef IPC_INSTANTIATE_EDGE_EDGE
 #undef IPC_INSTANTIATE_EDGE_EDGE_VALUE
 

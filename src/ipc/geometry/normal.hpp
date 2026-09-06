@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/simd.hpp>
 
 #include <array>
 #include <tuple>
@@ -214,7 +215,7 @@ namespace detail {
         Eigen::ConstRef<VectorMax3<T>> e0,
         Eigen::ConstRef<VectorMax3<T>> e1)
     {
-        return point_line_unnormalized_normal(p, e0, e1).normalized();
+        return normalized(point_line_unnormalized_normal(p, e0, e1));
     }
 
     /// @brief Computes the Jacobian of the unnormalized normal vector of a
@@ -303,7 +304,7 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector3<T>> b,
         Eigen::ConstRef<Eigen::Vector3<T>> c)
     {
-        return triangle_unnormalized_normal(a, b, c).normalized();
+        return normalized(triangle_unnormalized_normal(a, b, c));
     }
 
     /// @brief Computes the Jacobian of the unnormalized normal vector of a
@@ -403,7 +404,7 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
         Eigen::ConstRef<Eigen::Vector3<T>> eb1)
     {
-        return line_line_unnormalized_normal(ea0, ea1, eb0, eb1).normalized();
+        return normalized(line_line_unnormalized_normal(ea0, ea1, eb0, eb1));
     }
 
     /// @brief Computes the Jacobian of the unnormalized normal vector of two

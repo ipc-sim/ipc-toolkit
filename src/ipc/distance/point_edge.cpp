@@ -3,6 +3,7 @@
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
+#include <ipc/utils/simd.hpp>
 
 #include <stdexcept> // std::invalid_argument
 
@@ -71,6 +72,12 @@ namespace detail {
     IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(float, 3);
     IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(double, 2);
     IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(double, 3);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+    IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(SimdBatch<float>, 2);
+    IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(SimdBatch<float>, 3);
+    IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(SimdBatch<double>, 2);
+    IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(SimdBatch<double>, 3);
+#endif
 
 #undef IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <Eigen/Core>
-
 #include <cstdint>
 
 // WARNING: Do not modify config.hpp directly. Instead, modify config.hpp.in.
@@ -41,9 +39,16 @@ using index_t = int32_t;
 // using scalar_t = float;
 // #endif
 
+// Mirror the Eigen::StorageOptions enum to avoid including Eigen headers in
+// this file.
+namespace {
+    constexpr int ColMajor = 0x0; // NOLINT
+    constexpr int RowMajor = 0x1; // NOLINT
+} // namespace
+
 // clang-format off
 /// @brief The layout of derivatives of vertex positions. The default is `Eigen::RowMajor`.
-inline constexpr int VERTEX_DERIVATIVE_LAYOUT = Eigen::@IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT@;
+inline constexpr int VERTEX_DERIVATIVE_LAYOUT = @IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT@;
 // clang-format on
 
 } // namespace ipc

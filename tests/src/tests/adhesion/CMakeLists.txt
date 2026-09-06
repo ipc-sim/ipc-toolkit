@@ -1,6 +1,7 @@
 set(SOURCES
   # Tests
   test_adhesion.cpp
+  test_simd_adhesion.cpp
 
   # Benchmarks
 

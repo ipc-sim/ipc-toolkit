@@ -1,96 +1,111 @@
 #include "angle.hpp"
 
+#include <ipc/config.hpp>
 #include <ipc/geometry/normal.hpp>
+#include <ipc/math/scalar_math.hpp>
+#include <ipc/utils/simd.hpp>
 
-namespace ipc {
+#include <array>
+#include <utility>
 
-double dihedral_angle(
-    Eigen::ConstRef<Eigen::Vector3d> x0,
-    Eigen::ConstRef<Eigen::Vector3d> x1,
-    Eigen::ConstRef<Eigen::Vector3d> x2,
-    Eigen::ConstRef<Eigen::Vector3d> x3)
+namespace ipc::detail {
+
+namespace {
+    /// @brief Jacobians of the two triangle normals with respect to all 12 DOFs
+    /// (x0, x1, x2, x3).
+    ///
+    /// n0 = normal(x0, x1, x2) does not depend on x3, so its last block is
+    /// zero. n1 = normal(x1, x0, x3) comes back in (x1, x0, x3) order, so we
+    /// permute its columns into place and zero the x2 block.
+    template <typename T>
+    inline std::pair<Eigen::Matrix<T, 3, 12>, Eigen::Matrix<T, 3, 12>>
+    dihedral_normal_jacobians(
+        Eigen::ConstRef<Eigen::Vector3<T>> x0,
+        Eigen::ConstRef<Eigen::Vector3<T>> x1,
+        Eigen::ConstRef<Eigen::Vector3<T>> x2,
+        Eigen::ConstRef<Eigen::Vector3<T>> x3)
+    {
+        Eigen::Matrix<T, 3, 12> dn0_dx;
+        dn0_dx.template leftCols<9>() = triangle_normal_jacobian(x0, x1, x2);
+        dn0_dx.template rightCols<3>().setZero();
+
+        Eigen::Matrix<T, 3, 12> dn1_dx;
+        const std::array<int, 9> idx = { { 3, 4, 5, 0, 1, 2, 9, 10, 11 } };
+        dn1_dx(Eigen::all, idx) = triangle_normal_jacobian(x1, x0, x3);
+        dn1_dx.template middleCols<3>(6).setZero();
+
+        return { dn0_dx, dn1_dx };
+    }
+} // namespace
+
+template <typename T>
+T dihedral_angle(
+    Eigen::ConstRef<Eigen::Vector3<T>> x0,
+    Eigen::ConstRef<Eigen::Vector3<T>> x1,
+    Eigen::ConstRef<Eigen::Vector3<T>> x2,
+    Eigen::ConstRef<Eigen::Vector3<T>> x3)
 {
-    const Eigen::Vector3d n0 = triangle_normal(x0, x1, x2);
-    const Eigen::Vector3d n1 = triangle_normal(x1, x0, x3);
-    const Eigen::Vector3d e = (x1 - x0).normalized();
+    const Eigen::Vector3<T> n0 = triangle_normal(x0, x1, x2);
+    const Eigen::Vector3<T> n1 = triangle_normal(x1, x0, x3);
+    const Eigen::Vector3<T> e = normalized(x1 - x0);
 
-    const double sin_theta = n0.cross(n1).dot(e);
-    const double cos_theta = n0.dot(n1);
+    const T sin_theta = n0.cross(n1).dot(e);
+    const T cos_theta = n0.dot(n1);
 
-    return std::atan2(sin_theta, cos_theta);
+    return ipc::numext::atan2(sin_theta, cos_theta);
 }
 
-Eigen::Vector<double, 12> dihedral_angle_gradient(
-    Eigen::ConstRef<Eigen::Vector3d> x0,
-    Eigen::ConstRef<Eigen::Vector3d> x1,
-    Eigen::ConstRef<Eigen::Vector3d> x2,
-    Eigen::ConstRef<Eigen::Vector3d> x3)
+template <typename T>
+Eigen::Vector<T, 12> dihedral_angle_gradient(
+    Eigen::ConstRef<Eigen::Vector3<T>> x0,
+    Eigen::ConstRef<Eigen::Vector3<T>> x1,
+    Eigen::ConstRef<Eigen::Vector3<T>> x2,
+    Eigen::ConstRef<Eigen::Vector3<T>> x3)
 {
-    const Eigen::Vector3d n0 = triangle_normal(x0, x1, x2);
-    const Eigen::Vector3d n1 = triangle_normal(x1, x0, x3);
-    const Eigen::Vector3d e = (x1 - x0).normalized();
+    const Eigen::Vector3<T> n0 = triangle_normal(x0, x1, x2);
+    const Eigen::Vector3<T> n1 = triangle_normal(x1, x0, x3);
+    const Eigen::Vector3<T> e = normalized(x1 - x0);
 
     // --- Normal gradients ---
 
-    Eigen::Matrix<double, 3, 12> dn0_dx;
-    dn0_dx.leftCols<9>() = triangle_normal_jacobian(x0, x1, x2);
-    dn0_dx.rightCols<3>().setZero();
-
-    Eigen::Matrix<double, 3, 12> dn1_dx;
-    const std::array<int, 9> idx = { { 3, 4, 5, 0, 1, 2, 9, 10, 11 } };
-    dn1_dx(Eigen::all, idx) = triangle_normal_jacobian(x1, x0, x3);
-    dn1_dx.middleCols<3>(6).setZero();
+    const auto [dn0_dx, dn1_dx] = dihedral_normal_jacobians<T>(x0, x1, x2, x3);
 
     // --- Angle gradient ---
 
-    const Eigen::Vector<double, 12> dcos_dx =
+    const Eigen::Vector<T, 12> dcos_dx =
         dn0_dx.transpose() * n1 + dn1_dx.transpose() * n0;
 
-    const Eigen::Vector<double, 12> dsin_dx =
-        (cross_product_matrix(n0) * dn1_dx - cross_product_matrix(n1) * dn0_dx)
+    const Eigen::Vector<T, 12> dsin_dx =
+        (cross_product_matrix<T>(n0) * dn1_dx
+         - cross_product_matrix<T>(n1) * dn0_dx)
             .transpose()
         * e;
 
     // --- Product rule ---
 
-    const double sin_theta = n0.cross(n1).dot(e);
-    const double cos_theta = n0.dot(n1);
+    const T sin_theta = n0.cross(n1).dot(e);
+    const T cos_theta = n0.dot(n1);
 
     return dsin_dx * cos_theta - dcos_dx * sin_theta;
 }
 
-namespace {
-    inline Eigen::Vector3d cross(
-        Eigen::ConstRef<Eigen::Vector3d> a, Eigen::ConstRef<Eigen::Vector3d> b)
-    {
-        return a.cross(b);
-    }
-} // namespace
-
-Matrix12d dihedral_angle_hessian(
-    Eigen::ConstRef<Eigen::Vector3d> x0,
-    Eigen::ConstRef<Eigen::Vector3d> x1,
-    Eigen::ConstRef<Eigen::Vector3d> x2,
-    Eigen::ConstRef<Eigen::Vector3d> x3)
+template <typename T>
+Eigen::Matrix<T, 12, 12> dihedral_angle_hessian(
+    Eigen::ConstRef<Eigen::Vector3<T>> x0,
+    Eigen::ConstRef<Eigen::Vector3<T>> x1,
+    Eigen::ConstRef<Eigen::Vector3<T>> x2,
+    Eigen::ConstRef<Eigen::Vector3<T>> x3)
 {
-    const Eigen::Vector3d n0 = triangle_normal(x0, x1, x2);
-    const Eigen::Vector3d n1 = triangle_normal(x1, x0, x3);
+    using Matrix12 = Eigen::Matrix<T, 12, 12>;
+
+    const Eigen::Vector3<T> n0 = triangle_normal(x0, x1, x2);
+    const Eigen::Vector3<T> n1 = triangle_normal(x1, x0, x3);
 
     // -------------------------------------------------------------------------
     // Jacobian of n0 and n1 w.r.t. all 12 DOFs
-    // dn0_dx: n0 depends on (x0, x1, x2), not x3 → zero last 3 cols
-    // dn1_dx: n1 = triangle_normal(x1, x0, x3), permute cols (x1→0..2, x0→3..5,
-    // x3→6..8) → x2 block zero
     // -------------------------------------------------------------------------
 
-    Eigen::Matrix<double, 3, 12> dn0_dx;
-    dn0_dx.leftCols<9>() = triangle_normal_jacobian(x0, x1, x2);
-    dn0_dx.rightCols<3>().setZero();
-
-    Eigen::Matrix<double, 3, 12> dn1_dx;
-    const std::array<int, 9> idx = { { 3, 4, 5, 0, 1, 2, 9, 10, 11 } };
-    dn1_dx(Eigen::all, idx) = triangle_normal_jacobian(x1, x0, x3);
-    dn1_dx.middleCols<3>(6).setZero();
+    const auto [dn0_dx, dn1_dx] = dihedral_normal_jacobians<T>(x0, x1, x2, x3);
 
     // -------------------------------------------------------------------------
     // Hessians of n0 and n1 — shape (27 × 9) each, then embedded in 12-DOF
@@ -104,9 +119,9 @@ Matrix12d dihedral_angle_hessian(
     // -------------------------------------------------------------------------
 
     // Raw hessians in local (9-DOF) coordinate systems
-    const Eigen::Matrix<double, 27, 9> d2n0_local =
+    const Eigen::Matrix<T, 27, 9> d2n0_local =
         triangle_normal_hessian(x0, x1, x2);
-    const Eigen::Matrix<double, 27, 9> d2n1_local =
+    const Eigen::Matrix<T, 27, 9> d2n1_local =
         triangle_normal_hessian(x1, x0, x3);
 
     // We will access them on-the-fly via the index maps rather than building
@@ -146,9 +161,10 @@ Matrix12d dihedral_angle_hessian(
     // ∂²e_k/(∂x1_p ∂x0_q) = -He[k][p,q]
     // -------------------------------------------------------------------------
 
-    const auto [e, Je, He] = normalization_and_jacobian_and_hessian(x1 - x0);
+    const auto [e, Je, He] =
+        normalization_and_jacobian_and_hessian<T, 3>(x1 - x0);
 
-    // He is std::array<MatrixMax3d, 3> where He[k] is the 3×3 Hessian for
+    // He is std::array<Eigen::Matrix3<T>, 3> where He[k] is the 3×3 Hessian for
     // component k of the normalized vector.
 
     // -------------------------------------------------------------------------
@@ -157,33 +173,33 @@ Matrix12d dihedral_angle_hessian(
     // ∂e/∂x0 = -J_norm,  ∂e/∂x1 = +J_norm
     // -------------------------------------------------------------------------
 
-    Eigen::Matrix<double, 3, 12> de_dx = Eigen::Matrix<double, 3, 12>::Zero();
-    de_dx.leftCols<3>() = -Je;   // ∂e/∂x0
-    de_dx.middleCols<3>(3) = Je; // ∂e/∂x1
+    Eigen::Matrix<T, 3, 12> de_dx = Eigen::Matrix<T, 3, 12>::Zero();
+    de_dx.template leftCols<3>() = -Je;   // ∂e/∂x0
+    de_dx.template middleCols<3>(3) = Je; // ∂e/∂x1
 
     // -------------------------------------------------------------------------
     // Scalars  s = (n0 × n1) · e  and  c = n0 · n1
     // -------------------------------------------------------------------------
 
-    const Eigen::Vector3d m = n0.cross(n1); // n0 × n1
-    const double sin_theta = m.dot(e);
-    const double cos_theta = n0.dot(n1);
+    const Eigen::Vector3<T> m = n0.cross(n1); // n0 × n1
+    const T sin_theta = m.dot(e);
+    const T cos_theta = n0.dot(n1);
 
     // -------------------------------------------------------------------------
     // Jacobian of s and c (12-vectors) — re-derived consistently with gradient
     // -------------------------------------------------------------------------
 
     // dm_dx = ∂(n0×n1)/∂x  (3×12)
-    const Eigen::Matrix<double, 3, 12> dm_dx =
-        cross_product_matrix(n0) * dn1_dx - cross_product_matrix(n1) * dn0_dx;
+    const Eigen::Matrix<T, 3, 12> dm_dx = cross_product_matrix<T>(n0) * dn1_dx
+        - cross_product_matrix<T>(n1) * dn0_dx;
 
-    const Eigen::Vector<double, 12> dcos_dx =
+    const Eigen::Vector<T, 12> dcos_dx =
         dn0_dx.transpose() * n1 + dn1_dx.transpose() * n0;
 
-    const Eigen::Vector<double, 12> dsin_dx =
+    const Eigen::Vector<T, 12> dsin_dx =
         dm_dx.transpose() * e + de_dx.transpose() * m;
 
-    const Eigen::Vector<double, 12> dtheta_dx =
+    const Eigen::Vector<T, 12> dtheta_dx =
         dsin_dx * cos_theta - dcos_dx * sin_theta;
 
     // -------------------------------------------------------------------------
@@ -195,7 +211,7 @@ Matrix12d dihedral_angle_hessian(
     //                + n0 · (∂²n1/(∂xp ∂xq))
     // -------------------------------------------------------------------------
 
-    Matrix12d H_cos;
+    Matrix12 H_cos;
 
     // Cross-Jacobian terms (symmetric)
     H_cos = dn0_dx.transpose() * dn1_dx;
@@ -232,7 +248,7 @@ Matrix12d dihedral_angle_hessian(
     //                + m · [∂²e/(∂xp ∂xq)]
     // -------------------------------------------------------------------------
 
-    Matrix12d H_sin;
+    Matrix12 H_sin;
 
     // Cross-Jacobian terms (m–e interaction)
     H_sin = dm_dx.transpose() * de_dx;
@@ -243,16 +259,16 @@ Matrix12d dihedral_angle_hessian(
     // Block (x0,x0): +He[k], Block (x1,x1): +He[k],
     // Block (x0,x1): -He[k], Block (x1,x0): -He[k]
     for (int k = 0; k < 3; k++) {
-        const Eigen::Matrix3d& Hek = He[k]; // 3×3
-        const double mk = m(k);
+        const Eigen::Matrix3<T>& Hek = He[k]; // 3×3
+        const T mk = m(k);
         // (x0, x0)
-        H_sin.block<3, 3>(0, 0) += mk * Hek;
+        H_sin.template block<3, 3>(0, 0) += mk * Hek;
         // (x1, x1)
-        H_sin.block<3, 3>(3, 3) += mk * Hek;
+        H_sin.template block<3, 3>(3, 3) += mk * Hek;
         // (x0, x1)
-        H_sin.block<3, 3>(0, 3) -= mk * Hek;
+        H_sin.template block<3, 3>(0, 3) -= mk * Hek;
         // (x1, x0)
-        H_sin.block<3, 3>(3, 0) -= mk * Hek;
+        H_sin.template block<3, 3>(3, 0) -= mk * Hek;
     }
 
     // Second derivative of m = n0 × n1 contracted with e:
@@ -270,7 +286,7 @@ Matrix12d dihedral_angle_hessian(
     //   so  eᵀ [v×] = (-v × e)ᵀ = (e × v)ᵀ  (as a row vector)
 
     // Pre-compute (e × n0) for efficiency
-    const Eigen::Vector3d e_cross_n0 = cross(e, n0);
+    const Eigen::Vector3<T> e_cross_n0 = e.cross(n0);
 
     // --- Terms involving first × first derivatives (cross of Jacobian cols)
     // --- -eᵀ [dn1/dxq ×] dn0/dxp = (e × dn1/dxq) · dn0/dxp
@@ -280,15 +296,15 @@ Matrix12d dihedral_angle_hessian(
     //    => e · (dn0/dxq × dn1/dxp)
     //    Also: e · (v × w) = -(e × v) · w... let's just use dot directly.
     for (int q = 0; q < 12; q++) {
-        const Eigen::Vector3d dn1_q = dn1_dx.col(q);
-        const Eigen::Vector3d dn0_q = dn0_dx.col(q);
+        const Eigen::Vector3<T> dn1_q = dn1_dx.col(q);
+        const Eigen::Vector3<T> dn0_q = dn0_dx.col(q);
         // e · (dn1_q × dn0_p) for all p  →  negate the cross and dot with e
         // Term: -eᵀ [dn1_q×] dn0_dxp = e · (dn1_q × dn0_dxp) ... but
         //   [v×]w = v×w, so eᵀ [v×] w = e·(v×w) = (e×v)·w
         // -eᵀ [dn1_q ×] dn0_dxp = -(e × dn1_q) · dn0_dxp
-        const Eigen::Vector3d neg_e_cross_dn1_q = -(cross(e, dn1_q));
+        const Eigen::Vector3<T> neg_e_cross_dn1_q = -(e.cross(dn1_q));
         // +eᵀ [dn0_q ×] dn1_dxp = (e × dn0_q) · dn1_dxp
-        const Eigen::Vector3d e_cross_dn0_q = cross(e, dn0_q);
+        const Eigen::Vector3<T> e_cross_dn0_q = e.cross(dn0_q);
         for (int p = 0; p < 12; p++) {
             H_sin(p, q) += neg_e_cross_dn1_q.dot(dn0_dx.col(p));
             H_sin(p, q) += e_cross_dn0_q.dot(dn1_dx.col(p));
@@ -301,7 +317,7 @@ Matrix12d dihedral_angle_hessian(
     // +eᵀ [n0×] ∂²n1/(∂xp ∂xq)  = (e × n0)      · ∂²n1/(∂xp ∂xq)
     //   where eᵀ [n1×] w = (e×n1)·w
     //         eᵀ [n0×] w = (e×n0)·w
-    const Eigen::Vector3d neg_e_cross_n1 = -cross(e, n1); // -(e × n1)
+    const Eigen::Vector3<T> neg_e_cross_n1 = -e.cross(n1);
 
     for (int p = 0; p < 12; p++) {
         const int lp0 = g2l_n0(p);
@@ -337,13 +353,29 @@ Matrix12d dihedral_angle_hessian(
     //      - 2·∇θ·(s·∇s + c·∇c)ᵀ     (denominator derivative)
     // -------------------------------------------------------------------------
 
-    Matrix12d H_theta = cos_theta * H_sin - sin_theta * H_cos
+    Matrix12 H_theta = cos_theta * H_sin - sin_theta * H_cos
         + dcos_dx * dsin_dx.transpose() - dsin_dx * dcos_dx.transpose()
         - dtheta_dx
-            * ((2 * sin_theta) * dsin_dx + (2 * cos_theta) * dcos_dx)
+            * ((T(2) * sin_theta) * dsin_dx + (T(2) * cos_theta) * dcos_dx)
                   .transpose();
 
     return H_theta;
 }
 
-} // namespace ipc
+// clang-format off
+#define IPC_INSTANTIATE_ANGLE(T)                                              \
+    template T dihedral_angle<T>(Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>); \
+    template Eigen::Vector<T, 12> dihedral_angle_gradient<T>(Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>); \
+    template Eigen::Matrix<T, 12, 12> dihedral_angle_hessian<T>(Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>)
+
+IPC_INSTANTIATE_ANGLE(float);
+IPC_INSTANTIATE_ANGLE(double);
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_ANGLE(SimdBatch<float>);
+IPC_INSTANTIATE_ANGLE(SimdBatch<double>);
+#endif
+
+#undef IPC_INSTANTIATE_ANGLE
+// clang-format on
+
+} // namespace ipc::detail

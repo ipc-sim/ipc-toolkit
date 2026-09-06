@@ -16,6 +16,7 @@ set(SOURCES
   merge_thread_local.hpp
   profiler.cpp
   profiler.hpp
+  simd.hpp
   save_obj.cpp
   save_obj.hpp
   unordered_map_and_set.cpp
