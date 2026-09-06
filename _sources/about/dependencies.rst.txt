@@ -4,7 +4,7 @@ Dependencies
 .. figure:: /_static/graphviz/dependencies.svg
    :align: center
 
-   Default dependencies of the ``ipc::toolkit`` library. Excludes CUDA and Python bindings.
+   Default dependencies of the ``ipc::toolkit`` library. Edge colour is the link scope; a dashed edge marks an optional dependency, enabled by default but controlled by an ``IPC_TOOLKIT_WITH_*`` CMake option. Dependencies that are off by default are omitted. Excludes CUDA and Python bindings.
 
 The IPC Toolkit depends on a handful of third-party libraries, which are used to provide various functionality.
 
@@ -119,6 +119,11 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - ``IPC_TOOLKIT_WITH_INEXACT_CCD``
 
 Some of these libraries are enabled by default, and some are not. You can enable or disable them by passing the appropriate CMake option when you configure the IPC Toolkit build.
+
+.. warning::
+    ``xsimd`` is linked **publicly**, and the detected SIMD flags (``SIMD_CXX_FLAGS``, typically ``-march=native``) are applied publicly to anything linking ``ipc::toolkit``. This is a requirement rather than a convenience: ``ipc/utils/simd.hpp`` exposes ``ipc::SimdBatch<T>`` in the public API, and ``xsimd::default_arch`` is resolved from each translation unit's *own* compiler flags. A consumer compiled without these flags therefore names a different batch type than the one instantiated inside the library, and the link fails.
+
+    The practical consequence is that your binaries are compiled for the machine that built them and will not run on hardware lacking those instructions. If you need portable binaries, set ``IPC_TOOLKIT_WITH_SIMD`` to ``OFF``; the library then builds without ``xsimd`` and without the architecture flags.
 
 .. note::
     ``MeshFEMSparse`` (and its transitive dependency ``MeshFEMCore``) is downloaded source-only and compiled into a minimal static library (matrix data structures and assembly routines; no sparse direct solvers). When enabled (the default), :cpp:func:`ipc::Potential::hessian` assembles through the block-CSC backend — several times faster than the triplet-based assembly, with identical results up to floating-point summation order — and a :cpp:class:`ipc::MeshFEMHessianAssembler` held across :cpp:func:`ipc::Potential::assemble_hessian` calls additionally reuses the sparsity pattern between assemblies. It requires ``IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT=RowMajor`` (the default; the option is automatically disabled otherwise).
