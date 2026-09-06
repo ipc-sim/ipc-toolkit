@@ -183,7 +183,7 @@ MatrixMax<T, 27, 9> point_line_normal_hessian(
 
     const VectorMax3<T> z = point_line_unnormalized_normal(p, e0, e1);
     const T z_norm2 = z.squaredNorm();
-    const T z_norm = ipc::sqrt(z_norm2);
+    const T z_norm = ipc::numext::sqrt(z_norm2);
     const T z_norm3 = z_norm2 * z_norm;
 
     const int DIM = z.size(); // dimension (2 or 3)
@@ -270,7 +270,7 @@ Eigen::Matrix<T, 27, 9> triangle_normal_hessian(
 {
     const Eigen::Vector3<T> z = triangle_unnormalized_normal(a, b, c);
     const T z_norm2 = z.squaredNorm();
-    const T z_norm = ipc::sqrt(z_norm2);
+    const T z_norm = ipc::numext::sqrt(z_norm2);
     const T z_norm3 = z_norm2 * z_norm;
 
     const auto dz_dx = triangle_unnormalized_normal_jacobian(a, b, c);
@@ -349,7 +349,7 @@ Eigen::Matrix<T, 36, 12> line_line_normal_hessian(
     const Eigen::Vector3<T> z =
         line_line_unnormalized_normal(ea0, ea1, eb0, eb1);
     const T z_norm2 = z.squaredNorm();
-    const T z_norm = ipc::sqrt(z_norm2);
+    const T z_norm = ipc::numext::sqrt(z_norm2);
     const T z_norm3 = z_norm2 * z_norm;
 
     const Eigen::Matrix<T, 3, 12> dz_dx =

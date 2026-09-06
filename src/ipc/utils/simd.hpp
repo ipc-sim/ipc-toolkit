@@ -216,7 +216,7 @@ normalized(const Eigen::MatrixBase<Derived>& v)
     if constexpr (is_simd_batch_v<T>) {
         const typename Derived::PlainObject n = v.derived();
         const T z = n.squaredNorm();
-        const typename Derived::PlainObject scaled = n / ipc::sqrt(z);
+        const typename Derived::PlainObject scaled = n / ipc::numext::sqrt(z);
         const auto is_nonzero = z > T(0);
 
         typename Derived::PlainObject out = n;

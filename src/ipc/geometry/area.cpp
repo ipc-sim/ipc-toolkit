@@ -32,7 +32,7 @@ void triangle_area_gradient(
     const T t11 = t0_z - t1_z;
     const T t12 = t10 * t2 - t11 * t5;
     const T t13 = t10 * t6 - t11 * t3;
-    const T t14 = T(0.5) / ipc::sqrt(t12 * t12 + t13 * t13 + t7 * t7);
+    const T t14 = T(0.5) / ipc::numext::sqrt(t12 * t12 + t13 * t13 + t7 * t7);
     const T t15 = t1_x + t4;
     dA[0] = t14 * (t1 * t7 + t12 * t9);
     dA[1] = -t14 * (-t13 * t9 + t15 * t7);

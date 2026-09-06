@@ -52,7 +52,7 @@ T dihedral_angle(
     const T sin_theta = n0.cross(n1).dot(e);
     const T cos_theta = n0.dot(n1);
 
-    return ipc::atan2(sin_theta, cos_theta);
+    return ipc::numext::atan2(sin_theta, cos_theta);
 }
 
 template <typename T>

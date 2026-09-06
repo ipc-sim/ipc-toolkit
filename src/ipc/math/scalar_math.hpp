@@ -16,7 +16,17 @@
 
 namespace ipc {
 
-/// @brief Define `ipc::FUNC` forwarding its arguments to the `std` counterpart.
+/// @brief Portable forwarders to the `std` math functions.
+///
+/// These live in their own namespace, following `Eigen::numext`, because they
+/// carry the most collision-prone names in C++: at `ipc` scope they join the
+/// overload set of anyone writing `using namespace ipc;`, where `ipc::abs` was
+/// found to hijack Eigen's array `abs`. They are mechanism rather than API --
+/// each exists only so a template can reach `xsimd::`/autodiff overloads by
+/// ADL -- so callers should say `numext::sqrt` explicitly.
+namespace numext {
+
+/// @brief Define `ipc::numext::FUNC` forwarding to the `std` counterpart.
 #define IPC_TOOLKIT_DEFINE_STD(FUNC)                                           \
     template <                                                                 \
         typename T, typename... Ts,                                            \
@@ -27,14 +37,16 @@ namespace ipc {
         return FUNC(x, rest...);                                               \
     }
 
-IPC_TOOLKIT_DEFINE_STD(abs)
-IPC_TOOLKIT_DEFINE_STD(atan2)
-IPC_TOOLKIT_DEFINE_STD(fma)
-IPC_TOOLKIT_DEFINE_STD(log)
-IPC_TOOLKIT_DEFINE_STD(sqrt)
+    IPC_TOOLKIT_DEFINE_STD(abs)
+    IPC_TOOLKIT_DEFINE_STD(atan2)
+    IPC_TOOLKIT_DEFINE_STD(fma)
+    IPC_TOOLKIT_DEFINE_STD(log)
+    IPC_TOOLKIT_DEFINE_STD(sqrt)
 
 // This is a public header, so the macro does not outlive its use here.
 #undef IPC_TOOLKIT_DEFINE_STD
+
+} // namespace numext
 
 constexpr double MOLLIFIER_THRESHOLD_EPS = 1e-2;
 

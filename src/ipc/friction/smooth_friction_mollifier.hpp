@@ -38,7 +38,7 @@ template <typename T> inline T smooth_friction_f0(const T y, const T eps_v)
 {
     assert(all_of(eps_v > T(0)));
     return select_lazy(
-        ipc::abs(y) >= eps_v, [&] { return y; },
+        ipc::numext::abs(y) >= eps_v, [&] { return y; },
         [&] {
             return y * y * (T(1) - y / (T(3) * eps_v)) / eps_v + eps_v / T(3);
         });
@@ -61,7 +61,7 @@ template <typename T> inline T smooth_friction_f1(const T y, const T eps_v)
 {
     assert(all_of(eps_v > T(0)));
     return select_lazy(
-        ipc::abs(y) >= eps_v, [&] { return T(1); },
+        ipc::numext::abs(y) >= eps_v, [&] { return T(1); },
         [&] {
             const T y_over_eps_v = y / eps_v;
             return y_over_eps_v * (T(2) - y_over_eps_v);
@@ -85,7 +85,7 @@ template <typename T> inline T smooth_friction_f2(const T y, const T eps_v)
 {
     assert(all_of(eps_v > T(0)));
     return select_lazy(
-        ipc::abs(y) >= eps_v, [&] { return T(0); },
+        ipc::numext::abs(y) >= eps_v, [&] { return T(0); },
         [&] { return (T(2) - T(2) * y / eps_v) / eps_v; });
 }
 
@@ -108,7 +108,7 @@ inline T smooth_friction_f1_over_x(const T y, const T eps_v)
 {
     assert(all_of(eps_v > T(0)));
     return select_lazy(
-        ipc::abs(y) >= eps_v, [&] { return T(1) / y; },
+        ipc::numext::abs(y) >= eps_v, [&] { return T(1) / y; },
         [&] { return (T(2) - y / eps_v) / eps_v; });
 }
 
@@ -131,7 +131,7 @@ inline T smooth_friction_f2_x_minus_f1_over_x3(const T y, const T eps_v)
 {
     assert(all_of(eps_v > T(0)));
     return select_lazy(
-        ipc::abs(y) >= eps_v, [&] { return T(-1) / (y * y * y); },
+        ipc::numext::abs(y) >= eps_v, [&] { return T(-1) / (y * y * y); },
         [&] { return T(-1) / (y * eps_v * eps_v); });
 }
 

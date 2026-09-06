@@ -31,7 +31,7 @@ template <typename T>
 inline T smooth_mu(const T y, const T mu_s, const T mu_k, const T eps_v)
 {
     assert(all_of(eps_v > T(0)));
-    const T abs_y = ipc::abs(y);
+    const T abs_y = ipc::numext::abs(y);
     const T z = abs_y / eps_v;
     return select_lazy(
         mu_s == mu_k || abs_y >= eps_v, [&] { return mu_k; },
@@ -52,7 +52,7 @@ inline T
 smooth_mu_derivative(const T y, const T mu_s, const T mu_k, const T eps_v)
 {
     assert(all_of(eps_v > T(0)));
-    const T abs_y = ipc::abs(y);
+    const T abs_y = ipc::numext::abs(y);
     const T z = abs_y / eps_v;
     return select_lazy(
         mu_s == mu_k || abs_y >= eps_v, [&] { return T(0); },
@@ -72,7 +72,7 @@ template <typename T>
 inline T smooth_mu_f0(const T y, const T mu_s, const T mu_k, const T eps_v)
 {
     assert(all_of(eps_v > T(0)));
-    const T abs_y = ipc::abs(y);
+    const T abs_y = ipc::numext::abs(y);
     const T delta_mu = mu_k - mu_s;
     const T z = abs_y / eps_v;
     return select_lazy(
@@ -160,7 +160,7 @@ inline T smooth_mu_f2_x_minus_mu_f1_over_x3(
     const T y, const T mu_s, const T mu_k, const T eps_v)
 {
     assert(all_of(eps_v > T(0)));
-    const T abs_y = ipc::abs(y);
+    const T abs_y = ipc::numext::abs(y);
     const T delta_mu = mu_k - mu_s;
     const T z = T(1) / eps_v;
     return select_lazy(

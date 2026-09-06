@@ -17,7 +17,7 @@ template <typename T> struct Math {
 
     // NOTE: Define these in the class definition to allow inlining
     static double sign(const double x) { return x >= 0 ? 1.0 : -1.0; }
-    static T abs(const T& x) { return ipc::abs(x); }
+    static T abs(const T& x) { return ipc::numext::abs(x); }
     static T sqr(const T& x) { return ipc::sqr(x); }
     static T cubic(const T& x) { return ipc::cubic(x); }
 

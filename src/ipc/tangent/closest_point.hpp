@@ -189,8 +189,8 @@ namespace detail {
         // `x * y + z`; `bc_err` is then zero and this degrades to the naive
         // expression rather than misbehaving.
         const T bc = A(0, 1) * A(1, 0);
-        const T bc_err = ipc::fma(A(0, 1), A(1, 0), -bc);
-        const T det = ipc::fma(A(0, 0), A(1, 1), -bc) - bc_err;
+        const T bc_err = ipc::numext::fma(A(0, 1), A(1, 0), -bc);
+        const T det = ipc::numext::fma(A(0, 0), A(1, 1), -bc) - bc_err;
         const auto is_nonsingular = det > T(0);
         const T inv_det = select(is_nonsingular, T(1) / det, T(0));
         const Eigen::Vector2<T> x(
