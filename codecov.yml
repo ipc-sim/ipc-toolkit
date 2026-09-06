@@ -10,4 +10,7 @@ coverage:
         threshold: 5%
         only_pulls: true
 ignore:
-  - "tests/*"
+  # "**" so this reaches the whole tree: a single "*" does not cross a "/", so
+  # "tests/*" only ever matched files sitting directly in tests/, leaving
+  # everything under tests/src/tests/ reported.
+  - "tests/**"
