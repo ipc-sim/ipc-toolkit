@@ -121,8 +121,8 @@
 <!-- node5&#45;&gt;node15 -->
 <g id="edge11" class="edge">
 <title>node5&#45;&gt;node15</title>
-<path fill="none" stroke="#be6562" stroke-width="2" d="M1296.53,-376C1349.57,-376 1415,-376 1415,-376 1415,-376 1415,-285.47 1415,-285.47"/>
-<polygon fill="#be6562" stroke="#be6562" stroke-width="2" points="1418.5,-285.47 1415,-275.47 1411.5,-285.47 1418.5,-285.47"/>
+<path fill="none" stroke="#8fb976" stroke-width="2" d="M1296.53,-376C1349.57,-376 1415,-376 1415,-376 1415,-376 1415,-285.47 1415,-285.47"/>
+<polygon fill="#8fb976" stroke="#8fb976" stroke-width="2" points="1418.5,-285.47 1415,-275.47 1411.5,-285.47 1418.5,-285.47"/>
 </g>
 <!-- node6 -->
 <g id="node11" class="node">
