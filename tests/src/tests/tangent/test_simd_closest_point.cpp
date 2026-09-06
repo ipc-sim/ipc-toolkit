@@ -30,6 +30,22 @@ EdgePair crossing_edges(const double theta)
              Eigen::Vector3d(std::cos(theta), std::sin(theta), -0.5) };
 }
 
+/// @brief Two exactly parallel edges, separated in z and slid past each other
+/// along their shared direction by `shift`.
+///
+/// Parallel is what makes the 2x2 Gram matrix singular. The shift is what
+/// makes the case worth testing: without it the offset between the edges is
+/// perpendicular to both, the right-hand side comes out exactly zero, and a
+/// lane that was wrongly solved rather than zeroed would still leave no
+/// residual to catch. Sliding the edges gives that lane a residual of order
+/// ‖b‖, so the singular path has to actually be taken.
+EdgePair parallel_edges(const double shift)
+{
+    return { Eigen::Vector3d(-1, 0, 0), Eigen::Vector3d(1, 0, 0),
+             Eigen::Vector3d(-1 + shift, 0, -0.5),
+             Eigen::Vector3d(1 + shift, 0, -0.5) };
+}
+
 } // namespace
 
 TEST_CASE(
@@ -109,6 +125,48 @@ TEST_CASE(
             return edge_edge_closest_point(EA0[l], EA1[l], EB0[l], EB1[l])
                 .eval();
         });
+}
+
+TEST_CASE(
+    "A singular lane is zeroed without disturbing the lanes beside it",
+    "[closest_point][simd]")
+{
+    // theta = 0 stands for a parallel pair, whose Gram matrix is singular, so
+    // the solve zeroes that lane instead of dividing by the determinant. Every
+    // offset below mixes such a lane with a well conditioned one, which is the
+    // case a single batch has to answer two ways at once: zero one lane, solve
+    // the other, and hold the residual check to the solved lane only.
+    constexpr std::array<double, 4> THETAS = { { 0.0, 1.0, 0.0, 0.1 } };
+    const int offset = GENERATE(range(0, 4));
+
+    const Lanes thetas = lane_cases(THETAS, offset);
+
+    Points<3> EA0, EA1, EB0, EB1;
+    for (int l = 0; l < L; ++l) {
+        const EdgePair e =
+            thetas[l] == 0.0 ? parallel_edges(0.75) : crossing_edges(thetas[l]);
+        EA0[l] = e.ea0, EA1[l] = e.ea1, EB0[l] = e.eb0, EB1[l] = e.eb1;
+    }
+
+    const Eigen::Vector2<Batch> coords =
+        edge_edge_closest_point(pack(EA0), pack(EA1), pack(EB0), pack(EB1));
+
+    check_lanes("coordinates", coords, [&](int l) {
+        return edge_edge_closest_point(EA0[l], EA1[l], EB0[l], EB1[l]).eval();
+    });
+
+    // Pin down which lanes were the degenerate ones. Without this the check
+    // above would still pass if the batch and the scalar path agreed on some
+    // other answer for a parallel pair.
+    for (int l = 0; l < L; ++l) {
+        CAPTURE(l, thetas[l]);
+        if (thetas[l] == 0.0) {
+            CHECK(coords[0].get(l) == 0.0);
+            CHECK(coords[1].get(l) == 0.0);
+        } else {
+            CHECK(coords[0].get(l) != 0.0);
+        }
+    }
 }
 
 #endif
