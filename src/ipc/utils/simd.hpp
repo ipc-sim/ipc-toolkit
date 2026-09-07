@@ -125,7 +125,7 @@ select_lazy(const Mask& mask, F&& value, Rest&&... rest)
 
 } // namespace ipc
 
-#ifdef IPC_TOOLKIT_WITH_SIMD
+#if defined(IPC_TOOLKIT_WITH_SIMD) && !defined(__CUDACC__)
 
 namespace Eigen {
 
