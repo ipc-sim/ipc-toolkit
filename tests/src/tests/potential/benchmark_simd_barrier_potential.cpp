@@ -1,7 +1,8 @@
 // Per-collision barrier potential (value, gradient, Hessian) evaluated with
 // four scalar types -- double, float, SimdBatch<double>, SimdBatch<float> --
-// on the same collision set, so the four are compared on identical work. Runs
-// on every scene in `assembly_scene_specs()` that is available, except the two
+// on the same collision set, so the four are compared on identical work, plus
+// the same chain on a CUDA device when the library is built with it. Runs on
+// every scene in `assembly_scene_specs()` that is available, except the two
 // smallest.
 //
 // The chain each variant evaluates is the one `NormalPotential` uses:
@@ -22,6 +23,15 @@
 // derivatives are identical, which is what the check against the library path
 // relies on.
 //
+// The CUDA variants (`cuda<double>`, `cuda<float>`) evaluate the identical
+// chain with one thread per collision, out of the identical packed buffers --
+// only packed 32 collisions to a block instead of the CPU's lane count, so a
+// warp's reads coalesce. They are timed kernel-only, on inputs already
+// resident on the device; the upload and download costs are reported
+// separately below the table. A GPU has no single-threaded mode, so those
+// cells appear in the parallel table alone. See
+// benchmark_cuda_barrier_potential.cu.
+//
 // The float variants come in two flavours. "float" converts the scene's
 // coordinates as they are. "float (rescaled)" first re-centers each stencil
 // on its centroid and divides by d̂, in double, so a float sees O(1) numbers:
@@ -34,10 +44,13 @@
 //
 // Environment:
 //   IPC_TOOLKIT_BENCH_SAMPLES  number of timed runs per cell (default 5)
+//   IPC_TOOLKIT_BENCH_CUDA_BLOCK  threads per block for the CUDA variants
+//                              (default 64; see block_size() for why not 256)
 //   IPC_TOOLKIT_BENCH_OUTPUT   write the results as JSON to this path (one
 //                              report per scene under "scenes")
 
 #include "assembly_scene.hpp"
+#include "barrier_potential_bench.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -67,6 +80,7 @@
 #include <vector>
 
 using namespace ipc;
+using namespace ipc::tests::bench;
 
 namespace {
 
@@ -122,115 +136,16 @@ template <typename T> std::string variant_name(const bool rescaled)
     return rescaled ? name + " (rescaled)" : name;
 }
 
-// -- Collision kinds ----------------------------------------------------------
-
-enum class Kind : uint8_t { VV, EV, EE, FV };
-
-constexpr int num_vertices(const Kind k)
+#ifdef IPC_TOOLKIT_WITH_CUDA
+/// @brief The name of a CUDA variant. Its lane count is not part of it: 32 is
+/// the warp the layout is packed for, not a width the arithmetic sees.
+template <typename R> std::string cuda_variant_name(const bool rescaled)
 {
-    switch (k) {
-    case Kind::VV:
-        return 2;
-    case Kind::EV:
-        return 3;
-    default:
-        return 4;
-    }
+    const std::string name =
+        fmt::format("cuda<{}>", std::is_same_v<R, float> ? "float" : "double");
+    return rescaled ? name + " (rescaled)" : name;
 }
-
-const char* kind_name(const Kind k)
-{
-    switch (k) {
-    case Kind::VV:
-        return "vertex-vertex";
-    case Kind::EV:
-        return "edge-vertex";
-    case Kind::EE:
-        return "edge-edge";
-    default:
-        return "face-vertex";
-    }
-}
-
-/// @brief The distance query for a kind, for any scalar `T`.
-template <typename T, Kind K> struct Stencil;
-
-template <typename T> struct Stencil<T, Kind::VV> {
-    static constexpr int NV = 2;
-    using V = Eigen::Vector3<T>;
-    static T distance(const V* x, int /*dtype*/)
-    {
-        return point_point_distance(x[0], x[1]);
-    }
-    static Eigen::Vector<T, 6> gradient(const V* x, int /*dtype*/)
-    {
-        return point_point_distance_gradient(x[0], x[1]);
-    }
-    static Eigen::Matrix<T, 6, 6> hessian(const V* x, int /*dtype*/)
-    {
-        return point_point_distance_hessian(x[0], x[1]);
-    }
-};
-
-template <typename T> struct Stencil<T, Kind::EV> {
-    static constexpr int NV = 3;
-    using V = Eigen::Vector3<T>;
-    static T distance(const V* x, int dtype)
-    {
-        return point_edge_distance(
-            x[0], x[1], x[2], PointEdgeDistanceType(dtype));
-    }
-    static Eigen::Vector<T, 9> gradient(const V* x, int dtype)
-    {
-        return point_edge_distance_gradient(
-            x[0], x[1], x[2], PointEdgeDistanceType(dtype));
-    }
-    static Eigen::Matrix<T, 9, 9> hessian(const V* x, int dtype)
-    {
-        return point_edge_distance_hessian(
-            x[0], x[1], x[2], PointEdgeDistanceType(dtype));
-    }
-};
-
-template <typename T> struct Stencil<T, Kind::EE> {
-    static constexpr int NV = 4;
-    using V = Eigen::Vector3<T>;
-    static T distance(const V* x, int dtype)
-    {
-        return edge_edge_distance(
-            x[0], x[1], x[2], x[3], EdgeEdgeDistanceType(dtype));
-    }
-    static Eigen::Vector<T, 12> gradient(const V* x, int dtype)
-    {
-        return edge_edge_distance_gradient(
-            x[0], x[1], x[2], x[3], EdgeEdgeDistanceType(dtype));
-    }
-    static Eigen::Matrix<T, 12, 12> hessian(const V* x, int dtype)
-    {
-        return edge_edge_distance_hessian(
-            x[0], x[1], x[2], x[3], EdgeEdgeDistanceType(dtype));
-    }
-};
-
-template <typename T> struct Stencil<T, Kind::FV> {
-    static constexpr int NV = 4;
-    using V = Eigen::Vector3<T>;
-    static T distance(const V* x, int dtype)
-    {
-        return point_triangle_distance(
-            x[0], x[1], x[2], x[3], PointTriangleDistanceType(dtype));
-    }
-    static Eigen::Vector<T, 12> gradient(const V* x, int dtype)
-    {
-        return point_triangle_distance_gradient(
-            x[0], x[1], x[2], x[3], PointTriangleDistanceType(dtype));
-    }
-    static Eigen::Matrix<T, 12, 12> hessian(const V* x, int dtype)
-    {
-        return point_triangle_distance_hessian(
-            x[0], x[1], x[2], x[3], PointTriangleDistanceType(dtype));
-    }
-};
+#endif
 
 // -- Grouping and packing -----------------------------------------------------
 
@@ -396,30 +311,6 @@ PackedGroup<R> pack_group(
 
 // -- The evaluation loop ------------------------------------------------------
 
-struct Params {
-    double dhat_sqr; ///< The potential is a function of squared distance.
-    double kappa;
-};
-
-enum class Quantity : uint8_t { VALUE, GRADIENT, HESSIAN, HESSIAN_SUM };
-
-const char* quantity_name(const Quantity q)
-{
-    switch (q) {
-    case Quantity::VALUE:
-        return "value";
-    case Quantity::GRADIENT:
-        return "gradient";
-    case Quantity::HESSIAN:
-        return "hessian";
-    default:
-        return "hessian_sum";
-    }
-}
-
-constexpr Quantity QUANTITIES[] = { Quantity::VALUE, Quantity::GRADIENT,
-                                    Quantity::HESSIAN, Quantity::HESSIAN_SUM };
-
 template <typename T, Kind K> struct Evaluator {
     using Tr = ScalarTraits<T>;
     using R = typename Tr::Real;
@@ -583,6 +474,24 @@ double run_group(
     }
 }
 
+/// @brief The parameters in coordinates packed as (x - centroid) / scale.
+///
+/// With x' = (x - c)/s: d'² = d²/s², and since the barrier is homogeneous,
+/// b(d'², d̂²/s²) = b(d², d̂²)/s⁴. Its first derivative wrt d² picks up a
+/// further s², ∇ₓ' a further s, so the value, gradient, and Hessian are s⁴,
+/// s³, and s² too small; folding those into κ recovers them exactly.
+Params effective_params(const Params& p, const Quantity q, const double scale)
+{
+    if (scale == 1.0) {
+        return p;
+    }
+    const double s = scale;
+    const double kappa_scale = q == Quantity::VALUE ? s * s * s * s
+        : q == Quantity::GRADIENT                   ? s * s * s
+                                                    : s * s;
+    return Params { p.dhat_sqr / (s * s), p.kappa * kappa_scale };
+}
+
 /// @brief All groups packed for one scalar type, plus its outputs.
 template <typename T> struct Variant {
     using Tr = ScalarTraits<T>;
@@ -614,27 +523,9 @@ template <typename T> struct Variant {
         }
     }
 
-    /// @brief The parameters in the packed coordinates.
-    ///
-    /// With x' = (x - c)/s: d'² = d²/s², and since the barrier is homogeneous,
-    /// b(d'², d̂²/s²) = b(d², d̂²)/s⁴. Its first derivative wrt d² picks up a
-    /// further s², ∇ₓ' a further s, so the value, gradient, and Hessian are
-    /// s⁴, s³, and s² too small; folding those into κ recovers them exactly.
-    Params effective(const Params& p, const Quantity q) const
-    {
-        if (scale == 1.0) {
-            return p;
-        }
-        const double s = scale;
-        const double kappa_scale = q == Quantity::VALUE ? s * s * s * s
-            : q == Quantity::GRADIENT                   ? s * s * s
-                                                        : s * s;
-        return Params { p.dhat_sqr / (s * s), p.kappa * kappa_scale };
-    }
-
     double run(const Params& params, const Quantity q, const bool parallel)
     {
-        const Params p = effective(params, q);
+        const Params p = effective_params(params, q, scale);
         double total = 0;
         for (PackedGroup<R>& g : groups) {
             if (!parallel) {
@@ -654,6 +545,82 @@ template <typename T> struct Variant {
         return total;
     }
 };
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+
+/// @brief The CUDA counterpart of `Variant`: the same groups, packed at
+/// `CUDA_LANES` and uploaded once, evaluated by one thread per collision.
+///
+/// The host-side `groups` are kept so the device outputs can be copied back
+/// into the very same layout `grad_at`/`hess_at` read, which is what lets the
+/// accuracy check compare a GPU result against the scalar-double reference
+/// without knowing where it came from.
+template <typename R> struct CudaVariant {
+    /// @brief Coordinates are stored as (x - centroid) / scale.
+    double scale = 1.0;
+    std::vector<PackedGroup<R>> groups;
+    std::vector<CudaGroup<R>> device_groups;
+    double upload_seconds = 0;
+    double download_seconds = 0;
+
+    void pack(
+        const std::vector<GroupSpec>& specs,
+        const ipc::tests::AssemblyScene& scene)
+    {
+        // Freeing first keeps only one variant's buffers resident at a time:
+        // the largest scene's double Hessian alone is ~590 MB.
+        device_groups.clear();
+        groups.clear();
+        upload_seconds = 0;
+        device_groups.reserve(specs.size());
+        for (const GroupSpec& spec : specs) {
+            groups.push_back(pack_group<R>(spec, CUDA_LANES, scene, scale));
+            const PackedGroup<R>& g = groups.back();
+            device_groups.emplace_back(
+                g.kind, g.dtype, g.n, g.x.data(), g.w.data());
+            upload_seconds += device_groups.back().upload_seconds();
+        }
+    }
+
+    void allocate_outputs(const Quantity q)
+    {
+        for (CudaGroup<R>& g : device_groups) {
+            g.allocate_outputs(q);
+        }
+    }
+
+    double run(const Params& params, const Quantity q)
+    {
+        const Params p = effective_params(params, q, scale);
+        double total = 0;
+        for (CudaGroup<R>& g : device_groups) {
+            total += g.run(p, q);
+        }
+        return total;
+    }
+
+    /// @brief Bring the outputs of `q` back so the accuracy check can read
+    /// them. Never inside a timed run.
+    void download(const Quantity q)
+    {
+        download_seconds = 0;
+        for (size_t i = 0; i < groups.size(); i++) {
+            PackedGroup<R>& g = groups[i];
+            const size_t per_block = size_t(g.ndof()) * g.lanes;
+            if (q == Quantity::GRADIENT) {
+                g.grad_out.assign(g.nblocks * per_block, R(0));
+                download_seconds +=
+                    device_groups[i].download(q, g.grad_out.data());
+            } else if (q == Quantity::HESSIAN) {
+                g.hess_out.assign(g.nblocks * per_block * g.ndof(), R(0));
+                download_seconds +=
+                    device_groups[i].download(q, g.hess_out.data());
+            }
+        }
+    }
+};
+
+#endif
 
 // -- Timing -------------------------------------------------------------------
 
@@ -827,6 +794,9 @@ struct Cell {
     Quantity quantity;
     bool parallel;
     Timing timing;
+    /// @brief "cpu" or "gpu". A GPU cell is tagged parallel because it has no
+    /// single-threaded counterpart to put in the other table.
+    const char* device = "cpu";
 };
 
 struct Report {
@@ -836,8 +806,12 @@ struct Report {
     size_t num_mollified_ee = 0;
     int num_samples = 0;
     int num_threads = 1;
+    /// @brief CUDA device 0's name, empty if no GPU variant ran.
+    std::string device_name;
     std::vector<Cell> cells;
     std::vector<std::pair<std::string, double>> pack_seconds;
+    /// @brief Host/device copies, which the GPU timings deliberately exclude.
+    std::vector<std::pair<std::string, double>> transfer_seconds;
     std::vector<std::pair<std::string, Accuracy>> accuracy;
     std::string reference_check;
 
@@ -851,6 +825,7 @@ struct Report {
         fmt::format_to(f, "  \"num_mollified_ee\": {},\n", num_mollified_ee);
         fmt::format_to(f, "  \"num_samples\": {},\n", num_samples);
         fmt::format_to(f, "  \"num_threads\": {},\n", num_threads);
+        fmt::format_to(f, "  \"device_name\": \"{}\",\n", device_name);
         fmt::format_to(f, "  \"composition\": {{");
         for (size_t i = 0; i < composition.size(); i++) {
             fmt::format_to(
@@ -862,6 +837,12 @@ struct Report {
             fmt::format_to(
                 f, "{}\"{}\": {:.9g}", i ? ", " : "", pack_seconds[i].first,
                 pack_seconds[i].second);
+        }
+        fmt::format_to(f, "}},\n  \"transfer_seconds\": {{");
+        for (size_t i = 0; i < transfer_seconds.size(); i++) {
+            fmt::format_to(
+                f, "{}\"{}\": {:.9g}", i ? ", " : "", transfer_seconds[i].first,
+                transfer_seconds[i].second);
         }
         fmt::format_to(f, "}},\n  \"accuracy\": {{\n");
         for (size_t i = 0; i < accuracy.size(); i++) {
@@ -890,16 +871,56 @@ struct Report {
             fmt::format_to(
                 f,
                 "    {{\"variant\": \"{}\", \"quantity\": \"{}\", "
-                "\"parallel\": {}, \"median_s\": {:.9g}, \"min_s\": {:.9g}}}{}"
-                "\n",
+                "\"parallel\": {}, \"device\": \"{}\", "
+                "\"median_s\": {:.9g}, \"min_s\": {:.9g}}}{}\n",
                 c.variant, quantity_name(c.quantity),
-                c.parallel ? "true" : "false", c.timing.median_s,
+                c.parallel ? "true" : "false", c.device, c.timing.median_s,
                 c.timing.min_s, i + 1 < cells.size() ? "," : "");
         }
         fmt::format_to(f, "  ]\n}}");
         return fmt::to_string(buf);
     }
 };
+
+/// @brief Fold one quantity's outputs into `acc`, against the reference.
+template <typename R>
+void record_accuracy(
+    const std::vector<PackedGroup<R>>& got,
+    const Variant<double>& reference,
+    const Quantity q,
+    Accuracy& acc,
+    std::vector<size_t>& bad_by_group)
+{
+    std::vector<double> rel;
+    for (size_t i = 0; i < got.size(); i++) {
+        bad_by_group[i] += compare_outputs(
+            got[i], reference.groups[i], q, rel, acc.non_finite);
+    }
+    const double max_rel =
+        rel.empty() ? 0 : *std::max_element(rel.begin(), rel.end());
+    const double median_rel = median_of(rel);
+    if (q == Quantity::GRADIENT) {
+        acc.grad_max_rel = max_rel;
+        acc.grad_median_rel = median_rel;
+    } else {
+        acc.hess_max_rel = max_rel;
+        acc.hess_median_rel = median_rel;
+    }
+}
+
+/// @brief Name the groups that produced a non-finite entry.
+void record_non_finite_groups(
+    const std::vector<GroupSpec>& specs,
+    const std::vector<size_t>& bad_by_group,
+    Accuracy& acc)
+{
+    for (size_t i = 0; i < specs.size(); i++) {
+        if (bad_by_group[i] > 0) {
+            acc.non_finite_by_group.emplace_back(
+                specs[i].name(), bad_by_group[i]);
+        }
+    }
+}
 
 /// @brief Time and check one scalar type; append to the report.
 template <typename T>
@@ -936,33 +957,67 @@ void bench_variant(
                 const double ref_value = reference.run(params, q, false);
                 acc.value_rel = relative_error(value, ref_value);
             } else if (q != Quantity::HESSIAN_SUM) {
-                std::vector<double> rel;
-                for (size_t i = 0; i < variant.groups.size(); i++) {
-                    bad_by_group[i] += compare_outputs(
-                        variant.groups[i], reference.groups[i], q, rel,
-                        acc.non_finite);
-                }
-                const double max_rel =
-                    rel.empty() ? 0 : *std::max_element(rel.begin(), rel.end());
-                const double median_rel = median_of(rel);
-                if (q == Quantity::GRADIENT) {
-                    acc.grad_max_rel = max_rel;
-                    acc.grad_median_rel = median_rel;
-                } else {
-                    acc.hess_max_rel = max_rel;
-                    acc.hess_median_rel = median_rel;
-                }
+                record_accuracy(
+                    variant.groups, reference, q, acc, bad_by_group);
             }
         }
     }
-    for (size_t i = 0; i < specs.size(); i++) {
-        if (bad_by_group[i] > 0) {
-            acc.non_finite_by_group.emplace_back(
-                specs[i].name(), bad_by_group[i]);
-        }
-    }
+    record_non_finite_groups(specs, bad_by_group, acc);
     report.accuracy.emplace_back(name, acc);
 }
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+
+/// @brief Time and check one CUDA scalar type; append to the report.
+///
+/// Only parallel cells: a GPU has no single-threaded mode. The timed region
+/// is the launch plus the wait for the device to go idle -- the inputs are
+/// already resident, and the outputs stay there. Upload and download are
+/// measured too, but reported next to the packing times rather than folded
+/// into a cell, since a simulator holding its state on the device pays them
+/// once per collision set, not once per evaluation.
+template <typename R>
+void bench_cuda_variant(
+    const ipc::tests::AssemblyScene& scene,
+    const std::vector<GroupSpec>& specs,
+    const Params& params,
+    Variant<double>& reference,
+    Report& report,
+    CudaVariant<R>& variant)
+{
+    const std::string name = cuda_variant_name<R>(variant.scale != 1.0);
+
+    const Timing pack_time = time_runs([&] { variant.pack(specs, scene); }, 1);
+    report.pack_seconds.emplace_back(name, pack_time.median_s);
+    report.transfer_seconds.emplace_back(
+        name + " upload", variant.upload_seconds);
+
+    Accuracy acc;
+    std::vector<size_t> bad_by_group(specs.size(), 0);
+    for (const Quantity q : QUANTITIES) {
+        variant.allocate_outputs(q);
+        // Warm-up: the first launch of a kernel pays its module load.
+        double value = variant.run(params, q);
+        const Timing t = time_runs(
+            [&] { value = variant.run(params, q); }, report.num_samples);
+        report.cells.push_back(Cell { name, q, true, t, "gpu" });
+
+        if (q == Quantity::VALUE) {
+            const double ref_value = reference.run(params, q, false);
+            acc.value_rel = relative_error(value, ref_value);
+        } else if (q != Quantity::HESSIAN_SUM) {
+            variant.download(q);
+            report.transfer_seconds.emplace_back(
+                fmt::format("{} download ({})", name, quantity_name(q)),
+                variant.download_seconds);
+            record_accuracy(variant.groups, reference, q, acc, bad_by_group);
+        }
+    }
+    record_non_finite_groups(specs, bad_by_group, acc);
+    report.accuracy.emplace_back(name, acc);
+}
+
+#endif
 
 /// @brief Check the double path against the library on every collision the
 /// mollifier leaves untouched (m = 1), where the two must agree to rounding.
@@ -1049,8 +1104,15 @@ void print_report(const Report& r)
         r.num_mollified_ee);
     fmt::print(
         "{}\nMedian of {} runs; parallel columns use {} threads. "
-        "\"hess-sum\" evaluates the Hessian without storing it.\n\n",
+        "\"hess-sum\" evaluates the Hessian without storing it.\n",
         r.reference_check, r.num_samples, r.num_threads);
+    if (!r.device_name.empty()) {
+        fmt::print(
+            "The cuda<> rows ran on {} (kernel only, inputs already "
+            "resident) and appear in the parallel table alone.\n",
+            r.device_name);
+    }
+    fmt::print("\n");
 
     const auto find = [&](const std::string& v, Quantity q, bool par) {
         for (const Cell& c : r.cells) {
@@ -1061,16 +1123,24 @@ void print_report(const Report& r)
         return std::numeric_limits<double>::quiet_NaN();
     };
 
-    std::vector<std::string> variants;
-    for (const Cell& c : r.cells) {
-        if (std::find(variants.begin(), variants.end(), c.variant)
-            == variants.end()) {
-            variants.push_back(c.variant);
+    // Built per table: the GPU cells exist only in the parallel one, and a
+    // row of NaNs in the other would read as a measurement rather than an
+    // absence.
+    const auto variants_in = [&](const bool parallel) {
+        std::vector<std::string> variants;
+        for (const Cell& c : r.cells) {
+            if (c.parallel == parallel
+                && std::find(variants.begin(), variants.end(), c.variant)
+                    == variants.end()) {
+                variants.push_back(c.variant);
+            }
         }
-    }
+        return variants;
+    };
 
     const double per = 1e9 / double(r.num_collisions);
     for (const bool parallel : { false, true }) {
+        const std::vector<std::string> variants = variants_in(parallel);
         fmt::print("--- {} ---\n", parallel ? "parallel" : "single-threaded");
         fmt::print("{:<24}", "variant");
         for (const char* h : { "value", "grad", "hess", "hess-sum" }) {
@@ -1108,6 +1178,15 @@ void print_report(const Report& r)
     fmt::print("--- packing (gather into lane layout, once per variant) ---\n");
     for (const auto& [name, s] : r.pack_seconds) {
         fmt::print("{:<24} {:>9.2f} ms\n", name, s * 1e3);
+    }
+
+    if (!r.transfer_seconds.empty()) {
+        fmt::print(
+            "\n--- host/device copies (excluded from the cuda<> "
+            "timings) ---\n");
+        for (const auto& [name, s] : r.transfer_seconds) {
+            fmt::print("{:<42} {:>9.2f} ms\n", name, s * 1e3);
+        }
     }
 
     fmt::print("\n--- accuracy relative to double ---\n");
@@ -1181,6 +1260,27 @@ Report bench_scene(const ipc::tests::AssemblyScene& scene)
         Variant<SimdBatch<float>> v;
         bench(v, 1.0);
         bench(v, dhat);
+    }
+#endif
+#ifdef IPC_TOOLKIT_WITH_CUDA
+    // Each variant is scoped so its device buffers are freed before the next
+    // allocates: the largest scene's double Hessian alone is ~590 MB.
+    if (cuda_device_available()) {
+        report.device_name = cuda_device_name();
+        cuda_initialize();
+        const auto bench_cuda = [&](auto& variant, const double scale) {
+            variant.scale = scale;
+            bench_cuda_variant(scene, groups, params, ref, report, variant);
+        };
+        {
+            CudaVariant<double> v;
+            bench_cuda(v, 1.0);
+        }
+        {
+            CudaVariant<float> v;
+            bench_cuda(v, 1.0);
+            bench_cuda(v, dhat);
+        }
     }
 #endif
 

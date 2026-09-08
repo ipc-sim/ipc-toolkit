@@ -17,6 +17,7 @@ set(SOURCES
   # Utilities
   assembly_scene.cpp
   assembly_scene.hpp
+  barrier_potential_bench.hpp
   synthetic_contact_scene.cpp
   synthetic_contact_scene.hpp
 )
@@ -25,6 +26,7 @@ if(IPC_TOOLKIT_WITH_CUDA)
   list(APPEND SOURCES
     test_gpu_barrier_potential.cu
     test_gpu_psd_projection.cu
+    benchmark_cuda_barrier_potential.cu
   )
 endif()
 
