@@ -45,6 +45,7 @@ template <typename T> inline T edge_edge_mollifier(const T x, const T eps_x)
 template <typename T>
 inline T edge_edge_mollifier_gradient(const T x, const T eps_x)
 {
+    using namespace ipc::numext; // fma
     return select_lazy(
         x < eps_x,
         [&] {
