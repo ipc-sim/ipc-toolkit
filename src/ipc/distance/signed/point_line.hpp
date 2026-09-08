@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/geometry/normal.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -20,7 +21,7 @@ namespace detail {
     /// @return    The signed scalar distance from p to the infinite line through e0 and e1.
     /// @note      The edge must be non-degenerate (e0 != e1).
     template <typename T>
-    inline T point_line_signed_distance(
+    IPC_TOOLKIT_HOST_DEVICE inline T point_line_signed_distance(
         Eigen::ConstRef<Eigen::Vector2<T>> p,
         Eigen::ConstRef<Eigen::Vector2<T>> e0,
         Eigen::ConstRef<Eigen::Vector2<T>> e1)
@@ -41,7 +42,8 @@ namespace detail {
     /// @return    A 6-vector containing the gradient of the signed distance.
     /// @note      The edge must be non-degenerate (e0 != e1).
     template <typename T>
-    inline Eigen::Vector<T, 6> point_line_signed_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 6>
+    point_line_signed_distance_gradient(
         Eigen::ConstRef<Eigen::Vector2<T>> p,
         Eigen::ConstRef<Eigen::Vector2<T>> e0,
         Eigen::ConstRef<Eigen::Vector2<T>> e1)
@@ -70,7 +72,8 @@ namespace detail {
     /// @return    A 6x6 Hessian matrix of the signed distance.
     /// @note      The edge must be non-degenerate (e0 != e1).
     template <typename T>
-    Eigen::Matrix<T, 6, 6> point_line_signed_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 6, 6>
+    point_line_signed_distance_hessian(
         Eigen::ConstRef<Eigen::Vector2<T>> p,
         Eigen::ConstRef<Eigen::Vector2<T>> e0,
         Eigen::ConstRef<Eigen::Vector2<T>> e1);
@@ -90,7 +93,7 @@ namespace detail {
 /// @return    The signed scalar distance from p to the infinite line through e0 and e1.
 /// @note      The edge must be non-degenerate (e0 != e1).
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_signed_distance(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_signed_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -114,7 +117,7 @@ inline auto point_line_signed_distance(
 /// @return    A 6-vector containing the gradient of the signed distance.
 /// @note      The edge must be non-degenerate (e0 != e1).
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_signed_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_signed_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -138,7 +141,7 @@ inline auto point_line_signed_distance_gradient(
 /// @return    A 6x6 Hessian matrix of the signed distance.
 /// @note      The edge must be non-degenerate (e0 != e1).
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_signed_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_signed_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)

@@ -10,12 +10,16 @@
 
 namespace ipc {
 
+// ============================================================================
+// Free barrier functions -- shared between host C++ and CUDA device code.
+// ============================================================================
+//
 // Each barrier is one select_lazy cascade, ordered by increasing d so it
 // reads like the piecewise definition in the header. A scalar evaluates only
 // the case it lands in -- so the log below is never reached for d <= 0 -- while
 // a batch evaluates every case and blends per-lane, earlier cases winning.
 
-template <typename T> T barrier(const T d, const T dhat)
+template <typename T> IPC_TOOLKIT_HOST_DEVICE T barrier(const T d, const T dhat)
 {
     using namespace ipc::numext; // log
     // b(d) = -(d-d̂)²ln(d / d̂)
@@ -25,7 +29,8 @@ template <typename T> T barrier(const T d, const T dhat)
         [&] { return T(0); });
 }
 
-template <typename T> T barrier_first_derivative(const T d, const T dhat)
+template <typename T>
+IPC_TOOLKIT_HOST_DEVICE T barrier_first_derivative(const T d, const T dhat)
 {
     using namespace ipc::numext; // log
     // b(d) = -(d - d̂)²ln(d / d̂)
@@ -39,7 +44,8 @@ template <typename T> T barrier_first_derivative(const T d, const T dhat)
         [&] { return T(0); });
 }
 
-template <typename T> T barrier_second_derivative(const T d, const T dhat)
+template <typename T>
+IPC_TOOLKIT_HOST_DEVICE T barrier_second_derivative(const T d, const T dhat)
 {
     using namespace ipc::numext; // log
     return select_lazy(
@@ -51,8 +57,45 @@ template <typename T> T barrier_second_derivative(const T d, const T dhat)
         },
         [&] { return T(0); });
 }
+// ============================================================================
+// Explicit template instantiations
+/// @cond DOXYGEN_SKIP
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
+template float barrier(const float d, const float dhat);
+template double barrier(const double d, const double dhat);
+template float barrier_first_derivative(const float d, const float dhat);
+template double barrier_first_derivative(const double d, const double dhat);
+template float barrier_second_derivative(const float d, const float dhat);
+template double barrier_second_derivative(const double d, const double dhat);
+#endif
+#ifdef IPC_TOOLKIT_WITH_SIMD
+template SimdBatch<float>
+barrier(const SimdBatch<float> d, const SimdBatch<float> dhat);
+template SimdBatch<double>
+barrier(const SimdBatch<double> d, const SimdBatch<double> dhat);
+template SimdBatch<float>
+barrier_first_derivative(const SimdBatch<float> d, const SimdBatch<float> dhat);
+template SimdBatch<double> barrier_first_derivative(
+    const SimdBatch<double> d, const SimdBatch<double> dhat);
+template SimdBatch<float> barrier_second_derivative(
+    const SimdBatch<float> d, const SimdBatch<float> dhat);
+template SimdBatch<double> barrier_second_derivative(
+    const SimdBatch<double> d, const SimdBatch<double> dhat);
+#endif
+/// @endcond
 
 // ============================================================================
+// Barrier class hierarchy -- host only.
+// ============================================================================
+//
+// The classes are a virtual dispatch layer over the free functions above, and
+// virtual dispatch cannot cross the host/device boundary: a vtable built on the
+// host holds host code addresses, CUDA forbids passing an object of a class
+// with virtual functions to a __global__ function, and BarrierPotential owns
+// its barrier through a host-only std::shared_ptr. Skipping the hierarchy in
+// the device pass also keeps every class symbol -- including the float and
+// double ones -- in the host object, so each is emitted exactly once.
+#ifndef __CUDACC__
 
 template <typename T>
 T ClampedLogSqBarrier<T>::operator()(const T d, const T dhat) const
@@ -181,12 +224,6 @@ template class CubicBarrier<float>;
 template class CubicBarrier<double>;
 template class TwoStageBarrier<float>;
 template class TwoStageBarrier<double>;
-template float barrier(const float d, const float dhat);
-template double barrier(const double d, const double dhat);
-template float barrier_first_derivative(const float d, const float dhat);
-template double barrier_first_derivative(const double d, const double dhat);
-template float barrier_second_derivative(const float d, const float dhat);
-template double barrier_second_derivative(const double d, const double dhat);
 #ifdef IPC_TOOLKIT_WITH_SIMD
 template class BarrierBase<SimdBatch<float>>;
 template class BarrierBase<SimdBatch<double>>;
@@ -198,20 +235,10 @@ template class CubicBarrier<SimdBatch<float>>;
 template class CubicBarrier<SimdBatch<double>>;
 template class TwoStageBarrier<SimdBatch<float>>;
 template class TwoStageBarrier<SimdBatch<double>>;
-template SimdBatch<float>
-barrier(const SimdBatch<float> d, const SimdBatch<float> dhat);
-template SimdBatch<double>
-barrier(const SimdBatch<double> d, const SimdBatch<double> dhat);
-template SimdBatch<float>
-barrier_first_derivative(const SimdBatch<float> d, const SimdBatch<float> dhat);
-template SimdBatch<double> barrier_first_derivative(
-    const SimdBatch<double> d, const SimdBatch<double> dhat);
-template SimdBatch<float> barrier_second_derivative(
-    const SimdBatch<float> d, const SimdBatch<float> dhat);
-template SimdBatch<double> barrier_second_derivative(
-    const SimdBatch<double> d, const SimdBatch<double> dhat);
 #endif
 /// @endcond
 // ============================================================================
+
+#endif // !__CUDACC__
 
 } // namespace ipc

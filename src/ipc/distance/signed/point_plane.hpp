@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/geometry/normal.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -18,7 +19,7 @@ namespace detail {
     /// @param t2  Third vertex of the triangle (3D).
     /// @return    The signed distance from p to the plane of the triangle.
     template <typename T>
-    inline T point_plane_signed_distance(
+    IPC_TOOLKIT_HOST_DEVICE inline T point_plane_signed_distance(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -38,7 +39,8 @@ namespace detail {
     /// @param t2  Third vertex of the triangle (3D).
     /// @return    A 12-vector containing the gradient of the signed distance.
     template <typename T>
-    inline Eigen::Vector<T, 12> point_plane_signed_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 12>
+    point_plane_signed_distance_gradient(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -70,7 +72,8 @@ namespace detail {
     /// @param t2  Third vertex of the triangle (3D).
     /// @return    A 12x12 Hessian matrix of the signed distance.
     template <typename T>
-    Eigen::Matrix<T, 12, 12> point_plane_signed_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12>
+    point_plane_signed_distance_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -93,7 +96,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_plane_signed_distance(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_plane_signed_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
@@ -120,7 +123,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_plane_signed_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_plane_signed_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
@@ -146,7 +149,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_plane_signed_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_plane_signed_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,

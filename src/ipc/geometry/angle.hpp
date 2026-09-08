@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
@@ -7,7 +8,7 @@ namespace ipc {
 namespace detail {
     /// @note Prefer the ipc::dihedral_angle front end.
     template <typename T>
-    T dihedral_angle(
+    IPC_TOOLKIT_HOST_DEVICE T dihedral_angle(
         Eigen::ConstRef<Eigen::Vector3<T>> x0,
         Eigen::ConstRef<Eigen::Vector3<T>> x1,
         Eigen::ConstRef<Eigen::Vector3<T>> x2,
@@ -15,7 +16,7 @@ namespace detail {
 
     /// @note Prefer the ipc::dihedral_angle_gradient front end.
     template <typename T>
-    Eigen::Vector<T, 12> dihedral_angle_gradient(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Vector<T, 12> dihedral_angle_gradient(
         Eigen::ConstRef<Eigen::Vector3<T>> x0,
         Eigen::ConstRef<Eigen::Vector3<T>> x1,
         Eigen::ConstRef<Eigen::Vector3<T>> x2,
@@ -23,7 +24,7 @@ namespace detail {
 
     /// @note Prefer the ipc::dihedral_angle_hessian front end.
     template <typename T>
-    Eigen::Matrix<T, 12, 12> dihedral_angle_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12> dihedral_angle_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> x0,
         Eigen::ConstRef<Eigen::Vector3<T>> x1,
         Eigen::ConstRef<Eigen::Vector3<T>> x2,
@@ -44,7 +45,7 @@ template <
     typename DerivedX1,
     typename DerivedX2,
     typename DerivedX3>
-inline auto dihedral_angle(
+IPC_TOOLKIT_HOST_DEVICE inline auto dihedral_angle(
     const Eigen::MatrixBase<DerivedX0>& x0,
     const Eigen::MatrixBase<DerivedX1>& x1,
     const Eigen::MatrixBase<DerivedX2>& x2,
@@ -68,7 +69,7 @@ template <
     typename DerivedX1,
     typename DerivedX2,
     typename DerivedX3>
-inline auto dihedral_angle_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto dihedral_angle_gradient(
     const Eigen::MatrixBase<DerivedX0>& x0,
     const Eigen::MatrixBase<DerivedX1>& x1,
     const Eigen::MatrixBase<DerivedX2>& x2,
@@ -92,7 +93,7 @@ template <
     typename DerivedX1,
     typename DerivedX2,
     typename DerivedX3>
-inline auto dihedral_angle_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto dihedral_angle_hessian(
     const Eigen::MatrixBase<DerivedX0>& x0,
     const Eigen::MatrixBase<DerivedX1>& x1,
     const Eigen::MatrixBase<DerivedX2>& x2,

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/simd.hpp>
 
@@ -18,7 +19,8 @@ namespace detail {
     /// @param p1 Second point
     /// @return A dim×(dim-1) matrix whose columns are the basis vectors.
     template <typename T, int dim>
-    inline Eigen::Matrix<T, dim, dim - 1> point_point_tangent_basis(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, dim, dim - 1>
+    point_point_tangent_basis(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> p1)
     {
@@ -72,7 +74,8 @@ namespace detail {
     /// @param p1 Second point
     /// @return A (dim*(dim-1))×(2*dim) matrix.
     template <typename T, int dim>
-    Eigen::Matrix<T, dim*(dim - 1), 2 * dim> point_point_tangent_basis_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, dim*(dim - 1), 2 * dim>
+    point_point_tangent_basis_jacobian(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> p1);
 
@@ -87,7 +90,8 @@ namespace detail {
     /// @param e1 Second edge point
     /// @return A dim×(dim-1) matrix whose columns are the basis vectors.
     template <typename T, int dim>
-    inline Eigen::Matrix<T, dim, dim - 1> point_edge_tangent_basis(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, dim, dim - 1>
+    point_edge_tangent_basis(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1)
@@ -115,7 +119,8 @@ namespace detail {
     /// @param e1 Second edge point
     /// @return A (dim*(dim-1))×(3*dim) matrix.
     template <typename T, int dim>
-    Eigen::Matrix<T, dim*(dim - 1), 3 * dim> point_edge_tangent_basis_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, dim*(dim - 1), 3 * dim>
+    point_edge_tangent_basis_jacobian(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1);
@@ -131,7 +136,8 @@ namespace detail {
     /// @param eb1 Second point of the second edge
     /// @return A 3x2 matrix whose columns are the basis vectors.
     template <typename T>
-    inline Eigen::Matrix<T, 3, 2> edge_edge_tangent_basis(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 3, 2>
+    edge_edge_tangent_basis(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -161,7 +167,8 @@ namespace detail {
     /// @param eb1 Second point of the second edge
     /// @return A (3*2)x12 matrix whose columns are the basis vectors.
     template <typename T>
-    Eigen::Matrix<T, 6, 12> edge_edge_tangent_basis_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 6, 12>
+    edge_edge_tangent_basis_jacobian(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -178,7 +185,8 @@ namespace detail {
     /// @param t2 Triangle's third vertex
     /// @return A 3x2 matrix whose columns are the basis vectors.
     template <typename T>
-    inline Eigen::Matrix<T, 3, 2> point_triangle_tangent_basis(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 3, 2>
+    point_triangle_tangent_basis(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -209,7 +217,8 @@ namespace detail {
     /// @param t2 Triangle's third vertex
     /// @return A (3*2)x12 matrix whose columns are the basis vectors.
     template <typename T>
-    Eigen::Matrix<T, 6, 12> point_triangle_tangent_basis_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 6, 12>
+    point_triangle_tangent_basis_jacobian(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -224,7 +233,7 @@ namespace detail {
 /// @param p1 Second point
 /// @return A 3x2 matrix whose columns are the basis vectors.
 template <typename DerivedP0, typename DerivedP1>
-inline auto point_point_tangent_basis(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_point_tangent_basis(
     const Eigen::MatrixBase<DerivedP0>& p0,
     const Eigen::MatrixBase<DerivedP1>& p1)
 {
@@ -250,7 +259,7 @@ inline auto point_point_tangent_basis(
 /// @param p1 Second point
 /// @return A (3*2)x6 matrix whose columns are the basis vectors.
 template <typename DerivedP0, typename DerivedP1>
-inline auto point_point_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_point_tangent_basis_jacobian(
     const Eigen::MatrixBase<DerivedP0>& p0,
     const Eigen::MatrixBase<DerivedP1>& p1)
 {
@@ -280,7 +289,7 @@ inline auto point_point_tangent_basis_jacobian(
 /// @param e1 Second edge point
 /// @return A 3x2 matrix whose columns are the basis vectors.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_edge_tangent_basis(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_edge_tangent_basis(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -308,7 +317,7 @@ inline auto point_edge_tangent_basis(
 /// @param e1 Second edge point
 /// @return A (3*2)x9 matrix whose columns are the basis vectors.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_edge_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_edge_tangent_basis_jacobian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -344,7 +353,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_tangent_basis(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_tangent_basis(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -367,7 +376,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_tangent_basis_jacobian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -399,7 +408,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_triangle_tangent_basis(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_tangent_basis(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
@@ -420,7 +429,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_triangle_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_tangent_basis_jacobian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
@@ -437,22 +446,22 @@ namespace autogen {
 
     // J is (2×4) flattened in column-major order
     template <typename T>
-    void point_point_tangent_basis_2D_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_point_tangent_basis_2D_jacobian(
         T p0_x, T p0_y, T p1_x, T p1_y, T J[8]);
 
     // J is (6×6) flattened in column-major order
     template <typename T>
-    void point_point_tangent_basis_3D_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_point_tangent_basis_3D_jacobian(
         T p0_x, T p0_y, T p0_z, T p1_x, T p1_y, T p1_z, T J[36]);
 
     // J is (2×6) flattened in column-major order
     template <typename T>
-    void point_edge_tangent_basis_2D_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_edge_tangent_basis_2D_jacobian(
         T p_x, T p_y, T e0_x, T e0_y, T e1_x, T e1_y, T J[12]);
 
     // J is (6×9) flattened in column-major order
     template <typename T>
-    void point_edge_tangent_basis_3D_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_edge_tangent_basis_3D_jacobian(
         T p_x,
         T p_y,
         T p_z,
@@ -466,7 +475,7 @@ namespace autogen {
 
     // J is (6×12) flattened in column-major order
     template <typename T>
-    void edge_edge_tangent_basis_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void edge_edge_tangent_basis_jacobian(
         T ea0_x,
         T ea0_y,
         T ea0_z,
@@ -483,7 +492,7 @@ namespace autogen {
 
     // J is (6×12) flattened in column-major order
     template <typename T>
-    void point_triangle_tangent_basis_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_triangle_tangent_basis_jacobian(
         T p_x,
         T p_y,
         T p_z,

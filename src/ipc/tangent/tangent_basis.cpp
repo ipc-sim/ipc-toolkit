@@ -10,7 +10,8 @@ namespace ipc::detail {
 // Point - Point
 
 template <typename T, int dim>
-Eigen::Matrix<T, dim*(dim - 1), 2 * dim> point_point_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, dim*(dim - 1), 2 * dim>
+point_point_tangent_basis_jacobian(
     Eigen::ConstRef<Eigen::Vector<T, dim>> p0,
     Eigen::ConstRef<Eigen::Vector<T, dim>> p1)
 {
@@ -32,7 +33,8 @@ Eigen::Matrix<T, dim*(dim - 1), 2 * dim> point_point_tangent_basis_jacobian(
 // Point - Edge
 
 template <typename T, int dim>
-Eigen::Matrix<T, dim*(dim - 1), 3 * dim> point_edge_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, dim*(dim - 1), 3 * dim>
+point_edge_tangent_basis_jacobian(
     Eigen::ConstRef<Eigen::Vector<T, dim>> p,
     Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
     Eigen::ConstRef<Eigen::Vector<T, dim>> e1)
@@ -56,7 +58,8 @@ Eigen::Matrix<T, dim*(dim - 1), 3 * dim> point_edge_tangent_basis_jacobian(
 // Edge - Edge
 
 template <typename T>
-Eigen::Matrix<T, 6, 12> edge_edge_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 6, 12>
+edge_edge_tangent_basis_jacobian(
     Eigen::ConstRef<Eigen::Vector3<T>> ea0,
     Eigen::ConstRef<Eigen::Vector3<T>> ea1,
     Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -73,7 +76,8 @@ Eigen::Matrix<T, 6, 12> edge_edge_tangent_basis_jacobian(
 // Point - Triangle
 
 template <typename T>
-Eigen::Matrix<T, 6, 12> point_triangle_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 6, 12>
+point_triangle_tangent_basis_jacobian(
     Eigen::ConstRef<Eigen::Vector3<T>> p,
     Eigen::ConstRef<Eigen::Vector3<T>> t0,
     Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -107,10 +111,12 @@ Eigen::Matrix<T, 6, 12> point_triangle_tangent_basis_jacobian(
         Eigen::ConstRef<Eigen::Vector<T, dim>>,                                \
         Eigen::ConstRef<Eigen::Vector<T, dim>>)
 
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
 IPC_INSTANTIATE_TANGENT_BASIS_ND(float, 2);
 IPC_INSTANTIATE_TANGENT_BASIS_ND(float, 3);
 IPC_INSTANTIATE_TANGENT_BASIS_ND(double, 2);
 IPC_INSTANTIATE_TANGENT_BASIS_ND(double, 3);
+#endif
 #ifdef IPC_TOOLKIT_WITH_SIMD
 IPC_INSTANTIATE_TANGENT_BASIS_ND(SimdBatch<float>, 2);
 IPC_INSTANTIATE_TANGENT_BASIS_ND(SimdBatch<float>, 3);
@@ -142,8 +148,10 @@ IPC_INSTANTIATE_TANGENT_BASIS_ND(SimdBatch<double>, 3);
         Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
         Eigen::ConstRef<Eigen::Vector3<T>>)
 
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
 IPC_INSTANTIATE_TANGENT_BASIS_3D(float);
 IPC_INSTANTIATE_TANGENT_BASIS_3D(double);
+#endif
 #ifdef IPC_TOOLKIT_WITH_SIMD
 IPC_INSTANTIATE_TANGENT_BASIS_3D(SimdBatch<float>);
 IPC_INSTANTIATE_TANGENT_BASIS_3D(SimdBatch<double>);
@@ -159,7 +167,7 @@ namespace {
     /// @brief Compute the power of 1.5 of a number.
     /// @param x Number to compute the power of 1.5
     /// @return x^(1.5)
-    template <typename T> inline T pow_1_5(T x)
+    template <typename T> IPC_TOOLKIT_HOST_DEVICE inline T pow_1_5(T x)
     {
         return x * ipc::numext::sqrt(x);
     }
@@ -167,8 +175,8 @@ namespace {
 
 // J is (2×4) flattened in column-major order
 template <typename T>
-void point_point_tangent_basis_2D_jacobian(
-    T p0_x, T p0_y, T p1_x, T p1_y, T J[8])
+IPC_TOOLKIT_HOST_DEVICE void
+point_point_tangent_basis_2D_jacobian(T p0_x, T p0_y, T p1_x, T p1_y, T J[8])
 {
     const T t0 = p0_x - p1_x;
     const T t1 = p0_y - p1_y;
@@ -193,7 +201,7 @@ void point_point_tangent_basis_2D_jacobian(
 
 // J is (6×6) flattened in column-major order
 template <typename T>
-void point_point_tangent_basis_3D_jacobian(
+IPC_TOOLKIT_HOST_DEVICE void point_point_tangent_basis_3D_jacobian(
     T p0_x, T p0_y, T p0_z, T p1_x, T p1_y, T p1_z, T J[36])
 {
     const T t0 = p0_x - p1_x;
@@ -330,7 +338,7 @@ void point_point_tangent_basis_3D_jacobian(
 
 // J is (2×6) flattened in column-major order
 template <typename T>
-void point_edge_tangent_basis_2D_jacobian(
+IPC_TOOLKIT_HOST_DEVICE void point_edge_tangent_basis_2D_jacobian(
     T p_x, T p_y, T e0_x, T e0_y, T e1_x, T e1_y, T J[12])
 {
     const T t0 = e0_x - e1_x;
@@ -360,7 +368,7 @@ void point_edge_tangent_basis_2D_jacobian(
 
 // J is (6×9) flattened in column-major order
 template <typename T>
-void point_edge_tangent_basis_3D_jacobian(
+IPC_TOOLKIT_HOST_DEVICE void point_edge_tangent_basis_3D_jacobian(
     T p_x,
     T p_y,
     T p_z,
@@ -507,7 +515,7 @@ void point_edge_tangent_basis_3D_jacobian(
 
 // J is (6×12) flattened in column-major order
 template <typename T>
-void edge_edge_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE void edge_edge_tangent_basis_jacobian(
     T ea0_x,
     T ea0_y,
     T ea0_z,
@@ -734,7 +742,7 @@ void edge_edge_tangent_basis_jacobian(
 
 // J is (6×12) flattened in column-major order
 template <typename T>
-void point_triangle_tangent_basis_jacobian(
+IPC_TOOLKIT_HOST_DEVICE void point_triangle_tangent_basis_jacobian(
     T p_x,
     T p_y,
     T p_z,
@@ -958,8 +966,10 @@ void point_triangle_tangent_basis_jacobian(
     template void point_triangle_tangent_basis_jacobian<T>(                    \
         T, T, T, T, T, T, T, T, T, T, T, T, T[72])
 
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
 IPC_INSTANTIATE_TANGENT_BASIS_AUTOGEN(float);
 IPC_INSTANTIATE_TANGENT_BASIS_AUTOGEN(double);
+#endif
 #ifdef IPC_TOOLKIT_WITH_SIMD
 IPC_INSTANTIATE_TANGENT_BASIS_AUTOGEN(SimdBatch<float>);
 IPC_INSTANTIATE_TANGENT_BASIS_AUTOGEN(SimdBatch<double>);

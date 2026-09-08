@@ -1,40 +1,28 @@
 #include "distance_type.hpp"
 
 #include <ipc/utils/eigen_ext.hpp>
-#include <ipc/utils/logger.hpp>
 
 #include <Eigen/Geometry>
-#include <spdlog/spdlog.h>
 
 #include <limits>
+
+// The error reporting helpers at the bottom of this file are host only: nvcc
+// cannot parse spdlog, so their definitions and the headers they need both sit
+// behind `#ifndef __CUDACC__` and are compiled by the host pass alone. Keep
+// every use of the logger and of fmt inside those blocks -- an unguarded one
+// fails as a parse error deep inside fmt rather than as a missing declaration.
+#ifndef __CUDACC__
+#include <ipc/utils/logger.hpp>
+
+#include <spdlog/spdlog.h>
+
 #include <stdexcept>
+#endif
 
 namespace ipc::detail {
 
-void warn_degenerate_point_edge() noexcept
-{
-    logger().warn("Degenerate edge in point_edge_distance_type!");
-}
-
-void throw_invalid_distance_type(const char* function)
-{
-    throw std::invalid_argument(
-        fmt::format("{}: invalid distance type", function));
-}
-
-void throw_auto_requires_explicit_dtype(const char* function)
-{
-    throw std::invalid_argument(
-        fmt::format(
-            "{}: an explicit distance type is required for non-floating-point "
-            "scalars; resolving AUTO means comparing single ordered values, "
-            "which an autodiff, SIMD batch, or interval scalar does not "
-            "provide",
-            function));
-}
-
 template <typename T>
-PointTriangleDistanceType point_triangle_distance_type(
+IPC_TOOLKIT_HOST_DEVICE PointTriangleDistanceType point_triangle_distance_type(
     Eigen::ConstRef<Eigen::Vector3<T>> p,
     Eigen::ConstRef<Eigen::Vector3<T>> t0,
     Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -95,7 +83,7 @@ PointTriangleDistanceType point_triangle_distance_type(
 
 // A more robust implementation of http://geomalgorithms.com/a07-_distance.html
 template <typename T>
-EdgeEdgeDistanceType edge_edge_distance_type(
+IPC_TOOLKIT_HOST_DEVICE EdgeEdgeDistanceType edge_edge_distance_type(
     Eigen::ConstRef<Eigen::Vector3<T>> ea0,
     Eigen::ConstRef<Eigen::Vector3<T>> ea1,
     Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -199,7 +187,7 @@ EdgeEdgeDistanceType edge_edge_distance_type(
 }
 
 template <typename T>
-EdgeEdgeDistanceType edge_edge_parallel_distance_type(
+IPC_TOOLKIT_HOST_DEVICE EdgeEdgeDistanceType edge_edge_parallel_distance_type(
     Eigen::ConstRef<Eigen::Vector3<T>> ea0,
     Eigen::ConstRef<Eigen::Vector3<T>> ea1,
     Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -237,12 +225,46 @@ EdgeEdgeDistanceType edge_edge_parallel_distance_type(
 }
 
 // clang-format off
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
 template PointTriangleDistanceType point_triangle_distance_type<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
 template PointTriangleDistanceType point_triangle_distance_type<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
 template EdgeEdgeDistanceType edge_edge_distance_type<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
 template EdgeEdgeDistanceType edge_edge_distance_type<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
 template EdgeEdgeDistanceType edge_edge_parallel_distance_type<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
 template EdgeEdgeDistanceType edge_edge_parallel_distance_type<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
+#endif
 // clang-format on
+
+// ============================================================================
+// Error reporting -- host only.
+// ============================================================================
+//
+// The inline wrappers in distance_type.hpp call these on the host and trap on
+// the device, so the device pass needs neither the definitions nor spdlog.
+#ifndef __CUDACC__
+
+void warn_degenerate_point_edge_host() noexcept
+{
+    logger().warn("Degenerate edge in point_edge_distance_type!");
+}
+
+void throw_invalid_distance_type_host(const char* function)
+{
+    throw std::invalid_argument(
+        fmt::format("{}: invalid distance type", function));
+}
+
+void throw_auto_requires_explicit_dtype_host(const char* function)
+{
+    throw std::invalid_argument(
+        fmt::format(
+            "{}: an explicit distance type is required for non-floating-point "
+            "scalars; resolving AUTO means comparing single ordered values, "
+            "which an autodiff, SIMD batch, or interval scalar does not "
+            "provide",
+            function));
+}
+
+#endif // !__CUDACC__
 
 } // namespace ipc::detail

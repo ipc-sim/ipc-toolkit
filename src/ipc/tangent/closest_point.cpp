@@ -5,7 +5,7 @@
 namespace ipc::autogen {
 // hess is (6×6) flattened in column-major order
 template <typename T>
-void point_edge_closest_point_2D_hessian(
+IPC_TOOLKIT_HOST_DEVICE void point_edge_closest_point_2D_hessian(
     T p_x, T p_y, T e0_x, T e0_y, T e1_x, T e1_y, T hess[36])
 {
     const T t0 = e0_x - e1_x;
@@ -91,7 +91,7 @@ void point_edge_closest_point_2D_hessian(
 
 // hess is (9×9) flattened in column-major order
 template <typename T>
-void point_edge_closest_point_3D_hessian(
+IPC_TOOLKIT_HOST_DEVICE void point_edge_closest_point_3D_hessian(
     T p_x,
     T p_y,
     T p_z,
@@ -268,7 +268,7 @@ void point_edge_closest_point_3D_hessian(
 
 // J is (2×12) flattened in column-major order
 template <typename T>
-void edge_edge_closest_point_jacobian(
+IPC_TOOLKIT_HOST_DEVICE void edge_edge_closest_point_jacobian(
     T ea0_x,
     T ea0_y,
     T ea0_z,
@@ -524,7 +524,7 @@ void edge_edge_closest_point_jacobian(
 
 // hess is (144×1) flattened in column-major order
 template <typename T>
-void edge_edge_closest_point_hessian_a(
+IPC_TOOLKIT_HOST_DEVICE void edge_edge_closest_point_hessian_a(
     T ea0_x,
     T ea0_y,
     T ea0_z,
@@ -1369,7 +1369,7 @@ void edge_edge_closest_point_hessian_a(
 
 // hess is (144×1) flattened in column-major order
 template <typename T>
-void edge_edge_closest_point_hessian_b(
+IPC_TOOLKIT_HOST_DEVICE void edge_edge_closest_point_hessian_b(
     T ea0_x,
     T ea0_y,
     T ea0_z,
@@ -2259,7 +2259,7 @@ void edge_edge_closest_point_hessian_b(
 
 // J is (2×12) flattened in column-major order
 template <typename T>
-void point_triangle_closest_point_jacobian(
+IPC_TOOLKIT_HOST_DEVICE void point_triangle_closest_point_jacobian(
     T p_x,
     T p_y,
     T p_z,
@@ -2524,7 +2524,7 @@ void point_triangle_closest_point_jacobian(
 
 // hess is (144×1) flattened in column-major order
 template <typename T>
-void point_triangle_closest_point_hessian_0(
+IPC_TOOLKIT_HOST_DEVICE void point_triangle_closest_point_hessian_0(
     T p_x,
     T p_y,
     T p_z,
@@ -3445,7 +3445,7 @@ void point_triangle_closest_point_hessian_0(
 
 // hess is (144×1) flattened in column-major order
 template <typename T>
-void point_triangle_closest_point_hessian_1(
+IPC_TOOLKIT_HOST_DEVICE void point_triangle_closest_point_hessian_1(
     T p_x,
     T p_y,
     T p_z,
@@ -4387,8 +4387,10 @@ void point_triangle_closest_point_hessian_1(
     template void point_triangle_closest_point_hessian_1<T>(                   \
         T, T, T, T, T, T, T, T, T, T, T, T, T[144])
 
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
 IPC_INSTANTIATE_CLOSEST_POINT_AUTOGEN(float);
 IPC_INSTANTIATE_CLOSEST_POINT_AUTOGEN(double);
+#endif
 #ifdef IPC_TOOLKIT_WITH_SIMD
 IPC_INSTANTIATE_CLOSEST_POINT_AUTOGEN(SimdBatch<float>);
 IPC_INSTANTIATE_CLOSEST_POINT_AUTOGEN(SimdBatch<double>);

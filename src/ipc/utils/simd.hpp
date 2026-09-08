@@ -40,7 +40,7 @@ template <typename T> using scalar_of_t = typename ScalarOf<T>::type;
 /// constructor call receiving a `double`, an implicit narrowing that
 /// `-Wfloat-conversion` reports at every instantiation. For a plain scalar this
 /// is the explicit cast the code would have written anyway.
-template <typename T> inline T literal(const double c)
+template <typename T> IPC_TOOLKIT_HOST_DEVICE inline T literal(const double c)
 {
     return T(static_cast<scalar_of_t<T>>(c));
 }
@@ -54,19 +54,33 @@ template <typename T> inline T literal(const double c)
 /// We overload on the two argument types rather than relying on ADL to find
 /// `xsimd::all`. The tradeoff is a little duplication in exchange for keeping
 /// a name this generic from matching arbitrary types elsewhere in `ipc`.
-inline bool all_of(const bool mask) { return mask; }
+IPC_TOOLKIT_HOST_DEVICE inline bool all_of(const bool mask) { return mask; }
 
 /// @brief Pick between `a` and `b`.
 ///
 /// The scalar counterpart of `xsimd::select`, which ADL finds for a batch
 /// `mask`, so one `select(cond, a, b)` compiles for both.
-template <typename T> inline T select(const bool mask, const T& a, const T& b)
+template <typename T>
+IPC_TOOLKIT_HOST_DEVICE inline T select(const bool mask, const T& a, const T& b)
 {
     return mask ? a : b;
 }
 
+/// @brief Clamp `v` to `[lo, hi]`.
+///
+/// Not `std::clamp`, which cannot be called from device code: MSVC's debug STL
+/// checks the bounds with `_STL_VERIFY`, which expands to `__debugbreak()`, and
+/// nvcc's NVVM backend then emits invalid IR ("Terminator found in the middle
+/// of a basic block"). The comparison order matches `std::clamp` exactly, so
+/// the result -- including a NaN `v` passing through unchanged -- is identical.
+template <typename T>
+IPC_TOOLKIT_HOST_DEVICE inline T clamp(const T& v, const T& lo, const T& hi)
+{
+    return v < lo ? lo : (hi < v ? hi : v);
+}
+
 /// @brief `+infinity` for any scalar the library templates on.
-template <typename T> inline T infinity()
+template <typename T> IPC_TOOLKIT_HOST_DEVICE inline T infinity()
 {
     return T(std::numeric_limits<scalar_of_t<T>>::infinity());
 }
@@ -92,13 +106,15 @@ template <typename T> inline T infinity()
 /// comes from the order the blend is folded. Masks may overlap, and only that
 /// order decides the winner, so a test must cover lanes that fall in
 /// overlapping cases.
-template <typename F> inline auto select_lazy(F&& else_value)
+template <typename F>
+IPC_TOOLKIT_HOST_DEVICE inline auto select_lazy(F&& else_value)
 {
     return else_value();
 }
 
 template <typename Mask, typename F, typename... Rest>
-inline auto select_lazy(const Mask& mask, F&& value, Rest&&... rest)
+IPC_TOOLKIT_HOST_DEVICE inline auto
+select_lazy(const Mask& mask, F&& value, Rest&&... rest)
 {
     if constexpr (std::is_same_v<std::decay_t<Mask>, bool>) {
         return mask ? value() : select_lazy(std::forward<Rest>(rest)...);
@@ -198,6 +214,21 @@ inline bool all_of(const xsimd::batch_bool<T, A>& mask)
     return xsimd::all(mask);
 }
 
+/// @brief Clamp each lane of `v` to `[lo, hi]`.
+///
+/// The batch counterpart of the scalar `clamp` above: a batch comparison
+/// answers per-lane rather than with one `bool`, so the `?:` cascade becomes
+/// two `xsimd::select` blends in the same order. A NaN lane matches neither
+/// comparison and passes through, as it does for a scalar.
+template <typename T, typename A>
+inline xsimd::batch<T, A> clamp(
+    const xsimd::batch<T, A>& v,
+    const xsimd::batch<T, A>& lo,
+    const xsimd::batch<T, A>& hi)
+{
+    return xsimd::select(v < lo, lo, xsimd::select(hi < v, hi, v));
+}
+
 } // namespace ipc
 
 #endif
@@ -210,7 +241,7 @@ namespace ipc {
 /// `if (squaredNorm() > 0)`, which a batch cannot answer with one bool. This
 /// applies that same rule per-lane and otherwise defers to Eigen.
 template <typename Derived>
-inline typename Derived::PlainObject
+IPC_TOOLKIT_HOST_DEVICE inline typename Derived::PlainObject
 normalized(const Eigen::MatrixBase<Derived>& v)
 {
     using T = typename Derived::Scalar;

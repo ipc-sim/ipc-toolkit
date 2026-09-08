@@ -5,7 +5,8 @@
 namespace ipc::detail {
 
 template <typename T>
-Eigen::Matrix<T, 12, 12> point_plane_signed_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12>
+point_plane_signed_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3<T>> p,
     Eigen::ConstRef<Eigen::Vector3<T>> t0,
     Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -42,9 +43,19 @@ Eigen::Matrix<T, 12, 12> point_plane_signed_distance_hessian(
 
     // A. Contraction of the normal Hessian tensor with vector v
     // hess_n is 3x81. v is 3x1. Result is 1x81, which maps to 9x9.
-    hess.template block<9, 9>(3, 3) =
-        (hess_n.reshaped(Eigen::fix<3>, Eigen::fix<81>).transpose() * v)
-            .reshaped(Eigen::fix<9>, Eigen::fix<9>);
+    // We spell the two reshapes out as Maps rather than calling
+    // .reshaped(Eigen::fix<...>). Both are fixed-size views over the same
+    // column-major storage, so the result is identical, but .reshaped()
+    // returns a nested expression template that nvcc does not handle, and
+    // this contraction has to stay device-callable.
+    {
+        const Eigen::Map<const Eigen::Matrix<T, 3, 81>> hess_n_3_81(
+            hess_n.data());
+        const Eigen::Matrix<T, 81, 1> contracted =
+            (hess_n_3_81.transpose() * v).eval();
+        hess.template block<9, 9>(3, 3) =
+            Eigen::Map<const Eigen::Matrix<T, 9, 9>>(contracted.data());
+    }
 
     // B. Subtract first derivative terms (Product Rule corrections)
     // Extract 3x3 Jacobian blocks for t0, t1, t2
@@ -79,8 +90,10 @@ Eigen::Matrix<T, 12, 12> point_plane_signed_distance_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
         Eigen::ConstRef<Eigen::Vector3<T>>)
 
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
 IPC_INSTANTIATE_POINT_PLANE_SIGNED_DISTANCE_HESSIAN(float);
 IPC_INSTANTIATE_POINT_PLANE_SIGNED_DISTANCE_HESSIAN(double);
+#endif
 #ifdef IPC_TOOLKIT_WITH_SIMD
 IPC_INSTANTIATE_POINT_PLANE_SIGNED_DISTANCE_HESSIAN(SimdBatch<float>);
 IPC_INSTANTIATE_POINT_PLANE_SIGNED_DISTANCE_HESSIAN(SimdBatch<double>);
