@@ -1,0 +1,53 @@
+{
+    "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+    "name": "IPCToolkit CUDA Development Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        // Context is the repository root (two levels up from this file) so the
+        // build sees the whole project, matching the default dev container.
+        "context": "../.."
+    },
+    // On a Linux host with the NVIDIA Container Toolkit, uncomment the next line
+    // to pass the GPU into the container so the CUDA code can actually run.
+    // (Leave it commented on macOS/Windows or GPU-less hosts, where it errors.)
+    // "runArgs": ["--gpus=all"],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/zsh",
+                "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+                "C_Cpp.default.intelliSenseMode": "gcc-x64",
+                "C_Cpp.default.compilerPath": "/usr/bin/clang++-18",
+                "C_Cpp.clang_format_path": "/usr/bin/clang-format-18",
+                "C_Cpp.clang_format_style": "file",
+                "cmake.configureOnOpen": false,
+                "cmake.buildDirectory": "${workspaceFolder}/build",
+                "python.pythonPath": "/usr/bin/python3"
+            },
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-vscode.cmake-tools",
+                "xaver.clang-format",
+                "ms-python.python",
+                "ms-azuretools.vscode-docker",
+                "eamodio.gitlens",
+                "twxs.cmake",
+                "jeff-hykin.better-cpp-syntax",
+                "vadimcn.vscode-lldb",
+                "ms-python.vscode-pylance"
+            ]
+        }
+    },
+    "postCreateCommand": "pre-commit install",
+    "remoteUser": "devuser",
+    "mounts": [
+        "source=${localWorkspaceFolder}/.ccache,target=/home/devuser/.ccache,type=bind,consistency=cached"
+    ],
+    "forwardPorts": [],
+    "remoteEnv": {
+        "CCACHE_DIR": "/home/devuser/.ccache",
+        "CCACHE_MAXSIZE": "1G"
+    },
+    "workspaceFolder": "/home/devuser/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/devuser/workspace,type=bind,consistency=cached"
+}
