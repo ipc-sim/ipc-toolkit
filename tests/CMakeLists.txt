@@ -71,9 +71,15 @@ if(IPC_TOOLKIT_WITH_CUDA)
   # other libraries and executables.
   set_target_properties(ipc_toolkit_tests PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
-  # Use the same CUDA architectures Scalable CCD
-  # get_target_property(CMAKE_CUDA_ARCHITECTURES scalable_ccd CUDA_ARCHITECTURES)
-  set_target_properties(ipc_toolkit_tests PROPERTIES CUDA_ARCHITECTURES "native")
+  # Use the CUDA architectures specified by the user (e.g. via
+  # -DCMAKE_CUDA_ARCHITECTURES) and only fall back to auto-detecting the local
+  # GPU ("native") when none were given. "native" requires a physical GPU, so
+  # the fallback fails in GPU-less environments such as CI/Docker builds.
+  if(DEFINED CMAKE_CUDA_ARCHITECTURES)
+    set_target_properties(ipc_toolkit_tests PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
+  else()
+    set_target_properties(ipc_toolkit_tests PROPERTIES CUDA_ARCHITECTURES "native")
+  endif()
 endif()
 
 if (IPC_TOOLKIT_TESTS_CCD_BENCHMARK)
