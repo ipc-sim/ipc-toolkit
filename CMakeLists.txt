@@ -217,6 +217,14 @@ source_group(TREE "${PROJECT_SOURCE_DIR}" FILES ${IPC_TOOLKIT_SOURCES})
 include(eigen)
 target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
 
+# Logger
+# NOTE: Included before the CCD dependencies on purpose. Scalable CCD carries
+# its own spdlog recipe guarded on `if(TARGET spdlog::spdlog)`, so whichever
+# runs first wins -- and if that is Scalable CCD's, the unpatched spdlog is the
+# one CPM registers and cmake/patches/fmt-nvcc-compat.patch never applies.
+include(spdlog)
+target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
+
 # libigl
 include(libigl)
 target_link_libraries(ipc_toolkit PRIVATE igl::core igl::predicates)
@@ -232,11 +240,6 @@ target_link_libraries(ipc_toolkit PRIVATE tight_inclusion::tight_inclusion)
 # Scalable CCD (STQ broad phase and GPU Tight Inclusion)
 include(scalable_ccd)
 target_link_libraries(ipc_toolkit PRIVATE scalable_ccd::scalable_ccd)
-
-
-# Logger
-include(spdlog)
-target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
 # TinyAD
 include(tinyad)
