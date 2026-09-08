@@ -129,6 +129,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/find/")
 # General CMake utils
 include(ipc_toolkit_cpm_cache)
 include(ipc_toolkit_use_colors)
+include(ipc_toolkit_shared_device_sources)
 
 # Generate position-independent code by default
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -328,6 +329,28 @@ if(IPC_TOOLKIT_WITH_SIMD)
   # Disable vectorization in Eigen since I've found it to have alignment issues.
   # NOTE: I don't know why this needs to be public, but it crashes if I make it private.
   target_compile_definitions(ipc_toolkit PUBLIC EIGEN_DONT_VECTORIZE=1)
+
+  if(IPC_TOOLKIT_WITH_CUDA)
+    # Pin Eigen's alignment so C++ and CUDA translation units agree on object
+    # layout. EIGEN_DONT_VECTORIZE alone yields align=0 under the host compiler
+    # but align=16 under nvcc, which forces 16-byte alignment when compiling
+    # CUDA. Fixed-max types (e.g. VectorMax<double, 18>) then get a different
+    # sizeof/alignof in each, which smashes the stack when one is returned by
+    # value across that boundary. PUBLIC because every TU exchanging Eigen
+    # objects with the library must agree, or it is an ODR violation.
+    #
+    # NOTE: We pin to 0, not 16. Any non-zero pin is a cap, and Eigen applies
+    # it without checking the scalar's own alignment -- so a cap below the
+    # natural alignment of an xsimd batch (32 bytes on AVX2, 64 on AVX-512)
+    # makes Eigen ask to under-align an array of them, which clang rejects
+    # outright. Since EIGEN_DONT_VECTORIZE is already set, alignment buys us
+    # nothing here anyway; 0 means "emit no alignas", which is both what the
+    # host compiler already does and the one value that cannot conflict with
+    # any scalar on any architecture.
+    target_compile_definitions(ipc_toolkit PUBLIC
+      EIGEN_MAX_STATIC_ALIGN_BYTES=0
+      EIGEN_MAX_ALIGN_BYTES=0)
+  endif()
 endif()
 
 # For MSVC, do not use the min and max macros.

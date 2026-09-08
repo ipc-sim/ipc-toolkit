@@ -22,6 +22,41 @@
 #cmakedefine IPC_TOOLKIT_WITH_MESHFEM_SPARSE
 // #define IPC_TOOLKIT_DEBUG_AUTODIFF
 
+// Execution-space annotation for functions shared between C++ and CUDA.
+// IPC_TOOLKIT_HOST_DEVICE expands to `__host__ __device__` under nvcc and to
+// nothing otherwise, so the same declaration is valid in host and device code.
+// The definitions live in .cpp files compiled once per configuration (as a
+// generated .cu under CUDA; see ipc_toolkit_shared_device_sources.cmake).
+#if defined(IPC_TOOLKIT_WITH_CUDA) && defined(__CUDACC__)
+#define IPC_TOOLKIT_HOST_DEVICE __host__ __device__
+#else
+#define IPC_TOOLKIT_HOST_DEVICE
+#endif
+
+// Which scalar types a shared device source should instantiate.
+//
+// Templates like edge_edge_distance are instantiated for several scalars, but
+// only float and double mean anything on the GPU: autodiff and xsimd batches
+// have no device-callable operations, so instantiating a __host__ __device__
+// template with them makes nvcc compile host-only calls into device code.
+//
+// With CUDA off there is one translation unit and it instantiates everything.
+// With CUDA on the file is compiled twice -- once by nvcc for the device
+// scalars, once by the host compiler for the rest -- and
+// ipc_toolkit_target_shared_device_sources() defines one of the two macros
+// below per pass so the instantiations are split between them rather than
+// duplicated. See ipc_toolkit_shared_device_sources.cmake.
+#if defined(IPC_TOOLKIT_HOST_SCALARS_ONLY)
+#define IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS 0
+#define IPC_TOOLKIT_INSTANTIATE_HOST_SCALARS 1
+#elif defined(IPC_TOOLKIT_DEVICE_SCALARS_ONLY)
+#define IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS 1
+#define IPC_TOOLKIT_INSTANTIATE_HOST_SCALARS 0
+#else
+#define IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS 1
+#define IPC_TOOLKIT_INSTANTIATE_HOST_SCALARS 1
+#endif
+
 namespace ipc {
 
 // Type definitions
