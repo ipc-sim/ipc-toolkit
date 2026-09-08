@@ -2,11 +2,12 @@
 // between its host translation unit (benchmark_simd_barrier_potential.cpp) and
 // its CUDA one (benchmark_cuda_barrier_potential.cu).
 //
-// This header must stay compilable by nvcc, which rules out xsimd: under
-// __CUDACC__ ipc/utils/simd.hpp does not include it, so `SimdBatch` and
-// `xsimd::default_allocator` do not exist here. The packed buffers'
-// container type therefore stays in the .cpp and the CUDA interface below
-// takes raw pointers.
+// The CUDA interface below takes raw pointers rather than the packed buffers'
+// own container type, which keeps that type -- and the xsimd allocator behind
+// it -- out of the CUDA translation unit. nvcc compiles xsimd, so this is no
+// longer forced, but a batch scalar still has no device-callable operations:
+// the .cu instantiates float and double only, and the narrower interface is
+// what keeps it that way.
 
 #pragma once
 
