@@ -4,6 +4,9 @@
 #include <ipc/math/scalar_math.hpp>
 
 #include <Eigen/Core>
+#ifdef IPC_TOOLKIT_WITH_SIMD
+#include <xsimd/xsimd.hpp>
+#endif
 
 #include <limits>
 #include <type_traits>
@@ -63,6 +66,19 @@ IPC_TOOLKIT_HOST_DEVICE inline T select(const bool mask, const T& a, const T& b)
     return mask ? a : b;
 }
 
+/// @brief Clamp `v` to `[lo, hi]`.
+///
+/// Not `std::clamp`, which cannot be called from device code: MSVC's debug STL
+/// checks the bounds with `_STL_VERIFY`, which expands to `__debugbreak()`, and
+/// nvcc's NVVM backend then emits invalid IR ("Terminator found in the middle
+/// of a basic block"). The comparison order matches `std::clamp` exactly, so
+/// the result -- including a NaN `v` passing through unchanged -- is identical.
+template <typename T>
+IPC_TOOLKIT_HOST_DEVICE inline T clamp(const T& v, const T& lo, const T& hi)
+{
+    return v < lo ? lo : (hi < v ? hi : v);
+}
+
 /// @brief `+infinity` for any scalar the library templates on.
 template <typename T> IPC_TOOLKIT_HOST_DEVICE inline T infinity()
 {
@@ -110,8 +126,6 @@ select_lazy(const Mask& mask, F&& value, Rest&&... rest)
 } // namespace ipc
 
 #ifdef IPC_TOOLKIT_WITH_SIMD
-
-#include <xsimd/xsimd.hpp>
 
 namespace Eigen {
 
@@ -198,6 +212,21 @@ template <typename T, typename A>
 inline bool all_of(const xsimd::batch_bool<T, A>& mask)
 {
     return xsimd::all(mask);
+}
+
+/// @brief Clamp each lane of `v` to `[lo, hi]`.
+///
+/// The batch counterpart of the scalar `clamp` above: a batch comparison
+/// answers per-lane rather than with one `bool`, so the `?:` cascade becomes
+/// two `xsimd::select` blends in the same order. A NaN lane matches neither
+/// comparison and passes through, as it does for a scalar.
+template <typename T, typename A>
+inline xsimd::batch<T, A> clamp(
+    const xsimd::batch<T, A>& v,
+    const xsimd::batch<T, A>& lo,
+    const xsimd::batch<T, A>& hi)
+{
+    return xsimd::select(v < lo, lo, xsimd::select(hi < v, hi, v));
 }
 
 } // namespace ipc
