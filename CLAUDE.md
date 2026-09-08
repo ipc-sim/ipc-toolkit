@@ -25,6 +25,37 @@ cmake --build --preset=python
 # or: pip install .
 ```
 
+### CUDA Builds
+
+CUDA is off by default. The `cuda-release` and `cuda-debug` presets turn it on.
+Compiling CUDA needs nvcc but **not** a GPU; only running it needs the GPU.
+
+On a machine with no NVIDIA GPU or no CUDA toolkit — any Mac, for instance —
+use the CUDA dev container to check that the CUDA build still compiles. It
+builds an nvcc-equipped image and compiles the whole project inside it, then
+exits with the build's status:
+
+```bash
+./.devcontainer/cuda/build-cuda.sh
+```
+
+`PRESET` (default `cuda-release`), `CUDA_ARCH`, and `JOBS` override the
+defaults, e.g. `PRESET=test ./.devcontainer/cuda/build-cuda.sh` to build the
+CUDA tests too. The source is mounted read-only and rsynced into a named
+volume, so a run never writes into your working tree, and later runs are
+incremental.
+
+**This needs a running Docker daemon.** On macOS that means Docker Desktop or
+a colima VM (`colima start`); the failure mode otherwise is a confusing
+`/var/run/docker.sock` connection error rather than a clear diagnostic. A VM
+also stops when the machine sleeps, so a script that worked an hour ago may
+need the VM restarted.
+
+For interactive work, `.devcontainer/cuda/devcontainer.json` opens the same
+image as a VS Code dev container. On a Linux host with the NVIDIA Container
+Toolkit, uncomment its `runArgs` to pass the GPU through so the CUDA code can
+actually run.
+
 ## Running Tests
 
 Tests use Catch2. Test files mirror the source structure: `tests/src/tests/` mirrors `src/ipc/`.

@@ -188,6 +188,12 @@ if(IPC_TOOLKIT_WITH_CUDA)
   # library to be built with -dc as the member functions could be called by
   # other libraries and executables.
   set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+  # Device code calls constexpr host functions (std::numeric_limits,
+  # std::array). PUBLIC so downstream CUDA consumers (e.g. the tests) inherit
+  # the flag.
+  target_compile_options(ipc_toolkit PUBLIC
+    "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>")
 endif()
 
 # Fill in configuration options
@@ -217,6 +223,14 @@ source_group(TREE "${PROJECT_SOURCE_DIR}" FILES ${IPC_TOOLKIT_SOURCES})
 include(eigen)
 target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
 
+# Logger
+# NOTE: Included before the CCD dependencies on purpose. Scalable CCD carries
+# its own spdlog recipe guarded on `if(TARGET spdlog::spdlog)`, so whichever
+# runs first wins -- and if that is Scalable CCD's, the unpatched spdlog is the
+# one CPM registers and cmake/patches/fmt-nvcc-compat.patch never applies.
+include(spdlog)
+target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
+
 # libigl
 include(libigl)
 target_link_libraries(ipc_toolkit PRIVATE igl::core igl::predicates)
@@ -232,11 +246,6 @@ target_link_libraries(ipc_toolkit PRIVATE tight_inclusion::tight_inclusion)
 # Scalable CCD (STQ broad phase and GPU Tight Inclusion)
 include(scalable_ccd)
 target_link_libraries(ipc_toolkit PRIVATE scalable_ccd::scalable_ccd)
-
-
-# Logger
-include(spdlog)
-target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
 # TinyAD
 include(tinyad)
@@ -307,7 +316,10 @@ if(IPC_TOOLKIT_WITH_SIMD)
   # unit's own flags. ipc/utils/simd.hpp exposes batch types in the public API,
   # and a consumer compiled without these flags would name a different type
   # than the one instantiated in the library, failing to link.
-  target_compile_options(ipc_toolkit PUBLIC ${SIMD_CXX_FLAGS})
+  # NOTE: Restricted to C++ sources because these are MSVC-style /arch flags
+  # that nvcc would otherwise treat as input files, and device code has no use
+  # for CPU SIMD anyway.
+  target_compile_options(ipc_toolkit PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:${SIMD_CXX_FLAGS}>")
 
   # Link against cross-platform xsimd library
   include(xsimd)
