@@ -1,6 +1,5 @@
 set(SOURCES
   distance_type.hpp
-  distance_type_host.cpp
   edge_edge.hpp
   edge_edge_mollifier.hpp
   line_line.hpp
