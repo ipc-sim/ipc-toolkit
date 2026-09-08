@@ -3,10 +3,6 @@
 // Barrier functions that grow to infinity as x -> 0+. Includes gradient and
 // hessian functions, too. These barrier functions can be used to impose
 // inequality constraints on a function.
-//
-// Only the free functions live here so this file can be textually included
-// into barrier.hpp when CUDA is enabled; the Barrier class hierarchy's
-// out-of-line definitions are in barrier_classes.cpp.
 #include "barrier.hpp"
 
 #include <ipc/math/scalar_math.hpp>
@@ -29,7 +25,7 @@ template <typename T> IPC_TOOLKIT_HOST_DEVICE T barrier(const T d, const T dhat)
     // b(d) = -(d-d̂)²ln(d / d̂)
     return select_lazy(
         d <= T(0), [&] { return infinity<T>(); }, //
-        d < dhat, [&] { return -sqr(d - dhat) * ipc::numext::log(d / dhat); },
+        d < dhat, [&] { return -sqr(d - dhat) * log(d / dhat); },
         [&] { return T(0); });
 }
 
@@ -44,9 +40,7 @@ IPC_TOOLKIT_HOST_DEVICE T barrier_first_derivative(const T d, const T dhat)
     return select_lazy(
         d <= T(0), [&] { return T(0); }, //
         d < dhat,
-        [&] {
-            return (dhat - d) * (2 * ipc::numext::log(d / dhat) - dhat / d + 1);
-        },
+        [&] { return (dhat - d) * (2 * log(d / dhat) - dhat / d + 1); },
         [&] { return T(0); });
 }
 
@@ -59,7 +53,7 @@ IPC_TOOLKIT_HOST_DEVICE T barrier_second_derivative(const T d, const T dhat)
         d < dhat,
         [&] {
             const T dhat_d = dhat / d;
-            return (dhat_d + 2) * dhat_d - 2 * ipc::numext::log(d / dhat) - 3;
+            return (dhat_d + 2) * dhat_d - 2 * log(d / dhat) - 3;
         },
         [&] { return T(0); });
 }

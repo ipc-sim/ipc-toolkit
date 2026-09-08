@@ -7,22 +7,6 @@
 
 namespace ipc {
 
-namespace detail {
-    /// @brief Clamp a double to [lo, hi] (a device-safe std::clamp).
-    ///
-    /// std::clamp cannot be called from device code: MSVC's debug STL checks
-    /// the bounds with _STL_VERIFY, which expands to __debugbreak(); nvcc's
-    /// NVVM backend then emits invalid IR ("Terminator found in the middle of a
-    /// basic block"). The comparison order matches std::clamp exactly, so the
-    /// result -- including a NaN input passing through unchanged -- is
-    /// identical.
-    IPC_TOOLKIT_HOST_DEVICE inline double
-    clamp(const double v, const double lo, const double hi)
-    {
-        return v < lo ? lo : (hi < v ? hi : v);
-    }
-} // namespace detail
-
 /// @brief Expands a 32-bit integer into 64 bits by inserting 1 zero after each bit.
 /// @param v The 32-bit integer to expand.
 /// @return The expanded 64-bit integer.
