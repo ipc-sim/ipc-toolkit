@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
@@ -7,16 +8,16 @@ namespace ipc {
 // Symbolically generated derivatives
 namespace autogen {
     template <typename T>
-    void point_line_distance_gradient_2D(
+    IPC_TOOLKIT_HOST_DEVICE void point_line_distance_gradient_2D(
         T v01, T v02, T v11, T v12, T v21, T v22, T g[6]);
     template <typename T>
-    void point_line_distance_gradient_3D(
+    IPC_TOOLKIT_HOST_DEVICE void point_line_distance_gradient_3D(
         T v01, T v02, T v03, T v11, T v12, T v13, T v21, T v22, T v23, T g[9]);
     template <typename T>
-    void point_line_distance_hessian_2D(
+    IPC_TOOLKIT_HOST_DEVICE void point_line_distance_hessian_2D(
         T v01, T v02, T v11, T v12, T v21, T v22, T H[36]);
     template <typename T>
-    void point_line_distance_hessian_3D(
+    IPC_TOOLKIT_HOST_DEVICE void point_line_distance_hessian_3D(
         T v01, T v02, T v03, T v11, T v12, T v13, T v21, T v22, T v23, T H[81]);
 } // namespace autogen
 
@@ -30,7 +31,7 @@ namespace detail {
     /// @param e1 The second vertex of the edge defining the line.
     /// @return The distance between the point and line.
     template <typename T, int dim>
-    inline T point_line_distance(
+    IPC_TOOLKIT_HOST_DEVICE inline T point_line_distance(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1)
@@ -58,7 +59,8 @@ namespace detail {
     /// @param e1 The second vertex of the edge defining the line.
     /// @return The gradient of the distance wrt p, e0, and e1.
     template <typename T, int dim>
-    inline Eigen::Vector<T, 3 * dim> point_line_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 3 * dim>
+    point_line_distance_gradient(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1)
@@ -85,7 +87,8 @@ namespace detail {
     /// @param e1 The second vertex of the edge defining the line.
     /// @return The hessian of the distance wrt p, e0, and e1.
     template <typename T, int dim>
-    inline Eigen::Matrix<T, 3 * dim, 3 * dim> point_line_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 3 * dim, 3 * dim>
+    point_line_distance_hessian(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1)
@@ -111,7 +114,7 @@ namespace detail {
 /// @param e1 The second vertex of the edge defining the line.
 /// @return The distance between the point and line.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_distance(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -137,7 +140,7 @@ inline auto point_line_distance(
 /// @param e1 The second vertex of the edge defining the line.
 /// @return The gradient of the distance wrt p, e0, and e1.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -170,7 +173,7 @@ inline auto point_line_distance_gradient(
 /// @param e1 The second vertex of the edge defining the line.
 /// @return The hessian of the distance wrt p, e0, and e1.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)

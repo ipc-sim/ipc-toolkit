@@ -1,11 +1,18 @@
+// CUDA variant of ../devcontainer.json. It shares ../Dockerfile and differs
+// only in the base image it selects, the GPU pass-through note, and the
+// CMake-on-open setting; keep everything else in step with the default.
 {
     "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
     "name": "IPCToolkit CUDA Development Container",
     "build": {
-        "dockerfile": "Dockerfile",
-        // Context is the repository root (two levels up from this file) so the
-        // build sees the whole project, matching the default dev container.
-        "context": "../.."
+        // Shared with the default dev container; BASE_IMAGE is what makes this
+        // one CUDA-enabled. Context is the repository root (two levels up from
+        // this file), matching the default.
+        "dockerfile": "../Dockerfile",
+        "context": "../..",
+        "args": {
+            "BASE_IMAGE": "nvidia/cuda:12.6.2-devel-ubuntu22.04"
+        }
     },
     // On a Linux host with the NVIDIA Container Toolkit, uncomment the next line
     // to pass the GPU into the container so the CUDA code can actually run.
@@ -14,15 +21,22 @@
     "customizations": {
         "vscode": {
             "settings": {
-                "terminal.integrated.shell.linux": "/bin/zsh",
+                "terminal.integrated.shell.linux": "/bin/fish",
                 "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
                 "C_Cpp.default.intelliSenseMode": "gcc-x64",
                 "C_Cpp.default.compilerPath": "/usr/bin/clang++-18",
                 "C_Cpp.clang_format_path": "/usr/bin/clang-format-18",
                 "C_Cpp.clang_format_style": "file",
+                // Unlike the default container: opening this one would kick off
+                // a CUDA configure, which fetches and builds the GPU
+                // dependencies. Configure when you mean to.
                 "cmake.configureOnOpen": false,
                 "cmake.buildDirectory": "${workspaceFolder}/build",
-                "python.pythonPath": "/usr/bin/python3"
+                "python.pythonPath": "/usr/bin/python3",
+                "python.linting.enabled": true,
+                "python.linting.pylintEnabled": true,
+                "python.formatting.provider": "black",
+                "prettier.requireConfig": true
             },
             "extensions": [
                 "ms-vscode.cpptools",
@@ -31,10 +45,18 @@
                 "ms-python.python",
                 "ms-azuretools.vscode-docker",
                 "eamodio.gitlens",
+                "esbenp.prettier-vscode",
+                "mhutchie.git-graph",
                 "twxs.cmake",
                 "jeff-hykin.better-cpp-syntax",
                 "vadimcn.vscode-lldb",
-                "ms-python.vscode-pylance"
+                "cschlosser.doxdocgen",
+                "ms-python.vscode-pylance",
+                "mutantdino.resourcemonitor",
+                "randomfractalsinc.vscode-data-preview",
+                "oderwat.indent-rainbow",
+                "formulahendry.code-runner",
+                "donjayamanne.git-extension-pack"
             ]
         }
     },
