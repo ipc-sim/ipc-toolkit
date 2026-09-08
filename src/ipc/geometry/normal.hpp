@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/simd.hpp>
 
@@ -21,8 +22,7 @@ struct NormalizationAndJacobian {
     Eigen::Matrix<T, dim, dim, Eigen::ColMajor, max_dim, max_dim> jacobian;
 };
 
-/// @brief A normalized vector paired with the first two derivatives of the
-/// normalization.
+/// @brief A normalized vector paired with the first two derivatives of the normalization.
 /// @tparam T The scalar type.
 /// @tparam dim The dimension (2 or 3).
 /// @tparam max_dim The maximum dimension (2 or 3).
@@ -49,7 +49,7 @@ namespace detail {
     /// @param x The input vector.
     /// @return The normalized vector and its Jacobian.
     template <typename T, int dim>
-    inline NormalizationAndJacobian<T, dim>
+    IPC_TOOLKIT_HOST_DEVICE inline NormalizationAndJacobian<T, dim>
     normalization_and_jacobian(const Eigen::Vector<T, dim>& x)
     {
         static_assert(dim == 2 || dim == 3, "normalization is only 2D or 3D");
@@ -67,7 +67,7 @@ namespace detail {
     /// @param x The input vector.
     /// @return The normalized vector, its Jacobian, and its Hessian.
     template <typename T, int dim>
-    inline NormalizationAndJacobianAndHessian<T, dim>
+    IPC_TOOLKIT_HOST_DEVICE inline NormalizationAndJacobianAndHessian<T, dim>
     normalization_and_jacobian_and_hessian(const Eigen::Vector<T, dim>& x)
     {
         static_assert(dim == 2 || dim == 3, "normalization is only 2D or 3D");
@@ -98,7 +98,8 @@ namespace detail {
 /// @param x The input vector.
 /// @return The normalized vector and its Jacobian.
 template <typename DerivedX>
-inline auto normalization_and_jacobian(const Eigen::MatrixBase<DerivedX>& x)
+IPC_TOOLKIT_HOST_DEVICE inline auto
+normalization_and_jacobian(const Eigen::MatrixBase<DerivedX>& x)
 {
     using T = typename DerivedX::Scalar;
     using DynamicResult = NormalizationAndJacobian<T, Eigen::Dynamic, 3>;
@@ -121,7 +122,8 @@ inline auto normalization_and_jacobian(const Eigen::MatrixBase<DerivedX>& x)
 /// @param x The input vector.
 /// @return The Jacobian of the normalization operation.
 template <typename DerivedX>
-inline auto normalization_jacobian(const Eigen::MatrixBase<DerivedX>& x)
+IPC_TOOLKIT_HOST_DEVICE inline auto
+normalization_jacobian(const Eigen::MatrixBase<DerivedX>& x)
 {
     using T = typename DerivedX::Scalar;
 
@@ -143,7 +145,7 @@ inline auto normalization_jacobian(const Eigen::MatrixBase<DerivedX>& x)
 /// @param x The input vector.
 /// @return The normalized vector, its Jacobian, and its Hessian.
 template <typename DerivedX>
-inline auto
+IPC_TOOLKIT_HOST_DEVICE inline auto
 normalization_and_jacobian_and_hessian(const Eigen::MatrixBase<DerivedX>& x)
 {
     using T = typename DerivedX::Scalar;
@@ -180,7 +182,8 @@ normalization_and_jacobian_and_hessian(const Eigen::MatrixBase<DerivedX>& x)
 /// @param x The input vector.
 /// @return The Hessian of the normalization operation.
 template <typename DerivedX>
-inline auto normalization_hessian(const Eigen::MatrixBase<DerivedX>& x)
+IPC_TOOLKIT_HOST_DEVICE inline auto
+normalization_hessian(const Eigen::MatrixBase<DerivedX>& x)
 {
     return normalization_and_jacobian_and_hessian(x).hessian;
 }
@@ -193,7 +196,7 @@ namespace detail {
     /// @param v Vector to create the cross product matrix for.
     /// @return The cross product matrix of the vector.
     template <typename T>
-    inline Eigen::Matrix3<T>
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix3<T>
     cross_product_matrix(Eigen::ConstRef<Eigen::Vector3<T>> v)
     {
         Eigen::Matrix3<T> m;
@@ -208,7 +211,8 @@ namespace detail {
     /// @brief Computes the Jacobian of the cross product matrix.
     /// @return The Jacobian of the cross product matrix.
     template <typename T>
-    Eigen::Matrix<T, 9, 3> cross_product_matrix_jacobian();
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 9, 3>
+    cross_product_matrix_jacobian();
 
     // =========================================================================
 
@@ -224,7 +228,7 @@ namespace detail {
     /// @param e1 The end position of the line.
     /// @return The unnormalized normal vector.
     template <typename T>
-    VectorMax3<T> point_line_unnormalized_normal(
+    IPC_TOOLKIT_HOST_DEVICE VectorMax3<T> point_line_unnormalized_normal(
         Eigen::ConstRef<VectorMax3<T>> p,
         Eigen::ConstRef<VectorMax3<T>> e0,
         Eigen::ConstRef<VectorMax3<T>> e1);
@@ -235,7 +239,7 @@ namespace detail {
     /// @param e1 The end position of the line.
     /// @return The normal vector.
     template <typename T>
-    inline VectorMax3<T> point_line_normal(
+    IPC_TOOLKIT_HOST_DEVICE inline VectorMax3<T> point_line_normal(
         Eigen::ConstRef<VectorMax3<T>> p,
         Eigen::ConstRef<VectorMax3<T>> e0,
         Eigen::ConstRef<VectorMax3<T>> e1)
@@ -250,7 +254,8 @@ namespace detail {
     /// @param e1 The end position of the line.
     /// @return The Jacobian of the unnormalized normal vector.
     template <typename T>
-    MatrixMax<T, 3, 9> point_line_unnormalized_normal_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE MatrixMax<T, 3, 9>
+    point_line_unnormalized_normal_jacobian(
         Eigen::ConstRef<VectorMax3<T>> p,
         Eigen::ConstRef<VectorMax3<T>> e0,
         Eigen::ConstRef<VectorMax3<T>> e1);
@@ -262,7 +267,8 @@ namespace detail {
     /// @return The Hessian of the unnormalized normal vector of the point-line
     /// pair.
     template <typename T>
-    MatrixMax<T, 27, 9> point_line_unnormalized_normal_hessian(
+    IPC_TOOLKIT_HOST_DEVICE MatrixMax<T, 27, 9>
+    point_line_unnormalized_normal_hessian(
         Eigen::ConstRef<VectorMax3<T>> p,
         Eigen::ConstRef<VectorMax3<T>> e0,
         Eigen::ConstRef<VectorMax3<T>> e1);
@@ -273,7 +279,8 @@ namespace detail {
     /// @param e1 The end position of the line.
     /// @return The Jacobian of the normal vector.
     template <typename T>
-    inline MatrixMax<T, 3, 9> point_line_normal_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE inline MatrixMax<T, 3, 9>
+    point_line_normal_jacobian(
         Eigen::ConstRef<VectorMax3<T>> p,
         Eigen::ConstRef<VectorMax3<T>> e0,
         Eigen::ConstRef<VectorMax3<T>> e1)
@@ -289,7 +296,7 @@ namespace detail {
     /// @param e1 The end position of the line.
     /// @return The Hessian of the normal vector.
     template <typename T>
-    MatrixMax<T, 27, 9> point_line_normal_hessian(
+    IPC_TOOLKIT_HOST_DEVICE MatrixMax<T, 27, 9> point_line_normal_hessian(
         Eigen::ConstRef<VectorMax3<T>> p,
         Eigen::ConstRef<VectorMax3<T>> e0,
         Eigen::ConstRef<VectorMax3<T>> e1);
@@ -310,7 +317,8 @@ namespace detail {
     /// @param c The third vertex of the triangle.
     /// @return The unnormalized normal vector of the triangle.
     template <typename T>
-    inline Eigen::Vector3<T> triangle_unnormalized_normal(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector3<T>
+    triangle_unnormalized_normal(
         Eigen::ConstRef<Eigen::Vector3<T>> a,
         Eigen::ConstRef<Eigen::Vector3<T>> b,
         Eigen::ConstRef<Eigen::Vector3<T>> c)
@@ -324,7 +332,7 @@ namespace detail {
     /// @param c The third vertex of the triangle.
     /// @return The normal vector of the triangle.
     template <typename T>
-    inline Eigen::Vector3<T> triangle_normal(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector3<T> triangle_normal(
         Eigen::ConstRef<Eigen::Vector3<T>> a,
         Eigen::ConstRef<Eigen::Vector3<T>> b,
         Eigen::ConstRef<Eigen::Vector3<T>> c)
@@ -339,7 +347,8 @@ namespace detail {
     /// @param c The third vertex of the triangle.
     /// @return The Jacobian of the unnormalized normal vector of the triangle.
     template <typename T>
-    inline Eigen::Matrix<T, 3, 9> triangle_unnormalized_normal_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 3, 9>
+    triangle_unnormalized_normal_jacobian(
         Eigen::ConstRef<Eigen::Vector3<T>> a,
         Eigen::ConstRef<Eigen::Vector3<T>> b,
         Eigen::ConstRef<Eigen::Vector3<T>> c)
@@ -358,7 +367,8 @@ namespace detail {
     /// @param c The third vertex of the triangle.
     /// @return The Hessian of the unnormalized normal vector of the triangle.
     template <typename T>
-    Eigen::Matrix<T, 27, 9> triangle_unnormalized_normal_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 27, 9>
+    triangle_unnormalized_normal_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> a,
         Eigen::ConstRef<Eigen::Vector3<T>> b,
         Eigen::ConstRef<Eigen::Vector3<T>> c);
@@ -369,7 +379,8 @@ namespace detail {
     /// @param c The third vertex of the triangle.
     /// @return The Jacobian of the normal vector of the triangle.
     template <typename T>
-    inline Eigen::Matrix<T, 3, 9> triangle_normal_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 3, 9>
+    triangle_normal_jacobian(
         Eigen::ConstRef<Eigen::Vector3<T>> a,
         Eigen::ConstRef<Eigen::Vector3<T>> b,
         Eigen::ConstRef<Eigen::Vector3<T>> c)
@@ -385,7 +396,7 @@ namespace detail {
     /// @param c The third vertex of the triangle.
     /// @return The Hessian of the normal vector of the triangle.
     template <typename T>
-    Eigen::Matrix<T, 27, 9> triangle_normal_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 27, 9> triangle_normal_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> a,
         Eigen::ConstRef<Eigen::Vector3<T>> b,
         Eigen::ConstRef<Eigen::Vector3<T>> c);
@@ -407,7 +418,8 @@ namespace detail {
     /// @param eb1 The second vertex of the second line.
     /// @return The unnormalized normal vector of the two lines.
     template <typename T>
-    inline Eigen::Vector3<T> line_line_unnormalized_normal(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector3<T>
+    line_line_unnormalized_normal(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -423,7 +435,7 @@ namespace detail {
     /// @param eb1 The second vertex of the second line.
     /// @return The normal vector of the two lines.
     template <typename T>
-    inline Eigen::Vector3<T> line_line_normal(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector3<T> line_line_normal(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -440,7 +452,8 @@ namespace detail {
     /// @param eb1 The second vertex of the second line.
     /// @return The Jacobian of the unnormalized normal vector of the two lines.
     template <typename T>
-    inline Eigen::Matrix<T, 3, 12> line_line_unnormalized_normal_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 3, 12>
+    line_line_unnormalized_normal_jacobian(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -461,7 +474,8 @@ namespace detail {
     /// @param eb1 The second vertex of the second line.
     /// @return The Jacobian of the normal vector of the two lines.
     template <typename T>
-    inline Eigen::Matrix<T, 3, 12> line_line_normal_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 3, 12>
+    line_line_normal_jacobian(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -481,7 +495,8 @@ namespace detail {
     /// @param eb1 The second vertex of the second line.
     /// @return The Hessian of the unnormalized normal vector of the two lines.
     template <typename T>
-    Eigen::Matrix<T, 36, 12> line_line_unnormalized_normal_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 36, 12>
+    line_line_unnormalized_normal_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -494,7 +509,7 @@ namespace detail {
     /// @param eb1 The second vertex of the second line.
     /// @return The Hessian of the normal vector of the two lines.
     template <typename T>
-    Eigen::Matrix<T, 36, 12> line_line_normal_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 36, 12> line_line_normal_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -509,7 +524,8 @@ namespace detail {
 /// @brief Computes the Jacobian of the cross product matrix.
 /// @return The Jacobian of the cross product matrix.
 template <typename T>
-inline Eigen::Matrix<T, 9, 3> cross_product_matrix_jacobian()
+IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 9, 3>
+cross_product_matrix_jacobian()
 {
     return detail::cross_product_matrix_jacobian<T>();
 }
@@ -518,7 +534,8 @@ inline Eigen::Matrix<T, 9, 3> cross_product_matrix_jacobian()
 /// @param v Vector to create the cross product matrix for.
 /// @return The cross product matrix of the vector.
 template <typename DerivedX>
-inline auto cross_product_matrix(const Eigen::MatrixBase<DerivedX>& v)
+IPC_TOOLKIT_HOST_DEVICE inline auto
+cross_product_matrix(const Eigen::MatrixBase<DerivedX>& v)
 {
     using T = typename DerivedX::Scalar;
     return detail::cross_product_matrix<T>(v);
@@ -530,7 +547,7 @@ inline auto cross_product_matrix(const Eigen::MatrixBase<DerivedX>& v)
 /// @param e1 The end position of the line.
 /// @return The unnormalized normal vector.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_unnormalized_normal(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_unnormalized_normal(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -545,7 +562,7 @@ inline auto point_line_unnormalized_normal(
 /// @param e1 The end position of the line.
 /// @return The normal vector.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_normal(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_normal(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -561,7 +578,7 @@ inline auto point_line_normal(
 /// @param e1 The end position of the line.
 /// @return The Jacobian of the unnormalized normal vector.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_unnormalized_normal_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_unnormalized_normal_jacobian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -578,7 +595,7 @@ inline auto point_line_unnormalized_normal_jacobian(
 /// @return The Hessian of the unnormalized normal vector of the point-line
 /// pair.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_unnormalized_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_unnormalized_normal_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -593,7 +610,7 @@ inline auto point_line_unnormalized_normal_hessian(
 /// @param e1 The end position of the line.
 /// @return The Jacobian of the normal vector.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_normal_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_normal_jacobian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -608,7 +625,7 @@ inline auto point_line_normal_jacobian(
 /// @param e1 The end position of the line.
 /// @return The Hessian of the normal vector.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_line_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_line_normal_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -623,7 +640,7 @@ inline auto point_line_normal_hessian(
 /// @param c The third vertex of the triangle.
 /// @return The unnormalized normal vector of the triangle.
 template <typename DerivedA, typename DerivedB, typename DerivedC>
-inline auto triangle_unnormalized_normal(
+IPC_TOOLKIT_HOST_DEVICE inline auto triangle_unnormalized_normal(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
     const Eigen::MatrixBase<DerivedC>& c)
@@ -638,7 +655,7 @@ inline auto triangle_unnormalized_normal(
 /// @param c The third vertex of the triangle.
 /// @return The normal vector of the triangle.
 template <typename DerivedA, typename DerivedB, typename DerivedC>
-inline auto triangle_normal(
+IPC_TOOLKIT_HOST_DEVICE inline auto triangle_normal(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
     const Eigen::MatrixBase<DerivedC>& c)
@@ -654,7 +671,7 @@ inline auto triangle_normal(
 /// @param c The third vertex of the triangle.
 /// @return The Jacobian of the unnormalized normal vector of the triangle.
 template <typename DerivedA, typename DerivedB, typename DerivedC>
-inline auto triangle_unnormalized_normal_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto triangle_unnormalized_normal_jacobian(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
     const Eigen::MatrixBase<DerivedC>& c)
@@ -670,7 +687,7 @@ inline auto triangle_unnormalized_normal_jacobian(
 /// @param c The third vertex of the triangle.
 /// @return The Hessian of the unnormalized normal vector of the triangle.
 template <typename DerivedA, typename DerivedB, typename DerivedC>
-inline auto triangle_unnormalized_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto triangle_unnormalized_normal_hessian(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
     const Eigen::MatrixBase<DerivedC>& c)
@@ -685,7 +702,7 @@ inline auto triangle_unnormalized_normal_hessian(
 /// @param c The third vertex of the triangle.
 /// @return The Jacobian of the normal vector of the triangle.
 template <typename DerivedA, typename DerivedB, typename DerivedC>
-inline auto triangle_normal_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto triangle_normal_jacobian(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
     const Eigen::MatrixBase<DerivedC>& c)
@@ -700,7 +717,7 @@ inline auto triangle_normal_jacobian(
 /// @param c The third vertex of the triangle.
 /// @return The Hessian of the normal vector of the triangle.
 template <typename DerivedA, typename DerivedB, typename DerivedC>
-inline auto triangle_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto triangle_normal_hessian(
     const Eigen::MatrixBase<DerivedA>& a,
     const Eigen::MatrixBase<DerivedB>& b,
     const Eigen::MatrixBase<DerivedC>& c)
@@ -720,7 +737,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_unnormalized_normal(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_unnormalized_normal(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -741,7 +758,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_normal(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_normal(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -763,7 +780,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_unnormalized_normal_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_unnormalized_normal_jacobian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -785,7 +802,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_normal_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_normal_jacobian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -807,7 +824,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_unnormalized_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_unnormalized_normal_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -828,7 +845,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_normal_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,

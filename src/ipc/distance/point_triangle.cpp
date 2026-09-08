@@ -10,7 +10,7 @@
 namespace ipc::detail {
 
 template <typename T>
-T point_triangle_distance(
+IPC_TOOLKIT_HOST_DEVICE T point_triangle_distance(
     Eigen::ConstRef<Eigen::Vector3<T>> p,
     Eigen::ConstRef<Eigen::Vector3<T>> t0,
     Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -53,7 +53,7 @@ T point_triangle_distance(
 }
 
 template <typename T>
-Eigen::Vector<T, 12> point_triangle_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Vector<T, 12> point_triangle_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3<T>> p,
     Eigen::ConstRef<Eigen::Vector3<T>> t0,
     Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -124,7 +124,8 @@ Eigen::Vector<T, 12> point_triangle_distance_gradient(
 }
 
 template <typename T>
-Eigen::Matrix<T, 12, 12> point_triangle_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12>
+point_triangle_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3<T>> p,
     Eigen::ConstRef<Eigen::Vector3<T>> t0,
     Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -253,12 +254,16 @@ Eigen::Matrix<T, 12, 12> point_triangle_distance_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
         Eigen::ConstRef<Eigen::Vector3<T>>, PointTriangleDistanceType)
 
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
 IPC_INSTANTIATE_POINT_TRIANGLE(float);
 IPC_INSTANTIATE_POINT_TRIANGLE(double);
+#endif
+#if IPC_TOOLKIT_INSTANTIATE_HOST_SCALARS
 IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADGrad<12>);
 IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADHessian<12>);
 IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADGrad<13>);
 IPC_INSTANTIATE_POINT_TRIANGLE_VALUE(ADHessian<13>);
+#endif
 
 #ifdef IPC_TOOLKIT_WITH_SIMD
 // SIMD batches. Only an explicit distance type is supported.

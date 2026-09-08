@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/geometry/normal.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -26,7 +27,7 @@ namespace detail {
     /// represent segment endpoints). Behavior is undefined if ea0 == ea1 or eb0
     /// == eb1.
     template <typename T>
-    inline T line_line_signed_distance(
+    IPC_TOOLKIT_HOST_DEVICE inline T line_line_signed_distance(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -55,7 +56,8 @@ namespace detail {
     ///
     /// @see line_line_signed_distance, line_line_normal
     template <typename T>
-    inline Eigen::Vector<T, 12> line_line_signed_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 12>
+    line_line_signed_distance_gradient(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -90,7 +92,8 @@ namespace detail {
     ///
     /// @see line_line_signed_distance, line_line_signed_distance_gradient
     template <typename T>
-    Eigen::Matrix<T, 12, 12> line_line_signed_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12>
+    line_line_signed_distance_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -121,7 +124,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_signed_distance(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_signed_distance(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -156,7 +159,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_signed_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_signed_distance_gradient(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -190,7 +193,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_signed_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_signed_distance_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,

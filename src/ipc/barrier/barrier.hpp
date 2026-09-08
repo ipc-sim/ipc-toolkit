@@ -58,7 +58,8 @@ using Barrier = BarrierBase<>;
 /// @param d The distance.
 /// @param dhat Activation distance of the barrier.
 /// @return The value of the barrier function at d.
-template <typename T = double> T barrier(const T d, const T dhat);
+template <typename T = double>
+IPC_TOOLKIT_HOST_DEVICE T barrier(const T d, const T dhat);
 
 /// @brief Derivative of the barrier function.
 ///
@@ -71,7 +72,7 @@ template <typename T = double> T barrier(const T d, const T dhat);
 /// @param dhat Activation distance of the barrier.
 /// @return The derivative of the barrier wrt d.
 template <typename T = double>
-T barrier_first_derivative(const T d, const T dhat);
+IPC_TOOLKIT_HOST_DEVICE T barrier_first_derivative(const T d, const T dhat);
 
 /// @brief Second derivative of the barrier function.
 ///
@@ -84,7 +85,7 @@ T barrier_first_derivative(const T d, const T dhat);
 /// @param dhat Activation distance of the barrier.
 /// @return The second derivative of the barrier wrt d.
 template <typename T = double>
-T barrier_second_derivative(const T d, const T dhat);
+IPC_TOOLKIT_HOST_DEVICE T barrier_second_derivative(const T d, const T dhat);
 
 /// @brief Smoothly clamped log barrier functions from [Li et al. 2020].
 template <typename T = double> class ClampedLogBarrier : public BarrierBase<T> {

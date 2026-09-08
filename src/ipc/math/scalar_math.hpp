@@ -31,7 +31,7 @@ namespace numext {
     template <                                                                 \
         typename T, typename... Ts,                                            \
         typename = std::enable_if_t<(std::is_same_v<T, Ts> && ...)>>           \
-    inline auto FUNC(const T& x, const Ts&... rest)                            \
+    IPC_TOOLKIT_HOST_DEVICE inline auto FUNC(const T& x, const Ts&... rest)    \
     {                                                                          \
         IPC_TOOLKIT_USING_STD(FUNC)                                            \
         return FUNC(x, rest...);                                               \
@@ -52,9 +52,15 @@ constexpr double MOLLIFIER_THRESHOLD_EPS = 1e-2;
 
 /// @brief Square of `x`, for any scalar the library templates on.
 /// @note Faster than `std::pow(x, 2)`.
-template <typename T> inline T sqr(const T& x) { return x * x; }
+template <typename T> IPC_TOOLKIT_HOST_DEVICE inline T sqr(const T& x)
+{
+    return x * x;
+}
 
 /// @brief Cube of `x`, for any scalar the library templates on.
-template <typename T> inline T cubic(const T& x) { return x * x * x; }
+template <typename T> IPC_TOOLKIT_HOST_DEVICE inline T cubic(const T& x)
+{
+    return x * x * x;
+}
 
 } // namespace ipc

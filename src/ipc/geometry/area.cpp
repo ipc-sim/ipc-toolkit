@@ -6,7 +6,7 @@ namespace ipc::autogen {
 
 // dA is (9×1) flattened in column-major order
 template <typename T>
-void triangle_area_gradient(
+IPC_TOOLKIT_HOST_DEVICE void triangle_area_gradient(
     T t0_x,
     T t0_y,
     T t0_z,
@@ -48,8 +48,10 @@ void triangle_area_gradient(
 #define IPC_INSTANTIATE_AREA_AUTOGEN(T)                                        \
     template void triangle_area_gradient<T>(T, T, T, T, T, T, T, T, T, T[9])
 
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
 IPC_INSTANTIATE_AREA_AUTOGEN(float);
 IPC_INSTANTIATE_AREA_AUTOGEN(double);
+#endif
 #ifdef IPC_TOOLKIT_WITH_SIMD
 IPC_INSTANTIATE_AREA_AUTOGEN(SimdBatch<float>);
 IPC_INSTANTIATE_AREA_AUTOGEN(SimdBatch<double>);

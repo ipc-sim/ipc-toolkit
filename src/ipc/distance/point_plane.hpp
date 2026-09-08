@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/geometry/normal.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -9,10 +10,10 @@ namespace ipc {
 namespace autogen {
     // clang-format off
     template <typename T>
-    void point_plane_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE void point_plane_distance_gradient(
         T v01, T v02, T v03, T v11, T v12, T v13, T v21, T v22, T v23, T v31, T v32, T v33, T g[12]);
     template <typename T>
-    void point_plane_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE void point_plane_distance_hessian(
         T v01, T v02, T v03, T v11, T v12, T v13, T v21, T v22, T v23, T v31, T v32, T v33, T H[144]);
     // clang-format on
 } // namespace autogen
@@ -25,7 +26,7 @@ namespace detail {
     /// @param normal The normal of the plane.
     /// @return The distance between the point and plane.
     template <typename T>
-    inline T point_plane_distance(
+    IPC_TOOLKIT_HOST_DEVICE inline T point_plane_distance(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> origin,
         Eigen::ConstRef<Eigen::Vector3<T>> normal)
@@ -42,7 +43,7 @@ namespace detail {
     /// @param t2 The third vertex of the triangle.
     /// @return The distance between the point and plane.
     template <typename T>
-    inline T point_plane_distance(
+    IPC_TOOLKIT_HOST_DEVICE inline T point_plane_distance(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -61,7 +62,8 @@ namespace detail {
     /// @param normal The normal of the plane.
     /// @return The gradient of the distance wrt p.
     template <typename T>
-    inline Eigen::Vector3<T> point_plane_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector3<T>
+    point_plane_distance_gradient(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> origin,
         Eigen::ConstRef<Eigen::Vector3<T>> normal)
@@ -78,7 +80,8 @@ namespace detail {
     /// @param t2 The third vertex of the triangle.
     /// @return The gradient of the distance wrt p, t0, t1, and t2.
     template <typename T>
-    inline Eigen::Vector<T, 12> point_plane_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 12>
+    point_plane_distance_gradient(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -98,7 +101,8 @@ namespace detail {
     /// @param normal The normal of the plane.
     /// @return The hessian of the distance wrt p.
     template <typename T>
-    inline Eigen::Matrix3<T> point_plane_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix3<T>
+    point_plane_distance_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> origin,
         Eigen::ConstRef<Eigen::Vector3<T>> normal)
@@ -114,7 +118,8 @@ namespace detail {
     /// @param t2 The third vertex of the triangle.
     /// @return The hessian of the distance wrt p, t0, t1, and t2.
     template <typename T>
-    inline Eigen::Matrix<T, 12, 12> point_plane_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 12, 12>
+    point_plane_distance_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -135,7 +140,7 @@ namespace detail {
 /// @param normal The normal of the plane.
 /// @return The distance between the point and plane.
 template <typename DerivedP, typename DerivedOrigin, typename DerivedNormal>
-inline auto point_plane_distance(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_plane_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedOrigin>& origin,
     const Eigen::MatrixBase<DerivedNormal>& normal)
@@ -158,7 +163,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_plane_distance(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_plane_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
@@ -175,7 +180,7 @@ inline auto point_plane_distance(
 /// @param normal The normal of the plane.
 /// @return The gradient of the distance wrt p.
 template <typename DerivedP, typename DerivedOrigin, typename DerivedNormal>
-inline auto point_plane_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_plane_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedOrigin>& origin,
     const Eigen::MatrixBase<DerivedNormal>& normal)
@@ -196,7 +201,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_plane_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_plane_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
@@ -213,7 +218,7 @@ inline auto point_plane_distance_gradient(
 /// @param normal The normal of the plane.
 /// @return The hessian of the distance wrt p.
 template <typename DerivedP, typename DerivedOrigin, typename DerivedNormal>
-inline auto point_plane_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_plane_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedOrigin>& origin,
     const Eigen::MatrixBase<DerivedNormal>& normal)
@@ -234,7 +239,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_plane_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_plane_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,

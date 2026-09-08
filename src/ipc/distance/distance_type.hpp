@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <cassert>
@@ -60,14 +61,60 @@ enum class EdgeEdgeDistanceType : uint8_t {
 namespace detail {
     /// @brief Warn about a degenerate edge.
     /// @note Out of line to keep the logger (and spdlog) out of this header.
-    void warn_degenerate_point_edge() noexcept;
+    void warn_degenerate_point_edge_host() noexcept;
 
     /// @brief Throw for an invalid distance type.
     /// @note Out of line and [[noreturn]] so that constructing the exception does not consume the caller's inlining budget on the hot path.
-    [[noreturn]] void throw_invalid_distance_type(const char* function);
+    [[noreturn]] void throw_invalid_distance_type_host(const char* function);
 
     /// @brief Throw when AUTO is requested for a scalar that cannot resolve it.
-    [[noreturn]] void throw_auto_requires_explicit_dtype(const char* function);
+    [[noreturn]] void
+    throw_auto_requires_explicit_dtype_host(const char* function);
+
+    // The distance functions below are shared between host C++ and CUDA device
+    // code, but the device has neither the logger nor exceptions. So we funnel
+    // every error report through the wrappers below: on the host they forward
+    // to the out-of-line helpers above, and on the device they assert and trap.
+    // The tradeoff is that a bad distance type takes down the kernel instead of
+    // unwinding to a handler, but that is the best we can do without
+    // exceptions, and it still fails loudly instead of returning garbage.
+
+    /// @brief Warn about a degenerate edge on the host; a no-op on the device.
+    IPC_TOOLKIT_HOST_DEVICE inline void warn_degenerate_point_edge() noexcept
+    {
+#ifdef __CUDA_ARCH__
+        // A degenerate edge is recoverable (we fall back to an arbitrary
+        // end-point), so on the device we stay silent rather than trapping.
+#else
+        warn_degenerate_point_edge_host();
+#endif
+    }
+
+    /// @brief Report an invalid distance type: throws on the host, traps on the device.
+    [[noreturn]] IPC_TOOLKIT_HOST_DEVICE inline void
+    throw_invalid_distance_type(const char* function)
+    {
+#ifdef __CUDA_ARCH__
+        (void)function;
+        assert(false && "Invalid distance type!");
+        __trap();
+#else
+        throw_invalid_distance_type_host(function);
+#endif
+    }
+
+    /// @brief Report an unresolvable AUTO: throws on the host, traps on the device.
+    [[noreturn]] IPC_TOOLKIT_HOST_DEVICE inline void
+    throw_auto_requires_explicit_dtype(const char* function)
+    {
+#ifdef __CUDA_ARCH__
+        (void)function;
+        assert(false && "An explicit distance type is required!");
+        __trap();
+#else
+        throw_auto_requires_explicit_dtype_host(function);
+#endif
+    }
 
     /// @brief Determine the closest pair between a point and edge.
     /// @note Prefer the ipc::point_edge_distance_type front end below, which deduces both the scalar type and the dimension.
@@ -78,7 +125,8 @@ namespace detail {
     /// @param e1 The second vertex of the edge.
     /// @return The distance type of the point-edge pair.
     template <typename T, int dim>
-    inline PointEdgeDistanceType point_edge_distance_type(
+    IPC_TOOLKIT_HOST_DEVICE inline PointEdgeDistanceType
+    point_edge_distance_type(
         const Eigen::Vector<T, dim>& p,
         const Eigen::Vector<T, dim>& e0,
         const Eigen::Vector<T, dim>& e1)
@@ -110,7 +158,8 @@ namespace detail {
     /// @param t2 The third vertex of the triangle.
     /// @return The distance type of the point-triangle pair.
     template <typename T>
-    PointTriangleDistanceType point_triangle_distance_type(
+    IPC_TOOLKIT_HOST_DEVICE PointTriangleDistanceType
+    point_triangle_distance_type(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -123,7 +172,7 @@ namespace detail {
     /// @param eb1 The second vertex of the second edge.
     /// @return The distance type of the edge-edge pair.
     template <typename T>
-    EdgeEdgeDistanceType edge_edge_distance_type(
+    IPC_TOOLKIT_HOST_DEVICE EdgeEdgeDistanceType edge_edge_distance_type(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -136,7 +185,8 @@ namespace detail {
     /// @param eb1 The second vertex of the second edge.
     /// @return The distance type of the edge-edge pair.
     template <typename T>
-    EdgeEdgeDistanceType edge_edge_parallel_distance_type(
+    IPC_TOOLKIT_HOST_DEVICE EdgeEdgeDistanceType
+    edge_edge_parallel_distance_type(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -159,7 +209,7 @@ namespace detail {
 /// @param e1 The second vertex of the edge.
 /// @return The distance type of the point-edge pair.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline PointEdgeDistanceType point_edge_distance_type(
+IPC_TOOLKIT_HOST_DEVICE inline PointEdgeDistanceType point_edge_distance_type(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -190,7 +240,8 @@ template <
     typename DerivedT1,
     typename DerivedT2,
     std::enable_if_t<std::is_class_v<DerivedP>, int> = 0>
-inline PointTriangleDistanceType point_triangle_distance_type(
+IPC_TOOLKIT_HOST_DEVICE inline PointTriangleDistanceType
+point_triangle_distance_type(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
@@ -212,7 +263,7 @@ template <
     typename DerivedEB0,
     typename DerivedEB1,
     std::enable_if_t<std::is_class_v<DerivedEA0>, int> = 0>
-inline EdgeEdgeDistanceType edge_edge_distance_type(
+IPC_TOOLKIT_HOST_DEVICE inline EdgeEdgeDistanceType edge_edge_distance_type(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -234,7 +285,8 @@ template <
     typename DerivedEB0,
     typename DerivedEB1,
     std::enable_if_t<std::is_class_v<DerivedEA0>, int> = 0>
-inline EdgeEdgeDistanceType edge_edge_parallel_distance_type(
+IPC_TOOLKIT_HOST_DEVICE inline EdgeEdgeDistanceType
+edge_edge_parallel_distance_type(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,

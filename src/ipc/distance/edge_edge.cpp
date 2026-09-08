@@ -10,7 +10,7 @@
 namespace ipc::detail {
 
 template <typename T>
-T edge_edge_distance(
+IPC_TOOLKIT_HOST_DEVICE T edge_edge_distance(
     Eigen::ConstRef<Eigen::Vector3<T>> ea0,
     Eigen::ConstRef<Eigen::Vector3<T>> ea1,
     Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -59,7 +59,7 @@ T edge_edge_distance(
 }
 
 template <typename T>
-Eigen::Vector<T, 12> edge_edge_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Vector<T, 12> edge_edge_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3<T>> ea0,
     Eigen::ConstRef<Eigen::Vector3<T>> ea1,
     Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -143,7 +143,7 @@ Eigen::Vector<T, 12> edge_edge_distance_gradient(
 }
 
 template <typename T>
-Eigen::Matrix<T, 12, 12> edge_edge_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12> edge_edge_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3<T>> ea0,
     Eigen::ConstRef<Eigen::Vector3<T>> ea1,
     Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -290,14 +290,18 @@ Eigen::Matrix<T, 12, 12> edge_edge_distance_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
         Eigen::ConstRef<Eigen::Vector3<T>>, EdgeEdgeDistanceType)
 
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
 IPC_INSTANTIATE_EDGE_EDGE(float);
 IPC_INSTANTIATE_EDGE_EDGE(double);
+#endif
+#if IPC_TOOLKIT_INSTANTIATE_HOST_SCALARS
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADGrad<9>);
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADHessian<9>);
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADGrad<12>);
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADHessian<12>);
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADGrad<13>);
 IPC_INSTANTIATE_EDGE_EDGE_VALUE(ADHessian<13>);
+#endif
 #ifdef IPC_TOOLKIT_WITH_SIMD
 IPC_INSTANTIATE_EDGE_EDGE(SimdBatch<float>);
 IPC_INSTANTIATE_EDGE_EDGE(SimdBatch<double>);

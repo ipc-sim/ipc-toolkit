@@ -6,11 +6,24 @@
 #include <ipc/utils/simd.hpp>
 
 #include <array>
-#include <utility>
 
 namespace ipc::detail {
 
 namespace {
+    /// @brief Return type of dihedral_normal_jacobians below.
+    ///
+    /// An aggregate rather than a std::pair: nvcc admits libstdc++'s constexpr
+    /// std::pair into device code only under --expt-relaxed-constexpr, which
+    /// covers compile-time evaluation, and a pair built at run time inside a
+    /// kernel silently comes back zero-filled. See
+    /// ipc::NormalizationAndJacobian.
+    template <typename T> struct DihedralNormalJacobians {
+        /// @brief Jacobian of n0 = normal(x0, x1, x2) w.r.t. all 12 DOFs.
+        Eigen::Matrix<T, 3, 12> dn0_dx;
+        /// @brief Jacobian of n1 = normal(x1, x0, x3) w.r.t. all 12 DOFs.
+        Eigen::Matrix<T, 3, 12> dn1_dx;
+    };
+
     /// @brief Jacobians of the two triangle normals with respect to all 12 DOFs
     /// (x0, x1, x2, x3).
     ///
@@ -18,7 +31,7 @@ namespace {
     /// zero. n1 = normal(x1, x0, x3) comes back in (x1, x0, x3) order, so we
     /// permute its columns into place and zero the x2 block.
     template <typename T>
-    inline std::pair<Eigen::Matrix<T, 3, 12>, Eigen::Matrix<T, 3, 12>>
+    IPC_TOOLKIT_HOST_DEVICE inline DihedralNormalJacobians<T>
     dihedral_normal_jacobians(
         Eigen::ConstRef<Eigen::Vector3<T>> x0,
         Eigen::ConstRef<Eigen::Vector3<T>> x1,
@@ -29,17 +42,24 @@ namespace {
         dn0_dx.template leftCols<9>() = triangle_normal_jacobian(x0, x1, x2);
         dn0_dx.template rightCols<3>().setZero();
 
+        // We scatter the per-vertex blocks explicitly rather than writing
+        // dn1_dx(Eigen::all, idx). Eigen's index slicing is unavailable in
+        // device code, and this function has to stay device-callable. The
+        // permutation is the same one: x0 <- block 1, x1 <- block 0, x3 <-
+        // block 2, with the x2 block zeroed.
+        const Eigen::Matrix<T, 3, 9> dn1 = triangle_normal_jacobian(x1, x0, x3);
         Eigen::Matrix<T, 3, 12> dn1_dx;
-        const std::array<int, 9> idx = { { 3, 4, 5, 0, 1, 2, 9, 10, 11 } };
-        dn1_dx(Eigen::all, idx) = triangle_normal_jacobian(x1, x0, x3);
+        dn1_dx.template middleCols<3>(0) = dn1.template middleCols<3>(3);
+        dn1_dx.template middleCols<3>(3) = dn1.template middleCols<3>(0);
         dn1_dx.template middleCols<3>(6).setZero();
+        dn1_dx.template middleCols<3>(9) = dn1.template middleCols<3>(6);
 
         return { dn0_dx, dn1_dx };
     }
 } // namespace
 
 template <typename T>
-T dihedral_angle(
+IPC_TOOLKIT_HOST_DEVICE T dihedral_angle(
     Eigen::ConstRef<Eigen::Vector3<T>> x0,
     Eigen::ConstRef<Eigen::Vector3<T>> x1,
     Eigen::ConstRef<Eigen::Vector3<T>> x2,
@@ -56,7 +76,7 @@ T dihedral_angle(
 }
 
 template <typename T>
-Eigen::Vector<T, 12> dihedral_angle_gradient(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Vector<T, 12> dihedral_angle_gradient(
     Eigen::ConstRef<Eigen::Vector3<T>> x0,
     Eigen::ConstRef<Eigen::Vector3<T>> x1,
     Eigen::ConstRef<Eigen::Vector3<T>> x2,
@@ -90,7 +110,7 @@ Eigen::Vector<T, 12> dihedral_angle_gradient(
 }
 
 template <typename T>
-Eigen::Matrix<T, 12, 12> dihedral_angle_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12> dihedral_angle_hessian(
     Eigen::ConstRef<Eigen::Vector3<T>> x0,
     Eigen::ConstRef<Eigen::Vector3<T>> x1,
     Eigen::ConstRef<Eigen::Vector3<T>> x2,
@@ -368,8 +388,10 @@ Eigen::Matrix<T, 12, 12> dihedral_angle_hessian(
     template Eigen::Vector<T, 12> dihedral_angle_gradient<T>(Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>); \
     template Eigen::Matrix<T, 12, 12> dihedral_angle_hessian<T>(Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>)
 
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
 IPC_INSTANTIATE_ANGLE(float);
 IPC_INSTANTIATE_ANGLE(double);
+#endif
 #ifdef IPC_TOOLKIT_WITH_SIMD
 IPC_INSTANTIATE_ANGLE(SimdBatch<float>);
 IPC_INSTANTIATE_ANGLE(SimdBatch<double>);

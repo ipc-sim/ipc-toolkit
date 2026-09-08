@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Geometry>
@@ -10,10 +11,10 @@ namespace ipc {
 namespace autogen {
     // clang-format off
     template <typename T>
-    void line_line_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE void line_line_distance_gradient(
         T v01, T v02, T v03, T v11, T v12, T v13, T v21, T v22, T v23, T v31, T v32, T v33, T g[12]);
     template <typename T>
-    void line_line_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE void line_line_distance_hessian(
         T v01, T v02, T v03, T v11, T v12, T v13, T v21, T v22, T v23, T v31, T v32, T v33, T H[144]);
     // clang-format on
 } // namespace autogen
@@ -28,7 +29,7 @@ namespace detail {
     /// @param eb1 The second vertex of the edge defining the second line.
     /// @return The distance between the two lines.
     template <typename T>
-    inline T line_line_distance(
+    IPC_TOOLKIT_HOST_DEVICE inline T line_line_distance(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -53,7 +54,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_distance(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_distance(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -70,7 +71,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_distance_gradient(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -88,7 +89,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto line_line_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto line_line_distance_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,

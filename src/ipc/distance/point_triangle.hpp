@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -15,7 +16,7 @@ namespace detail {
     /// @param dtype The point-triangle distance type to compute.
     /// @return The distance between the point and triangle.
     template <typename T>
-    T point_triangle_distance(
+    IPC_TOOLKIT_HOST_DEVICE T point_triangle_distance(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -31,7 +32,8 @@ namespace detail {
     /// @param dtype The point-triangle distance type to compute.
     /// @return The gradient of the distance wrt p, t0, t1, and t2.
     template <typename T>
-    Eigen::Vector<T, 12> point_triangle_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Vector<T, 12>
+    point_triangle_distance_gradient(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -47,7 +49,8 @@ namespace detail {
     /// @param dtype The point-triangle distance type to compute.
     /// @return The hessian of the distance wrt p, t0, t1, and t2.
     template <typename T>
-    Eigen::Matrix<T, 12, 12> point_triangle_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12>
+    point_triangle_distance_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -70,7 +73,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_triangle_distance(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
@@ -94,7 +97,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_triangle_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
@@ -118,7 +121,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_triangle_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,

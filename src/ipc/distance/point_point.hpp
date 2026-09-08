@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <cassert>
@@ -15,7 +16,7 @@ namespace detail {
     /// @param p1 The second point.
     /// @return The distance between p0 and p1.
     template <typename T, int dim>
-    inline T point_point_distance(
+    IPC_TOOLKIT_HOST_DEVICE inline T point_point_distance(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> p1)
     {
@@ -31,7 +32,8 @@ namespace detail {
     /// @param p1 The second point.
     /// @return The computed gradient.
     template <typename T, int dim>
-    inline Eigen::Vector<T, 2 * dim> point_point_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 2 * dim>
+    point_point_distance_gradient(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> p1)
     {
@@ -50,7 +52,8 @@ namespace detail {
     /// @param p1 The second point.
     /// @return The computed hessian.
     template <typename T, int dim>
-    inline Eigen::Matrix<T, 2 * dim, 2 * dim> point_point_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 2 * dim, 2 * dim>
+    point_point_distance_hessian(
         Eigen::ConstRef<Eigen::Vector<T, dim>> /*p0*/,
         Eigen::ConstRef<Eigen::Vector<T, dim>> /*p1*/)
     {
@@ -73,7 +76,7 @@ namespace detail {
 /// @param p1 The second point.
 /// @return The distance between p0 and p1.
 template <typename DerivedP0, typename DerivedP1>
-inline auto point_point_distance(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_point_distance(
     const Eigen::MatrixBase<DerivedP0>& p0,
     const Eigen::MatrixBase<DerivedP1>& p1)
 {
@@ -98,7 +101,7 @@ inline auto point_point_distance(
 /// @param p1 The second point.
 /// @return The computed gradient.
 template <typename DerivedP0, typename DerivedP1>
-inline auto point_point_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_point_distance_gradient(
     const Eigen::MatrixBase<DerivedP0>& p0,
     const Eigen::MatrixBase<DerivedP1>& p1)
 {
@@ -124,7 +127,7 @@ inline auto point_point_distance_gradient(
 /// @param p1 The second point.
 /// @return The computed hessian.
 template <typename DerivedP0, typename DerivedP1>
-inline auto point_point_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_point_distance_hessian(
     const Eigen::MatrixBase<DerivedP0>& p0,
     const Eigen::MatrixBase<DerivedP1>& p1)
 {

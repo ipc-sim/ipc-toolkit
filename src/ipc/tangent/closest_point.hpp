@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/simd.hpp>
 
@@ -13,12 +14,12 @@ namespace ipc {
 namespace autogen {
     /// hess is (6×6) flattened in column-major order
     template <typename T>
-    void point_edge_closest_point_2D_hessian(
+    IPC_TOOLKIT_HOST_DEVICE void point_edge_closest_point_2D_hessian(
         T p_x, T p_y, T e0_x, T e0_y, T e1_x, T e1_y, T hess[36]);
 
     /// hess is (9×9) flattened in column-major order
     template <typename T>
-    void point_edge_closest_point_3D_hessian(
+    IPC_TOOLKIT_HOST_DEVICE void point_edge_closest_point_3D_hessian(
         T p_x,
         T p_y,
         T p_z,
@@ -32,7 +33,7 @@ namespace autogen {
 
     /// J is (2×12) flattened in column-major order
     template <typename T>
-    void edge_edge_closest_point_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void edge_edge_closest_point_jacobian(
         T ea0_x,
         T ea0_y,
         T ea0_z,
@@ -49,7 +50,7 @@ namespace autogen {
 
     /// hess is (144×1) flattened in column-major order
     template <typename T>
-    void edge_edge_closest_point_hessian_a(
+    IPC_TOOLKIT_HOST_DEVICE void edge_edge_closest_point_hessian_a(
         T ea0_x,
         T ea0_y,
         T ea0_z,
@@ -66,7 +67,7 @@ namespace autogen {
 
     /// hess is (144×1) flattened in column-major order
     template <typename T>
-    void edge_edge_closest_point_hessian_b(
+    IPC_TOOLKIT_HOST_DEVICE void edge_edge_closest_point_hessian_b(
         T ea0_x,
         T ea0_y,
         T ea0_z,
@@ -83,7 +84,7 @@ namespace autogen {
 
     /// J is (2×12) flattened in column-major order
     template <typename T>
-    void point_triangle_closest_point_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE void point_triangle_closest_point_jacobian(
         T p_x,
         T p_y,
         T p_z,
@@ -100,7 +101,7 @@ namespace autogen {
 
     /// hess is (144×1) flattened in column-major order
     template <typename T>
-    void point_triangle_closest_point_hessian_0(
+    IPC_TOOLKIT_HOST_DEVICE void point_triangle_closest_point_hessian_0(
         T p_x,
         T p_y,
         T p_z,
@@ -117,7 +118,7 @@ namespace autogen {
 
     /// hess is (144×1) flattened in column-major order
     template <typename T>
-    void point_triangle_closest_point_hessian_1(
+    IPC_TOOLKIT_HOST_DEVICE void point_triangle_closest_point_hessian_1(
         T p_x,
         T p_y,
         T p_z,
@@ -172,7 +173,7 @@ namespace detail {
     /// @param b The right-hand side vector.
     /// @return The solution vector `x`.
     template <typename T>
-    inline Eigen::Vector2<T> solve_spd_2x2(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector2<T> solve_spd_2x2(
         Eigen::ConstRef<Eigen::Matrix2<T>> A,
         Eigen::ConstRef<Eigen::Vector2<T>> b)
     {
@@ -215,7 +216,7 @@ namespace detail {
     /// @param e1 Second edge point
     /// @return Barycentric coordinate of the closest point
     template <typename T, int dim>
-    inline T point_edge_closest_point(
+    IPC_TOOLKIT_HOST_DEVICE inline T point_edge_closest_point(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1)
@@ -233,7 +234,8 @@ namespace detail {
     /// @param e1 Second edge point
     /// @return Jacobian of the closest point
     template <typename T, int dim>
-    inline Eigen::Vector<T, 3 * dim> point_edge_closest_point_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 3 * dim>
+    point_edge_closest_point_jacobian(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1)
@@ -261,7 +263,8 @@ namespace detail {
     /// @param e1 Second edge point
     /// @return Hessian of the closest point
     template <typename T, int dim>
-    inline Eigen::Matrix<T, 3 * dim, 3 * dim> point_edge_closest_point_hessian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 3 * dim, 3 * dim>
+    point_edge_closest_point_hessian(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1)
@@ -291,7 +294,7 @@ namespace detail {
     /// @param eb1 Second point of the second edge
     /// @return Barycentric coordinates of the closest points
     template <typename T>
-    inline Eigen::Vector2<T> edge_edge_closest_point(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector2<T> edge_edge_closest_point(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -321,7 +324,8 @@ namespace detail {
     /// @param eb1 Second point of the second edge
     /// @return Jacobian of the closest points
     template <typename T>
-    inline Eigen::Matrix<T, 2, 12> edge_edge_closest_point_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 2, 12>
+    edge_edge_closest_point_jacobian(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -342,7 +346,7 @@ namespace detail {
     /// @param eb1 Second point of the second edge
     /// @return Hessian of the closest points (2x12x12 tensor)
     template <typename T>
-    inline std::array<Eigen::Matrix<T, 12, 12>, 2>
+    IPC_TOOLKIT_HOST_DEVICE inline std::array<Eigen::Matrix<T, 12, 12>, 2>
     edge_edge_closest_point_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
@@ -370,7 +374,8 @@ namespace detail {
     /// @param t2 Triangle's third vertex
     /// @return Barycentric coordinates of the closest point
     template <typename T>
-    inline Eigen::Vector2<T> point_triangle_closest_point(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector2<T>
+    point_triangle_closest_point(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -392,7 +397,8 @@ namespace detail {
     /// @param t2 Triangle's third vertex
     /// @return Jacobian of the closest point
     template <typename T>
-    inline Eigen::Matrix<T, 2, 12> point_triangle_closest_point_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 2, 12>
+    point_triangle_closest_point_jacobian(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
@@ -413,7 +419,7 @@ namespace detail {
     /// @param t2 Triangle's third vertex
     /// @return Hessian of the closest point (2x12x12 tensor)
     template <typename T>
-    inline std::array<Eigen::Matrix<T, 12, 12>, 2>
+    IPC_TOOLKIT_HOST_DEVICE inline std::array<Eigen::Matrix<T, 12, 12>, 2>
     point_triangle_closest_point_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> p,
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
@@ -440,7 +446,7 @@ namespace detail {
 /// @param e1 Second edge point
 /// @return barycentric coordinates of the closest point
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_edge_closest_point(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_edge_closest_point(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -465,7 +471,7 @@ inline auto point_edge_closest_point(
 /// @param e1 Second edge point
 /// @return Jacobian of the closest point
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_edge_closest_point_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_edge_closest_point_jacobian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -492,7 +498,7 @@ inline auto point_edge_closest_point_jacobian(
 /// @param e1 Second edge point
 /// @return Hessian of the closest point
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_edge_closest_point_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_edge_closest_point_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
@@ -535,7 +541,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_closest_point(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_closest_point(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -559,7 +565,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_closest_point_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_closest_point_jacobian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -583,7 +589,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_closest_point_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_closest_point_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -610,7 +616,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_triangle_closest_point(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_closest_point(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
@@ -634,7 +640,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_triangle_closest_point_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_closest_point_jacobian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
@@ -658,7 +664,7 @@ template <
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2>
-inline auto point_triangle_closest_point_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_closest_point_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
