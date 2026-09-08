@@ -310,7 +310,10 @@ if(IPC_TOOLKIT_WITH_SIMD)
   # unit's own flags. ipc/utils/simd.hpp exposes batch types in the public API,
   # and a consumer compiled without these flags would name a different type
   # than the one instantiated in the library, failing to link.
-  target_compile_options(ipc_toolkit PUBLIC ${SIMD_CXX_FLAGS})
+  # NOTE: Restricted to C++ sources because these are MSVC-style /arch flags
+  # that nvcc would otherwise treat as input files, and device code has no use
+  # for CPU SIMD anyway.
+  target_compile_options(ipc_toolkit PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:${SIMD_CXX_FLAGS}>")
 
   # Link against cross-platform xsimd library
   include(xsimd)

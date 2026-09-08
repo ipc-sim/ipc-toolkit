@@ -4,6 +4,9 @@
 #include <ipc/math/scalar_math.hpp>
 
 #include <Eigen/Core>
+#if defined(IPC_TOOLKIT_WITH_SIMD) && !defined(__CUDACC__)
+#include <xsimd/xsimd.hpp>
+#endif
 
 #include <limits>
 #include <type_traits>
@@ -106,7 +109,7 @@ inline auto select_lazy(const Mask& mask, F&& value, Rest&&... rest)
 
 } // namespace ipc
 
-#ifdef IPC_TOOLKIT_WITH_SIMD
+#if defined(IPC_TOOLKIT_WITH_SIMD) && !defined(__CUDACC__)
 
 #include <xsimd/xsimd.hpp>
 
