@@ -22,6 +22,17 @@
 #cmakedefine IPC_TOOLKIT_WITH_MESHFEM_SPARSE
 // #define IPC_TOOLKIT_DEBUG_AUTODIFF
 
+// CPU SIMD is a host-only facility, so retract the switch for nvcc. xsimd is
+// not on nvcc's include path and ipc/utils/simd.hpp defines no batch types
+// there, so any `#ifdef IPC_TOOLKIT_WITH_SIMD` block naming SimdBatch would
+// otherwise fail to compile the moment its file becomes a shared device
+// source. Retracting once here means those blocks need no CUDA-specific
+// spelling. Note that this is a property of the translation unit, not of the
+// build: host TUs of a CUDA-enabled build still see SIMD as on.
+#if defined(IPC_TOOLKIT_WITH_SIMD) && defined(__CUDACC__)
+#undef IPC_TOOLKIT_WITH_SIMD
+#endif
+
 // Execution-space annotation for functions shared between C++ and CUDA.
 // IPC_TOOLKIT_HOST_DEVICE expands to `__host__ __device__` under nvcc and to
 // nothing otherwise, so the same declaration is valid in host and device code.

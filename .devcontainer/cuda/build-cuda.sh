@@ -12,9 +12,9 @@
 # hermetic and never writes into your host working tree.
 #
 # Usage:
-#   .devcontainer/cuda/build-cuda.sh                 # cuda-release, arch 75;80;86;89
+#   .devcontainer/cuda/build-cuda.sh                 # cuda-release, arch 75
 #   PRESET=test .devcontainer/cuda/build-cuda.sh     # test preset (CUDA + tests)
-#   CUDA_ARCH="86" .devcontainer/cuda/build-cuda.sh  # single architecture
+#   CUDA_ARCH="75;80;86;89" .devcontainer/cuda/build-cuda.sh  # several archs
 #   JOBS=4 .devcontainer/cuda/build-cuda.sh          # limit parallelism (memory)
 #
 set -euo pipefail
@@ -23,7 +23,11 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 IMAGE_NAME="${IMAGE_NAME:-ipc-toolkit-cuda-dev}"
 PRESET="${PRESET:-cuda-release}"
-CUDA_ARCH="${CUDA_ARCH:-75;80;86;89}"
+# One architecture is enough to answer "does it compile": nvcc runs the whole
+# device front-end per architecture in the list, so the extra ones only repeat
+# codegen. 75 is the oldest we support, hence the strictest. Override to build
+# a list when you want to check architecture-specific codegen.
+CUDA_ARCH="${CUDA_ARCH:-75}"
 CUDA_IMAGE="${CUDA_IMAGE:-nvidia/cuda:12.6.2-devel-ubuntu22.04}"
 # Heavy TUs (headers textually include implementations under CUDA) can OOM the
 # VM at full parallelism; default below nproc.
@@ -31,9 +35,9 @@ JOBS="${JOBS:-4}"
 
 echo ">> Building CUDA dev image '${IMAGE_NAME}'"
 docker build \
-    -f "${REPO_ROOT}/.devcontainer/cuda/Dockerfile" \
+    -f "${REPO_ROOT}/.devcontainer/Dockerfile" \
     -t "${IMAGE_NAME}" \
-    --build-arg "CUDA_IMAGE=${CUDA_IMAGE}" \
+    --build-arg "BASE_IMAGE=${CUDA_IMAGE}" \
     "${REPO_ROOT}"
 
 echo ">> Compiling (preset=${PRESET}, arch=${CUDA_ARCH})"
@@ -50,21 +54,24 @@ docker run --rm --user root \
     "${IMAGE_NAME}" \
     bash -euo pipefail -c '
         export CPM_SOURCE_CACHE=/cpm-cache CCACHE_DIR=/root/.ccache
-        mkdir -p /workspace
         # /workspace is a persistent named volume: rsync copies only files
         # that changed since the last run (the macOS<->VM file-share is slow,
         # so minimizing reads matters) and ninja can then build incrementally.
         # The excludes also shield the persistent build/ dir from --delete.
+        # tests/data is excluded for the same reason: it is cloned by an
+        # ExternalProject whose stamp lives under build/, so deleting the data
+        # while keeping the stamp makes the next build fail in gitupdate.cmake
+        # instead of re-cloning.
         echo ">> [1/3] Syncing source into the container (delta copy)..."
         time rsync -a --delete \
             --exclude=/build \
             --exclude=/.git \
             --exclude=/.ccache \
+            --exclude=/tests/data \
             --exclude=/docs \
             --exclude=/notebooks \
             --exclude=/IPCToolkitOptions.cmake \
             /src/ /workspace/
-        rm -f /workspace/IPCToolkitOptions.cmake
         cd /workspace
         echo ">> [2/3] Configuring (preset=${PRESET})..."
         cmake --preset="${PRESET}" -G Ninja \

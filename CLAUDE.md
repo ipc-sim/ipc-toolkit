@@ -39,11 +39,16 @@ exits with the build's status:
 ./.devcontainer/cuda/build-cuda.sh
 ```
 
-`PRESET` (default `cuda-release`), `CUDA_ARCH`, and `JOBS` override the
+`PRESET` (default `cuda-release`), `CUDA_ARCH` (default `75`, the oldest
+architecture we support and so the strictest; a list such as `"75;80;86;89"`
+costs one full device codegen pass per entry), and `JOBS` override the
 defaults, e.g. `PRESET=test ./.devcontainer/cuda/build-cuda.sh` to build the
 CUDA tests too. The source is mounted read-only and rsynced into a named
 volume, so a run never writes into your working tree, and later runs are
 incremental.
+
+The script builds `.devcontainer/Dockerfile`, the same file the non-CUDA dev
+container uses, passing `BASE_IMAGE` to select an nvcc-equipped base.
 
 **This needs a running Docker daemon.** On macOS that means Docker Desktop or
 a colima VM (`colima start`); the failure mode otherwise is a confusing

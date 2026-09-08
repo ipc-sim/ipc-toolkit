@@ -38,16 +38,12 @@ function(ipc_toolkit_target_shared_device_sources target)
       # Mirror the source's path (relative to the current source dir) under the
       # wrapper directory so that duplicate base names in different subfolders
       # (e.g. a/point.cpp and b/point.cpp) get distinct wrapper paths instead of
-      # colliding on a single flattened name.
+      # colliding on a single flattened name. Swapping the extension on the
+      # relative path covers a bare filename and a subdirectory path alike.
       file(RELATIVE_PATH src_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${src_abs}")
-      get_filename_component(rel_dir "${src_rel}" DIRECTORY)
-      get_filename_component(src_name_we "${src_rel}" NAME_WE)
-
-      set(wrapper_dir "${CMAKE_CURRENT_BINARY_DIR}/cuda_device_wrappers")
-      if(rel_dir)
-        set(wrapper_dir "${wrapper_dir}/${rel_dir}")
-      endif()
-      set(wrapper "${wrapper_dir}/${src_name_we}.cu")
+      string(REGEX REPLACE "\\.[^./\\\\]*$" "" src_rel_we "${src_rel}")
+      set(wrapper
+        "${CMAKE_CURRENT_BINARY_DIR}/cuda_device_wrappers/${src_rel_we}.cu")
 
       # file(GENERATE) only rewrites when the content changes, so this does not
       # trigger spurious rebuilds on reconfigure. The wrapper #includes the
@@ -61,18 +57,13 @@ function(ipc_toolkit_target_shared_device_sources target)
 ")
 
       # Source file properties are directory-scoped and are read from the
-      # directory that created the target, which is not this subdirectory. Set
-      # them in both scopes (TARGET_DIRECTORY for the generator, the plain call
-      # for anything reading them here) and use absolute paths so the lookup
-      # resolves from either scope. Without TARGET_DIRECTORY the defines are
-      # silently dropped and both passes instantiate every scalar, so nvcc sees
-      # the xsimd batch instantiations and fails.
+      # directory that created the target, which is not this subdirectory, so
+      # they must be set with TARGET_DIRECTORY and with absolute paths.
+      # Without it the defines are silently dropped and both passes instantiate
+      # every scalar, so nvcc sees the xsimd batch instantiations and fails.
       set_source_files_properties("${wrapper}"
         TARGET_DIRECTORY ${target}
         PROPERTIES
-        GENERATED TRUE
-        COMPILE_DEFINITIONS IPC_TOOLKIT_DEVICE_SCALARS_ONLY)
-      set_source_files_properties("${wrapper}" PROPERTIES
         GENERATED TRUE
         COMPILE_DEFINITIONS IPC_TOOLKIT_DEVICE_SCALARS_ONLY)
       list(APPEND sources_to_add "${wrapper}")
@@ -82,8 +73,6 @@ function(ipc_toolkit_target_shared_device_sources target)
       set_source_files_properties("${src_abs}"
         TARGET_DIRECTORY ${target}
         PROPERTIES COMPILE_DEFINITIONS IPC_TOOLKIT_HOST_SCALARS_ONLY)
-      set_source_files_properties("${src_abs}" PROPERTIES
-        COMPILE_DEFINITIONS IPC_TOOLKIT_HOST_SCALARS_ONLY)
       list(APPEND sources_to_add "${src_abs}")
     else()
       list(APPEND sources_to_add "${src}")
