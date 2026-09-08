@@ -4,11 +4,40 @@
 #include <ipc/utils/simd.hpp>
 
 #include <array>
-#include <tuple>
 
 namespace ipc {
 
 // =============================================================================
+
+/// @brief A normalized vector paired with the Jacobian of the normalization.
+/// @tparam T The scalar type.
+/// @tparam dim The dimension (2 or 3).
+/// @tparam max_dim The maximum dimension (2 or 3).
+template <typename T, int dim, int max_dim = dim>
+struct NormalizationAndJacobian {
+    /// @brief The normalized vector x/‖x‖.
+    Eigen::Matrix<T, dim, 1, Eigen::ColMajor, max_dim, 1> normalized;
+    /// @brief The Jacobian of the normalization evaluated at x.
+    Eigen::Matrix<T, dim, dim, Eigen::ColMajor, max_dim, max_dim> jacobian;
+};
+
+/// @brief A normalized vector paired with the first two derivatives of the
+/// normalization.
+/// @tparam T The scalar type.
+/// @tparam dim The dimension (2 or 3).
+/// @tparam max_dim The maximum dimension (2 or 3).
+template <typename T, int dim, int max_dim = dim>
+struct NormalizationAndJacobianAndHessian {
+    /// @brief The normalized vector x/‖x‖.
+    Eigen::Matrix<T, dim, 1, Eigen::ColMajor, max_dim, 1> normalized;
+    /// @brief The Jacobian of the normalization evaluated at x.
+    Eigen::Matrix<T, dim, dim, Eigen::ColMajor, max_dim, max_dim> jacobian;
+    /// @brief The Hessian of the normalization, one matrix per component.
+    std::array<
+        Eigen::Matrix<T, dim, dim, Eigen::ColMajor, max_dim, max_dim>,
+        max_dim>
+        hessian;
+};
 
 namespace detail {
 
@@ -18,9 +47,9 @@ namespace detail {
     /// @tparam T The scalar type.
     /// @tparam dim The dimension (2 or 3).
     /// @param x The input vector.
-    /// @return A tuple containing the normalized vector and its Jacobian.
+    /// @return The normalized vector and its Jacobian.
     template <typename T, int dim>
-    inline std::tuple<Eigen::Vector<T, dim>, Eigen::Matrix<T, dim, dim>>
+    inline NormalizationAndJacobian<T, dim>
     normalization_and_jacobian(const Eigen::Vector<T, dim>& x)
     {
         static_assert(dim == 2 || dim == 3, "normalization is only 2D or 3D");
@@ -36,12 +65,9 @@ namespace detail {
     /// @tparam T The scalar type.
     /// @tparam dim The dimension (2 or 3).
     /// @param x The input vector.
-    /// @return A tuple of the normalized vector, its Jacobian, and its Hessian.
+    /// @return The normalized vector, its Jacobian, and its Hessian.
     template <typename T, int dim>
-    inline std::tuple<
-        Eigen::Vector<T, dim>,
-        Eigen::Matrix<T, dim, dim>,
-        std::array<Eigen::Matrix<T, dim, dim>, dim>>
+    inline NormalizationAndJacobianAndHessian<T, dim>
     normalization_and_jacobian_and_hessian(const Eigen::Vector<T, dim>& x)
     {
         static_assert(dim == 2 || dim == 3, "normalization is only 2D or 3D");
@@ -65,28 +91,29 @@ namespace detail {
 ///
 /// Accepts any Eigen vector expression (row or column). The dimension is
 /// resolved at compile time when the argument type knows it and with a single
-/// branch otherwise. When the dimension is known the return type is
-/// std::tuple<Eigen::Vector<T, dim>, Eigen::Matrix<T, dim, dim>>; otherwise it
-/// is std::tuple<VectorMax3<T>, MatrixMax3<T>>.
+/// branch otherwise. When the dimension is known the result holds
+/// Eigen::Vector<T, dim> and Eigen::Matrix<T, dim, dim>; otherwise it holds
+/// VectorMax3<T> and MatrixMax3<T>.
 ///
 /// @param x The input vector.
-/// @return A tuple containing the normalized vector and its Jacobian.
+/// @return The normalized vector and its Jacobian.
 template <typename DerivedX>
 inline auto normalization_and_jacobian(const Eigen::MatrixBase<DerivedX>& x)
 {
     using T = typename DerivedX::Scalar;
+    using DynamicResult = NormalizationAndJacobian<T, Eigen::Dynamic, 3>;
 
     if constexpr (dim_v<DerivedX> == 2) {
         return detail::normalization_and_jacobian<T, 2>(x);
     } else if constexpr (dim_v<DerivedX> == 3) {
         return detail::normalization_and_jacobian<T, 3>(x);
     } else if (x.size() == 2) {
-        const auto [xhat, J] = detail::normalization_and_jacobian<T, 2>(x);
-        return std::tuple<VectorMax3<T>, MatrixMax3<T>>(xhat, J);
+        const auto fixed = detail::normalization_and_jacobian<T, 2>(x);
+        return DynamicResult { fixed.normalized, fixed.jacobian };
     } else {
         assert(x.size() == 3);
-        const auto [xhat, J] = detail::normalization_and_jacobian<T, 3>(x);
-        return std::tuple<VectorMax3<T>, MatrixMax3<T>>(xhat, J);
+        const auto fixed = detail::normalization_and_jacobian<T, 3>(x);
+        return DynamicResult { fixed.normalized, fixed.jacobian };
     }
 }
 
@@ -99,55 +126,53 @@ inline auto normalization_jacobian(const Eigen::MatrixBase<DerivedX>& x)
     using T = typename DerivedX::Scalar;
 
     if constexpr (dim_v<DerivedX> == 2) {
-        return std::get<1>(detail::normalization_and_jacobian<T, 2>(x));
+        return detail::normalization_and_jacobian<T, 2>(x).jacobian;
     } else if constexpr (dim_v<DerivedX> == 3) {
-        return std::get<1>(detail::normalization_and_jacobian<T, 3>(x));
+        return detail::normalization_and_jacobian<T, 3>(x).jacobian;
     } else if (x.size() == 2) {
         return MatrixMax3<T>(
-            std::get<1>(detail::normalization_and_jacobian<T, 2>(x)));
+            detail::normalization_and_jacobian<T, 2>(x).jacobian);
     } else {
         assert(x.size() == 3);
         return MatrixMax3<T>(
-            std::get<1>(detail::normalization_and_jacobian<T, 3>(x)));
+            detail::normalization_and_jacobian<T, 3>(x).jacobian);
     }
 }
 
 /// @brief Computes the normalization, Jacobian, and Hessian of a vector.
 /// @param x The input vector.
-/// @return A tuple of the normalized vector, its Jacobian, and its Hessian.
+/// @return The normalized vector, its Jacobian, and its Hessian.
 template <typename DerivedX>
 inline auto
 normalization_and_jacobian_and_hessian(const Eigen::MatrixBase<DerivedX>& x)
 {
     using T = typename DerivedX::Scalar;
-    using Ret =
-        std::tuple<VectorMax3<T>, MatrixMax3<T>, std::array<MatrixMax3<T>, 3>>;
+    using DynamicResult =
+        NormalizationAndJacobianAndHessian<T, Eigen::Dynamic, 3>;
 
     if constexpr (dim_v<DerivedX> == 2) {
         return detail::normalization_and_jacobian_and_hessian<T, 2>(x);
     } else if constexpr (dim_v<DerivedX> == 3) {
         return detail::normalization_and_jacobian_and_hessian<T, 3>(x);
     } else if (x.size() == 2) {
-        const auto [xhat, J, H] =
+        const auto fixed =
             detail::normalization_and_jacobian_and_hessian<T, 2>(x);
-        return Ret(
-            xhat, J,
-            std::array<MatrixMax3<T>, 3> {
-                MatrixMax3<T>(H[0]),
-                MatrixMax3<T>(H[1]),
-                MatrixMax3<T>(), // H[2] is empty in 2D
-            });
+        return DynamicResult { fixed.normalized, fixed.jacobian,
+                               std::array<MatrixMax3<T>, 3> {
+                                   MatrixMax3<T>(fixed.hessian[0]),
+                                   MatrixMax3<T>(fixed.hessian[1]),
+                                   MatrixMax3<T>(), // hessian[2] is empty in 2D
+                               } };
     } else {
         assert(x.size() == 3);
-        const auto [xhat, J, H] =
+        const auto fixed =
             detail::normalization_and_jacobian_and_hessian<T, 3>(x);
-        return Ret(
-            xhat, J,
-            std::array<MatrixMax3<T>, 3> {
-                MatrixMax3<T>(H[0]),
-                MatrixMax3<T>(H[1]),
-                MatrixMax3<T>(H[2]),
-            });
+        return DynamicResult { fixed.normalized, fixed.jacobian,
+                               std::array<MatrixMax3<T>, 3> {
+                                   MatrixMax3<T>(fixed.hessian[0]),
+                                   MatrixMax3<T>(fixed.hessian[1]),
+                                   MatrixMax3<T>(fixed.hessian[2]),
+                               } };
     }
 }
 
@@ -157,7 +182,7 @@ normalization_and_jacobian_and_hessian(const Eigen::MatrixBase<DerivedX>& x)
 template <typename DerivedX>
 inline auto normalization_hessian(const Eigen::MatrixBase<DerivedX>& x)
 {
-    return std::get<2>(normalization_and_jacobian_and_hessian(x));
+    return normalization_and_jacobian_and_hessian(x).hessian;
 }
 
 namespace detail {
