@@ -36,7 +36,7 @@ else()
 
     # -Wconversion
     -Werror=enum-conversion
-    -Wfloat-conversion
+    -Werror=float-conversion
     # Disable these errors for now, because they are too noisy
     # -Wno-sign-conversion
     # -Wno-shorten-64-to-32

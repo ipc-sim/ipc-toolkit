@@ -17,6 +17,7 @@ namespace ipc {
 
 template <typename T> T barrier(const T d, const T dhat)
 {
+    using namespace ipc::numext; // log
     // b(d) = -(d-d̂)²ln(d / d̂)
     return select_lazy(
         d <= T(0), [&] { return infinity<T>(); }, //
@@ -26,6 +27,7 @@ template <typename T> T barrier(const T d, const T dhat)
 
 template <typename T> T barrier_first_derivative(const T d, const T dhat)
 {
+    using namespace ipc::numext; // log
     // b(d) = -(d - d̂)²ln(d / d̂)
     // b'(d) = -2(d - d̂)ln(d / d̂) - (d-d̂)²(1 / d)
     //       = (d - d̂) * (-2ln(d/d̂) - (d - d̂) / d)
@@ -39,6 +41,7 @@ template <typename T> T barrier_first_derivative(const T d, const T dhat)
 
 template <typename T> T barrier_second_derivative(const T d, const T dhat)
 {
+    using namespace ipc::numext; // log
     return select_lazy(
         d <= T(0), [&] { return T(0); }, //
         d < dhat,
@@ -54,6 +57,7 @@ template <typename T> T barrier_second_derivative(const T d, const T dhat)
 template <typename T>
 T ClampedLogSqBarrier<T>::operator()(const T d, const T dhat) const
 {
+    using namespace ipc::numext; // log
     // b(d) = (d-d̂)²ln²(d / d̂)
     return select_lazy(
         d <= T(0), [&] { return infinity<T>(); }, //
@@ -68,6 +72,7 @@ T ClampedLogSqBarrier<T>::operator()(const T d, const T dhat) const
 template <typename T>
 T ClampedLogSqBarrier<T>::first_derivative(const T d, const T dhat) const
 {
+    using namespace ipc::numext; // log
     // b(d) = (d - d̂)²ln²(d / d̂)
     // b'(d) = 2 (d - d̂) ln²(d / d̂) + 2 (d - d̂)² ln(d / d̂) / d
     //       = 2 (d - d̂) ln(d / d̂) [ln(d / d̂) + (d - d̂) / d]
@@ -86,6 +91,7 @@ T ClampedLogSqBarrier<T>::first_derivative(const T d, const T dhat) const
 template <typename T>
 T ClampedLogSqBarrier<T>::second_derivative(const T d, const T dhat) const
 {
+    using namespace ipc::numext; // log
     return select_lazy(
         d <= T(0), [&] { return T(0); }, //
         d < dhat,
@@ -133,6 +139,7 @@ T CubicBarrier<T>::second_derivative(const T d, const T dhat) const
 template <typename T>
 T TwoStageBarrier<T>::operator()(const T d, const T dhat) const
 {
+    using namespace ipc::numext; // log
     return select_lazy(
         d <= T(0), [&] { return infinity<T>(); }, //
         d < T(0.5) * dhat,
