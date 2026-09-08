@@ -111,8 +111,6 @@ inline auto select_lazy(const Mask& mask, F&& value, Rest&&... rest)
 
 #if defined(IPC_TOOLKIT_WITH_SIMD) && !defined(__CUDACC__)
 
-#include <xsimd/xsimd.hpp>
-
 namespace Eigen {
 
 /// @brief Let Eigen treat an xsimd batch as a scalar type.
