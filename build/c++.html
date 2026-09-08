@@ -2125,6 +2125,7 @@ make<span class="w"> </span>-j<span class="k">$(</span>nproc<span class="k">)</s
 </div>
 <h2 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">¶</a></h2>
 <p><strong>All required dependencies are downloaded through CMake</strong> depending on the build options, and are built automatically when you build the IPC Toolkit. You do not need to install them separately.</p>
+<p>Fetching them does need <code class="docutils literal notranslate"><span class="pre">git</span></code> and the <code class="docutils literal notranslate"><span class="pre">patch</span></code> command-line utility on your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> (one dependency is fetched with a patch applied). Both ship with the usual developer tool sets – <code class="docutils literal notranslate"><span class="pre">build-essential</span></code> on Debian/Ubuntu, the Xcode command line tools on macOS, Git for Windows on Windows – but a minimal container image may need them installed.</p>
 <p>A full list of dependencies can be found on the <a class="reference external" href="https://ipctk.xyz/dependencies.html">dependencies page</a>.</p>
 
 

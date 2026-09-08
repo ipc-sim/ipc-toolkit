@@ -63,4 +63,6 @@ Dependencies
 
 **All required dependencies are downloaded through CMake** depending on the build options, and are built automatically when you build the IPC Toolkit. You do not need to install them separately.
 
+Fetching them does need ``git`` and the ``patch`` command-line utility on your ``PATH`` (one dependency is fetched with a patch applied). Both ship with the usual developer tool sets -- ``build-essential`` on Debian/Ubuntu, the Xcode command line tools on macOS, Git for Windows on Windows -- but a minimal container image may need them installed.
+
 A full list of dependencies can be found on the `dependencies page <https://ipctk.xyz/dependencies.html>`_.
