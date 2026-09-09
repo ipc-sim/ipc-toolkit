@@ -1,5 +1,6 @@
 #include "lbvh.hpp"
 
+#include <ipc/broad_phase/details/connectivity_filters.hpp>
 #include <ipc/math/morton.hpp>
 #include <ipc/utils/merge_thread_local.hpp>
 #include <ipc/utils/profiler.hpp>
@@ -96,11 +97,11 @@ void LBVH::build(
 }
 
 namespace {
-    /// Returns the number of common leading bits (CLZ of XOR) between sorted
-    /// Morton codes at positions i and j. code_i is the Morton code at position
-    /// i, passed explicitly to avoid a redundant lookup. Returns -1 when j is
-    /// out of bounds.  Duplicate codes fall back to CLZ of the index XOR
-    /// (offset by 32 so it sorts after any code-level difference).
+    /// Returns the length of the common leading-bit prefix of the sorted Morton
+    /// codes at positions i and j, or -1 when j is out of bounds. code_i is the
+    /// Morton code at position i, passed explicitly to avoid a redundant
+    /// lookup. The prefix itself is computed by ipc::morton_common_prefix(),
+    /// shared with the device build in ipc::cuda::LBVH.
     int delta(
         const LBVH::MortonCodeElements& sorted_morton_codes,
         int i,
@@ -110,24 +111,8 @@ namespace {
         if (j < 0 || j >= sorted_morton_codes.size()) {
             return -1;
         }
-        uint64_t code_j = sorted_morton_codes[j].morton_code;
-        if (code_i == code_j) {
-            // handle duplicate morton codes
-            int element_idx_i = i;
-            int element_idx_j = j;
-
-            // add 32 for common prefix of code_i ^ code_j
-#if defined(__GNUC__) || defined(__clang__)
-            return 32 + __builtin_clz(element_idx_i ^ element_idx_j);
-#elif defined(WIN32)
-            return 32 + __lzcnt(element_idx_i ^ element_idx_j);
-#endif
-        }
-#if defined(__GNUC__) || defined(__clang__)
-        return __builtin_clzll(code_i ^ code_j);
-#elif defined(WIN32)
-        return __lzcnt64(code_i ^ code_j);
-#endif
+        return morton_common_prefix(
+            code_i, i, sorted_morton_codes[j].morton_code, j);
     }
 } // namespace
 
@@ -154,17 +139,8 @@ void LBVH::init_bvh(
         tbb::parallel_for(size_t(0), boxes.size(), [&](size_t i) {
             const auto& box = boxes[i];
 
-            const Eigen::Array3d center = 0.5 * (box.min + box.max);
-            const Eigen::Array3d mapped_center =
-                (center - mesh_aabb.min) * mesh_width_inv;
-
-            if (dim == 2) {
-                morton_codes[i].morton_code =
-                    morton_2D(mapped_center.x(), mapped_center.y());
-            } else {
-                morton_codes[i].morton_code = morton_3D(
-                    mapped_center.x(), mapped_center.y(), mapped_center.z());
-            }
+            morton_codes[i].morton_code = morton_code(
+                0.5 * (box.min + box.max), mesh_aabb.min, mesh_width_inv, dim);
             morton_codes[i].box_id = i;
         });
     }
@@ -808,8 +784,7 @@ bool LBVH::can_edge_vertex_collide(size_t ei, size_t vi) const
     assert(ei < edge_vertex_ids.size());
     const auto& [e0i, e1i] = edge_vertex_ids[ei];
 
-    return vi != e0i && vi != e1i
-        && (can_vertices_collide(vi, e0i) || can_vertices_collide(vi, e1i));
+    return details::can_edge_vertex_collide(e0i, e1i, vi, can_vertices_collide);
 }
 
 bool LBVH::can_edges_collide(size_t eai, size_t ebi) const
@@ -819,13 +794,8 @@ bool LBVH::can_edges_collide(size_t eai, size_t ebi) const
     assert(ebi < edge_vertex_ids.size());
     const auto& [eb0i, eb1i] = edge_vertex_ids[ebi];
 
-    const bool share_endpoint =
-        ea0i == eb0i || ea0i == eb1i || ea1i == eb0i || ea1i == eb1i;
-
-    return !share_endpoint
-        && (can_vertices_collide(ea0i, eb0i) || can_vertices_collide(ea0i, eb1i)
-            || can_vertices_collide(ea1i, eb0i)
-            || can_vertices_collide(ea1i, eb1i));
+    return details::can_edges_collide(
+        ea0i, ea1i, eb0i, eb1i, can_vertices_collide);
 }
 
 bool LBVH::can_face_vertex_collide(size_t fi, size_t vi) const
@@ -833,9 +803,8 @@ bool LBVH::can_face_vertex_collide(size_t fi, size_t vi) const
     assert(fi < face_vertex_ids.size());
     const auto& [f0i, f1i, f2i] = face_vertex_ids[fi];
 
-    return vi != f0i && vi != f1i && vi != f2i
-        && (can_vertices_collide(vi, f0i) || can_vertices_collide(vi, f1i)
-            || can_vertices_collide(vi, f2i));
+    return details::can_face_vertex_collide(
+        f0i, f1i, f2i, vi, can_vertices_collide);
 }
 
 bool LBVH::can_edge_face_collide(size_t ei, size_t fi) const
@@ -845,14 +814,8 @@ bool LBVH::can_edge_face_collide(size_t ei, size_t fi) const
     assert(fi < face_vertex_ids.size());
     const auto& [f0i, f1i, f2i] = face_vertex_ids[fi];
 
-    const bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i
-        || e1i == f0i || e1i == f1i || e1i == f2i;
-
-    return !share_endpoint
-        && (can_vertices_collide(e0i, f0i) || can_vertices_collide(e0i, f1i)
-            || can_vertices_collide(e0i, f2i) || can_vertices_collide(e1i, f0i)
-            || can_vertices_collide(e1i, f1i)
-            || can_vertices_collide(e1i, f2i));
+    return details::can_edge_face_collide(
+        e0i, e1i, f0i, f1i, f2i, can_vertices_collide);
 }
 
 bool LBVH::can_faces_collide(size_t fai, size_t fbi) const
@@ -862,19 +825,8 @@ bool LBVH::can_faces_collide(size_t fai, size_t fbi) const
     assert(fbi < face_vertex_ids.size());
     const auto& [fb0i, fb1i, fb2i] = face_vertex_ids[fbi];
 
-    const bool share_endpoint = fa0i == fb0i || fa0i == fb1i || fa0i == fb2i
-        || fa1i == fb0i || fa1i == fb1i || fa1i == fb2i || fa2i == fb0i
-        || fa2i == fb1i || fa2i == fb2i;
-
-    return !share_endpoint
-        && (can_vertices_collide(fa0i, fb0i) || can_vertices_collide(fa0i, fb1i)
-            || can_vertices_collide(fa0i, fb2i)
-            || can_vertices_collide(fa1i, fb0i)
-            || can_vertices_collide(fa1i, fb1i)
-            || can_vertices_collide(fa1i, fb2i)
-            || can_vertices_collide(fa2i, fb0i)
-            || can_vertices_collide(fa2i, fb1i)
-            || can_vertices_collide(fa2i, fb2i));
+    return details::can_faces_collide(
+        fa0i, fa1i, fa2i, fb0i, fb1i, fb2i, can_vertices_collide);
 }
 
 } // namespace ipc

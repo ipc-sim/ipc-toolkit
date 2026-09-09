@@ -3,6 +3,7 @@
 #ifdef IPC_TOOLKIT_WITH_CUDA
 
 #include <ipc/broad_phase/cuda/lbvh_impl.cuh>
+#include <ipc/broad_phase/details/connectivity_filters.hpp>
 #include <ipc/math/morton.hpp>
 #include <ipc/utils/cuda/device_utils.cuh>
 #include <ipc/utils/logger.hpp>
@@ -223,11 +224,7 @@ namespace {
         if (j < 0 || j >= n) {
             return -1;
         }
-        const uint64_t code_j = sorted_codes[j];
-        if (code_i == code_j) {
-            return 32 + __clz(i ^ j);
-        }
-        return __clzll(static_cast<long long>(code_i ^ code_j));
+        return ipc::morton_common_prefix(code_i, i, sorted_codes[j], j);
     }
 
     /// @brief Compute one Morton code per box from its (normalized) center.
@@ -247,19 +244,16 @@ namespace {
             return;
         }
 
-        const double cx = 0.5 * (box_min[3 * i + 0] + box_max[3 * i + 0]);
-        const double cy = 0.5 * (box_min[3 * i + 1] + box_max[3 * i + 1]);
-        const double cz = 0.5 * (box_min[3 * i + 2] + box_max[3 * i + 2]);
-
-        // (center - mesh_min) * mesh_width_inv -- the reciprocal is
-        // precomputed once per build (see compute_domain) and multiplied here
-        // instead of dividing per box, matching the CPU (ipc::LBVH::init_bvh)
+        // mesh_width_inv is the reciprocal of the domain width, computed
+        // once per build (see compute_domain), so ipc::morton_code() multiplies
+        // rather than divides and matches the CPU (ipc::LBVH::init_bvh)
         // bit-for-bit.
-        const double mx = (cx - mesh_min.x()) * mesh_width_inv.x();
-        const double my = (cy - mesh_min.y()) * mesh_width_inv.y();
-        const double mz = (cz - mesh_min.z()) * mesh_width_inv.z();
+        const Eigen::Array3d center(
+            0.5 * (box_min[3 * i + 0] + box_max[3 * i + 0]),
+            0.5 * (box_min[3 * i + 1] + box_max[3 * i + 1]),
+            0.5 * (box_min[3 * i + 2] + box_max[3 * i + 2]));
 
-        codes[i] = (dim == 2) ? morton_2D(mx, my) : morton_3D(mx, my, mz);
+        codes[i] = ipc::morton_code(center, mesh_min, mesh_width_inv, dim);
         box_ids[i] = i;
     }
 
@@ -392,7 +386,6 @@ namespace {
     /// @brief After the root swap, rewrite left pointers that referenced the
     /// old node 0 to its new location. See the CPU swap_root_to_zero comment:
     /// the old node 0 was only ever a left child, so only .left needs patching.
-    /// is_inner_marker aliases .right and is nonzero iff internal.
     /// @param nodes The BVH nodes.
     /// @param num_nodes The number of nodes.
     /// @param root The new location of the old node 0.
@@ -405,7 +398,7 @@ namespace {
         if (i >= num_nodes) {
             return;
         }
-        if (nodes[i].is_inner_marker != 0 && nodes[i].left == 0) {
+        if (nodes[i].is_inner() && nodes[i].left == 0) {
             nodes[i].left = root;
         }
     }
@@ -633,18 +626,10 @@ namespace {
 
     // -- Traversal ----------------------------------------------------------
 
-    __device__ inline bool
-    aabb_intersects(const ipc::LBVH::Node& a, const ipc::LBVH::Node& b)
-    {
-        return a.aabb_min[0] <= b.aabb_max[0] && b.aabb_min[0] <= a.aabb_max[0]
-            && a.aabb_min[1] <= b.aabb_max[1] && b.aabb_min[1] <= a.aabb_max[1]
-            && a.aabb_min[2] <= b.aabb_max[2] && b.aabb_min[2] <= a.aabb_max[2];
-    }
-
     /// @brief Whether two primitives share a vertex id (the device connectivity
     /// filter). A vertex primitive's id set is {itself}; an edge's is its 2
     /// endpoints; a face's is its 3 vertices. This is exactly the
-    /// shared-endpoint exclusion in ipc::LBVH's can_*_collide (for
+    /// shared-endpoint exclusion in ipc::details::can_*_collide (for
     /// vertex-vertex it reduces to p_a == p_b).
     /// @param p_a The first primitive id.
     /// @param conn_a The first primitive's connectivity, or null for a vertex.
@@ -762,7 +747,7 @@ namespace {
                 if constexpr (triangular) {
                     break; // no self-collision with a single primitive
                 }
-                if (aabb_intersects(node, query)
+                if (node.intersects(query)
                     && !prim_shares_vertex(
                         query.primitive_id, source_conn, source_count,
                         node.primitive_id, target_conn, target_count)) {
@@ -775,8 +760,8 @@ namespace {
 
             const ipc::LBVH::Node& child_l = target[node.left];
             const ipc::LBVH::Node& child_r = target[node.right];
-            bool intersects_l = aabb_intersects(child_l, query);
-            bool intersects_r = aabb_intersects(child_r, query);
+            bool intersects_l = child_l.intersects(query);
+            bool intersects_r = child_r.intersects(query);
 
             // Skip subtrees fully on the query's left (triangular only).
             if constexpr (triangular) {
@@ -790,9 +775,8 @@ namespace {
                 }
             }
 
-            // is_inner_marker aliases .right; it is 0 iff the node is a leaf.
-            const bool l_leaf = (child_l.is_inner_marker == 0);
-            const bool r_leaf = (child_r.is_inner_marker == 0);
+            const bool l_leaf = child_l.is_leaf();
+            const bool r_leaf = child_r.is_leaf();
 
             if (intersects_l && l_leaf
                 && !prim_shares_vertex(
@@ -1302,8 +1286,9 @@ LBVH::DeviceCandidateView LBVH::detect_face_face_candidates_device() const
 bool LBVH::can_edge_vertex_collide(size_t ei, size_t vi) const
 {
     const auto& [e0i, e1i] = m_impl->h_edge_vertex_ids[ei];
-    return vi != e0i && vi != e1i
-        && (can_vertices_collide(vi, e0i) || can_vertices_collide(vi, e1i));
+
+    return ipc::details::can_edge_vertex_collide(
+        e0i, e1i, vi, can_vertices_collide);
 }
 
 bool LBVH::can_edges_collide(size_t eai, size_t ebi) const
@@ -1311,21 +1296,16 @@ bool LBVH::can_edges_collide(size_t eai, size_t ebi) const
     const auto& [ea0i, ea1i] = m_impl->h_edge_vertex_ids[eai];
     const auto& [eb0i, eb1i] = m_impl->h_edge_vertex_ids[ebi];
 
-    const bool share_endpoint =
-        ea0i == eb0i || ea0i == eb1i || ea1i == eb0i || ea1i == eb1i;
-
-    return !share_endpoint
-        && (can_vertices_collide(ea0i, eb0i) || can_vertices_collide(ea0i, eb1i)
-            || can_vertices_collide(ea1i, eb0i)
-            || can_vertices_collide(ea1i, eb1i));
+    return ipc::details::can_edges_collide(
+        ea0i, ea1i, eb0i, eb1i, can_vertices_collide);
 }
 
 bool LBVH::can_face_vertex_collide(size_t fi, size_t vi) const
 {
     const auto& [f0i, f1i, f2i] = m_impl->h_face_vertex_ids[fi];
-    return vi != f0i && vi != f1i && vi != f2i
-        && (can_vertices_collide(vi, f0i) || can_vertices_collide(vi, f1i)
-            || can_vertices_collide(vi, f2i));
+
+    return ipc::details::can_face_vertex_collide(
+        f0i, f1i, f2i, vi, can_vertices_collide);
 }
 
 bool LBVH::can_edge_face_collide(size_t ei, size_t fi) const
@@ -1333,14 +1313,8 @@ bool LBVH::can_edge_face_collide(size_t ei, size_t fi) const
     const auto& [e0i, e1i] = m_impl->h_edge_vertex_ids[ei];
     const auto& [f0i, f1i, f2i] = m_impl->h_face_vertex_ids[fi];
 
-    const bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i
-        || e1i == f0i || e1i == f1i || e1i == f2i;
-
-    return !share_endpoint
-        && (can_vertices_collide(e0i, f0i) || can_vertices_collide(e0i, f1i)
-            || can_vertices_collide(e0i, f2i) || can_vertices_collide(e1i, f0i)
-            || can_vertices_collide(e1i, f1i)
-            || can_vertices_collide(e1i, f2i));
+    return ipc::details::can_edge_face_collide(
+        e0i, e1i, f0i, f1i, f2i, can_vertices_collide);
 }
 
 bool LBVH::can_faces_collide(size_t fai, size_t fbi) const
@@ -1348,19 +1322,8 @@ bool LBVH::can_faces_collide(size_t fai, size_t fbi) const
     const auto& [fa0i, fa1i, fa2i] = m_impl->h_face_vertex_ids[fai];
     const auto& [fb0i, fb1i, fb2i] = m_impl->h_face_vertex_ids[fbi];
 
-    const bool share_endpoint = fa0i == fb0i || fa0i == fb1i || fa0i == fb2i
-        || fa1i == fb0i || fa1i == fb1i || fa1i == fb2i || fa2i == fb0i
-        || fa2i == fb1i || fa2i == fb2i;
-
-    return !share_endpoint
-        && (can_vertices_collide(fa0i, fb0i) || can_vertices_collide(fa0i, fb1i)
-            || can_vertices_collide(fa0i, fb2i)
-            || can_vertices_collide(fa1i, fb0i)
-            || can_vertices_collide(fa1i, fb1i)
-            || can_vertices_collide(fa1i, fb2i)
-            || can_vertices_collide(fa2i, fb0i)
-            || can_vertices_collide(fa2i, fb1i)
-            || can_vertices_collide(fa2i, fb2i));
+    return ipc::details::can_faces_collide(
+        fa0i, fa1i, fa2i, fb0i, fb1i, fb2i, can_vertices_collide);
 }
 
 size_t LBVH::num_vertex_nodes() const
