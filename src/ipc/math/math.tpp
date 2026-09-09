@@ -207,26 +207,29 @@ template <typename T> T Math<T>::inv_barrier(const T& x, const int r)
 template <typename T> T Math<T>::log_barrier(const T& x)
 {
     // log barrier
-    if (x < 1)
+    if (x < 1) {
         return -sqr(1 - x) * log(x);
-    else
+    } else {
         return T(0.);
+    }
 }
 
 template <typename T> double Math<T>::log_barrier_grad(const double x)
 {
-    if (x < 1)
+    if (x < 1) {
         return (1 - x) * (2 * log(x) + (x - 1) / x);
-    else
+    } else {
         return 0.;
+    }
 }
 
 template <typename T> double Math<T>::log_barrier_hess(const double x)
 {
-    if (x < 1)
+    if (x < 1) {
         return -2 * log(x) - 4 * (x - 1) / x + sqr((x - 1) / x);
-    else
+    } else {
         return 0.;
+    }
 }
 
 template <typename T>

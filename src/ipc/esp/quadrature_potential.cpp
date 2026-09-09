@@ -53,8 +53,9 @@ PointPotential::build_collisions_at_vertex(
             != ESPParameters::IntegrationType::BRUTE_FORCE;
 
     for (const auto& other_f : f_set) {
-        if (filter_obstacles && mesh.is_obstacle_face(other_f))
+        if (filter_obstacles && mesh.is_obstacle_face(other_f)) {
             continue;
+        }
         ++num_collision_pairs;
         if (std::shared_ptr<ESPCollision> pair =
                 ESPCollisionsBuilder<3>::reduce_point_triangle_collision(
@@ -64,8 +65,9 @@ PointPotential::build_collisions_at_vertex(
     }
 
     for (const auto& other_e : e_set) {
-        if (filter_obstacles && mesh.is_obstacle_edge(other_e))
+        if (filter_obstacles && mesh.is_obstacle_edge(other_e)) {
             continue;
+        }
         ++num_collision_pairs;
         if (std::shared_ptr<ESPCollision> pair =
                 ESPCollisionsBuilder<3>::reduce_point_edge_collision(
@@ -76,8 +78,9 @@ PointPotential::build_collisions_at_vertex(
     }
 
     for (const auto& other_v : v_set) {
-        if (filter_obstacles && mesh.is_obstacle_vertex(other_v))
+        if (filter_obstacles && mesh.is_obstacle_vertex(other_v)) {
             continue;
+        }
         if ((V.row(vid) - V.row(other_v)).squaredNorm()
             >= params.dhat * params.dhat) {
             continue;
@@ -220,8 +223,9 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
             Eigen::RowVector3d d = p - V.row(e00);
             Eigen::RowVector3d t = V.row(e01) - V.row(e00);
             closest_uv = d.dot(t) / t.squaredNorm();
-        } else
+        } else {
             log_and_throw_error("Invalid dtype!");
+        }
 
         if (!std::isfinite(closest_uv)) {
             log_and_throw_error("Potentially parallel edges!");
@@ -242,8 +246,9 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
                 != ESPParameters::IntegrationType::BRUTE_FORCE;
 
         for (const auto& other_v : v_set) {
-            if (filter_obstacles_e && mesh.is_obstacle_vertex(other_v))
+            if (filter_obstacles_e && mesh.is_obstacle_vertex(other_v)) {
                 continue;
+            }
             if ((V_(vid) - V_(other_v)).squaredNorm()
                 >= params.dhat * params.dhat) {
                 continue;
@@ -256,10 +261,12 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
         }
 
         for (const auto& other_e : e_set) {
-            if (other_e == e0)
+            if (other_e == e0) {
                 continue;
-            if (filter_obstacles_e && mesh.is_obstacle_edge(other_e))
+            }
+            if (filter_obstacles_e && mesh.is_obstacle_edge(other_e)) {
                 continue;
+            }
 
             auto dtype2 = point_edge_distance_type_exact(
                 V_(vid), V_(mesh.edges()(other_e, 0)),
@@ -310,10 +317,12 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
         const auto& e0_faces = mesh.edges_to_faces()[e0];
         for (const auto& other_f : f_set) {
             if (std::find(e0_faces.begin(), e0_faces.end(), other_f)
-                != e0_faces.end())
+                != e0_faces.end()) {
                 continue;
-            if (filter_obstacles_e && mesh.is_obstacle_face(other_f))
+            }
+            if (filter_obstacles_e && mesh.is_obstacle_face(other_f)) {
                 continue;
+            }
 
             auto dtype2 = point_triangle_distance_type_exact(
                 V_(vid), V_(mesh.faces()(other_f, 0)),
@@ -679,27 +688,32 @@ PointPotential::build_collisions_at_face_interior_point(
 
     for (const auto& other_f : f_set) {
         assert(other_f != fid);
-        if (filter_obstacles_f && mesh.is_obstacle_face(other_f))
+        if (filter_obstacles_f && mesh.is_obstacle_face(other_f)) {
             continue;
+        }
         if (skip_edge_id >= 0) {
             bool shares_edge = false;
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < 3; j++) {
                 if (mesh.faces_to_edges()(other_f, j) == skip_edge_id) {
                     shares_edge = true;
                     break;
                 }
-            if (shares_edge)
+            }
+            if (shares_edge) {
                 continue;
+            }
         }
         if (corner_vertex >= 0) {
             bool has_vertex = false;
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < 3; j++) {
                 if (mesh.faces()(other_f, j) == corner_vertex) {
                     has_vertex = true;
                     break;
                 }
-            if (has_vertex)
+            }
+            if (has_vertex) {
                 continue;
+            }
         }
         ++num_collision_pairs;
         if (auto pair =
@@ -710,14 +724,17 @@ PointPotential::build_collisions_at_face_interior_point(
     }
 
     for (const auto& other_e : e_set) {
-        if (filter_obstacles_f && mesh.is_obstacle_edge(other_e))
+        if (filter_obstacles_f && mesh.is_obstacle_edge(other_e)) {
             continue;
-        if (other_e == skip_edge_id)
+        }
+        if (other_e == skip_edge_id) {
             continue;
+        }
         if (corner_vertex >= 0
             && (mesh.edges()(other_e, 0) == corner_vertex
-                || mesh.edges()(other_e, 1) == corner_vertex))
+                || mesh.edges()(other_e, 1) == corner_vertex)) {
             continue;
+        }
         ++num_collision_pairs;
         if (auto pair = ESPCollisionsBuilder<3>::reduce_point_edge_collision(
                 EdgeVertexCandidate(other_e, vid), params, mesh, V_)) {
@@ -727,10 +744,12 @@ PointPotential::build_collisions_at_face_interior_point(
     }
 
     for (const auto& other_v : v_set) {
-        if (filter_obstacles_f && mesh.is_obstacle_vertex(other_v))
+        if (filter_obstacles_f && mesh.is_obstacle_vertex(other_v)) {
             continue;
-        if (other_v == corner_vertex)
+        }
+        if (other_v == corner_vertex) {
             continue;
+        }
         if ((V_(vid) - V_(other_v)).squaredNorm()
             >= params.dhat * params.dhat) {
             continue;
@@ -1000,10 +1019,11 @@ PointPotential::build_collisions_at_edge_qp(
     // If lambda[k] == 0 the QP coincides with the opposite endpoint.
     // Parallel to the 3D corner_vertex exclusion.
     index_t corner_vertex = -1;
-    if (lambda[0] == 0.0)
+    if (lambda[0] == 0.0) {
         corner_vertex = e1;
-    else if (lambda[1] == 0.0)
+    } else if (lambda[1] == 0.0) {
         corner_vertex = e0;
+    }
 
     const bool src_is_obstacle = mesh.is_obstacle_edge(ei);
     const bool filter_obstacles = src_is_obstacle
@@ -1016,12 +1036,15 @@ PointPotential::build_collisions_at_edge_qp(
 
     // VV pairs (weight=-1): for each nearby vertex within dhat of the QP.
     for (const index_t vj : candidates.ev_set(ei)) {
-        if (vj == corner_vertex)
+        if (vj == corner_vertex) {
             continue;
-        if (filter_obstacles && mesh.is_obstacle_vertex(vj))
+        }
+        if (filter_obstacles && mesh.is_obstacle_vertex(vj)) {
             continue;
-        if (point_point_distance(q_pos, V.row(vj)) >= dhat2)
+        }
+        if (point_point_distance(q_pos, V.row(vj)) >= dhat2) {
             continue;
+        }
         ++num_collision_pairs;
 
         std::shared_ptr<ESPCollision> vv_pair =
@@ -1039,15 +1062,19 @@ PointPotential::build_collisions_at_edge_qp(
         processed_edges.insert(ej);
         const index_t ea = mesh.edges()(ej, 0);
         const index_t eb = mesh.edges()(ej, 1);
-        if (corner_vertex >= 0 && (ea == corner_vertex || eb == corner_vertex))
+        if (corner_vertex >= 0
+            && (ea == corner_vertex || eb == corner_vertex)) {
             continue;
-        if (filter_obstacles && mesh.is_obstacle_edge(ej))
+        }
+        if (filter_obstacles && mesh.is_obstacle_edge(ej)) {
             continue;
+        }
         const auto dtype =
             point_edge_distance_type_exact(q_pos, V.row(ea), V.row(eb));
         if (dtype == PointEdgeDistanceType::P_E0) {
-            if (point_point_distance(q_pos, V.row(ea)) >= dhat2)
+            if (point_point_distance(q_pos, V.row(ea)) >= dhat2) {
                 continue;
+            }
             ++num_collision_pairs;
             insert_pair(
                 pairs,
@@ -1055,8 +1082,9 @@ PointPotential::build_collisions_at_edge_qp(
                     std::make_shared<ESPCollisionTemplate<Vertex2, Vertex2>>(
                         virtual_vid, ea, mesh)));
         } else if (dtype == PointEdgeDistanceType::P_E1) {
-            if (point_point_distance(q_pos, V.row(eb)) >= dhat2)
+            if (point_point_distance(q_pos, V.row(eb)) >= dhat2) {
                 continue;
+            }
             ++num_collision_pairs;
             insert_pair(
                 pairs,
@@ -1065,8 +1093,9 @@ PointPotential::build_collisions_at_edge_qp(
                         virtual_vid, eb, mesh)));
         } else {
             if (point_edge_distance(q_pos, V.row(ea), V.row(eb), dtype)
-                >= dhat2)
+                >= dhat2) {
                 continue;
+            }
             ++num_collision_pairs;
             insert_pair(
                 pairs,

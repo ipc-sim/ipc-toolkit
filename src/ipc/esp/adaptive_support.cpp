@@ -23,8 +23,9 @@ AdaptiveSupport::AdaptiveSupport(
     ESPCollisions collisions;
     collisions.build(mesh, rest_positions, params);
 
-    if (collisions.empty())
+    if (collisions.empty()) {
         return;
+    }
 
     // Returns the mesh vertex IDs in a collision pair that belong to the
     // PRIMITIVE (i.e., not the source quadrature point). Source vertices are
@@ -59,8 +60,9 @@ AdaptiveSupport::AdaptiveSupport(
                 auto fit = collisions.face_collisions.find(f);
                 if (fit != collisions.face_collisions.end()) {
                     for (size_t qi = 0; qi < face_quad_rule.size(); qi++) {
-                        if (qi >= fit->second.size())
+                        if (qi >= fit->second.size()) {
                             continue;
+                        }
                         const auto& qp = face_quad_rule[qi];
                         const Eigen::RowVector3d q_pos = qp.lambda[0]
                                 * rest_positions.row(mesh.faces()(f, 0))
@@ -108,17 +110,20 @@ AdaptiveSupport::AdaptiveSupport(
                      collisions.m_candidates.ee_set(edge_id)) {
                     const index_t ec = mesh.edges()(other_edge_id, 0);
                     const index_t ed = mesh.edges()(other_edge_id, 1);
-                    if (ea == ec || ea == ed || eb == ec || eb == ed)
+                    if (ea == ec || ea == ed || eb == ec || eb == ed) {
                         continue;
+                    }
 
                     auto eit = collisions.edge_edge_collisions.find(
                         std::make_pair(edge_id, other_edge_id));
-                    if (eit == collisions.edge_edge_collisions.end())
+                    if (eit == collisions.edge_edge_collisions.end()) {
                         continue;
+                    }
 
                     const auto& dict = *eit->second;
-                    if (dict.ee_dtype() != EdgeEdgeDistanceType::EA_EB)
+                    if (dict.ee_dtype() != EdgeEdgeDistanceType::EA_EB) {
                         continue;
+                    }
 
                     const double uv = closest_point_uv<double>(
                         rest_positions.row(ea), rest_positions.row(eb),
@@ -147,8 +152,9 @@ AdaptiveSupport::AdaptiveSupport(
             int num_remaining = 0;
 
             for (size_t i = 0; i < active_pairs.size(); i++) {
-                if (completed[i])
+                if (completed[i]) {
                     continue;
+                }
                 auto& p = active_pairs[i];
                 const Eigen::VectorXd dofs = p.needs_extended
                     ? p.cc->dof(VertexMatrixView<3>(rest_positions, p.qp_pos))
@@ -156,8 +162,9 @@ AdaptiveSupport::AdaptiveSupport(
                 const double val = p.cc->weight * (*p.cc)(dofs, params, this);
 
                 if (val != 0.0) {
-                    for (const index_t vid : p.primitive_vids)
+                    for (const index_t vid : p.primitive_vids) {
                         needs_reduction[vid] = true;
+                    }
                     has_active = true;
                 } else {
                     completed[i] = true;
@@ -165,8 +172,9 @@ AdaptiveSupport::AdaptiveSupport(
             }
 
             for (int v = 0; v < nv; v++) {
-                if (needs_reduction[v])
+                if (needs_reduction[v]) {
                     m_values(v) *= zeta;
+                }
             }
         }
 
@@ -187,17 +195,19 @@ AdaptiveSupport::AdaptiveSupport(
             const index_t e1 = mesh.edges()(ei, 1);
             for (size_t qi = 0; qi < qp_dicts.size(); qi++) {
                 const auto& dict = *qp_dicts[qi];
-                if (dict.size() == 0)
+                if (dict.size() == 0) {
                     continue;
+                }
                 const auto& qp = rule[qi];
                 const Eigen::RowVector2d q_pos =
                     (1.0 - qp.xi) * rest_positions.row(e0)
                     + qp.xi * rest_positions.row(e1);
                 for (int ci = 0; ci < dict.size(); ci++) {
                     auto pvids = get_primitive_vids(dict[ci]);
-                    if (!pvids.empty())
+                    if (!pvids.empty()) {
                         active_pairs.push_back(
                             { &dict[ci], true, q_pos, std::move(pvids) });
+                    }
                 }
             }
         }
@@ -209,16 +219,18 @@ AdaptiveSupport::AdaptiveSupport(
             std::vector<bool> needs_reduction(nv, false);
 
             for (size_t i = 0; i < active_pairs.size(); i++) {
-                if (completed[i])
+                if (completed[i]) {
                     continue;
+                }
                 auto& p = active_pairs[i];
                 const Eigen::VectorXd dofs = p.needs_extended
                     ? p.cc->dof(VertexMatrixView<2>(rest_positions, p.qp_pos))
                     : p.cc->dof(rest_positions);
                 const double val = p.cc->weight * (*p.cc)(dofs, params, this);
                 if (val != 0.0) {
-                    for (const index_t vid : p.primitive_vids)
+                    for (const index_t vid : p.primitive_vids) {
                         needs_reduction[vid] = true;
+                    }
                     has_active = true;
                 } else {
                     completed[i] = true;
@@ -226,8 +238,9 @@ AdaptiveSupport::AdaptiveSupport(
             }
 
             for (int v = 0; v < nv; v++) {
-                if (needs_reduction[v])
+                if (needs_reduction[v]) {
                     m_values(v) *= zeta;
+                }
             }
         }
     }

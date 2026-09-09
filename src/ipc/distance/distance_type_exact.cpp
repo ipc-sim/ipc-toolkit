@@ -41,8 +41,9 @@ int dot3_3d(
 {
     // Evaluates the sign of dot(p1-p0, p2-p0)
     const int s = dot3_3d_filter(p0_.data(), p1_.data(), p2_.data());
-    if (s != FPG_UNCERTAIN_VALUE)
+    if (s != FPG_UNCERTAIN_VALUE) {
         return s;
+    }
     logger().trace("dot3_3d filter uncertain - fallback to exact arithmetic");
     const ExVec3 p0 = make_exact(p0_);
     const ExVec3 p1 = make_exact(p1_);
@@ -58,8 +59,9 @@ int dot3_2d(
 {
     // Evaluates the sign of dot(p1-p0, p2-p0)
     const int s = dot3_2d_filter(p0_.data(), p1_.data(), p2_.data());
-    if (s != FPG_UNCERTAIN_VALUE)
+    if (s != FPG_UNCERTAIN_VALUE) {
         return s;
+    }
     logger().trace("dot3_2d filter uncertain - fallback to exact arithmetic");
     const ExVec3 p0 = make_exact(p0_);
     const ExVec3 p1 = make_exact(p1_);
@@ -81,8 +83,9 @@ int cross_dot_cross_1(
     */
     const int s = cross_dot_cross_1_3d_filter(
         p0_.data(), p1_.data(), p2_.data(), p3_.data());
-    if (s != FPG_UNCERTAIN_VALUE)
+    if (s != FPG_UNCERTAIN_VALUE) {
         return s;
+    }
     logger().trace(
         "cross_dot_cross_1 filter uncertain - fallback to exact arithmetic");
     const ExVec3 p0 = make_exact(p0_);
@@ -106,8 +109,9 @@ int cross_dot_cross_2(
     */
     const int s = cross_dot_cross_2_3d_filter(
         p0_.data(), p1_.data(), p2_.data(), p3_.data());
-    if (s != FPG_UNCERTAIN_VALUE)
+    if (s != FPG_UNCERTAIN_VALUE) {
         return s;
+    }
     logger().trace(
         "cross_dot_cross_1 filter uncertain - fallback to exact arithmetic");
     const ExVec3 p0 = make_exact(p0_);
@@ -126,19 +130,21 @@ static PointEdgeDistanceType point_edge_distance_type_predicate(
     init_pck();
     assert(p.size() == e0.size() && p.size() == e1.size());
     if (p.size() == 2) {
-        if (dot3_2d(e0, p, e1) <= 0)
+        if (dot3_2d(e0, p, e1) <= 0) {
             return PointEdgeDistanceType::P_E0;
-        else if (dot3_2d(e1, p, e0) <= 0)
+        } else if (dot3_2d(e1, p, e0) <= 0) {
             return PointEdgeDistanceType::P_E1;
-        else
+        } else {
             return PointEdgeDistanceType::P_E;
+        }
     } else {
-        if (dot3_3d(e0, p, e1) <= 0)
+        if (dot3_3d(e0, p, e1) <= 0) {
             return PointEdgeDistanceType::P_E0;
-        else if (dot3_3d(e1, p, e0) <= 0)
+        } else if (dot3_3d(e1, p, e0) <= 0) {
             return PointEdgeDistanceType::P_E1;
-        else
+        } else {
             return PointEdgeDistanceType::P_E;
+        }
     }
 }
 #endif // IPC_TOOLKIT_WITH_GEOGRAM
@@ -149,8 +155,9 @@ PointEdgeDistanceType point_edge_distance_type_exact(
     Eigen::ConstRef<VectorMax3d> e1)
 {
 #ifdef IPC_TOOLKIT_WITH_GEOGRAM
-    if (DistanceTypeConfig::instance().use_standard())
+    if (DistanceTypeConfig::instance().use_standard()) {
         return point_edge_distance_type(p, e0, e1);
+    }
     return point_edge_distance_type_predicate(p, e0, e1);
 #else
     return point_edge_distance_type(p, e0, e1);
@@ -181,12 +188,15 @@ static PointTriangleDistanceType point_triangle_distance_type_predicate(
         return PointTriangleDistanceType::P_T2;
     }
 
-    if (cross_dot_cross_1(t0, t1, t2, p) >= 0 && dot01 > 0 && dot10 > 0)
+    if (cross_dot_cross_1(t0, t1, t2, p) >= 0 && dot01 > 0 && dot10 > 0) {
         return PointTriangleDistanceType::P_E0;
-    if (cross_dot_cross_1(t1, t2, t0, p) >= 0 && dot12 > 0 && dot21 > 0)
+    }
+    if (cross_dot_cross_1(t1, t2, t0, p) >= 0 && dot12 > 0 && dot21 > 0) {
         return PointTriangleDistanceType::P_E1;
-    if (cross_dot_cross_1(t2, t0, t1, p) >= 0 && dot20 > 0 && dot02 > 0)
+    }
+    if (cross_dot_cross_1(t2, t0, t1, p) >= 0 && dot20 > 0 && dot02 > 0) {
         return PointTriangleDistanceType::P_E2;
+    }
 
     return PointTriangleDistanceType::P_T;
 }
@@ -199,8 +209,9 @@ PointTriangleDistanceType point_triangle_distance_type_exact(
     Eigen::ConstRef<Eigen::Vector3d> t2)
 {
 #ifdef IPC_TOOLKIT_WITH_GEOGRAM
-    if (DistanceTypeConfig::instance().use_standard())
+    if (DistanceTypeConfig::instance().use_standard()) {
         return point_triangle_distance_type(p, t0, t1, t2);
+    }
     return point_triangle_distance_type_predicate(p, t0, t1, t2);
 #else
     return point_triangle_distance_type(p, t0, t1, t2);
@@ -235,16 +246,18 @@ bool is_parallel_edge_edge(
         // TODO use a zero filter?
         const int s = cross_null_3d_filter(
             ea0_.data(), ea1_.data(), eb0_.data(), eb1_.data());
-        if (s != FPG_UNCERTAIN_VALUE)
+        if (s != FPG_UNCERTAIN_VALUE) {
             return false;
+        }
         const ExVec3 ea0 = make_exact(ea0_);
         const ExVec3 ea1 = make_exact(ea1_);
         const ExVec3 eb0 = make_exact(eb0_);
         const ExVec3 eb1 = make_exact(eb1_);
         const ExReal cross_norm_sqr = cross(ea1 - ea0, eb1 - eb0).length2();
         return cross_norm_sqr == 0;
-    } else
+    } else {
         return is_almost_parallel_edge_edge(ea0_, ea1_, eb0_, eb1_);
+    }
 #else
     // Without geogram the exact test is unavailable; PARALLEL_THRESHOLD must
     // be non-zero for the thresholded test to be meaningful.
@@ -269,14 +282,18 @@ static EdgeEdgeDistanceType edge_edge_distance_type_predicate(
     const PointEdgeDistanceType dt_ea1 =
         point_edge_distance_type_exact(ea1, eb0, eb1);
 
-    if (dt_ea0 == PointEdgeDistanceType::P_E0 && dot3_3d(ea0, eb0, ea1) <= 0)
+    if (dt_ea0 == PointEdgeDistanceType::P_E0 && dot3_3d(ea0, eb0, ea1) <= 0) {
         return EdgeEdgeDistanceType::EA0_EB0;
-    if (dt_ea0 == PointEdgeDistanceType::P_E1 && dot3_3d(ea0, eb1, ea1) <= 0)
+    }
+    if (dt_ea0 == PointEdgeDistanceType::P_E1 && dot3_3d(ea0, eb1, ea1) <= 0) {
         return EdgeEdgeDistanceType::EA0_EB1;
-    if (dt_ea1 == PointEdgeDistanceType::P_E0 && dot3_3d(ea1, eb0, ea0) <= 0)
+    }
+    if (dt_ea1 == PointEdgeDistanceType::P_E0 && dot3_3d(ea1, eb0, ea0) <= 0) {
         return EdgeEdgeDistanceType::EA1_EB0;
-    if (dt_ea1 == PointEdgeDistanceType::P_E1 && dot3_3d(ea1, eb1, ea0) <= 0)
+    }
+    if (dt_ea1 == PointEdgeDistanceType::P_E1 && dot3_3d(ea1, eb1, ea0) <= 0) {
         return EdgeEdgeDistanceType::EA1_EB1;
+    }
 
     const PointEdgeDistanceType dt_eb0 =
         point_edge_distance_type_exact(eb0, ea0, ea1);
@@ -284,17 +301,21 @@ static EdgeEdgeDistanceType edge_edge_distance_type_predicate(
         point_edge_distance_type_exact(eb1, ea0, ea1);
 
     if (dt_eb0 == PointEdgeDistanceType::P_E
-        && cross_dot_cross_2(eb0, ea0, ea1, eb1) >= 0)
+        && cross_dot_cross_2(eb0, ea0, ea1, eb1) >= 0) {
         return EdgeEdgeDistanceType::EA_EB0;
+    }
     if (dt_eb1 == PointEdgeDistanceType::P_E
-        && cross_dot_cross_2(eb1, ea0, ea1, eb0) >= 0)
+        && cross_dot_cross_2(eb1, ea0, ea1, eb0) >= 0) {
         return EdgeEdgeDistanceType::EA_EB1;
+    }
     if (dt_ea0 == PointEdgeDistanceType::P_E
-        && cross_dot_cross_2(ea0, eb0, eb1, ea1) >= 0)
+        && cross_dot_cross_2(ea0, eb0, eb1, ea1) >= 0) {
         return EdgeEdgeDistanceType::EA0_EB;
+    }
     if (dt_ea1 == PointEdgeDistanceType::P_E
-        && cross_dot_cross_2(ea1, eb0, eb1, ea0) >= 0)
+        && cross_dot_cross_2(ea1, eb0, eb1, ea0) >= 0) {
         return EdgeEdgeDistanceType::EA1_EB;
+    }
 
     return EdgeEdgeDistanceType::EA_EB;
 }
@@ -307,8 +328,9 @@ EdgeEdgeDistanceType edge_edge_distance_type_exact(
     Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
 #ifdef IPC_TOOLKIT_WITH_GEOGRAM
-    if (DistanceTypeConfig::instance().use_standard())
+    if (DistanceTypeConfig::instance().use_standard()) {
         return edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    }
     return edge_edge_distance_type_predicate(ea0, ea1, eb0, eb1);
 #else
     return edge_edge_distance_type(ea0, ea1, eb0, eb1);

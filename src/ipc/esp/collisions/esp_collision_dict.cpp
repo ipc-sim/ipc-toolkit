@@ -28,7 +28,7 @@ void ESPCollisionDict<pType, DIM>::initialize(
     }
 
     // Erase virtual vertex id, which is the largest in all ids
-    if (pType != PointType::VERTEX && map.size() > 0) {
+    if (pType != PointType::VERTEX && !map.empty()) {
         auto iter = std::prev(vids.end());
         auto ptr = map.begin().value();
         vids.erase(iter);
@@ -48,8 +48,9 @@ void ESPCollisionDict<pType, DIM>::initialize(
 
     // Cache primary local ids
     for (int i = 0; i < m_primary_vertex_ids.size(); i++) {
-        if (m_primary_vertex_ids[i] < 0)
+        if (m_primary_vertex_ids[i] < 0) {
             break;
+        }
         m_primary_local_ids[i] = vertex_ids_inverse(m_primary_vertex_ids[i]);
     }
 

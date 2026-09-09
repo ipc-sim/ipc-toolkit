@@ -70,8 +70,9 @@ namespace {
         }
         std::vector<index_t> neighbors_ordered;
         for (index_t n : neighbors) {
-            if (n != v_id)
+            if (n != v_id) {
                 neighbors_ordered.push_back(n);
+            }
         }
         return neighbors_ordered;
     }

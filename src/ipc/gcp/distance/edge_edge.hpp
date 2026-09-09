@@ -206,9 +206,10 @@ T closest_point_uv(
         const T b = u.dot(v);
         const T d = u.dot(e0 - e2);
         uv = (-d + b) / a;
-    } else
+    } else {
         log_and_throw_error(
             "edge-edge dtype {} cannot handle!", static_cast<int>(dtype));
+    }
 
     if (uv < 0.) {
         uv = 0.;

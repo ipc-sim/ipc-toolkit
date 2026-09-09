@@ -32,8 +32,9 @@ public:
     // For an n-point rule, integration is exact for degrees up to 2n-3.
     static const Rule& get_rule(int n)
     {
-        if (n < 1)
+        if (n < 1) {
             throw std::runtime_error("Order must be at least 1");
+        }
 
         static std::map<int, Rule> cache;
         static std::mutex mtx;
@@ -751,8 +752,9 @@ lobatto_compute(int n1, std::vector<double>& x, std::vector<double>& w)
         error = 0.0;
         for (i = 0; i < n; i++) {
             test = fabs(x[i] - xold[i]);
-            if (test > error)
+            if (test > error) {
                 error = test;
+            }
         }
 
     } while (tolerance < error);

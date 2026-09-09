@@ -45,8 +45,9 @@ void ProfileRegistry::dump_json(const std::string& path) const
     std::map<std::string, Stat> sorted_copy;
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        for (const auto& [name, s] : m_stats)
+        for (const auto& [name, s] : m_stats) {
             sorted_copy.emplace(name, s);
+        }
     }
 
     std::ostringstream out;
@@ -54,8 +55,9 @@ void ProfileRegistry::dump_json(const std::string& path) const
     bool first = true;
     out << std::setprecision(12);
     for (const auto& [name, s] : sorted_copy) {
-        if (!first)
+        if (!first) {
             out << ",\n";
+        }
         first = false;
         const double mean =
             s.count > 0 ? s.total / static_cast<double>(s.count) : 0.0;

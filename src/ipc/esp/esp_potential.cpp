@@ -42,8 +42,9 @@ namespace {
     template <class T> inline T pow_int(T x, int n)
     {
         T r = T(1);
-        for (int i = 0; i < n; ++i)
+        for (int i = 0; i < n; ++i) {
             r = r * x;
+        }
         return r;
     }
 } // namespace
@@ -90,8 +91,9 @@ double ESPPotential::operator()(
 
                     for (size_t qi = 0; qi < qp_dicts.size(); ++qi) {
                         const auto& dict = *qp_dicts[qi];
-                        if (dict.size() == 0)
+                        if (dict.size() == 0) {
                             continue;
+                        }
                         const auto& qp = rule[qi];
                         const std::array<double, 2> lambda = { { 1.0 - qp.xi,
                                                                  qp.xi } };
@@ -170,8 +172,9 @@ double ESPPotential::operator()(
                                 const auto dtype = iter->second->ee_dtype();
 
                                 // Skip non EA_EB collision types
-                                if (dtype != EdgeEdgeDistanceType::EA_EB)
+                                if (dtype != EdgeEdgeDistanceType::EA_EB) {
                                     continue;
+                                }
 
                                 const double dist = sqrt(edge_edge_distance(
                                     X.row(ea), X.row(eb), X.row(ec), X.row(ed),
@@ -380,8 +383,9 @@ Eigen::VectorXd ESPPotential::gradient(
 
         std::vector<index_t> active_edges;
         active_edges.reserve(collisions.edge_collisions_2d.size());
-        for (const auto& [ei, _] : collisions.edge_collisions_2d)
+        for (const auto& [ei, _] : collisions.edge_collisions_2d) {
             active_edges.push_back(ei);
+        }
 
         tbb::parallel_for(
             tbb::blocked_range<size_t>(0, active_edges.size()),
@@ -398,8 +402,9 @@ Eigen::VectorXd ESPPotential::gradient(
 
                     for (size_t qi = 0; qi < qp_dicts.size(); ++qi) {
                         const auto& dict = *qp_dicts[qi];
-                        if (dict.size() == 0)
+                        if (dict.size() == 0) {
                             continue;
+                        }
                         const auto& qp = rule[qi];
                         const std::array<double, 2> lambda = { { 1.0 - qp.xi,
                                                                  qp.xi } };
@@ -489,8 +494,9 @@ Eigen::VectorXd ESPPotential::gradient(
                                 const auto dtype = iter->second->ee_dtype();
 
                                 // Skip non EA_EB collision types
-                                if (dtype != EdgeEdgeDistanceType::EA_EB)
+                                if (dtype != EdgeEdgeDistanceType::EA_EB) {
                                     continue;
+                                }
 
                                 Eigen::Vector<double, 12> positions;
                                 positions << X.row(ea).transpose(),
@@ -805,8 +811,9 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
 
         std::vector<index_t> active_edges;
         active_edges.reserve(collisions.edge_collisions_2d.size());
-        for (const auto& [ei, _] : collisions.edge_collisions_2d)
+        for (const auto& [ei, _] : collisions.edge_collisions_2d) {
             active_edges.push_back(ei);
+        }
 
         tbb::parallel_for(
             tbb::blocked_range<size_t>(0, active_edges.size()),
@@ -823,8 +830,9 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
 
                     for (size_t qi = 0; qi < qp_dicts.size(); ++qi) {
                         const auto& dict = *qp_dicts[qi];
-                        if (dict.size() == 0)
+                        if (dict.size() == 0) {
                             continue;
+                        }
                         const auto& qp = rule[qi];
                         const std::array<double, 2> lambda = { { 1.0 - qp.xi,
                                                                  qp.xi } };
@@ -940,8 +948,9 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                 const auto dtype = iter->second->ee_dtype();
 
                                 // Skip non EA_EB collision types
-                                if (dtype != EdgeEdgeDistanceType::EA_EB)
+                                if (dtype != EdgeEdgeDistanceType::EA_EB) {
                                     continue;
+                                }
 
                                 Eigen::Vector<double, 12> positions;
                                 positions << X.row(ea).transpose(),
@@ -1288,8 +1297,9 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                 }
                                 for (index_t vid :
                                      e.dict->primary_vertex_ids()) {
-                                    if (vid >= 0)
+                                    if (vid >= 0) {
                                         union_vids.push_back(vid);
+                                    }
                                 }
                             }
                             for (const auto& e : const_cache) {

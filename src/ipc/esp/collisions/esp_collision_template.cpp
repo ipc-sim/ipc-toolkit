@@ -17,10 +17,11 @@ namespace {
 
 template <typename T> double scalar_val(const T& x)
 {
-    if constexpr (std::is_same_v<T, double>)
+    if constexpr (std::is_same_v<T, double>) {
         return x;
-    else
+    } else {
         return x.val;
+    }
 }
 
 // Evaluate barrier with AD or double types.
@@ -33,8 +34,9 @@ T eval_barrier_ad(const ipc::Barrier& b, const T& dist, const T& dhat)
     using ipc::InversePowerBarrier;
     using ipc::NormalizedClampedLogBarrier;
 
-    if (scalar_val(dist) >= scalar_val(dhat))
+    if (scalar_val(dist) >= scalar_val(dhat)) {
         return T(0.0);
+    }
 
     if (dynamic_cast<const NormalizedClampedLogBarrier<>*>(&b)) {
         const T t = dist / dhat;
@@ -399,8 +401,9 @@ double ESPCollisionTemplate<Edge3P1, Vertex3>::operator()(
             positions.template segment<3>(6), positions.template head<3>(),
             positions.template segment<3>(3)));
         eps = adaptive->edge(primitive_a.id(), u);
-    } else
+    } else {
         eps = params.dhat;
+    }
     // Edge3P1-Vertex3 is constructed only at interior P_E (see
     // ESPCollisionsBuilder<3>::reduce_point_edge_collision).
     const double dist = sqrt(point_edge_distance(
@@ -429,8 +432,9 @@ double ESPCollisionTemplate<Face3P1, Vertex3>::operator()(
         double u, v;
         smooth_clamp_simplex(uv_raw[0], uv_raw[1], u, v);
         eps = adaptive->face(primitive_a.id(), u, v);
-    } else
+    } else {
         eps = params.dhat;
+    }
     // Face3P1-Vertex3 is constructed only at interior P_T (see
     // ESPCollisionsBuilder<3>::reduce_point_triangle_collision).
     const double dist = sqrt(point_triangle_distance(
@@ -957,8 +961,9 @@ double ESPCollisionTemplate<Vertex2, Vertex2>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     const int n = vertices.rows();
-    if (vertex_id(0) >= n || vertex_id(1) >= n)
+    if (vertex_id(0) >= n || vertex_id(1) >= n) {
         return std::numeric_limits<double>::max();
+    }
     return point_point_distance(
         vertices.row(vertex_id(0)), vertices.row(vertex_id(1)));
 }
@@ -968,8 +973,9 @@ double ESPCollisionTemplate<Vertex2, Edge2P1>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     const int n = vertices.rows();
-    if (vertex_id(0) >= n || vertex_id(1) >= n || vertex_id(2) >= n)
+    if (vertex_id(0) >= n || vertex_id(1) >= n || vertex_id(2) >= n) {
         return std::numeric_limits<double>::max();
+    }
     return point_edge_distance(
         vertices.row(vertex_id(0)), vertices.row(vertex_id(1)),
         vertices.row(vertex_id(2)));
@@ -1007,8 +1013,9 @@ double ESPCollisionTemplate<Vertex2, Edge2P1>::operator()(
             positions.template head<2>(), positions.template segment<2>(2),
             positions.template segment<2>(4)));
         eps = adaptive->edge(primitive_b.id(), u);
-    } else
+    } else {
         eps = params.dhat;
+    }
     // Vertex2-Edge2P1 is constructed only at interior P_E (the 2D edge-QP
     // builder routes endpoint cases to Vertex2-Vertex2).
     const double dist = std::sqrt(point_edge_distance(

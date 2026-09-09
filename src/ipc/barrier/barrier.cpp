@@ -243,20 +243,23 @@ void InversePowerBarrier::h_and_derivs(
 
 double InversePowerBarrier::operator()(const double d, const double dhat) const
 {
-    if (d <= 0.0)
+    if (d <= 0.0) {
         return std::numeric_limits<double>::infinity();
+    }
     double h, dh, ddh;
     h_and_derivs(d, dhat, h, dh, ddh);
-    if (h == 0.0)
+    if (h == 0.0) {
         return 0.0;
+    }
     return h / std::pow(d, m_power);
 }
 
 double
 InversePowerBarrier::first_derivative(const double d, const double dhat) const
 {
-    if (d <= 0.0 || d >= dhat)
+    if (d <= 0.0 || d >= dhat) {
         return 0.0;
+    }
     double h, dh, ddh;
     h_and_derivs(d, dhat, h, dh, ddh);
     // b'(d) = (dh·d − p·h) / d^(p+1)
@@ -266,8 +269,9 @@ InversePowerBarrier::first_derivative(const double d, const double dhat) const
 double
 InversePowerBarrier::second_derivative(const double d, const double dhat) const
 {
-    if (d <= 0.0 || d >= dhat)
+    if (d <= 0.0 || d >= dhat) {
         return 0.0;
+    }
     double h, dh, ddh;
     h_and_derivs(d, dhat, h, dh, ddh);
     // b''(d) = (ddh·d² − 2p·dh·d + p(p+1)·h) / d^(p+2)

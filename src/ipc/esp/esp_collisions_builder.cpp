@@ -30,12 +30,14 @@ void ESPCollisionsBuilder<2>::build_edge_collisions(
     for (size_t edge_idx = start; edge_idx < end; ++edge_idx) {
         const index_t ei = static_cast<index_t>(edge_idx);
 
-        if (candidates.ev_set(ei).empty() && candidates.ee_set(ei).empty())
+        if (candidates.ev_set(ei).empty() && candidates.ee_set(ei).empty()) {
             continue;
+        }
 
         if (params.integration_type == IntegrationType::NO_OBST
-            && mesh.is_obstacle_edge(ei))
+            && mesh.is_obstacle_edge(ei)) {
             continue;
+        }
         if (params.integration_type != IntegrationType::BRUTE_FORCE
             && mesh.is_obstacle_edge(ei)) {
             const auto& ev = candidates.ev_set(ei);
@@ -43,8 +45,9 @@ void ESPCollisionsBuilder<2>::build_edge_collisions(
                 std::any_of(ev.begin(), ev.end(), [&](index_t v) {
                     return !mesh.is_obstacle_vertex(v);
                 });
-            if (!has_non_obstacle)
+            if (!has_non_obstacle) {
                 continue;
+            }
         }
 
         const double dhat = params.dhat;
@@ -57,8 +60,9 @@ void ESPCollisionsBuilder<2>::build_edge_collisions(
             const std::array<double, 2> lambda = { { 1.0 - qp.xi, qp.xi } };
             size_t n = 0;
             auto dict = pp.build_collisions_at_edge_qp(V, ei, lambda, dhat, n);
-            if (dict && dict->size() > 0)
+            if (dict && dict->size() > 0) {
                 has_any = true;
+            }
             qp_dicts.push_back(std::move(dict));
         }
 
@@ -278,8 +282,9 @@ void QuadratureCollisionsBuilder::build_vertex_collisions(
     for (size_t i = start_i; i < end_i; i++) {
         const index_t vi = vertex_indices[i];
         if (params.integration_type == IntegrationType::NO_OBST
-            && mesh.is_obstacle_vertex(vi))
+            && mesh.is_obstacle_vertex(vi)) {
             continue;
+        }
         if (params.integration_type != IntegrationType::BRUTE_FORCE
             && mesh.is_obstacle_vertex(vi)) {
             const auto v_set = point_potential->candidates.vv_set(vi);
@@ -295,8 +300,9 @@ void QuadratureCollisionsBuilder::build_vertex_collisions(
                 || std::any_of(f_set.begin(), f_set.end(), [&](index_t f) {
                        return !mesh.is_obstacle_face(f);
                    });
-            if (!has_non_obstacle)
+            if (!has_non_obstacle) {
                 continue;
+            }
         }
         size_t n = 0;
         auto dict =
@@ -316,15 +322,17 @@ void QuadratureCollisionsBuilder::build_face_collisions(
 {
     const CollisionMesh& mesh = point_potential->mesh;
     const auto& face_quad_rule = point_potential->params.get_quad_rule();
-    if (face_quad_rule.empty())
+    if (face_quad_rule.empty()) {
         return;
+    }
 
     const ESPParameters& params = point_potential->params;
     for (size_t i = start_i; i < end_i; i++) {
         const index_t fi = face_indices[i];
         if (params.integration_type == IntegrationType::NO_OBST
-            && mesh.is_obstacle_face(fi))
+            && mesh.is_obstacle_face(fi)) {
             continue;
+        }
         if (params.integration_type != IntegrationType::BRUTE_FORCE
             && mesh.is_obstacle_face(fi)) {
             const auto v_set = point_potential->candidates.fv_set(fi);
@@ -340,8 +348,9 @@ void QuadratureCollisionsBuilder::build_face_collisions(
                 || std::any_of(f_set.begin(), f_set.end(), [&](index_t f) {
                        return !mesh.is_obstacle_face(f);
                    });
-            if (!has_non_obstacle)
+            if (!has_non_obstacle) {
                 continue;
+            }
         }
 
         std::vector<std::unique_ptr<ESPCollisionDict<PointType::FACE>>>

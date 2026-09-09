@@ -508,8 +508,9 @@ void TangentialCollisions::build(
 
             for (size_t qi = 0; qi < qp_dicts.size(); ++qi) {
                 const auto& dict_ptr = qp_dicts[qi];
-                if (!dict_ptr || dict_ptr->size() == 0)
+                if (!dict_ptr || dict_ptr->size() == 0) {
                     continue;
+                }
                 const auto& qp = rule[qi];
                 const std::array<double, 2> lambda = { { 1.0 - qp.xi, qp.xi } };
                 const Eigen::RowVector2d virtual_pos =
@@ -521,8 +522,9 @@ void TangentialCollisions::build(
                     const auto& cc = (*dict_ptr)[j];
                     const double contact_force =
                         compute_contact_force_2d(cc, V_ext, outer_w);
-                    if (contact_force == 0)
+                    if (contact_force == 0) {
                         continue;
+                    }
 
                     switch (cc.type()) {
                     case ESPCollisionType::VERTEX_VERTEX: {
@@ -561,13 +563,15 @@ void TangentialCollisions::build(
                         const Eigen::Vector2d vp = virtual_pos.transpose();
 
                         double u = point_edge_closest_point(vp, ea_pos, eb_pos);
-                        if (!std::isfinite(u))
+                        if (!std::isfinite(u)) {
                             break;
+                        }
                         u = std::clamp(u, 0.0, 1.0);
 
                         auto emit_ev = [&](index_t v_edge, double w) {
-                            if (w <= 0)
+                            if (w <= 0) {
                                 return;
+                            }
                             Eigen::Matrix<double, 6, 1> cp;
                             cp.segment<2>(0) = vertices.row(v_edge).transpose();
                             cp.segment<2>(2) = vertices.row(e0).transpose();
@@ -673,8 +677,9 @@ void TangentialCollisions::build(
         const bool has_face_quad = params.quad_order > 0;
         const auto& face_quad_rule = params.get_quad_rule();
         double sum_face_qp_w = 0.0;
-        for (const auto& qp : face_quad_rule)
+        for (const auto& qp : face_quad_rule) {
             sum_face_qp_w += qp.weight;
+        }
 
         // When face quadrature is active, vertices are already included
         // in the quadrature rule, so don't count the 3 vertex contributions.
@@ -687,13 +692,15 @@ void TangentialCollisions::build(
             // Add per-face sum of active EE mollifiers (EA_EB only).
             for (const auto& [ei_pair, dict_ptr] :
                  collisions.edge_edge_collisions) {
-                if (dict_ptr->ee_dtype() != EdgeEdgeDistanceType::EA_EB)
+                if (dict_ptr->ee_dtype() != EdgeEdgeDistanceType::EA_EB) {
                     continue;
+                }
                 const auto [e0, e1] = ei_pair;
                 const index_t e00 = edges(e0, 0), e01 = edges(e0, 1);
                 const index_t e10 = edges(e1, 0), e11 = edges(e1, 1);
-                if (e00 == e10 || e00 == e11 || e01 == e10 || e01 == e11)
+                if (e00 == e10 || e00 == e11 || e01 == e10 || e01 == e11) {
                     continue;
+                }
                 const double dist_sqr = edge_edge_distance(
                     vertices.row(e00), vertices.row(e01), vertices.row(e10),
                     vertices.row(e11), EdgeEdgeDistanceType::EA_EB);
@@ -733,14 +740,15 @@ void TangentialCollisions::build(
         // Precompute per-vertex HOP outer weight = sum_{f ∋ v} face_scale(f).
         Eigen::VectorXd v_outer_w = Eigen::VectorXd::Zero(n_verts);
         for (index_t f = 0; f < faces.rows(); f++) {
-            for (int lv = 0; lv < 3; lv++)
+            for (int lv = 0; lv < 3; lv++) {
                 v_outer_w(faces(f, lv)) += face_scale(f);
+            }
         }
 
         // ---- VERTEX dicts: all vertex IDs are real ----
         // Skip when face quadrature is active (quad_order > 0), which
         // already includes vertices, matching the normal potential's behavior.
-        if (!has_face_quad)
+        if (!has_face_quad) {
             for (const auto& [vi, dict_ptr] : collisions.vertex_collisions) {
                 VertexMatrixView<3> V_view(vertices);
                 const double v_w = v_outer_w(vi);
@@ -748,8 +756,9 @@ void TangentialCollisions::build(
                     const auto& cc = (*dict_ptr)[j];
                     const double contact_force =
                         compute_contact_force(cc, V_view, v_w);
-                    if (contact_force == 0)
+                    if (contact_force == 0) {
                         continue;
+                    }
 
                     switch (cc.type()) {
                     case ESPCollisionType::VERTEX_VERTEX: {
@@ -813,12 +822,14 @@ void TangentialCollisions::build(
                     }
                 }
             }
+        }
 
         // Precompute per-edge HOP outer weight = sum_{f ∋ e} face_scale(f).
         Eigen::VectorXd e_outer_w = Eigen::VectorXd::Zero(edges.rows());
         for (index_t f = 0; f < faces.rows(); f++) {
-            for (int le = 0; le < 3; le++)
+            for (int le = 0; le < 3; le++) {
                 e_outer_w(mesh.faces_to_edges()(f, le)) += face_scale(f);
+            }
         }
 
         // ---- EDGE dicts: virtual vertex at edge-edge closest point ----
@@ -831,8 +842,9 @@ void TangentialCollisions::build(
 
             // The ESP potential only contributes for EA_EB; skip otherwise so
             // friction matches exactly.
-            if (dtype != EdgeEdgeDistanceType::EA_EB)
+            if (dtype != EdgeEdgeDistanceType::EA_EB) {
                 continue;
+            }
 
             // Compute virtual vertex position on edge e0
             // (same logic as quadrature_potential.cpp)
@@ -840,8 +852,9 @@ void TangentialCollisions::build(
                 vertices.row(e00).transpose(), vertices.row(e01).transpose(),
                 vertices.row(e10).transpose(),
                 vertices.row(e11).transpose())(0);
-            if (!std::isfinite(closest_uv))
+            if (!std::isfinite(closest_uv)) {
                 continue;
+            }
 
             const Eigen::RowVector3d virtual_pos =
                 closest_uv * (vertices.row(e01) - vertices.row(e00))
@@ -867,14 +880,16 @@ void TangentialCollisions::build(
                 vertices.row(e10).transpose(), vertices.row(e11).transpose(),
                 mtypes, dist_sqr_ee);
             const double edge_outer_w = mollifier * e_outer_w(e0);
-            if (edge_outer_w == 0)
+            if (edge_outer_w == 0) {
                 continue;
+            }
             for (int j = 0; j < dict_ptr->size(); j++) {
                 const auto& cc = (*dict_ptr)[j];
                 const double contact_force =
                     compute_contact_force(cc, V_ext, edge_outer_w);
-                if (contact_force == 0)
+                if (contact_force == 0) {
                     continue;
+                }
 
                 switch (cc.type()) {
                 case ESPCollisionType::VERTEX_VERTEX: {
@@ -1054,8 +1069,9 @@ void TangentialCollisions::build(
                     const auto& cc = (*dict_ptr)[j];
                     const double contact_force =
                         compute_contact_force(cc, V_ext, fq_outer_w);
-                    if (contact_force == 0)
+                    if (contact_force == 0) {
                         continue;
+                    }
 
                     switch (cc.type()) {
                     case ESPCollisionType::VERTEX_VERTEX: {
@@ -1099,15 +1115,17 @@ void TangentialCollisions::build(
 
                         double u =
                             point_edge_closest_point(vp, oe0_pos, oe1_pos);
-                        if (!std::isfinite(u))
+                        if (!std::isfinite(u)) {
                             break;
+                        }
                         u = std::clamp(u, 0.0, 1.0);
                         const double w0 = 1.0 - u;
                         const double w1 = u;
 
                         auto emit_fv = [&](index_t v_edge, double w) {
-                            if (w <= 0)
+                            if (w <= 0) {
                                 return;
+                            }
                             Vector12d cp;
                             cp.segment<3>(0) = vertices.row(v_edge);
                             cp.segment<3>(3) = vertices.row(f0);
@@ -1147,8 +1165,9 @@ void TangentialCollisions::build(
 
                         Eigen::Vector2d bary = point_triangle_closest_point(
                             vp, ja_pos, jb_pos, jc_pos);
-                        if (!bary.allFinite())
+                        if (!bary.allFinite()) {
                             break;
+                        }
                         double beta = std::clamp(bary(0), 0.0, 1.0);
                         double gamma = std::clamp(bary(1), 0.0, 1.0);
                         if (beta + gamma > 1.0) {
@@ -1159,8 +1178,9 @@ void TangentialCollisions::build(
                         const double alpha = 1.0 - beta - gamma;
 
                         auto emit_fv = [&](index_t v_other, double w) {
-                            if (w <= 0)
+                            if (w <= 0) {
                                 return;
+                            }
                             Vector12d cp;
                             cp.segment<3>(0) = vertices.row(v_other);
                             cp.segment<3>(3) = vertices.row(f0);

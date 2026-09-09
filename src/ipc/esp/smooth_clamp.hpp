@@ -10,10 +10,11 @@ constexpr double kSmoothClampEps = 0.1;
 namespace detail {
     template <typename T> double smooth_clamp_scalar(const T& x)
     {
-        if constexpr (std::is_same_v<T, double>)
+        if constexpr (std::is_same_v<T, double>) {
             return x;
-        else
+        } else {
             return x.val;
+        }
     }
 } // namespace detail
 
@@ -29,10 +30,12 @@ template <typename T> T smooth_clamp01(const T& x)
 {
     constexpr double eps = kSmoothClampEps;
     const double xv = detail::smooth_clamp_scalar(x);
-    if (xv <= 0.0)
+    if (xv <= 0.0) {
         return T(0.0);
-    if (xv >= 1.0)
+    }
+    if (xv >= 1.0) {
         return T(1.0);
+    }
     if (xv < eps) {
         return -x * x * x / (eps * eps) + 2.0 * x * x / eps;
     }
