@@ -278,7 +278,7 @@ InversePowerBarrier::second_derivative(const double d, const double dhat) const
 
 // ============================================================================
 
-double NearFarBarrier::near(const double d, const double dhat) const
+double NearFarBarrier::near_value(const double d, const double dhat) const
 {
     const double dhat_end = m_alpha * dhat;
     const double dhat_start = -dhat_end / 2.0;
@@ -286,7 +286,7 @@ double NearFarBarrier::near(const double d, const double dhat) const
         * (1.0 - Math<double>::smooth_heaviside(d, dhat_start, dhat_end));
 }
 
-double NearFarBarrier::far(const double d, const double dhat) const
+double NearFarBarrier::far_value(const double d, const double dhat) const
 {
     const double dhat_end = m_alpha * dhat;
     const double dhat_start = -dhat_end / 2.0;

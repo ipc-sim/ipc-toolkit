@@ -6,10 +6,10 @@
 #include <ipc/candidates/face_vertex.hpp>
 #include <ipc/candidates/plane_vertex.hpp>
 #include <ipc/candidates/vertex_vertex.hpp>
-#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <Eigen/Core>
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -264,24 +264,19 @@ public:
     std::vector<EdgeFaceCandidate> ef_candidates;
     std::vector<FaceFaceCandidate> ff_candidates;
 
-    // use unordered map to store candidates
-
     CollisionMesh mesh_;
-
-    unordered_map<index_t, std::set<index_t>> m_vv_set;
-    unordered_map<index_t, std::set<index_t>> m_ve_set;
-    unordered_map<index_t, std::set<index_t>> m_vf_set;
-
-    unordered_map<index_t, std::set<index_t>> m_ev_set;
-    unordered_map<index_t, std::set<index_t>> m_ee_set;
-    unordered_map<index_t, std::set<index_t>> m_ef_set;
-
-    unordered_map<index_t, std::set<index_t>> m_fv_set;
-    unordered_map<index_t, std::set<index_t>> m_fe_set;
-    unordered_map<index_t, std::set<index_t>> m_ff_set;
 
 private:
     static bool default_is_active(double candidate) { return true; }
+
+    /// @brief Adjacency sets built by convert_candidates_to_sets().
+    ///
+    /// Held behind a pointer so this public header does not need
+    /// ipc/utils/unordered_map_and_set.hpp, which pulls in Abseil -- a private
+    /// dependency of the library that consumers (e.g. the Python bindings) do
+    /// not link against.
+    struct AdjacencySets;
+    std::shared_ptr<AdjacencySets> m_sets;
 };
 
 } // namespace ipc

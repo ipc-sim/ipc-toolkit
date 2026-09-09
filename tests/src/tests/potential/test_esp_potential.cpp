@@ -1084,7 +1084,9 @@ TEST_CASE("NearFarBarrier decomposition", "[esp_potential][barrier]")
             const double d = dhat * (i + 1.0) / N;
 
             const double b = base(d, dhat);
-            CHECK(nf.near(d, dhat) + nf.far(d, dhat) == Catch::Approx(b));
+            CHECK(
+                nf.near_value(d, dhat) + nf.far_value(d, dhat)
+                == Catch::Approx(b));
 
             const double db = base.first_derivative(d, dhat);
             CHECK(
@@ -1106,16 +1108,16 @@ TEST_CASE("NearFarBarrier decomposition", "[esp_potential][barrier]")
             // Check that near barrier is 0 above alpha*dhat and non-zero below
             constexpr double eps_tol = 1e-9;
             if (d >= alpha * dhat) {
-                CHECK(nf.near(d, dhat) == 0.0);
+                CHECK(nf.near_value(d, dhat) == 0.0);
             } else if (d < alpha * dhat - eps_tol) {
-                CHECK(nf.near(d, dhat) > 0.0);
+                CHECK(nf.near_value(d, dhat) > 0.0);
             }
 
             // Check that far barrier is 0 below dhat*alpha/2 and non-zero above
             if (d <= dhat * alpha / 2 || d >= dhat) {
-                CHECK(nf.far(d, dhat) == 0.0);
+                CHECK(nf.far_value(d, dhat) == 0.0);
             } else if (d > dhat * alpha / 2 + eps_tol) {
-                CHECK(nf.far(d, dhat) > 0.0);
+                CHECK(nf.far_value(d, dhat) > 0.0);
             }
         }
     };

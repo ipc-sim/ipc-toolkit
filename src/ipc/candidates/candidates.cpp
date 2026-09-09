@@ -11,6 +11,7 @@
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/profiler.hpp>
 #include <ipc/utils/save_obj.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <igl/remove_unreferenced.h>
 #include <tbb/blocked_range.h>
@@ -23,6 +24,22 @@
 #include <iostream>
 
 namespace ipc {
+
+// Definition of the pimpl declared in candidates.hpp. Kept here so the public
+// header does not need to include Abseil (a private dependency).
+struct Candidates::AdjacencySets {
+    unordered_map<index_t, std::set<index_t>> vv;
+    unordered_map<index_t, std::set<index_t>> ve;
+    unordered_map<index_t, std::set<index_t>> vf;
+
+    unordered_map<index_t, std::set<index_t>> ev;
+    unordered_map<index_t, std::set<index_t>> ee;
+    unordered_map<index_t, std::set<index_t>> ef;
+
+    unordered_map<index_t, std::set<index_t>> fv;
+    unordered_map<index_t, std::set<index_t>> fe;
+    unordered_map<index_t, std::set<index_t>> ff;
+};
 
 namespace {
     // Pad codim_edges because remove_unreferenced requires a N×3 matrix.
@@ -726,37 +743,43 @@ bool Candidates::save_obj(
 
 void Candidates::convert_candidates_to_sets()
 {
+    m_sets = std::make_shared<AdjacencySets>();
+
     for (const auto& vv : vv_candidates) {
-        m_vv_set[vv.vertex0_id].insert(vv.vertex1_id);
-        m_vv_set[vv.vertex1_id].insert(vv.vertex0_id);
+        m_sets->vv[vv.vertex0_id].insert(vv.vertex1_id);
+        m_sets->vv[vv.vertex1_id].insert(vv.vertex0_id);
     }
     for (const auto& ee : ee_candidates) {
-        m_ee_set[ee.edge0_id].insert(ee.edge1_id);
-        m_ee_set[ee.edge1_id].insert(ee.edge0_id);
+        m_sets->ee[ee.edge0_id].insert(ee.edge1_id);
+        m_sets->ee[ee.edge1_id].insert(ee.edge0_id);
     }
     for (const auto& ff : ff_candidates) {
-        m_ff_set[ff.face0_id].insert(ff.face1_id);
-        m_ff_set[ff.face1_id].insert(ff.face0_id);
+        m_sets->ff[ff.face0_id].insert(ff.face1_id);
+        m_sets->ff[ff.face1_id].insert(ff.face0_id);
     }
     for (const auto& ev : ev_candidates) {
-        m_ev_set[ev.edge_id].insert(ev.vertex_id);
-        m_ve_set[ev.vertex_id].insert(ev.edge_id);
+        m_sets->ev[ev.edge_id].insert(ev.vertex_id);
+        m_sets->ve[ev.vertex_id].insert(ev.edge_id);
     }
     for (const auto& fv : fv_candidates) {
-        m_fv_set[fv.face_id].insert(fv.vertex_id);
-        m_vf_set[fv.vertex_id].insert(fv.face_id);
+        m_sets->fv[fv.face_id].insert(fv.vertex_id);
+        m_sets->vf[fv.vertex_id].insert(fv.face_id);
     }
     for (const auto& ef : ef_candidates) {
-        m_ef_set[ef.edge_id].insert(ef.face_id);
-        m_fe_set[ef.face_id].insert(ef.edge_id);
+        m_sets->ef[ef.edge_id].insert(ef.face_id);
+        m_sets->fe[ef.face_id].insert(ef.edge_id);
     }
 }
 
 std::set<index_t> Candidates::vv_set(index_t id) const
 {
+    if (!m_sets) {
+        return {};
+    }
+
     assert(mesh_.num_vertices());
     std::set<index_t> out;
-    if (auto iter = m_vv_set.find(id); iter != m_vv_set.end()) {
+    if (auto iter = m_sets->vv.find(id); iter != m_sets->vv.end()) {
         out = iter->second;
     }
 
@@ -771,14 +794,22 @@ std::set<index_t> Candidates::vv_set(index_t id) const
 }
 std::set<index_t> Candidates::ve_set(index_t id) const
 {
-    if (auto iter = m_ve_set.find(id); iter != m_ve_set.end()) {
+    if (!m_sets) {
+        return {};
+    }
+
+    if (auto iter = m_sets->ve.find(id); iter != m_sets->ve.end()) {
         return iter->second;
     }
     return {};
 }
 std::set<index_t> Candidates::vf_set(index_t id) const
 {
-    if (auto iter = m_vf_set.find(id); iter != m_vf_set.end()) {
+    if (!m_sets) {
+        return {};
+    }
+
+    if (auto iter = m_sets->vf.find(id); iter != m_sets->vf.end()) {
         return iter->second;
     }
     return {};
@@ -786,9 +817,13 @@ std::set<index_t> Candidates::vf_set(index_t id) const
 
 std::set<index_t> Candidates::ev_set(index_t id) const
 {
+    if (!m_sets) {
+        return {};
+    }
+
     assert(mesh_.num_vertices());
     std::set<index_t> out;
-    if (auto iter = m_ev_set.find(id); iter != m_ev_set.end()) {
+    if (auto iter = m_sets->ev.find(id); iter != m_sets->ev.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 2; ++lv) {
@@ -798,9 +833,13 @@ std::set<index_t> Candidates::ev_set(index_t id) const
 }
 std::set<index_t> Candidates::ee_set(index_t id) const
 {
+    if (!m_sets) {
+        return {};
+    }
+
     assert(mesh_.num_vertices());
     std::set<index_t> out;
-    if (auto iter = m_ee_set.find(id); iter != m_ee_set.end()) {
+    if (auto iter = m_sets->ee.find(id); iter != m_sets->ee.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 2; ++lv) {
@@ -830,9 +869,13 @@ std::set<index_t> Candidates::ee_set(index_t id) const
 }
 std::set<index_t> Candidates::ef_set(index_t id) const
 {
+    if (!m_sets) {
+        return {};
+    }
+
     assert(mesh_.num_vertices());
     std::set<index_t> out;
-    if (auto iter = m_ef_set.find(id); iter != m_ef_set.end()) {
+    if (auto iter = m_sets->ef.find(id); iter != m_sets->ef.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 2; ++lv) {
@@ -849,9 +892,13 @@ std::set<index_t> Candidates::ef_set(index_t id) const
 
 std::set<index_t> Candidates::fv_set(index_t id) const
 {
+    if (!m_sets) {
+        return {};
+    }
+
     assert(mesh_.num_vertices());
     std::set<index_t> out;
-    if (auto iter = m_fv_set.find(id); iter != m_fv_set.end()) {
+    if (auto iter = m_sets->fv.find(id); iter != m_sets->fv.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 3; ++lv) {
@@ -861,9 +908,13 @@ std::set<index_t> Candidates::fv_set(index_t id) const
 }
 std::set<index_t> Candidates::fe_set(index_t id) const
 {
+    if (!m_sets) {
+        return {};
+    }
+
     assert(mesh_.num_vertices());
     std::set<index_t> out;
-    if (auto iter = m_fe_set.find(id); iter != m_fe_set.end()) {
+    if (auto iter = m_sets->fe.find(id); iter != m_sets->fe.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 3; ++lv) {
@@ -875,9 +926,13 @@ std::set<index_t> Candidates::fe_set(index_t id) const
 }
 std::set<index_t> Candidates::ff_set(index_t id) const
 {
+    if (!m_sets) {
+        return {};
+    }
+
     assert(mesh_.num_vertices());
     std::set<index_t> out;
-    if (auto iter = m_ff_set.find(id); iter != m_ff_set.end()) {
+    if (auto iter = m_sets->ff.find(id); iter != m_sets->ff.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 3; ++lv) {

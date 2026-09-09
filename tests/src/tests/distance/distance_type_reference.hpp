@@ -3,6 +3,8 @@
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <geogram/numerics/exact_geometry.h>
+// geogram 1.10 no longer pulls this in transitively via exact_geometry.h.
+#include <geogram/numerics/predicates.h>
 
 using namespace ipc;
 using ExReal = GEO::expansion_nt; // exact scalar type

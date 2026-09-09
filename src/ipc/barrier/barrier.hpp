@@ -527,10 +527,10 @@ public:
     }
 
     /// @brief Evaluate the near function.
-    double near(const double d, const double dhat) const;
+    double near_value(const double d, const double dhat) const;
 
     /// @brief Evaluate the far function.
-    double far(const double d, const double dhat) const;
+    double far_value(const double d, const double dhat) const;
 
     /// @brief Evaluate the first derivative of the near function.
     double first_derivative_near(const double d, const double dhat) const;

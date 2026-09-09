@@ -8,6 +8,8 @@
 #include "fp_filters.h"
 
 #include <geogram/numerics/exact_geometry.h>
+// geogram 1.10 no longer pulls this in transitively via exact_geometry.h.
+#include <geogram/numerics/predicates.h>
 #endif
 
 namespace ipc {

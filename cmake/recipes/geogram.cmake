@@ -8,7 +8,7 @@ message(STATUS "Third-party: creating target 'geogram::geogram'")
 
 include(CPM)
 CPMAddPackage(
-    URI "gh:BrunoLevy/geogram@1.9.8"
+    URI "gh:BrunoLevy/geogram@1.10.1"
     OPTIONS
         "GEOGRAM_WITH_GRAPHICS OFF"  
         "GEOGRAM_WITH_LEGACY_NUMERICS OFF"  

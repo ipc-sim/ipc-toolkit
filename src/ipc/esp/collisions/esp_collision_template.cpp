@@ -662,7 +662,8 @@ ESPCollisionTemplate<Vertex3, Vertex3>::operator_nearfar(
     const double eps =
         adaptive ? adaptive->vertex(primitive_a.id()) : params.dhat;
     params.record_dist(dist);
-    return { nf_barrier->near(dist, eps), nf_barrier->far(dist, eps) };
+    return { nf_barrier->near_value(dist, eps),
+             nf_barrier->far_value(dist, eps) };
 }
 
 template <>
@@ -679,7 +680,8 @@ ESPCollisionTemplate<Edge3P1, Vertex3>::operator_nearfar(
     const double eps =
         adaptive ? adaptive->edge(primitive_a.id(), 0.5) : params.dhat;
     params.record_dist(dist);
-    return { nf_barrier->near(dist, eps), nf_barrier->far(dist, eps) };
+    return { nf_barrier->near_value(dist, eps),
+             nf_barrier->far_value(dist, eps) };
 }
 
 template <>
@@ -697,7 +699,8 @@ ESPCollisionTemplate<Face3P1, Vertex3>::operator_nearfar(
         ? adaptive->face(primitive_a.id(), 1.0 / 3.0, 1.0 / 3.0)
         : params.dhat;
     params.record_dist(dist);
-    return { nf_barrier->near(dist, eps), nf_barrier->far(dist, eps) };
+    return { nf_barrier->near_value(dist, eps),
+             nf_barrier->far_value(dist, eps) };
 }
 
 template <>
