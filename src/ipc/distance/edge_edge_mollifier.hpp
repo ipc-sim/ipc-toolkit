@@ -1,6 +1,9 @@
 #pragma once
 
+#include <ipc/config.hpp>
+#include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/simd.hpp>
 
 namespace ipc {
 
@@ -8,14 +11,14 @@ namespace ipc {
 namespace autogen {
     // clang-format off
     template <typename T>
-    void edge_edge_cross_squarednorm_gradient(
+    IPC_TOOLKIT_HOST_DEVICE void edge_edge_cross_squarednorm_gradient(
         T v01, T v02, T v03, T v11, T v12, T v13, T v21, T v22, T v23, T v31, T v32, T v33, T g[12]);
     template <typename T>
-    void edge_edge_cross_squarednorm_hessian(
+    IPC_TOOLKIT_HOST_DEVICE void edge_edge_cross_squarednorm_hessian(
         T v01, T v02, T v03, T v11, T v12, T v13, T v21, T v22, T v23, T v31, T v32, T v33, T H[144]);
     template <typename T>
-    void edge_edge_mollifier_threshold_gradient(
-        T ea0x, T ea0y, T ea0z, T ea1x, T ea1y, T ea1z, T eb0x, T eb0y, T eb0z, T eb1x, T eb1y, T eb1z, T grad[12], T scale = T(1e-3));
+    IPC_TOOLKIT_HOST_DEVICE void edge_edge_mollifier_threshold_gradient(
+        T ea0x, T ea0y, T ea0z, T ea1x, T ea1y, T ea1z, T eb0x, T eb0y, T eb0z, T eb1x, T eb1y, T eb1z, T grad[12], T scale = literal<T>(1e-3));
     // clang-format on
 } // namespace autogen
 
@@ -25,14 +28,16 @@ namespace autogen {
 /// @param x Squared norm of the edge-edge cross product.
 /// @param eps_x Mollifier activation threshold.
 /// @return The mollifier coefficient to premultiply the edge-edge distance.
-template <typename T> inline T edge_edge_mollifier(const T x, const T eps_x)
+template <typename T>
+IPC_TOOLKIT_HOST_DEVICE inline T edge_edge_mollifier(const T x, const T eps_x)
 {
-    if (x < eps_x) {
-        const T x_div_eps_x = x / eps_x;
-        return (-x_div_eps_x + T(2)) * x_div_eps_x;
-    } else {
-        return T(1);
-    }
+    return select_lazy(
+        x < eps_x,
+        [&] {
+            const T x_div_eps_x = x / eps_x;
+            return (-x_div_eps_x + T(2)) * x_div_eps_x;
+        },
+        [&] { return T(1); });
 }
 
 /// @brief The gradient of the mollifier function for edge-edge distance.
@@ -40,14 +45,17 @@ template <typename T> inline T edge_edge_mollifier(const T x, const T eps_x)
 /// @param eps_x Mollifier activation threshold.
 /// @return The gradient of the mollifier function for edge-edge distance wrt x.
 template <typename T>
-inline T edge_edge_mollifier_gradient(const T x, const T eps_x)
+IPC_TOOLKIT_HOST_DEVICE inline T
+edge_edge_mollifier_gradient(const T x, const T eps_x)
 {
-    if (x < eps_x) {
-        const T one_div_eps_x = T(1) / eps_x;
-        return T(2) * one_div_eps_x * fma(-one_div_eps_x, x, T(1));
-    } else {
-        return T(0);
-    }
+    using namespace ipc::numext; // fma
+    return select_lazy(
+        x < eps_x,
+        [&] {
+            const T one_div_eps_x = T(1) / eps_x;
+            return T(2) * one_div_eps_x * fma(-one_div_eps_x, x, T(1));
+        },
+        [&] { return T(0); });
 }
 
 /// @brief The derivative of the mollifier function for edge-edge distance wrt
@@ -57,10 +65,13 @@ inline T edge_edge_mollifier_gradient(const T x, const T eps_x)
 /// @return The derivative of the mollifier function for edge-edge distance wrt
 ///     eps_x.
 template <typename T>
-inline T edge_edge_mollifier_derivative_wrt_eps_x(const T x, const T eps_x)
+IPC_TOOLKIT_HOST_DEVICE inline T
+edge_edge_mollifier_derivative_wrt_eps_x(const T x, const T eps_x)
 {
-    return x < eps_x ? (T(2) * x * (-eps_x + x) / (eps_x * eps_x * eps_x))
-                     : T(0);
+    return select_lazy(
+        x < eps_x,
+        [&] { return T(2) * x * (-eps_x + x) / (eps_x * eps_x * eps_x); },
+        [&] { return T(0); });
 }
 
 /// @brief The hessian of the mollifier function for edge-edge distance.
@@ -68,13 +79,12 @@ inline T edge_edge_mollifier_derivative_wrt_eps_x(const T x, const T eps_x)
 /// @param eps_x Mollifier activation threshold.
 /// @return The hessian of the mollifier function for edge-edge distance wrt x.
 template <typename T>
-inline T edge_edge_mollifier_hessian(const T x, const T eps_x)
+IPC_TOOLKIT_HOST_DEVICE inline T
+edge_edge_mollifier_hessian(const T x, const T eps_x)
 {
-    if (x < eps_x) {
-        return T(-2) / (eps_x * eps_x);
-    } else {
-        return T(0);
-    }
+    return select_lazy(
+        x < eps_x, [&] { return T(-2) / (eps_x * eps_x); },
+        [&] { return T(0); });
 }
 
 /// @brief The derivative of the gradient of the mollifier function for
@@ -84,11 +94,13 @@ inline T edge_edge_mollifier_hessian(const T x, const T eps_x)
 /// @return The derivative of the gradient of the mollifier function for
 ///     edge-edge distance wrt eps_x.
 template <typename T>
-inline T
+IPC_TOOLKIT_HOST_DEVICE inline T
 edge_edge_mollifier_gradient_derivative_wrt_eps_x(const T x, const T eps_x)
 {
-    return x < eps_x ? (T(2) * (-eps_x + T(2) * x) / (eps_x * eps_x * eps_x))
-                     : T(0);
+    return select_lazy(
+        x < eps_x,
+        [&] { return T(2) * (-eps_x + T(2) * x) / (eps_x * eps_x * eps_x); },
+        [&] { return T(0); });
 }
 
 // --- Fixed-size kernels ---------------------------------------------------
@@ -96,7 +108,7 @@ edge_edge_mollifier_gradient_derivative_wrt_eps_x(const T x, const T eps_x)
 namespace detail {
     /// @note Prefer the ipc::edge_edge_cross_squarednorm front end.
     template <typename T>
-    inline T edge_edge_cross_squarednorm(
+    IPC_TOOLKIT_HOST_DEVICE inline T edge_edge_cross_squarednorm(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -107,7 +119,8 @@ namespace detail {
 
     /// @note Prefer the ipc::edge_edge_cross_squarednorm_gradient front end.
     template <typename T>
-    inline Eigen::Vector<T, 12> edge_edge_cross_squarednorm_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 12>
+    edge_edge_cross_squarednorm_gradient(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -122,7 +135,8 @@ namespace detail {
 
     /// @note Prefer the ipc::edge_edge_cross_squarednorm_hessian front end.
     template <typename T>
-    inline Eigen::Matrix<T, 12, 12> edge_edge_cross_squarednorm_hessian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 12, 12>
+    edge_edge_cross_squarednorm_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -137,27 +151,21 @@ namespace detail {
 
     /// @note Prefer the ipc::edge_edge_mollifier front end.
     template <typename T>
-    inline T edge_edge_mollifier(
+    IPC_TOOLKIT_HOST_DEVICE inline T edge_edge_mollifier(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
         Eigen::ConstRef<Eigen::Vector3<T>> eb1,
         const T eps_x)
     {
-        const T ee_cross_norm_sqr =
-            edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
-        if (ee_cross_norm_sqr < eps_x) {
-            // NOTE: ipc:: qualification: the scalar overload is hidden by the
-            // same-named kernel in this namespace.
-            return ipc::edge_edge_mollifier(ee_cross_norm_sqr, eps_x);
-        } else {
-            return T(1);
-        }
+        return ipc::edge_edge_mollifier(
+            edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1), eps_x);
     }
 
     /// @note Prefer the ipc::edge_edge_mollifier_gradient front end.
     template <typename T>
-    inline Eigen::Vector<T, 12> edge_edge_mollifier_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 12>
+    edge_edge_mollifier_gradient(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -166,17 +174,20 @@ namespace detail {
     {
         const T ee_cross_norm_sqr =
             edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
-        if (ee_cross_norm_sqr < eps_x) {
-            return ipc::edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
-                * edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1);
-        } else {
-            return Eigen::Vector<T, 12>::Zero();
+        if constexpr (!is_simd_batch_v<T>) {
+            // Shortcut for the common case of the mollifier being inactive.
+            if (ee_cross_norm_sqr >= eps_x) {
+                return Eigen::Vector<T, 12>::Zero();
+            }
         }
+        return ipc::edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
+            * edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1);
     }
 
     /// @note Prefer the ipc::edge_edge_mollifier_hessian front end.
     template <typename T>
-    inline Eigen::Matrix<T, 12, 12> edge_edge_mollifier_hessian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 12, 12>
+    edge_edge_mollifier_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -185,23 +196,26 @@ namespace detail {
     {
         const T ee_cross_norm_sqr =
             edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
-        if (ee_cross_norm_sqr < eps_x) {
-            const Eigen::Vector<T, 12> grad =
-                edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1);
-
-            return (ipc::edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
-                    * edge_edge_cross_squarednorm_hessian(ea0, ea1, eb0, eb1))
-                + ((ipc::edge_edge_mollifier_hessian(ee_cross_norm_sqr, eps_x)
-                    * grad)
-                   * grad.transpose());
-        } else {
-            return Eigen::Matrix<T, 12, 12>::Zero();
+        if constexpr (!is_simd_batch_v<T>) {
+            // Shortcut for the common case of the mollifier being inactive.
+            if (ee_cross_norm_sqr >= eps_x) {
+                return Eigen::Matrix<T, 12, 12>::Zero();
+            }
         }
+        const Eigen::Vector<T, 12> grad =
+            edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1);
+
+        return (ipc::edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
+                * edge_edge_cross_squarednorm_hessian(ea0, ea1, eb0, eb1))
+            + ((ipc::edge_edge_mollifier_hessian(ee_cross_norm_sqr, eps_x)
+                * grad)
+               * grad.transpose());
     }
 
     /// @note Prefer the ipc::edge_edge_mollifier_gradient_wrt_x front end.
     template <typename T>
-    Eigen::Vector<T, 12> edge_edge_mollifier_gradient_wrt_x(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Vector<T, 12>
+    edge_edge_mollifier_gradient_wrt_x(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0_rest,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1_rest,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0_rest,
@@ -214,7 +228,8 @@ namespace detail {
     /// @note Prefer the ipc::edge_edge_mollifier_gradient_jacobian_wrt_x front
     ///     end.
     template <typename T>
-    Eigen::Matrix<T, 12, 12> edge_edge_mollifier_gradient_jacobian_wrt_x(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12>
+    edge_edge_mollifier_gradient_jacobian_wrt_x(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0_rest,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1_rest,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0_rest,
@@ -226,19 +241,20 @@ namespace detail {
 
     /// @note Prefer the ipc::edge_edge_mollifier_threshold front end.
     template <typename T>
-    T edge_edge_mollifier_threshold(
+    IPC_TOOLKIT_HOST_DEVICE T edge_edge_mollifier_threshold(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0_rest,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1_rest,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0_rest,
         Eigen::ConstRef<Eigen::Vector3<T>> eb1_rest)
     {
-        return T(1e-3) * (ea0_rest - ea1_rest).squaredNorm()
+        return literal<T>(1e-3) * (ea0_rest - ea1_rest).squaredNorm()
             * (eb0_rest - eb1_rest).squaredNorm();
     }
 
     /// @note Prefer the ipc::edge_edge_mollifier_threshold_gradient front end.
     template <typename T>
-    Eigen::Vector<T, 12> edge_edge_mollifier_threshold_gradient(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Vector<T, 12>
+    edge_edge_mollifier_threshold_gradient(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0_rest,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1_rest,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0_rest,
@@ -248,7 +264,7 @@ namespace detail {
         autogen::edge_edge_mollifier_threshold_gradient(
             ea0_rest[0], ea0_rest[1], ea0_rest[2], ea1_rest[0], ea1_rest[1],
             ea1_rest[2], eb0_rest[0], eb0_rest[1], eb0_rest[2], eb1_rest[0],
-            eb1_rest[1], eb1_rest[2], grad.data(), /*scale=*/T(1e-3));
+            eb1_rest[1], eb1_rest[2], grad.data(), /*scale=*/literal<T>(1e-3));
         return grad;
     }
 } // namespace detail
@@ -266,7 +282,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_cross_squarednorm(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_cross_squarednorm(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -290,7 +306,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_cross_squarednorm_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_cross_squarednorm_gradient(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -312,7 +328,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_cross_squarednorm_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_cross_squarednorm_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -337,7 +353,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_mollifier(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_mollifier(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -360,7 +376,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_mollifier_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_mollifier_gradient(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -383,7 +399,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_mollifier_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_mollifier_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -414,7 +430,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_mollifier_gradient_wrt_x(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_mollifier_gradient_wrt_x(
     const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
     const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
     const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,
@@ -451,7 +467,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_mollifier_gradient_jacobian_wrt_x(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_mollifier_gradient_jacobian_wrt_x(
     const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
     const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
     const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,
@@ -480,7 +496,7 @@ template <
     typename DerivedEA1Rest,
     typename DerivedEB0Rest,
     typename DerivedEB1Rest>
-inline auto edge_edge_mollifier_threshold(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_mollifier_threshold(
     const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
     const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
     const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,
@@ -506,7 +522,7 @@ template <
     typename DerivedEA1Rest,
     typename DerivedEB0Rest,
     typename DerivedEB1Rest>
-inline auto edge_edge_mollifier_threshold_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_mollifier_threshold_gradient(
     const Eigen::MatrixBase<DerivedEA0Rest>& ea0_rest,
     const Eigen::MatrixBase<DerivedEA1Rest>& ea1_rest,
     const Eigen::MatrixBase<DerivedEB0Rest>& eb0_rest,

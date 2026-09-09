@@ -61,7 +61,8 @@ using Barrier = BarrierBase<>;
 /// @param d The distance.
 /// @param dhat Activation distance of the barrier.
 /// @return The value of the barrier function at d.
-template <typename T = double> T barrier(const T d, const T dhat);
+template <typename T = double>
+IPC_TOOLKIT_HOST_DEVICE T barrier(const T d, const T dhat);
 
 /// @brief Derivative of the barrier function.
 ///
@@ -74,7 +75,7 @@ template <typename T = double> T barrier(const T d, const T dhat);
 /// @param dhat Activation distance of the barrier.
 /// @return The derivative of the barrier wrt d.
 template <typename T = double>
-T barrier_first_derivative(const T d, const T dhat);
+IPC_TOOLKIT_HOST_DEVICE T barrier_first_derivative(const T d, const T dhat);
 
 /// @brief Second derivative of the barrier function.
 ///
@@ -87,7 +88,7 @@ T barrier_first_derivative(const T d, const T dhat);
 /// @param dhat Activation distance of the barrier.
 /// @return The second derivative of the barrier wrt d.
 template <typename T = double>
-T barrier_second_derivative(const T d, const T dhat);
+IPC_TOOLKIT_HOST_DEVICE T barrier_second_derivative(const T d, const T dhat);
 
 /// @brief Smoothly clamped log barrier functions from [Li et al. 2020].
 template <typename T = double> class ClampedLogBarrier : public BarrierBase<T> {
@@ -341,6 +342,7 @@ public:
      *
      * \f\[
      *     b(d) = \begin{cases}
+     *         \infty & d \le 0\\
      *         -\frac{\hat{d}^2}{4} \left(\ln\left(\frac{2d}{\hat{d}}\right) -
      *         \tfrac{1}{2}\right) & d < \frac{\hat{d}}{2}\\
      *         \tfrac{1}{2} (\hat{d} - d)^2 & d < \hat{d}\\
@@ -359,7 +361,8 @@ public:
      *
      * \f\[
      *     b'(d) = \begin{cases}
-     *         -\frac{\hat{d}}{4d} & d < \frac{\hat{d}}{2}\\
+     *         0 & d \le 0\\
+     *         -\frac{\hat{d}^2}{4d} & d < \frac{\hat{d}}{2}\\
      *         d - \hat{d} & d < \hat{d}\\
      *         0 & d \ge \hat{d}
      *     \end{cases}
@@ -376,7 +379,8 @@ public:
      *
      * \f\[
      *     b''(d) = \begin{cases}
-     *         \frac{\hat{d}}{4d^2} & d < \frac{\hat{d}}{2}\\
+     *         0 & d \le 0\\
+     *         \frac{\hat{d}^2}{4d^2} & d < \frac{\hat{d}}{2}\\
      *         1 & d < \hat{d}\\
      *         0 & d \ge \hat{d}
      *     \end{cases}

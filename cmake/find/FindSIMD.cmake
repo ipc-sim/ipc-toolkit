@@ -180,8 +180,14 @@ function (test_sse_availability)
 
 endfunction()
 
-# This script checks for the highest level of FMA support on the host
-# by compiling and running small C++ programs that uses FMA intrinsics.
+# This script checks for x86 FMA3 support on the host by compiling and running
+# a small C++ program that uses the AVX2 FMA intrinsics.
+#
+# NOTE: This probe is x86-only -- it needs `-mavx2 -mfma` and <immintrin.h>, so
+# it cannot succeed on AArch64 and reports DETECTED_FMA3_X86 as failed there.
+# That is not a missing capability: AArch64 has no opt-in FMA flag because
+# fmadd/fmsub and the NEON vfmaq_* family are mandatory in the base ISA, so an
+# empty FMA_FLAGS is the correct answer and NEON implies a fused multiply-add.
 
 # If any  FMA support is detected, the following variables are set:
 #
@@ -194,7 +200,7 @@ endfunction()
 function (test_fma_availability)
 	set(FMA_FLAGS)
 	set(FMA_FOUND)
-	set(DETECTED_FMA)
+	set(DETECTED_FMA3_X86)
 
 	include(CheckCXXSourceRuns)
 	set(CMAKE_REQUIRED_FLAGS)
@@ -219,12 +225,12 @@ function (test_fma_availability)
 
 		__m256d result =  _mm256_fmsub_pd (a, b, c);
 		return 0;
-		}" DETECTED_FMA)
+		}" DETECTED_FMA3_X86)
 	endif()
 
 	set(CMAKE_REQUIRED_FLAGS)
 
-	if(DETECTED_FMA)
+	if(DETECTED_FMA3_X86)
 	  SET(FMA_FOUND 1)
 	  if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 		SET(FMA_FLAGS "${FMA_FLAGS} -mfma")

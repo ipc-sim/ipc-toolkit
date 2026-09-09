@@ -57,19 +57,19 @@ struct GCPParameters {
             logger().error(
                 "Parameter 'dhat' must be greater than 0! dhat: {}", dhat);
         }
-        if (abs(alpha_t) > 1) {
+        if (std::abs(alpha_t) > 1) {
             logger().error(
                 "Parameter 'alpha_t' must be in [-1, 1]! alpha_t: {}", alpha_t);
         }
-        if (abs(alpha_n) > 1) {
+        if (std::abs(alpha_n) > 1) {
             logger().error(
                 "Parameter 'alpha_n' must be in [-1, 1]! alpha_n: {}", alpha_n);
         }
-        if (abs(beta_t) > 1) {
+        if (std::abs(beta_t) > 1) {
             logger().error(
                 "Parameter 'beta_t' must be in [-1, 1]! beta_t: {}", beta_t);
         }
-        if (abs(beta_n) > 1) {
+        if (std::abs(beta_n) > 1) {
             logger().error(
                 "Parameter 'beta_n' must be in [-1, 1]! beta_n: {}", beta_n);
         }

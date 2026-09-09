@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
@@ -21,7 +22,7 @@ namespace detail {
     /// @param dtype The point edge distance type to compute.
     /// @return The distance between the point and edge.
     template <typename T, int dim>
-    inline T point_edge_distance(
+    IPC_TOOLKIT_HOST_DEVICE inline T point_edge_distance(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1,
@@ -62,7 +63,8 @@ namespace detail {
     /// @param dtype The point edge distance type to compute.
     /// @return The gradient of the distance wrt p, e0, and e1.
     template <typename T, int dim>
-    inline Eigen::Vector<T, 3 * dim> point_edge_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 3 * dim>
+    point_edge_distance_gradient(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1,
@@ -114,7 +116,8 @@ namespace detail {
     /// @param dtype The point edge distance type to compute.
     /// @return The hessian of the distance wrt p, e0, and e1.
     template <typename T, int dim>
-    Eigen::Matrix<T, 3 * dim, 3 * dim> point_edge_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 3 * dim, 3 * dim>
+    point_edge_distance_hessian(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1,
@@ -129,7 +132,7 @@ namespace detail {
 /// @param dtype The point edge distance type to compute.
 /// @return The distance between the point and edge.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_edge_distance(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_edge_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1,
@@ -157,7 +160,7 @@ inline auto point_edge_distance(
 /// @param dtype The point edge distance type to compute.
 /// @return The gradient of the distance wrt p, e0, and e1.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_edge_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_edge_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1,
@@ -186,7 +189,7 @@ inline auto point_edge_distance_gradient(
 /// @param dtype The point edge distance type to compute.
 /// @return The hessian of the distance wrt p, e0, and e1.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_edge_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_edge_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1,

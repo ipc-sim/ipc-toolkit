@@ -1,9 +1,12 @@
 #include "line_line.hpp"
 
+#include <ipc/utils/simd.hpp>
+
 namespace ipc::detail {
 
 template <typename T>
-Eigen::Matrix<T, 12, 12> line_line_signed_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12>
+line_line_signed_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3<T>> ea0,
     Eigen::ConstRef<Eigen::Vector3<T>> ea1,
     Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -26,7 +29,18 @@ Eigen::Matrix<T, 12, 12> line_line_signed_distance_hessian(
     // Contract the normal Hessian (3x12x12) with vector v (3x1).
     // This computes (v ⋅ d²n/dx²).
     // The result is a 1x12x12 vector, which maps to the 12x12 Hessian matrix.
-    hess = (hess_n.reshaped(3, 144).transpose() * v).reshaped(12, 12);
+    // We spell the two reshapes out as Maps rather than calling
+    // .reshaped(Eigen::fix<...>). Both are fixed-size views over the same
+    // column-major storage, so the result is identical, but .reshaped()
+    // returns a nested expression template that nvcc does not handle, and
+    // this contraction has to stay device-callable.
+    {
+        const Eigen::Map<const Eigen::Matrix<T, 3, 144>> hess_n_3_144(
+            hess_n.data());
+        const Eigen::Matrix<T, 144, 1> contracted =
+            (hess_n_3_144.transpose() * v).eval();
+        hess = Eigen::Map<const Eigen::Matrix<T, 12, 12>>(contracted.data());
+    }
 
     // ---------------------------------------------------------
     // 2. Add Jacobian Terms (Product Rule Corrections)
@@ -70,9 +84,22 @@ Eigen::Matrix<T, 12, 12> line_line_signed_distance_hessian(
     return hess;
 }
 
-// clang-format off
-template Matrix12f line_line_signed_distance_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
-template Matrix12d line_line_signed_distance_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
-// clang-format on
+#define IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN(T)                   \
+    template Eigen::Matrix<T, 12, 12> line_line_signed_distance_hessian<T>(    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>)
+
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
+IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN(float);
+IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN(double);
+#endif
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN(SimdBatch<float>);
+IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN(SimdBatch<double>);
+#endif
+
+#undef IPC_INSTANTIATE_LINE_LINE_SIGNED_DISTANCE_HESSIAN
 
 } // namespace ipc::detail

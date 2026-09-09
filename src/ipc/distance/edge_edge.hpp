@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -15,7 +16,7 @@ namespace detail {
     /// @param dtype The point edge distance type to compute.
     /// @return The distance between the two edges.
     template <typename T>
-    T edge_edge_distance(
+    IPC_TOOLKIT_HOST_DEVICE T edge_edge_distance(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -31,7 +32,7 @@ namespace detail {
     /// @param dtype The point edge distance type to compute.
     /// @return The gradient of the distance wrt ea0, ea1, eb0, and eb1.
     template <typename T>
-    Eigen::Vector<T, 12> edge_edge_distance_gradient(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Vector<T, 12> edge_edge_distance_gradient(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -47,7 +48,7 @@ namespace detail {
     /// @param dtype The point edge distance type to compute.
     /// @return The hessian of the distance wrt ea0, ea1, eb0, and eb1.
     template <typename T>
-    Eigen::Matrix<T, 12, 12> edge_edge_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12> edge_edge_distance_hessian(
         Eigen::ConstRef<Eigen::Vector3<T>> ea0,
         Eigen::ConstRef<Eigen::Vector3<T>> ea1,
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -70,7 +71,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_distance(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_distance(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -94,7 +95,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_distance_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_distance_gradient(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
@@ -118,7 +119,7 @@ template <
     typename DerivedEA1,
     typename DerivedEB0,
     typename DerivedEB1>
-inline auto edge_edge_distance_hessian(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_distance_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,

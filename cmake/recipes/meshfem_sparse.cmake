@@ -58,7 +58,9 @@ target_include_directories(MeshFEMSparse SYSTEM PUBLIC
 
 # MeshFEMCore's headers include the CMake-generated <MeshFEM_export.h>. We
 # build a static library, so the export macros are empty.
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/meshfem/exports/MeshFEM_export.h" [[
+file(CONFIGURE
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/meshfem/exports/MeshFEM_export.h"
+    CONTENT [[
 #pragma once
 #define MESHFEM_EXPORT
 #define MESHFEM_NO_EXPORT

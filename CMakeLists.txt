@@ -130,6 +130,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/find/")
 # General CMake utils
 include(ipc_toolkit_cpm_cache)
 include(ipc_toolkit_use_colors)
+include(ipc_toolkit_shared_device_sources)
 
 # Generate position-independent code by default
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -189,6 +190,12 @@ if(IPC_TOOLKIT_WITH_CUDA)
   # library to be built with -dc as the member functions could be called by
   # other libraries and executables.
   set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+  # Device code calls constexpr host functions (std::numeric_limits,
+  # std::array). PUBLIC so downstream CUDA consumers (e.g. the tests) inherit
+  # the flag.
+  target_compile_options(ipc_toolkit PUBLIC
+    "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:--expt-relaxed-constexpr>")
 endif()
 
 # Fill in configuration options
@@ -208,7 +215,25 @@ target_include_directories(ipc_toolkit PUBLIC
 # Folder name for IDE
 set_target_properties(ipc_toolkit PROPERTIES FOLDER "SRC")
 get_target_property(IPC_TOOLKIT_SOURCES ipc_toolkit SOURCES)
-source_group(TREE "${PROJECT_SOURCE_DIR}" FILES ${IPC_TOOLKIT_SOURCES})
+# source_group(TREE) hard-errors on any file that is not under ROOT, and with
+# CUDA enabled the target owns generated wrappers under the binary dir (see
+# ipc_toolkit_shared_device_sources.cmake). The binary dir is outside the
+# source tree for any out-of-source build, which is every consumer that pulls
+# us in via CPM/FetchContent, so split the two groups apart.
+set(IPC_TOOLKIT_IN_TREE_SOURCES "")
+set(IPC_TOOLKIT_GENERATED_SOURCES "")
+foreach(source IN LISTS IPC_TOOLKIT_SOURCES)
+  cmake_path(IS_PREFIX PROJECT_SOURCE_DIR "${source}" NORMALIZE is_in_tree)
+  if(is_in_tree)
+    list(APPEND IPC_TOOLKIT_IN_TREE_SOURCES "${source}")
+  else()
+    list(APPEND IPC_TOOLKIT_GENERATED_SOURCES "${source}")
+  endif()
+endforeach()
+source_group(TREE "${PROJECT_SOURCE_DIR}" FILES ${IPC_TOOLKIT_IN_TREE_SOURCES})
+if(IPC_TOOLKIT_GENERATED_SOURCES)
+  source_group("Generated" FILES ${IPC_TOOLKIT_GENERATED_SOURCES})
+endif()
 
 ################################################################################
 # Dependencies
@@ -217,6 +242,14 @@ source_group(TREE "${PROJECT_SOURCE_DIR}" FILES ${IPC_TOOLKIT_SOURCES})
 # Eigen
 include(eigen)
 target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
+
+# Logger
+# NOTE: Included before the CCD dependencies on purpose. Scalable CCD carries
+# its own spdlog recipe guarded on `if(TARGET spdlog::spdlog)`, so whichever
+# runs first wins -- and if that is Scalable CCD's, the unpatched spdlog is the
+# one CPM registers and cmake/patches/fmt-nvcc-compat.patch never applies.
+include(spdlog)
+target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
 # libigl
 include(libigl)
@@ -233,11 +266,6 @@ target_link_libraries(ipc_toolkit PRIVATE tight_inclusion::tight_inclusion)
 # Scalable CCD (STQ broad phase and GPU Tight Inclusion)
 include(scalable_ccd)
 target_link_libraries(ipc_toolkit PRIVATE scalable_ccd::scalable_ccd)
-
-
-# Logger
-include(spdlog)
-target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
 # TinyAD
 include(tinyad)
@@ -309,21 +337,79 @@ target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 
 # SIMD support
 if(IPC_TOOLKIT_WITH_SIMD)
-  # Add SIMD flags to compiler flags
-  target_compile_options(ipc_toolkit PRIVATE ${SIMD_CXX_FLAGS})
+  # Add SIMD flags to compiler flags.
+  # NOTE: PUBLIC because xsimd::default_arch is selected from each translation
+  # unit's own flags. ipc/utils/simd.hpp exposes batch types in the public API,
+  # and a consumer compiled without these flags would name a different type
+  # than the one instantiated in the library, failing to link.
+  # NOTE: Restricted to C++ sources because nvcc would treat a bare /arch or
+  # -march flag as an input file, and device code has no use for CPU SIMD.
+  target_compile_options(ipc_toolkit PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:${SIMD_CXX_FLAGS}>")
+
+  if(IPC_TOOLKIT_WITH_CUDA)
+    # The *host* pass of a .cu still needs them. A shared device source is
+    # compiled twice and the nvcc pass owns the float and double
+    # instantiations (see ipc_toolkit_shared_device_sources.cmake), so without
+    # this they would be the only scalar code in the library built without
+    # SIMD support. Hand the flags to the host compiler nvcc drives rather
+    # than to nvcc itself.
+    set(SIMD_CUDA_HOST_FLAGS "")
+    foreach(simd_flag IN LISTS SIMD_CXX_FLAGS)
+      list(APPEND SIMD_CUDA_HOST_FLAGS "-Xcompiler=${simd_flag}")
+    endforeach()
+    target_compile_options(ipc_toolkit PUBLIC
+      "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:${SIMD_CUDA_HOST_FLAGS}>")
+  endif()
 
   # Link against cross-platform xsimd library
   include(xsimd)
-  target_link_libraries(ipc_toolkit PRIVATE xsimd::xsimd)
+  target_link_libraries(ipc_toolkit PUBLIC xsimd::xsimd)
 
   # Disable vectorization in Eigen since I've found it to have alignment issues.
   # NOTE: I don't know why this needs to be public, but it crashes if I make it private.
   target_compile_definitions(ipc_toolkit PUBLIC EIGEN_DONT_VECTORIZE=1)
 endif()
 
+if(IPC_TOOLKIT_WITH_CUDA)
+  # Pin Eigen's alignment so C++ and CUDA translation units agree on object
+  # layout. Eigen picks its alignment per translation unit from the flags that
+  # unit was compiled with, and nvcc never sees the host compiler's -march
+  # flags -- so the two sides disagree whenever anything makes them differ.
+  # Two ways that happens here: EIGEN_DONT_VECTORIZE yields align=0 under the
+  # host compiler but align=16 under nvcc, and -march=native yields align=32
+  # (AVX) or 64 (AVX-512) in C++ against nvcc's 16. Fixed-max types (e.g.
+  # VectorMax<double, 18>) then get a different sizeof/alignof in each, which
+  # smashes the stack when one is returned by value across that boundary.
+  target_compile_definitions(ipc_toolkit PUBLIC
+    EIGEN_MAX_STATIC_ALIGN_BYTES=0
+    EIGEN_MAX_ALIGN_BYTES=0)
+endif()
+
 # For MSVC, do not use the min and max macros.
 if(MSVC)
   target_compile_definitions(ipc_toolkit PRIVATE NOMINMAX)
+
+  # Compile CUDA translation units as UTF-8.
+  #
+  # The bundled fmt hard-fails on MSVC unless narrow literals are UTF-8:
+  # static_assert(!FMT_UNICODE || use_utf8, "Unicode support requires
+  # compiling with /utf-8"). It detects this by encoding U+00A7 and checking
+  # for the two-byte form, which the active code page does not produce.
+  #
+  # spdlog already hands us /utf-8 PUBLIC, but only for COMPILE_LANGUAGE:CXX,
+  # so a .cu never receives it. Our fmt patch (cmake/patches/) keeps the
+  # assert quiet there by hardcoding the probe true under __CUDACC__, which
+  # silences the error without making it correct: fmt then skips its
+  # vprint_mojibake fallback and writes code-page bytes as though they were
+  # UTF-8. This flag makes the hardcoded answer the true one.
+  #
+  # NOTE: -Xcompiler because options reach nvcc verbatim and it forwards no
+  # MSVC flags of its own. It reaches the host pass only -- the device
+  # front-end cannot be given /utf-8 at all, which is why the patch stays.
+  # PUBLIC so a consumer's own .cu files agree, and gated on nvcc because
+  # clang as the CUDA compiler has no -Xcompiler.
+  target_compile_options(ipc_toolkit PUBLIC
+    "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:-Xcompiler=/utf-8>")
 endif()
 
 # Use C++17
@@ -371,6 +457,7 @@ endif()
 
 if(IPC_TOOLKIT_WITH_CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   # Add required flags (GCC & LLVM/Clang)
+  # NOTE: tests/CMakeLists.txt repeats these for the test target; keep in sync.
   target_compile_options(ipc_toolkit PRIVATE
     -g         # generate debug info
     --coverage # sets all required flags

@@ -3,6 +3,7 @@
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
+#include <ipc/utils/simd.hpp>
 
 #include <stdexcept> // std::invalid_argument
 
@@ -11,7 +12,8 @@ namespace ipc {
 namespace detail {
 
     template <typename T, int dim>
-    Eigen::Matrix<T, 3 * dim, 3 * dim> point_edge_distance_hessian(
+    IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 3 * dim, 3 * dim>
+    point_edge_distance_hessian(
         Eigen::ConstRef<Eigen::Vector<T, dim>> p,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1,
@@ -67,10 +69,18 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector<T, dim>>,                                \
         Eigen::ConstRef<Eigen::Vector<T, dim>>, PointEdgeDistanceType)
 
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
     IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(float, 2);
     IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(float, 3);
     IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(double, 2);
     IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(double, 3);
+#endif
+#ifdef IPC_TOOLKIT_WITH_SIMD
+    IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(SimdBatch<float>, 2);
+    IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(SimdBatch<float>, 3);
+    IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(SimdBatch<double>, 2);
+    IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN(SimdBatch<double>, 3);
+#endif
 
 #undef IPC_INSTANTIATE_POINT_EDGE_DISTANCE_HESSIAN
 

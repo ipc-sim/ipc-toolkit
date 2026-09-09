@@ -2,6 +2,8 @@
 
 #include <ipc/geometry/normal.hpp>
 
+#include <tuple>
+
 using namespace ipc;
 
 void define_normal(py::module_& m)
@@ -9,7 +11,8 @@ void define_normal(py::module_& m)
     m.def(
         "normalization_and_jacobian",
         [](Eigen::ConstRef<VectorMax3d> x) {
-            return normalization_and_jacobian(x);
+            const auto [normalized, jacobian] = normalization_and_jacobian(x);
+            return std::make_tuple(normalized, jacobian);
         },
         R"ipc_qu8mg5v7(
         Computes the normalization and Jacobian of a vector.
@@ -45,7 +48,9 @@ void define_normal(py::module_& m)
     m.def(
         "normalization_and_jacobian_and_hessian",
         [](Eigen::ConstRef<VectorMax3d> x) {
-            return normalization_and_jacobian_and_hessian(x);
+            const auto [normalized, jacobian, hessian] =
+                normalization_and_jacobian_and_hessian(x);
+            return std::make_tuple(normalized, jacobian, hessian);
         },
         R"ipc_qu8mg5v7(
         Computes the normalization, Jacobian, and Hessian of a vector.

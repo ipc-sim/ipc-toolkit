@@ -674,6 +674,6 @@ notebooks/*.png
 CMakeGraphVizOptions.cmake
 .zed/*
 
-CLAUDE.md
 .claude
 graphify-out
+__cmake_systeminformation

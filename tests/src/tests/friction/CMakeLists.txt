@@ -3,6 +3,7 @@ set(SOURCES
   test_anisotropic_friction.cpp
   test_force_jacobian.cpp
   test_friction.cpp
+  test_simd_friction.cpp
   test_smooth_friction_mollifier.cpp
   test_smooth_mu.cpp
 

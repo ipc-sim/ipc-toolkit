@@ -18,6 +18,7 @@ set(SOURCES
   profile_registry.hpp
   profiler.cpp
   profiler.hpp
+  simd.hpp
   save_obj.cpp
   save_obj.hpp
   unordered_map_and_set.cpp

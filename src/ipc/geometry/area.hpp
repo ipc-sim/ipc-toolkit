@@ -1,10 +1,12 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Geometry>
 
 #include <cassert>
+#include <type_traits>
 
 namespace ipc {
 
@@ -14,7 +16,7 @@ namespace autogen {
     // clang-format off
     /// dA is (9×1) flattened in column-major order
     template <typename T>
-    void triangle_area_gradient(
+    IPC_TOOLKIT_HOST_DEVICE void triangle_area_gradient(
         T t0_x, T t0_y, T t0_z, T t1_x, T t1_y, T t1_z, T t2_x, T t2_y, T t2_z, T dA[9]);
     // clang-format on
 
@@ -28,7 +30,7 @@ namespace detail {
     /// @param e1 The second vertex of the edge.
     /// @return The length of the edge.
     template <typename T, int dim>
-    inline T edge_length(
+    IPC_TOOLKIT_HOST_DEVICE inline T edge_length(
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1)
     {
@@ -43,12 +45,17 @@ namespace detail {
     /// @param e1 The second vertex of the edge.
     /// @return The gradient of the edge's length wrt e0, and e1.
     template <typename T, int dim>
-    inline Eigen::Vector<T, 2 * dim> edge_length_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 2 * dim>
+    edge_length_gradient(
         Eigen::ConstRef<Eigen::Vector<T, dim>> e0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> e1)
     {
         static_assert(dim == 2 || dim == 3, "edges are only 2D or 3D");
-        assert((e1 - e0).norm() != 0);
+        // A degenerate edge divides by zero below. A batch cannot answer that
+        // with one bool, so it is only asserted for a plain scalar.
+        if constexpr (std::is_floating_point_v<T>) {
+            assert((e1 - e0).norm() != 0);
+        }
 
         // ∇ ‖e₁ - e₀‖
         Eigen::Vector<T, 2 * dim> grad;
@@ -64,7 +71,7 @@ namespace detail {
     /// @param t2 The third vertex of the triangle.
     /// @return The area of the triangle.
     template <typename T>
-    inline T triangle_area(
+    IPC_TOOLKIT_HOST_DEVICE inline T triangle_area(
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
         Eigen::ConstRef<Eigen::Vector3<T>> t2)
@@ -79,7 +86,7 @@ namespace detail {
     /// @param t2 The third vertex of the triangle.
     /// @return The gradient of the triangle's area t0, t1, and t2.
     template <typename T>
-    inline Eigen::Vector<T, 9> triangle_area_gradient(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 9> triangle_area_gradient(
         Eigen::ConstRef<Eigen::Vector3<T>> t0,
         Eigen::ConstRef<Eigen::Vector3<T>> t1,
         Eigen::ConstRef<Eigen::Vector3<T>> t2)
@@ -97,7 +104,7 @@ namespace detail {
 /// @param e1 The second vertex of the edge.
 /// @return The length of the edge.
 template <typename DerivedE0, typename DerivedE1>
-inline auto edge_length(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_length(
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
 {
@@ -120,7 +127,7 @@ inline auto edge_length(
 /// @param e1 The second vertex of the edge.
 /// @return The gradient of the edge's length wrt e0, and e1.
 template <typename DerivedE0, typename DerivedE1>
-inline auto edge_length_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_length_gradient(
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
 {
@@ -147,7 +154,7 @@ inline auto edge_length_gradient(
 /// @param t2 The third vertex of the triangle.
 /// @return The area of the triangle.
 template <typename DerivedT0, typename DerivedT1, typename DerivedT2>
-inline auto triangle_area(
+IPC_TOOLKIT_HOST_DEVICE inline auto triangle_area(
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2)
@@ -167,7 +174,7 @@ inline auto triangle_area(
 /// @param t2 The third vertex of the triangle.
 /// @return The gradient of the triangle's area t0, t1, and t2.
 template <typename DerivedT0, typename DerivedT1, typename DerivedT2>
-inline auto triangle_area_gradient(
+IPC_TOOLKIT_HOST_DEVICE inline auto triangle_area_gradient(
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2)

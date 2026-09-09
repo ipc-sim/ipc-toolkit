@@ -76,9 +76,15 @@ if(IPC_TOOLKIT_WITH_CUDA)
   # other libraries and executables.
   set_target_properties(ipc_toolkit_tests PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
-  # Use the same CUDA architectures Scalable CCD
-  # get_target_property(CMAKE_CUDA_ARCHITECTURES scalable_ccd CUDA_ARCHITECTURES)
-  set_target_properties(ipc_toolkit_tests PROPERTIES CUDA_ARCHITECTURES "native")
+  # Use the CUDA architectures specified by the user (e.g. via
+  # -DCMAKE_CUDA_ARCHITECTURES) and only fall back to auto-detecting the local
+  # GPU ("native") when none were given. "native" requires a physical GPU, so
+  # the fallback fails in GPU-less environments such as CI/Docker builds.
+  if(DEFINED CMAKE_CUDA_ARCHITECTURES)
+    set_target_properties(ipc_toolkit_tests PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
+  else()
+    set_target_properties(ipc_toolkit_tests PROPERTIES CUDA_ARCHITECTURES "native")
+  endif()
 endif()
 
 if (IPC_TOOLKIT_TESTS_CCD_BENCHMARK)
@@ -101,6 +107,23 @@ target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
 ################################################################################
 
 target_compile_definitions(ipc_toolkit_tests PRIVATE CATCH_CONFIG_ENABLE_BENCHMARKING)
+
+# Code coverage
+#
+# The library sets these on itself privately; we repeat them here rather than
+# inherit them, so instrumentation reaches the tests without every consumer of
+# ipc::toolkit picking it up too. This is needed because much of the library is
+# header-only templates: a template is compiled in whichever translation unit
+# instantiates it, so a header only ever called from a test would otherwise
+# have no counters anywhere and read as untested. The linker flags do come from
+# ipc::toolkit, which applies them PUBLIC.
+if(IPC_TOOLKIT_WITH_CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(ipc_toolkit_tests PRIVATE
+    -g         # generate debug info
+    --coverage # sets all required flags
+    -fprofile-update=atomic
+  )
+endif()
 
 if (FILIB_BUILD_SHARED_LIB AND WIN32)
   # Copy DLLs to the output directory

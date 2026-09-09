@@ -1,12 +1,12 @@
 #include "area.hpp"
 
-#include <cmath>
+#include <ipc/utils/simd.hpp>
 
 namespace ipc::autogen {
 
 // dA is (9×1) flattened in column-major order
 template <typename T>
-void triangle_area_gradient(
+IPC_TOOLKIT_HOST_DEVICE void triangle_area_gradient(
     T t0_x,
     T t0_y,
     T t0_z,
@@ -32,7 +32,7 @@ void triangle_area_gradient(
     const T t11 = t0_z - t1_z;
     const T t12 = t10 * t2 - t11 * t5;
     const T t13 = t10 * t6 - t11 * t3;
-    const T t14 = T(0.5) / std::sqrt(t12 * t12 + t13 * t13 + t7 * t7);
+    const T t14 = T(0.5) / ipc::numext::sqrt(t12 * t12 + t13 * t13 + t7 * t7);
     const T t15 = t1_x + t4;
     dA[0] = t14 * (t1 * t7 + t12 * t9);
     dA[1] = -t14 * (-t13 * t9 + t15 * t7);
@@ -48,8 +48,14 @@ void triangle_area_gradient(
 #define IPC_INSTANTIATE_AREA_AUTOGEN(T)                                        \
     template void triangle_area_gradient<T>(T, T, T, T, T, T, T, T, T, T[9])
 
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
 IPC_INSTANTIATE_AREA_AUTOGEN(float);
 IPC_INSTANTIATE_AREA_AUTOGEN(double);
+#endif
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_AREA_AUTOGEN(SimdBatch<float>);
+IPC_INSTANTIATE_AREA_AUTOGEN(SimdBatch<double>);
+#endif
 #undef IPC_INSTANTIATE_AREA_AUTOGEN
 
 } // namespace ipc::autogen

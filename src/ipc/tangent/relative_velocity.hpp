@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <cassert>
@@ -17,7 +18,8 @@ namespace detail {
     /// @param dp1 Velocity of the second point
     /// @return The relative velocity of the two points
     template <typename T, int dim>
-    inline Eigen::Vector<T, dim> point_point_relative_velocity(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, dim>
+    point_point_relative_velocity(
         Eigen::ConstRef<Eigen::Vector<T, dim>> dp0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> dp1)
     {
@@ -31,7 +33,7 @@ namespace detail {
     /// @tparam dim The dimension (2 or 3).
     /// @return The relative velocity Jacobian du/dx
     template <typename T, int dim>
-    inline Eigen::Matrix<T, dim, 2 * dim>
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, dim, 2 * dim>
     point_point_relative_velocity_jacobian()
     {
         static_assert(
@@ -47,7 +49,7 @@ namespace detail {
     /// @tparam dim The dimension (2 or 3).
     /// @return The vectorized tensor of d²u/dxdβ
     template <typename T, int dim>
-    inline Eigen::Vector<T, 2 * dim * dim>
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 2 * dim * dim>
     point_point_relative_velocity_dx_dbeta()
     {
         static_assert(
@@ -68,7 +70,8 @@ namespace detail {
     /// @param alpha Parametric coordinate of the closest point on the edge
     /// @return The relative velocity of the point and the edge
     template <typename T, int dim>
-    inline Eigen::Vector<T, dim> point_edge_relative_velocity(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, dim>
+    point_edge_relative_velocity(
         Eigen::ConstRef<Eigen::Vector<T, dim>> dp,
         Eigen::ConstRef<Eigen::Vector<T, dim>> de0,
         Eigen::ConstRef<Eigen::Vector<T, dim>> de1,
@@ -86,7 +89,7 @@ namespace detail {
     /// @param alpha Parametric coordinate of the closest point on the edge
     /// @return The relative velocity Jacobian du/dx
     template <typename T, int dim>
-    inline Eigen::Matrix<T, dim, 3 * dim>
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, dim, 3 * dim>
     point_edge_relative_velocity_jacobian(const T alpha)
     {
         static_assert(
@@ -106,7 +109,7 @@ namespace detail {
     /// @param alpha Parametric coordinate of the closest point on the edge
     /// @return The vectorized tensor of d²u/dxdα
     template <typename T, int dim>
-    inline Eigen::Vector<T, 3 * dim * dim>
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector<T, 3 * dim * dim>
     point_edge_relative_velocity_dx_dbeta(const T alpha)
     {
         static_assert(
@@ -134,7 +137,8 @@ namespace detail {
     /// @param coords Two parametric coordinates of the closest points
     /// @return The relative velocity of the edges
     template <typename T>
-    inline Eigen::Vector3<T> edge_edge_relative_velocity(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector3<T>
+    edge_edge_relative_velocity(
         Eigen::ConstRef<Eigen::Vector3<T>> dea0,
         Eigen::ConstRef<Eigen::Vector3<T>> dea1,
         Eigen::ConstRef<Eigen::Vector3<T>> deb0,
@@ -151,7 +155,8 @@ namespace detail {
     /// @param coords Two parametric coordinates of the closest points
     /// @return The relative velocity Jacobian du/dx
     template <typename T>
-    inline Eigen::Matrix<T, 3, 12> edge_edge_relative_velocity_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 3, 12>
+    edge_edge_relative_velocity_jacobian(
         Eigen::ConstRef<Eigen::Vector2<T>> coords)
     {
         Eigen::Matrix<T, 3, 12> J = Eigen::Matrix<T, 3, 12>::Zero();
@@ -167,7 +172,8 @@ namespace detail {
     /// @param coords Two parametric coordinates of the closest points
     /// @return The vectorized tensor of d²u/dxdβ
     template <typename T>
-    inline Eigen::Matrix<T, 36, 2> edge_edge_relative_velocity_dx_dbeta(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 36, 2>
+    edge_edge_relative_velocity_dx_dbeta(
         Eigen::ConstRef<Eigen::Vector2<T>> coords)
     {
         constexpr int dim = 3;
@@ -195,7 +201,8 @@ namespace detail {
     /// @param coords Baricentric coordinates of the closest point
     /// @return The relative velocity of the point to the triangle
     template <typename T>
-    inline Eigen::Vector3<T> point_triangle_relative_velocity(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Vector3<T>
+    point_triangle_relative_velocity(
         Eigen::ConstRef<Eigen::Vector3<T>> dp,
         Eigen::ConstRef<Eigen::Vector3<T>> dt0,
         Eigen::ConstRef<Eigen::Vector3<T>> dt1,
@@ -213,7 +220,8 @@ namespace detail {
     /// @param coords Barycentric coordinates of the closest point
     /// @return The relative velocity Jacobian du/dx
     template <typename T>
-    inline Eigen::Matrix<T, 3, 12> point_triangle_relative_velocity_jacobian(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 3, 12>
+    point_triangle_relative_velocity_jacobian(
         Eigen::ConstRef<Eigen::Vector2<T>> coords)
     {
         Eigen::Matrix<T, 3, 12> J = Eigen::Matrix<T, 3, 12>::Zero();
@@ -231,7 +239,8 @@ namespace detail {
     /// @param coords Baricentric coordinates of the closest point
     /// @return The vectorized tensor of d²u/dxdβ
     template <typename T>
-    inline Eigen::Matrix<T, 36, 2> point_triangle_relative_velocity_dx_dbeta(
+    IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 36, 2>
+    point_triangle_relative_velocity_dx_dbeta(
         Eigen::ConstRef<Eigen::Vector2<T>> coords)
     {
         constexpr int dim = 3;
@@ -256,7 +265,7 @@ namespace detail {
 /// @param dp1 Velocity of the second point
 /// @return The relative velocity of the two points
 template <typename DerivedDP0, typename DerivedDP1>
-inline auto point_point_relative_velocity(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_point_relative_velocity(
     const Eigen::MatrixBase<DerivedDP0>& dp0,
     const Eigen::MatrixBase<DerivedDP1>& dp1)
 {
@@ -282,7 +291,8 @@ inline auto point_point_relative_velocity(
 /// @param dim Dimension (2 or 3)
 /// @return The relative velocity Jacobian du/dx
 template <typename T = double>
-inline MatrixMax<T, 3, 6> point_point_relative_velocity_jacobian(const int dim)
+IPC_TOOLKIT_HOST_DEVICE inline MatrixMax<T, 3, 6>
+point_point_relative_velocity_jacobian(const int dim)
 {
     if (dim == 2) {
         return MatrixMax<T, 3, 6>(
@@ -299,7 +309,8 @@ inline MatrixMax<T, 3, 6> point_point_relative_velocity_jacobian(const int dim)
 /// @param dim Dimension (2 or 3)
 /// @return The vectorized tensor of d²u/dxdβ
 template <typename T = double>
-inline VectorMax<T, 18> point_point_relative_velocity_dx_dbeta(const int dim)
+IPC_TOOLKIT_HOST_DEVICE inline VectorMax<T, 18>
+point_point_relative_velocity_dx_dbeta(const int dim)
 {
     if (dim == 2) {
         return VectorMax<T, 18>(
@@ -321,7 +332,7 @@ inline VectorMax<T, 18> point_point_relative_velocity_dx_dbeta(const int dim)
 /// @param alpha Parametric coordinate of the closest point on the edge
 /// @return The relative velocity of the point and the edge
 template <typename DerivedDP, typename DerivedDE0, typename DerivedDE1>
-inline auto point_edge_relative_velocity(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_edge_relative_velocity(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDE0>& de0,
     const Eigen::MatrixBase<DerivedDE1>& de1,
@@ -350,7 +361,7 @@ inline auto point_edge_relative_velocity(
 /// @param alpha Parametric coordinate of the closest point on the edge
 /// @return The relative velocity Jacobian du/dx
 template <typename T = double>
-inline MatrixMax<T, 3, 9>
+IPC_TOOLKIT_HOST_DEVICE inline MatrixMax<T, 3, 9>
 point_edge_relative_velocity_jacobian(const int dim, const T alpha)
 {
     if (dim == 2) {
@@ -375,7 +386,7 @@ point_edge_relative_velocity_jacobian(const int dim, const T alpha)
 /// @param alpha Parametric coordinate of the closest point on the edge
 /// @return The vectorized tensor of d²u/dxdα
 template <typename T = double>
-inline VectorMax<T, 27>
+IPC_TOOLKIT_HOST_DEVICE inline VectorMax<T, 27>
 point_edge_relative_velocity_dx_dbeta(const int dim, const T alpha)
 {
     if (dim == 2) {
@@ -404,7 +415,7 @@ template <
     typename DerivedDEB0,
     typename DerivedDEB1,
     typename DerivedCoords>
-inline auto edge_edge_relative_velocity(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_relative_velocity(
     const Eigen::MatrixBase<DerivedDEA0>& dea0,
     const Eigen::MatrixBase<DerivedDEA1>& dea1,
     const Eigen::MatrixBase<DerivedDEB0>& deb0,
@@ -422,7 +433,7 @@ inline auto edge_edge_relative_velocity(
 /// @param coords Two parametric coordinates of the closest points on the edges
 /// @return The relative velocity Jacobian du/dx
 template <typename DerivedCoords>
-inline auto edge_edge_relative_velocity_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_relative_velocity_jacobian(
     const Eigen::MatrixBase<DerivedCoords>& coords)
 {
     using T = typename DerivedCoords::Scalar;
@@ -441,7 +452,7 @@ inline auto edge_edge_relative_velocity_jacobian(
 /// @param coords Two parametric coordinates of the closest points on the edges
 /// @return The vectorized tensor of d²u/dxdβ
 template <typename DerivedCoords>
-inline auto edge_edge_relative_velocity_dx_dbeta(
+IPC_TOOLKIT_HOST_DEVICE inline auto edge_edge_relative_velocity_dx_dbeta(
     const Eigen::MatrixBase<DerivedCoords>& coords)
 {
     using T = typename DerivedCoords::Scalar;
@@ -464,7 +475,7 @@ template <
     typename DerivedDT1,
     typename DerivedDT2,
     typename DerivedCoords>
-inline auto point_triangle_relative_velocity(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_relative_velocity(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDT0>& dt0,
     const Eigen::MatrixBase<DerivedDT1>& dt1,
@@ -480,7 +491,7 @@ inline auto point_triangle_relative_velocity(
 /// @param coords Barycentric coordinates of the closest point on the triangle
 /// @return The relative velocity Jacobian du/dx
 template <typename DerivedCoords>
-inline auto point_triangle_relative_velocity_jacobian(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_relative_velocity_jacobian(
     const Eigen::MatrixBase<DerivedCoords>& coords)
 {
     using T = typename DerivedCoords::Scalar;
@@ -499,7 +510,7 @@ inline auto point_triangle_relative_velocity_jacobian(
 /// @param coords Baricentric coordinates of the closest point on the triangle
 /// @return The vectorized tensor of d²u/dxdβ
 template <typename DerivedCoords>
-inline auto point_triangle_relative_velocity_dx_dbeta(
+IPC_TOOLKIT_HOST_DEVICE inline auto point_triangle_relative_velocity_dx_dbeta(
     const Eigen::MatrixBase<DerivedCoords>& coords)
 {
     using T = typename DerivedCoords::Scalar;

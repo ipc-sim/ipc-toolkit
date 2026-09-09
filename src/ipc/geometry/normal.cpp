@@ -1,15 +1,14 @@
-#include "ipc/geometry/normal.hpp"
+#include "normal.hpp"
 
 #include <ipc/config.hpp>
-
-#include <cmath>
+#include <ipc/utils/simd.hpp>
 
 namespace ipc::detail {
 
 // --- point-line normal functions -------------------------------------------
 
 template <typename T>
-VectorMax3<T> point_line_unnormalized_normal(
+IPC_TOOLKIT_HOST_DEVICE VectorMax3<T> point_line_unnormalized_normal(
     Eigen::ConstRef<VectorMax3<T>> p,
     Eigen::ConstRef<VectorMax3<T>> e0,
     Eigen::ConstRef<VectorMax3<T>> e1)
@@ -32,7 +31,8 @@ VectorMax3<T> point_line_unnormalized_normal(
 }
 
 template <typename T>
-MatrixMax<T, 3, 9> point_line_unnormalized_normal_jacobian(
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<T, 3, 9>
+point_line_unnormalized_normal_jacobian(
     Eigen::ConstRef<VectorMax3<T>> p,
     Eigen::ConstRef<VectorMax3<T>> e0,
     Eigen::ConstRef<VectorMax3<T>> e1)
@@ -68,7 +68,8 @@ MatrixMax<T, 3, 9> point_line_unnormalized_normal_jacobian(
 }
 
 template <typename T>
-MatrixMax<T, 27, 9> point_line_unnormalized_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<T, 27, 9>
+point_line_unnormalized_normal_hessian(
     Eigen::ConstRef<VectorMax3<T>> p,
     Eigen::ConstRef<VectorMax3<T>> e0,
     Eigen::ConstRef<VectorMax3<T>> e1)
@@ -174,7 +175,7 @@ MatrixMax<T, 27, 9> point_line_unnormalized_normal_hessian(
 }
 
 template <typename T>
-MatrixMax<T, 27, 9> point_line_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE MatrixMax<T, 27, 9> point_line_normal_hessian(
     Eigen::ConstRef<VectorMax3<T>> p,
     Eigen::ConstRef<VectorMax3<T>> e0,
     Eigen::ConstRef<VectorMax3<T>> e1)
@@ -184,7 +185,7 @@ MatrixMax<T, 27, 9> point_line_normal_hessian(
 
     const VectorMax3<T> z = point_line_unnormalized_normal(p, e0, e1);
     const T z_norm2 = z.squaredNorm();
-    const T z_norm = std::sqrt(z_norm2);
+    const T z_norm = ipc::numext::sqrt(z_norm2);
     const T z_norm3 = z_norm2 * z_norm;
 
     const int DIM = z.size(); // dimension (2 or 3)
@@ -218,15 +219,16 @@ MatrixMax<T, 27, 9> point_line_normal_hessian(
 
 namespace {
     template <typename T>
-    void set_cross_product_matrix_jacobian(
-        Eigen::Ref<Eigen::Matrix<T, 9, 3>> Jx, double chain_rule = 1.0)
+    IPC_TOOLKIT_HOST_DEVICE void set_cross_product_matrix_jacobian(
+        Eigen::Ref<Eigen::Matrix<T, 9, 3>> Jx, T chain_rule = T(1.0))
     {
         Jx(2, 1) = Jx(3, 2) = Jx(7, 0) = -chain_rule;
         Jx(1, 2) = Jx(5, 0) = Jx(6, 1) = chain_rule;
     }
 } // namespace
 
-template <typename T> Eigen::Matrix<T, 9, 3> cross_product_matrix_jacobian()
+template <typename T>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 9, 3> cross_product_matrix_jacobian()
 {
     Eigen::Matrix<T, 9, 3> J = Eigen::Matrix<T, 9, 3>::Zero();
     J(2, 1) = J(3, 2) = J(7, 0) = T(-1);
@@ -235,7 +237,8 @@ template <typename T> Eigen::Matrix<T, 9, 3> cross_product_matrix_jacobian()
 }
 
 template <typename T>
-Eigen::Matrix<T, 27, 9> triangle_unnormalized_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 27, 9>
+triangle_unnormalized_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3<T>> a,
     Eigen::ConstRef<Eigen::Vector3<T>> b,
     Eigen::ConstRef<Eigen::Vector3<T>> c)
@@ -264,14 +267,14 @@ Eigen::Matrix<T, 27, 9> triangle_unnormalized_normal_hessian(
 }
 
 template <typename T>
-Eigen::Matrix<T, 27, 9> triangle_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 27, 9> triangle_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3<T>> a,
     Eigen::ConstRef<Eigen::Vector3<T>> b,
     Eigen::ConstRef<Eigen::Vector3<T>> c)
 {
     const Eigen::Vector3<T> z = triangle_unnormalized_normal(a, b, c);
     const T z_norm2 = z.squaredNorm();
-    const T z_norm = std::sqrt(z_norm2);
+    const T z_norm = ipc::numext::sqrt(z_norm2);
     const T z_norm3 = z_norm2 * z_norm;
 
     const auto dz_dx = triangle_unnormalized_normal_jacobian(a, b, c);
@@ -301,7 +304,8 @@ Eigen::Matrix<T, 27, 9> triangle_normal_hessian(
 // --- line-line normal functions ---------------------------------------------
 
 template <typename T>
-Eigen::Matrix<T, 36, 12> line_line_unnormalized_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 36, 12>
+line_line_unnormalized_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3<T>> ea0,
     Eigen::ConstRef<Eigen::Vector3<T>> ea1,
     Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -341,7 +345,7 @@ Eigen::Matrix<T, 36, 12> line_line_unnormalized_normal_hessian(
 }
 
 template <typename T>
-Eigen::Matrix<T, 36, 12> line_line_normal_hessian(
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 36, 12> line_line_normal_hessian(
     Eigen::ConstRef<Eigen::Vector3<T>> ea0,
     Eigen::ConstRef<Eigen::Vector3<T>> ea1,
     Eigen::ConstRef<Eigen::Vector3<T>> eb0,
@@ -350,7 +354,7 @@ Eigen::Matrix<T, 36, 12> line_line_normal_hessian(
     const Eigen::Vector3<T> z =
         line_line_unnormalized_normal(ea0, ea1, eb0, eb1);
     const T z_norm2 = z.squaredNorm();
-    const T z_norm = std::sqrt(z_norm2);
+    const T z_norm = ipc::numext::sqrt(z_norm2);
     const T z_norm3 = z_norm2 * z_norm;
 
     const Eigen::Matrix<T, 3, 12> dz_dx =
@@ -380,24 +384,27 @@ Eigen::Matrix<T, 36, 12> line_line_normal_hessian(
 }
 
 // clang-format off
-template VectorMax3f point_line_unnormalized_normal<float>(Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>);
-template VectorMax3d point_line_unnormalized_normal<double>(Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>);
-template MatrixMax<float, 3, 9> point_line_unnormalized_normal_jacobian<float>(Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>);
-template MatrixMax<double, 3, 9> point_line_unnormalized_normal_jacobian<double>(Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>);
-template MatrixMax<float, 27, 9> point_line_unnormalized_normal_hessian<float>(Eigen::ConstRef<VectorMax3f>,Eigen::ConstRef<VectorMax3f>,Eigen::ConstRef<VectorMax3f>);
-template MatrixMax<double, 27, 9> point_line_unnormalized_normal_hessian<double>(Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>);
-template MatrixMax<float, 27, 9> point_line_normal_hessian<float>(Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>, Eigen::ConstRef<VectorMax3f>);
-template MatrixMax<double, 27, 9> point_line_normal_hessian<double>(Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>);
-template Eigen::Matrix<float, 9, 3> cross_product_matrix_jacobian<float>();
-template Eigen::Matrix<double, 9, 3> cross_product_matrix_jacobian<double>();
-template Eigen::Matrix<float, 27, 9> triangle_unnormalized_normal_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
-template Eigen::Matrix<double, 27, 9> triangle_unnormalized_normal_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
-template Eigen::Matrix<float, 27, 9> triangle_normal_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
-template Eigen::Matrix<double, 27, 9> triangle_normal_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
-template Eigen::Matrix<float, 36, 12> line_line_unnormalized_normal_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
-template Eigen::Matrix<double, 36, 12> line_line_unnormalized_normal_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
-template Eigen::Matrix<float, 36, 12> line_line_normal_hessian<float>(Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>, Eigen::ConstRef<Eigen::Vector3f>);
-template Eigen::Matrix<double, 36, 12> line_line_normal_hessian<double>(Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>, Eigen::ConstRef<Eigen::Vector3d>);
+#define IPC_INSTANTIATE_NORMAL(T)                                             \
+    template VectorMax3<T> point_line_unnormalized_normal<T>(Eigen::ConstRef<VectorMax3<T>>, Eigen::ConstRef<VectorMax3<T>>, Eigen::ConstRef<VectorMax3<T>>); \
+    template MatrixMax<T, 3, 9> point_line_unnormalized_normal_jacobian<T>(Eigen::ConstRef<VectorMax3<T>>, Eigen::ConstRef<VectorMax3<T>>, Eigen::ConstRef<VectorMax3<T>>); \
+    template MatrixMax<T, 27, 9> point_line_unnormalized_normal_hessian<T>(Eigen::ConstRef<VectorMax3<T>>, Eigen::ConstRef<VectorMax3<T>>, Eigen::ConstRef<VectorMax3<T>>); \
+    template MatrixMax<T, 27, 9> point_line_normal_hessian<T>(Eigen::ConstRef<VectorMax3<T>>, Eigen::ConstRef<VectorMax3<T>>, Eigen::ConstRef<VectorMax3<T>>); \
+    template Eigen::Matrix<T, 9, 3> cross_product_matrix_jacobian<T>(); \
+    template Eigen::Matrix<T, 27, 9> triangle_unnormalized_normal_hessian<T>(Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>); \
+    template Eigen::Matrix<T, 27, 9> triangle_normal_hessian<T>(Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>); \
+    template Eigen::Matrix<T, 36, 12> line_line_unnormalized_normal_hessian<T>(Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>); \
+    template Eigen::Matrix<T, 36, 12> line_line_normal_hessian<T>(Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>, Eigen::ConstRef<Eigen::Vector3<T>>)
+
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
+IPC_INSTANTIATE_NORMAL(float);
+IPC_INSTANTIATE_NORMAL(double);
+#endif
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_NORMAL(SimdBatch<float>);
+IPC_INSTANTIATE_NORMAL(SimdBatch<double>);
+#endif
+
+#undef IPC_INSTANTIATE_NORMAL
 // clang-format on
 
 } // namespace ipc::detail

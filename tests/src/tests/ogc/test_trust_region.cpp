@@ -15,9 +15,9 @@ using namespace ipc;
 // its interior, close enough to generate an FV collision with the given dhat.
 //
 // Layout (y-up):
-//   V[0] = (0,  0, 0)   \
-//   V[1] = (2,  0, 0)    > triangle in y=0 plane
-//   V[2] = (1,  0, 2)   /
+//   V[0] = (0,  0, 0)   ┐
+//   V[1] = (2,  0, 0)   │ triangle in y=0 plane
+//   V[2] = (1,  0, 2)   ┘
 //   V[3] = (1, gap, 1)    <- vertex directly above triangle centroid
 //
 // Returned mesh has one face [0,1,2] and three boundary edges.
@@ -173,11 +173,6 @@ TEST_CASE(
 
     // Call filter_step
     tr.filter_step(mesh, x, dx);
-
-    // Compute expected beta using same stable formula as implementation
-    const Eigen::RowVector3d ci = tr.trust_region_centers.row(0);
-    const Eigen::RowVector3d xi = x.row(0);
-    const Eigen::RowVector3d dxi = Eigen::RowVector3d(1.0, 0.0, 0.0);
 
     // After filtering, dx should be scaled by expected_beta
     CHECK(dx(0, 0) == Catch::Approx(0.5));

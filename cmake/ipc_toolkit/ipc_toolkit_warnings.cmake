@@ -36,7 +36,7 @@ else()
 
     # -Wconversion
     -Werror=enum-conversion
-    -Wfloat-conversion
+    -Werror=float-conversion
     # Disable these errors for now, because they are too noisy
     # -Wno-sign-conversion
     # -Wno-shorten-64-to-32
@@ -47,6 +47,7 @@ else()
     -Wpointer-arith
     -Wformat=2
     -Wuninitialized
+    -Wno-maybe-uninitialized
     -Wcast-qual
     -Wmissing-noreturn
     -Wmissing-format-attribute
@@ -122,7 +123,10 @@ else()
     # GCC 6.1 #
     ###########
 
-    -Wnull-dereference
+    # -Wnull-dereference is added below, but only for non-GCC compilers: GCC
+    # has a long-standing history of false positives on inlined Eigen
+    # expression-template code (e.g. https://gcc.gnu.org/PR94867, seen from
+    # GCC 8 through at least GCC 14).
     -fdelete-null-pointer-checks
     -Wduplicated-cond
     -Wmisleading-indentation
@@ -172,6 +176,17 @@ else()
 
     -Wno-redundant-decls
   )
+
+  if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND IPC_TOOLKIT_WARNING_FLAGS -Wnull-dereference)
+  endif()
+
+  # GCC 16 mis-analyzes TBB's enumerable_thread_specific. GCC <= 15 and Clang
+  # are clean, so only suppress it where it fires.
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+     AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16)
+    list(APPEND IPC_TOOLKIT_WARNING_FLAGS -Wno-array-bounds)
+  endif()
 endif()
 
 add_library(ipc_toolkit_warnings INTERFACE)
