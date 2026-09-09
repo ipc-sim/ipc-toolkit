@@ -91,18 +91,26 @@ public:
     /// Used to skip subtrees during triangular (self-collision) traversal.
     using RightmostLeaves = std::vector<int32_t, DefaultInitAllocator<int32_t>>;
 
-private:
-    struct ConstructionInfo {
+    /// @brief Per-internal-node scratch for the bottom-up build.
+    /// @tparam Counter The visitation counter's type: std::atomic<int> here,
+    /// and a plain int for the device build in ipc::cuda::LBVH, where
+    /// atomicAdd() supplies the atomicity.
+    /// @see ipc::details::build_hierarchy_from_leaf
+    template <typename Counter> struct ConstructionInfo {
         /// @brief Left range endpoint passed up by the left child.
-        int32_t left_range;
+        int left_range;
         /// @brief Right range endpoint passed up by the right child.
-        int32_t right_range;
+        int right_range;
         /// @brief Number of threads that arrived at this node.
-        std::atomic<int> visitation_count;
+        Counter visitation_count;
     };
 
-    using ConstructionInfos =
-        std::vector<ConstructionInfo, DefaultInitAllocator<ConstructionInfo>>;
+private:
+    using HostConstructionInfo = ConstructionInfo<std::atomic<int>>;
+
+    using ConstructionInfos = std::vector<
+        HostConstructionInfo,
+        DefaultInitAllocator<HostConstructionInfo>>;
 
 public:
     LBVH();
