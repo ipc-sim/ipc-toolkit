@@ -1,6 +1,8 @@
 #include "lbvh.hpp"
 
 #include <ipc/broad_phase/details/connectivity_filters.hpp>
+#include <ipc/broad_phase/details/lbvh_build.hpp>
+#include <ipc/broad_phase/details/lbvh_traverse.hpp>
 #include <ipc/math/morton.hpp>
 #include <ipc/utils/merge_thread_local.hpp>
 #include <ipc/utils/profiler.hpp>
@@ -24,23 +26,6 @@ namespace xs = xsimd;
 using namespace std::placeholders;
 
 namespace ipc {
-
-namespace {
-    // Helper to safely convert double AABB to float AABB
-    inline void assign_inflated_aabb(const AABB& box, LBVH::Node& node)
-    {
-        // Round Min down
-        node.aabb_min = box.min.unaryExpr([](double val) {
-            return std::nextafter(
-                float(val), -std::numeric_limits<float>::infinity());
-        });
-        // Round Max up
-        node.aabb_max = box.max.unaryExpr([](double val) {
-            return std::nextafter(
-                float(val), std::numeric_limits<float>::infinity());
-        });
-    }
-} // namespace
 
 LBVH::LBVH() : BroadPhase()
 {
@@ -96,26 +81,6 @@ void LBVH::build(
     face_boxes.clear();
 }
 
-namespace {
-    /// Returns the length of the common leading-bit prefix of the sorted Morton
-    /// codes at positions i and j, or -1 when j is out of bounds. code_i is the
-    /// Morton code at position i, passed explicitly to avoid a redundant
-    /// lookup. The prefix itself is computed by ipc::morton_common_prefix(),
-    /// shared with the device build in ipc::cuda::LBVH.
-    int delta(
-        const LBVH::MortonCodeElements& sorted_morton_codes,
-        int i,
-        uint64_t code_i,
-        int j)
-    {
-        if (j < 0 || j >= sorted_morton_codes.size()) {
-            return -1;
-        }
-        return morton_common_prefix(
-            code_i, i, sorted_morton_codes[j].morton_code, j);
-    }
-} // namespace
-
 void LBVH::init_bvh(
     const AABBs& boxes, Nodes& lbvh, RightmostLeaves& rightmost_leaves) const
 {
@@ -156,7 +121,6 @@ void LBVH::init_bvh(
 
     assert(boxes.size() <= std::numeric_limits<int>::max());
     const int N_LEAVES = int(boxes.size());
-    const int LEAF_OFFSET = N_LEAVES - 1;
 
     if (rightmost_leaves.size() != lbvh.size()) {
         rightmost_leaves.resize(lbvh.size());
@@ -172,136 +136,46 @@ void LBVH::init_bvh(
     }
 
     // Apetrei 2014: single bottom-up pass that simultaneously builds the
-    // hierarchy and computes bounding boxes. Each leaf thread walks toward the
-    // root, choosing its parent in O(1) by comparing the CLZ-delta values at
-    // the two ends of its current key range.
-    //
-    // In this layout internal node j always splits between sorted keys j and
-    // j+1. The root is NOT necessarily at index 0, so after construction we
-    // swap the root into position 0 to match the traversal code's expectation.
+    // hierarchy and computes bounding boxes. See
+    // ipc::details::build_hierarchy_from_leaf(), shared with the device build
+    // in ipc::cuda::LBVH.
     std::atomic<int> root_idx(-1);
     {
         IPC_TOOLKIT_PROFILE_BLOCK("build_hierarchy_and_boxes");
         tbb::parallel_for(0, N_LEAVES, [&](int i) {
-            // --- Initialize leaf node ---
-            {
-                const auto& box = boxes[morton_codes[i].box_id];
+            const size_t box_id = morton_codes[i].box_id;
+            details::init_leaf_node(
+                i, N_LEAVES, box_id, boxes[box_id].min, boxes[box_id].max,
+                lbvh.data(), rightmost_leaves.data());
 
-                Node leaf_node; // Create leaf node
-                assign_inflated_aabb(box, leaf_node);
-                leaf_node.primitive_id = morton_codes[i].box_id;
-                leaf_node.is_inner_marker = 0;
-                lbvh[LEAF_OFFSET + i] = leaf_node; // Store leaf
-                // A leaf's rightmost leaf is itself
-                rightmost_leaves[LEAF_OFFSET + i] = i;
-            }
+            const int root = details::build_hierarchy_from_leaf(
+                i, N_LEAVES, [&](int k) { return morton_codes[k].morton_code; },
+                lbvh.data(), rightmost_leaves.data(), construction_infos.data(),
+                // std::atomic's post-increment is sequentially consistent, so
+                // it already orders this thread's writes before the arrival
+                // and the arrival before its later reads.
+                [](std::atomic<int>& count) { return count++; });
 
-            // --- Bottom-up walk (Apetrei 2014, Fig. 2) ---
-            // Invariant: the current subtree covers the sorted-key range
-            // [left_key, right_key].
-            int left_key = i;
-            int right_key = i;
-            int current_node = LEAF_OFFSET + i;
-
-            while (true) {
-                // Choose parent. Candidates are internal node right_key
-                // (current becomes its left / childA) or internal node
-                // left_key-1 (current becomes its right / childB). Our delta()
-                // returns CLZ (higher = more-similar = finer split), so the
-                // CLOSER ancestor has the LARGER delta — hence ">".
-                //
-                // Boundary rules:
-                //   left_key == 0        → must be childA (no node -1)
-                //   right_key == n-1     → must be childB (no node n-1)
-                const bool is_child_a = (left_key == 0)
-                    || (right_key != N_LEAVES - 1
-                        && delta(
-                               morton_codes, right_key,
-                               morton_codes[right_key].morton_code,
-                               right_key + 1)
-                            > delta(
-                                morton_codes, left_key - 1,
-                                morton_codes[left_key - 1].morton_code,
-                                left_key));
-                const int parent = is_child_a ? right_key : left_key - 1;
-
-                auto& info = construction_infos[parent];
-
-                // Write the child pointer on the parent node.
-                // childA writes .left; childB writes .right.
-                if (is_child_a) {
-                    lbvh[parent].left = current_node;
-                    info.left_range = left_key;
-                } else {
-                    lbvh[parent].right = current_node;
-                    info.right_range = right_key;
-                }
-
-                // Atomic arrival gate: the first thread to reach this parent
-                // stops; the second thread proceeds (it now knows both children
-                // are complete).
-
-                if (info.visitation_count++ == 0) {
-                    // this is the first thread that arrived at this
-                    // node -> finished
-                    break;
-                }
-                // this is the second thread that arrived at this node,
-                // both children are computed -> compute aabb union and
-                // continue
-                assert(lbvh[parent].is_inner());
-                const Node& child_a = lbvh[lbvh[parent].left];
-                const Node& child_b = lbvh[lbvh[parent].right];
-                lbvh[parent].aabb_min = child_a.aabb_min.min(child_b.aabb_min);
-                lbvh[parent].aabb_max = child_a.aabb_max.max(child_b.aabb_max);
-
-                // Compute rightmost leaf: max of children's rightmost
-                rightmost_leaves[parent] = std::max(
-                    rightmost_leaves[lbvh[parent].left],
-                    rightmost_leaves[lbvh[parent].right]);
-
-                // Reconstruct the full key range for the parent.
-                left_key = construction_infos[parent].left_range;
-                right_key = construction_infos[parent].right_range;
-                current_node = parent;
-
-                if (left_key == 0 && right_key == N_LEAVES - 1) {
-                    // only one thread should reach the root
-                    int expected = -1;
-                    [[maybe_unused]] bool set =
-                        root_idx.compare_exchange_strong(
-                            expected, current_node);
-                    assert(set);
-                    break; // root AABB is complete
-                }
+            if (root >= 0) {
+                // Only one thread should ever reach the root.
+                int expected = -1;
+                [[maybe_unused]] const bool set =
+                    root_idx.compare_exchange_strong(expected, root);
+                assert(set);
             }
         });
     }
 
     // --- Move the root to index 0 so traversal can start there. ---
     // In the Apetrei layout the root's index equals the global split position,
-    // which is generally != 0.  We swap the root node into position 0 and patch
-    // up the single affected child pointer.
-    //
-    // Key invariant (Apetrei): node 0's subtree always has left_key=0, so it is
-    // only ever written as a LEFT child — meaning no internal node ever has
-    // right==0.  Therefore swapping node 0 cannot create a spurious
-    // is_inner_marker==0 (which would look like a leaf).
+    // which is generally != 0.
     const int root = root_idx.load();
     if (root > 0) {
         IPC_TOOLKIT_PROFILE_BLOCK("swap_root_to_zero");
-        std::swap(lbvh[0], lbvh[root]);
-        std::swap(rightmost_leaves[0], rightmost_leaves[root]);
+        details::swap_root_to_zero(lbvh.data(), rightmost_leaves.data(), root);
 
-        // The root (now at 0) is never any node's child, so no pointer
-        // references R that needs rewriting to 0. The only pointers that
-        // referenced 0 (the old node-0) must be rewritten to R.  And since old
-        // node-0 was only ever a LEFT child (see invariant above), we only need
-        // to patch .left pointers.
         tbb::parallel_for(size_t(0), lbvh.size(), [&](size_t i) {
-            if (lbvh[i].is_inner() && lbvh[i].left == 0) {
-                lbvh[i].left = root;
-            }
+            details::patch_left_pointer(lbvh[i], root);
         });
     }
 }
@@ -342,6 +216,9 @@ namespace {
         candidates.emplace_back(i, j);
     }
 
+    /// Scalar traversal: descend the target BVH for one query leaf and record
+    /// every overlapping, filter-passing pair. The descent itself is
+    /// ipc::details::traverse_lbvh(), shared with ipc::cuda::LBVH.
     template <typename Candidate, bool swap_order, bool triangular>
     void traverse_lbvh(
         const LBVH::Node& query,
@@ -351,81 +228,12 @@ namespace {
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates)
     {
-        // Use a fixed-size array as a stack to avoid dynamic allocations
-        constexpr int MAX_STACK_SIZE = 64;
-        int stack[MAX_STACK_SIZE];
-        int stack_ptr = 0;
-        stack[stack_ptr++] = LBVH::Node::INVALID_POINTER;
-
-        int node_idx = 0; // root
-        do {
-            const LBVH::Node& node = lbvh[node_idx];
-
-            if (lbvh.size() == 1) {     // Single node case (only root)
-                assert(node.is_leaf()); // Only one node, so it must be a leaf
-                if constexpr (triangular) {
-                    break; // No self-collision if only one node
-                }
-                if (node.intersects(query)) {
-                    attempt_add_candidate<Candidate, swap_order>(
-                        query, node, can_collide, candidates);
-                }
-                break;
-            }
-
-            // Check left and right are valid pointers
-            assert(node.is_inner());
-
-#if defined(__GNUC__) || defined(__clang__)
-            // Prefetch child nodes to reduce cache misses
-            __builtin_prefetch(&lbvh[node.left], 0, 1);
-            __builtin_prefetch(&lbvh[node.right], 0, 1);
-#endif
-
-            const LBVH::Node& child_l = lbvh[node.left];
-            const LBVH::Node& child_r = lbvh[node.right];
-            bool intersects_l = child_l.intersects(query);
-            bool intersects_r = child_r.intersects(query);
-
-            // Ignore overlap if the subtree is fully on the
-            // left-hand side of the query (triangular traversal only).
-            if constexpr (triangular) {
-                if (intersects_l
-                    && rightmost_leaves[node.left] <= query_leaf_idx) {
-                    intersects_l = false;
-                }
-                if (intersects_r
-                    && rightmost_leaves[node.right] <= query_leaf_idx) {
-                    intersects_r = false;
-                }
-            }
-
-            // Query overlaps a leaf node => report collision.
-            if (intersects_l && child_l.is_leaf()) {
+        details::traverse_lbvh<triangular>(
+            query, int(query_leaf_idx), lbvh.data(), int(lbvh.size()),
+            rightmost_leaves.data(), [&](const LBVH::Node& leaf) {
                 attempt_add_candidate<Candidate, swap_order>(
-                    query, child_l, can_collide, candidates);
-            }
-            if (intersects_r && child_r.is_leaf()) {
-                attempt_add_candidate<Candidate, swap_order>(
-                    query, child_r, can_collide, candidates);
-            }
-
-            // Query overlaps an internal node => traverse.
-            bool traverse_l = (intersects_l && !child_l.is_leaf());
-            bool traverse_r = (intersects_r && !child_r.is_leaf());
-
-            if (!traverse_l && !traverse_r) {
-                assert(stack_ptr > 0);
-                node_idx = stack[--stack_ptr];
-            } else {
-                node_idx = traverse_l ? node.left : node.right;
-                if (traverse_l && traverse_r) {
-                    // Postpone traversal of the right child
-                    assert(stack_ptr < MAX_STACK_SIZE);
-                    stack[stack_ptr++] = node.right;
-                }
-            }
-        } while (node_idx != LBVH::Node::INVALID_POINTER); // Same as root
+                    query, leaf, can_collide, candidates);
+            });
     }
 
 #ifdef IPC_TOOLKIT_WITH_SIMD

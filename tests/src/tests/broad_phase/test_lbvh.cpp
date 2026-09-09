@@ -3,6 +3,7 @@
 #include <tests/config.hpp>
 #include <tests/utils.hpp>
 
+#include <ipc/broad_phase/brute_force.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/utils/profiler.hpp>
@@ -286,6 +287,121 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
 #ifdef IPC_TOOLKIT_WITH_PROFILER
     ipc::profiler().print();
     ipc::profiler().clear();
+#endif
+}
+
+TEST_CASE("LBVH single-primitive trees", "[broad_phase][lbvh]")
+{
+    // A BVH over a single primitive is one node, which is both the root and a
+    // leaf. When such a BVH is the traversal TARGET the descent takes a
+    // dedicated branch, because the root cannot be descended into. Only two
+    // detections put a BVH there that can have one node -- face-vertex (the
+    // face BVH) and edge-face (the edge BVH) -- and the meshes the other tests
+    // load never reduce either to a single primitive.
+    //
+    // One face and one edge, sharing no vertices so the connectivity filter
+    // keeps the pair, and inflated enough that the AABBs actually overlap.
+    Eigen::MatrixXd vertices(5, 3);
+    vertices << 0.00, 0.00, 0.00, // 0 |
+        1.00, 0.00, 0.00,         // 1 |- the face
+        0.00, 1.00, 0.00,         // 2 |
+        0.05, 0.05, 0.05,         // 3 |- the edge
+        0.15, 0.05, 0.05;         // 4 |
+
+    Eigen::MatrixXi edges(1, 2);
+    edges << 3, 4;
+
+    Eigen::MatrixXi faces(1, 3);
+    faces << 0, 1, 2;
+
+    constexpr double inflation_radius = 0.1;
+
+    LBVH lbvh;
+    lbvh.build(vertices, edges, faces, inflation_radius);
+
+    BruteForce brute_force;
+    brute_force.build(vertices, edges, faces, inflation_radius);
+
+    // The branch under test is only reached if these really are single nodes.
+    REQUIRE(lbvh.face_nodes().size() == 1);
+    REQUIRE(lbvh.edge_nodes().size() == 1);
+
+    // The LBVH rounds its AABBs outward to floats, so it may report a superset
+    // of the exact (double-precision) brute-force set, never a subset.
+    {
+        std::vector<FaceVertexCandidate> fv_candidates, expected;
+        lbvh.detect_face_vertex_candidates(fv_candidates);
+        brute_force.detect_face_vertex_candidates(expected);
+
+        // Without this the checks below would pass on an empty set, which is
+        // exactly what a broken single-node branch would produce.
+        REQUIRE(!expected.empty());
+        CHECK(fv_candidates.size() >= expected.size());
+        CHECK(contains_all_candidates(fv_candidates, expected));
+    }
+
+    {
+        std::vector<EdgeFaceCandidate> ef_candidates, expected;
+        lbvh.detect_edge_face_candidates(ef_candidates);
+        brute_force.detect_edge_face_candidates(expected);
+
+        REQUIRE(!expected.empty());
+        CHECK(ef_candidates.size() >= expected.size());
+        CHECK(contains_all_candidates(ef_candidates, expected));
+    }
+
+    // The remaining types traverse multi-node targets here, but are cheap to
+    // check on a mesh this small.
+    {
+        std::vector<VertexVertexCandidate> vv_candidates, expected;
+        lbvh.detect_vertex_vertex_candidates(vv_candidates);
+        brute_force.detect_vertex_vertex_candidates(expected);
+        CHECK(contains_all_candidates(vv_candidates, expected));
+    }
+
+    {
+        std::vector<EdgeVertexCandidate> ev_candidates, expected;
+        lbvh.detect_edge_vertex_candidates(ev_candidates);
+        brute_force.detect_edge_vertex_candidates(expected);
+        REQUIRE(!expected.empty());
+        CHECK(contains_all_candidates(ev_candidates, expected));
+    }
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+    // The device build has its own single-leaf branch, so check it agrees with
+    // the host on exactly these trees.
+    cuda::LBVH gpu_lbvh;
+    gpu_lbvh.build(vertices, edges, faces, inflation_radius);
+
+    REQUIRE(gpu_lbvh.num_face_nodes() == 1);
+    REQUIRE(gpu_lbvh.num_edge_nodes() == 1);
+
+    {
+        std::vector<FaceVertexCandidate> gpu_candidates, cpu_candidates;
+        gpu_lbvh.detect_face_vertex_candidates(gpu_candidates);
+        lbvh.detect_face_vertex_candidates(cpu_candidates);
+        REQUIRE(!cpu_candidates.empty());
+        CHECK(gpu_candidates.size() == cpu_candidates.size());
+        CHECK(contains_all_candidates(gpu_candidates, cpu_candidates));
+    }
+
+    {
+        std::vector<EdgeFaceCandidate> gpu_candidates, cpu_candidates;
+        gpu_lbvh.detect_edge_face_candidates(gpu_candidates);
+        lbvh.detect_edge_face_candidates(cpu_candidates);
+        REQUIRE(!cpu_candidates.empty());
+        CHECK(gpu_candidates.size() == cpu_candidates.size());
+        CHECK(contains_all_candidates(gpu_candidates, cpu_candidates));
+    }
+
+    {
+        std::vector<EdgeVertexCandidate> gpu_candidates, cpu_candidates;
+        gpu_lbvh.detect_edge_vertex_candidates(gpu_candidates);
+        lbvh.detect_edge_vertex_candidates(cpu_candidates);
+        REQUIRE(!cpu_candidates.empty());
+        CHECK(gpu_candidates.size() == cpu_candidates.size());
+        CHECK(contains_all_candidates(gpu_candidates, cpu_candidates));
+    }
 #endif
 }
 

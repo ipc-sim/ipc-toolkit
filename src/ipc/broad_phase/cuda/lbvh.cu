@@ -4,6 +4,8 @@
 
 #include <ipc/broad_phase/cuda/lbvh_impl.cuh>
 #include <ipc/broad_phase/details/connectivity_filters.hpp>
+#include <ipc/broad_phase/details/lbvh_build.hpp>
+#include <ipc/broad_phase/details/lbvh_traverse.hpp>
 #include <ipc/math/morton.hpp>
 #include <ipc/utils/cuda/device_utils.cuh>
 #include <ipc/utils/logger.hpp>
@@ -29,17 +31,12 @@ namespace {
         sizeof(Eigen::Array3d) == 24,
         "Eigen::Array3d must be 24 bytes (3 packed doubles)");
 
-    /// @brief Per-internal-node scratch used by the bottom-up build. The device
-    /// analog of ipc::LBVH::ConstructionInfo, kept separate on purpose: that
-    /// struct's visitation_count is a std::atomic<int>, which cannot be used
-    /// here (atomicAdd needs an int*, and std::atomic is non-copyable so it
-    /// cannot be a thrust::device_vector element). A plain int suffices because
-    /// atomicAdd provides the atomicity the CPU gets from std::atomic.
-    struct DeviceConstructionInfo {
-        int left_range;
-        int right_range;
-        int visitation_count;
-    };
+    /// @brief Per-internal-node scratch used by the bottom-up build. The
+    /// counter is a plain int rather than the host build's std::atomic<int>:
+    /// atomicAdd() needs an int*, std::atomic is non-copyable and so cannot be
+    /// a thrust::device_vector element, and atomicAdd() supplies the same
+    /// atomicity. The layout is otherwise identical to the host's.
+    using DeviceConstructionInfo = ipc::LBVH::ConstructionInfo<int>;
 
     /// @brief Min/max domain accumulator for the Morton-normalization reduction.
     struct Domain {
@@ -204,29 +201,6 @@ namespace {
 
     // -- Tree building ------------------------------------------------------
 
-    /// @brief Number of common leading bits between Morton codes at sorted
-    /// positions i and j (device port of the CPU delta()). Duplicate codes fall
-    /// back to the CLZ of the index XOR (offset by 32 so it sorts after any
-    /// code-level difference).
-    /// @param sorted_codes The Morton codes in sorted order.
-    /// @param n The number of codes.
-    /// @param i The first sorted position.
-    /// @param code_i The code at position i (passed to avoid a redundant look-up).
-    /// @param j The second sorted position.
-    /// @return The common-prefix length, or -1 when j is out of bounds.
-    __device__ inline int delta_device(
-        const uint64_t* __restrict__ sorted_codes,
-        const int n,
-        const int i,
-        const uint64_t code_i,
-        const int j)
-    {
-        if (j < 0 || j >= n) {
-            return -1;
-        }
-        return ipc::morton_common_prefix(code_i, i, sorted_codes[j], j);
-    }
-
     /// @brief Compute one Morton code per box from its (normalized) center.
     /// Mirrors the compute_morton_codes block of ipc::LBVH::init_bvh.
     __global__ void compute_morton_codes_kernel(
@@ -258,9 +232,18 @@ namespace {
     }
 
     /// @brief Single-pass bottom-up hierarchy + AABB build (Apetrei 2014).
-    /// One thread per leaf. Direct port of the build_hierarchy_and_boxes block
-    /// of ipc::LBVH::init_bvh, with atomicAdd + __threadfence replacing the
-    /// std::atomic arrival gate.
+    /// One thread per leaf, driving ipc::details::build_hierarchy_from_leaf()
+    /// -- the same walk the CPU build runs -- with atomicAdd() and the fences
+    /// around it standing in for the host's std::atomic arrival.
+    /// @param box_min The box min corners (3 * n, row-major).
+    /// @param box_max The box max corners (3 * n, row-major).
+    /// @param sorted_codes The Morton codes in sorted order.
+    /// @param sorted_box_ids The box ids in Morton-sorted order.
+    /// @param N_LEAVES The number of leaves.
+    /// @param[out] nodes The BVH nodes.
+    /// @param[out] rightmost The per-node rightmost-leaf indices.
+    /// @param[in,out] infos The per-node construction scratch (zeroed).
+    /// @param[out] root_idx The root's index.
     __global__ void build_hierarchy_kernel(
         const double* __restrict__ box_min,
         const double* __restrict__ box_max,
@@ -277,94 +260,43 @@ namespace {
             return;
         }
 
-        const int LEAF_OFFSET = N_LEAVES - 1;
+        const index_t bid = sorted_box_ids[i];
+        ipc::details::init_leaf_node(
+            i, N_LEAVES, bid,
+            Eigen::Array3d(
+                box_min[3 * bid + 0], box_min[3 * bid + 1],
+                box_min[3 * bid + 2]),
+            Eigen::Array3d(
+                box_max[3 * bid + 0], box_max[3 * bid + 1],
+                box_max[3 * bid + 2]),
+            nodes, rightmost);
 
-        // --- Initialize leaf node ---
-        {
-            const index_t bid = sorted_box_ids[i];
-            ipc::LBVH::Node leaf;
-#pragma unroll
-            for (int k = 0; k < 3; ++k) {
-                // Round the float AABB out (matches assign_inflated_aabb).
-                leaf.aabb_min[k] = nextafterf(
-                    static_cast<float>(box_min[3 * bid + k]), -INFINITY);
-                leaf.aabb_max[k] = nextafterf(
-                    static_cast<float>(box_max[3 * bid + k]), INFINITY);
-            }
-            leaf.primitive_id = static_cast<int32_t>(bid);
-            leaf.is_inner_marker = 0;
-            nodes[LEAF_OFFSET + i] = leaf;
-            // A leaf's rightmost leaf is itself.
-            rightmost[LEAF_OFFSET + i] = i;
-        }
+        const int root = ipc::details::build_hierarchy_from_leaf(
+            i, N_LEAVES, [sorted_codes](int k) { return sorted_codes[k]; },
+            nodes, rightmost, infos,
+            [](int& count) {
+                // Release: publish this thread's child pointer, range endpoint
+                // and leaf/subtree AABB before announcing arrival, so whoever
+                // continues sees a complete child.
+                __threadfence();
+                const int previous = atomicAdd(&count, 1);
+                if (previous != 0) {
+                    // Acquire: this thread continues and reads the sibling's
+                    // node, range endpoint and rightmost leaf. Those are
+                    // ordinary loads, so without this fence they may be served
+                    // from a stale L1 on another SM.
+                    __threadfence();
+                }
+                return previous;
+            });
 
-        // Single-node tree: the leaf is the root; no internal nodes to build.
-        if (N_LEAVES == 1) {
-            if (i == 0) {
-                *root_idx = 0;
-            }
-            return;
-        }
-
-        // --- Bottom-up walk (Apetrei 2014, Fig. 2) ---
-        int left_key = i;
-        int right_key = i;
-        int current_node = LEAF_OFFSET + i;
-
-        while (true) {
-            // Choose parent (see the CPU comment in ipc::LBVH::init_bvh).
-            const bool is_child_a = (left_key == 0)
-                || (right_key != N_LEAVES - 1
-                    && delta_device(
-                           sorted_codes, N_LEAVES, right_key,
-                           sorted_codes[right_key], right_key + 1)
-                        > delta_device(
-                            sorted_codes, N_LEAVES, left_key - 1,
-                            sorted_codes[left_key - 1], left_key));
-            const int parent = is_child_a ? right_key : left_key - 1;
-
-            // Write the child pointer + range onto the parent.
-            if (is_child_a) {
-                nodes[parent].left = current_node;
-                infos[parent].left_range = left_key;
-            } else {
-                nodes[parent].right = current_node;
-                infos[parent].right_range = right_key;
-            }
-
-            // Publish this child's node data and range to all threads before
-            // signaling arrival, so the second thread reads consistent state.
-            __threadfence();
-
-            // Atomic arrival gate: first thread stops; second proceeds knowing
-            // both children are complete.
-            if (atomicAdd(&infos[parent].visitation_count, 1) == 0) {
-                break; // first thread to arrive -> finished
-            }
-
-            // Second thread: compute the parent AABB union and rightmost leaf.
-            const ipc::LBVH::Node& child_a = nodes[nodes[parent].left];
-            const ipc::LBVH::Node& child_b = nodes[nodes[parent].right];
-            nodes[parent].aabb_min = child_a.aabb_min.min(child_b.aabb_min);
-            nodes[parent].aabb_max = child_a.aabb_max.max(child_b.aabb_max);
-            rightmost[parent] = ::max(
-                rightmost[nodes[parent].left], rightmost[nodes[parent].right]);
-
-            // Reconstruct the parent's full key range and continue upward.
-            left_key = infos[parent].left_range;
-            right_key = infos[parent].right_range;
-            current_node = parent;
-
-            if (left_key == 0 && right_key == N_LEAVES - 1) {
-                // Only one thread reaches the root.
-                *root_idx = current_node;
-                break;
-            }
+        if (root >= 0) {
+            *root_idx = root; // only one thread reaches the root
         }
     }
 
-    /// @brief Swap the node and rightmost-leaf entries at indices 0 and root
-    /// (runs on a single thread).
+    /// @brief Swap the node and rightmost-leaf entries at index 0 and the root
+    /// (single thread). See ipc::details::swap_root_to_zero().
     /// @param nodes The BVH nodes.
     /// @param rightmost The per-node rightmost-leaf indices.
     /// @param root The index to swap with index 0.
@@ -374,18 +306,12 @@ namespace {
         const int root)
     {
         if (blockIdx.x == 0 && threadIdx.x == 0) {
-            const ipc::LBVH::Node tmp = nodes[0];
-            nodes[0] = nodes[root];
-            nodes[root] = tmp;
-            const int32_t t = rightmost[0];
-            rightmost[0] = rightmost[root];
-            rightmost[root] = t;
+            ipc::details::swap_root_to_zero(nodes, rightmost, root);
         }
     }
 
     /// @brief After the root swap, rewrite left pointers that referenced the
-    /// old node 0 to its new location. See the CPU swap_root_to_zero comment:
-    /// the old node 0 was only ever a left child, so only .left needs patching.
+    /// old node 0 to its new location. See ipc::details::patch_left_pointer().
     /// @param nodes The BVH nodes.
     /// @param num_nodes The number of nodes.
     /// @param root The new location of the old node 0.
@@ -398,9 +324,7 @@ namespace {
         if (i >= num_nodes) {
             return;
         }
-        if (nodes[i].is_inner() && nodes[i].left == 0) {
-            nodes[i].left = root;
-        }
+        ipc::details::patch_left_pointer(nodes[i], root);
     }
 
     /// @brief Build one BVH on the device from device-resident box corners.
@@ -704,12 +628,27 @@ namespace {
 
     /// @brief One thread per source leaf: descend the target BVH and append
     /// every AABB-overlapping, connectivity-passing (source_prim, target_prim)
-    /// pair to the output arrays. Descent is a direct port of traverse_lbvh()
-    /// in lbvh.cpp (scalar path); the connectivity (shared-vertex) exclusion is
-    /// applied here on the device. The remaining user vertex filter (if any) is
-    /// applied on the host, so the final set matches the CPU ipc::LBVH.
+    /// pair to the output arrays. The descent is ipc::details::traverse_lbvh(),
+    /// shared with the CPU ipc::LBVH; the connectivity (shared-vertex)
+    /// exclusion is applied here on the device. The remaining user vertex
+    /// filter (if any) is applied on the host, so the final set matches the CPU
+    /// ipc::LBVH.
     /// @tparam triangular Self-collision: skip subtrees fully left of the query.
     /// @tparam swap_order Emit (target_prim, source_prim) instead.
+    /// @param source The BVH whose leaves are the queries.
+    /// @param n_source_leaves The number of source leaves.
+    /// @param source_leaf_offset The index of the source BVH's first leaf.
+    /// @param target The BVH to descend.
+    /// @param target_size The number of nodes in the target BVH.
+    /// @param target_rightmost The target's per-node rightmost-leaf indices.
+    /// @param source_conn The source connectivity (null for vertices).
+    /// @param source_count The vertex ids per source primitive (1, 2, or 3).
+    /// @param target_conn The target connectivity (null for vertices).
+    /// @param target_count The vertex ids per target primitive (1, 2, or 3).
+    /// @param[out] out_a The first ids of the emitted pairs.
+    /// @param[out] out_b The second ids of the emitted pairs.
+    /// @param[in,out] counter The emitted-pair counter.
+    /// @param capacity The output arrays' capacity.
     template <bool triangular, bool swap_order>
     __global__ void traverse_kernel(
         const ipc::LBVH::Node* __restrict__ source,
@@ -732,81 +671,18 @@ namespace {
             return;
         }
         const ipc::LBVH::Node query = source[source_leaf_offset + s];
-        const int query_leaf_idx = s;
 
-        constexpr int MAX_STACK_SIZE = 64;
-        int stack[MAX_STACK_SIZE];
-        int stack_ptr = 0;
-        stack[stack_ptr++] = ipc::LBVH::Node::INVALID_POINTER; // 0
-
-        int node_idx = 0; // root
-        do {
-            const ipc::LBVH::Node& node = target[node_idx];
-
-            if (target_size == 1) { // single node (only root, which is a leaf)
-                if constexpr (triangular) {
-                    break; // no self-collision with a single primitive
-                }
-                if (node.intersects(query)
-                    && !prim_shares_vertex(
+        ipc::details::traverse_lbvh<triangular>(
+            query, s, target, target_size, target_rightmost,
+            [&](const ipc::LBVH::Node& leaf) {
+                if (!prim_shares_vertex(
                         query.primitive_id, source_conn, source_count,
-                        node.primitive_id, target_conn, target_count)) {
+                        leaf.primitive_id, target_conn, target_count)) {
                     emit_pair<swap_order>(
-                        query.primitive_id, node.primitive_id, out_a, out_b,
+                        query.primitive_id, leaf.primitive_id, out_a, out_b,
                         counter, capacity);
                 }
-                break;
-            }
-
-            const ipc::LBVH::Node& child_l = target[node.left];
-            const ipc::LBVH::Node& child_r = target[node.right];
-            bool intersects_l = child_l.intersects(query);
-            bool intersects_r = child_r.intersects(query);
-
-            // Skip subtrees fully on the query's left (triangular only).
-            if constexpr (triangular) {
-                if (intersects_l
-                    && target_rightmost[node.left] <= query_leaf_idx) {
-                    intersects_l = false;
-                }
-                if (intersects_r
-                    && target_rightmost[node.right] <= query_leaf_idx) {
-                    intersects_r = false;
-                }
-            }
-
-            const bool l_leaf = child_l.is_leaf();
-            const bool r_leaf = child_r.is_leaf();
-
-            if (intersects_l && l_leaf
-                && !prim_shares_vertex(
-                    query.primitive_id, source_conn, source_count,
-                    child_l.primitive_id, target_conn, target_count)) {
-                emit_pair<swap_order>(
-                    query.primitive_id, child_l.primitive_id, out_a, out_b,
-                    counter, capacity);
-            }
-            if (intersects_r && r_leaf
-                && !prim_shares_vertex(
-                    query.primitive_id, source_conn, source_count,
-                    child_r.primitive_id, target_conn, target_count)) {
-                emit_pair<swap_order>(
-                    query.primitive_id, child_r.primitive_id, out_a, out_b,
-                    counter, capacity);
-            }
-
-            const bool traverse_l = intersects_l && !l_leaf;
-            const bool traverse_r = intersects_r && !r_leaf;
-
-            if (!traverse_l && !traverse_r) {
-                node_idx = stack[--stack_ptr];
-            } else {
-                node_idx = traverse_l ? node.left : node.right;
-                if (traverse_l && traverse_r) {
-                    stack[stack_ptr++] = node.right;
-                }
-            }
-        } while (node_idx != ipc::LBVH::Node::INVALID_POINTER);
+            });
     }
 
     /// @brief Run the device traversal of the target BVH by the source leaves,
