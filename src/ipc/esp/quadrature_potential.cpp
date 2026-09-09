@@ -233,12 +233,13 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
 
         const index_t vid = V.rows(); // virtual vertex
 
-        // Eigen::MatrixXd V_(V.rows() + 1, 3);
-        // V_.topRows(V.rows()) = V;
-        // V_.row(vid) = closest_uv * (V.row(e01) - V.row(e00)) + V.row(e00);
+        // Eigen::MatrixXd V_view(V.rows() + 1, 3);
+        // V_view.topRows(V.rows()) = V;
+        // V_view.row(vid) = closest_uv * (V.row(e01) - V.row(e00)) +
+        // V.row(e00);
         const Eigen::RowVector3d ee_closest_point =
             closest_uv * (V.row(e01) - V.row(e00)) + V.row(e00);
-        VertexMatrixView<3> V_(V, ee_closest_point);
+        VertexMatrixView<3> V_view(V, ee_closest_point);
 
         const bool src_is_obstacle_e = mesh.is_obstacle_edge(e0);
         const bool filter_obstacles_e = src_is_obstacle_e
@@ -249,7 +250,7 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
             if (filter_obstacles_e && mesh.is_obstacle_vertex(other_v)) {
                 continue;
             }
-            if ((V_(vid) - V_(other_v)).squaredNorm()
+            if ((V_view(vid) - V_view(other_v)).squaredNorm()
                 >= params.dhat * params.dhat) {
                 continue;
             }
@@ -269,12 +270,12 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
             }
 
             auto dtype2 = point_edge_distance_type_exact(
-                V_(vid), V_(mesh.edges()(other_e, 0)),
-                V_(mesh.edges()(other_e, 1)));
+                V_view(vid), V_view(mesh.edges()(other_e, 0)),
+                V_view(mesh.edges()(other_e, 1)));
 
             const double dist_sqr = point_edge_distance(
-                V_(vid), V_(mesh.edges()(other_e, 0)),
-                V_(mesh.edges()(other_e, 1)), dtype2);
+                V_view(vid), V_view(mesh.edges()(other_e, 0)),
+                V_view(mesh.edges()(other_e, 1)), dtype2);
 
             if (dist_sqr >= params.dhat * params.dhat) {
                 continue;
@@ -325,13 +326,14 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
             }
 
             auto dtype2 = point_triangle_distance_type_exact(
-                V_(vid), V_(mesh.faces()(other_f, 0)),
-                V_(mesh.faces()(other_f, 1)), V_(mesh.faces()(other_f, 2)));
+                V_view(vid), V_view(mesh.faces()(other_f, 0)),
+                V_view(mesh.faces()(other_f, 1)),
+                V_view(mesh.faces()(other_f, 2)));
 
             const double dist_sqr = point_triangle_distance(
-                V_(vid), V_(mesh.faces()(other_f, 0)),
-                V_(mesh.faces()(other_f, 1)), V_(mesh.faces()(other_f, 2)),
-                dtype2);
+                V_view(vid), V_view(mesh.faces()(other_f, 0)),
+                V_view(mesh.faces()(other_f, 1)),
+                V_view(mesh.faces()(other_f, 2)), dtype2);
 
             if (dist_sqr >= params.dhat * params.dhat) {
                 continue;
@@ -584,7 +586,7 @@ PointPotential::build_collisions_at_face_center(
         (V.row(mesh.faces()(fid, 0)) + V.row(mesh.faces()(fid, 1))
          + V.row(mesh.faces()(fid, 2)))
         / 3.;
-    VertexMatrixView<3> V_(V, face_center);
+    VertexMatrixView<3> V_view(V, face_center);
 
     unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>> pairs;
     num_collision_pairs = 0;
@@ -598,7 +600,7 @@ PointPotential::build_collisions_at_face_center(
         ++num_collision_pairs;
         if (auto pair =
                 ESPCollisionsBuilder<3>::reduce_point_triangle_collision(
-                    FaceVertexCandidate(other_f, vid), params, mesh, V_)) {
+                    FaceVertexCandidate(other_f, vid), params, mesh, V_view)) {
             insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
         }
     }
@@ -606,14 +608,14 @@ PointPotential::build_collisions_at_face_center(
     for (const auto& other_e : e_set) {
         ++num_collision_pairs;
         if (auto pair = ESPCollisionsBuilder<3>::reduce_point_edge_collision(
-                EdgeVertexCandidate(other_e, vid), params, mesh, V_)) {
+                EdgeVertexCandidate(other_e, vid), params, mesh, V_view)) {
             pair->weight = -1;
             insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
         }
     }
 
     for (const auto& other_v : v_set) {
-        if ((V_(vid) - V_(other_v)).squaredNorm()
+        if ((V_view(vid) - V_view(other_v)).squaredNorm()
             >= params.dhat * params.dhat) {
             continue;
         }
@@ -645,7 +647,7 @@ PointPotential::build_collisions_at_face_interior_point(
     const Eigen::RowVector3d q_pos = lambda[0] * V.row(mesh.faces()(fid, 0))
         + lambda[1] * V.row(mesh.faces()(fid, 1))
         + lambda[2] * V.row(mesh.faces()(fid, 2));
-    VertexMatrixView<3> V_(V, q_pos);
+    VertexMatrixView<3> V_view(V, q_pos);
 
     unordered_map<std::array<index_t, 3>, std::shared_ptr<ESPCollision>> pairs;
     num_collision_pairs = 0;
@@ -718,7 +720,7 @@ PointPotential::build_collisions_at_face_interior_point(
         ++num_collision_pairs;
         if (auto pair =
                 ESPCollisionsBuilder<3>::reduce_point_triangle_collision(
-                    FaceVertexCandidate(other_f, vid), params, mesh, V_)) {
+                    FaceVertexCandidate(other_f, vid), params, mesh, V_view)) {
             insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
         }
     }
@@ -737,7 +739,7 @@ PointPotential::build_collisions_at_face_interior_point(
         }
         ++num_collision_pairs;
         if (auto pair = ESPCollisionsBuilder<3>::reduce_point_edge_collision(
-                EdgeVertexCandidate(other_e, vid), params, mesh, V_)) {
+                EdgeVertexCandidate(other_e, vid), params, mesh, V_view)) {
             pair->weight = -1;
             insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
         }
@@ -750,7 +752,7 @@ PointPotential::build_collisions_at_face_interior_point(
         if (other_v == corner_vertex) {
             continue;
         }
-        if ((V_(vid) - V_(other_v)).squaredNorm()
+        if ((V_view(vid) - V_view(other_v)).squaredNorm()
             >= params.dhat * params.dhat) {
             continue;
         }
@@ -1014,7 +1016,7 @@ PointPotential::build_collisions_at_edge_qp(
 
     const Eigen::RowVector2d q_pos =
         lambda[0] * V.row(e0) + lambda[1] * V.row(e1);
-    VertexMatrixView<2> V_(V, q_pos);
+    VertexMatrixView<2> V_view(V, q_pos);
 
     // If lambda[k] == 0 the QP coincides with the opposite endpoint.
     // Parallel to the 3D corner_vertex exclusion.

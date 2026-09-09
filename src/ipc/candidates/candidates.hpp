@@ -264,7 +264,7 @@ public:
     std::vector<EdgeFaceCandidate> ef_candidates;
     std::vector<FaceFaceCandidate> ff_candidates;
 
-    CollisionMesh mesh_;
+    CollisionMesh m_mesh;
 
 private:
     static bool default_is_active(double candidate) { return true; }

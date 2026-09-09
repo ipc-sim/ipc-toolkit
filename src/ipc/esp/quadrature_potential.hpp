@@ -240,17 +240,17 @@ namespace PointPotentialHelper {
 
 class PointPotential {
 public:
-    constexpr static int r = 2;
+    constexpr static int R = 2;
 
     PointPotential(
-        const CollisionMesh& mesh_,
-        const Candidates& candidates_,
-        const ESPParameters params_,
-        const AdaptiveSupport* adaptive_ = nullptr)
-        : mesh(mesh_)
-        , candidates(candidates_)
-        , params(params_)
-        , adaptive(adaptive_)
+        const CollisionMesh& _mesh,
+        const Candidates& _candidates,
+        const ESPParameters& _params,
+        const AdaptiveSupport* _adaptive = nullptr)
+        : mesh(_mesh)
+        , candidates(_candidates)
+        , params(_params)
+        , adaptive(_adaptive)
     {
     }
 

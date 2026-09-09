@@ -19,7 +19,7 @@ TEST_CASE("VertexMatrixView single matrix", "[vertex_matrix_view]")
 
     REQUIRE(view.rows() == 3);
     REQUIRE(view.cols() == 3);
-    REQUIRE(view.m_B == nullptr);
+    REQUIRE(view.m_b == nullptr);
 
     for (index_t i = 0; i < 3; i++) {
         auto row = view(i);
@@ -45,8 +45,8 @@ TEST_CASE("VertexMatrixView two-matrix concatenation", "[vertex_matrix_view]")
 
     REQUIRE(view.rows() == 5);
     REQUIRE(view.cols() == 3);
-    REQUIRE(view.n_A_rows == 2);
-    REQUIRE(view.n_B_rows == 3);
+    REQUIRE(view.m_n_a_rows == 2);
+    REQUIRE(view.m_n_b_rows == 3);
 
     // Check rows from A
     for (index_t i = 0; i < 2; i++) {
@@ -100,8 +100,8 @@ TEST_CASE("VertexMatrixView non-owning semantics", "[vertex_matrix_view]")
     VertexMatrixView<3> view(A, B);
 
     // The view should point to the original data
-    CHECK(view.m_A == A.data());
-    CHECK(view.m_B == B.data());
+    CHECK(view.m_a == A.data());
+    CHECK(view.m_b == B.data());
 
     // Mutate A and verify the view reflects the change
     A(0, 0) = 99;
@@ -118,7 +118,7 @@ TEST_CASE("VertexMatrixView empty matrix B", "[vertex_matrix_view]")
     VertexMatrixView<3> view(A, B);
 
     REQUIRE(view.rows() == 3);
-    REQUIRE(view.n_B_rows == 0);
+    REQUIRE(view.m_n_b_rows == 0);
 
     for (index_t i = 0; i < 3; i++) {
         auto row = view(i);

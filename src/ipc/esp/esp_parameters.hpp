@@ -1,9 +1,11 @@
 #pragma once
+
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/utils/logger.hpp>
 
 #include <array>
 #include <atomic>
+#include <cstdint>
 #include <limits>
 #include <memory>
 
@@ -17,7 +19,7 @@ struct FaceQuadPoint {
 using FaceQuadRule = std::vector<FaceQuadPoint>;
 
 struct ESPParameters {
-    enum class IntegrationType {
+    enum class IntegrationType : std::uint8_t {
         BRUTE_FORCE, ///< Integrate all pairs with no obstacle filtering
         NORMAL, ///< Filter obstacle-obstacle pairs; skip primitives with only
                 ///< obstacle candidates
@@ -26,13 +28,13 @@ struct ESPParameters {
 
     ESPParameters(
         const double _dhat,
-        const double _dbar_factor = 1.0,
+        const double dbar_factor_value = 1.0,
         const int _quad_order = 1,
         bool _area_weights = true,
         const IntegrationType _integration_type = IntegrationType::NORMAL)
         : dhat(_dhat)
-        , dbar(_dbar_factor * dhat)
-        , _dbar_factor(_dbar_factor)
+        , dbar(dbar_factor_value * dhat)
+        , dbar_factor_value(dbar_factor_value)
         , quad_order(_quad_order)
         , area_weights(_area_weights)
         , integration_type(_integration_type)
@@ -55,7 +57,7 @@ struct ESPParameters {
 
     const double dhat;
     const double dbar;
-    const double _dbar_factor;
+    const double dbar_factor_value;
 
     /// Barrier function used in 3D collision evaluation.
     std::shared_ptr<Barrier> barrier =
@@ -64,7 +66,7 @@ struct ESPParameters {
     bool area_weights;
     const IntegrationType integration_type;
 
-    double dbar_factor() const { return _dbar_factor; }
+    double dbar_factor() const { return dbar_factor_value; }
 
     const FaceQuadRule& get_quad_rule() const { return face_quad_rule; }
 

@@ -19,10 +19,10 @@ public:
     /// @param B The bottom matrix.
     VertexMatrixView(
         Eigen::ConstRef<Eigen::MatrixXd> A, Eigen::ConstRef<Eigen::MatrixXd> B)
-        : n_A_rows(A.rows())
-        , n_B_rows(B.rows())
-        , m_A(A.data())
-        , m_B(B.data())
+        : m_n_a_rows(A.rows())
+        , m_n_b_rows(B.rows())
+        , m_a(A.data())
+        , m_b(B.data())
     {
         if (A.cols() != ncols || B.cols() != ncols) {
             log_and_throw_error("Incompatible matrix columns!");
@@ -31,10 +31,10 @@ public:
 
     /// @brief Construct a view wrapping a single matrix (no concatenation).
     explicit VertexMatrixView(Eigen::ConstRef<Eigen::MatrixXd> A)
-        : n_A_rows(A.rows())
-        , n_B_rows(0)
-        , m_A(A.data())
-        , m_B(nullptr)
+        : m_n_a_rows(A.rows())
+        , m_n_b_rows(0)
+        , m_a(A.data())
+        , m_b(nullptr)
     {
         if (A.cols() != ncols) {
             log_and_throw_error("Incompatible matrix columns!");
@@ -46,9 +46,9 @@ public:
     {
         assert(i < rows());
         Eigen::RowVector<double, ncols> row;
-        const double* src = (i < n_A_rows) ? m_A : m_B;
-        const index_t nrows = (i < n_A_rows) ? n_A_rows : n_B_rows;
-        const index_t li = (i < n_A_rows) ? i : (i - n_A_rows);
+        const double* src = (i < m_n_a_rows) ? m_a : m_b;
+        const index_t nrows = (i < m_n_a_rows) ? m_n_a_rows : m_n_b_rows;
+        const index_t li = (i < m_n_a_rows) ? i : (i - m_n_a_rows);
         for (int d = 0; d < ncols; ++d) {
             row[d] = src[li + d * nrows];
         }
@@ -56,15 +56,15 @@ public:
     }
 
     /// @brief Total number of rows (A rows + B rows).
-    index_t rows() const { return n_A_rows + n_B_rows; }
+    index_t rows() const { return m_n_a_rows + m_n_b_rows; }
 
     /// @brief Number of columns (compile-time constant).
     index_t cols() const { return ncols; }
 
-    const index_t n_A_rows;
-    const index_t n_B_rows;
-    const double* const m_A;
-    const double* const m_B;
+    const index_t m_n_a_rows;
+    const index_t m_n_b_rows;
+    const double* const m_a;
+    const double* const m_b;
 };
 
 } // namespace ipc

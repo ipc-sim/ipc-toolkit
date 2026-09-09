@@ -35,46 +35,46 @@ inline ExVec3 make_exact(Eigen::ConstRef<VectorMax3d> v)
 }
 
 int dot3_3d(
-    Eigen::ConstRef<VectorMax3d> p0_,
-    Eigen::ConstRef<VectorMax3d> p1_,
-    Eigen::ConstRef<VectorMax3d> p2_)
+    Eigen::ConstRef<VectorMax3d> _p0,
+    Eigen::ConstRef<VectorMax3d> _p1,
+    Eigen::ConstRef<VectorMax3d> _p2)
 {
     // Evaluates the sign of dot(p1-p0, p2-p0)
-    const int s = dot3_3d_filter(p0_.data(), p1_.data(), p2_.data());
+    const int s = dot3_3d_filter(_p0.data(), _p1.data(), _p2.data());
     if (s != FPG_UNCERTAIN_VALUE) {
         return s;
     }
     logger().trace("dot3_3d filter uncertain - fallback to exact arithmetic");
-    const ExVec3 p0 = make_exact(p0_);
-    const ExVec3 p1 = make_exact(p1_);
-    const ExVec3 p2 = make_exact(p2_);
+    const ExVec3 p0 = make_exact(_p0);
+    const ExVec3 p1 = make_exact(_p1);
+    const ExVec3 p2 = make_exact(_p2);
     const ExReal ss = dot(p1 - p0, p2 - p0);
     return (ss > 0) ? 1 : ((ss < 0) ? -1 : 0);
 }
 
 int dot3_2d(
-    Eigen::ConstRef<VectorMax3d> p0_,
-    Eigen::ConstRef<VectorMax3d> p1_,
-    Eigen::ConstRef<VectorMax3d> p2_)
+    Eigen::ConstRef<VectorMax3d> _p0,
+    Eigen::ConstRef<VectorMax3d> _p1,
+    Eigen::ConstRef<VectorMax3d> _p2)
 {
     // Evaluates the sign of dot(p1-p0, p2-p0)
-    const int s = dot3_2d_filter(p0_.data(), p1_.data(), p2_.data());
+    const int s = dot3_2d_filter(_p0.data(), _p1.data(), _p2.data());
     if (s != FPG_UNCERTAIN_VALUE) {
         return s;
     }
     logger().trace("dot3_2d filter uncertain - fallback to exact arithmetic");
-    const ExVec3 p0 = make_exact(p0_);
-    const ExVec3 p1 = make_exact(p1_);
-    const ExVec3 p2 = make_exact(p2_);
+    const ExVec3 p0 = make_exact(_p0);
+    const ExVec3 p1 = make_exact(_p1);
+    const ExVec3 p2 = make_exact(_p2);
     const ExReal ss = dot(p1 - p0, p2 - p0);
     return (ss > 0) ? 1 : ((ss < 0) ? -1 : 0);
 }
 
 int cross_dot_cross_1(
-    Eigen::ConstRef<VectorMax3d> p0_,
-    Eigen::ConstRef<VectorMax3d> p1_,
-    Eigen::ConstRef<VectorMax3d> p2_,
-    Eigen::ConstRef<VectorMax3d> p3_)
+    Eigen::ConstRef<VectorMax3d> _p0,
+    Eigen::ConstRef<VectorMax3d> _p1,
+    Eigen::ConstRef<VectorMax3d> _p2,
+    Eigen::ConstRef<VectorMax3d> _p3)
 {
     /*
     Evaluates the sign of dot(cross(p1-p0, p2-p0), cross(p3-p0, p1-p0)) =
@@ -82,25 +82,25 @@ int cross_dot_cross_1(
     p3-p0)
     */
     const int s = cross_dot_cross_1_3d_filter(
-        p0_.data(), p1_.data(), p2_.data(), p3_.data());
+        _p0.data(), _p1.data(), _p2.data(), _p3.data());
     if (s != FPG_UNCERTAIN_VALUE) {
         return s;
     }
     logger().trace(
         "cross_dot_cross_1 filter uncertain - fallback to exact arithmetic");
-    const ExVec3 p0 = make_exact(p0_);
-    const ExVec3 p1 = make_exact(p1_);
-    const ExVec3 p2 = make_exact(p2_);
-    const ExVec3 p3 = make_exact(p3_);
+    const ExVec3 p0 = make_exact(_p0);
+    const ExVec3 p1 = make_exact(_p1);
+    const ExVec3 p2 = make_exact(_p2);
+    const ExVec3 p3 = make_exact(_p3);
     const ExReal ss = dot(cross(p1 - p0, p2 - p0), cross(p3 - p0, p1 - p0));
     return (ss > 0) ? 1 : ((ss < 0) ? -1 : 0);
 }
 
 int cross_dot_cross_2(
-    Eigen::ConstRef<VectorMax3d> p0_,
-    Eigen::ConstRef<VectorMax3d> p1_,
-    Eigen::ConstRef<VectorMax3d> p2_,
-    Eigen::ConstRef<VectorMax3d> p3_)
+    Eigen::ConstRef<VectorMax3d> _p0,
+    Eigen::ConstRef<VectorMax3d> _p1,
+    Eigen::ConstRef<VectorMax3d> _p2,
+    Eigen::ConstRef<VectorMax3d> _p3)
 {
     /*
     Evaluates the sign of dot(cross(p1-p0, p2-p0), cross(p3-p0, p1-p2)) =
@@ -108,16 +108,16 @@ int cross_dot_cross_2(
     p3-p0)
     */
     const int s = cross_dot_cross_2_3d_filter(
-        p0_.data(), p1_.data(), p2_.data(), p3_.data());
+        _p0.data(), _p1.data(), _p2.data(), _p3.data());
     if (s != FPG_UNCERTAIN_VALUE) {
         return s;
     }
     logger().trace(
         "cross_dot_cross_1 filter uncertain - fallback to exact arithmetic");
-    const ExVec3 p0 = make_exact(p0_);
-    const ExVec3 p1 = make_exact(p1_);
-    const ExVec3 p2 = make_exact(p2_);
-    const ExVec3 p3 = make_exact(p3_);
+    const ExVec3 p0 = make_exact(_p0);
+    const ExVec3 p1 = make_exact(_p1);
+    const ExVec3 p2 = make_exact(_p2);
+    const ExVec3 p3 = make_exact(_p3);
     const ExReal ss = dot(cross(p1 - p0, p2 - p0), cross(p3 - p0, p1 - p2));
     return (ss > 0) ? 1 : ((ss < 0) ? -1 : 0);
 }
@@ -235,28 +235,28 @@ bool is_almost_parallel_edge_edge(
 }
 
 bool is_parallel_edge_edge(
-    Eigen::ConstRef<Eigen::Vector3d> ea0_,
-    Eigen::ConstRef<Eigen::Vector3d> ea1_,
-    Eigen::ConstRef<Eigen::Vector3d> eb0_,
-    Eigen::ConstRef<Eigen::Vector3d> eb1_)
+    Eigen::ConstRef<Eigen::Vector3d> _ea0,
+    Eigen::ConstRef<Eigen::Vector3d> _ea1,
+    Eigen::ConstRef<Eigen::Vector3d> _eb0,
+    Eigen::ConstRef<Eigen::Vector3d> _eb1)
 {
 #ifdef IPC_TOOLKIT_WITH_GEOGRAM
     if constexpr (PARALLEL_THRESHOLD == 0.0) {
         init_pck();
         // TODO use a zero filter?
         const int s = cross_null_3d_filter(
-            ea0_.data(), ea1_.data(), eb0_.data(), eb1_.data());
+            _ea0.data(), _ea1.data(), _eb0.data(), _eb1.data());
         if (s != FPG_UNCERTAIN_VALUE) {
             return false;
         }
-        const ExVec3 ea0 = make_exact(ea0_);
-        const ExVec3 ea1 = make_exact(ea1_);
-        const ExVec3 eb0 = make_exact(eb0_);
-        const ExVec3 eb1 = make_exact(eb1_);
+        const ExVec3 ea0 = make_exact(_ea0);
+        const ExVec3 ea1 = make_exact(_ea1);
+        const ExVec3 eb0 = make_exact(_eb0);
+        const ExVec3 eb1 = make_exact(_eb1);
         const ExReal cross_norm_sqr = cross(ea1 - ea0, eb1 - eb0).length2();
         return cross_norm_sqr == 0;
     } else {
-        return is_almost_parallel_edge_edge(ea0_, ea1_, eb0_, eb1_);
+        return is_almost_parallel_edge_edge(_ea0, _ea1, _eb0, _eb1);
     }
 #else
     // Without geogram the exact test is unavailable; PARALLEL_THRESHOLD must
@@ -264,7 +264,7 @@ bool is_parallel_edge_edge(
     static_assert(
         PARALLEL_THRESHOLD != 0.0,
         "PARALLEL_THRESHOLD == 0 requires the exact predicates (geogram).");
-    return is_almost_parallel_edge_edge(ea0_, ea1_, eb0_, eb1_);
+    return is_almost_parallel_edge_edge(_ea0, _ea1, _eb0, _eb1);
 #endif
 }
 

@@ -110,9 +110,9 @@ public:
         MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>>
     hessian_nearfar(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
-        const ESPParameters&,
-        const AdaptiveSupport*,
-        const NearFarBarrier*) const override
+        const ESPParameters& /*params*/,
+        const AdaptiveSupport* /*adaptive*/,
+        const NearFarBarrier* /*near_far*/) const override
     {
         int n = positions.size();
         MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> zero =

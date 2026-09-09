@@ -22,7 +22,7 @@ enum class PointType : std::uint8_t { VERTEX, EDGE, FACE };
 /// @tparam DIM Spatial dimension (2 or 3). Default is 3.
 template <PointType pType, int DIM = 3> class ESPCollisionDict {
 public:
-    static constexpr int dim = DIM;
+    static constexpr int DIMENSION = DIM;
 
     // Collision pair types depend on dimension.
     using VVType = std::conditional_t<

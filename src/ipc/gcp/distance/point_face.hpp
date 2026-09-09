@@ -27,14 +27,14 @@ scalar point_triangle_sqr_distance(
         if constexpr (std::is_same<double, scalar>::value) {
             dtype = point_triangle_distance_type(p, t0, t1, t2);
         } else {
-            Eigen::Vector3d p_, t0_, t1_, t2_;
+            Eigen::Vector3d _p, _t0, _t1, _t2;
             for (int d = 0; d < 3; d++) {
-                p_(d) = p(d).val;
-                t0_(d) = t0(d).val;
-                t1_(d) = t1(d).val;
-                t2_(d) = t2(d).val;
+                _p(d) = p(d).val;
+                _t0(d) = t0(d).val;
+                _t1(d) = t1(d).val;
+                _t2(d) = t2(d).val;
             }
-            dtype = point_triangle_distance_type(p_, t0_, t1_, t2_);
+            dtype = point_triangle_distance_type(_p, _t0, _t1, _t2);
         }
     }
 

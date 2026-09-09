@@ -55,22 +55,22 @@ void ESPCollisionDict<pType, DIM>::initialize(
     }
 
     // Cache dofs
-    m_dofs.resize(m_vertex_ids.size() * dim);
+    m_dofs.resize(m_vertex_ids.size() * DIMENSION);
     for (int i = 0; i < m_vertex_ids.size(); i++) {
-        for (int d = 0; d < dim; d++) {
-            m_dofs[i * dim + d] = m_vertex_ids[i] * dim + d;
+        for (int d = 0; d < DIMENSION; d++) {
+            m_dofs[i * DIMENSION + d] = m_vertex_ids[i] * DIMENSION + d;
         }
     }
 
     // Cache primary dofs
     m_primary_dofs.clear();
-    m_primary_dofs.reserve(m_primary_vertex_ids.size() * dim);
+    m_primary_dofs.reserve(m_primary_vertex_ids.size() * DIMENSION);
     for (index_t i : m_primary_vertex_ids) {
         if (i < 0) {
             break;
         }
-        for (index_t d = 0; d < dim; d++) {
-            m_primary_dofs.push_back(i * dim + d);
+        for (index_t d = 0; d < DIMENSION; d++) {
+            m_primary_dofs.push_back(i * DIMENSION + d);
         }
     }
 

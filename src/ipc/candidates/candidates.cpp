@@ -74,7 +74,7 @@ void Candidates::build(
     }
 
     const int dim = vertices.cols();
-    mesh_ = mesh;
+    m_mesh = mesh;
 
     clear();
 
@@ -162,7 +162,7 @@ void Candidates::build(
     }
 
     const int dim = vertices_t0.cols();
-    mesh_ = mesh;
+    m_mesh = mesh;
 
     clear();
 
@@ -777,16 +777,16 @@ std::set<index_t> Candidates::vv_set(index_t id) const
         return {};
     }
 
-    assert(mesh_.num_vertices());
+    assert(m_mesh.num_vertices());
     std::set<index_t> out;
     if (auto iter = m_sets->vv.find(id); iter != m_sets->vv.end()) {
         out = iter->second;
     }
 
-    if (mesh_.dim() == 2) {
+    if (m_mesh.dim() == 2) {
         for (const index_t ej : ve_set(id)) {
-            out.insert(mesh_.edges()(ej, 0));
-            out.insert(mesh_.edges()(ej, 1));
+            out.insert(m_mesh.edges()(ej, 0));
+            out.insert(m_mesh.edges()(ej, 1));
         }
     }
     out.erase(id);
@@ -821,13 +821,13 @@ std::set<index_t> Candidates::ev_set(index_t id) const
         return {};
     }
 
-    assert(mesh_.num_vertices());
+    assert(m_mesh.num_vertices());
     std::set<index_t> out;
     if (auto iter = m_sets->ev.find(id); iter != m_sets->ev.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 2; ++lv) {
-        out.insert(mesh_.edges()(id, lv));
+        out.insert(m_mesh.edges()(id, lv));
     }
     return out;
 }
@@ -837,13 +837,13 @@ std::set<index_t> Candidates::ee_set(index_t id) const
         return {};
     }
 
-    assert(mesh_.num_vertices());
+    assert(m_mesh.num_vertices());
     std::set<index_t> out;
     if (auto iter = m_sets->ee.find(id); iter != m_sets->ee.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 2; ++lv) {
-        for (index_t eid : mesh_.vertices_to_edges()[mesh_.edges()(id, lv)]) {
+        for (index_t eid : m_mesh.vertices_to_edges()[m_mesh.edges()(id, lv)]) {
             out.insert(eid);
         }
     }
@@ -851,14 +851,14 @@ std::set<index_t> Candidates::ee_set(index_t id) const
     // them from EV candidates symmetrically:
     // (a) edges adjacent to vertices that are close to edge id (via ev_set)
     // (b) edges that id's own endpoints are close to (via ve_set)
-    if (mesh_.dim() == 2) {
+    if (m_mesh.dim() == 2) {
         for (const index_t vj : ev_set(id)) {
-            for (const index_t ej : mesh_.vertices_to_edges()[vj]) {
+            for (const index_t ej : m_mesh.vertices_to_edges()[vj]) {
                 out.insert(ej);
             }
         }
         for (index_t lv = 0; lv < 2; ++lv) {
-            const index_t vi = mesh_.edges()(id, lv);
+            const index_t vi = m_mesh.edges()(id, lv);
             for (const index_t ej : ve_set(vi)) {
                 out.insert(ej);
             }
@@ -873,18 +873,18 @@ std::set<index_t> Candidates::ef_set(index_t id) const
         return {};
     }
 
-    assert(mesh_.num_vertices());
+    assert(m_mesh.num_vertices());
     std::set<index_t> out;
     if (auto iter = m_sets->ef.find(id); iter != m_sets->ef.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 2; ++lv) {
-        const auto& faces = mesh_.vertices_to_faces()[mesh_.edges()(id, lv)];
+        const auto& faces = m_mesh.vertices_to_faces()[m_mesh.edges()(id, lv)];
         for (int fid : faces) {
             out.insert(fid);
         }
     }
-    for (const index_t fid : mesh_.edges_to_faces()[id]) {
+    for (const index_t fid : m_mesh.edges_to_faces()[id]) {
         out.erase(fid);
     }
     return out;
@@ -896,13 +896,13 @@ std::set<index_t> Candidates::fv_set(index_t id) const
         return {};
     }
 
-    assert(mesh_.num_vertices());
+    assert(m_mesh.num_vertices());
     std::set<index_t> out;
     if (auto iter = m_sets->fv.find(id); iter != m_sets->fv.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 3; ++lv) {
-        out.insert(mesh_.faces()(id, lv));
+        out.insert(m_mesh.faces()(id, lv));
     }
     return out;
 }
@@ -912,13 +912,13 @@ std::set<index_t> Candidates::fe_set(index_t id) const
         return {};
     }
 
-    assert(mesh_.num_vertices());
+    assert(m_mesh.num_vertices());
     std::set<index_t> out;
     if (auto iter = m_sets->fe.find(id); iter != m_sets->fe.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 3; ++lv) {
-        for (index_t eid : mesh_.vertices_to_edges()[mesh_.faces()(id, lv)]) {
+        for (index_t eid : m_mesh.vertices_to_edges()[m_mesh.faces()(id, lv)]) {
             out.insert(eid);
         }
     }
@@ -930,14 +930,14 @@ std::set<index_t> Candidates::ff_set(index_t id) const
         return {};
     }
 
-    assert(mesh_.num_vertices());
+    assert(m_mesh.num_vertices());
     std::set<index_t> out;
     if (auto iter = m_sets->ff.find(id); iter != m_sets->ff.end()) {
         out = iter->second;
     }
     for (index_t lv = 0; lv < 3; ++lv) {
-        const index_t vid = mesh_.faces()(id, lv);
-        for (index_t fid : mesh_.vertices_to_faces()[vid]) {
+        const index_t vid = m_mesh.faces()(id, lv);
+        for (index_t fid : m_mesh.vertices_to_faces()[vid]) {
             out.insert(fid);
         }
     }

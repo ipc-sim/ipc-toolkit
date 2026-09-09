@@ -2,6 +2,8 @@
 
 namespace ipc {
 // A minimal, non-owning view of a contiguous sequence of objects.
+// Named to mirror std::span, hence the non-CamelCase name.
+// NOLINTNEXTLINE(readability-identifier-naming)
 template <typename T> class span {
 public:
     // Member types
@@ -18,19 +20,19 @@ public:
 
     // Constructors
     // Default constructor (creates an empty span)
-    constexpr span() noexcept : ptr_(nullptr), size_(0) { }
+    constexpr span() noexcept : m_ptr(nullptr), m_size(0) { }
 
     // Construct from a pointer and a count
     constexpr span(pointer ptr, size_type count) noexcept
-        : ptr_(ptr)
-        , size_(count)
+        : m_ptr(ptr)
+        , m_size(count)
     {
     }
 
     // Construct from a pointer and an end pointer
     constexpr span(pointer first, pointer last) noexcept
-        : ptr_(first)
-        , size_(static_cast<size_type>(last - first))
+        : m_ptr(first)
+        , m_size(static_cast<size_type>(last - first))
     {
     }
 
@@ -39,21 +41,21 @@ public:
     {
         // In a real implementation, bounds checking might be optional (e.g., in
         // debug builds).
-        return *(ptr_ + idx);
+        return *(m_ptr + idx);
     }
 
-    constexpr pointer data() const noexcept { return ptr_; }
+    constexpr pointer data() const noexcept { return m_ptr; }
 
     // Observers
-    constexpr size_type size() const noexcept { return size_; }
-    constexpr bool empty() const noexcept { return size_ == 0; }
+    constexpr size_type size() const noexcept { return m_size; }
+    constexpr bool empty() const noexcept { return m_size == 0; }
 
     // Iterators
-    constexpr iterator begin() const noexcept { return ptr_; }
-    constexpr iterator end() const noexcept { return ptr_ + size_; }
+    constexpr iterator begin() const noexcept { return m_ptr; }
+    constexpr iterator end() const noexcept { return m_ptr + m_size; }
 
 private:
-    pointer ptr_;
-    size_type size_;
+    pointer m_ptr;
+    size_type m_size;
 };
 } // namespace ipc

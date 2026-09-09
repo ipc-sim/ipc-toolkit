@@ -22,15 +22,15 @@ public:
         return cfg;
     }
 
-    bool use_standard() const { return use_standard_; }
-    void set_use_standard(bool v) { use_standard_ = v; }
+    bool use_standard() const { return m_use_standard; }
+    void set_use_standard(bool v) { m_use_standard = v; }
 
     DistanceTypeConfig(const DistanceTypeConfig&) = delete;
     DistanceTypeConfig& operator=(const DistanceTypeConfig&) = delete;
 
 private:
     DistanceTypeConfig() = default;
-    bool use_standard_ = false;
+    bool m_use_standard = false;
 };
 
 /// @brief Determine the closest pair between a point and edge, using exact

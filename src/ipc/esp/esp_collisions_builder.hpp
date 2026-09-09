@@ -19,7 +19,8 @@ template <> class ESPCollisionsBuilder<2> {
 public:
     ESPCollisionsBuilder() = default;
     // Copy creates an empty builder (used by tbb::enumerable_thread_specific).
-    ESPCollisionsBuilder(const ESPCollisionsBuilder&) : ESPCollisionsBuilder()
+    ESPCollisionsBuilder(const ESPCollisionsBuilder& /*other*/)
+        : ESPCollisionsBuilder()
     {
     }
 
