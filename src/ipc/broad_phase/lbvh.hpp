@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp> // for IPC_TOOLKIT_HOST_DEVICE
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/utils/default_init_allocator.hpp>
 
@@ -48,14 +49,20 @@ public:
 
 #pragma GCC diagnostic pop
 
+        // These are host/device so the CUDA broad phase (ipc::cuda::LBVH)
+        // traverses the same node with the same predicates as the CPU one.
+
         /// @brief Check if this node is an inner node.
-        bool is_inner() const { return is_inner_marker; }
+        IPC_TOOLKIT_HOST_DEVICE bool is_inner() const
+        {
+            return is_inner_marker;
+        }
 
         /// @brief Check if this node is a leaf node.
-        bool is_leaf() const { return !is_inner(); }
+        IPC_TOOLKIT_HOST_DEVICE bool is_leaf() const { return !is_inner(); }
 
         /// @brief Check if this node is valid.
-        bool is_valid() const
+        IPC_TOOLKIT_HOST_DEVICE bool is_valid() const
         {
             return is_inner()
                 ? (left != INVALID_POINTER && right != INVALID_POINTER)
@@ -63,7 +70,7 @@ public:
         }
 
         /// @brief Check if this node's AABB intersects with another node's AABB.
-        bool intersects(const Node& other) const
+        IPC_TOOLKIT_HOST_DEVICE bool intersects(const Node& other) const
         {
             return (aabb_min <= other.aabb_max).all()
                 && (other.aabb_min <= aabb_max).all();
