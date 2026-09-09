@@ -661,30 +661,35 @@ namespace {
         const index_t* __restrict__ conn_b,
         const int count_b)
     {
-        index_t ids_a[3];
-        index_t ids_b[3];
+        // Use scalars, not arrays. Runtime-indexed local arrays force local
+        // memory allocation, causing stack corruption on ptxas (sm_120) when
+        // the frame overflows into the traversal stack sentinel. Keeping values
+        // in registers limits the frame size to 0x100 and prevents invalid
+        // memory writes. Unused slots are filled from slot 0 for well-defined
+        // comparisons.
+        index_t a0, a1, a2;
         if (conn_a == nullptr) {
-            ids_a[0] = p_a;
+            a0 = a1 = a2 = p_a;
         } else {
-            for (int k = 0; k < count_a; ++k) {
-                ids_a[k] = conn_a[count_a * p_a + k];
-            }
+            const index_t* row = conn_a + count_a * p_a;
+            a0 = row[0];
+            a1 = count_a > 1 ? row[1] : a0;
+            a2 = count_a > 2 ? row[2] : a0;
         }
+
+        index_t b0, b1, b2;
         if (conn_b == nullptr) {
-            ids_b[0] = p_b;
+            b0 = b1 = b2 = p_b;
         } else {
-            for (int k = 0; k < count_b; ++k) {
-                ids_b[k] = conn_b[count_b * p_b + k];
-            }
+            const index_t* row = conn_b + count_b * p_b;
+            b0 = row[0];
+            b1 = count_b > 1 ? row[1] : b0;
+            b2 = count_b > 2 ? row[2] : b0;
         }
-        for (int i = 0; i < count_a; ++i) {
-            for (int j = 0; j < count_b; ++j) {
-                if (ids_a[i] == ids_b[j]) {
-                    return true;
-                }
-            }
-        }
-        return false;
+
+        return a0 == b0 || a0 == b1 || a0 == b2 //
+            || a1 == b0 || a1 == b1 || a1 == b2 //
+            || a2 == b0 || a2 == b1 || a2 == b2;
     }
 
     /// @brief Append a (source_prim, target_prim) pair (post-swap) via an
