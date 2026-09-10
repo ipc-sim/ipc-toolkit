@@ -8,8 +8,8 @@
 #include <cstdint> // for uint64_t
 
 #if !defined(__CUDA_ARCH__) && !defined(__GNUC__) && !defined(__clang__)       \
-    && defined(WIN32)
-#include <intrin.h> // for __lzcnt / __lzcnt64
+    && defined(_MSC_VER)
+#include <intrin.h> // for _BitScanReverse / _BitScanReverse64
 #endif
 
 namespace ipc {
@@ -71,12 +71,39 @@ IPC_TOOLKIT_HOST_DEVICE inline uint64_t morton_3D(double x, double y, double z)
     return (xx << 2) | (yy << 1) | zz;
 }
 
+/// @brief Computes the reciprocal width of a Morton normalization domain.
+///
+/// The one place this derivation lives, so the host and device LBVH builds --
+/// which must produce bit-identical codes -- cannot drift apart on it.
+///
+/// A degenerate axis -- every box spanning the same coordinate, as for a
+/// planar mesh with no inflation, the unused z of a 2D mesh, or a single box
+/// -- has zero width. Its reciprocal is 0 rather than infinity, so every
+/// center normalizes to 0 along it and the codes simply carry no information
+/// on that axis (as they should); 1/0 would give infinity and then 0 * inf =
+/// NaN in morton_code(), whose conversion to an integer is undefined.
+///
+/// @param domain_min The minimum corner of the normalization domain.
+/// @param domain_max The maximum corner of the normalization domain.
+/// @return The reciprocal of the domain's width along each axis, or 0 along a
+/// zero-width axis.
+IPC_TOOLKIT_HOST_DEVICE inline Eigen::Array3d morton_domain_width_inv(
+    const Eigen::Array3d& domain_min, const Eigen::Array3d& domain_max)
+{
+    Eigen::Array3d width_inv;
+    for (int k = 0; k < 3; ++k) {
+        const double width = domain_max[k] - domain_min[k];
+        width_inv[k] = width > 0 ? 1.0 / width : 0.0;
+    }
+    return width_inv;
+}
+
 /// @brief Calculates the Morton code of a box from its center.
 ///
 /// The center is normalized into the unit square/cube by the given domain
-/// before being encoded. The domain's width is passed as a reciprocal so this
-/// multiplies rather than divides, letting the host and device LBVH builds
-/// agree bit-for-bit.
+/// before being encoded. The domain's width is passed as a reciprocal (see
+/// morton_domain_width_inv()) so this multiplies rather than divides, letting
+/// the host and device LBVH builds agree bit-for-bit.
 ///
 /// @param center The center of the box.
 /// @param domain_min The minimum corner of the normalization domain.
@@ -108,8 +135,13 @@ IPC_TOOLKIT_HOST_DEVICE inline int count_leading_zeros(const uint32_t v)
     return __clz(static_cast<int>(v));
 #elif defined(__GNUC__) || defined(__clang__)
     return __builtin_clz(v);
-#elif defined(WIN32)
-    return static_cast<int>(__lzcnt(v));
+#elif defined(_MSC_VER)
+    // Not __lzcnt: without LZCNT/ABM support that encoding decodes as bsr and
+    // returns the index of the highest set bit instead. _BitScanReverse is the
+    // bsr itself, so the count is 31 minus the index on every x86/ARM target.
+    unsigned long index; // NOLINT(google-runtime-int)
+    _BitScanReverse(&index, v);
+    return 31 - static_cast<int>(index);
 #else
 #error "count_leading_zeros: no leading-zero-count intrinsic for this compiler"
 #endif
@@ -125,12 +157,38 @@ IPC_TOOLKIT_HOST_DEVICE inline int count_leading_zeros(const uint64_t v)
     return __clzll(static_cast<long long>(v));
 #elif defined(__GNUC__) || defined(__clang__)
     return __builtin_clzll(v);
-#elif defined(WIN32)
-    return static_cast<int>(__lzcnt64(v));
+#elif defined(_MSC_VER)
+#if defined(_M_X64) || defined(_M_ARM64)
+    unsigned long index; // NOLINT(google-runtime-int)
+    _BitScanReverse64(&index, v);
+    return 63 - static_cast<int>(index);
+#else
+    // _BitScanReverse64 does not exist on 32-bit targets: scan the halves.
+    const uint32_t hi = static_cast<uint32_t>(v >> 32);
+    return hi != 0 ? count_leading_zeros(hi)
+                   : 32 + count_leading_zeros(static_cast<uint32_t>(v));
+#endif
 #else
 #error "count_leading_zeros: no leading-zero-count intrinsic for this compiler"
 #endif
 }
+
+/// @brief The number of bits in the Morton code (the width of its type).
+constexpr int MORTON_CODE_BITS = 8 * sizeof(uint64_t);
+
+/// @brief The number of bits in the position used to break ties between
+/// duplicate Morton codes (see morton_common_prefix()): the width of the
+/// sorted-position type.
+constexpr int MORTON_TIE_BREAK_BITS = 8 * sizeof(int);
+
+/// @brief The width of the augmented key morton_common_prefix() compares: the
+/// Morton code followed by the sorted position.
+///
+/// Every internal node of an LBVH splits its range at a distinct prefix length
+/// of this key, and prefix lengths strictly increase from the root down, so no
+/// root-to-leaf path has more than this many internal nodes. This bounds the
+/// depth of the tree and so sizes the traversal stack.
+constexpr int MORTON_KEY_BITS = MORTON_CODE_BITS + MORTON_TIE_BREAK_BITS;
 
 /// @brief Computes the length of the common leading-bit prefix of two sorted
 /// Morton codes.
@@ -138,8 +196,9 @@ IPC_TOOLKIT_HOST_DEVICE inline int count_leading_zeros(const uint64_t v)
 /// This is the delta of Apetrei [2014]: a larger value means the two positions
 /// are separated by a finer split, and so have a nearer common ancestor.
 /// Duplicate codes fall back to the leading zeros of the positions' XOR, offset
-/// by 32 so that any code-level difference always compares as the shorter
-/// prefix.
+/// by the code width so that any code-level difference always compares as the
+/// shorter prefix -- as if the position were appended to the code (Karras
+/// [2012]).
 ///
 /// @note The two positions must differ (i != j). This holds for every delta the
 /// LBVH build evaluates, as it only ever compares adjacent positions.
@@ -148,12 +207,13 @@ IPC_TOOLKIT_HOST_DEVICE inline int count_leading_zeros(const uint64_t v)
 /// @param i The first sorted position.
 /// @param code_j The Morton code at sorted position j.
 /// @param j The second sorted position.
-/// @return The length of the common leading-bit prefix.
+/// @return The length of the common leading-bit prefix, in [0, MORTON_KEY_BITS).
 IPC_TOOLKIT_HOST_DEVICE inline int morton_common_prefix(
     const uint64_t code_i, const int i, const uint64_t code_j, const int j)
 {
     if (code_i == code_j) {
-        return 32 + count_leading_zeros(static_cast<uint32_t>(i ^ j));
+        return MORTON_CODE_BITS
+            + count_leading_zeros(static_cast<uint32_t>(i ^ j));
     }
     return count_leading_zeros(code_i ^ code_j);
 }

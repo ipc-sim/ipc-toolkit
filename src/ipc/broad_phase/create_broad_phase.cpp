@@ -38,6 +38,7 @@ create_broad_phase(const BroadPhaseMethod& broad_phase_method)
         log_and_throw_error(
             "CUDA LBVH broad phase requires CUDA! Enable it through CMake option IPC_TOOLKIT_WITH_CUDA.");
 #endif
+    case BroadPhaseMethod::NUM_BROAD_PHASE_METHODS:
     default:
         log_and_throw_error("Unknown broad phase type!");
     }

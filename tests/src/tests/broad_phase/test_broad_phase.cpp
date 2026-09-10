@@ -295,12 +295,23 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
 
 TEST_CASE("Create broad phase", "[broad_phase]")
 {
-#ifdef IPC_TOOLKIT_WITH_CUDA
-    uint8_t n_broad_phase_methods = 7;
-#else
-    uint8_t n_broad_phase_methods = 5;
+    using ipc::BroadPhaseMethod;
+
+    constexpr auto NUM_METHODS =
+        static_cast<uint8_t>(BroadPhaseMethod::NUM_BROAD_PHASE_METHODS);
+    for (uint8_t i = 0; i < NUM_METHODS; i++) {
+        const auto method = static_cast<BroadPhaseMethod>(i);
+        CAPTURE(i);
+#ifndef IPC_TOOLKIT_WITH_CUDA
+        if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+            || method == BroadPhaseMethod::LBVH_CUDA) {
+            CHECK_THROWS(create_broad_phase(method));
+            continue;
+        }
 #endif
-    for (uint8_t i = 0; i < n_broad_phase_methods; i++) {
-        CHECK(create_broad_phase(static_cast<ipc::BroadPhaseMethod>(i)));
+        CHECK(create_broad_phase(method));
     }
+
+    // The sentinel is not a method.
+    CHECK_THROWS(create_broad_phase(BroadPhaseMethod::NUM_BROAD_PHASE_METHODS));
 }

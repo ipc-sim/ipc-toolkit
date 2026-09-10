@@ -344,14 +344,13 @@ if(IPC_TOOLKIT_WITH_SIMD)
     # compiled twice and the nvcc pass owns the float and double
     # instantiations (see ipc_toolkit_shared_device_sources.cmake), so without
     # this they would be the only scalar code in the library built without
-    # SIMD support. Hand the flags to the host compiler nvcc drives rather
-    # than to nvcc itself.
-    set(SIMD_CUDA_HOST_FLAGS "")
-    foreach(simd_flag IN LISTS SIMD_CXX_FLAGS)
-      list(APPEND SIMD_CUDA_HOST_FLAGS "-Xcompiler=${simd_flag}")
-    endforeach()
-    target_compile_options(ipc_toolkit PUBLIC
-      "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:${SIMD_CUDA_HOST_FLAGS}>")
+    # SIMD support. ipc_toolkit_filter_nvcc_flags() hands the flags to the
+    # host compiler nvcc drives (via -Xcompiler) rather than to nvcc itself,
+    # keeping only those that pass compiles with.
+    include(ipc_toolkit_filter_flags)
+    set(SIMD_CUDA_HOST_FLAGS ${SIMD_CXX_FLAGS})
+    ipc_toolkit_filter_nvcc_flags(SIMD_CUDA_HOST_FLAGS)
+    target_compile_options(ipc_toolkit PUBLIC ${SIMD_CUDA_HOST_FLAGS})
   endif()
 
   # Link against cross-platform xsimd library

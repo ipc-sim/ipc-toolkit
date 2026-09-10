@@ -66,6 +66,12 @@ IPC_TOOLKIT_HOST_DEVICE inline T select(const bool mask, const T& a, const T& b)
     return mask ? a : b;
 }
 
+/// @brief Whether any lane of a mask is set.
+///
+/// The scalar counterpart of `xsimd::any`, which ADL finds for a batch `mask`,
+/// so one `any(mask)` compiles for both (see ipc::details::traverse_lbvh).
+IPC_TOOLKIT_HOST_DEVICE constexpr bool any(const bool mask) { return mask; }
+
 /// @brief Clamp `v` to `[lo, hi]`.
 ///
 /// Not `std::clamp`, which cannot be called from device code: MSVC's debug STL

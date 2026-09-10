@@ -3,14 +3,14 @@
 #include <tests/config.hpp>
 #include <tests/utils.hpp>
 
+#include <tests/broad_phase/lbvh_validation.hpp>
+
 #include <ipc/broad_phase/brute_force.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/utils/profiler.hpp>
 
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include <ipc/broad_phase/cuda/lbvh.hpp>
-#endif
+#include <igl/edges.h>
 
 #include <tbb/parallel_sort.h>
 
@@ -18,66 +18,7 @@
 #include <catch2/benchmark/catch_benchmark.hpp>
 
 using namespace ipc;
-
-namespace {
-
-bool is_aabb_union(
-    const LBVH::Node& parent,
-    const LBVH::Node& childA,
-    const LBVH::Node& childB)
-{
-    AABB children;
-    children.min = childA.aabb_min.min(childB.aabb_min).cast<double>();
-    children.max = childA.aabb_max.max(childB.aabb_max).cast<double>();
-    constexpr float EPS = 1e-4f;
-    return (abs(parent.aabb_max.cast<double>() - children.max) < EPS).all()
-        && (abs(parent.aabb_min.cast<double>() - children.min) < EPS).all();
-}
-
-void traverse_lbvh(
-    const LBVH::Nodes& lbvh_nodes,
-    const uint32_t index,
-    std::vector<bool>& visited)
-{
-    const LBVH::Node& node = lbvh_nodes[index];
-    CHECK(node.is_valid());
-
-    if (node.is_leaf()) {
-        // leaf
-        CHECK(!visited[index]);
-        visited[index] = true;
-    } else {
-        // inner node
-        CHECK(!visited[index]);
-        visited[index] = true;
-
-        // verify aabbs
-        LBVH::Node childA = lbvh_nodes[node.left];
-        LBVH::Node childB = lbvh_nodes[node.right];
-
-        {
-            CAPTURE(
-                index, node.left, node.right, node.aabb_min.transpose(),
-                childA.aabb_min.transpose(), childB.aabb_min.transpose(),
-                node.aabb_max.transpose(), childA.aabb_max.transpose(),
-                childB.aabb_max.transpose());
-            CHECK(is_aabb_union(node, childA, childB));
-        }
-
-        // continue traversal
-        traverse_lbvh(lbvh_nodes, node.left, visited);
-        traverse_lbvh(lbvh_nodes, node.right, visited);
-    }
-}
-
-void check_valid_lbvh_nodes(const LBVH::Nodes& lbvh_nodes)
-{
-    std::vector<bool> visited(lbvh_nodes.size(), false);
-    traverse_lbvh(lbvh_nodes, 0, visited);
-    REQUIRE(
-        std::all_of(visited.begin(), visited.end(), [](bool v) { return v; }));
-}
-} // namespace
+using ipc::tests::check_valid_lbvh_nodes;
 
 TEST_CASE("LBVH::build", "[broad_phase][lbvh]")
 {
@@ -367,42 +308,61 @@ TEST_CASE("LBVH single-primitive trees", "[broad_phase][lbvh]")
         CHECK(contains_all_candidates(ev_candidates, expected));
     }
 
-#ifdef IPC_TOOLKIT_WITH_CUDA
-    // The device build has its own single-leaf branch, so check it agrees with
-    // the host on exactly these trees.
-    cuda::LBVH gpu_lbvh;
-    gpu_lbvh.build(vertices, edges, faces, inflation_radius);
+    // The device build reaches the same branch through the same shared code;
+    // its parity with these trees is checked in test_gpu_lbvh.cu, where a
+    // missing GPU skips rather than fails.
+}
 
-    REQUIRE(gpu_lbvh.num_face_nodes() == 1);
-    REQUIRE(gpu_lbvh.num_edge_nodes() == 1);
-
-    {
-        std::vector<FaceVertexCandidate> gpu_candidates, cpu_candidates;
-        gpu_lbvh.detect_face_vertex_candidates(gpu_candidates);
-        lbvh.detect_face_vertex_candidates(cpu_candidates);
-        REQUIRE(!cpu_candidates.empty());
-        CHECK(gpu_candidates.size() == cpu_candidates.size());
-        CHECK(contains_all_candidates(gpu_candidates, cpu_candidates));
+// A planar mesh with no inflation has zero-width vertex boxes along z, so the
+// Morton normalization domain is degenerate on that axis. The reciprocal width
+// must be 0 there, not infinity: 0 * inf is NaN, and converting NaN to an
+// integer code is undefined. The tree must still be valid and complete.
+TEST_CASE("LBVH degenerate domain", "[broad_phase][lbvh]")
+{
+    // A 4x4 grid of vertices in the z = 0 plane, triangulated.
+    constexpr int N = 4;
+    Eigen::MatrixXd vertices(N * N, 3);
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            vertices.row(N * i + j) << i, j, 0.0;
+        }
     }
-
-    {
-        std::vector<EdgeFaceCandidate> gpu_candidates, cpu_candidates;
-        gpu_lbvh.detect_edge_face_candidates(gpu_candidates);
-        lbvh.detect_edge_face_candidates(cpu_candidates);
-        REQUIRE(!cpu_candidates.empty());
-        CHECK(gpu_candidates.size() == cpu_candidates.size());
-        CHECK(contains_all_candidates(gpu_candidates, cpu_candidates));
+    Eigen::MatrixXi faces(2 * (N - 1) * (N - 1), 3);
+    for (int i = 0, f = 0; i < N - 1; ++i) {
+        for (int j = 0; j < N - 1; ++j) {
+            const int v00 = N * i + j, v10 = v00 + N;
+            faces.row(f++) << v00, v10, v00 + 1;
+            faces.row(f++) << v10, v10 + 1, v00 + 1;
+        }
     }
+    Eigen::MatrixXi edges;
+    igl::edges(faces, edges);
 
+    // Inflation 0 keeps the z extent of every box exactly zero.
+    LBVH lbvh;
+    lbvh.build(vertices, edges, faces, /*inflation_radius=*/0);
+
+    check_valid_lbvh_nodes(lbvh.vertex_nodes());
+    check_valid_lbvh_nodes(lbvh.edge_nodes());
+    check_valid_lbvh_nodes(lbvh.face_nodes());
+
+    // And the result still matches brute force (a superset, as usual).
+    BruteForce brute_force;
+    brute_force.build(vertices, edges, faces, 0);
     {
-        std::vector<EdgeVertexCandidate> gpu_candidates, cpu_candidates;
-        gpu_lbvh.detect_edge_vertex_candidates(gpu_candidates);
-        lbvh.detect_edge_vertex_candidates(cpu_candidates);
-        REQUIRE(!cpu_candidates.empty());
-        CHECK(gpu_candidates.size() == cpu_candidates.size());
-        CHECK(contains_all_candidates(gpu_candidates, cpu_candidates));
+        std::vector<EdgeEdgeCandidate> candidates, expected;
+        lbvh.detect_edge_edge_candidates(candidates);
+        brute_force.detect_edge_edge_candidates(expected);
+        REQUIRE(!expected.empty()); // coplanar neighbors do overlap
+        CHECK(contains_all_candidates(candidates, expected));
     }
-#endif
+    {
+        std::vector<FaceVertexCandidate> candidates, expected;
+        lbvh.detect_face_vertex_candidates(candidates);
+        brute_force.detect_face_vertex_candidates(expected);
+        REQUIRE(!expected.empty());
+        CHECK(contains_all_candidates(candidates, expected));
+    }
 }
 
 TEST_CASE(
@@ -464,24 +424,8 @@ TEST_CASE(
         lbvh->detect_edge_edge_candidates(ee_candidates);
         return ee_candidates.size();
     };
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-    cuda::LBVH gpu_lbvh;
-    gpu_lbvh.build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
-    // Warm up the CUDA context so the first sample is not skewed by lazy
-    // context/allocation initialization.
-    {
-        std::vector<EdgeEdgeCandidate> warmup;
-        gpu_lbvh.detect_edge_edge_candidates(warmup);
-    }
-
-    BENCHMARK("cuda::LBVH::detect_edge_edge_candidates")
-    {
-        std::vector<EdgeEdgeCandidate> ee_candidates;
-        gpu_lbvh.detect_edge_edge_candidates(ee_candidates);
-        return ee_candidates.size();
-    };
-#endif
+    // The cuda::LBVH counterpart lives in test_gpu_lbvh.cu, behind the GPU
+    // skip.
 }
 
 TEST_CASE("Benchmark LBVH::build", "[!benchmark][broad_phase][lbvh]")
@@ -526,20 +470,7 @@ TEST_CASE("Benchmark LBVH::build", "[!benchmark][broad_phase][lbvh]")
                 vertices_t0, vertices_t1, edges, faces, inflation_radius);
             return lbvh->edge_nodes().size();
         };
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-        cuda::LBVH gpu_lbvh;
-        // Warm up the CUDA context so the first sample is not skewed by lazy
-        // context/allocation initialization.
-        gpu_lbvh.build(
-            vertices_t0, vertices_t1, edges, faces, inflation_radius);
-
-        BENCHMARK(fmt::format("cuda::LBVH::build [{}]", scene))
-        {
-            gpu_lbvh.build(
-                vertices_t0, vertices_t1, edges, faces, inflation_radius);
-            return gpu_lbvh.num_edge_nodes();
-        };
-#endif
+        // The cuda::LBVH counterpart lives in test_gpu_lbvh.cu, behind the
+        // GPU skip.
     }
 }

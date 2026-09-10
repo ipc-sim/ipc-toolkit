@@ -10,39 +10,45 @@
 #include <ipc/utils/cuda/device_utils.cuh>
 #include <ipc/utils/logger.hpp>
 
-#include <thrust/copy.h>
 #include <thrust/iterator/counting_iterator.h>
-#include <thrust/sort.h>
-#include <thrust/transform_reduce.h>
+#include <thrust/iterator/transform_iterator.h>
 
 #include <algorithm>
-#include <cmath>
-#include <functional>
+#include <cassert>
+#include <cub/device/device_radix_sort.cuh>
+#include <cub/device/device_reduce.cuh>
 #include <limits>
+#include <mutex>
+#include <string>
+#include <type_traits>
 #include <vector>
 
 namespace ipc::cuda {
 
 namespace {
 
-    // Eigen::Array3d is passed to kernels by value, so it must be exactly three
-    // packed doubles (no vectorization padding) to have a stable layout.
+    // ipc::LBVH::Node is shared through device memory and copied back to the
+    // host bytewise, so both sides must agree on its layout. ipc::LBVH asserts
+    // the size in a host-only constructor no device path instantiates; this
+    // one is evaluated by nvcc's front end, which is what lays the type out for
+    // the device.
     static_assert(
-        sizeof(Eigen::Array3d) == 24,
-        "Eigen::Array3d must be 24 bytes (3 packed doubles)");
+        sizeof(ipc::LBVH::Node) == 32,
+        "ipc::LBVH::Node must be 32 bytes to share it with the host");
+    static_assert(
+        alignof(ipc::LBVH::Node) == 32,
+        "ipc::LBVH::Node must be 32-byte aligned to share it with the host");
 
     /// @brief Per-internal-node scratch used by the bottom-up build. The
     /// counter is a plain int rather than the host build's std::atomic<int>:
-    /// atomicAdd() needs an int*, std::atomic is non-copyable and so cannot be
-    /// a thrust::device_vector element, and atomicAdd() supplies the same
-    /// atomicity. The layout is otherwise identical to the host's.
+    /// atomicAdd() needs an int*, and supplies the same atomicity. The layout
+    /// is otherwise identical to the host's.
     using DeviceConstructionInfo = ipc::LBVH::ConstructionInfo<int>;
 
-    /// @brief Min/max domain accumulator for the Morton-normalization reduction.
-    struct Domain {
-        double mn[3];
-        double mx[3];
-    };
+    using Domain = LBVH::Impl::Domain;
+    static_assert(
+        std::is_trivially_copyable_v<Domain>,
+        "Domain is copied into kernel parameter space and reduced by CUB");
 
     struct DomainReduce {
         __host__ __device__ Domain
@@ -51,8 +57,8 @@ namespace {
             Domain r;
 #pragma unroll
             for (int k = 0; k < 3; ++k) {
-                r.mn[k] = fmin(a.mn[k], b.mn[k]);
-                r.mx[k] = fmax(a.mx[k], b.mx[k]);
+                r.min[k] = fmin(a.min[k], b.min[k]);
+                r.max[k] = fmax(a.max[k], b.max[k]);
             }
             return r;
         }
@@ -66,39 +72,44 @@ namespace {
             Domain d;
 #pragma unroll
             for (int k = 0; k < 3; ++k) {
-                d.mn[k] = box_min[3 * i + k];
-                d.mx[k] = box_max[3 * i + k];
+                d.min[k] = box_min[3 * i + k];
+                d.max[k] = box_max[3 * i + k];
             }
             return d;
         }
     };
 
     // -- Box building -------------------------------------------------------
-    // Matches ipc::build_*_boxes + AABB::conservative_inflation exactly: the
-    // double bounds are nudged outward with nextafter so the box is
-    // conservative. (The leaf nodes later apply a second float-nextafter in
-    // build_hierarchy_kernel, matching assign_inflated_aabb.)
-    //
-    // For dim == 2 input, ipc::AABB always stores a 3-wide array whose z
-    // component is zero-initialized and never touched by conservative_inflation
-    // (only the first `dim` components of the constructor argument are
-    // assigned) -- so the z bound is an exact, uninflated 0.0, not
-    // nextafter(0 +/- inflation_radius, ...). Replicate that exactly: for
-    // k >= dim, write a hard 0.0 instead of inflating.
-    //
-    // The direction arguments must be doubles: INFINITY is a float macro, so
-    // nextafter(double, INFINITY) resolves to the host-only
-    // std::nextafter<double, float> promotion template instead of CUDA's
-    // __device__ nextafter(double, double).
-    constexpr double POS_INF = std::numeric_limits<double>::infinity();
-    constexpr double NEG_INF = -POS_INF;
 
-    __global__ void build_vertex_boxes_static_kernel(
-        const double* __restrict__ vertices, // dim * n, row-major
+    /// @brief One vertex box from the vertex's positions at t0 and t1; pass
+    /// the same array twice for a static box.
+    ///
+    /// Mirrors AABB::from_point(p_t0, p_t1, r), i.e. the union of the two
+    /// inflated points, bit-for-bit: the per-coordinate inflation is
+    /// AABB::conservative_{lower,upper}_bound() -- the very function the host
+    /// calls -- and taking the union before inflating equals inflating before
+    /// the union because nextafter is monotone:
+    /// min(nextafter(a - r), nextafter(b - r)) == nextafter(min(a, b) - r).
+    ///
+    /// For dim == 2 input, ipc::AABB always stores a 3-wide array whose z
+    /// component is zero-initialized and never touched by the inflation (only
+    /// the first `dim` components of the constructor argument are assigned) --
+    /// so the z bound is an exact, uninflated 0.0. Replicate that exactly.
+    ///
+    /// @param vertices_t0 Positions at t0, column-major (dim * n).
+    /// @param vertices_t1 Positions at t1, column-major (dim * n).
+    /// @param n The number of vertices.
+    /// @param dim The simulation dimension (2 or 3).
+    /// @param inflation_radius The inflation radius.
+    /// @param[out] box_min The box min corners (always 3 * n, row-major).
+    /// @param[out] box_max The box max corners (always 3 * n, row-major).
+    __global__ void build_vertex_boxes_kernel(
+        const double* vertices_t0, // not __restrict__: may alias vertices_t1
+        const double* vertices_t1, // (the static build passes one array twice)
         const int n,
         const int dim,
         const double inflation_radius,
-        double* __restrict__ box_min, // always 3 * n, row-major
+        double* __restrict__ box_min,
         double* __restrict__ box_max)
     {
         const int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -108,9 +119,12 @@ namespace {
 #pragma unroll
         for (int k = 0; k < 3; ++k) {
             if (k < dim) {
-                const double v = vertices[dim * i + k];
-                box_min[3 * i + k] = nextafter(v - inflation_radius, NEG_INF);
-                box_max[3 * i + k] = nextafter(v + inflation_radius, POS_INF);
+                const double a = vertices_t0[k * n + i];
+                const double b = vertices_t1[k * n + i];
+                box_min[3 * i + k] = AABB::conservative_lower_bound(
+                    fmin(a, b), inflation_radius);
+                box_max[3 * i + k] = AABB::conservative_upper_bound(
+                    fmax(a, b), inflation_radius);
             } else {
                 box_min[3 * i + k] = 0.0;
                 box_max[3 * i + k] = 0.0;
@@ -118,42 +132,12 @@ namespace {
         }
     }
 
-    __global__ void build_vertex_boxes_dynamic_kernel(
-        const double* __restrict__ vertices_t0, // dim * n, row-major
-        const double* __restrict__ vertices_t1, // dim * n, row-major
-        const int n,
-        const int dim,
-        const double inflation_radius,
-        double* __restrict__ box_min, // always 3 * n, row-major
-        double* __restrict__ box_max)
-    {
-        const int i = blockIdx.x * blockDim.x + threadIdx.x;
-        if (i >= n) {
-            return;
-        }
-#pragma unroll
-        for (int k = 0; k < 3; ++k) {
-            if (k < dim) {
-                const double a = vertices_t0[dim * i + k];
-                const double b = vertices_t1[dim * i + k];
-                // union of the two inflated point boxes; nextafter is
-                // monotonic so min(nextafter(a),nextafter(b)) ==
-                // nextafter(min(a,b)).
-                box_min[3 * i + k] =
-                    nextafter(fmin(a, b) - inflation_radius, NEG_INF);
-                box_max[3 * i + k] =
-                    nextafter(fmax(a, b) + inflation_radius, POS_INF);
-            } else {
-                box_min[3 * i + k] = 0.0;
-                box_max[3 * i + k] = 0.0;
-            }
-        }
-    }
-
+    /// @brief One edge box as the union of its two vertex boxes, i.e. the
+    /// AABB(aabb1, aabb2) constructor ipc::build_edge_boxes uses.
     __global__ void build_edge_boxes_kernel(
         const double* __restrict__ vbox_min,
         const double* __restrict__ vbox_max,
-        const index_t* __restrict__ edges, // 2 * n, row-major
+        const int32_t* __restrict__ edges, // 2 * n, row-major
         const int n,
         double* __restrict__ box_min,
         double* __restrict__ box_max)
@@ -162,8 +146,8 @@ namespace {
         if (i >= n) {
             return;
         }
-        const index_t e0 = edges[2 * i + 0];
-        const index_t e1 = edges[2 * i + 1];
+        const int32_t e0 = edges[2 * i + 0];
+        const int32_t e1 = edges[2 * i + 1];
 #pragma unroll
         for (int k = 0; k < 3; ++k) {
             box_min[3 * i + k] =
@@ -173,10 +157,12 @@ namespace {
         }
     }
 
+    /// @brief One face box as the union of its three vertex boxes, i.e. the
+    /// AABB(aabb1, aabb2, aabb3) constructor ipc::build_face_boxes uses.
     __global__ void build_face_boxes_kernel(
         const double* __restrict__ vbox_min,
         const double* __restrict__ vbox_max,
-        const index_t* __restrict__ faces, // 3 * n, row-major
+        const int32_t* __restrict__ faces, // 3 * n, row-major
         const int n,
         double* __restrict__ box_min,
         double* __restrict__ box_max)
@@ -185,9 +171,9 @@ namespace {
         if (i >= n) {
             return;
         }
-        const index_t f0 = faces[3 * i + 0];
-        const index_t f1 = faces[3 * i + 1];
-        const index_t f2 = faces[3 * i + 2];
+        const int32_t f0 = faces[3 * i + 0];
+        const int32_t f1 = faces[3 * i + 1];
+        const int32_t f2 = faces[3 * i + 2];
 #pragma unroll
         for (int k = 0; k < 3; ++k) {
             box_min[3 * i + k] = fmin(
@@ -203,25 +189,37 @@ namespace {
 
     /// @brief Compute one Morton code per box from its (normalized) center.
     /// Mirrors the compute_morton_codes block of ipc::LBVH::init_bvh.
+    /// @param box_min The box min corners (3 * n, row-major).
+    /// @param box_max The box max corners (3 * n, row-major).
+    /// @param n The number of boxes.
+    /// @param domain The Morton-normalization domain (device resident).
+    /// @param dim The simulation dimension (2 or 3).
+    /// @param[out] codes The Morton codes.
+    /// @param[out] box_ids The box ids (the identity, to be sorted with codes).
     __global__ void compute_morton_codes_kernel(
-        const double* __restrict__ box_min, // 3 * n, row-major
-        const double* __restrict__ box_max, // 3 * n, row-major
+        const double* __restrict__ box_min,
+        const double* __restrict__ box_max,
         const int n,
-        const Eigen::Array3d mesh_min,
-        const Eigen::Array3d mesh_width_inv,
+        const Domain* __restrict__ domain,
         const int dim,
         uint64_t* __restrict__ codes,
-        index_t* __restrict__ box_ids)
+        int32_t* __restrict__ box_ids)
     {
         const int i = blockIdx.x * blockDim.x + threadIdx.x;
         if (i >= n) {
             return;
         }
 
-        // mesh_width_inv is the reciprocal of the domain width, computed
-        // once per build (see compute_domain), so ipc::morton_code() multiplies
-        // rather than divides and matches the CPU (ipc::LBVH::init_bvh)
-        // bit-for-bit.
+        const Eigen::Array3d mesh_min(
+            domain->min[0], domain->min[1], domain->min[2]);
+        const Eigen::Array3d mesh_max(
+            domain->max[0], domain->max[1], domain->max[2]);
+        // The same derivation the CPU (ipc::LBVH::init_bvh) evaluates once per
+        // build; IEEE division is deterministic, so evaluating it per thread
+        // gives the identical reciprocal and so identical codes.
+        const Eigen::Array3d mesh_width_inv =
+            ipc::morton_domain_width_inv(mesh_min, mesh_max);
+
         const Eigen::Array3d center(
             0.5 * (box_min[3 * i + 0] + box_max[3 * i + 0]),
             0.5 * (box_min[3 * i + 1] + box_max[3 * i + 1]),
@@ -239,7 +237,7 @@ namespace {
     /// @param box_max The box max corners (3 * n, row-major).
     /// @param sorted_codes The Morton codes in sorted order.
     /// @param sorted_box_ids The box ids in Morton-sorted order.
-    /// @param N_LEAVES The number of leaves.
+    /// @param n_leaves The number of leaves.
     /// @param[out] nodes The BVH nodes.
     /// @param[out] rightmost The per-node rightmost-leaf indices.
     /// @param[in,out] infos The per-node construction scratch (zeroed).
@@ -248,21 +246,21 @@ namespace {
         const double* __restrict__ box_min,
         const double* __restrict__ box_max,
         const uint64_t* __restrict__ sorted_codes,
-        const index_t* __restrict__ sorted_box_ids,
-        const int N_LEAVES,
+        const int32_t* __restrict__ sorted_box_ids,
+        const int n_leaves,
         ipc::LBVH::Node* __restrict__ nodes,
         int32_t* __restrict__ rightmost,
         DeviceConstructionInfo* __restrict__ infos,
         int* __restrict__ root_idx)
     {
         const int i = blockIdx.x * blockDim.x + threadIdx.x;
-        if (i >= N_LEAVES) {
+        if (i >= n_leaves) {
             return;
         }
 
-        const index_t bid = sorted_box_ids[i];
+        const int32_t bid = sorted_box_ids[i];
         ipc::details::init_leaf_node(
-            i, N_LEAVES, bid,
+            i, n_leaves, bid,
             Eigen::Array3d(
                 box_min[3 * bid + 0], box_min[3 * bid + 1],
                 box_min[3 * bid + 2]),
@@ -272,7 +270,7 @@ namespace {
             nodes, rightmost);
 
         const int root = ipc::details::build_hierarchy_from_leaf(
-            i, N_LEAVES, [sorted_codes](int k) { return sorted_codes[k]; },
+            i, n_leaves, [sorted_codes](int k) { return sorted_codes[k]; },
             nodes, rightmost, infos,
             [](int& count) {
                 // Release: publish this thread's child pointer, range endpoint
@@ -296,17 +294,18 @@ namespace {
     }
 
     /// @brief Swap the node and rightmost-leaf entries at index 0 and the root
-    /// (single thread). See ipc::details::swap_root_to_zero().
+    /// (single thread). See ipc::details::swap_root_to_zero(). Reads the root
+    /// from device memory so the build never round-trips through the host.
     /// @param nodes The BVH nodes.
     /// @param rightmost The per-node rightmost-leaf indices.
-    /// @param root The index to swap with index 0.
+    /// @param root The root's index; a no-op if it is already 0 (or unset).
     __global__ void swap_root_kernel(
         ipc::LBVH::Node* __restrict__ nodes,
         int32_t* __restrict__ rightmost,
-        const int root)
+        const int* __restrict__ root)
     {
-        if (blockIdx.x == 0 && threadIdx.x == 0) {
-            ipc::details::swap_root_to_zero(nodes, rightmost, root);
+        if (blockIdx.x == 0 && threadIdx.x == 0 && *root > 0) {
+            ipc::details::swap_root_to_zero(nodes, rightmost, *root);
         }
     }
 
@@ -314,43 +313,43 @@ namespace {
     /// old node 0 to its new location. See ipc::details::patch_left_pointer().
     /// @param nodes The BVH nodes.
     /// @param num_nodes The number of nodes.
-    /// @param root The new location of the old node 0.
+    /// @param root The new location of the old node 0; a no-op if the root was
+    /// already 0 (or unset).
     __global__ void patch_left_kernel(
         ipc::LBVH::Node* __restrict__ nodes,
         const int num_nodes,
-        const int root)
+        const int* __restrict__ root)
     {
         const int i = blockIdx.x * blockDim.x + threadIdx.x;
-        if (i >= num_nodes) {
+        const int r = *root;
+        if (i >= num_nodes || r <= 0) {
             return;
         }
-        ipc::details::patch_left_pointer(nodes[i], root);
+        ipc::details::patch_left_pointer(nodes[i], r);
     }
 
     /// @brief Build one BVH on the device from device-resident box corners.
-    /// Mirrors ipc::LBVH::init_bvh; the output BVH is resized and filled in
-    /// place.
+    /// Mirrors ipc::LBVH::init_bvh. Fully asynchronous: nothing here waits on
+    /// the device; the caller synchronizes once after all three trees.
+    /// @param impl The pimpl whose scratch buffers to use.
     /// @param d_box_min The box min corners (3 * n, row-major, device).
     /// @param d_box_max The box max corners (3 * n, row-major, device).
     /// @param n The number of boxes (leaves).
-    /// @param mesh_min The Morton-normalization domain minimum.
-    /// @param mesh_width_inv The reciprocal of the Morton-normalization domain
-    /// extent (precomputed once per build; see compute_domain).
     /// @param dim The simulation dimension (2 or 3).
-    /// @param bvh The BVH to build (output).
+    /// @param[out] bvh The BVH to build.
+    /// @param[out] d_root Where to write the root's index (device); -1 if the
+    /// build never reaches a root.
     void build_tree(
+        LBVH::Impl& impl,
         const double* d_box_min,
         const double* d_box_max,
         const int n,
-        const Eigen::Array3d& mesh_min,
-        const Eigen::Array3d& mesh_width_inv,
         const int dim,
-        LBVH::Impl::DeviceBVH& bvh)
+        LBVH::Impl::DeviceBVH& bvh,
+        int* d_root)
     {
-        bvh.n_leaves = n;
         if (n == 0) {
-            bvh.nodes.clear();
-            bvh.rightmost_leaves.clear();
+            bvh.clear();
             return;
         }
 
@@ -358,92 +357,132 @@ namespace {
         bvh.nodes.resize(num_nodes);
         bvh.rightmost_leaves.resize(num_nodes);
 
-        thrust::device_vector<uint64_t> morton_codes(n);
-        thrust::device_vector<index_t> box_ids(n);
-        // Value-initialized to zero => visitation_count starts at 0.
-        thrust::device_vector<DeviceConstructionInfo> infos(num_nodes);
-        thrust::device_vector<int> d_root(1, -1);
+        for (auto& codes : impl.morton_codes) {
+            codes.resize(n);
+        }
+        for (auto& ids : impl.box_ids) {
+            ids.resize(n);
+        }
+        // Only the visitation counts need zeroing; a memset is the cheapest
+        // way to do it.
+        impl.construction_infos.resize(num_nodes);
+        impl.construction_infos.zero();
+        IPC_TOOLKIT_CUDA_CHECK(cudaMemsetAsync(d_root, 0xFF, sizeof(int)));
 
         compute_morton_codes_kernel<<<kernel_grid_size(n), KERNEL_BLOCK_SIZE>>>(
-            d_box_min, d_box_max, n, mesh_min, mesh_width_inv, dim,
-            thrust::raw_pointer_cast(morton_codes.data()),
-            thrust::raw_pointer_cast(box_ids.data()));
+            d_box_min, d_box_max, n, impl.domain.data(), dim,
+            impl.morton_codes[0].data(), impl.box_ids[0].data());
         IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
-        thrust::sort_by_key(
-            morton_codes.begin(), morton_codes.end(), box_ids.begin());
+        // Radix sort the (code, id) pairs by code.
+        //
+        // A radix sort is out of place: each pass reads one array and writes
+        // another, so CUB is given two buffers per sequence (a DoubleBuffer)
+        // and ping-pongs between them, pass after pass. The unsorted input is
+        // in buffer [0], where the codes kernel wrote it; after the sort,
+        // Current() says which of the two holds the result -- it depends on
+        // the number of passes, so it must be read back rather than assumed.
+        cub::DoubleBuffer<uint64_t> keys(
+            impl.morton_codes[0].data(), impl.morton_codes[1].data());
+        cub::DoubleBuffer<int32_t> values(
+            impl.box_ids[0].data(), impl.box_ids[1].data());
 
+        // CUB's two-phase convention: with a null storage pointer the call
+        // only reports the scratch bytes it needs; the second call sorts.
+        // Keeping that scratch in a persistent buffer is what makes this
+        // allocation-free per build (thrust::sort_by_key would cudaMalloc and
+        // cudaFree it every call).
+        size_t temp_bytes = 0;
+        IPC_TOOLKIT_CUDA_CHECK(
+            cub::DeviceRadixSort::SortPairs(
+                nullptr, temp_bytes, keys, values, n));
+        impl.sort_temp.resize(temp_bytes);
+        IPC_TOOLKIT_CUDA_CHECK(
+            cub::DeviceRadixSort::SortPairs(
+                impl.sort_temp.data(), temp_bytes, keys, values, n));
+
+        // Current() is the sorted half of each ping-pong pair.
         build_hierarchy_kernel<<<kernel_grid_size(n), KERNEL_BLOCK_SIZE>>>(
-            d_box_min, d_box_max, thrust::raw_pointer_cast(morton_codes.data()),
-            thrust::raw_pointer_cast(box_ids.data()), n,
-            thrust::raw_pointer_cast(bvh.nodes.data()),
-            thrust::raw_pointer_cast(bvh.rightmost_leaves.data()),
-            thrust::raw_pointer_cast(infos.data()),
-            thrust::raw_pointer_cast(d_root.data()));
+            d_box_min, d_box_max, keys.Current(), values.Current(), n,
+            bvh.nodes.data(), bvh.rightmost_leaves.data(),
+            impl.construction_infos.data(), d_root);
         IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
-        const int root = d_root[0]; // device->host read
-        if (root > 0) {
-            swap_root_kernel<<<1, 1>>>(
-                thrust::raw_pointer_cast(bvh.nodes.data()),
-                thrust::raw_pointer_cast(bvh.rightmost_leaves.data()), root);
-            IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+        swap_root_kernel<<<1, 1>>>(
+            bvh.nodes.data(), bvh.rightmost_leaves.data(), d_root);
+        IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
-            patch_left_kernel<<<
-                kernel_grid_size(num_nodes), KERNEL_BLOCK_SIZE>>>(
-                thrust::raw_pointer_cast(bvh.nodes.data()),
-                static_cast<int>(num_nodes), root);
-            IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
-        }
+        patch_left_kernel<<<kernel_grid_size(num_nodes), KERNEL_BLOCK_SIZE>>>(
+            bvh.nodes.data(), static_cast<int>(num_nodes), d_root);
+        IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
     }
 
-    /// @brief Compute the Morton-normalization domain (min of mins, max of
-    /// maxs) over device-resident vertex box corners, and its reciprocal
-    /// extent. The reciprocal is computed once here (per build) and multiplied
-    /// per box in compute_morton_codes_kernel instead of dividing per box,
-    /// matching the CPU (ipc::LBVH::init_bvh) bit-for-bit.
-    void compute_domain(
-        const thrust::device_vector<double>& vbox_min,
-        const thrust::device_vector<double>& vbox_max,
-        const int n_vertices,
-        Eigen::Array3d& mesh_min,
-        Eigen::Array3d& mesh_width_inv)
+    /// @brief Reduce the Morton-normalization domain (min of mins, max of
+    /// maxs) over the device-resident vertex box corners into impl.domain.
+    /// The same quantity BroadPhase::compute_mesh_aabb() computes on the host
+    /// from the same boxes, with the same seeds; min/max are order-independent,
+    /// so the two agree bit-for-bit. Stays on the device: the codes kernel
+    /// reads it directly, with no host round-trip.
+    void compute_domain(LBVH::Impl& impl, const int n_vertices)
     {
         Domain init;
         for (int k = 0; k < 3; ++k) {
-            init.mn[k] = std::numeric_limits<double>::max();
-            init.mx[k] = std::numeric_limits<double>::lowest();
+            init.min[k] = std::numeric_limits<double>::max();
+            init.max[k] = std::numeric_limits<double>::lowest();
         }
-        const Domain dom = thrust::transform_reduce(
-            thrust::counting_iterator<int>(0),
-            thrust::counting_iterator<int>(n_vertices),
-            MakeDomain { thrust::raw_pointer_cast(vbox_min.data()),
-                         thrust::raw_pointer_cast(vbox_max.data()) },
-            init, DomainReduce {});
 
-        mesh_min = Eigen::Array3d(dom.mn[0], dom.mn[1], dom.mn[2]);
-        const Eigen::Array3d mesh_width(
-            dom.mx[0] - dom.mn[0], dom.mx[1] - dom.mn[1],
-            dom.mx[2] - dom.mn[2]);
-        mesh_width_inv = 1.0 / mesh_width;
+        const auto domains = thrust::make_transform_iterator(
+            thrust::counting_iterator<int>(0),
+            MakeDomain { impl.vbox_min.data(), impl.vbox_max.data() });
+
+        impl.domain.resize(1);
+        size_t temp_bytes = 0;
+        IPC_TOOLKIT_CUDA_CHECK(
+            cub::DeviceReduce::Reduce(
+                nullptr, temp_bytes, domains, impl.domain.data(), n_vertices,
+                DomainReduce {}, init));
+        impl.reduce_temp.resize(temp_bytes);
+        IPC_TOOLKIT_CUDA_CHECK(
+            cub::DeviceReduce::Reduce(
+                impl.reduce_temp.data(), temp_bytes, domains,
+                impl.domain.data(), n_vertices, DomainReduce {}, init));
     }
 
-    // Upload an integer connectivity matrix (rowwise) as a flat row-major
-    // index_t device array.
+    /// @brief Upload vertex positions column-major, straight from the matrix
+    /// when it is contiguous (no host transpose).
+    void upload_vertices(
+        Eigen::ConstRef<Eigen::MatrixXd> vertices, DeviceBuffer<double>& d)
+    {
+        const size_t n = static_cast<size_t>(vertices.size());
+        if (vertices.innerStride() == 1
+            && vertices.outerStride() == vertices.rows()) {
+            d.upload(vertices.data(), n);
+        } else {
+            const Eigen::MatrixXd contiguous = vertices;
+            d.upload(contiguous.data(), n);
+        }
+    }
+
+    /// @brief Flatten an integer connectivity matrix (rowwise) to row-major
+    /// 32-bit ids on the host, and upload the same array to the device.
     template <int Cols>
-    thrust::device_vector<index_t>
-    upload_connectivity(Eigen::ConstRef<Eigen::MatrixXi> M)
+    void upload_connectivity(
+        Eigen::ConstRef<Eigen::MatrixXi> M,
+        std::vector<int32_t>& h,
+        DeviceBuffer<int32_t>& d)
     {
         const size_t n = M.rows();
-        std::vector<index_t> h(Cols * n);
+        h.resize(Cols * n);
         for (size_t i = 0; i < n; ++i) {
             for (int k = 0; k < Cols; ++k) {
-                h[Cols * i + k] = static_cast<index_t>(M(i, k));
+                h[Cols * i + k] = static_cast<int32_t>(M(i, k));
             }
         }
-        return thrust::device_vector<index_t>(h);
+        d.upload(h.data(), h.size());
     }
 
+    /// @brief Copy a device BVH to the host. Bytewise: ipc::LBVH::Node holds
+    /// only floats and ints, so a memcpy is its copy.
     void to_host(
         const LBVH::Impl::DeviceBVH& bvh,
         ipc::LBVH::Nodes& nodes,
@@ -451,26 +490,20 @@ namespace {
     {
         nodes.resize(bvh.nodes.size());
         rightmost_leaves.resize(bvh.rightmost_leaves.size());
-        thrust::copy(bvh.nodes.begin(), bvh.nodes.end(), nodes.begin());
-        thrust::copy(
-            bvh.rightmost_leaves.begin(), bvh.rightmost_leaves.end(),
-            rightmost_leaves.begin());
+        bvh.nodes.download(nodes.data());
+        bvh.rightmost_leaves.download(rightmost_leaves.data());
     }
 
-    /// @brief Given device-resident vertex boxes, build the edge/face boxes and
-    /// all three BVHs. Shared by every build() overload.
+    /// @brief Given device-resident vertex boxes (impl.vbox_min/max), build the
+    /// edge/face boxes and all three BVHs. Shared by every build() overload.
     /// @param impl The pimpl to fill (output).
     /// @param dim The simulation dimension (2 or 3).
-    /// @param vbox_min The vertex box min corners (3 * n_vertices, device).
-    /// @param vbox_max The vertex box max corners (3 * n_vertices, device).
     /// @param n_vertices The number of vertices.
     /// @param edges The mesh edges.
     /// @param faces The mesh faces.
     void build_from_vertex_boxes(
         LBVH::Impl& impl,
         const int dim,
-        const thrust::device_vector<double>& vbox_min,
-        const thrust::device_vector<double>& vbox_max,
         const int n_vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces)
@@ -481,145 +514,112 @@ namespace {
         const int n_edges = static_cast<int>(edges.rows());
         const int n_faces = static_cast<int>(faces.rows());
 
-        // Upload connectivity to the device, and keep a host copy for the
-        // host-side can_*_collide filters.
-        impl.edges = upload_connectivity<2>(edges);
-        impl.faces = upload_connectivity<3>(faces);
-
-        impl.h_edge_vertex_ids.resize(n_edges);
-        for (int i = 0; i < n_edges; ++i) {
-            impl.h_edge_vertex_ids[i] = { { static_cast<index_t>(edges(i, 0)),
-                                            static_cast<index_t>(
-                                                edges(i, 1)) } };
-        }
-        impl.h_face_vertex_ids.resize(n_faces);
-        for (int i = 0; i < n_faces; ++i) {
-            impl.h_face_vertex_ids[i] = { { static_cast<index_t>(faces(i, 0)),
-                                            static_cast<index_t>(faces(i, 1)),
-                                            static_cast<index_t>(
-                                                faces(i, 2)) } };
-        }
+        upload_connectivity<2>(edges, impl.h_edges, impl.edges);
+        upload_connectivity<3>(faces, impl.h_faces, impl.faces);
 
         // Build edge/face boxes on the device from the vertex boxes.
-        thrust::device_vector<double> ebox_min(3 * size_t(n_edges));
-        thrust::device_vector<double> ebox_max(3 * size_t(n_edges));
+        impl.ebox_min.resize(3 * size_t(n_edges));
+        impl.ebox_max.resize(3 * size_t(n_edges));
         if (n_edges > 0) {
             build_edge_boxes_kernel<<<
                 kernel_grid_size(n_edges), KERNEL_BLOCK_SIZE>>>(
-                thrust::raw_pointer_cast(vbox_min.data()),
-                thrust::raw_pointer_cast(vbox_max.data()),
-                thrust::raw_pointer_cast(impl.edges.data()), n_edges,
-                thrust::raw_pointer_cast(ebox_min.data()),
-                thrust::raw_pointer_cast(ebox_max.data()));
+                impl.vbox_min.data(), impl.vbox_max.data(), impl.edges.data(),
+                n_edges, impl.ebox_min.data(), impl.ebox_max.data());
             IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
         }
 
-        thrust::device_vector<double> fbox_min(3 * size_t(n_faces));
-        thrust::device_vector<double> fbox_max(3 * size_t(n_faces));
+        impl.fbox_min.resize(3 * size_t(n_faces));
+        impl.fbox_max.resize(3 * size_t(n_faces));
         if (n_faces > 0) {
             build_face_boxes_kernel<<<
                 kernel_grid_size(n_faces), KERNEL_BLOCK_SIZE>>>(
-                thrust::raw_pointer_cast(vbox_min.data()),
-                thrust::raw_pointer_cast(vbox_max.data()),
-                thrust::raw_pointer_cast(impl.faces.data()), n_faces,
-                thrust::raw_pointer_cast(fbox_min.data()),
-                thrust::raw_pointer_cast(fbox_max.data()));
+                impl.vbox_min.data(), impl.vbox_max.data(), impl.faces.data(),
+                n_faces, impl.fbox_min.data(), impl.fbox_max.data());
             IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
         }
 
         // The CPU normalizes all three BVHs by the vertex box domain.
-        Eigen::Array3d mesh_min, mesh_width_inv;
-        compute_domain(
-            vbox_min, vbox_max, n_vertices, mesh_min, mesh_width_inv);
+        compute_domain(impl, n_vertices);
 
+        impl.roots.resize(3);
         build_tree(
-            thrust::raw_pointer_cast(vbox_min.data()),
-            thrust::raw_pointer_cast(vbox_max.data()), n_vertices, mesh_min,
-            mesh_width_inv, dim, impl.vertex_bvh);
+            impl, impl.vbox_min.data(), impl.vbox_max.data(), n_vertices, dim,
+            impl.vertex_bvh, impl.roots.data() + 0);
         build_tree(
-            thrust::raw_pointer_cast(ebox_min.data()),
-            thrust::raw_pointer_cast(ebox_max.data()), n_edges, mesh_min,
-            mesh_width_inv, dim, impl.edge_bvh);
+            impl, impl.ebox_min.data(), impl.ebox_max.data(), n_edges, dim,
+            impl.edge_bvh, impl.roots.data() + 1);
         build_tree(
-            thrust::raw_pointer_cast(fbox_min.data()),
-            thrust::raw_pointer_cast(fbox_max.data()), n_faces, mesh_min,
-            mesh_width_inv, dim, impl.face_bvh);
+            impl, impl.fbox_min.data(), impl.fbox_max.data(), n_faces, dim,
+            impl.face_bvh, impl.roots.data() + 2);
 
+        // The one synchronization of the build: surfaces any kernel fault and
+        // lets the roots be read back -- all three at once.
         IPC_TOOLKIT_CUDA_CHECK(cudaDeviceSynchronize());
+
+        // A hierarchy build that never reaches its root leaves -1 behind. The
+        // traversal always starts at node 0, which would then be an arbitrary
+        // interior node, silently dropping every candidate outside its
+        // subtree. Refuse to hand out such a tree.
+        int roots[3];
+        impl.roots.download(roots);
+        const int n_leaves[3] = { n_vertices, n_edges, n_faces };
+        for (int k = 0; k < 3; ++k) {
+            if (n_leaves[k] > 0 && roots[k] < 0) {
+                log_and_throw_error(
+                    "ipc::cuda::LBVH: the device hierarchy build did not "
+                    "reach a root (tree {} of 3, {} leaves); the BVH is "
+                    "malformed",
+                    k, n_leaves[k]);
+            }
+        }
     }
 
     // -- Traversal ----------------------------------------------------------
 
-    /// @brief Whether two primitives share a vertex id (the device connectivity
-    /// filter). A vertex primitive's id set is {itself}; an edge's is its 2
-    /// endpoints; a face's is its 3 vertices. This is exactly the
-    /// shared-endpoint exclusion in ipc::details::can_*_collide (for
-    /// vertex-vertex it reduces to p_a == p_b).
-    /// @param p_a The first primitive id.
-    /// @param conn_a The first primitive's connectivity, or null for a vertex.
-    /// @param count_a The number of vertex ids per first primitive (1, 2, or 3).
-    /// @param p_b The second primitive id.
-    /// @param conn_b The second primitive's connectivity, or null for a vertex.
-    /// @param count_b The number of vertex ids per second primitive.
-    /// @return Whether the two primitives share any vertex id.
-    __device__ inline bool prim_shares_vertex(
-        const int p_a,
-        const index_t* __restrict__ conn_a,
-        const int count_a,
-        const int p_b,
-        const index_t* __restrict__ conn_b,
-        const int count_b)
+    /// @brief Load a primitive's vertex ids into registers: a vertex's id is
+    /// itself; an edge's or a face's come from its connectivity row. Fully
+    /// unrolled, so the array is only ever indexed by constants and stays in
+    /// registers (a runtime-indexed local array would go to local memory).
+    /// @tparam N The number of vertex ids per primitive (1, 2, or 3).
+    /// @param prim The primitive id.
+    /// @param conn The connectivity (N ids per primitive, row-major); unused
+    /// and may be null for N == 1.
+    /// @param[out] ids The primitive's vertex ids.
+    template <int N>
+    __device__ inline void load_vertex_ids(
+        const int32_t prim, const int32_t* __restrict__ conn, int32_t (&ids)[N])
     {
-        // Use scalars, not arrays. Runtime-indexed local arrays force local
-        // memory allocation, causing stack corruption on ptxas (sm_120) when
-        // the frame overflows into the traversal stack sentinel. Keeping values
-        // in registers limits the frame size to 0x100 and prevents invalid
-        // memory writes. Unused slots are filled from slot 0 for well-defined
-        // comparisons.
-        index_t a0, a1, a2;
-        if (conn_a == nullptr) {
-            a0 = a1 = a2 = p_a;
+        if constexpr (N == 1) {
+            ids[0] = prim;
         } else {
-            const index_t* row = conn_a + count_a * p_a;
-            a0 = row[0];
-            a1 = count_a > 1 ? row[1] : a0;
-            a2 = count_a > 2 ? row[2] : a0;
+            assert(conn != nullptr);
+#pragma unroll
+            for (int k = 0; k < N; ++k) {
+                ids[k] = conn[N * prim + k];
+            }
         }
-
-        index_t b0, b1, b2;
-        if (conn_b == nullptr) {
-            b0 = b1 = b2 = p_b;
-        } else {
-            const index_t* row = conn_b + count_b * p_b;
-            b0 = row[0];
-            b1 = count_b > 1 ? row[1] : b0;
-            b2 = count_b > 2 ? row[2] : b0;
-        }
-
-        return a0 == b0 || a0 == b1 || a0 == b2 //
-            || a1 == b0 || a1 == b1 || a1 == b2 //
-            || a2 == b0 || a2 == b1 || a2 == b2;
     }
 
     /// @brief Append a (source_prim, target_prim) pair (post-swap) via an
     /// atomic counter. Writes only if the slot is within capacity; the counter
-    /// still advances on overflow so the caller learns the required size.
+    /// still advances on overflow so the caller learns the required size. The
+    /// counter and capacity are 64-bit so neither can wrap or truncate.
     template <bool swap_order>
     __device__ inline void emit_pair(
-        const int query_prim,
-        const int node_prim,
+        const int32_t query_prim,
+        const int32_t node_prim,
         int32_t* __restrict__ out_a,
         int32_t* __restrict__ out_b,
-        int* __restrict__ counter,
-        const int capacity)
+        unsigned long long* __restrict__ counter,
+        const unsigned long long capacity)
     {
-        int a = query_prim, b = node_prim;
+        int32_t a = query_prim, b = node_prim;
         if constexpr (swap_order) {
-            const int t = a;
+            const int32_t t = a;
             a = b;
             b = t;
         }
-        const int slot = atomicAdd(counter, 1);
+        const unsigned long long slot = atomicAdd(counter, 1ULL);
         if (slot < capacity) {
             out_a[slot] = a;
             out_b[slot] = b;
@@ -628,13 +628,14 @@ namespace {
 
     /// @brief One thread per source leaf: descend the target BVH and append
     /// every AABB-overlapping, connectivity-passing (source_prim, target_prim)
-    /// pair to the output arrays. The descent is ipc::details::traverse_lbvh(),
-    /// shared with the CPU ipc::LBVH; the connectivity (shared-vertex)
-    /// exclusion is applied here on the device. The remaining user vertex
-    /// filter (if any) is applied on the host, so the final set matches the CPU
-    /// ipc::LBVH.
-    /// @tparam triangular Self-collision: skip subtrees fully left of the query.
+    /// pair to the output arrays. The descent is ipc::details::traverse_lbvh()
+    /// and the shared-vertex exclusion ipc::details::share_vertex(), both
+    /// shared with the CPU ipc::LBVH. The remaining user vertex filter (if
+    /// any) is applied on the host, so the final set matches the CPU.
+    /// @tparam triangular Self-collision: skip subtrees left of the query.
     /// @tparam swap_order Emit (target_prim, source_prim) instead.
+    /// @tparam SourceCount The vertex ids per source primitive (1, 2, or 3).
+    /// @tparam TargetCount The vertex ids per target primitive (1, 2, or 3).
     /// @param source The BVH whose leaves are the queries.
     /// @param n_source_leaves The number of source leaves.
     /// @param source_leaf_offset The index of the source BVH's first leaf.
@@ -642,14 +643,16 @@ namespace {
     /// @param target_size The number of nodes in the target BVH.
     /// @param target_rightmost The target's per-node rightmost-leaf indices.
     /// @param source_conn The source connectivity (null for vertices).
-    /// @param source_count The vertex ids per source primitive (1, 2, or 3).
     /// @param target_conn The target connectivity (null for vertices).
-    /// @param target_count The vertex ids per target primitive (1, 2, or 3).
     /// @param[out] out_a The first ids of the emitted pairs.
     /// @param[out] out_b The second ids of the emitted pairs.
     /// @param[in,out] counter The emitted-pair counter.
     /// @param capacity The output arrays' capacity.
-    template <bool triangular, bool swap_order>
+    template <
+        bool triangular,
+        bool swap_order,
+        int SourceCount,
+        int TargetCount>
     __global__ void traverse_kernel(
         const ipc::LBVH::Node* __restrict__ source,
         const int n_source_leaves,
@@ -657,14 +660,12 @@ namespace {
         const ipc::LBVH::Node* __restrict__ target,
         const int target_size,
         const int32_t* __restrict__ target_rightmost,
-        const index_t* __restrict__ source_conn, // null for vertex primitives
-        const int source_count,                  // ids per source primitive
-        const index_t* __restrict__ target_conn, // null for vertex primitives
-        const int target_count,                  // ids per target primitive
+        const int32_t* __restrict__ source_conn,
+        const int32_t* __restrict__ target_conn,
         int32_t* __restrict__ out_a,
         int32_t* __restrict__ out_b,
-        int* __restrict__ counter,
-        const int capacity)
+        unsigned long long* __restrict__ counter,
+        const unsigned long long capacity)
     {
         const int s = blockIdx.x * blockDim.x + threadIdx.x;
         if (s >= n_source_leaves) {
@@ -672,12 +673,19 @@ namespace {
         }
         const ipc::LBVH::Node query = source[source_leaf_offset + s];
 
+        int32_t query_ids[SourceCount];
+        load_vertex_ids<SourceCount>(
+            query.primitive_id, source_conn, query_ids);
+
         ipc::details::traverse_lbvh<triangular>(
-            query, s, target, target_size, target_rightmost,
-            [&](const ipc::LBVH::Node& leaf) {
-                if (!prim_shares_vertex(
-                        query.primitive_id, source_conn, source_count,
-                        leaf.primitive_id, target_conn, target_count)) {
+            s, target, target_size, target_rightmost,
+            [&](const ipc::LBVH::Node& node) { return node.intersects(query); },
+            [&](const ipc::LBVH::Node& leaf, const int /*leaf_idx*/,
+                const bool /*intersects*/) {
+                int32_t leaf_ids[TargetCount];
+                load_vertex_ids<TargetCount>(
+                    leaf.primitive_id, target_conn, leaf_ids);
+                if (!ipc::details::share_vertex(query_ids, leaf_ids)) {
                     emit_pair<swap_order>(
                         query.primitive_id, leaf.primitive_id, out_a, out_b,
                         counter, capacity);
@@ -685,68 +693,229 @@ namespace {
             });
     }
 
-    /// @brief Run the device traversal of the target BVH by the source leaves,
-    /// leaving the connectivity-filtered candidate pairs device-resident in
-    /// buf.a/buf.b (resized to the exact count). The initial buffer size is
-    /// seeded from buf.predicted_capacity (the largest count ever observed for
-    /// this type on this object), so only the first call -- or a call whose
-    /// count exceeds every prior call -- pays the overflow-and-retry cost;
-    /// every other call fits on the first pass.
-    /// @tparam triangular Self-collision: skip subtrees fully left of the query.
-    /// @tparam swap_order Emit (target_prim, source_prim) instead.
-    /// @param source The BVH whose leaves are the queries.
-    /// @param target The BVH to descend.
-    /// @param source_conn The source primitives' connectivity (null for vertices).
-    /// @param source_count The vertex ids per source primitive (1, 2, or 3).
-    /// @param target_conn The target primitives' connectivity (null for vertices).
-    /// @param target_count The vertex ids per target primitive (1, 2, or 3).
-    /// @param buf The output candidate buffer and capacity hint (in/out).
+    /// @brief How one candidate type is traversed: which BVH is the source
+    /// (its leaves are the queries), which is the target (descended), how many
+    /// vertex ids each primitive has, whether the pair is triangular (a BVH
+    /// against itself) and whether it is emitted swapped. Each tuple is stated
+    /// exactly once here and drives both the host-materializing and the
+    /// device-view detect paths, so the two cannot disagree.
+    template <typename Candidate> struct Traversal;
+
+    template <> struct Traversal<VertexVertexCandidate> {
+        static constexpr bool triangular = true;
+        static constexpr bool swap_order = false;
+        static constexpr int source_count = 1;
+        static constexpr int target_count = 1;
+        static const LBVH::Impl::DeviceBVH& source(const LBVH::Impl& impl)
+        {
+            return impl.vertex_bvh;
+        }
+        static const LBVH::Impl::DeviceBVH& target(const LBVH::Impl& impl)
+        {
+            return impl.vertex_bvh;
+        }
+        static const int32_t* source_conn(const LBVH::Impl&) { return nullptr; }
+        static const int32_t* target_conn(const LBVH::Impl&) { return nullptr; }
+        static LBVH::Impl::DeviceCandidates& buffer(LBVH::Impl& impl)
+        {
+            return impl.vv_candidates;
+        }
+    };
+
+    // In 2D and for codimensional edge-vertex collisions there are more
+    // vertices than edges, so iterate over the edges. Mirrors ipc::LBVH.
+    template <> struct Traversal<EdgeVertexCandidate> {
+        static constexpr bool triangular = false;
+        static constexpr bool swap_order = false;
+        static constexpr int source_count = 2;
+        static constexpr int target_count = 1;
+        static const LBVH::Impl::DeviceBVH& source(const LBVH::Impl& impl)
+        {
+            return impl.edge_bvh;
+        }
+        static const LBVH::Impl::DeviceBVH& target(const LBVH::Impl& impl)
+        {
+            return impl.vertex_bvh;
+        }
+        static const int32_t* source_conn(const LBVH::Impl& impl)
+        {
+            return impl.edges.data();
+        }
+        static const int32_t* target_conn(const LBVH::Impl&) { return nullptr; }
+        static LBVH::Impl::DeviceCandidates& buffer(LBVH::Impl& impl)
+        {
+            return impl.ev_candidates;
+        }
+    };
+
+    template <> struct Traversal<EdgeEdgeCandidate> {
+        static constexpr bool triangular = true;
+        static constexpr bool swap_order = false;
+        static constexpr int source_count = 2;
+        static constexpr int target_count = 2;
+        static const LBVH::Impl::DeviceBVH& source(const LBVH::Impl& impl)
+        {
+            return impl.edge_bvh;
+        }
+        static const LBVH::Impl::DeviceBVH& target(const LBVH::Impl& impl)
+        {
+            return impl.edge_bvh;
+        }
+        static const int32_t* source_conn(const LBVH::Impl& impl)
+        {
+            return impl.edges.data();
+        }
+        static const int32_t* target_conn(const LBVH::Impl& impl)
+        {
+            return impl.edges.data();
+        }
+        static LBVH::Impl::DeviceCandidates& buffer(LBVH::Impl& impl)
+        {
+            return impl.ee_candidates;
+        }
+    };
+
+    // The ratio vertices:faces is 1:2, so iterate over the vertices and query
+    // the face BVH, swapping so the emitted pair is (face, vertex). Mirrors
+    // ipc::LBVH.
+    template <> struct Traversal<FaceVertexCandidate> {
+        static constexpr bool triangular = false;
+        static constexpr bool swap_order = true;
+        static constexpr int source_count = 1;
+        static constexpr int target_count = 3;
+        static const LBVH::Impl::DeviceBVH& source(const LBVH::Impl& impl)
+        {
+            return impl.vertex_bvh;
+        }
+        static const LBVH::Impl::DeviceBVH& target(const LBVH::Impl& impl)
+        {
+            return impl.face_bvh;
+        }
+        static const int32_t* source_conn(const LBVH::Impl&) { return nullptr; }
+        static const int32_t* target_conn(const LBVH::Impl& impl)
+        {
+            return impl.faces.data();
+        }
+        static LBVH::Impl::DeviceCandidates& buffer(LBVH::Impl& impl)
+        {
+            return impl.fv_candidates;
+        }
+    };
+
+    // The ratio edges:faces is 3:2, so iterate over the faces and query the
+    // edge BVH, swapping so the emitted pair is (edge, face). Mirrors
+    // ipc::LBVH.
+    template <> struct Traversal<EdgeFaceCandidate> {
+        static constexpr bool triangular = false;
+        static constexpr bool swap_order = true;
+        static constexpr int source_count = 3;
+        static constexpr int target_count = 2;
+        static const LBVH::Impl::DeviceBVH& source(const LBVH::Impl& impl)
+        {
+            return impl.face_bvh;
+        }
+        static const LBVH::Impl::DeviceBVH& target(const LBVH::Impl& impl)
+        {
+            return impl.edge_bvh;
+        }
+        static const int32_t* source_conn(const LBVH::Impl& impl)
+        {
+            return impl.faces.data();
+        }
+        static const int32_t* target_conn(const LBVH::Impl& impl)
+        {
+            return impl.edges.data();
+        }
+        static LBVH::Impl::DeviceCandidates& buffer(LBVH::Impl& impl)
+        {
+            return impl.ef_candidates;
+        }
+    };
+
+    template <> struct Traversal<FaceFaceCandidate> {
+        static constexpr bool triangular = true;
+        static constexpr bool swap_order = false;
+        static constexpr int source_count = 3;
+        static constexpr int target_count = 3;
+        static const LBVH::Impl::DeviceBVH& source(const LBVH::Impl& impl)
+        {
+            return impl.face_bvh;
+        }
+        static const LBVH::Impl::DeviceBVH& target(const LBVH::Impl& impl)
+        {
+            return impl.face_bvh;
+        }
+        static const int32_t* source_conn(const LBVH::Impl& impl)
+        {
+            return impl.faces.data();
+        }
+        static const int32_t* target_conn(const LBVH::Impl& impl)
+        {
+            return impl.faces.data();
+        }
+        static LBVH::Impl::DeviceCandidates& buffer(LBVH::Impl& impl)
+        {
+            return impl.ff_candidates;
+        }
+    };
+
+    /// @brief Run the device traversal for one candidate type, leaving the
+    /// connectivity-filtered pairs device-resident in its buffer.
+    ///
+    /// The first pass is sized from the buffer's high-water mark (the largest
+    /// count any earlier call on this object needed), or a guess of 8 pairs
+    /// per source leaf, whichever is larger. The kernel counts every pair it
+    /// finds but writes only those that fit, so if the first pass overflows
+    /// the exact count is known and a second pass always fits: at most two
+    /// passes, and only the first call -- or a call whose count exceeds every
+    /// prior one -- pays for the second.
+    ///
+    /// @tparam Candidate The candidate type; see Traversal.
+    /// @param impl The pimpl; the caller must hold impl.mutex.
     /// @return The number of candidate pairs emitted.
-    template <bool triangular, bool swap_order>
-    size_t run_traversal(
-        const LBVH::Impl::DeviceBVH& source,
-        const LBVH::Impl::DeviceBVH& target,
-        const index_t* source_conn,
-        const int source_count,
-        const index_t* target_conn,
-        const int target_count,
-        LBVH::Impl::DeviceCandidates& buf)
+    template <typename Candidate> size_t run_traversal(LBVH::Impl& impl)
     {
-        const int n_source_leaves = source.n_leaves;
+        using T = Traversal<Candidate>;
+        const LBVH::Impl::DeviceBVH& source = T::source(impl);
+        const LBVH::Impl::DeviceBVH& target = T::target(impl);
+        LBVH::Impl::DeviceCandidates& buf = T::buffer(impl);
+
+        buf.clear();
+
+        const int n_source_leaves = source.n_leaves();
         const int target_size = static_cast<int>(target.nodes.size());
-        if (n_source_leaves == 0 || target_size == 0) {
-            buf.a.clear();
-            buf.b.clear();
+        // A triangular traversal is a BVH against itself, and a lone primitive
+        // cannot collide with itself.
+        if (n_source_leaves == 0 || target_size == 0
+            || (T::triangular && n_source_leaves < 2)) {
             return 0;
         }
         const int source_leaf_offset = n_source_leaves - 1;
 
         size_t capacity = std::max(
-            buf.predicted_capacity,
-            static_cast<size_t>(std::max(1024, 8 * n_source_leaves)));
-        thrust::device_vector<int> d_counter(1);
+            { buf.a.capacity(), size_t(1024),
+              size_t(8) * static_cast<size_t>(n_source_leaves) });
+        impl.counter.resize(1);
 
-        int count = 0;
-        while (true) {
-            buf.a.resize(capacity);
-            buf.b.resize(capacity);
-            d_counter[0] = 0;
+        unsigned long long count = 0;
+        for (int pass = 0; pass < 2; ++pass) {
+            buf.a.reserve(capacity);
+            buf.b.reserve(capacity);
+            impl.counter.zero();
 
-            traverse_kernel<triangular, swap_order>
+            traverse_kernel<
+                T::triangular, T::swap_order, T::source_count, T::target_count>
                 <<<kernel_grid_size(n_source_leaves), KERNEL_BLOCK_SIZE>>>(
-                    thrust::raw_pointer_cast(source.nodes.data()),
-                    n_source_leaves, source_leaf_offset,
-                    thrust::raw_pointer_cast(target.nodes.data()), target_size,
-                    thrust::raw_pointer_cast(target.rightmost_leaves.data()),
-                    source_conn, source_count, target_conn, target_count,
-                    thrust::raw_pointer_cast(buf.a.data()),
-                    thrust::raw_pointer_cast(buf.b.data()),
-                    thrust::raw_pointer_cast(d_counter.data()),
-                    static_cast<int>(capacity));
+                    source.nodes.data(), n_source_leaves, source_leaf_offset,
+                    target.nodes.data(), target_size,
+                    target.rightmost_leaves.data(), T::source_conn(impl),
+                    T::target_conn(impl), buf.a.data(), buf.b.data(),
+                    impl.counter.data(),
+                    static_cast<unsigned long long>(capacity));
             IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
-            count = d_counter[0]; // device->host read (also synchronizes)
-            if (static_cast<size_t>(count) <= capacity) {
+            impl.counter.download(&count); // synchronizes
+            if (count <= capacity) {
                 break; // everything fit
             }
 
@@ -757,41 +926,47 @@ namespace {
                 count, capacity);
             capacity = static_cast<size_t>(count); // exact size now known
         }
+        if (count > capacity) {
+            // The count is a deterministic function of the two trees, so the
+            // second pass must fit; anything else is a device fault.
+            log_and_throw_error(
+                "ipc::cuda::LBVH: the candidate count changed between two "
+                "identical traversals ({} > capacity {})",
+                count, capacity);
+        }
 
-        buf.predicted_capacity = std::max(buf.predicted_capacity, capacity);
-        buf.a.resize(count); // shrink to the exact candidate count (keeps data)
-        buf.b.resize(count);
-        return static_cast<size_t>(count);
+        buf.count = static_cast<size_t>(count);
+        buf.a.resize(buf.count);
+        buf.b.resize(buf.count);
+        return buf.count;
     }
 
     /// @brief Copy the device-resident candidate pairs to host Candidate
-    /// objects. For the accept-all filter every pair is kept (the device set is
-    /// already exact); otherwise the user vertex filter trims the
+    /// objects. For the accept-all filter every pair is kept (the device set
+    /// is already exact); otherwise the user vertex filter trims the
     /// connectivity-filtered superset.
-    /// @param d_a The first ids of each candidate pair (device).
-    /// @param d_b The second ids of each candidate pair (device).
-    /// @param count The number of candidate pairs.
-    /// @param accepts_all Whether the user vertex filter accepts every pair.
-    /// @param can_collide The predicate applied when accepts_all is false.
-    /// @param out The materialized candidates (appended to).
-    template <typename Candidate>
+    /// @param buf The device pairs.
+    /// @param filter The user vertex filter.
+    /// @param can_collide The full predicate applied when the filter is not accept-all.
+    /// @param[out] out The materialized candidates (cleared first).
+    template <typename Candidate, typename CanCollide>
     void materialize(
-        const thrust::device_vector<int32_t>& d_a,
-        const thrust::device_vector<int32_t>& d_b,
-        const size_t count,
-        const bool accepts_all,
-        const std::function<bool(size_t, size_t)>& can_collide,
+        const LBVH::Impl::DeviceCandidates& buf,
+        const CollisionFilter& filter,
+        const CanCollide& can_collide,
         std::vector<Candidate>& out)
     {
+        out.clear();
+        const size_t count = buf.count;
         if (count == 0) {
             return;
         }
         std::vector<int32_t> h_a(count), h_b(count);
-        thrust::copy(d_a.begin(), d_a.begin() + count, h_a.begin());
-        thrust::copy(d_b.begin(), d_b.begin() + count, h_b.begin());
+        buf.a.download(h_a.data());
+        buf.b.download(h_b.data());
 
-        out.reserve(out.size() + count);
-        if (accepts_all) {
+        out.reserve(count);
+        if (filter.accepts_all()) {
             for (size_t k = 0; k < count; ++k) {
                 out.emplace_back(h_a[k], h_b[k]);
             }
@@ -804,16 +979,88 @@ namespace {
         }
     }
 
+    /// @brief Traverse on the device, then materialize on the host.
+    template <typename Candidate, typename CanCollide>
+    void detect_host(
+        LBVH::Impl& impl,
+        const CollisionFilter& filter,
+        const CanCollide& can_collide,
+        std::vector<Candidate>& out)
+    {
+        // The detect_*() methods are const on the BroadPhase interface, and
+        // ipc::LBVH's really are read-only, so a caller may legitimately run
+        // two of them concurrently on one shared object. Here every one of
+        // them writes shared device state -- the pair counter, and the
+        // candidate buffer of its type -- so without this lock two detections
+        // would race on the counter and on buffer reallocation. Held for the
+        // materialize too, so another call cannot overwrite the buffer while
+        // it is being copied to the host.
+        const std::lock_guard<std::mutex> lock(impl.mutex);
+        run_traversal<Candidate>(impl);
+        materialize(
+            Traversal<Candidate>::buffer(impl), filter, can_collide, out);
+    }
+
+    /// @brief Traverse on the device and return a view of the result.
+    template <typename Candidate>
+    LBVH::DeviceCandidateView detect_device(LBVH::Impl& impl)
+    {
+        // Same reason as detect_host(): const on the interface, but writes the
+        // shared counter and this type's candidate buffer. The lock ends with
+        // the call, so the returned view is only as safe as the caller's own
+        // ordering of later detect_*() calls (see DeviceCandidateView).
+        const std::lock_guard<std::mutex> lock(impl.mutex);
+        const size_t count = run_traversal<Candidate>(impl);
+        const LBVH::Impl::DeviceCandidates& buf =
+            Traversal<Candidate>::buffer(impl);
+        return LBVH::DeviceCandidateView { count ? buf.a.data() : nullptr,
+                                           count ? buf.b.data() : nullptr,
+                                           count };
+    }
+
 } // namespace
+
+// ---------------------------------------------------------------------------
 
 LBVH::LBVH() : ipc::BroadPhase(), m_impl(std::make_unique<Impl>()) { }
 
 LBVH::~LBVH() = default;
 
-LBVH::LBVH(LBVH&&) noexcept = default;
-LBVH& LBVH::operator=(LBVH&&) noexcept = default;
+// ipc::BroadPhase declares a destructor and so has no move operations: moving
+// it as a whole would invoke its copy, which copies a std::function and may
+// throw. Its members are moved individually instead, which cannot. The
+// moved-from object is left in the cleared state (no Impl, dim 0, default
+// filter); impl() re-seeds it on its next use.
 
-const LBVH::Impl& LBVH::impl() const { return *m_impl; }
+LBVH::LBVH(LBVH&& other) noexcept
+    : ipc::BroadPhase()
+    , m_impl(std::move(other.m_impl))
+{
+    can_vertices_collide = std::move(other.can_vertices_collide);
+    other.can_vertices_collide = CollisionFilter();
+    dim = other.dim;
+    other.dim = 0;
+}
+
+LBVH& LBVH::operator=(LBVH&& other) noexcept
+{
+    if (this != &other) {
+        m_impl = std::move(other.m_impl);
+        can_vertices_collide = std::move(other.can_vertices_collide);
+        other.can_vertices_collide = CollisionFilter();
+        dim = other.dim;
+        other.dim = 0;
+    }
+    return *this;
+}
+
+LBVH::Impl& LBVH::impl() const
+{
+    if (!m_impl) {
+        m_impl = std::make_unique<Impl>();
+    }
+    return *m_impl;
+}
 
 void LBVH::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
@@ -821,38 +1068,9 @@ void LBVH::build(
     Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
-    clear();
-
-    assert(vertices.cols() == 2 || vertices.cols() == 3);
-    dim = static_cast<uint8_t>(vertices.cols());
-
-    const int n_vertices = static_cast<int>(vertices.rows());
-    if (n_vertices == 0) {
-        return;
-    }
-
-    // Upload vertices as a flat row-major array (dim components per vertex;
-    // no padding -- the box kernel below fills the unused z for 2D input).
-    std::vector<double> h_verts(size_t(dim) * size_t(n_vertices));
-    for (int i = 0; i < n_vertices; ++i) {
-        for (int k = 0; k < dim; ++k) {
-            h_verts[size_t(dim) * size_t(i) + k] = vertices(i, k);
-        }
-    }
-    const thrust::device_vector<double> d_verts(h_verts);
-
-    // Build vertex boxes on the device (always 3-wide storage).
-    thrust::device_vector<double> vbox_min(3 * size_t(n_vertices));
-    thrust::device_vector<double> vbox_max(3 * size_t(n_vertices));
-    build_vertex_boxes_static_kernel<<<
-        kernel_grid_size(n_vertices), KERNEL_BLOCK_SIZE>>>(
-        thrust::raw_pointer_cast(d_verts.data()), n_vertices, dim,
-        inflation_radius, thrust::raw_pointer_cast(vbox_min.data()),
-        thrust::raw_pointer_cast(vbox_max.data()));
-    IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
-
-    build_from_vertex_boxes(
-        *m_impl, dim, vbox_min, vbox_max, n_vertices, edges, faces);
+    // A static box is a temporal one whose endpoints coincide. The dynamic
+    // build notices the two refs alias and uploads the vertices only once.
+    build(vertices, vertices, edges, faces, inflation_radius);
 }
 
 void LBVH::build(
@@ -864,6 +1082,7 @@ void LBVH::build(
 {
     assert(vertices_t0.rows() == vertices_t1.rows());
     assert(vertices_t0.cols() == vertices_t1.cols());
+    assert(vertices_t0.rows() <= std::numeric_limits<int32_t>::max());
 
     clear();
 
@@ -875,41 +1094,39 @@ void LBVH::build(
         return;
     }
 
-    std::vector<double> h_v0(size_t(dim) * size_t(n_vertices));
-    std::vector<double> h_v1(size_t(dim) * size_t(n_vertices));
-    for (int i = 0; i < n_vertices; ++i) {
-        for (int k = 0; k < dim; ++k) {
-            h_v0[size_t(dim) * size_t(i) + k] = vertices_t0(i, k);
-            h_v1[size_t(dim) * size_t(i) + k] = vertices_t1(i, k);
-        }
-    }
-    const thrust::device_vector<double> d_v0(h_v0);
-    const thrust::device_vector<double> d_v1(h_v1);
+    Impl& device = impl();
+    upload_vertices(vertices_t0, device.vertices_t0);
 
-    thrust::device_vector<double> vbox_min(3 * size_t(n_vertices));
-    thrust::device_vector<double> vbox_max(3 * size_t(n_vertices));
-    build_vertex_boxes_dynamic_kernel<<<
+    // The static build passes the same matrix twice; upload it once and point
+    // the kernel's t1 at the t0 copy rather than paying a second transfer.
+    const bool same_vertices = vertices_t0.data() == vertices_t1.data()
+        && vertices_t0.outerStride() == vertices_t1.outerStride();
+    if (!same_vertices) {
+        upload_vertices(vertices_t1, device.vertices_t1);
+    }
+    const double* d_vertices_t1 =
+        same_vertices ? device.vertices_t0.data() : device.vertices_t1.data();
+
+    // Build vertex boxes on the device (always 3-wide storage).
+    device.vbox_min.resize(3 * size_t(n_vertices));
+    device.vbox_max.resize(3 * size_t(n_vertices));
+    build_vertex_boxes_kernel<<<
         kernel_grid_size(n_vertices), KERNEL_BLOCK_SIZE>>>(
-        thrust::raw_pointer_cast(d_v0.data()),
-        thrust::raw_pointer_cast(d_v1.data()), n_vertices, dim,
-        inflation_radius, thrust::raw_pointer_cast(vbox_min.data()),
-        thrust::raw_pointer_cast(vbox_max.data()));
+        device.vertices_t0.data(), d_vertices_t1, n_vertices, dim,
+        inflation_radius, device.vbox_min.data(), device.vbox_max.data());
     IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
-    build_from_vertex_boxes(
-        *m_impl, dim, vbox_min, vbox_max, n_vertices, edges, faces);
+    build_from_vertex_boxes(device, dim, n_vertices, edges, faces);
 }
 
 void LBVH::build(
-    const AABBs& vertex_boxes,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
-    Eigen::ConstRef<Eigen::MatrixXi> faces,
-    const uint8_t _dim)
+    Eigen::ConstRef<Eigen::MatrixXi> faces)
 {
-    clear();
-
-    assert(_dim == 2 || _dim == 3);
-    dim = _dim;
+    // BroadPhase::build(const AABBs&, edges, faces, dim) has cleared us and
+    // filled vertex_boxes and dim.
+    assert(dim == 2 || dim == 3);
+    assert(vertex_boxes.size() <= std::numeric_limits<int32_t>::max());
 
     const int n_vertices = static_cast<int>(vertex_boxes.size());
     if (n_vertices == 0) {
@@ -925,17 +1142,20 @@ void LBVH::build(
             h_max[3 * size_t(i) + k] = vertex_boxes[i].max[k];
         }
     }
-    const thrust::device_vector<double> vbox_min(h_min);
-    const thrust::device_vector<double> vbox_max(h_max);
+    Impl& device = impl();
+    device.vbox_min.upload(h_min.data(), h_min.size());
+    device.vbox_max.upload(h_max.data(), h_max.size());
 
-    build_from_vertex_boxes(
-        *m_impl, dim, vbox_min, vbox_max, n_vertices, edges, faces);
+    build_from_vertex_boxes(device, dim, n_vertices, edges, faces);
+
+    // As in ipc::LBVH: the host boxes are redundant once the trees exist.
+    vertex_boxes.clear();
 }
 
 void LBVH::clear()
 {
     ipc::BroadPhase::clear();
-    if (m_impl) {
+    if (m_impl) { // a moved-from object has nothing to clear
         m_impl->clear();
     }
 }
@@ -944,67 +1164,11 @@ void LBVH::clear()
 // BroadPhase interface. Device BVH descent + device connectivity filter; the
 // user vertex filter is applied on the host only when it is not accept-all.
 
-namespace {
-    // Raw device pointer to a connectivity array, or nullptr if empty (a
-    // vertex primitive has no connectivity array).
-    const index_t* conn_ptr(const thrust::device_vector<index_t>& v)
-    {
-        return v.empty() ? nullptr : thrust::raw_pointer_cast(v.data());
-    }
-
-    // Fill buf with the device connectivity-filtered candidate pairs, then
-    // materialize them (host) into out, trimming with can_collide when the user
-    // filter is not accept-all.
-    template <typename Candidate, bool triangular, bool swap_order>
-    void detect_host(
-        const LBVH::Impl::DeviceBVH& source,
-        const LBVH::Impl::DeviceBVH& target,
-        const index_t* source_conn,
-        const int source_count,
-        const index_t* target_conn,
-        const int target_count,
-        LBVH::Impl::DeviceCandidates& buf,
-        const bool accepts_all,
-        const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& out)
-    {
-        const size_t count = run_traversal<triangular, swap_order>(
-            source, target, source_conn, source_count, target_conn,
-            target_count, buf);
-        materialize<Candidate>(
-            buf.a, buf.b, count, accepts_all, can_collide, out);
-    }
-
-    // Fill buf on the device and return a view of it.
-    template <bool triangular, bool swap_order>
-    LBVH::DeviceCandidateView detect_device(
-        const LBVH::Impl::DeviceBVH& source,
-        const LBVH::Impl::DeviceBVH& target,
-        const index_t* source_conn,
-        const int source_count,
-        const index_t* target_conn,
-        const int target_count,
-        LBVH::Impl::DeviceCandidates& buf)
-    {
-        const size_t count = run_traversal<triangular, swap_order>(
-            source, target, source_conn, source_count, target_conn,
-            target_count, buf);
-        return LBVH::DeviceCandidateView {
-            count ? thrust::raw_pointer_cast(buf.a.data()) : nullptr,
-            count ? thrust::raw_pointer_cast(buf.b.data()) : nullptr, count
-        };
-    }
-} // namespace
-
 void LBVH::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
-    if (m_impl->vertex_bvh.n_leaves <= 1) {
-        return; // need at least 2 vertices for a collision
-    }
-    detect_host<VertexVertexCandidate, /*triangular=*/true, /*swap=*/false>(
-        m_impl->vertex_bvh, m_impl->vertex_bvh, nullptr, 1, nullptr, 1,
-        m_impl->vv_candidates, can_vertices_collide.accepts_all(),
+    detect_host<VertexVertexCandidate>(
+        impl(), can_vertices_collide,
         [this](size_t a, size_t b) { return can_vertices_collide(a, b); },
         candidates);
 }
@@ -1012,12 +1176,8 @@ void LBVH::detect_vertex_vertex_candidates(
 void LBVH::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
-    if (m_impl->edge_bvh.n_leaves == 0 || m_impl->vertex_bvh.n_leaves == 0) {
-        return;
-    }
-    detect_host<EdgeVertexCandidate, /*triangular=*/false, /*swap=*/false>(
-        m_impl->edge_bvh, m_impl->vertex_bvh, conn_ptr(m_impl->edges), 2,
-        nullptr, 1, m_impl->ev_candidates, can_vertices_collide.accepts_all(),
+    detect_host<EdgeVertexCandidate>(
+        impl(), can_vertices_collide,
         [this](size_t a, size_t b) { return can_edge_vertex_collide(a, b); },
         candidates);
 }
@@ -1025,13 +1185,8 @@ void LBVH::detect_edge_vertex_candidates(
 void LBVH::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
-    if (m_impl->edge_bvh.n_leaves <= 1) {
-        return; // need at least 2 edges for a collision
-    }
-    detect_host<EdgeEdgeCandidate, /*triangular=*/true, /*swap=*/false>(
-        m_impl->edge_bvh, m_impl->edge_bvh, conn_ptr(m_impl->edges), 2,
-        conn_ptr(m_impl->edges), 2, m_impl->ee_candidates,
-        can_vertices_collide.accepts_all(),
+    detect_host<EdgeEdgeCandidate>(
+        impl(), can_vertices_collide,
         [this](size_t a, size_t b) { return can_edges_collide(a, b); },
         candidates);
 }
@@ -1039,15 +1194,8 @@ void LBVH::detect_edge_edge_candidates(
 void LBVH::detect_face_vertex_candidates(
     std::vector<FaceVertexCandidate>& candidates) const
 {
-    if (m_impl->face_bvh.n_leaves == 0 || m_impl->vertex_bvh.n_leaves == 0) {
-        return;
-    }
-    // Iterate over the vertices (source) and query the face BVH (target),
-    // swapping so the emitted pair is (face, vertex). Mirrors ipc::LBVH.
-    detect_host<FaceVertexCandidate, /*triangular=*/false, /*swap=*/true>(
-        m_impl->vertex_bvh, m_impl->face_bvh, nullptr, 1,
-        conn_ptr(m_impl->faces), 3, m_impl->fv_candidates,
-        can_vertices_collide.accepts_all(),
+    detect_host<FaceVertexCandidate>(
+        impl(), can_vertices_collide,
         [this](size_t a, size_t b) { return can_face_vertex_collide(a, b); },
         candidates);
 }
@@ -1055,15 +1203,8 @@ void LBVH::detect_face_vertex_candidates(
 void LBVH::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
-    if (m_impl->edge_bvh.n_leaves == 0 || m_impl->face_bvh.n_leaves == 0) {
-        return;
-    }
-    // Iterate over the faces (source) and query the edge BVH (target),
-    // swapping so the emitted pair is (edge, face). Mirrors ipc::LBVH.
-    detect_host<EdgeFaceCandidate, /*triangular=*/false, /*swap=*/true>(
-        m_impl->face_bvh, m_impl->edge_bvh, conn_ptr(m_impl->faces), 3,
-        conn_ptr(m_impl->edges), 2, m_impl->ef_candidates,
-        can_vertices_collide.accepts_all(),
+    detect_host<EdgeFaceCandidate>(
+        impl(), can_vertices_collide,
         [this](size_t a, size_t b) { return can_edge_face_collide(a, b); },
         candidates);
 }
@@ -1071,145 +1212,109 @@ void LBVH::detect_edge_face_candidates(
 void LBVH::detect_face_face_candidates(
     std::vector<FaceFaceCandidate>& candidates) const
 {
-    if (m_impl->face_bvh.n_leaves <= 1) {
-        return; // need at least 2 faces for a collision
-    }
-    detect_host<FaceFaceCandidate, /*triangular=*/true, /*swap=*/false>(
-        m_impl->face_bvh, m_impl->face_bvh, conn_ptr(m_impl->faces), 3,
-        conn_ptr(m_impl->faces), 3, m_impl->ff_candidates,
-        can_vertices_collide.accepts_all(),
+    detect_host<FaceFaceCandidate>(
+        impl(), can_vertices_collide,
         [this](size_t a, size_t b) { return can_faces_collide(a, b); },
         candidates);
 }
 
 // ---------------------------------------------------------------------------
-// Device-resident candidate accessors. Run the traversal and return a view of
-// the connectivity-filtered pairs left on the device (valid until the next
-// call on the same type or clear()). For the accept-all filter this is the
-// exact candidate set; otherwise it is a superset the caller must trim with
-// the user vertex filter.
+// Device-resident candidate accessors.
 
 LBVH::DeviceCandidateView LBVH::detect_vertex_vertex_candidates_device() const
 {
-    if (m_impl->vertex_bvh.n_leaves <= 1) {
-        m_impl->vv_candidates.clear();
-        return {};
-    }
-    return detect_device</*triangular=*/true, /*swap=*/false>(
-        m_impl->vertex_bvh, m_impl->vertex_bvh, nullptr, 1, nullptr, 1,
-        m_impl->vv_candidates);
+    return detect_device<VertexVertexCandidate>(impl());
 }
 
 LBVH::DeviceCandidateView LBVH::detect_edge_vertex_candidates_device() const
 {
-    if (m_impl->edge_bvh.n_leaves == 0 || m_impl->vertex_bvh.n_leaves == 0) {
-        m_impl->ev_candidates.clear();
-        return {};
-    }
-    return detect_device</*triangular=*/false, /*swap=*/false>(
-        m_impl->edge_bvh, m_impl->vertex_bvh, conn_ptr(m_impl->edges), 2,
-        nullptr, 1, m_impl->ev_candidates);
+    return detect_device<EdgeVertexCandidate>(impl());
 }
 
 LBVH::DeviceCandidateView LBVH::detect_edge_edge_candidates_device() const
 {
-    if (m_impl->edge_bvh.n_leaves <= 1) {
-        m_impl->ee_candidates.clear();
-        return {};
-    }
-    return detect_device</*triangular=*/true, /*swap=*/false>(
-        m_impl->edge_bvh, m_impl->edge_bvh, conn_ptr(m_impl->edges), 2,
-        conn_ptr(m_impl->edges), 2, m_impl->ee_candidates);
+    return detect_device<EdgeEdgeCandidate>(impl());
 }
 
 LBVH::DeviceCandidateView LBVH::detect_face_vertex_candidates_device() const
 {
-    if (m_impl->face_bvh.n_leaves == 0 || m_impl->vertex_bvh.n_leaves == 0) {
-        m_impl->fv_candidates.clear();
-        return {};
-    }
-    return detect_device</*triangular=*/false, /*swap=*/true>(
-        m_impl->vertex_bvh, m_impl->face_bvh, nullptr, 1,
-        conn_ptr(m_impl->faces), 3, m_impl->fv_candidates);
+    return detect_device<FaceVertexCandidate>(impl());
 }
 
 LBVH::DeviceCandidateView LBVH::detect_edge_face_candidates_device() const
 {
-    if (m_impl->edge_bvh.n_leaves == 0 || m_impl->face_bvh.n_leaves == 0) {
-        m_impl->ef_candidates.clear();
-        return {};
-    }
-    return detect_device</*triangular=*/false, /*swap=*/true>(
-        m_impl->face_bvh, m_impl->edge_bvh, conn_ptr(m_impl->faces), 3,
-        conn_ptr(m_impl->edges), 2, m_impl->ef_candidates);
+    return detect_device<EdgeFaceCandidate>(impl());
 }
 
 LBVH::DeviceCandidateView LBVH::detect_face_face_candidates_device() const
 {
-    if (m_impl->face_bvh.n_leaves <= 1) {
-        m_impl->ff_candidates.clear();
-        return {};
-    }
-    return detect_device</*triangular=*/true, /*swap=*/false>(
-        m_impl->face_bvh, m_impl->face_bvh, conn_ptr(m_impl->faces), 3,
-        conn_ptr(m_impl->faces), 3, m_impl->ff_candidates);
+    return detect_device<FaceFaceCandidate>(impl());
 }
 
 // ---------------------------------------------------------------------------
 // Host-side can_*_collide filters (mesh connectivity + user vertex filter).
-// Mirror ipc::LBVH's overrides, backed by the host connectivity copies.
+// Mirror ipc::LBVH's overrides, backed by the host connectivity copies. The
+// ids arrive from device memory, so the bounds asserts are the tripwire that
+// localizes a host/device desync to the traversal.
 
 bool LBVH::can_edge_vertex_collide(size_t ei, size_t vi) const
 {
-    const auto& [e0i, e1i] = m_impl->h_edge_vertex_ids[ei];
+    const std::vector<int32_t>& edges = impl().h_edges;
+    assert(2 * ei + 1 < edges.size());
 
     return ipc::details::can_edge_vertex_collide(
-        e0i, e1i, vi, can_vertices_collide);
+        edges[2 * ei], edges[2 * ei + 1], vi, can_vertices_collide);
 }
 
 bool LBVH::can_edges_collide(size_t eai, size_t ebi) const
 {
-    const auto& [ea0i, ea1i] = m_impl->h_edge_vertex_ids[eai];
-    const auto& [eb0i, eb1i] = m_impl->h_edge_vertex_ids[ebi];
+    const std::vector<int32_t>& edges = impl().h_edges;
+    assert(2 * eai + 1 < edges.size());
+    assert(2 * ebi + 1 < edges.size());
 
     return ipc::details::can_edges_collide(
-        ea0i, ea1i, eb0i, eb1i, can_vertices_collide);
+        edges[2 * eai], edges[2 * eai + 1], edges[2 * ebi], edges[2 * ebi + 1],
+        can_vertices_collide);
 }
 
 bool LBVH::can_face_vertex_collide(size_t fi, size_t vi) const
 {
-    const auto& [f0i, f1i, f2i] = m_impl->h_face_vertex_ids[fi];
+    const std::vector<int32_t>& faces = impl().h_faces;
+    assert(3 * fi + 2 < faces.size());
 
     return ipc::details::can_face_vertex_collide(
-        f0i, f1i, f2i, vi, can_vertices_collide);
+        faces[3 * fi], faces[3 * fi + 1], faces[3 * fi + 2], vi,
+        can_vertices_collide);
 }
 
 bool LBVH::can_edge_face_collide(size_t ei, size_t fi) const
 {
-    const auto& [e0i, e1i] = m_impl->h_edge_vertex_ids[ei];
-    const auto& [f0i, f1i, f2i] = m_impl->h_face_vertex_ids[fi];
+    const std::vector<int32_t>& edges = impl().h_edges;
+    const std::vector<int32_t>& faces = impl().h_faces;
+    assert(2 * ei + 1 < edges.size());
+    assert(3 * fi + 2 < faces.size());
 
     return ipc::details::can_edge_face_collide(
-        e0i, e1i, f0i, f1i, f2i, can_vertices_collide);
+        edges[2 * ei], edges[2 * ei + 1], faces[3 * fi], faces[3 * fi + 1],
+        faces[3 * fi + 2], can_vertices_collide);
 }
 
 bool LBVH::can_faces_collide(size_t fai, size_t fbi) const
 {
-    const auto& [fa0i, fa1i, fa2i] = m_impl->h_face_vertex_ids[fai];
-    const auto& [fb0i, fb1i, fb2i] = m_impl->h_face_vertex_ids[fbi];
+    const std::vector<int32_t>& faces = impl().h_faces;
+    assert(3 * fai + 2 < faces.size());
+    assert(3 * fbi + 2 < faces.size());
 
     return ipc::details::can_faces_collide(
-        fa0i, fa1i, fa2i, fb0i, fb1i, fb2i, can_vertices_collide);
+        faces[3 * fai], faces[3 * fai + 1], faces[3 * fai + 2], faces[3 * fbi],
+        faces[3 * fbi + 1], faces[3 * fbi + 2], can_vertices_collide);
 }
 
-size_t LBVH::num_vertex_nodes() const
-{
-    return m_impl->vertex_bvh.nodes.size();
-}
+size_t LBVH::num_vertex_nodes() const { return impl().vertex_bvh.nodes.size(); }
 
-size_t LBVH::num_edge_nodes() const { return m_impl->edge_bvh.nodes.size(); }
+size_t LBVH::num_edge_nodes() const { return impl().edge_bvh.nodes.size(); }
 
-size_t LBVH::num_face_nodes() const { return m_impl->face_bvh.nodes.size(); }
+size_t LBVH::num_face_nodes() const { return impl().face_bvh.nodes.size(); }
 
 // ---------------------------------------------------------------------------
 // Debug / validation.
@@ -1217,19 +1322,19 @@ size_t LBVH::num_face_nodes() const { return m_impl->face_bvh.nodes.size(); }
 void LBVH::vertex_nodes_to_host(
     ipc::LBVH::Nodes& nodes, ipc::LBVH::RightmostLeaves& rightmost_leaves) const
 {
-    to_host(m_impl->vertex_bvh, nodes, rightmost_leaves);
+    to_host(impl().vertex_bvh, nodes, rightmost_leaves);
 }
 
 void LBVH::edge_nodes_to_host(
     ipc::LBVH::Nodes& nodes, ipc::LBVH::RightmostLeaves& rightmost_leaves) const
 {
-    to_host(m_impl->edge_bvh, nodes, rightmost_leaves);
+    to_host(impl().edge_bvh, nodes, rightmost_leaves);
 }
 
 void LBVH::face_nodes_to_host(
     ipc::LBVH::Nodes& nodes, ipc::LBVH::RightmostLeaves& rightmost_leaves) const
 {
-    to_host(m_impl->face_bvh, nodes, rightmost_leaves);
+    to_host(impl().face_bvh, nodes, rightmost_leaves);
 }
 
 } // namespace ipc::cuda

@@ -3,6 +3,7 @@
 #include <ipc/config.hpp>
 #include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/math/morton.hpp>
+#include <ipc/utils/simd.hpp> // for infinity<T>()
 
 #include <Eigen/Core>
 
@@ -26,6 +27,9 @@ namespace ipc::details {
 /// Each corner is nudged to the next representable float away from the box, so
 /// the float AABB always encloses the double one and never clips a primitive.
 ///
+/// @note The directions are typed floats (not the INFINITY macro, whose type
+/// is unspecified) so this resolves to the same nextafterf on host and device.
+///
 /// @param box_min The minimum corner of the double AABB.
 /// @param box_max The maximum corner of the double AABB.
 /// @param[out] node The node whose AABB is set.
@@ -36,8 +40,9 @@ IPC_TOOLKIT_HOST_DEVICE inline void set_inflated_aabb(
 {
     for (int k = 0; k < 3; ++k) {
         node.aabb_min[k] =
-            nextafterf(static_cast<float>(box_min[k]), -INFINITY);
-        node.aabb_max[k] = nextafterf(static_cast<float>(box_max[k]), INFINITY);
+            nextafterf(static_cast<float>(box_min[k]), -infinity<float>());
+        node.aabb_max[k] =
+            nextafterf(static_cast<float>(box_max[k]), infinity<float>());
     }
 }
 
