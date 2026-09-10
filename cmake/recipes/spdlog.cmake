@@ -1,18 +1,6 @@
 # spdlog (https://github.com/gabime/spdlog)
 # License: MIT
 if(TARGET spdlog::spdlog)
-    # Someone else created the target, so the fmt patch below never runs. That
-    # is fine without CUDA, but the patch is what makes the bundled fmt
-    # compile under nvcc at all, so warn rather than fail at the first .cu.
-    if(IPC_TOOLKIT_WITH_CUDA)
-        message(WARNING
-            "spdlog::spdlog was provided by an enclosing project, so IPC "
-            "Toolkit's cmake/patches/fmt-nvcc-compat.patch was not applied. "
-            "The bundled fmt does not compile under nvcc unpatched: its "
-            "literal-encoding probe misfires and a char32_t table uses hex "
-            "escapes with the high bit set. Apply the same patch to your "
-            "spdlog, or let IPC Toolkit fetch its own.")
-    endif()
     return()
 endif()
 

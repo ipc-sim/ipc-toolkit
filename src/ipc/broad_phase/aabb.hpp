@@ -3,8 +3,10 @@
 #include <ipc/config.hpp>
 #include <ipc/utils/default_init_allocator.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/simd.hpp> // for infinity<T>()
 
 #include <array>
+#include <cmath> // for nextafter
 
 namespace ipc {
 
@@ -59,6 +61,33 @@ public:
         Eigen::Ref<ArrayMax3d> min,
         Eigen::Ref<ArrayMax3d> max,
         const double inflation_radius);
+
+    /// @brief Conservatively inflate one lower bound.
+    ///
+    /// The single-coordinate policy behind conservative_inflation(): the bound
+    /// is moved out by the radius, then nudged to the next representable double
+    /// away from the box so rounding can never shrink it. Host/device so the
+    /// GPU broad phases build bit-identical boxes.
+    ///
+    /// @param v The coordinate to bound from below.
+    /// @param inflation_radius The radius to inflate by.
+    /// @return The conservative lower bound.
+    IPC_TOOLKIT_HOST_DEVICE static double
+    conservative_lower_bound(const double v, const double inflation_radius)
+    {
+        return nextafter(v - inflation_radius, -infinity<double>());
+    }
+
+    /// @brief Conservatively inflate one upper bound.
+    /// @see conservative_lower_bound
+    /// @param v The coordinate to bound from above.
+    /// @param inflation_radius The radius to inflate by.
+    /// @return The conservative upper bound.
+    IPC_TOOLKIT_HOST_DEVICE static double
+    conservative_upper_bound(const double v, const double inflation_radius)
+    {
+        return nextafter(v + inflation_radius, infinity<double>());
+    }
 
 public:
     /// @brief Minimum corner of the AABB.

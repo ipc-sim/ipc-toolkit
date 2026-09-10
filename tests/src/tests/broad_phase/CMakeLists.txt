@@ -13,7 +13,14 @@ set(SOURCES
   # Utilities
   brute_force_comparison.cpp
   brute_force_comparison.hpp
+  lbvh_validation.hpp
 )
+
+if(IPC_TOOLKIT_WITH_CUDA)
+  list(APPEND SOURCES
+    test_gpu_lbvh.cu
+  )
+endif()
 
 target_sources(ipc_toolkit_tests PRIVATE ${SOURCES})
 

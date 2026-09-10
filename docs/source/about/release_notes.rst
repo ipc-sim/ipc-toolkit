@@ -25,10 +25,17 @@ New Features |:rocket:|
 
 - Expose the intersection coordinates of an edge–triangle intersection through a new :cpp:func:`ipc::edge_triangle_intersection` overload, which reports the barycentric coordinates :math:`(u, v)` on the triangle and the parameter :math:`t` along the edge (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_).
 - Add :cpp:func:`ipc::CollisionMesh::face_normals`, computing the unit normal of each face for a given set of vertex positions (3D only) (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_).
+- Add :cpp:class:`ipc::cuda::LBVH`, a GPU broad phase that builds the vertex/edge/face AABBs and BVHs and runs the traversal and shared-vertex filtering on the device, producing the same candidates as :cpp:class:`ipc::LBVH` for any vertex filter (`#260 <https://github.com/ipc-sim/ipc-toolkit/pull/260>`_). Requires ``IPC_TOOLKIT_WITH_CUDA``; selectable through ``BroadPhaseMethod::LBVH_CUDA``.
+
+  - The Apetrei :cite:p:`Apetrei2014FastAS` bottom-up build, the BVH descent, and the shared-vertex exclusion are one ``ipc::details`` implementation shared by the CPU and CUDA broad phases; each platform supplies only its parallel launch, its sort, and its atomics.
+  - ``detect_*_candidates_device()`` return a view of the candidate pairs left on the device for a GPU-native pipeline.
 
 API Changes |:wrench:|
 ~~~~~~~~~~~~~~~~~~~~~~
 
+- ``BroadPhase::detect_*_candidates()`` now uniformly **clear** their output vector first on every broad phase, so it holds exactly that detection's result (`#260 <https://github.com/ipc-sim/ipc-toolkit/pull/260>`_). Previously half the implementations overwrote and half appended; all in-library callers pass an empty vector, so their results are unchanged.
+- Add :cpp:func:`ipc::CollisionFilter::accepts_all`, true for a filter that holds no predicate (the default), so a broad phase can skip per-pair filtering entirely (`#260 <https://github.com/ipc-sim/ipc-toolkit/pull/260>`_). Composing with an accept-all filter now short-circuits: ``f | accept_all`` is accept-all and ``f & accept_all`` is ``f``.
+- Add ``BroadPhaseMethod::NUM_BROAD_PHASE_METHODS`` as a sentinel for the number of methods (`#260 <https://github.com/ipc-sim/ipc-toolkit/pull/260>`_).
 - Update Tight Inclusion from ``1.0.6`` to ``1.1.0`` (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
 
   - Adds a ``BUCKET_DEPTH_FIRST_SEARCH`` root-finding method, which upstream makes the default for ``edgeEdgeCCD`` and ``vertexFaceCCD``.
@@ -186,6 +193,7 @@ Python |:snake:|
 
 - Validate preconditions in the bindings instead of relying on the C++ ``assert``\ s, which are compiled out under ``NDEBUG`` and would let a release build silently accept a bad value (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). ``BarrierPotential`` now raises ``ValueError`` for a non-positive or NaN ``dhat``/``stiffness`` and for a null barrier.
 - Bind ``edge_triangle_intersection()``, returning an ``(intersects, u, v, t)`` tuple since Python has no out-parameters, and ``CollisionMesh.face_normals()``, returning an (#F × 3) array to match the other per-element accessors (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_). ``face_normals()`` raises ``ValueError`` on a 2D mesh rather than invoking undefined behavior.
+- Add the ``ipctk.cuda`` submodule, mirroring the C++ ``ipc::cuda`` namespace, with ``ipctk.cuda.LBVH`` (``ipc::cuda::LBVH``) in CUDA builds (`#260 <https://github.com/ipc-sim/ipc-toolkit/pull/260>`_).
 
 Documentation
 ~~~~~~~~~~~~~
