@@ -16,9 +16,8 @@
 
 namespace ipc {
 
-// Appends the contents of every thread-local vector to `out`, preserving
-// whatever `out` already holds. The function may modify the provided `vectors`
-// (stealing and clearing per-thread buffers) for performance.
+// Assumes `out` is empty at the start. The function may modify the provided
+// `vectors` (stealing and clearing per-thread buffers) for performance.
 template <typename T>
 void merge_thread_local_vectors(
     tbb::enumerable_thread_specific<std::vector<T>>& vectors,
@@ -26,6 +25,10 @@ void merge_thread_local_vectors(
 {
     IPC_TOOLKIT_PROFILE_BLOCK("merge_thread_local_vectors");
 
+    assert(out.empty());
+
+    // Since `out` is always empty, compute total from thread-local vectors
+    // only.
     size_t total = 0;
     for (auto& v : vectors) {
         total += v.size();
@@ -35,13 +38,11 @@ void merge_thread_local_vectors(
     }
 
     // Fast path for trivially-copyable types: allocate once and memcpy each
-    // thread-local buffer into the contiguous destination, after any existing
-    // contents.
+    // thread-local buffer into the contiguous destination.
     if constexpr (
         std::is_trivially_copyable_v<T> && std::is_default_constructible_v<T>) {
-        const size_t offset = out.size();
-        out.resize(offset + total);
-        char* dest = reinterpret_cast<char*>(out.data() + offset);
+        out.resize(total);
+        char* dest = reinterpret_cast<char*>(out.data());
         for (auto& v : vectors) {
             if (v.empty()) {
                 continue;
@@ -53,16 +54,11 @@ void merge_thread_local_vectors(
         }
     } else {
         // For non-trivial types, steal the largest thread-local buffer into
-        // `out` (cheap swap, only possible when `out` is empty) and move from
-        // the remaining buffers.
-        const size_t final_size = out.size() + total; // before stealing
-
+        // `out` (cheap swap) and move from the remaining buffers.
         std::vector<T>* largest = nullptr;
-        if (out.empty()) {
-            for (auto& v : vectors) {
-                if (!largest || v.size() > largest->size()) {
-                    largest = &v;
-                }
+        for (auto& v : vectors) {
+            if (!largest || v.size() > largest->size()) {
+                largest = &v;
             }
         }
 
@@ -72,7 +68,7 @@ void merge_thread_local_vectors(
             out.swap(*largest);
         }
 
-        out.reserve(final_size);
+        out.reserve(total);
 
         for (auto& v : vectors) {
             if (&v != largest && !v.empty()) {
