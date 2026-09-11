@@ -82,6 +82,13 @@ Edge3::Edge3(
         faces.row(i) = face_rows[i];
     }
 
+    // Rest-shape squared edge length: from rest positions — constant quadrature
+    // weight
+    {
+        const Eigen::MatrixXd& rp = mesh.rest_positions();
+        m_rest_sq_length = (rp.row(e1_id) - rp.row(e0_id)).squaredNorm();
+    }
+
     if (m_vertex_ids.size() > N_EDGE_NEIGHBORS_3D) {
         logger().error(
             "Too many vertex neighbors for edge3 primitive! vertex count {} exceeds N_EDGE_NEIGHBORS_3D {}. "
@@ -193,8 +200,9 @@ T Edge3::smooth_edge3_term(
         normal_term = Math<T>::smooth_heaviside(normal_term - 1, 1., 0);
     }
 
-    // Weight: squared edge length
-    const T weight = (e1 - e0).squaredNorm();
+    // Weight: squared edge length (rest-shape if enabled, deformed otherwise)
+    const T weight = m_params.use_rest_shape_measure ? T(m_rest_sq_length)
+                                                     : (e1 - e0).squaredNorm();
 
     return weight * tangent_term * normal_term;
 }
@@ -559,17 +567,18 @@ GradientType<Eigen::Dynamic> Edge3::smooth_edge3_term_gradient(
     Eigen::VectorXd grad_tmp =
         tangent_grad * normal_term + normal_grad * tangent_term;
 
-    // Weight = (e1 - e0).squaredNorm()
     const Eigen::RowVector3d edge = X.row(1) - X.row(0);
-    const double weight = edge.squaredNorm();
+    const double weight =
+        m_params.use_rest_shape_measure ? m_rest_sq_length : edge.squaredNorm();
     grad_tmp *= weight;
-    // Derivative of weight w.r.t. e0 and e1
-    // d/d(e0) (e1-e0)^2 = 2*(e0-e1), d/d(e1) (e1-e0)^2 = 2*(e1-e0)
-    const int id_e0 = 3; // offset in [direction, X]
-    const int id_e1 = 6;
-    grad_tmp.segment<3>(id_e0) += (2 * val) * (-edge).transpose();
-    grad_tmp.segment<3>(id_e1) += (2 * val) * edge.transpose();
-
+    if (!m_params.use_rest_shape_measure) {
+        // Derivative of weight w.r.t. e0 and e1
+        // d/d(e0) (e1-e0)^2 = 2*(e0-e1), d/d(e1) (e1-e0)^2 = 2*(e1-e0)
+        const int id_e0 = 3; // offset in [direction, X]
+        const int id_e1 = 6;
+        grad_tmp.segment<3>(id_e0) += (2 * val) * (-edge).transpose();
+        grad_tmp.segment<3>(id_e1) += (2 * val) * edge.transpose();
+    }
     val *= weight;
 
     return std::make_tuple(val, grad_tmp);
