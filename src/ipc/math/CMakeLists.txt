@@ -7,6 +7,7 @@ set(SOURCES
   math.tpp
   morton.hpp
   scalar_math.hpp
+  span.hpp
 )
 
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

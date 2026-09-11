@@ -92,6 +92,7 @@ PYBIND11_MODULE(ipctk, m)
     define_smooth_mu(m);
 
     define_smooth_potential(m);
+    define_esp_potential(m);
 
     // geometry
     define_angle(m);

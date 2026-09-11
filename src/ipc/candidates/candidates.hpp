@@ -9,6 +9,8 @@
 
 #include <Eigen/Core>
 
+#include <memory>
+#include <set>
 #include <vector>
 
 namespace ipc {
@@ -27,7 +29,8 @@ public:
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double inflation_radius = 0,
-        BroadPhase* broad_phase = nullptr);
+        BroadPhase* broad_phase = nullptr,
+        const bool all_types = false);
 
     /// @brief Initialize the set of continuous collision detection candidates.
     /// @note Assumes the trajectory is linear.
@@ -41,7 +44,8 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
         const double inflation_radius = 0,
-        BroadPhase* broad_phase = nullptr);
+        BroadPhase* broad_phase = nullptr,
+        const bool all_types = false);
 
     /// @brief Get the number of collision candidates.
     /// @return The number of collision candidates.
@@ -236,6 +240,20 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const;
 
+    void convert_candidates_to_sets();
+
+    std::set<index_t> vv_set(index_t id) const;
+    std::set<index_t> ve_set(index_t id) const;
+    std::set<index_t> vf_set(index_t id) const;
+
+    std::set<index_t> ev_set(index_t id) const;
+    std::set<index_t> ee_set(index_t id) const;
+    std::set<index_t> ef_set(index_t id) const;
+
+    std::set<index_t> fv_set(index_t id) const;
+    std::set<index_t> fe_set(index_t id) const;
+    std::set<index_t> ff_set(index_t id) const;
+
 public:
     std::vector<VertexVertexCandidate> vv_candidates;
     std::vector<EdgeVertexCandidate> ev_candidates;
@@ -243,8 +261,22 @@ public:
     std::vector<FaceVertexCandidate> fv_candidates;
     std::vector<PlaneVertexCandidate> pv_candidates;
 
+    std::vector<EdgeFaceCandidate> ef_candidates;
+    std::vector<FaceFaceCandidate> ff_candidates;
+
+    CollisionMesh m_mesh;
+
 private:
     static bool default_is_active(double candidate) { return true; }
+
+    /// @brief Adjacency sets built by convert_candidates_to_sets().
+    ///
+    /// Held behind a pointer so this public header does not need
+    /// ipc/utils/unordered_map_and_set.hpp, which pulls in Abseil -- a private
+    /// dependency of the library that consumers (e.g. the Python bindings) do
+    /// not link against.
+    struct AdjacencySets;
+    std::shared_ptr<AdjacencySets> m_sets;
 };
 
 } // namespace ipc

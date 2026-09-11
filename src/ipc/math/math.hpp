@@ -47,6 +47,10 @@ template <typename T> struct Math {
     static double inv_barrier_grad(const double x, const int r);
     static double inv_barrier_hess(const double x, const int r);
 
+    static T log_barrier(const T& x);
+    static double log_barrier_grad(const double x);
+    static double log_barrier_hess(const double x);
+
     static T l_ns(const T& x);
 
     // NOTE: Define this in the class definition to allow inlining

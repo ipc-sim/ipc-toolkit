@@ -188,10 +188,13 @@ public:
     /// @brief Plane-vertex normal collisions.
     std::vector<PlaneVertexNormalCollision> pv_collisions;
 
+    void set_skip_obstacles(bool x) { m_skip_obstacles = x; }
+
 protected:
     CollisionSetType m_collision_set_type = CollisionSetType::IPC;
     bool m_use_area_weighting = false;
     bool m_enable_shape_derivatives = false;
+    bool m_skip_obstacles = false;
 };
 
 } // namespace ipc

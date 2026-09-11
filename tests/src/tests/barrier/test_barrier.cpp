@@ -6,7 +6,7 @@
 
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/geometry/normal.hpp>
-#include <ipc/smooth_contact/primitives/point3.hpp>
+#include <ipc/gcp/primitives/point3.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 #include <ipc/math/math.hpp>
 
@@ -138,6 +138,55 @@ TEST_CASE("Inv barrier derivatives", "[deriv]")
     }
 }
 
+TEST_CASE("Log barrier derivatives", "[deriv]")
+{
+    const int n_samples = 100;
+    ScalarBase::setVariableCount(1);
+    using T = ipc::ADHessian<1>;
+    const double dhat = 0.13;
+    for (int i = 1; i <= n_samples; i++) {
+        const double x = i / static_cast<double>(n_samples);
+        double deriv = ipc::Math<double>::log_barrier_grad(x / dhat) / dhat;
+        double hess =
+            ipc::Math<double>::log_barrier_hess(x / dhat) / dhat / dhat;
+        T x_ad = T(x, 0);
+        T y_ad = ipc::Math<T>::log_barrier(x_ad / dhat);
+        double deriv_ad = y_ad.grad(0);
+        double hess_ad = y_ad.Hess(0);
+
+        CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
+        CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
+    }
+
+    ScalarBase::setVariableCount(3);
+    using T3 = ipc::ADHessian<3>;
+
+    for (int i = 1; i <= n_samples; i++) {
+        Eigen::Vector3d x = Eigen::Vector3d::Random() * dhat / 3.;
+        double deriv =
+            ipc::Math<double>::log_barrier_grad(x.norm() / dhat) / dhat;
+        double hess =
+            ipc::Math<double>::log_barrier_hess(x.norm() / dhat) / dhat / dhat;
+        auto x_ad = ipc::slice_positions<T3, 3, 1>(x);
+        T3 y_ad = ipc::Math<T3>::log_barrier(x_ad.norm() / dhat);
+        Eigen::Vector3d deriv_ad = y_ad.grad;
+        Eigen::Matrix3d hess_ad = y_ad.Hess;
+
+        Eigen::Vector3d xn = x / x.norm();
+        Eigen::Vector3d deriv_analytic = deriv * xn;
+        Eigen::Matrix3d hess_analytic =
+            (deriv / x.norm()) * Eigen::Matrix3d::Identity()
+            + (hess - deriv / x.norm()) * xn * xn.transpose();
+
+        CHECK(
+            (deriv_ad - deriv_analytic).norm()
+            < 1e-14 * std::max(1., deriv_ad.norm()));
+        CHECK(
+            (hess_ad - hess_analytic).norm()
+            < 1e-12 * std::max(1., hess_ad.norm()));
+    }
+}
+
 TEST_CASE("Normalize vector derivatives", "[deriv]")
 {
     const int n_samples = 1000;
@@ -249,7 +298,7 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
 
 TEST_CASE("point term derivatives", "[deriv]")
 {
-    ipc::SmoothContactParameters params(1, 1, 1, 0.01, 0, 2);
+    ipc::GCPParameters params(1, 1, 1, 0.01, 0, 2);
 
     Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
@@ -340,7 +389,7 @@ TEST_CASE("point term derivatives", "[deriv]")
 
 TEST_CASE("point term normal derivatives", "[deriv]")
 {
-    ipc::SmoothContactParameters params(1, 1, 1, 1, 0, 2);
+    ipc::GCPParameters params(1, 1, 1, 1, 0, 2);
 
     Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
@@ -436,6 +485,18 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     {
         barrier = std::make_unique<ipc::TwoStageBarrier<>>();
     }
+    SECTION("InversePower1")
+    {
+        barrier = std::make_unique<ipc::InversePowerBarrier>(1.0);
+    }
+    SECTION("InversePower2")
+    {
+        barrier = std::make_unique<ipc::InversePowerBarrier>(2.0);
+    }
+    SECTION("InversePower3")
+    {
+        barrier = std::make_unique<ipc::InversePowerBarrier>(3.0);
+    }
 
     if (use_dist_sqr) {
         d_vec *= d;
@@ -474,7 +535,7 @@ TEST_CASE("Physical barrier", "[barrier]")
 {
     const bool use_dist_sqr = GENERATE(false, true);
 
-    ipc::ClampedLogBarrier original_barrier;
+    ipc::ClampedLogBarrier<> original_barrier;
     PhysicalBarrier new_barrier(use_dist_sqr);
 
     const double dhat =

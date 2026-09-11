@@ -11,6 +11,7 @@
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/profiler.hpp>
 #include <ipc/utils/save_obj.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <igl/remove_unreferenced.h>
 #include <tbb/blocked_range.h>
@@ -20,8 +21,25 @@
 
 #include <atomic>
 #include <fstream>
+#include <iostream>
 
 namespace ipc {
+
+// Definition of the pimpl declared in candidates.hpp. Kept here so the public
+// header does not need to include Abseil (a private dependency).
+struct Candidates::AdjacencySets {
+    unordered_map<index_t, std::set<index_t>> vv;
+    unordered_map<index_t, std::set<index_t>> ve;
+    unordered_map<index_t, std::set<index_t>> vf;
+
+    unordered_map<index_t, std::set<index_t>> ev;
+    unordered_map<index_t, std::set<index_t>> ee;
+    unordered_map<index_t, std::set<index_t>> ef;
+
+    unordered_map<index_t, std::set<index_t>> fv;
+    unordered_map<index_t, std::set<index_t>> fe;
+    unordered_map<index_t, std::set<index_t>> ff;
+};
 
 namespace {
     // Pad codim_edges because remove_unreferenced requires a N×3 matrix.
@@ -44,7 +62,8 @@ void Candidates::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double inflation_radius,
-    BroadPhase* broad_phase)
+    BroadPhase* broad_phase,
+    const bool all_types)
 {
     IPC_TOOLKIT_PROFILE_BLOCK("Candidates::build(static)");
 
@@ -55,12 +74,13 @@ void Candidates::build(
     }
 
     const int dim = vertices.cols();
+    m_mesh = mesh;
 
     clear();
 
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
-    broad_phase->detect_collision_candidates(*this);
+    broad_phase->detect_collision_candidates(*this, all_types);
 
     // Codim. vertices to codim. vertices:
     if (mesh.num_codim_vertices()) {
@@ -130,7 +150,8 @@ void Candidates::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double inflation_radius,
-    BroadPhase* broad_phase)
+    BroadPhase* broad_phase,
+    const bool all_types)
 {
     IPC_TOOLKIT_PROFILE_BLOCK("Candidates::build(dynamic)");
 
@@ -141,6 +162,7 @@ void Candidates::build(
     }
 
     const int dim = vertices_t0.cols();
+    m_mesh = mesh;
 
     clear();
 
@@ -493,6 +515,8 @@ void Candidates::clear()
     ev_candidates.clear();
     ee_candidates.clear();
     fv_candidates.clear();
+    ef_candidates.clear();
+    ff_candidates.clear();
     pv_candidates.clear();
 }
 
@@ -715,6 +739,210 @@ bool Candidates::save_obj(
     v_offset += ee_candidates.size() * 4;
     ipc::save_obj(obj, vertices, faces, faces, fv_candidates, v_offset);
     return true;
+}
+
+void Candidates::convert_candidates_to_sets()
+{
+    m_sets = std::make_shared<AdjacencySets>();
+
+    for (const auto& vv : vv_candidates) {
+        m_sets->vv[vv.vertex0_id].insert(vv.vertex1_id);
+        m_sets->vv[vv.vertex1_id].insert(vv.vertex0_id);
+    }
+    for (const auto& ee : ee_candidates) {
+        m_sets->ee[ee.edge0_id].insert(ee.edge1_id);
+        m_sets->ee[ee.edge1_id].insert(ee.edge0_id);
+    }
+    for (const auto& ff : ff_candidates) {
+        m_sets->ff[ff.face0_id].insert(ff.face1_id);
+        m_sets->ff[ff.face1_id].insert(ff.face0_id);
+    }
+    for (const auto& ev : ev_candidates) {
+        m_sets->ev[ev.edge_id].insert(ev.vertex_id);
+        m_sets->ve[ev.vertex_id].insert(ev.edge_id);
+    }
+    for (const auto& fv : fv_candidates) {
+        m_sets->fv[fv.face_id].insert(fv.vertex_id);
+        m_sets->vf[fv.vertex_id].insert(fv.face_id);
+    }
+    for (const auto& ef : ef_candidates) {
+        m_sets->ef[ef.edge_id].insert(ef.face_id);
+        m_sets->fe[ef.face_id].insert(ef.edge_id);
+    }
+}
+
+std::set<index_t> Candidates::vv_set(index_t id) const
+{
+    if (!m_sets) {
+        return {};
+    }
+
+    assert(m_mesh.num_vertices());
+    std::set<index_t> out;
+    if (auto iter = m_sets->vv.find(id); iter != m_sets->vv.end()) {
+        out = iter->second;
+    }
+
+    if (m_mesh.dim() == 2) {
+        for (const index_t ej : ve_set(id)) {
+            out.insert(m_mesh.edges()(ej, 0));
+            out.insert(m_mesh.edges()(ej, 1));
+        }
+    }
+    out.erase(id);
+    return out;
+}
+std::set<index_t> Candidates::ve_set(index_t id) const
+{
+    if (!m_sets) {
+        return {};
+    }
+
+    if (auto iter = m_sets->ve.find(id); iter != m_sets->ve.end()) {
+        return iter->second;
+    }
+    return {};
+}
+std::set<index_t> Candidates::vf_set(index_t id) const
+{
+    if (!m_sets) {
+        return {};
+    }
+
+    if (auto iter = m_sets->vf.find(id); iter != m_sets->vf.end()) {
+        return iter->second;
+    }
+    return {};
+}
+
+std::set<index_t> Candidates::ev_set(index_t id) const
+{
+    if (!m_sets) {
+        return {};
+    }
+
+    assert(m_mesh.num_vertices());
+    std::set<index_t> out;
+    if (auto iter = m_sets->ev.find(id); iter != m_sets->ev.end()) {
+        out = iter->second;
+    }
+    for (index_t lv = 0; lv < 2; ++lv) {
+        out.insert(m_mesh.edges()(id, lv));
+    }
+    return out;
+}
+std::set<index_t> Candidates::ee_set(index_t id) const
+{
+    if (!m_sets) {
+        return {};
+    }
+
+    assert(m_mesh.num_vertices());
+    std::set<index_t> out;
+    if (auto iter = m_sets->ee.find(id); iter != m_sets->ee.end()) {
+        out = iter->second;
+    }
+    for (index_t lv = 0; lv < 2; ++lv) {
+        for (index_t eid : m_mesh.vertices_to_edges()[m_mesh.edges()(id, lv)]) {
+            out.insert(eid);
+        }
+    }
+    // In 2D, EE candidates are never built by the broad phase. Reconstruct
+    // them from EV candidates symmetrically:
+    // (a) edges adjacent to vertices that are close to edge id (via ev_set)
+    // (b) edges that id's own endpoints are close to (via ve_set)
+    if (m_mesh.dim() == 2) {
+        for (const index_t vj : ev_set(id)) {
+            for (const index_t ej : m_mesh.vertices_to_edges()[vj]) {
+                out.insert(ej);
+            }
+        }
+        for (index_t lv = 0; lv < 2; ++lv) {
+            const index_t vi = m_mesh.edges()(id, lv);
+            for (const index_t ej : ve_set(vi)) {
+                out.insert(ej);
+            }
+        }
+    }
+    out.erase(id);
+    return out;
+}
+std::set<index_t> Candidates::ef_set(index_t id) const
+{
+    if (!m_sets) {
+        return {};
+    }
+
+    assert(m_mesh.num_vertices());
+    std::set<index_t> out;
+    if (auto iter = m_sets->ef.find(id); iter != m_sets->ef.end()) {
+        out = iter->second;
+    }
+    for (index_t lv = 0; lv < 2; ++lv) {
+        const auto& faces = m_mesh.vertices_to_faces()[m_mesh.edges()(id, lv)];
+        for (int fid : faces) {
+            out.insert(fid);
+        }
+    }
+    for (const index_t fid : m_mesh.edges_to_faces()[id]) {
+        out.erase(fid);
+    }
+    return out;
+}
+
+std::set<index_t> Candidates::fv_set(index_t id) const
+{
+    if (!m_sets) {
+        return {};
+    }
+
+    assert(m_mesh.num_vertices());
+    std::set<index_t> out;
+    if (auto iter = m_sets->fv.find(id); iter != m_sets->fv.end()) {
+        out = iter->second;
+    }
+    for (index_t lv = 0; lv < 3; ++lv) {
+        out.insert(m_mesh.faces()(id, lv));
+    }
+    return out;
+}
+std::set<index_t> Candidates::fe_set(index_t id) const
+{
+    if (!m_sets) {
+        return {};
+    }
+
+    assert(m_mesh.num_vertices());
+    std::set<index_t> out;
+    if (auto iter = m_sets->fe.find(id); iter != m_sets->fe.end()) {
+        out = iter->second;
+    }
+    for (index_t lv = 0; lv < 3; ++lv) {
+        for (index_t eid : m_mesh.vertices_to_edges()[m_mesh.faces()(id, lv)]) {
+            out.insert(eid);
+        }
+    }
+    return out;
+}
+std::set<index_t> Candidates::ff_set(index_t id) const
+{
+    if (!m_sets) {
+        return {};
+    }
+
+    assert(m_mesh.num_vertices());
+    std::set<index_t> out;
+    if (auto iter = m_sets->ff.find(id); iter != m_sets->ff.end()) {
+        out = iter->second;
+    }
+    for (index_t lv = 0; lv < 3; ++lv) {
+        const index_t vid = m_mesh.faces()(id, lv);
+        for (index_t fid : m_mesh.vertices_to_faces()[vid]) {
+            out.insert(fid);
+        }
+    }
+    out.erase(id);
+    return out;
 }
 
 } // namespace ipc

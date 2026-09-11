@@ -64,7 +64,8 @@ public:
 
     /// @brief Detect all collision candidates needed for a given dimensional simulation.
     /// @param candidates The detected collision candidates.
-    void detect_collision_candidates(Candidates& candidates) const;
+    void detect_collision_candidates(
+        Candidates& candidates, bool all_types = false) const;
 
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisions.

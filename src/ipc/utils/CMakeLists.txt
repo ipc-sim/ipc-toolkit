@@ -14,6 +14,8 @@ set(SOURCES
   meshfem_hessian_assembler.cpp
   meshfem_hessian_assembler.hpp
   merge_thread_local.hpp
+  profile_registry.cpp
+  profile_registry.hpp
   profiler.cpp
   profiler.hpp
   simd.hpp

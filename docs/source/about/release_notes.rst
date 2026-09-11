@@ -177,11 +177,11 @@ Bug Fixes |:bug:|
 Python |:snake:|
 ~~~~~~~~~~~~~~~~
 
-- 💥 **[Breaking]** Rename the ``SmoothPotential`` class to ``SmoothContactPotential`` to match the C++ name (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+- 💥 **[Breaking]** Rename the ``GCPPotential`` class to ``GCPPotential`` to match the C++ name (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
 - Fill gaps that made the GCP and convergent-formulation tutorials impossible to follow from Python (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_):
 
-  - Add ``SmoothCollisions.compute_adaptive_dhat``. Without it, adaptive dhat was unreachable even though ``build()`` accepts ``use_adaptive_dhat=True`` and requires this to be called first.
-  - Add the ``SmoothContactParameters.adaptive_dhat_ratio`` property.
+  - Add ``GCPCollisions.compute_adaptive_dhat``. Without it, adaptive dhat was unreachable even though ``build()`` accepts ``use_adaptive_dhat=True`` and requires this to be called first.
+  - Add the ``GCPParameters.adaptive_dhat_ratio`` property.
   - Add the ``BarrierPotential.stiffness`` and ``.use_physical_barrier`` properties, mirroring the C++ setters.
 
 - Validate preconditions in the bindings instead of relying on the C++ ``assert``\ s, which are compiled out under ``NDEBUG`` and would let a release build silently accept a bad value (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). ``BarrierPotential`` now raises ``ValueError`` for a non-positive or NaN ``dhat``/``stiffness`` and for a null barrier.
@@ -209,7 +209,7 @@ Documentation
 Refactor
 ~~~~~~~~
 
-- Replace the duplicate squared-distance implementations in ``ipc/smooth_contact/distance/`` (``point_point_sqr_distance``, ``point_line_sqr_distance``, ``line_line_sqr_distance``, ``edge_edge_sqr_distance``, ``point_plane_sqr_distance``, ``point_triangle_sqr_distance``) with the now-templated functions from ``ipc/distance/``.
+- Replace the duplicate squared-distance implementations in ``ipc/gcp/distance/`` (``point_point_sqr_distance``, ``point_line_sqr_distance``, ``line_line_sqr_distance``, ``edge_edge_sqr_distance``, ``point_plane_sqr_distance``, ``point_triangle_sqr_distance``) with the now-templated functions from ``ipc/distance/``.
 
 Miscellaneous
 ~~~~~~~~~~~~~

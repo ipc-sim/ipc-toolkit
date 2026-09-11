@@ -76,7 +76,8 @@ void BroadPhase::clear()
     dim = 0; // reset dimension
 }
 
-void BroadPhase::detect_collision_candidates(Candidates& candidates) const
+void BroadPhase::detect_collision_candidates(
+    Candidates& candidates, bool all_types) const
 {
     candidates.clear();
     assert(dim == 2 || dim == 3);
@@ -87,6 +88,14 @@ void BroadPhase::detect_collision_candidates(Candidates& candidates) const
         // These are not needed for 2D
         detect_edge_edge_candidates(candidates.ee_candidates);
         detect_face_vertex_candidates(candidates.fv_candidates);
+
+        // These are needed for ESP contact
+        if (all_types) {
+            detect_vertex_vertex_candidates(candidates.vv_candidates);
+            detect_edge_face_candidates(candidates.ef_candidates);
+            detect_face_face_candidates(candidates.ff_candidates);
+            detect_edge_vertex_candidates(candidates.ev_candidates);
+        }
     }
 }
 

@@ -6,6 +6,7 @@
 #include <ipc/utils/hessian_assembler.hpp>
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/meshfem_hessian_assembler.hpp>
+#include <ipc/utils/profile_registry.hpp>
 #include <ipc/utils/profiler.hpp>
 
 #include <tbb/blocked_range.h>
@@ -13,8 +14,23 @@
 #include <tbb/parallel_reduce.h>
 
 #include <array>
+#include <string>
+#include <type_traits>
 
 namespace ipc {
+
+namespace {
+    template <class T> const std::string& profile_prefix()
+    {
+        if constexpr (std::is_same_v<T, TangentialCollisions>) {
+            static const std::string p = "friction";
+            return p;
+        } else {
+            static const std::string p = "ipc";
+            return p;
+        }
+    }
+} // namespace
 
 template <class TCollisions>
 double Potential<TCollisions>::operator()(
@@ -24,6 +40,7 @@ double Potential<TCollisions>::operator()(
 {
     assert(X.rows() == mesh.num_vertices());
     IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::operator()");
+    ScopedProfileTimer _t(profile_prefix<TCollisions>() + ".potential_eval");
 
     return tbb::parallel_reduce(
         tbb::blocked_range<size_t>(size_t(0), collisions.size()), 0.0,
@@ -48,6 +65,8 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
 {
     assert(X.rows() == mesh.num_vertices());
     IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::gradient()");
+    ScopedProfileTimer _t(
+        profile_prefix<TCollisions>() + ".potential_gradient");
 
     // Assemble directly in full-mesh DOF when the DOF map is a pure selection
     // (remapping stencil vertex IDs is then equivalent to to_full_dof());
@@ -108,6 +127,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const bool in_full_dof) const
 {
     IPC_TOOLKIT_PROFILE_BLOCK("Potential<T>::hessian()");
+    ScopedProfileTimer _t(profile_prefix<TCollisions>() + ".potential_hessian");
 
     // Assemble directly in full-mesh DOF when the DOF map is a pure selection
     // (remapping stencil vertex IDs is then equivalent to to_full_dof());

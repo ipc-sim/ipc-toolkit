@@ -9,6 +9,10 @@
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
+#ifdef IPC_TOOLKIT_WITH_GEOGRAM
+#include "distance_type_reference.hpp"
+#endif
+
 using namespace ipc;
 
 TEST_CASE("Point-edge distance type", "[distance][distance-type][point-edge]")
@@ -54,6 +58,114 @@ TEST_CASE("Point-edge distance type", "[distance][distance-type][point-edge]")
         }
     }
 }
+
+#ifdef IPC_TOOLKIT_WITH_GEOGRAM
+// These compare the shipped classifiers against an exact-arithmetic
+// reference, which is only available when geogram is enabled.
+TEST_CASE(
+    "Point-edge distance type random",
+    "[distance][distance-type][point-edge][exact]")
+{
+    const int num_random_tests = 1000000;
+
+    for (int i = 0; i < num_random_tests; ++i) {
+        const VectorMax3d p = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d e0 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d e1 = Eigen::Vector3d::Random() * 10;
+
+        const PointEdgeDistanceType dtype = point_edge_distance_type(p, e0, e1);
+        const PointEdgeDistanceType dtype_exact =
+            point_edge_distance_type_exact(p, e0, e1);
+
+        CAPTURE(p.transpose(), e0.transpose(), e1.transpose());
+        CHECK(dtype == dtype_exact);
+    }
+}
+
+TEST_CASE(
+    "Point-triangle distance type random",
+    "[distance][distance-type][point-triangle][exact]")
+{
+    const int num_random_tests = 1000000;
+
+    for (int i = 0; i < num_random_tests; ++i) {
+        const VectorMax3d p = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d t0 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d t1 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d t2 = Eigen::Vector3d::Random() * 10;
+
+        const PointTriangleDistanceType dtype =
+            point_triangle_distance_type(p, t0, t1, t2);
+        const PointTriangleDistanceType dtype_exact =
+            point_triangle_distance_type_exact(p, t0, t1, t2);
+
+        CAPTURE(p.transpose(), t0.transpose(), t1.transpose(), t2.transpose());
+        CHECK(dtype == dtype_exact);
+    }
+}
+
+TEST_CASE(
+    "Edge-edge distance type random",
+    "[distance][distance-type][edge-edge][exact]")
+{
+    const int num_random_tests = 1000000;
+
+    for (int i = 0; i < num_random_tests; ++i) {
+        const VectorMax3d e0 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d e1 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d e2 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d e3 = Eigen::Vector3d::Random() * 10;
+
+        const EdgeEdgeDistanceType dtype =
+            edge_edge_distance_type(e0, e1, e2, e3);
+        const EdgeEdgeDistanceType dtype_exact =
+            edge_edge_distance_type_exact(e0, e1, e2, e3);
+
+        CAPTURE(e0.transpose(), e1.transpose(), e2.transpose(), e3.transpose());
+        CHECK(dtype == dtype_exact);
+    }
+}
+
+// Nearly parallel random edges. ipc::edge_edge_distance_type unconditionally
+// uses the thresholded analytic classifier (no exact-predicate mode), so the
+// reference must be called with the *same* threshold to stay comparable:
+// with a threshold of 0 (a fully exact reference), this comparison would fail
+// on ~20% of samples, because the reference would then only take the
+// parallel-classifier branch for exactly-parallel edges while the shipped
+// classifier takes it for the much larger near-parallel set.
+TEST_CASE(
+    "Edge-edge distance type random parallel",
+    "[distance][distance-type][edge-edge][exact][parallel]")
+{
+    const int num_random_tests = 1000000;
+
+    for (int i = 0; i < num_random_tests; ++i) {
+        const Eigen::Vector3d ea0 = Eigen::Vector3d::Random() * 10;
+        const Eigen::Vector3d ea1 = Eigen::Vector3d::Random() * 10;
+
+        Eigen::Vector3d eb0 = ea0;
+        Eigen::Vector3d eb1 = ea1;
+
+        const double amount = Eigen::Vector3d::Random()(0);
+        const int axis = i % 3;
+        eb0[axis] += amount;
+        eb1[axis] += amount;
+
+        if (i % 2 == 0)
+            eb1 += Eigen::Vector3d::Random() * ((ea1 - ea0).norm() * 1e-20);
+
+        const EdgeEdgeDistanceType dtype =
+            edge_edge_distance_type(ea0, ea1, eb0, eb1);
+        const EdgeEdgeDistanceType dtype_exact =
+            edge_edge_distance_type_exact(ea0, ea1, eb0, eb1);
+
+        CAPTURE(
+            ea0.transpose(), ea1.transpose(), eb0.transpose(), eb1.transpose());
+        CHECK(dtype == dtype_exact);
+    }
+}
+
+#endif // IPC_TOOLKIT_WITH_GEOGRAM
 
 struct RandomBarycentricCoordGenerator
     : Catch::Generators::IGenerator<Eigen::Vector3d> {

@@ -46,6 +46,8 @@ public:
     /// @brief Get the number of vertices in the collision stencil.
     virtual int num_vertices() const = 0;
 
+    virtual std::string name() const { return "unknown"; }
+
     /// @brief Get the dimension of the collision stencil.
     /// @param ndof Number of degrees of freedom in the stencil.
     /// @return The dimension of the collision stencil.

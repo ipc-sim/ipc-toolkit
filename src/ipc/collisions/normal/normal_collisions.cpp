@@ -3,6 +3,8 @@
 #include <ipc/collisions/normal/normal_collisions_builder.hpp>
 #include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/logger.hpp>
+#include <ipc/utils/profile_registry.hpp>
 #include <ipc/utils/profiler.hpp>
 
 #include <tbb/blocked_range.h>
@@ -27,8 +29,13 @@ void NormalCollisions::build(
     const double inflation_radius = 0.5 * (dhat + dmin);
 
     Candidates candidates;
-    candidates.build(mesh, vertices, inflation_radius, broad_phase);
+    {
+        IPC_PROFILE_SCOPE("ipc.broad_phase");
+        candidates.build(mesh, vertices, inflation_radius, broad_phase);
+    }
 
+    // The inner overload accumulates collision_build + collision/candidate
+    // counts into the ProfileRegistry.
     this->build(candidates, mesh, vertices, dhat, dmin);
 }
 
@@ -42,6 +49,7 @@ void NormalCollisions::build(
     assert(vertices.rows() == mesh.num_vertices());
     IPC_TOOLKIT_PROFILE_BLOCK("NormalCollisions::build(candidates)");
 
+    IPC_PROFILE_SCOPE("ipc.collision_build");
     clear();
 
     // Cull the candidates by measuring the distance and dropping those that are
@@ -52,7 +60,7 @@ void NormalCollisions::build(
 
     tbb::enumerable_thread_specific<NormalCollisionsBuilder> storage(
         use_area_weighting(), enable_shape_derivatives(),
-        collision_set_type() == CollisionSetType::OGC);
+        collision_set_type() == CollisionSetType::OGC, m_skip_obstacles);
 
     tbb::parallel_for(
         size_t(0), candidates.vv_candidates.size(), [&](size_t i) {
@@ -152,6 +160,33 @@ void NormalCollisions::build(
         NormalCollision& collision = (*this)[ci];
         collision.dmin = dmin;
     }
+
+    auto& reg = ProfileRegistry::instance();
+    reg.add_value(
+        "ipc.candidates.vv",
+        static_cast<double>(candidates.vv_candidates.size()));
+    reg.add_value(
+        "ipc.candidates.ev",
+        static_cast<double>(candidates.ev_candidates.size()));
+    reg.add_value(
+        "ipc.candidates.ee",
+        static_cast<double>(candidates.ee_candidates.size()));
+    reg.add_value(
+        "ipc.candidates.fv",
+        static_cast<double>(candidates.fv_candidates.size()));
+    reg.add_value(
+        "ipc.candidates.total", static_cast<double>(candidates.size()));
+    reg.add_value(
+        "ipc.collision_set.vv", static_cast<double>(vv_collisions.size()));
+    reg.add_value(
+        "ipc.collision_set.ev", static_cast<double>(ev_collisions.size()));
+    reg.add_value(
+        "ipc.collision_set.ee", static_cast<double>(ee_collisions.size()));
+    reg.add_value(
+        "ipc.collision_set.fv", static_cast<double>(fv_collisions.size()));
+    reg.add_value(
+        "ipc.collision_set.pv", static_cast<double>(pv_collisions.size()));
+    reg.add_value("ipc.collision_set.total", static_cast<double>(size()));
 }
 
 void NormalCollisions::set_use_area_weighting(const bool use_area_weighting)

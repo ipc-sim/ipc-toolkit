@@ -32,6 +32,7 @@ CollisionMesh::CollisionMesh(
 CollisionMesh::CollisionMesh(
     const std::vector<bool>& include_vertex,
     const std::vector<bool>& orient_vertex,
+    const std::vector<bool>& obstacle_vertex,
     Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces,
@@ -97,6 +98,12 @@ CollisionMesh::CollisionMesh(
     m_is_orient_vertex.assign(m_rest_positions.rows(), false);
     for (int i = 0; i < m_is_orient_vertex.size(); i++) {
         m_is_orient_vertex[i] = orient_vertex[m_vertex_to_full_vertex[i]];
+    }
+
+    assert(obstacle_vertex.size() == full_rest_positions.rows());
+    m_is_obstacle_vertex.assign(m_rest_positions.rows(), false);
+    for (int i = 0; i < m_is_obstacle_vertex.size(); i++) {
+        m_is_obstacle_vertex[i] = obstacle_vertex[m_vertex_to_full_vertex[i]];
     }
 
     // Map faces and edges to only included vertices
@@ -261,13 +268,25 @@ void CollisionMesh::init_adjacencies()
     remove_duplicates(m_vertex_vertex_adjacencies);
     remove_duplicates(m_vertex_edge_adjacencies);
 
+    m_edge_face_adjacencies.assign(
+        num_edges(), std::array<int, 2>({ { -1, -1 } }));
     m_vertex_face_adjacencies.resize(num_vertices());
     m_edge_vertex_adjacencies.resize(num_edges());
+    assert(num_edges() == m_edges.rows());
     for (int i = 0; i < m_faces.rows(); i++) {
         for (int j = 0; j < 3; ++j) {
             m_vertex_face_adjacencies[m_faces(i, j)].push_back(i);
             m_edge_vertex_adjacencies[m_faces_to_edges(i, j)].push_back(
                 m_faces(i, (j + 2) % 3));
+
+            auto& face_ids = m_edge_face_adjacencies[m_faces_to_edges(i, j)];
+            if (face_ids[0] >= 0 && face_ids[0] != i) {
+                face_ids[1] = i;
+            } else if (face_ids[1] < 0) {
+                face_ids[0] = i;
+            } else {
+                log_and_throw_error("Non-manifold edge found!");
+            }
         }
     }
     remove_duplicates(m_vertex_face_adjacencies);
@@ -342,9 +361,10 @@ void CollisionMesh::init_areas()
     Eigen::VectorXd vertex_face_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
     m_edge_areas.setConstant(m_edges.rows(), -1);
+    m_face_areas.setConstant(m_faces.rows(), -1);
     if (dim() == 3) {
         for (int i = 0; i < m_faces.rows(); i++) {
-            double face_area = triangle_area(
+            m_face_areas(i) = triangle_area(
                 m_rest_positions.row(m_faces(i, 0)),
                 m_rest_positions.row(m_faces(i, 1)),
                 m_rest_positions.row(m_faces(i, 2)));
@@ -352,11 +372,11 @@ void CollisionMesh::init_areas()
             for (int j = 0; j < m_faces.cols(); ++j) {
                 vertex_face_areas[m_faces(i, j)] =
                     std::max(vertex_face_areas[m_faces(i, j)], 0.0);
-                vertex_face_areas[m_faces(i, j)] += face_area / 3.0;
+                vertex_face_areas[m_faces(i, j)] += m_face_areas(i) / 3.0;
 
                 m_edge_areas[m_faces_to_edges(i, j)] =
                     std::max(m_edge_areas[m_faces_to_edges(i, j)], 0.0);
-                m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3.0;
+                m_edge_areas[m_faces_to_edges(i, j)] += m_face_areas(i) / 3.0;
             }
         }
     }
@@ -597,5 +617,41 @@ CollisionMesh::face_normals(Eigen::ConstRef<Eigen::MatrixXd> vertices) const
             vertices.row(m_faces(f, 2)));
     });
     return normals;
+}
+
+bool CollisionMesh::is_watertight() const
+{
+    if (dim() == 2) {
+        std::vector<int> vertex_appearance_count(num_vertices(), 0);
+        for (int e = 0; e < m_edges.rows(); e++) {
+            vertex_appearance_count[m_edges(e, 0)]++;
+            vertex_appearance_count[m_edges(e, 1)]++;
+        }
+
+        for (int c : vertex_appearance_count) {
+            if (c != 2) {
+                return false;
+            }
+        }
+
+        return true;
+    } else {
+        assert(dim() == 3);
+
+        std::vector<int> face_appearance_count(num_edges(), 0);
+        for (int f = 0; f < m_faces.rows(); f++) {
+            for (int i = 0; i < 3; i++) {
+                face_appearance_count[faces_to_edges()(f, i)]++;
+            }
+        }
+
+        for (int c : face_appearance_count) {
+            if (c != 2) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 } // namespace ipc

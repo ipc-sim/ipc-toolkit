@@ -100,6 +100,7 @@ option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"     
 option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
 option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
 option(IPC_TOOLKIT_WITH_PROFILER              "Enable performance profiler"                   OFF)
+option(IPC_TOOLKIT_WITH_GEOGRAM               "Use geogram for predicates / expansion types"  ON)
 option(IPC_TOOLKIT_WITH_TRACY                 "Enable Tracy frame profiler"                   OFF)
 option(IPC_TOOLKIT_WITH_MESHFEM_SPARSE        "Use MeshFEMSparse for block-accelerated assembly" ON)
 
@@ -302,6 +303,12 @@ if(IPC_TOOLKIT_WITH_FILIB)
   target_link_libraries(ipc_toolkit PUBLIC filib::filib)
 endif()
 
+# Geogram
+if(IPC_TOOLKIT_WITH_GEOGRAM)
+  include(geogram)
+  target_link_libraries(ipc_toolkit PUBLIC geogram::geogram)
+endif()
+
 # Block-accelerated Hessian assembly
 if(IPC_TOOLKIT_WITH_MESHFEM_SPARSE)
   include(meshfem_sparse)
@@ -409,6 +416,25 @@ endif()
 target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 
 ################################################################################
+# CUDA
+################################################################################
+
+# CUDA support
+if(IPC_TOOLKIT_WITH_CUDA)
+  # If CMAKE_CUDA_ARCHITECTURES was not specified, set it to native.
+  if(DEFINED CMAKE_CUDA_ARCHITECTURES)
+    message(STATUS "CMAKE_CUDA_ARCHITECTURES was specified, skipping auto-detection")
+  else()
+    message(STATUS "CMAKE_CUDA_ARCHITECTURES was not specified, set it to native")
+    set(CMAKE_CUDA_ARCHITECTURES "native")
+  endif()
+  message(STATUS "Targeting CUDA_ARCHITECTURES \"${CMAKE_CUDA_ARCHITECTURES}\"")
+
+  # Enable CUDA support
+  enable_language(CUDA)
+endif()
+
+################################################################################
 # Tests
 ################################################################################
 
@@ -417,6 +443,12 @@ if(IPC_TOOLKIT_BUILD_TESTS)
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
+  if(IPC_TOOLKIT_WITH_ROBIN_MAP)
+    target_link_libraries(ipc_toolkit_tests PRIVATE tsl::robin_map)
+  endif()
+  if(IPC_TOOLKIT_WITH_ABSEIL)
+    target_link_libraries(ipc_toolkit_tests PRIVATE absl::hash)
+  endif()
 endif()
 
 ################################################################################

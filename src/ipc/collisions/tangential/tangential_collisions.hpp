@@ -8,7 +8,9 @@
 #include <ipc/collisions/tangential/plane_vertex.hpp>
 #include <ipc/collisions/tangential/tangential_collision.hpp>
 #include <ipc/collisions/tangential/vertex_vertex.hpp>
-#include <ipc/smooth_contact/smooth_collisions.hpp>
+#include <ipc/esp/esp_collisions.hpp>
+#include <ipc/esp/esp_parameters.hpp>
+#include <ipc/gcp/gcp_collisions.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Core>
@@ -91,11 +93,32 @@ public:
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const SmoothCollisions& collisions,
-        const SmoothContactParameters& params,
+        const GCPCollisions& collisions,
+        const GCPParameters& params,
         const double normal_stiffness,
         Eigen::ConstRef<Eigen::VectorXd> mu_s,
         Eigen::ConstRef<Eigen::VectorXd> mu_k,
+        const std::function<double(double, double)>& blend_mu =
+            default_blend_mu);
+
+    /// @brief Build the tangential collisions for ESP contact.
+    /// @param mesh The collision mesh.
+    /// @param vertices The vertices of the mesh.
+    /// @param collisions The set of ESP collisions.
+    /// @param params Parameters of Extremum Sum Potential (ESP).
+    /// @param normal_stiffness Stiffness of the normal potential.
+    /// @param mu_s The static friction coefficient per vertex.
+    /// @param mu_k The kinetic friction coefficient per vertex.
+    /// @param blend_mu Function to blend vertex-based coefficients of friction. Defaults to average.
+    void build(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        const ESPCollisions& collisions,
+        const ESPParameters& params,
+        const double normal_stiffness,
+        Eigen::ConstRef<Eigen::VectorXd> mu_s,
+        Eigen::ConstRef<Eigen::VectorXd> mu_k,
+        const bool normalize_weights = true,
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
 

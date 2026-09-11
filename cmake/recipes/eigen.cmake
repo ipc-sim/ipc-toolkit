@@ -5,7 +5,7 @@ if(TARGET Eigen3::Eigen)
 endif()
 
 option(EIGEN_WITH_MKL "Use Eigen with MKL" OFF)
-option(EIGEN_DONT_VECTORIZE "Disable Eigen vectorization" OFF)
+option(EIGEN_DONT_VECTORIZE "Disable Eigen vectorization" ON)
 
 message(STATUS "Third-party: creating target 'Eigen3::Eigen'")
 

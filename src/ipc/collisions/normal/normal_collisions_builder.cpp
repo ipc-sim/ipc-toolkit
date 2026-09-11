@@ -14,10 +14,12 @@ namespace ipc {
 NormalCollisionsBuilder::NormalCollisionsBuilder(
     const bool _use_area_weighting,
     const bool _enable_shape_derivatives,
-    const bool _use_ogc)
+    const bool _use_ogc,
+    const bool _skip_obstacles)
     : use_area_weighting(_use_area_weighting)
     , enable_shape_derivatives(_enable_shape_derivatives)
     , use_ogc(_use_ogc)
+    , skip_obstacles(_skip_obstacles)
 {
 }
 
@@ -64,6 +66,11 @@ void NormalCollisionsBuilder::add_edge_vertex_collision(
     const std::function<bool(double)>& is_active)
 {
     const auto& [ei, vi] = candidate;
+
+    if (skip_obstacles && mesh.is_obstacle_vertex(vi)) {
+        return;
+    }
+
     const auto [v, e0, e1, _] =
         candidate.vertices(vertices, mesh.edges(), mesh.faces());
 
@@ -145,6 +152,12 @@ void NormalCollisionsBuilder::add_edge_edge_collision(
 {
     const auto& [eai, ebi] = candidate;
 
+    const bool is_obstacle_ea = mesh.is_obstacle_edge(eai);
+    const bool is_obstacle_eb = mesh.is_obstacle_edge(ebi);
+    if (skip_obstacles && is_obstacle_ea && is_obstacle_eb) {
+        return;
+    }
+
     const auto [ea0i, ea1i, eb0i, eb1i] =
         candidate.vertex_ids(mesh.edges(), mesh.faces());
 
@@ -178,7 +191,7 @@ void NormalCollisionsBuilder::add_edge_edge_collision(
 
     // ÷ 4 to handle double counting and PT + EE for correct integration.
     // Sum edge areas because duplicate edge candidates were removed.
-    const double weight = use_area_weighting
+    double weight = use_area_weighting
         ? (0.25 * (mesh.edge_area(eai) + mesh.edge_area(ebi)))
         : 1;
 
@@ -188,6 +201,13 @@ void NormalCollisionsBuilder::add_edge_edge_collision(
             ? (0.25
                * (mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi)))
             : Eigen::SparseVector<double>(vertices.size());
+    }
+
+    if (skip_obstacles && (is_obstacle_ea || is_obstacle_eb)) {
+        weight /= 2;
+        if (enable_shape_derivatives) {
+            weight_gradient /= 2;
+        }
     }
 
     switch (dtype) {
@@ -243,6 +263,10 @@ void NormalCollisionsBuilder::add_face_vertex_collision(
     const std::function<bool(double)>& is_active)
 {
     const auto& [fi, vi] = candidate;
+    if (skip_obstacles && mesh.is_obstacle_vertex(vi)) {
+        return;
+    }
+
     const index_t f0i = mesh.faces()(fi, 0), f1i = mesh.faces()(fi, 1),
                   f2i = mesh.faces()(fi, 2);
 
