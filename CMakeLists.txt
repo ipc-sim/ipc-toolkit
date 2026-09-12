@@ -207,8 +207,8 @@ add_subdirectory("${IPC_TOOLKIT_SOURCE_DIR}")
 
 # Public include directory for IPC Toolkit
 target_include_directories(ipc_toolkit PUBLIC
-  "${IPC_TOOLKIT_INCLUDE_DIR}"    # public headers
-  "${PROJECT_BINARY_DIR}/include" # generated config.hpp
+  "${IPC_TOOLKIT_INCLUDE_DIR}"                     # public headers
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> # generated config.hpp
 )
 
 # Folder name for IDE
