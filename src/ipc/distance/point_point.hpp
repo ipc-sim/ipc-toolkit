@@ -54,8 +54,8 @@ namespace detail {
     template <typename T, int dim>
     IPC_TOOLKIT_HOST_DEVICE inline Eigen::Matrix<T, 2 * dim, 2 * dim>
     point_point_distance_hessian(
-        Eigen::ConstRef<Eigen::Vector<T, dim>> /*p0*/,
-        Eigen::ConstRef<Eigen::Vector<T, dim>> /*p1*/)
+        [[maybe_unused]] Eigen::ConstRef<Eigen::Vector<T, dim>> p0,
+        [[maybe_unused]] Eigen::ConstRef<Eigen::Vector<T, dim>> p1)
     {
         static_assert(dim == 2 || dim == 3, "point-point is only 2D or 3D");
         const Eigen::Matrix<T, dim, dim> I2 =

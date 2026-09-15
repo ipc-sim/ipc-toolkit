@@ -145,7 +145,7 @@ inline CollisionFilter make_codim_cross_filter(size_t n_codim_vertices)
 /// @brief Create a filter that prevents self-collisions within a connected
 ///        component of the face mesh. Two vertices in the same connected
 ///        component are blocked; cross-component pairs are allowed.
-/// @param faces Face index matrix (#F × 3).
+/// @param faces Face index matrix (|F| × 3).
 /// @return A CollisionFilter that blocks intra-component pairs.
 /// @note Implemented in collision_filter.cpp (requires libigl internally).
 CollisionFilter
