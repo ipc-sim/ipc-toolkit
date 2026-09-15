@@ -234,3 +234,82 @@ TEST_CASE("CollisionFilter composition chain", "[collision_filter]")
     CHECK_FALSE(active(0, 1));
     CHECK_FALSE(active(3, 5));
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+TEST_CASE("CollisionFilter accepts_all", "[collision_filter]")
+{
+    // accepts_all() is what lets a GPU broad phase skip host-side filtering,
+    // so a wrong `true` silently drops the user's filter. Pin both directions.
+
+    SECTION("default filter")
+    {
+        const CollisionFilter f;
+        CHECK(f.accepts_all());
+        CHECK(f(0, 1));
+        CHECK(f(7, 7));
+
+        // The conversion must still yield a callable function.
+        const std::function<bool(size_t, size_t)> fn = f;
+        REQUIRE(fn);
+        CHECK(fn(3, 4));
+    }
+
+    SECTION("an empty std::function is the accept-all filter")
+    {
+        const std::function<bool(size_t, size_t)> empty;
+        const CollisionFilter f(empty);
+        CHECK(f.accepts_all());
+        CHECK(f(0, 1));
+    }
+
+    SECTION("a user callable is never accept-all, even if it returns true")
+    {
+        const CollisionFilter f([](size_t, size_t) { return true; });
+        CHECK_FALSE(f.accepts_all());
+        CHECK(f(0, 1));
+    }
+
+    SECTION("compositions")
+    {
+        const CollisionFilter all;
+        const CollisionFilter odd(
+            [](size_t vi, size_t vj) { return (vi + vj) % 2 == 1; });
+
+        // accept-all absorbs a union ...
+        CHECK((all | all).accepts_all());
+        CHECK((odd | all).accepts_all());
+        CHECK((all | odd).accepts_all());
+        CHECK((odd | all)(0, 2));
+
+        // ... and is the identity of an intersection.
+        CHECK((all & all).accepts_all());
+        CHECK_FALSE((odd & all).accepts_all());
+        CHECK_FALSE((all & odd).accepts_all());
+        CHECK((all & odd)(0, 1));
+        CHECK_FALSE((all & odd)(0, 2));
+
+        // Negating accept-all rejects everything and is not accept-all.
+        const CollisionFilter none = !all;
+        CHECK_FALSE(none.accepts_all());
+        CHECK_FALSE(none(0, 1));
+        CHECK_FALSE((!odd).accepts_all());
+
+        // Compound assignment follows the same rules.
+        CollisionFilter g;
+        g &= odd;
+        CHECK_FALSE(g.accepts_all());
+        CHECK(g(0, 1));
+        g |= all;
+        CHECK(g.accepts_all());
+    }
+
+    SECTION("factories are never accept-all")
+    {
+        Eigen::VectorXi patches(2);
+        patches << 0, 1;
+        CHECK_FALSE(make_vertex_patches_filter(patches).accepts_all());
+        CHECK_FALSE(make_static_obstacle_filter(1).accepts_all());
+        CHECK_FALSE(make_codim_cross_filter(1).accepts_all());
+    }
+}

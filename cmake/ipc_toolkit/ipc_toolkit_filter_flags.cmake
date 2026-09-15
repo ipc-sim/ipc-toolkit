@@ -23,3 +23,26 @@ function(ipc_toolkit_filter_flags flags)
   endforeach()
   set(${flags} ${output_flags} PARENT_SCOPE)
 endfunction()
+
+# The nvcc counterpart of ipc_toolkit_filter_flags(): keep the flags of `flags`
+# that nvcc's host compiler accepts, checked by actually compiling with nvcc and
+# `-Xcompiler=<flag>`, and wrap each so it applies only to CUDA sources compiled
+# by nvcc. `-Xcompiler` is required: nvcc parses some host flags itself with a
+# different meaning (`-Werror` takes nvcc's own diagnostic names, `-march=...`
+# is read as an input file), so a bare host flag on the nvcc command line is
+# unsafe. Requires the CUDA language to be enabled.
+function(ipc_toolkit_filter_nvcc_flags flags)
+  include(CheckCompilerFlag)
+  set(output_flags)
+  foreach(FLAG IN ITEMS ${${flags}})
+    string(REPLACE "=" "-" FLAG_VAR "${FLAG}")
+    if(NOT DEFINED IS_SUPPORTED_NVCC_HOST_${FLAG_VAR})
+      check_compiler_flag(CUDA "-Xcompiler=${FLAG}" IS_SUPPORTED_NVCC_HOST_${FLAG_VAR})
+    endif()
+    if(IS_SUPPORTED_NVCC_HOST_${FLAG_VAR})
+      list(APPEND output_flags
+        "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:-Xcompiler=${FLAG}>")
+    endif()
+  endforeach()
+  set(${flags} ${output_flags} PARENT_SCOPE)
+endfunction()

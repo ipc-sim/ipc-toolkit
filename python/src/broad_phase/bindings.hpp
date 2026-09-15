@@ -5,6 +5,7 @@
 void define_aabb(py::module_& m);
 void define_broad_phase(py::module_& m);
 void define_brute_force(py::module_& m);
+void define_cuda_lbvh(py::module_& cuda); // into the ipctk.cuda submodule
 void define_hash_grid(py::module_& m);
 void define_lbvh(py::module_& m);
 void define_spatial_hash(py::module_& m);
