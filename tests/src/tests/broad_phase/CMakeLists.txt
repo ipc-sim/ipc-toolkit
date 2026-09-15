@@ -19,6 +19,7 @@ set(SOURCES
 if(IPC_TOOLKIT_WITH_CUDA)
   list(APPEND SOURCES
     test_gpu_lbvh.cu
+    benchmark_lbvh_stages.cu
   )
 endif()
 

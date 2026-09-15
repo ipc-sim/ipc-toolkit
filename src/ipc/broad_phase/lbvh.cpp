@@ -401,10 +401,16 @@ void LBVH::detect_candidates(
 
     tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
 
-    independent_traversal<Candidate, swap_order, triangular>(
-        source, target, rightmost_leaves, can_collide, storage);
+    {
+        IPC_TOOLKIT_PROFILE_BLOCK("traverse");
+        independent_traversal<Candidate, swap_order, triangular>(
+            source, target, rightmost_leaves, can_collide, storage);
+    }
 
-    merge_thread_local_vectors(storage, candidates);
+    {
+        IPC_TOOLKIT_PROFILE_BLOCK("merge_thread_local_candidates");
+        merge_thread_local_vectors(storage, candidates);
+    }
 }
 
 void LBVH::detect_vertex_vertex_candidates(

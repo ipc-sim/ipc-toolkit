@@ -7,6 +7,7 @@
 #include <ipc/broad_phase/details/lbvh_build.hpp>
 #include <ipc/broad_phase/details/lbvh_traverse.hpp>
 #include <ipc/math/morton.hpp>
+#include <ipc/utils/cuda/cuda_profiler.cuh>
 #include <ipc/utils/cuda/device_utils.cuh>
 #include <ipc/utils/logger.hpp>
 
@@ -354,25 +355,32 @@ namespace {
         }
 
         const size_t num_nodes = size_t(2) * n - 1;
-        bvh.nodes.resize(num_nodes);
-        bvh.rightmost_leaves.resize(num_nodes);
+        {
+            IPC_TOOLKIT_PROFILE_BLOCK_CUDA("resize_bvh");
+            bvh.nodes.resize(num_nodes);
+            bvh.rightmost_leaves.resize(num_nodes);
 
-        for (auto& codes : impl.morton_codes) {
-            codes.resize(n);
+            for (auto& codes : impl.morton_codes) {
+                codes.resize(n);
+            }
+            for (auto& ids : impl.box_ids) {
+                ids.resize(n);
+            }
+            // Only the visitation counts need zeroing; a memset is the
+            // cheapest way to do it.
+            impl.construction_infos.resize(num_nodes);
+            impl.construction_infos.zero();
+            IPC_TOOLKIT_CUDA_CHECK(cudaMemsetAsync(d_root, 0xFF, sizeof(int)));
         }
-        for (auto& ids : impl.box_ids) {
-            ids.resize(n);
-        }
-        // Only the visitation counts need zeroing; a memset is the cheapest
-        // way to do it.
-        impl.construction_infos.resize(num_nodes);
-        impl.construction_infos.zero();
-        IPC_TOOLKIT_CUDA_CHECK(cudaMemsetAsync(d_root, 0xFF, sizeof(int)));
 
-        compute_morton_codes_kernel<<<kernel_grid_size(n), KERNEL_BLOCK_SIZE>>>(
-            d_box_min, d_box_max, n, impl.domain.data(), dim,
-            impl.morton_codes[0].data(), impl.box_ids[0].data());
-        IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+        {
+            IPC_TOOLKIT_PROFILE_BLOCK_CUDA("compute_morton_codes");
+            compute_morton_codes_kernel<<<
+                kernel_grid_size(n), KERNEL_BLOCK_SIZE>>>(
+                d_box_min, d_box_max, n, impl.domain.data(), dim,
+                impl.morton_codes[0].data(), impl.box_ids[0].data());
+            IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+        }
 
         // Radix sort the (code, id) pairs by code.
         //
@@ -392,29 +400,39 @@ namespace {
         // Keeping that scratch in a persistent buffer is what makes this
         // allocation-free per build (thrust::sort_by_key would cudaMalloc and
         // cudaFree it every call).
-        size_t temp_bytes = 0;
-        IPC_TOOLKIT_CUDA_CHECK(
-            cub::DeviceRadixSort::SortPairs(
-                nullptr, temp_bytes, keys, values, n));
-        impl.sort_temp.resize(temp_bytes);
-        IPC_TOOLKIT_CUDA_CHECK(
-            cub::DeviceRadixSort::SortPairs(
-                impl.sort_temp.data(), temp_bytes, keys, values, n));
+        {
+            IPC_TOOLKIT_PROFILE_BLOCK_CUDA("sort_morton_codes");
+            size_t temp_bytes = 0;
+            IPC_TOOLKIT_CUDA_CHECK(
+                cub::DeviceRadixSort::SortPairs(
+                    nullptr, temp_bytes, keys, values, n));
+            impl.sort_temp.resize(temp_bytes);
+            IPC_TOOLKIT_CUDA_CHECK(
+                cub::DeviceRadixSort::SortPairs(
+                    impl.sort_temp.data(), temp_bytes, keys, values, n));
+        }
 
-        // Current() is the sorted half of each ping-pong pair.
-        build_hierarchy_kernel<<<kernel_grid_size(n), KERNEL_BLOCK_SIZE>>>(
-            d_box_min, d_box_max, keys.Current(), values.Current(), n,
-            bvh.nodes.data(), bvh.rightmost_leaves.data(),
-            impl.construction_infos.data(), d_root);
-        IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+        {
+            IPC_TOOLKIT_PROFILE_BLOCK_CUDA("build_hierarchy");
+            // Current() is the sorted half of each ping-pong pair.
+            build_hierarchy_kernel<<<kernel_grid_size(n), KERNEL_BLOCK_SIZE>>>(
+                d_box_min, d_box_max, keys.Current(), values.Current(), n,
+                bvh.nodes.data(), bvh.rightmost_leaves.data(),
+                impl.construction_infos.data(), d_root);
+            IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+        }
 
-        swap_root_kernel<<<1, 1>>>(
-            bvh.nodes.data(), bvh.rightmost_leaves.data(), d_root);
-        IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+        {
+            IPC_TOOLKIT_PROFILE_BLOCK_CUDA("patch_root");
+            swap_root_kernel<<<1, 1>>>(
+                bvh.nodes.data(), bvh.rightmost_leaves.data(), d_root);
+            IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
-        patch_left_kernel<<<kernel_grid_size(num_nodes), KERNEL_BLOCK_SIZE>>>(
-            bvh.nodes.data(), static_cast<int>(num_nodes), d_root);
-        IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+            patch_left_kernel<<<
+                kernel_grid_size(num_nodes), KERNEL_BLOCK_SIZE>>>(
+                bvh.nodes.data(), static_cast<int>(num_nodes), d_root);
+            IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+        }
     }
 
     /// @brief Reduce the Morton-normalization domain (min of mins, max of
@@ -425,6 +443,8 @@ namespace {
     /// reads it directly, with no host round-trip.
     void compute_domain(LBVH::Impl& impl, const int n_vertices)
     {
+        IPC_TOOLKIT_PROFILE_BLOCK_CUDA("compute_domain");
+
         Domain init;
         for (int k = 0; k < 3; ++k) {
             init.min[k] = std::numeric_limits<double>::max();
@@ -453,6 +473,8 @@ namespace {
     void upload_vertices(
         Eigen::ConstRef<Eigen::MatrixXd> vertices, DeviceBuffer<double>& d)
     {
+        IPC_TOOLKIT_PROFILE_BLOCK("upload_vertices");
+
         const size_t n = static_cast<size_t>(vertices.size());
         if (vertices.innerStride() == 1
             && vertices.outerStride() == vertices.rows()) {
@@ -471,6 +493,8 @@ namespace {
         std::vector<int32_t>& h,
         DeviceBuffer<int32_t>& d)
     {
+        IPC_TOOLKIT_PROFILE_BLOCK("upload_connectivity");
+
         const size_t n = M.rows();
         h.resize(Cols * n);
         for (size_t i = 0; i < n; ++i) {
@@ -518,24 +542,29 @@ namespace {
         upload_connectivity<3>(faces, impl.h_faces, impl.faces);
 
         // Build edge/face boxes on the device from the vertex boxes.
-        impl.ebox_min.resize(3 * size_t(n_edges));
-        impl.ebox_max.resize(3 * size_t(n_edges));
-        if (n_edges > 0) {
-            build_edge_boxes_kernel<<<
-                kernel_grid_size(n_edges), KERNEL_BLOCK_SIZE>>>(
-                impl.vbox_min.data(), impl.vbox_max.data(), impl.edges.data(),
-                n_edges, impl.ebox_min.data(), impl.ebox_max.data());
-            IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
-        }
+        {
+            IPC_TOOLKIT_PROFILE_BLOCK_CUDA("build_edge_face_boxes");
+            impl.ebox_min.resize(3 * size_t(n_edges));
+            impl.ebox_max.resize(3 * size_t(n_edges));
+            if (n_edges > 0) {
+                build_edge_boxes_kernel<<<
+                    kernel_grid_size(n_edges), KERNEL_BLOCK_SIZE>>>(
+                    impl.vbox_min.data(), impl.vbox_max.data(),
+                    impl.edges.data(), n_edges, impl.ebox_min.data(),
+                    impl.ebox_max.data());
+                IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+            }
 
-        impl.fbox_min.resize(3 * size_t(n_faces));
-        impl.fbox_max.resize(3 * size_t(n_faces));
-        if (n_faces > 0) {
-            build_face_boxes_kernel<<<
-                kernel_grid_size(n_faces), KERNEL_BLOCK_SIZE>>>(
-                impl.vbox_min.data(), impl.vbox_max.data(), impl.faces.data(),
-                n_faces, impl.fbox_min.data(), impl.fbox_max.data());
-            IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+            impl.fbox_min.resize(3 * size_t(n_faces));
+            impl.fbox_max.resize(3 * size_t(n_faces));
+            if (n_faces > 0) {
+                build_face_boxes_kernel<<<
+                    kernel_grid_size(n_faces), KERNEL_BLOCK_SIZE>>>(
+                    impl.vbox_min.data(), impl.vbox_max.data(),
+                    impl.faces.data(), n_faces, impl.fbox_min.data(),
+                    impl.fbox_max.data());
+                IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+            }
         }
 
         // The CPU normalizes all three BVHs by the vertex box domain.
@@ -554,7 +583,10 @@ namespace {
 
         // The one synchronization of the build: surfaces any kernel fault and
         // lets the roots be read back -- all three at once.
-        IPC_TOOLKIT_CUDA_CHECK(cudaDeviceSynchronize());
+        {
+            IPC_TOOLKIT_PROFILE_BLOCK("synchronize_and_read_roots");
+            IPC_TOOLKIT_CUDA_CHECK(cudaDeviceSynchronize());
+        }
 
         // A hierarchy build that never reaches its root leaves -1 behind. The
         // traversal always starts at node 0, which would then be an arbitrary
@@ -875,6 +907,8 @@ namespace {
     /// @return The number of candidate pairs emitted.
     template <typename Candidate> size_t run_traversal(LBVH::Impl& impl)
     {
+        IPC_TOOLKIT_PROFILE_BLOCK("traverse");
+
         using T = Traversal<Candidate>;
         const LBVH::Impl::DeviceBVH& source = T::source(impl);
         const LBVH::Impl::DeviceBVH& target = T::target(impl);
@@ -961,19 +995,32 @@ namespace {
         if (count == 0) {
             return;
         }
-        std::vector<int32_t> h_a(count), h_b(count);
-        buf.a.download(h_a.data());
-        buf.b.download(h_b.data());
+        std::vector<int32_t> h_a, h_b;
+        {
+            // Staging for the pairs: two int32 arrays the size of the
+            // candidate set (42 MB on Cloth-Ball), allocated and zeroed.
+            IPC_TOOLKIT_PROFILE_BLOCK("allocate_host_buffers");
+            h_a.resize(count);
+            h_b.resize(count);
+        }
+        {
+            IPC_TOOLKIT_PROFILE_BLOCK("download_pairs");
+            buf.a.download(h_a.data());
+            buf.b.download(h_b.data());
+        }
 
-        out.reserve(count);
-        if (filter.accepts_all()) {
-            for (size_t k = 0; k < count; ++k) {
-                out.emplace_back(h_a[k], h_b[k]);
-            }
-        } else {
-            for (size_t k = 0; k < count; ++k) {
-                if (can_collide(h_a[k], h_b[k])) {
+        {
+            IPC_TOOLKIT_PROFILE_BLOCK("construct_candidates");
+            out.reserve(count);
+            if (filter.accepts_all()) {
+                for (size_t k = 0; k < count; ++k) {
                     out.emplace_back(h_a[k], h_b[k]);
+                }
+            } else {
+                for (size_t k = 0; k < count; ++k) {
+                    if (can_collide(h_a[k], h_b[k])) {
+                        out.emplace_back(h_a[k], h_b[k]);
+                    }
                 }
             }
         }
@@ -996,6 +1043,7 @@ namespace {
         // materialize too, so another call cannot overwrite the buffer while
         // it is being copied to the host.
         const std::lock_guard<std::mutex> lock(impl.mutex);
+        IPC_TOOLKIT_PROFILE_BLOCK("cuda::LBVH::detect_candidates");
         run_traversal<Candidate>(impl);
         materialize(
             Traversal<Candidate>::buffer(impl), filter, can_collide, out);
@@ -1080,6 +1128,8 @@ void LBVH::build(
     Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
+    IPC_TOOLKIT_PROFILE_BLOCK("cuda::LBVH::build");
+
     assert(vertices_t0.rows() == vertices_t1.rows());
     assert(vertices_t0.cols() == vertices_t1.cols());
     assert(vertices_t0.rows() <= std::numeric_limits<int32_t>::max());
@@ -1108,13 +1158,16 @@ void LBVH::build(
         same_vertices ? device.vertices_t0.data() : device.vertices_t1.data();
 
     // Build vertex boxes on the device (always 3-wide storage).
-    device.vbox_min.resize(3 * size_t(n_vertices));
-    device.vbox_max.resize(3 * size_t(n_vertices));
-    build_vertex_boxes_kernel<<<
-        kernel_grid_size(n_vertices), KERNEL_BLOCK_SIZE>>>(
-        device.vertices_t0.data(), d_vertices_t1, n_vertices, dim,
-        inflation_radius, device.vbox_min.data(), device.vbox_max.data());
-    IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+    {
+        IPC_TOOLKIT_PROFILE_BLOCK_CUDA("build_vertex_boxes");
+        device.vbox_min.resize(3 * size_t(n_vertices));
+        device.vbox_max.resize(3 * size_t(n_vertices));
+        build_vertex_boxes_kernel<<<
+            kernel_grid_size(n_vertices), KERNEL_BLOCK_SIZE>>>(
+            device.vertices_t0.data(), d_vertices_t1, n_vertices, dim,
+            inflation_radius, device.vbox_min.data(), device.vbox_max.data());
+        IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
+    }
 
     build_from_vertex_boxes(device, dim, n_vertices, edges, faces);
 }
