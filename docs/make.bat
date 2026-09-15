@@ -10,6 +10,13 @@ if "%SPHINXBUILD%" == "" (
 set SOURCEDIR=source
 set BUILDDIR=build
 
+REM Build quietly by default so only warnings and errors reach the console.
+REM Set DOCS_VERBOSE=1 to get Sphinx's and Doxygen's progress logs back.
+set QUIET=-q
+if not "%DOCS_VERBOSE%" == "" (
+	set QUIET=
+)
+
 if "%1" == "" goto help
 
 %SPHINXBUILD% >NUL 2>NUL
@@ -25,7 +32,7 @@ if errorlevel 9009 (
 	exit /b 1
 )
 
-%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %QUIET% %SPHINXOPTS% %O%
 goto end
 
 :help
