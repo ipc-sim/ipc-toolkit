@@ -642,8 +642,7 @@ namespace {
     __device__ inline void emit_pair(
         const int32_t query_prim,
         const int32_t node_prim,
-        int32_t* __restrict__ out_a,
-        int32_t* __restrict__ out_b,
+        LBVH::CandidatePair* __restrict__ out_pairs,
         unsigned long long* __restrict__ counter,
         const unsigned long long capacity)
     {
@@ -655,8 +654,7 @@ namespace {
         }
         const unsigned long long slot = atomicAdd(counter, 1ULL);
         if (slot < capacity) {
-            out_a[slot] = a;
-            out_b[slot] = b;
+            out_pairs[slot] = LBVH::CandidatePair { a, b };
         }
     }
 
@@ -678,8 +676,7 @@ namespace {
     /// @param target_rightmost The target's per-node rightmost-leaf indices.
     /// @param source_conn The source connectivity (null for vertices).
     /// @param target_conn The target connectivity (null for vertices).
-    /// @param[out] out_a The first ids of the emitted pairs.
-    /// @param[out] out_b The second ids of the emitted pairs.
+    /// @param[out] out_pairs The emitted pairs.
     /// @param[in,out] counter The emitted-pair counter.
     /// @param capacity The output arrays' capacity.
     template <
@@ -696,8 +693,7 @@ namespace {
         const int32_t* __restrict__ target_rightmost,
         const int32_t* __restrict__ source_conn,
         const int32_t* __restrict__ target_conn,
-        int32_t* __restrict__ out_a,
-        int32_t* __restrict__ out_b,
+        LBVH::CandidatePair* __restrict__ out_pairs,
         unsigned long long* __restrict__ counter,
         const unsigned long long capacity)
     {
@@ -721,7 +717,7 @@ namespace {
                     leaf.primitive_id, target_conn, leaf_ids);
                 if (!ipc::details::share_vertex(query_ids, leaf_ids)) {
                     emit_pair<swap_order>(
-                        query.primitive_id, leaf.primitive_id, out_a, out_b,
+                        query.primitive_id, leaf.primitive_id, out_pairs,
                         counter, capacity);
                 }
             });
@@ -929,14 +925,13 @@ namespace {
         const int source_leaf_offset = n_source_leaves - 1;
 
         size_t capacity = std::max(
-            { buf.a.capacity(), size_t(1024),
+            { buf.pairs.capacity(), size_t(1024),
               size_t(8) * static_cast<size_t>(n_source_leaves) });
         impl.counter.resize(1);
 
         unsigned long long count = 0;
         for (int pass = 0; pass < 2; ++pass) {
-            buf.a.reserve(capacity);
-            buf.b.reserve(capacity);
+            buf.pairs.reserve(capacity);
             impl.counter.zero();
 
             traverse_kernel<
@@ -945,8 +940,7 @@ namespace {
                     source.nodes.data(), n_source_leaves, source_leaf_offset,
                     target.nodes.data(), target_size,
                     target.rightmost_leaves.data(), T::source_conn(impl),
-                    T::target_conn(impl), buf.a.data(), buf.b.data(),
-                    impl.counter.data(),
+                    T::target_conn(impl), buf.pairs.data(), impl.counter.data(),
                     static_cast<unsigned long long>(capacity));
             IPC_TOOLKIT_CUDA_CHECK(cudaGetLastError());
 
@@ -972,8 +966,7 @@ namespace {
         }
 
         buf.count = static_cast<size_t>(count);
-        buf.a.resize(buf.count);
-        buf.b.resize(buf.count);
+        buf.pairs.resize(buf.count);
         return buf.count;
     }
 
@@ -985,6 +978,32 @@ namespace {
     /// @param filter The user vertex filter.
     /// @param can_collide The full predicate applied when the filter is not accept-all.
     /// @param[out] out The materialized candidates (cleared first).
+    /// @brief Whether a candidate set can be copied straight from the device
+    /// into the host output.
+    ///
+    /// The device writes two int32 ids per candidate and the host candidate
+    /// types are two index_t in the same order, so when index_t is 32 bits the
+    /// two have identical layout and the whole set is one memcpy. The layout
+    /// is verified once at runtime as well, so reordering a candidate's
+    /// members falls back to building them one by one rather than silently
+    /// producing garbage.
+    template <typename Candidate> bool can_copy_pairs_directly()
+    {
+        if constexpr (
+            std::is_trivially_copyable_v<Candidate>
+            && sizeof(Candidate) == sizeof(LBVH::CandidatePair)
+            && alignof(Candidate) >= alignof(LBVH::CandidatePair)) {
+            static const bool matches = []() {
+                const Candidate candidate(1, 2);
+                const LBVH::CandidatePair pair { 1, 2 };
+                return std::memcmp(&candidate, &pair, sizeof(pair)) == 0;
+            }();
+            return matches;
+        } else {
+            return false;
+        }
+    }
+
     template <typename Candidate, typename CanCollide>
     void materialize(
         const LBVH::Impl::DeviceCandidates& buf,
@@ -997,18 +1016,27 @@ namespace {
         if (count == 0) {
             return;
         }
-        std::vector<int32_t> h_a, h_b;
+
+        // The device set is already exact when the filter accepts all, so
+        // with a matching layout the candidates never have to be built: size
+        // the output and copy the pairs into it.
+        if (filter.accepts_all() && can_copy_pairs_directly<Candidate>()) {
+            IPC_TOOLKIT_PROFILE_BLOCK("download_candidates");
+            out.resize(count);
+            buf.pairs.download(
+                reinterpret_cast<LBVH::CandidatePair*>(out.data()));
+            return;
+        }
+
+        std::vector<LBVH::CandidatePair> h_pairs;
         {
-            // Staging for the pairs: two int32 arrays the size of the
-            // candidate set (42 MB on Cloth-Ball), allocated and zeroed.
+            // Staging for the pairs, the size of the candidate set.
             IPC_TOOLKIT_PROFILE_BLOCK("allocate_host_buffers");
-            h_a.resize(count);
-            h_b.resize(count);
+            h_pairs.resize(count);
         }
         {
             IPC_TOOLKIT_PROFILE_BLOCK("download_pairs");
-            buf.a.download(h_a.data());
-            buf.b.download(h_b.data());
+            buf.pairs.download(h_pairs.data());
         }
 
         {
@@ -1016,12 +1044,12 @@ namespace {
             out.reserve(count);
             if (filter.accepts_all()) {
                 for (size_t k = 0; k < count; ++k) {
-                    out.emplace_back(h_a[k], h_b[k]);
+                    out.emplace_back(h_pairs[k].a, h_pairs[k].b);
                 }
             } else {
                 for (size_t k = 0; k < count; ++k) {
-                    if (can_collide(h_a[k], h_b[k])) {
-                        out.emplace_back(h_a[k], h_b[k]);
+                    if (can_collide(h_pairs[k].a, h_pairs[k].b)) {
+                        out.emplace_back(h_pairs[k].a, h_pairs[k].b);
                     }
                 }
             }
@@ -1063,8 +1091,7 @@ namespace {
         const size_t count = run_traversal<Candidate>(impl);
         const LBVH::Impl::DeviceCandidates& buf =
             Traversal<Candidate>::buffer(impl);
-        return LBVH::DeviceCandidateView { count ? buf.a.data() : nullptr,
-                                           count ? buf.b.data() : nullptr,
+        return LBVH::DeviceCandidateView { count ? buf.pairs.data() : nullptr,
                                            count };
     }
 

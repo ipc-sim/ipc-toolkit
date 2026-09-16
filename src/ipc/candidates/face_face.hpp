@@ -12,6 +12,13 @@ namespace ipc {
 /// @note This may be useful for nonlinear triangles in the future.
 class FaceFaceCandidate {
 public:
+    /// @brief Construct a candidate with indeterminate IDs.
+    ///
+    /// Leaves the members uninitialized so a container can size itself
+    /// without writing them; keeping this trivial is what makes the type
+    /// trivially copyable.
+    FaceFaceCandidate() = default;
+
     FaceFaceCandidate(index_t face0_id, index_t face1_id);
 
     bool operator==(const FaceFaceCandidate& other) const;

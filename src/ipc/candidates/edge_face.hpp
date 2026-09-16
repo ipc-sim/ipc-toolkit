@@ -12,6 +12,13 @@ namespace ipc {
 /// Not included in Candidates because it is not a collision candidate.
 class EdgeFaceCandidate {
 public:
+    /// @brief Construct a candidate with indeterminate IDs.
+    ///
+    /// Leaves the members uninitialized so a container can size itself
+    /// without writing them; keeping this trivial is what makes the type
+    /// trivially copyable.
+    EdgeFaceCandidate() = default;
+
     EdgeFaceCandidate(index_t edge_id, index_t face_id);
 
     bool operator==(const EdgeFaceCandidate& other) const;
