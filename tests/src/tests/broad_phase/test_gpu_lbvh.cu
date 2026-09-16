@@ -150,16 +150,14 @@ TEST_CASE("GPU LBVH detect candidates", "[broad_phase][lbvh][cuda][gpu]")
         const cuda::LBVH::DeviceCandidateView view =
             gpu_lbvh.detect_edge_edge_candidates_device();
         REQUIRE(view.size == cpu_c.size());
-        std::vector<int32_t> a(view.size), b(view.size);
+        std::vector<cuda::LBVH::CandidatePair> pairs(view.size);
         REQUIRE_CUDA(cudaMemcpy(
-            a.data(), view.a, view.size * sizeof(int32_t),
-            cudaMemcpyDeviceToHost));
-        REQUIRE_CUDA(cudaMemcpy(
-            b.data(), view.b, view.size * sizeof(int32_t),
+            pairs.data(), view.pairs,
+            view.size * sizeof(cuda::LBVH::CandidatePair),
             cudaMemcpyDeviceToHost));
         ipc::CandidateVector<EdgeEdgeCandidate> view_c;
         for (size_t k = 0; k < view.size; ++k) {
-            view_c.emplace_back(a[k], b[k]);
+            view_c.emplace_back(pairs[k].a, pairs[k].b);
         }
         compare_candidates_exact(view_c, cpu_c);
 

@@ -54,17 +54,26 @@ public:
     LBVH(const LBVH&) = delete;
     LBVH& operator=(const LBVH&) = delete;
 
-    /// @brief Non-owning view of device-resident candidate pairs (SoA).
+    /// @brief One device-resident candidate: the two primitive ids.
     ///
-    /// The pointers address device memory owned by this LBVH and stay valid
+    /// Laid out to match the host candidate types, which are two index_t in
+    /// this order, so a candidate set can be copied to the host in one
+    /// memcpy when index_t is 32 bits. The ids are int32_t, not index_t: see
+    /// the class comment.
+    struct CandidatePair {
+        int32_t a; ///< The first primitive's id.
+        int32_t b; ///< The second primitive's id.
+    };
+
+    /// @brief Non-owning view of device-resident candidate pairs (AoS).
+    ///
+    /// The pointer addresses device memory owned by this LBVH and stays valid
     /// until the next detect_*() or detect_*_device() call of the SAME
     /// candidate type (both variants share one buffer per type), or until
-    /// clear(), build(), or destruction. The ids are int32_t, not index_t:
-    /// see the class comment.
+    /// clear(), build(), or destruction.
     struct DeviceCandidateView {
-        const int32_t* a = nullptr; ///< Device pointer to the first ids.
-        const int32_t* b = nullptr; ///< Device pointer to the second ids.
-        size_t size = 0;            ///< Number of candidate pairs.
+        const CandidatePair* pairs = nullptr; ///< Device pointer to the pairs.
+        size_t size = 0;                      ///< Number of candidate pairs.
     };
 
     /// @brief Get the name of the broad phase method.

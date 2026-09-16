@@ -56,15 +56,13 @@ struct LBVH::Impl {
     /// Nothing is initialized: the kernel writes exactly the slots it fills.
     /// The memory is released only by the destructor.
     struct DeviceCandidates {
-        DeviceBuffer<int32_t> a;
-        DeviceBuffer<int32_t> b;
-        size_t count = 0; ///< The number of valid pairs in a/b.
+        DeviceBuffer<LBVH::CandidatePair> pairs;
+        size_t count = 0; ///< The number of valid pairs.
 
         void clear()
         {
             count = 0;
-            a.clear();
-            b.clear();
+            pairs.clear();
         }
     };
 
