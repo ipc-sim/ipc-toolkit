@@ -33,7 +33,11 @@ public:
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param mesh The collision mesh.
     /// @param vertices Vertices of the collision mesh.
-    /// @param broad_phase_method Broad-phase method to use.
+    /// @param params The smooth contact parameters.
+    /// @param use_adaptive_dhat Use the per-element activation distances from a
+    ///     prior call to compute_adaptive_dhat instead of a uniform
+    ///     params.dhat.
+    /// @param broad_phase Broad-phase method to use.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
@@ -45,8 +49,12 @@ public:
     /// @param candidates Distance candidates from which the collision set is built.
     /// @param mesh The collision mesh.
     /// @param vertices Vertices of the collision mesh.
+    /// @param params The smooth contact parameters.
+    /// @param use_adaptive_dhat Use the per-element activation distances from a
+    ///     prior call to compute_adaptive_dhat instead of a uniform
+    ///     params.dhat.
     void build(
-        const Candidates& _candidates,
+        const Candidates& candidates,
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const SmoothContactParameters params,

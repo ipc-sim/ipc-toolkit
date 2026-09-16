@@ -217,7 +217,7 @@ namespace detail {
     // =========================================================================
 
     /**
-     * \defgroup geometry Point-line normal
+     * \defgroup point_line_normal Point-line normal
      * \brief Functions for computing a point-line normal and resp. Jacobians.
      * @{
      */
@@ -306,7 +306,7 @@ namespace detail {
     // =========================================================================
 
     /**
-     * \defgroup geometry Triangle normal
+     * \defgroup triangle_normal Triangle normal
      * \brief Functions for computing a triangle's normal and resp. Jacobians.
      * @{
      */
@@ -406,7 +406,7 @@ namespace detail {
     // =========================================================================
 
     /**
-     * \defgroup geometry Line-line normal
+     * \defgroup line_line_normal Line-line normal
      * \brief Functions for computing a line-line normal and resp. Jacobians.
      * @{
      */
@@ -515,9 +515,9 @@ namespace detail {
         Eigen::ConstRef<Eigen::Vector3<T>> eb0,
         Eigen::ConstRef<Eigen::Vector3<T>> eb1);
 
-} // namespace detail
+    /** @} */
 
-/** @} */
+} // namespace detail
 
 // --- EigenExpression wrappers ---
 

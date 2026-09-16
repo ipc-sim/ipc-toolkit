@@ -96,7 +96,6 @@ public:
         const double tmax = 1.0) const;
 
     /// @brief Perform nonlinear CCD between two linear edges moving along nonlinear trajectories.
-    /// @ingroup ccd
     /// @param[in] ea0 First edge's first endpoint's trajectory
     /// @param[in] ea1 First edge's second endpoint's trajectory
     /// @param[in] eb0 Second edge's first endpoint's trajectory
