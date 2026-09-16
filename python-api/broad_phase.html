@@ -2363,6 +2363,16 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#lbvh-cuda" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/broad_phase.rst#lbvh-cuda (reference label)"><span>LBVH <wbr>(CUDA)</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#aabb" class="md-nav__link">
     
     <span class="md-ellipsis">
@@ -3882,6 +3892,16 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#lbvh-cuda" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/broad_phase.rst#lbvh-cuda (reference label)"><span>LBVH <wbr>(CUDA)</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#aabb" class="md-nav__link">
     
     <span class="md-ellipsis">
@@ -4943,6 +4963,13 @@ inflation_radius: Radius of inflation around all elements.</p>
 </dd></dl>
 
 <h2 id="sweep-and-tiniest-queue">Sweep and Tiniest Queue<a class="headerlink" href="#sweep-and-tiniest-queue" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ipctk.SweepAndTiniestQueue</span></code> is available only when <code class="docutils literal notranslate"><span class="pre">ipctk</span></code> is built with
+CUDA (<code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_CUDA</span></code>), which the documentation build is not.</p>
+<h2 id="lbvh-cuda">LBVH (CUDA)<a class="headerlink" href="#lbvh-cuda" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ipctk.cuda.LBVH</span></code> is the GPU counterpart of <code class="docutils literal notranslate"><span class="pre">ipctk.LBVH</span></code> (C++:
+<code class="docutils literal notranslate"><span class="pre">ipc::cuda::LBVH</span></code>). The <code class="docutils literal notranslate"><span class="pre">ipctk.cuda</span></code> submodule mirrors the C++ <code class="docutils literal notranslate"><span class="pre">ipc::cuda</span></code>
+namespace; its classes exist only when <code class="docutils literal notranslate"><span class="pre">ipctk</span></code> is built with CUDA
+(<code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_CUDA</span></code>), which the documentation build is not.</p>
 <h2 id="aabb">AABB<a class="headerlink" href="#aabb" title="Link to this heading">¶</a></h2>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.AABB">
