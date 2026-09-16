@@ -147,10 +147,11 @@ Simply fork this repository and make a Pull Request! We would appreciate:
 * Documentation
 * Testing
 
-.. image:: https://api.star-history.com/chart?repos=ipc-sim/ipc-toolkit&type=date&legend=top-left
-   :align: center
-   :alt: Star History Chart
-   :target: https://www.star-history.com/?repos=ipc-sim%2Fipc-toolkit&type=date&releases=&legend=bottom-right
+..
+   .. image:: https://api.star-history.com/chart?repos=ipc-sim/ipc-toolkit&type=date&legend=top-left
+      :align: center
+      :alt: Star History Chart
+      :target: https://www.star-history.com/?repos=ipc-sim%2Fipc-toolkit&type=date&releases=&legend=bottom-right
 
 **Citation**
 
