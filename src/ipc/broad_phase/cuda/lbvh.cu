@@ -1021,7 +1021,7 @@ namespace {
         // with a matching layout the candidates never have to be built: size
         // the output and copy the pairs into it.
         if (filter.accepts_all() && can_copy_pairs_directly<Candidate>()) {
-            IPC_TOOLKIT_PROFILE_BLOCK("download_candidates");
+            IPC_TOOLKIT_PROFILE_BLOCK("copy_candidates_to_host");
             out.resize(count);
             buf.pairs.download(
                 reinterpret_cast<LBVH::CandidatePair*>(out.data()));
