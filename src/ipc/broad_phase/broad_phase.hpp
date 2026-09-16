@@ -63,36 +63,36 @@ public:
     virtual void clear();
 
     /// @brief Detect all collision candidates needed for a given dimensional simulation.
-    /// @param candidates The detected collision candidates.
+    /// @param candidates The detected collision candidates (cleared first).
     void detect_collision_candidates(Candidates& candidates) const;
 
     /// @brief Find the candidate vertex-vertex collisions.
-    /// @param[out] candidates The candidate vertex-vertex collisions.
+    /// @param[out] candidates The candidate vertex-vertex collisions (cleared first).
     virtual void detect_vertex_vertex_candidates(
         std::vector<VertexVertexCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate edge-vertex collisions.
-    /// @param[out] candidates The candidate edge-vertex collisions.
+    /// @param[out] candidates The candidate edge-vertex collisions (cleared first).
     virtual void detect_edge_vertex_candidates(
         std::vector<EdgeVertexCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate edge-edge collisions.
-    /// @param[out] candidates The candidate edge-edge collisions.
+    /// @param[out] candidates The candidate edge-edge collisions (cleared first).
     virtual void detect_edge_edge_candidates(
         std::vector<EdgeEdgeCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate face-vertex collisions.
-    /// @param[out] candidates The candidate face-vertex collisions.
+    /// @param[out] candidates The candidate face-vertex collisions (cleared first).
     virtual void detect_face_vertex_candidates(
         std::vector<FaceVertexCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate edge-face intersections.
-    /// @param[out] candidates The candidate edge-face intersections.
+    /// @param[out] candidates The candidate edge-face intersections (cleared first).
     virtual void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate face-face collisions.
-    /// @param[out] candidates The candidate face-face collisions.
+    /// @param[out] candidates The candidate face-face collisions (cleared first).
     virtual void detect_face_face_candidates(
         std::vector<FaceFaceCandidate>& candidates) const = 0;
 

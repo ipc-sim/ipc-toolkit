@@ -195,3 +195,54 @@ add_library(ipc::toolkit::warnings ALIAS ipc_toolkit_warnings)
 include(ipc_toolkit_filter_flags)
 ipc_toolkit_filter_flags(IPC_TOOLKIT_WARNING_FLAGS)
 target_compile_options(ipc_toolkit_warnings INTERFACE ${IPC_TOOLKIT_WARNING_FLAGS})
+
+# nvcc forwards none of the flags above to the host compiler it drives, so a
+# .cu is otherwise compiled with no warnings at all. Hand the host pass the
+# flags that catch bugs in OUR code (the device pass has no use for them).
+#
+# The full set is deliberately not forwarded: nvcc's generated host code and the
+# CUDA headers are not clean under -Wpedantic, -Wold-style-cast or -Wsign-promo
+# (thousands of hits in its stubs and in crt/device_functions.hpp), and its
+# rewriting of aggregate initializers trips -Werror=missing-braces.
+#
+# ipc_toolkit_filter_nvcc_flags() checks each flag against nvcc and scopes it
+# to CUDA sources compiled by nvcc (clang as the CUDA compiler has no -Xcompiler
+# and takes the C++ flags above directly).
+if(IPC_TOOLKIT_WITH_CUDA AND NOT MSVC)
+  set(IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS
+    -Wall
+    -Wextra
+    -Wshadow
+    -Woverloaded-virtual
+    -Wuninitialized
+    -Wcast-qual
+    -Wpointer-arith
+    -Werror=return-type
+    -Werror=non-virtual-dtor
+    -Werror=delete-non-virtual-dtor
+    -Wno-unused-parameter
+    -Wno-sign-compare
+    -Wno-unknown-pragmas # nvcc's own pragmas (unroll) reach the host pass
+  )
+  ipc_toolkit_filter_nvcc_flags(IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS)
+  target_compile_options(ipc_toolkit_warnings INTERFACE ${IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS})
+endif()
+
+# The device pass has no -Wall; nvcc's own diagnostics are few, and these are
+# the ones with a bug-finding record here. They go to nvcc directly (not via
+# -Xcompiler): nvcc's -Werror takes nvcc's own diagnostic names.
+#  * all-warnings: the front end's own warnings (e.g. "variable used before its
+#    value is set") become errors.
+#  * cross-execution-space-call: calling a host-only function from device code
+#    is an error, the typical mistake in code shared via IPC_TOOLKIT_HOST_DEVICE.
+# Not used: -Xptxas -warn-spills. Under separable compilation the shared device
+# sources are relocatable __device__ functions that follow the ABI, and ptxas
+# reports their callee-saved register traffic as spills (64 hits in the barrier
+# functions alone), so it is noise here; check kernels with --resource-usage on
+# a non-rdc compile instead. -warn-lmem-usage likewise: the traversal stack is
+# intentional local memory.
+if(IPC_TOOLKIT_WITH_CUDA)
+  target_compile_options(ipc_toolkit_warnings INTERFACE
+    "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:SHELL:-Werror all-warnings>"
+    "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:SHELL:-Werror cross-execution-space-call>")
+endif()

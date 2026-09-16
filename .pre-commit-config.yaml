@@ -11,4 +11,4 @@ repos:
           - -i
           - --style=file
           - --verbose
-        files: '\.(c|cc|cpp|h|hpp|tpp|cxx|hh|inl|ipp)$'
+        files: '\.(c|cc|cpp|cu|cuh|h|hpp|tpp|cxx|hh|inl|ipp)$'
