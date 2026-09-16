@@ -1,3 +1,4 @@
+#include <ipc/candidates/candidate_vector.hpp>
 #include <common.hpp>
 
 #include <ipc/broad_phase/broad_phase.hpp>
@@ -39,13 +40,14 @@ public:
     void clear() override { PYBIND11_OVERRIDE(void, BroadPhase, clear); }
 
     void detect_vertex_vertex_candidates(
-        std::vector<VertexVertexCandidate>& candidates) const override
+        ipc::CandidateVector<VertexVertexCandidate>& candidates) const override
     {
         py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
         py::function override =
             py::get_override(this, "detect_vertex_vertex_candidates");
         if (override) {
-            candidates = override().cast<std::vector<VertexVertexCandidate>>();
+            candidates =
+                override().cast<ipc::CandidateVector<VertexVertexCandidate>>();
             return;
         }
         throw std::runtime_error(
@@ -53,13 +55,14 @@ public:
     }
 
     void detect_edge_vertex_candidates(
-        std::vector<EdgeVertexCandidate>& candidates) const override
+        ipc::CandidateVector<EdgeVertexCandidate>& candidates) const override
     {
         py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
         py::function override =
             py::get_override(this, "detect_edge_vertex_candidates");
         if (override) {
-            candidates = override().cast<std::vector<EdgeVertexCandidate>>();
+            candidates =
+                override().cast<ipc::CandidateVector<EdgeVertexCandidate>>();
             return;
         }
         throw std::runtime_error(
@@ -67,13 +70,14 @@ public:
     }
 
     void detect_edge_edge_candidates(
-        std::vector<EdgeEdgeCandidate>& candidates) const override
+        ipc::CandidateVector<EdgeEdgeCandidate>& candidates) const override
     {
         py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
         py::function override =
             py::get_override(this, "detect_edge_edge_candidates");
         if (override) {
-            candidates = override().cast<std::vector<EdgeEdgeCandidate>>();
+            candidates =
+                override().cast<ipc::CandidateVector<EdgeEdgeCandidate>>();
             return;
         }
         throw std::runtime_error(
@@ -81,13 +85,14 @@ public:
     }
 
     void detect_face_vertex_candidates(
-        std::vector<FaceVertexCandidate>& candidates) const override
+        ipc::CandidateVector<FaceVertexCandidate>& candidates) const override
     {
         py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
         py::function override =
             py::get_override(this, "detect_face_vertex_candidates");
         if (override) {
-            candidates = override().cast<std::vector<FaceVertexCandidate>>();
+            candidates =
+                override().cast<ipc::CandidateVector<FaceVertexCandidate>>();
             return;
         }
         throw std::runtime_error(
@@ -95,13 +100,14 @@ public:
     }
 
     void detect_edge_face_candidates(
-        std::vector<EdgeFaceCandidate>& candidates) const override
+        ipc::CandidateVector<EdgeFaceCandidate>& candidates) const override
     {
         py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
         py::function override =
             py::get_override(this, "detect_edge_face_candidates");
         if (override) {
-            candidates = override().cast<std::vector<EdgeFaceCandidate>>();
+            candidates =
+                override().cast<ipc::CandidateVector<EdgeFaceCandidate>>();
             return;
         }
         throw std::runtime_error(
@@ -109,13 +115,14 @@ public:
     }
 
     void detect_face_face_candidates(
-        std::vector<FaceFaceCandidate>& candidates) const override
+        ipc::CandidateVector<FaceFaceCandidate>& candidates) const override
     {
         py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
         py::function override =
             py::get_override(this, "detect_face_face_candidates");
         if (override) {
-            candidates = override().cast<std::vector<FaceFaceCandidate>>();
+            candidates =
+                override().cast<ipc::CandidateVector<FaceFaceCandidate>>();
             return;
         }
         throw std::runtime_error(
@@ -170,7 +177,7 @@ void define_broad_phase(py::module_& m)
         .def(
             "detect_vertex_vertex_candidates",
             [](const BroadPhase& self) {
-                std::vector<VertexVertexCandidate> candidates;
+                ipc::CandidateVector<VertexVertexCandidate> candidates;
                 self.detect_vertex_vertex_candidates(candidates);
                 return candidates;
             },
@@ -183,7 +190,7 @@ void define_broad_phase(py::module_& m)
         .def(
             "detect_edge_vertex_candidates",
             [](const BroadPhase& self) {
-                std::vector<EdgeVertexCandidate> candidates;
+                ipc::CandidateVector<EdgeVertexCandidate> candidates;
                 self.detect_edge_vertex_candidates(candidates);
                 return candidates;
             },
@@ -196,7 +203,7 @@ void define_broad_phase(py::module_& m)
         .def(
             "detect_edge_edge_candidates",
             [](const BroadPhase& self) {
-                std::vector<EdgeEdgeCandidate> candidates;
+                ipc::CandidateVector<EdgeEdgeCandidate> candidates;
                 self.detect_edge_edge_candidates(candidates);
                 return candidates;
             },
@@ -209,7 +216,7 @@ void define_broad_phase(py::module_& m)
         .def(
             "detect_face_vertex_candidates",
             [](const BroadPhase& self) {
-                std::vector<FaceVertexCandidate> candidates;
+                ipc::CandidateVector<FaceVertexCandidate> candidates;
                 self.detect_face_vertex_candidates(candidates);
                 return candidates;
             },
@@ -222,7 +229,7 @@ void define_broad_phase(py::module_& m)
         .def(
             "detect_edge_face_candidates",
             [](const BroadPhase& self) {
-                std::vector<EdgeFaceCandidate> candidates;
+                ipc::CandidateVector<EdgeFaceCandidate> candidates;
                 self.detect_edge_face_candidates(candidates);
                 return candidates;
             },
@@ -235,7 +242,7 @@ void define_broad_phase(py::module_& m)
         .def(
             "detect_face_face_candidates",
             [](const BroadPhase& self) {
-                std::vector<FaceFaceCandidate> candidates;
+                ipc::CandidateVector<FaceFaceCandidate> candidates;
                 self.detect_face_face_candidates(candidates);
                 return candidates;
             },

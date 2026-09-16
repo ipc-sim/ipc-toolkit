@@ -6,6 +6,7 @@
 // AABB (an order-independent union of identically-inflated boxes). The
 // detected candidate sets must be exactly equal.
 
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/config.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
@@ -39,7 +40,7 @@ namespace {
 // so they must be exactly equal as sets.
 template <typename Candidate>
 void compare_candidates_exact(
-    std::vector<Candidate> gpu, std::vector<Candidate> cpu)
+    ipc::CandidateVector<Candidate> gpu, ipc::CandidateVector<Candidate> cpu)
 {
     std::sort(gpu.begin(), gpu.end());
     std::sort(cpu.begin(), cpu.end());
@@ -126,19 +127,19 @@ TEST_CASE("GPU LBVH detect candidates", "[broad_phase][lbvh][cuda][gpu]")
     cpu_lbvh.build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
 
     {
-        std::vector<VertexVertexCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<VertexVertexCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_vertex_vertex_candidates(gpu_c);
         cpu_lbvh.detect_vertex_vertex_candidates(cpu_c);
         compare_candidates_exact(gpu_c, cpu_c);
     }
     {
-        std::vector<EdgeVertexCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<EdgeVertexCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_edge_vertex_candidates(gpu_c);
         cpu_lbvh.detect_edge_vertex_candidates(cpu_c);
         compare_candidates_exact(gpu_c, cpu_c);
     }
     {
-        std::vector<EdgeEdgeCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<EdgeEdgeCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_edge_edge_candidates(gpu_c);
         cpu_lbvh.detect_edge_edge_candidates(cpu_c);
         compare_candidates_exact(gpu_c, cpu_c);
@@ -156,7 +157,7 @@ TEST_CASE("GPU LBVH detect candidates", "[broad_phase][lbvh][cuda][gpu]")
         REQUIRE_CUDA(cudaMemcpy(
             b.data(), view.b, view.size * sizeof(int32_t),
             cudaMemcpyDeviceToHost));
-        std::vector<EdgeEdgeCandidate> view_c;
+        ipc::CandidateVector<EdgeEdgeCandidate> view_c;
         for (size_t k = 0; k < view.size; ++k) {
             view_c.emplace_back(a[k], b[k]);
         }
@@ -168,19 +169,19 @@ TEST_CASE("GPU LBVH detect candidates", "[broad_phase][lbvh][cuda][gpu]")
         CHECK(gpu_c.size() == cpu_c.size());
     }
     {
-        std::vector<FaceVertexCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<FaceVertexCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_face_vertex_candidates(gpu_c);
         cpu_lbvh.detect_face_vertex_candidates(cpu_c);
         compare_candidates_exact(gpu_c, cpu_c);
     }
     {
-        std::vector<EdgeFaceCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<EdgeFaceCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_edge_face_candidates(gpu_c);
         cpu_lbvh.detect_edge_face_candidates(cpu_c);
         compare_candidates_exact(gpu_c, cpu_c);
     }
     {
-        std::vector<FaceFaceCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<FaceFaceCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_face_face_candidates(gpu_c);
         cpu_lbvh.detect_face_face_candidates(cpu_c);
         compare_candidates_exact(gpu_c, cpu_c);
@@ -216,7 +217,7 @@ TEST_CASE(
     cpu_lbvh.build(vertices_t0, vertices_t1, edges, faces, 0);
 
     {
-        std::vector<EdgeEdgeCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<EdgeEdgeCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_edge_edge_candidates(gpu_c);
         cpu_lbvh.detect_edge_edge_candidates(cpu_c);
         compare_candidates_exact(gpu_c, cpu_c);
@@ -227,13 +228,13 @@ TEST_CASE(
             gpu_lbvh.detect_edge_edge_candidates_device().size >= cpu_c.size());
     }
     {
-        std::vector<FaceVertexCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<FaceVertexCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_face_vertex_candidates(gpu_c);
         cpu_lbvh.detect_face_vertex_candidates(cpu_c);
         compare_candidates_exact(gpu_c, cpu_c);
     }
     {
-        std::vector<EdgeFaceCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<EdgeFaceCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_edge_face_candidates(gpu_c);
         cpu_lbvh.detect_edge_face_candidates(cpu_c);
         compare_candidates_exact(gpu_c, cpu_c);
@@ -276,7 +277,7 @@ TEST_CASE("GPU LBVH 2D build and detect", "[broad_phase][lbvh][cuda][gpu]")
 
     // -- Detection parity (only edge-vertex is meaningful in 2D; mirrors
     //    BroadPhase::detect_collision_candidates's dim == 2 branch). --
-    std::vector<EdgeVertexCandidate> gpu_c, cpu_c;
+    ipc::CandidateVector<EdgeVertexCandidate> gpu_c, cpu_c;
     gpu_lbvh.detect_edge_vertex_candidates(gpu_c);
     cpu_lbvh.detect_edge_vertex_candidates(cpu_c);
     compare_candidates_exact(gpu_c, cpu_c);
@@ -329,7 +330,7 @@ TEST_CASE("GPU LBVH single-primitive trees", "[broad_phase][lbvh][cuda][gpu]")
     tests::check_lbvh_nodes_match(nodes, cpu_lbvh.edge_nodes());
 
     {
-        std::vector<FaceVertexCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<FaceVertexCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_face_vertex_candidates(gpu_c);
         cpu_lbvh.detect_face_vertex_candidates(cpu_c);
         // Without this the checks would pass on an empty set, which is
@@ -338,14 +339,14 @@ TEST_CASE("GPU LBVH single-primitive trees", "[broad_phase][lbvh][cuda][gpu]")
         compare_candidates_exact(gpu_c, cpu_c);
     }
     {
-        std::vector<EdgeFaceCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<EdgeFaceCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_edge_face_candidates(gpu_c);
         cpu_lbvh.detect_edge_face_candidates(cpu_c);
         REQUIRE(!cpu_c.empty());
         compare_candidates_exact(gpu_c, cpu_c);
     }
     {
-        std::vector<EdgeVertexCandidate> gpu_c, cpu_c;
+        ipc::CandidateVector<EdgeVertexCandidate> gpu_c, cpu_c;
         gpu_lbvh.detect_edge_vertex_candidates(gpu_c);
         cpu_lbvh.detect_edge_vertex_candidates(cpu_c);
         REQUIRE(!cpu_c.empty());
@@ -393,7 +394,7 @@ TEST_CASE("GPU LBVH degenerate domain", "[broad_phase][lbvh][cuda][gpu]")
     gpu_lbvh.face_nodes_to_host(nodes, rightmost);
     tests::check_lbvh_nodes_match(nodes, cpu_lbvh.face_nodes());
 
-    std::vector<EdgeEdgeCandidate> gpu_c, cpu_c;
+    ipc::CandidateVector<EdgeEdgeCandidate> gpu_c, cpu_c;
     gpu_lbvh.detect_edge_edge_candidates(gpu_c);
     cpu_lbvh.detect_edge_edge_candidates(cpu_c);
     REQUIRE(!cpu_c.empty());
@@ -419,7 +420,7 @@ TEST_CASE("GPU LBVH move", "[broad_phase][lbvh][cuda][gpu]")
     CHECK(b.num_face_nodes() == num_nodes);
     CHECK(a.num_face_nodes() == 0); // NOLINT(bugprone-use-after-move)
 
-    std::vector<FaceFaceCandidate> candidates;
+    ipc::CandidateVector<FaceFaceCandidate> candidates;
     a.detect_face_face_candidates(candidates); // cleared, not null
     CHECK(candidates.empty());
 
@@ -493,13 +494,13 @@ TEST_CASE(
     // Warm up the CUDA context so the first sample is not skewed by lazy
     // context/allocation initialization.
     {
-        std::vector<EdgeEdgeCandidate> warmup;
+        ipc::CandidateVector<EdgeEdgeCandidate> warmup;
         gpu_lbvh.detect_edge_edge_candidates(warmup);
     }
 
     BENCHMARK("cuda::LBVH::detect_edge_edge_candidates")
     {
-        std::vector<EdgeEdgeCandidate> ee_candidates;
+        ipc::CandidateVector<EdgeEdgeCandidate> ee_candidates;
         gpu_lbvh.detect_edge_edge_candidates(ee_candidates);
         return ee_candidates.size();
     };

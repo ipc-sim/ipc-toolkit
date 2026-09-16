@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/broad_phase/default_broad_phase.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/face_vertex.hpp>
@@ -252,7 +253,7 @@ public:
     /// @param vertices Collision mesh vertex positions (rowwise).
     /// @param is_active (Optional) Function to determine if a candidate is active.
     /// @return Vertex-vertex candidates derived from edge-vertex candidates.
-    std::vector<VertexVertexCandidate> edge_vertex_to_vertex_vertex(
+    CandidateVector<VertexVertexCandidate> edge_vertex_to_vertex_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::function<bool(double)>& is_active = default_is_active) const;
@@ -262,7 +263,7 @@ public:
     /// @param vertices Collision mesh vertex positions (rowwise).
     /// @param is_active (Optional) Function to determine if a candidate is active.
     /// @return Vertex-vertex candidates derived from face-vertex candidates.
-    std::vector<VertexVertexCandidate> face_vertex_to_vertex_vertex(
+    CandidateVector<VertexVertexCandidate> face_vertex_to_vertex_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::function<bool(double)>& is_active = default_is_active) const;
@@ -272,7 +273,7 @@ public:
     /// @param vertices Collision mesh vertex positions (rowwise).
     /// @param is_active (Optional) Function to determine if a candidate is active.
     /// @return Edge-vertex candidates derived from face-vertex candidates.
-    std::vector<EdgeVertexCandidate> face_vertex_to_edge_vertex(
+    CandidateVector<EdgeVertexCandidate> face_vertex_to_edge_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::function<bool(double)>& is_active = default_is_active) const;
@@ -282,7 +283,7 @@ public:
     /// @param vertices Collision mesh vertex positions (rowwise).
     /// @param is_active (Optional) Function to determine if a candidate is active.
     /// @return Edge-vertex candidates derived from edge-edge candidates.
-    std::vector<EdgeVertexCandidate> edge_edge_to_edge_vertex(
+    CandidateVector<EdgeVertexCandidate> edge_edge_to_edge_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::function<bool(double)>& is_active = default_is_active) const;
@@ -330,14 +331,14 @@ public:
     AdjacencyList ff_set(const CollisionMesh& mesh, index_t id) const;
 
 public:
-    std::vector<VertexVertexCandidate> vv_candidates;
-    std::vector<EdgeVertexCandidate> ev_candidates;
-    std::vector<EdgeEdgeCandidate> ee_candidates;
-    std::vector<FaceVertexCandidate> fv_candidates;
-    std::vector<PlaneVertexCandidate> pv_candidates;
+    CandidateVector<VertexVertexCandidate> vv_candidates;
+    CandidateVector<EdgeVertexCandidate> ev_candidates;
+    CandidateVector<EdgeEdgeCandidate> ee_candidates;
+    CandidateVector<FaceVertexCandidate> fv_candidates;
+    CandidateVector<PlaneVertexCandidate> pv_candidates;
 
-    std::vector<EdgeFaceCandidate> ef_candidates;
-    std::vector<FaceFaceCandidate> ff_candidates;
+    CandidateVector<EdgeFaceCandidate> ef_candidates;
+    CandidateVector<FaceFaceCandidate> ff_candidates;
 
     /// @brief Whether these candidates include the types only ESP needs.
     ///

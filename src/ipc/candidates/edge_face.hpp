@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/config.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 
 #include <Eigen/Core>
 

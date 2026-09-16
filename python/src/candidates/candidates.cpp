@@ -1,3 +1,4 @@
+#include <ipc/candidates/candidate_vector.hpp>
 #include <common.hpp>
 
 #include <ipc/candidates/candidates.hpp>
@@ -162,8 +163,8 @@ void define_candidates(py::module_& m)
         .def(
             "edge_vertex_to_vertex_vertex",
             [](const Candidates& C, const CollisionMesh& mesh,
-               Eigen::ConstRef<Eigen::MatrixXd> vertices,
-               py::object is_active) -> std::vector<VertexVertexCandidate> {
+               Eigen::ConstRef<Eigen::MatrixXd> vertices, py::object is_active)
+                -> ipc::CandidateVector<VertexVertexCandidate> {
                 std::function<bool(double)> is_active_fn = [](double) {
                     return true;
                 };
@@ -190,8 +191,8 @@ void define_candidates(py::module_& m)
         .def(
             "face_vertex_to_vertex_vertex",
             [](const Candidates& C, const CollisionMesh& mesh,
-               Eigen::ConstRef<Eigen::MatrixXd> vertices,
-               py::object is_active) -> std::vector<VertexVertexCandidate> {
+               Eigen::ConstRef<Eigen::MatrixXd> vertices, py::object is_active)
+                -> ipc::CandidateVector<VertexVertexCandidate> {
                 std::function<bool(double)> is_active_fn = [](double) {
                     return true;
                 };
@@ -218,8 +219,8 @@ void define_candidates(py::module_& m)
         .def(
             "face_vertex_to_edge_vertex",
             [](const Candidates& C, const CollisionMesh& mesh,
-               Eigen::ConstRef<Eigen::MatrixXd> vertices,
-               py::object is_active) -> std::vector<EdgeVertexCandidate> {
+               Eigen::ConstRef<Eigen::MatrixXd> vertices, py::object is_active)
+                -> ipc::CandidateVector<EdgeVertexCandidate> {
                 std::function<bool(double)> is_active_fn = [](double) {
                     return true;
                 };
@@ -246,8 +247,8 @@ void define_candidates(py::module_& m)
         .def(
             "edge_edge_to_edge_vertex",
             [](const Candidates& C, const CollisionMesh& mesh,
-               Eigen::ConstRef<Eigen::MatrixXd> vertices,
-               py::object is_active) -> std::vector<EdgeVertexCandidate> {
+               Eigen::ConstRef<Eigen::MatrixXd> vertices, py::object is_active)
+                -> ipc::CandidateVector<EdgeVertexCandidate> {
                 std::function<bool(double)> is_active_fn = [](double) {
                     return true;
                 };
