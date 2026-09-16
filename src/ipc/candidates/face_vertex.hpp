@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/candidates/stencil_adapter.hpp>
 #include <ipc/candidates/stencil_mixin.hpp>
 #include <ipc/distance/distance_type.hpp>

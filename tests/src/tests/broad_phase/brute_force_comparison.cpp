@@ -1,3 +1,4 @@
+#include <ipc/candidates/candidate_vector.hpp>
 #include "brute_force_comparison.hpp"
 
 #include <ipc/ccd/tight_inclusion_ccd.hpp>
@@ -122,8 +123,8 @@ void brute_force_comparison(
     const ipc::CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    std::vector<Candidate>& candidates,
-    std::vector<Candidate>& bf_candidates)
+    ipc::CandidateVector<Candidate>& candidates,
+    ipc::CandidateVector<Candidate>& bf_candidates)
 {
     CHECK(candidates.size() <= bf_candidates.size());
 
@@ -152,17 +153,17 @@ template void brute_force_comparison<ipc::EdgeVertexCandidate>(
     const ipc::CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    std::vector<ipc::EdgeVertexCandidate>& candidates,
-    std::vector<ipc::EdgeVertexCandidate>& bf_candidates);
+    ipc::CandidateVector<ipc::EdgeVertexCandidate>& candidates,
+    ipc::CandidateVector<ipc::EdgeVertexCandidate>& bf_candidates);
 template void brute_force_comparison<ipc::EdgeEdgeCandidate>(
     const ipc::CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    std::vector<ipc::EdgeEdgeCandidate>& candidates,
-    std::vector<ipc::EdgeEdgeCandidate>& bf_candidates);
+    ipc::CandidateVector<ipc::EdgeEdgeCandidate>& candidates,
+    ipc::CandidateVector<ipc::EdgeEdgeCandidate>& bf_candidates);
 template void brute_force_comparison<ipc::FaceVertexCandidate>(
     const ipc::CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    std::vector<ipc::FaceVertexCandidate>& candidates,
-    std::vector<ipc::FaceVertexCandidate>& bf_candidates);
+    ipc::CandidateVector<ipc::FaceVertexCandidate>& candidates,
+    ipc::CandidateVector<ipc::FaceVertexCandidate>& bf_candidates);

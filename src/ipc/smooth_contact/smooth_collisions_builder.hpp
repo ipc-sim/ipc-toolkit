@@ -6,6 +6,7 @@
 #pragma once
 
 #include <ipc/collision_mesh.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/smooth_contact/smooth_collisions.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
 
@@ -23,7 +24,7 @@ public:
     void add_edge_vertex_collisions(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<EdgeVertexCandidate>& candidates,
+        const CandidateVector<EdgeVertexCandidate>& candidates,
         const SmoothContactParameters& params,
         const std::function<double(const index_t)>& vert_dhat,
         const std::function<double(const index_t)>& edge_dhat,
@@ -60,7 +61,7 @@ public:
     void add_edge_edge_collisions(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<EdgeEdgeCandidate>& candidates,
+        const CandidateVector<EdgeEdgeCandidate>& candidates,
         const SmoothContactParameters& params,
         const std::function<double(const index_t)>& vert_dhat,
         const std::function<double(const index_t)>& edge_dhat,
@@ -70,7 +71,7 @@ public:
     void add_face_vertex_collisions(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<FaceVertexCandidate>& candidates,
+        const CandidateVector<FaceVertexCandidate>& candidates,
         const SmoothContactParameters& params,
         const std::function<double(const index_t)>& vert_dhat,
         const std::function<double(const index_t)>& edge_dhat,

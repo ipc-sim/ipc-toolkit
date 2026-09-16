@@ -1,5 +1,7 @@
 #include "lbvh.hpp"
 
+#include <ipc/candidates/candidate_vector.hpp>
+
 #ifdef IPC_TOOLKIT_WITH_CUDA
 
 #include <ipc/broad_phase/cuda/lbvh_impl.cuh>
@@ -988,7 +990,7 @@ namespace {
         const LBVH::Impl::DeviceCandidates& buf,
         const CollisionFilter& filter,
         const CanCollide& can_collide,
-        std::vector<Candidate>& out)
+        CandidateVector<Candidate>& out)
     {
         out.clear();
         const size_t count = buf.count;
@@ -1032,7 +1034,7 @@ namespace {
         LBVH::Impl& impl,
         const CollisionFilter& filter,
         const CanCollide& can_collide,
-        std::vector<Candidate>& out)
+        CandidateVector<Candidate>& out)
     {
         // The detect_*() methods are const on the BroadPhase interface, and
         // ipc::LBVH's really are read-only, so a caller may legitimately run
@@ -1218,7 +1220,7 @@ void LBVH::clear()
 // user vertex filter is applied on the host only when it is not accept-all.
 
 void LBVH::detect_vertex_vertex_candidates(
-    std::vector<VertexVertexCandidate>& candidates) const
+    CandidateVector<VertexVertexCandidate>& candidates) const
 {
     detect_host<VertexVertexCandidate>(
         impl(), can_vertices_collide,
@@ -1227,7 +1229,7 @@ void LBVH::detect_vertex_vertex_candidates(
 }
 
 void LBVH::detect_edge_vertex_candidates(
-    std::vector<EdgeVertexCandidate>& candidates) const
+    CandidateVector<EdgeVertexCandidate>& candidates) const
 {
     detect_host<EdgeVertexCandidate>(
         impl(), can_vertices_collide,
@@ -1236,7 +1238,7 @@ void LBVH::detect_edge_vertex_candidates(
 }
 
 void LBVH::detect_edge_edge_candidates(
-    std::vector<EdgeEdgeCandidate>& candidates) const
+    CandidateVector<EdgeEdgeCandidate>& candidates) const
 {
     detect_host<EdgeEdgeCandidate>(
         impl(), can_vertices_collide,
@@ -1245,7 +1247,7 @@ void LBVH::detect_edge_edge_candidates(
 }
 
 void LBVH::detect_face_vertex_candidates(
-    std::vector<FaceVertexCandidate>& candidates) const
+    CandidateVector<FaceVertexCandidate>& candidates) const
 {
     detect_host<FaceVertexCandidate>(
         impl(), can_vertices_collide,
@@ -1254,7 +1256,7 @@ void LBVH::detect_face_vertex_candidates(
 }
 
 void LBVH::detect_edge_face_candidates(
-    std::vector<EdgeFaceCandidate>& candidates) const
+    CandidateVector<EdgeFaceCandidate>& candidates) const
 {
     detect_host<EdgeFaceCandidate>(
         impl(), can_vertices_collide,
@@ -1263,7 +1265,7 @@ void LBVH::detect_edge_face_candidates(
 }
 
 void LBVH::detect_face_face_candidates(
-    std::vector<FaceFaceCandidate>& candidates) const
+    CandidateVector<FaceFaceCandidate>& candidates) const
 {
     detect_host<FaceFaceCandidate>(
         impl(), can_vertices_collide,

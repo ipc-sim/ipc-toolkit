@@ -1,6 +1,7 @@
 #include "hash_grid.hpp"
 
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/merge_thread_local.hpp>
 
@@ -110,7 +111,7 @@ void HashGrid::detect_candidates(
     const AABBs& boxes0,
     const AABBs& boxes1,
     const std::function<bool(size_t, size_t)>& can_collide,
-    std::vector<Candidate>& candidates) const
+    CandidateVector<Candidate>& candidates) const
 {
     // Entries with the same key means they share a cell (that cell index
     // hashes to the same key) and should be flagged for low-level intersection
@@ -145,7 +146,7 @@ void HashGrid::detect_candidates(
 
     // 2. Enumerate hash collisions
 #ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
-    tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
+    tbb::enumerable_thread_specific<CandidateVector<Candidate>> storage;
 #else
     tbb::enumerable_thread_specific<unordered_set<Candidate>> storage;
 #endif
@@ -216,7 +217,7 @@ void HashGrid::detect_candidates(
     const std::vector<HashItem>& items,
     const AABBs& boxes,
     const std::function<bool(size_t, size_t)>& can_collide,
-    std::vector<Candidate>& candidates) const
+    CandidateVector<Candidate>& candidates) const
 {
     // Entries with the same key means they share a cell (that cell index
     // hashes to the same key) and should be flagged for low-level
@@ -224,7 +225,7 @@ void HashGrid::detect_candidates(
     // (key,value) pairs creating Candidate entries for pairs with the same key
 
 #ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
-    tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
+    tbb::enumerable_thread_specific<CandidateVector<Candidate>> storage;
 #else
     tbb::enumerable_thread_specific<unordered_set<Candidate>> storage;
 #endif
@@ -284,7 +285,7 @@ void HashGrid::detect_candidates(
 }
 
 void HashGrid::detect_vertex_vertex_candidates(
-    std::vector<VertexVertexCandidate>& candidates) const
+    CandidateVector<VertexVertexCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates(
@@ -292,7 +293,7 @@ void HashGrid::detect_vertex_vertex_candidates(
 }
 
 void HashGrid::detect_edge_vertex_candidates(
-    std::vector<EdgeVertexCandidate>& candidates) const
+    CandidateVector<EdgeVertexCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates(
@@ -302,7 +303,7 @@ void HashGrid::detect_edge_vertex_candidates(
 }
 
 void HashGrid::detect_edge_edge_candidates(
-    std::vector<EdgeEdgeCandidate>& candidates) const
+    CandidateVector<EdgeEdgeCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates(
@@ -311,7 +312,7 @@ void HashGrid::detect_edge_edge_candidates(
 }
 
 void HashGrid::detect_face_vertex_candidates(
-    std::vector<FaceVertexCandidate>& candidates) const
+    CandidateVector<FaceVertexCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates(
@@ -321,7 +322,7 @@ void HashGrid::detect_face_vertex_candidates(
 }
 
 void HashGrid::detect_edge_face_candidates(
-    std::vector<EdgeFaceCandidate>& candidates) const
+    CandidateVector<EdgeFaceCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates(
@@ -330,7 +331,7 @@ void HashGrid::detect_edge_face_candidates(
 }
 
 void HashGrid::detect_face_face_candidates(
-    std::vector<FaceFaceCandidate>& candidates) const
+    CandidateVector<FaceFaceCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates(

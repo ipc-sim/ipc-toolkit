@@ -1,5 +1,6 @@
 #include "save_obj.hpp"
 
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/edge_face.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
@@ -15,7 +16,7 @@ void save_obj(
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> /*unused*/,
     Eigen::ConstRef<Eigen::MatrixXi> /*unused*/,
-    const std::vector<VertexVertexCandidate>& vv_candidates,
+    const CandidateVector<VertexVertexCandidate>& vv_candidates,
     const int /*unused*/)
 {
     out << "o VV\n";
@@ -31,7 +32,7 @@ void save_obj(
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
     Eigen::ConstRef<Eigen::MatrixXi> F,
-    const std::vector<EdgeVertexCandidate>& ev_candidates,
+    const CandidateVector<EdgeVertexCandidate>& ev_candidates,
     const int v_offset)
 {
     out << "o EV\n";
@@ -51,7 +52,7 @@ void save_obj(
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
     Eigen::ConstRef<Eigen::MatrixXi> F,
-    const std::vector<EdgeEdgeCandidate>& ee_candidates,
+    const CandidateVector<EdgeEdgeCandidate>& ee_candidates,
     const int v_offset)
 {
     out << "o EE\n";
@@ -73,7 +74,7 @@ void save_obj(
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
     Eigen::ConstRef<Eigen::MatrixXi> F,
-    const std::vector<FaceVertexCandidate>& fv_candidates,
+    const CandidateVector<FaceVertexCandidate>& fv_candidates,
     const int v_offset)
 {
     out << "o FV\n";
@@ -94,7 +95,7 @@ void save_obj(
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
     Eigen::ConstRef<Eigen::MatrixXi> F,
-    const std::vector<EdgeFaceCandidate>& ef_candidates,
+    const CandidateVector<EdgeFaceCandidate>& ef_candidates,
     const int v_offset)
 {
     out << "o EF\n";

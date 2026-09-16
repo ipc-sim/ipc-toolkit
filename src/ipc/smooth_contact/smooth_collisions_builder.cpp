@@ -1,5 +1,6 @@
 #include "smooth_collisions_builder.hpp"
 
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_edge.hpp>
@@ -41,7 +42,7 @@ namespace {
 void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<EdgeVertexCandidate>& candidates,
+    const CandidateVector<EdgeVertexCandidate>& candidates,
     const SmoothContactParameters& params,
     const std::function<double(const index_t)>& vert_dhat,
     const std::function<double(const index_t)>& edge_dhat,
@@ -83,7 +84,7 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
 void SmoothCollisionsBuilder<3>::add_edge_edge_collisions(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<EdgeEdgeCandidate>& candidates,
+    const CandidateVector<EdgeEdgeCandidate>& candidates,
     const SmoothContactParameters& params,
     const std::function<double(const index_t)>& vert_dhat,
     const std::function<double(const index_t)>& edge_dhat,
@@ -118,7 +119,7 @@ void SmoothCollisionsBuilder<3>::add_edge_edge_collisions(
 void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<FaceVertexCandidate>& candidates,
+    const CandidateVector<FaceVertexCandidate>& candidates,
     const SmoothContactParameters& params,
     const std::function<double(const index_t)>& vert_dhat,
     const std::function<double(const index_t)>& edge_dhat,

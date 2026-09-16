@@ -25,10 +25,10 @@ inline constexpr size_t PARALLEL_MERGE_MIN_BYTES = 1 << 20; // 1 MiB
 
 // Assumes `out` is empty at the start. The function may modify the provided
 // `vectors` (stealing and clearing per-thread buffers) for performance.
-template <typename T>
+template <typename T, typename AllocIn, typename AllocOut>
 void merge_thread_local_vectors(
-    tbb::enumerable_thread_specific<std::vector<T>>& vectors,
-    std::vector<T>& out)
+    tbb::enumerable_thread_specific<std::vector<T, AllocIn>>& vectors,
+    std::vector<T, AllocOut>& out)
 {
     IPC_TOOLKIT_PROFILE_BLOCK("merge_thread_local_vectors");
 
@@ -63,10 +63,10 @@ void merge_thread_local_vectors(
                 std::memcpy(dest, v.data(), v.size() * sizeof(T));
                 dest += v.size() * sizeof(T);
                 // release the local buffer to reduce memory usage
-                std::vector<T>().swap(v);
+                std::vector<T, AllocIn>().swap(v);
             }
         } else {
-            std::vector<std::vector<T>*> blocks;
+            std::vector<std::vector<T, AllocIn>*> blocks;
             blocks.reserve(vectors.size());
             for (auto& v : vectors) {
                 if (!v.empty()) {
@@ -84,23 +84,29 @@ void merge_thread_local_vectors(
                     out.data() + offsets[i], blocks[i]->data(),
                     blocks[i]->size() * sizeof(T));
                 // release the local buffer to reduce memory usage
-                std::vector<T>().swap(*blocks[i]);
+                std::vector<T, AllocIn>().swap(*blocks[i]);
             });
         }
     } else {
         // For non-trivial types, steal the largest thread-local buffer into
         // `out` (cheap swap) and move from the remaining buffers.
-        std::vector<T>* largest = nullptr;
+        std::vector<T, AllocIn>* largest = nullptr;
         for (auto& v : vectors) {
             if (!largest || v.size() > largest->size()) {
                 largest = &v;
             }
         }
 
-        if (largest && !largest->empty()) {
-            // out is empty, so swapping moves the largest contents into out and
-            // leaves the thread-local buffer empty (former out).
-            out.swap(*largest);
+        if constexpr (std::is_same_v<AllocIn, AllocOut>) {
+            if (largest && !largest->empty()) {
+                // out is empty, so swapping moves the largest contents into
+                // out and leaves the thread-local buffer empty (former out).
+                out.swap(*largest);
+            }
+        } else {
+            // The buffers do not share an allocator, so the largest cannot be
+            // stolen; it is moved from with the rest below.
+            largest = nullptr;
         }
 
         out.reserve(total);
@@ -113,7 +119,7 @@ void merge_thread_local_vectors(
                     std::make_move_iterator(v.end()));
             }
             // Ensure capacity is released.
-            std::vector<T>().swap(v);
+            std::vector<T, AllocIn>().swap(v);
         }
     }
 }

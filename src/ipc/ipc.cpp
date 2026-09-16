@@ -2,6 +2,7 @@
 
 #include <ipc/config.hpp>
 #include <ipc/broad_phase/default_broad_phase.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/geometry/intersection.hpp>
@@ -126,7 +127,7 @@ bool has_intersections(
 
     if (vertices.cols() == 2) {
         // Need to check segment-segment intersections in 2D
-        std::vector<EdgeEdgeCandidate> ee_candidates;
+        CandidateVector<EdgeEdgeCandidate> ee_candidates;
 
         broad_phase->detect_edge_edge_candidates(ee_candidates);
         broad_phase->clear();
@@ -146,7 +147,7 @@ bool has_intersections(
         // Need to check segment-triangle intersections in 3D
         assert(vertices.cols() == 3);
 
-        std::vector<EdgeFaceCandidate> ef_candidates;
+        CandidateVector<EdgeFaceCandidate> ef_candidates;
         broad_phase->detect_edge_face_candidates(ef_candidates);
         broad_phase->clear();
 

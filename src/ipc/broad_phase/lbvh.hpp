@@ -2,6 +2,7 @@
 
 #include <ipc/config.hpp> // for IPC_TOOLKIT_HOST_DEVICE
 #include <ipc/broad_phase/broad_phase.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/utils/default_init_allocator.hpp>
 
 namespace ipc {
@@ -128,32 +129,32 @@ public:
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisions.
     void detect_vertex_vertex_candidates(
-        std::vector<VertexVertexCandidate>& candidates) const override;
+        CandidateVector<VertexVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-vertex collisions.
     /// @param[out] candidates The candidate edge-vertex collisions.
     void detect_edge_vertex_candidates(
-        std::vector<EdgeVertexCandidate>& candidates) const override;
+        CandidateVector<EdgeVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-edge collisions.
     /// @param[out] candidates The candidate edge-edge collisions.
     void detect_edge_edge_candidates(
-        std::vector<EdgeEdgeCandidate>& candidates) const override;
+        CandidateVector<EdgeEdgeCandidate>& candidates) const override;
 
     /// @brief Find the candidate face-vertex collisions.
     /// @param[out] candidates The candidate face-vertex collisions.
     void detect_face_vertex_candidates(
-        std::vector<FaceVertexCandidate>& candidates) const override;
+        CandidateVector<FaceVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-face intersections.
     /// @param[out] candidates The candidate edge-face intersections.
     void detect_edge_face_candidates(
-        std::vector<EdgeFaceCandidate>& candidates) const override;
+        CandidateVector<EdgeFaceCandidate>& candidates) const override;
 
     /// @brief Find the candidate face-face collisions.
     /// @param[out] candidates The candidate face-face collisions.
     void detect_face_face_candidates(
-        std::vector<FaceFaceCandidate>& candidates) const override;
+        CandidateVector<FaceFaceCandidate>& candidates) const override;
 
     const Nodes& vertex_nodes() const { return vertex_bvh; }
     const Nodes& edge_nodes() const { return edge_bvh; }
@@ -195,7 +196,7 @@ protected:
         const Nodes& target,
         const RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates);
+        CandidateVector<Candidate>& candidates);
 
     /// @brief Detect candidate collisions between a single LBVH and itself.
     /// @tparam Candidate Type of candidate collision.
@@ -208,7 +209,7 @@ protected:
         const Nodes& source_and_target,
         const RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates)
+        CandidateVector<Candidate>& candidates)
     {
         detect_candidates<Candidate, false, true>(
             source_and_target, source_and_target, rightmost_leaves, can_collide,

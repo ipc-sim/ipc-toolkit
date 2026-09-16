@@ -1,3 +1,4 @@
+#include <ipc/candidates/candidate_vector.hpp>
 #include <tests/config.hpp>
 #include <tests/broad_phase/brute_force_comparison.hpp>
 #include <tests/utils.hpp>
@@ -37,7 +38,7 @@ void test_face_face_broad_phase(
     } else {
         broad_phase->build(V0, mesh.edges(), mesh.faces(), inflation_radius);
     }
-    std::vector<FaceFaceCandidate> ff_candidates;
+    ipc::CandidateVector<FaceFaceCandidate> ff_candidates;
     broad_phase->detect_face_face_candidates(ff_candidates);
 
     BruteForce bf;
@@ -47,7 +48,7 @@ void test_face_face_broad_phase(
     } else {
         bf.build(V0, mesh.edges(), mesh.faces(), inflation_radius);
     }
-    std::vector<FaceFaceCandidate> bf_ff_candidates;
+    ipc::CandidateVector<FaceFaceCandidate> bf_ff_candidates;
     bf.detect_face_face_candidates(bf_ff_candidates);
 
     CHECK(!ff_candidates.empty());
@@ -286,7 +287,7 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
     const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
     broad_phase->build(boxes, Eigen::MatrixXi(), Eigen::MatrixXi(), /*dim=*/3);
 
-    std::vector<VertexVertexCandidate> candidates;
+    ipc::CandidateVector<VertexVertexCandidate> candidates;
     broad_phase->detect_vertex_vertex_candidates(candidates);
 
     CAPTURE(broad_phase->name());

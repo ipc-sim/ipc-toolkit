@@ -3,6 +3,7 @@
 #include <ipc/config.hpp>
 #include <ipc/ipc.hpp>
 #include <ipc/broad_phase/default_broad_phase.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_line.hpp>
@@ -546,14 +547,14 @@ namespace {
     /// @param is_active Function to determine if a candidate is active
     /// @return Vertex-vertex candidates
     template <typename Candidate>
-    std::vector<VertexVertexCandidate>
+    CandidateVector<VertexVertexCandidate>
     element_vertex_to_vertex_vertex_candidates(
         Eigen::ConstRef<Eigen::MatrixXi> elements,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<Candidate>& candidates,
+        const CandidateVector<Candidate>& candidates,
         const std::function<bool(double)>& is_active)
     {
-        std::vector<VertexVertexCandidate> vv_candidates;
+        CandidateVector<VertexVertexCandidate> vv_candidates;
         for (const auto& [ei, vi] : candidates) {
             for (int j = 0; j < elements.cols(); j++) {
                 const int vj = elements(ei, j);
@@ -575,7 +576,7 @@ namespace {
 
 } // namespace
 
-std::vector<VertexVertexCandidate> Candidates::edge_vertex_to_vertex_vertex(
+CandidateVector<VertexVertexCandidate> Candidates::edge_vertex_to_vertex_vertex(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::function<bool(double)>& is_active) const
@@ -584,7 +585,7 @@ std::vector<VertexVertexCandidate> Candidates::edge_vertex_to_vertex_vertex(
         mesh.edges(), vertices, ev_candidates, is_active);
 }
 
-std::vector<VertexVertexCandidate> Candidates::face_vertex_to_vertex_vertex(
+CandidateVector<VertexVertexCandidate> Candidates::face_vertex_to_vertex_vertex(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::function<bool(double)>& is_active) const
@@ -593,12 +594,12 @@ std::vector<VertexVertexCandidate> Candidates::face_vertex_to_vertex_vertex(
         mesh.faces(), vertices, fv_candidates, is_active);
 }
 
-std::vector<EdgeVertexCandidate> Candidates::face_vertex_to_edge_vertex(
+CandidateVector<EdgeVertexCandidate> Candidates::face_vertex_to_edge_vertex(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::function<bool(double)>& is_active) const
 {
-    std::vector<EdgeVertexCandidate> C_ev;
+    CandidateVector<EdgeVertexCandidate> C_ev;
     for (const auto& [fi, vi] : fv_candidates) {
         for (int j = 0; j < 3; j++) {
             const int ei = mesh.faces_to_edges()(fi, j);
@@ -618,12 +619,12 @@ std::vector<EdgeVertexCandidate> Candidates::face_vertex_to_edge_vertex(
     return C_ev;
 }
 
-std::vector<EdgeVertexCandidate> Candidates::edge_edge_to_edge_vertex(
+CandidateVector<EdgeVertexCandidate> Candidates::edge_edge_to_edge_vertex(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::function<bool(double)>& is_active) const
 {
-    std::vector<EdgeVertexCandidate> C_ev;
+    CandidateVector<EdgeVertexCandidate> C_ev;
     for (const EdgeEdgeCandidate& ee : ee_candidates) {
         for (int i = 0; i < 2; i++) {
             const int ei = i == 0 ? ee.edge0_id : ee.edge1_id;

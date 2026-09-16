@@ -1,5 +1,7 @@
 #include "sweep_and_tiniest_queue.hpp"
 
+#include <ipc/candidates/candidate_vector.hpp>
+
 #ifdef IPC_TOOLKIT_WITH_CUDA
 
 #include <ipc/broad_phase/details/connectivity_filters.hpp>
@@ -121,7 +123,7 @@ void SweepAndTiniestQueue::clear()
 }
 
 void SweepAndTiniestQueue::detect_vertex_vertex_candidates(
-    std::vector<VertexVertexCandidate>& candidates) const
+    CandidateVector<VertexVertexCandidate>& candidates) const
 {
     candidates.clear();
     scalable_ccd::cuda::BroadPhase broad_phase;
@@ -137,7 +139,7 @@ void SweepAndTiniestQueue::detect_vertex_vertex_candidates(
 }
 
 void SweepAndTiniestQueue::detect_edge_vertex_candidates(
-    std::vector<EdgeVertexCandidate>& candidates) const
+    CandidateVector<EdgeVertexCandidate>& candidates) const
 {
     candidates.clear();
     scalable_ccd::cuda::BroadPhase broad_phase;
@@ -154,7 +156,7 @@ void SweepAndTiniestQueue::detect_edge_vertex_candidates(
 }
 
 void SweepAndTiniestQueue::detect_edge_edge_candidates(
-    std::vector<EdgeEdgeCandidate>& candidates) const
+    CandidateVector<EdgeEdgeCandidate>& candidates) const
 {
     candidates.clear();
     scalable_ccd::cuda::BroadPhase broad_phase;
@@ -170,7 +172,7 @@ void SweepAndTiniestQueue::detect_edge_edge_candidates(
 }
 
 void SweepAndTiniestQueue::detect_face_vertex_candidates(
-    std::vector<FaceVertexCandidate>& candidates) const
+    CandidateVector<FaceVertexCandidate>& candidates) const
 {
     candidates.clear();
     scalable_ccd::cuda::BroadPhase broad_phase;
@@ -187,7 +189,7 @@ void SweepAndTiniestQueue::detect_face_vertex_candidates(
 }
 
 void SweepAndTiniestQueue::detect_edge_face_candidates(
-    std::vector<EdgeFaceCandidate>& candidates) const
+    CandidateVector<EdgeFaceCandidate>& candidates) const
 {
     candidates.clear();
     scalable_ccd::cuda::BroadPhase broad_phase;
@@ -204,7 +206,7 @@ void SweepAndTiniestQueue::detect_edge_face_candidates(
 }
 
 void SweepAndTiniestQueue::detect_face_face_candidates(
-    std::vector<FaceFaceCandidate>& candidates) const
+    CandidateVector<FaceFaceCandidate>& candidates) const
 {
     candidates.clear();
     scalable_ccd::cuda::BroadPhase broad_phase;

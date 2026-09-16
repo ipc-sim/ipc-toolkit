@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/config.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 
@@ -114,17 +115,17 @@ public:
     // of the same type.
 
     void detect_vertex_vertex_candidates(
-        std::vector<VertexVertexCandidate>& candidates) const override;
+        CandidateVector<VertexVertexCandidate>& candidates) const override;
     void detect_edge_vertex_candidates(
-        std::vector<EdgeVertexCandidate>& candidates) const override;
+        CandidateVector<EdgeVertexCandidate>& candidates) const override;
     void detect_edge_edge_candidates(
-        std::vector<EdgeEdgeCandidate>& candidates) const override;
+        CandidateVector<EdgeEdgeCandidate>& candidates) const override;
     void detect_face_vertex_candidates(
-        std::vector<FaceVertexCandidate>& candidates) const override;
+        CandidateVector<FaceVertexCandidate>& candidates) const override;
     void detect_edge_face_candidates(
-        std::vector<EdgeFaceCandidate>& candidates) const override;
+        CandidateVector<EdgeFaceCandidate>& candidates) const override;
     void detect_face_face_candidates(
-        std::vector<FaceFaceCandidate>& candidates) const override;
+        CandidateVector<FaceFaceCandidate>& candidates) const override;
 
     // ------------------------------------------------------------------
     // Device-resident candidate accessors (GPU-native pipeline). Each runs the

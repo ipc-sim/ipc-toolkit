@@ -1,3 +1,4 @@
+#include <ipc/candidates/candidate_vector.hpp>
 #include <tests/config.hpp>
 #include <tests/utils.hpp>
 
@@ -43,19 +44,19 @@ TEST_CASE("STQ All Cases", "[broad_phase][stq][cuda]")
     CHECK(candidates.ee_candidates.size() == 5'197'332);
     CHECK(candidates.fv_candidates.size() == 1'655'541);
 
-    std::vector<VertexVertexCandidate> vv_candidates;
+    ipc::CandidateVector<VertexVertexCandidate> vv_candidates;
     broad_phase->detect_vertex_vertex_candidates(vv_candidates);
     CHECK(vv_candidates.size() == 84'912);
 
-    std::vector<EdgeVertexCandidate> ev_candidates;
+    ipc::CandidateVector<EdgeVertexCandidate> ev_candidates;
     broad_phase->detect_edge_vertex_candidates(ev_candidates);
     CHECK(ev_candidates.size() == 1'666'926);
 
-    std::vector<EdgeFaceCandidate> ef_candidates;
+    ipc::CandidateVector<EdgeFaceCandidate> ef_candidates;
     broad_phase->detect_edge_face_candidates(ef_candidates);
     CHECK(ef_candidates.size() == 9'248'220);
 
-    std::vector<FaceFaceCandidate> ff_candidates;
+    ipc::CandidateVector<FaceFaceCandidate> ff_candidates;
     broad_phase->detect_face_face_candidates(ff_candidates);
     CHECK(ff_candidates.size() == 3'975'589);
 
