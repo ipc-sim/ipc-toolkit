@@ -7,7 +7,7 @@ using namespace ipc;
 void define_edge_edge_tangential_collision(py::module_& m)
 {
     py::class_<
-        EdgeEdgeTangentialCollision, EdgeEdgeCandidate, TangentialCollision>(
+        EdgeEdgeTangentialCollision, EdgeEdgeStencil, TangentialCollision>(
         m, "EdgeEdgeTangentialCollision")
         .def(py::init<const EdgeEdgeNormalCollision&>(), "collision"_a)
         .def(

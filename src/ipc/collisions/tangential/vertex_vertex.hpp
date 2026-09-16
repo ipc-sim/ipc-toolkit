@@ -6,10 +6,15 @@
 
 namespace ipc {
 
-class VertexVertexTangentialCollision : public VertexVertexCandidate,
+class VertexVertexTangentialCollision : public VertexVertexStencil,
                                         public TangentialCollision {
 public:
-    using VertexVertexCandidate::VertexVertexCandidate;
+    // The adapter also names dim/ndof (the stencil's dof-count overloads); keep
+    // this collision's own no-argument accessors.
+    using TangentialCollision::dim;
+    using TangentialCollision::ndof;
+
+    using VertexVertexStencil::VertexVertexStencil;
 
     VertexVertexTangentialCollision(
         const VertexVertexNormalCollision& collision);

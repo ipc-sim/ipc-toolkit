@@ -1,14 +1,15 @@
 #include <common.hpp>
 
+#include "stencil_methods.hpp"
+
 #include <ipc/candidates/vertex_vertex.hpp>
 
 using namespace ipc;
 
 void define_vertex_vertex_candidate(py::module_& m)
 {
-    py::class_<VertexVertexCandidate, CollisionStencil>(
-        m, "VertexVertexCandidate")
-        .def(py::init<index_t, index_t>(), "vertex0_id"_a, "vertex1_id"_a)
+    auto cls = py::class_<VertexVertexCandidate>(m, "VertexVertexCandidate");
+    cls.def(py::init<index_t, index_t>(), "vertex0_id"_a, "vertex1_id"_a)
         .def(
             py::init([](std::tuple<index_t, index_t> vertex_ids) {
                 return std::make_unique<VertexVertexCandidate>(
@@ -42,4 +43,12 @@ void define_vertex_vertex_candidate(py::module_& m)
 
     py::implicitly_convertible<
         std::tuple<index_t, index_t>, VertexVertexCandidate>();
+
+    define_stencil_methods<VertexVertexCandidate>(cls);
+
+    // The adapter the collision types derive from; it carries the
+    // polymorphic stencil interface the POD candidate deliberately
+    // lacks.
+    py::class_<VertexVertexStencil, VertexVertexCandidate, CollisionStencil>(
+        m, "VertexVertexStencil");
 }

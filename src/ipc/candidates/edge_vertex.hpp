@@ -1,6 +1,7 @@
 #pragma once
 
-#include <ipc/candidates/collision_stencil.hpp>
+#include <ipc/candidates/stencil_adapter.hpp>
+#include <ipc/candidates/stencil_mixin.hpp>
 #include <ipc/distance/distance_type.hpp>
 
 #include <Eigen/Core>
@@ -10,14 +11,20 @@
 namespace ipc {
 
 /// @brief A candidate for edge-vertex collision detection.
-class EdgeVertexCandidate : virtual public CollisionStencil {
+class EdgeVertexCandidate : public StencilMixin<EdgeVertexCandidate> {
+    friend class StencilMixin<EdgeVertexCandidate>;
+
 public:
+    /// @brief Construct a candidate with indeterminate edge IDs.
+    /// @note Keeping this trivial is what makes the type trivially copyable.
+    EdgeVertexCandidate() = default;
+
     EdgeVertexCandidate(index_t edge_id, index_t vertex_id);
 
     // ------------------------------------------------------------------------
-    // CollisionStencil
+    // Stencil
 
-    int num_vertices() const override { return 3; }
+    constexpr static int num_vertices() { return 3; }
 
     /// @brief Get the vertex IDs for the edge-vertex pair
     /// @param edges The edge connectivity matrix
@@ -25,27 +32,31 @@ public:
     /// @return An array of vertex IDs in the order: [vi, e0i, e1i, -1]
     std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const override
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
     {
         return { { vertex_id, edges(edge_id, 0), edges(edge_id, 1), -1 } };
     }
 
-    using CollisionStencil::compute_coefficients;
-    using CollisionStencil::compute_distance;
-    using CollisionStencil::compute_distance_gradient;
-    using CollisionStencil::compute_distance_hessian;
+    using StencilMixin<EdgeVertexCandidate>::compute_coefficients;
+    using StencilMixin<EdgeVertexCandidate>::compute_distance;
+    using StencilMixin<EdgeVertexCandidate>::compute_distance_gradient;
+    using StencilMixin<EdgeVertexCandidate>::compute_distance_hessian;
 
-    double
-    compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override;
+    double compute_distance(
+        Eigen::ConstRef<VectorMax12d> positions,
+        const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO) const;
 
     VectorMax12d compute_distance_gradient(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions,
+        const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO) const;
 
     MatrixMax12d compute_distance_hessian(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions,
+        const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO) const;
 
     VectorMax4d compute_coefficients(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions,
+        const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO) const;
 
     // ------------------------------------------------------------------------
 
@@ -56,11 +67,11 @@ public:
         const double min_distance = 0.0,
         const double tmax = 1.0,
         const NarrowPhaseCCD& narrow_phase_ccd =
-            DEFAULT_NARROW_PHASE_CCD) const override;
+            DEFAULT_NARROW_PHASE_CCD) const;
 
     // ------------------------------------------------------------------------
 
-    virtual PointEdgeDistanceType known_dtype() const
+    constexpr static PointEdgeDistanceType known_dtype()
     {
         return PointEdgeDistanceType::AUTO;
     }
@@ -82,11 +93,17 @@ public:
     index_t vertex_id;
 
 protected:
-    VectorMax3d compute_unnormalized_normal(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+    VectorMax3d
+    compute_unnormalized_normal(Eigen::ConstRef<VectorMax12d> positions) const;
 
     MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions) const;
 };
+
+/// @brief EdgeVertexCandidate with the runtime-polymorphic stencil interface.
+///
+/// The base of the corresponding collision types.
+using EdgeVertexStencil =
+    DTypeStencilAdapter<EdgeVertexCandidate, PointEdgeDistanceType>;
 
 } // namespace ipc

@@ -1,21 +1,24 @@
 #pragma once
 
 #include <ipc/config.hpp>
+#include <ipc/candidates/stencil_mixin.hpp>
 #include <ipc/ccd/default_narrow_phase_ccd.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <array>
-#include <limits>
-#include <ostream>
 
 namespace ipc {
 
 /// @brief A stencil representing a collision between at most four vertices.
-class CollisionStencil {
-public:
-    /// @brief The maximum number of vertices in a collision stencil.
-    static constexpr int STENCIL_SIZE = 4;
+///
+/// The runtime-polymorphic stencil, used where the stencil type is not known
+/// statically. The operations built on top of the primitives below live in
+/// StencilMixin, which this shares with the non-polymorphic candidate types.
+class CollisionStencil : public StencilMixin<CollisionStencil> {
+    // So the mixin can reach the protected unnormalized-normal primitives.
+    friend class StencilMixin<CollisionStencil>;
 
+public:
     virtual ~CollisionStencil() = default;
 
     /// @brief Get this as a child collision type.
@@ -46,15 +49,6 @@ public:
     /// @brief Get the number of vertices in the collision stencil.
     virtual int num_vertices() const = 0;
 
-    /// @brief Get the dimension of the collision stencil.
-    /// @param ndof Number of degrees of freedom in the stencil.
-    /// @return The dimension of the collision stencil.
-    int dim(const int ndof) const
-    {
-        assert(ndof % num_vertices() == 0);
-        return ndof / num_vertices();
-    }
-
     /// @brief Get the vertex IDs of the collision stencil.
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
@@ -63,149 +57,12 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const = 0;
 
-    /// @brief Get the vertex attributes of the collision stencil.
-    /// @param vertices Vertex attributes
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @return The vertex positions of the collision stencil. Elements i > num_vertices() are NaN.
-    std::array<VectorMax3d, STENCIL_SIZE> vertices(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const
-    {
-        constexpr double NaN = std::numeric_limits<double>::signaling_NaN();
-
-        const auto vertex_ids = this->vertex_ids(edges, faces);
-
-        std::array<VectorMax3d, STENCIL_SIZE> stencil_vertices;
-        for (int i = 0; i < STENCIL_SIZE; i++) {
-            if (vertex_ids[i] >= 0) {
-                stencil_vertices[i] = vertices.row(vertex_ids[i]);
-            } else {
-                stencil_vertices[i].setConstant(vertices.cols(), NaN);
-            }
-        }
-
-        return stencil_vertices;
-    }
-
-    /// @brief Select this stencil's DOF from the full matrix of DOF.
-    /// @param X Full matrix of DOF (rowwise).
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @return This stencil's DOF.
-    VectorMax12d
-    dof(Eigen::ConstRef<Eigen::MatrixXd> X,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const
-    {
-        const int dim = X.cols();
-        VectorMax12d x(num_vertices() * dim);
-        const auto idx = vertex_ids(edges, faces);
-        for (int i = 0; i < num_vertices(); i++) {
-            x.segment(i * dim, dim) = X.row(idx[i]);
-        }
-        return x;
-    }
-
-    /// @brief Compute the distance of the stencil.
-    /// @param vertices Collision mesh vertices
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @return Distance of the stencil.
-    double compute_distance(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const
-    {
-        return compute_distance(dof(vertices, edges, faces));
-    }
-
-    /// @brief Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
-    /// @param vertices Collision mesh vertices
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @return Distance gradient of the stencil w.r.t. the stencil's vertex positions.
-    VectorMax12d compute_distance_gradient(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const
-    {
-        return compute_distance_gradient(dof(vertices, edges, faces));
-    }
-
-    /// @brief Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
-    /// @param vertices Collision mesh vertices
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
-    MatrixMax12d compute_distance_hessian(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const
-    {
-        return compute_distance_hessian(dof(vertices, edges, faces));
-    }
-
-    /// @brief Compute the coefficients of the stencil s.t. \f$d(x) = \|\sum c_i \mathbf{x}_i\|^2\f$.
-    /// @param vertices Collision mesh vertices
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @return Coefficients of the stencil.
-    VectorMax4d compute_coefficients(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const
-    {
-        return compute_coefficients(dof(vertices, edges, faces));
-    }
-
-    /// @brief Compute the distance vector using the mesh vertices.
-    /// @param vertices Collision mesh vertices.
-    /// @param edges Collision mesh edges.
-    /// @param faces Collision mesh faces.
-    /// @return The distance vector (dim-dimensional).
-    VectorMax3d compute_distance_vector(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const
-    {
-        return compute_distance_vector(dof(vertices, edges, faces));
-    }
-
-    /// @brief Compute the normal of the stencil.
-    /// @param vertices Collision mesh vertices
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @param flip_if_negative If true, flip the normal if the point is on the negative side.
-    /// @param sign If not nullptr, set to the sign of the normal before any flipping.
-    /// @return Normal of the stencil.
-    VectorMax3d compute_normal(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces,
-        const bool flip_if_negative = true,
-        double* sign = nullptr) const
-    {
-        return compute_normal(
-            dof(vertices, edges, faces), flip_if_negative, sign);
-    }
-
-    /// @brief Compute the Jacobian of the normal of the stencil.
-    /// @param vertices Collision mesh vertices
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @param flip_if_negative If true, flip the normal if the point is on the negative side.
-    /// @return Jacobian of the normal of the stencil.
-    MatrixMax<double, 3, 12> compute_normal_jacobian(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces,
-        const bool flip_if_negative = true) const
-    {
-        return compute_normal_jacobian(
-            dof(vertices, edges, faces), flip_if_negative);
-    }
+    // The mesh-based overloads live in the mixin; naming the positions-based
+    // ones below would otherwise hide them.
+    using StencilMixin<CollisionStencil>::compute_distance;
+    using StencilMixin<CollisionStencil>::compute_distance_gradient;
+    using StencilMixin<CollisionStencil>::compute_distance_hessian;
+    using StencilMixin<CollisionStencil>::compute_coefficients;
 
     // ----------------------------------------------------------------------
     // NOTE: The following functions take stencil vertices as output by dof()
@@ -238,107 +95,6 @@ public:
     virtual VectorMax4d
     compute_coefficients(Eigen::ConstRef<VectorMax12d> positions) const = 0;
 
-    // ------------------------------------------------------------------
-    // Efficient distance-vector based methods [Shen et al. 2024]
-    //
-    // The distance vector t = ∑ cᵢ xᵢ is the vector between the
-    // closest points, where cᵢ are the coefficients and xᵢ are vertex
-    // positions. Then d = ‖t‖ and d² = tᵀt.
-    //
-    // ∂t/∂x = [c₀ I, c₁ I, c₂ I, c₃ I]ᵀ ∈ ℝ^{n×dim}
-    // ∂²t/∂x² = 0
-    //
-    // These allow efficient computation of:
-    //   - diag(∂²b/∂x²) without forming the full Hessian
-    //   - pᵀ(∂²b/∂x²)p without forming the full Hessian
-    // ------------------------------------------------------------------
-
-    /// @brief Compute the distance vector of the stencil: t = ∑ cᵢ xᵢ.
-    ///
-    /// The distance vector is the vector between the closest points on the
-    /// collision primitives. Its squared norm equals the squared distance.
-    ///
-    /// @param positions Stencil's vertex positions.
-    /// @note positions can be computed as stencil.dof(vertices, edges, faces)
-    /// @return The distance vector (dim-dimensional, i.e., 2D or 3D).
-    VectorMax3d
-    compute_distance_vector(Eigen::ConstRef<VectorMax12d> positions) const;
-
-    /// @brief Compute the distance vector and the coefficients together.
-    /// @param positions Stencil's vertex positions.
-    /// @param[out] coeffs The computed coefficients cᵢ.
-    /// @return The distance vector.
-    VectorMax3d compute_distance_vector(
-        Eigen::ConstRef<VectorMax12d> positions, VectorMax4d& coeffs) const;
-
-    /// @brief Compute the Jacobian of the distance vector w.r.t. positions: ∂t/∂x = [c₀I c₁I ... cₙI]ᵀ.
-    ///
-    /// Since ∂t/∂x has a very simple structure (block-diagonal with scalar
-    /// coefficients times identity), many operations can be done without
-    /// forming this matrix. This method is provided for completeness and
-    /// verification.
-    ///
-    /// @param positions Stencil's vertex positions.
-    /// @return The Jacobian ∂t/∂x ∈ ℝ^{ndof × dim}.
-    MatrixMax<double, 12, 3> compute_distance_vector_jacobian(
-        Eigen::ConstRef<VectorMax12d> positions) const;
-
-    /// @brief Compute diag((∂t/∂x)(∂t/∂x)ᵀ) efficiently (Eq. 11 of the paper).
-    ///
-    /// Result is [c₀², c₀², c₀², c₁², c₁², c₁², ...] (each cᵢ² repeated dim
-    /// times). This is used for computing diag(∂²b/∂x²) without the full
-    /// Hessian.
-    ///
-    /// @param coeffs The coefficients cᵢ (from compute_coefficients).
-    /// @param d The spatial dimension (2 or 3).
-    /// @return The diagonal of (∂t/∂x)(∂t/∂x)ᵀ as a vector of size ndof.
-    static VectorMax12d diag_distance_vector_outer(
-        Eigen::ConstRef<VectorMax4d> coeffs, const int d);
-
-    /// @brief Compute diag((∂t/∂x · t)(∂t/∂x · t)ᵀ) efficiently (Eq. 12).
-    ///
-    /// Result is element-wise square of [c₀tᵀ, c₁tᵀ, ..., cₙtᵀ].
-    /// This is used for computing diag(∂²b/∂x²) without the full Hessian.
-    ///
-    /// @param coeffs The coefficients cᵢ.
-    /// @param distance_vector The distance vector t.
-    /// @return The diagonal of (∂t/∂x·t)(∂t/∂x·t)ᵀ as a vector of size ndof.
-    static VectorMax12d diag_distance_vector_t_outer(
-        Eigen::ConstRef<VectorMax4d> coeffs,
-        Eigen::ConstRef<VectorMax3d> distance_vector);
-
-    /// @brief Compute pᵀ(∂t/∂x) efficiently as ∑ cᵢ pᵢ (Eqs. 13-14).
-    ///
-    /// Given p = [p₀, p₁, ..., pₙ]ᵀ where pᵢ ∈ ℝ^dim, this computes
-    /// pᵀ(∂t/∂x) = ∑ cᵢ pᵢ which is a dim-dimensional vector.
-    ///
-    /// @param coeffs The coefficients cᵢ.
-    /// @param p A vector of size ndof (the direction for the quadratic form).
-    /// @param d The spatial dimension (2 or 3).
-    /// @return pᵀ(∂t/∂x) as a dim-dimensional vector.
-    static VectorMax3d contract_distance_vector_jacobian(
-        Eigen::ConstRef<VectorMax4d> coeffs,
-        Eigen::ConstRef<VectorMax12d> p,
-        const int d);
-
-    /// @brief Compute the normal of the stencil.
-    /// @param positions Stencil's vertex positions.
-    /// @param flip_if_negative If true, flip the normal if the point is on the negative side.
-    /// @param sign If not nullptr, set to the sign of the normal before any flipping.
-    /// @return Normal of the stencil.
-    VectorMax3d compute_normal(
-        Eigen::ConstRef<VectorMax12d> positions,
-        bool flip_if_negative = true,
-        double* sign = nullptr) const;
-
-    /// @brief Compute the Jacobian of the normal of the stencil.
-    /// @param positions Stencil's vertex positions.
-    /// @param flip_if_negative If true, flip the normal if the point is on the negative side.
-    /// @return Jacobian of the normal of the stencil.
-    MatrixMax<double, 3, 12> compute_normal_jacobian(
-        Eigen::ConstRef<VectorMax12d> positions,
-        bool flip_if_negative = true) const;
-
     /// @brief Perform narrow-phase CCD on the candidate.
     /// @param[in] vertices_t0 Stencil vertices at the start of the time step.
     /// @param[in] vertices_t1 Stencil vertices at the end of the time step.
@@ -355,16 +111,6 @@ public:
         const double tmax = 1.0,
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const = 0;
-
-    /// @brief Write the CCD query to a stream.
-    /// @param out Stream to write to.
-    /// @param vertices_t0 Stencil vertices at the start of the time step.
-    /// @param vertices_t1 Stencil vertices at the end of the time step.
-    /// @return The stream.
-    std::ostream& write_ccd_query(
-        std::ostream& out,
-        Eigen::ConstRef<VectorMax12d> vertices_t0,
-        Eigen::ConstRef<VectorMax12d> vertices_t1) const;
 
 protected:
     /// @brief Compute the unnormalized normal of the stencil.

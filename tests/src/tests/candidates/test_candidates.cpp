@@ -21,61 +21,21 @@ TEST_CASE("Candidates", "[candidates]")
 
     CHECK(candidates.size() == 10);
 
-    CHECK(
-        dynamic_cast<VertexVertexCandidate&>(candidates[0])
-        == candidates.vv_candidates[0]);
-    CHECK(
-        dynamic_cast<EdgeVertexCandidate&>(candidates[2])
-        == candidates.ev_candidates[0]);
-    CHECK(
-        dynamic_cast<EdgeEdgeCandidate&>(candidates[4])
-        == candidates.ee_candidates[0]);
-    CHECK(
-        dynamic_cast<FaceVertexCandidate&>(candidates[6])
-        == candidates.fv_candidates[0]);
-    CHECK(&(candidates[8]) == &(candidates.pv_candidates[0]));
+    auto candidates_match = [&](const int i, const auto& b) -> bool {
+        return candidates.visit(i, [&](const auto& a) {
+            return static_cast<const void*>(&a)
+                == static_cast<const void*>(&(b));
+        });
+    };
 
-    CHECK(&(candidates[0]) == &(candidates.vv_candidates[0]));
-    CHECK(&(candidates[2]) == &(candidates.ev_candidates[0]));
-    CHECK(&(candidates[4]) == &(candidates.ee_candidates[0]));
-    CHECK(&(candidates[6]) == &(candidates.fv_candidates[0]));
-    CHECK(&(candidates[8]) == &(candidates.pv_candidates[0]));
+    CHECK(candidates_match(0, candidates.vv_candidates[0]));
+    CHECK(candidates_match(2, candidates.ev_candidates[0]));
+    CHECK(candidates_match(4, candidates.ee_candidates[0]));
+    CHECK(candidates_match(6, candidates.fv_candidates[0]));
+    CHECK(candidates_match(8, candidates.pv_candidates[0]));
 
     try {
-        candidates[candidates.size()];
-        FAIL("Should have thrown an exception");
-    } catch (const std::out_of_range& e) {
-        SUCCEED("Exception thrown");
-        CHECK(e.what() == std::string("Candidate index is out of range!"));
-    } catch (...) {
-        FAIL("Uknown exception thrown");
-    }
-
-    const Candidates& const_candidates = candidates;
-    CHECK(
-        const_candidates[0].as<VertexVertexCandidate>()
-        == candidates.vv_candidates[0]);
-    CHECK(
-        const_candidates[2].as<EdgeVertexCandidate>()
-        == candidates.ev_candidates[0]);
-    CHECK(
-        const_candidates[4].as<EdgeEdgeCandidate>()
-        == candidates.ee_candidates[0]);
-    CHECK(
-        const_candidates[6].as<FaceVertexCandidate>()
-        == candidates.fv_candidates[0]);
-    CHECK(
-        const_candidates[8].as<PlaneVertexCandidate>()
-        == candidates.pv_candidates[0]);
-
-    CHECK(&(const_candidates[0]) == &(candidates.vv_candidates[0]));
-    CHECK(&(const_candidates[2]) == &(candidates.ev_candidates[0]));
-    CHECK(&(const_candidates[4]) == &(candidates.ee_candidates[0]));
-    CHECK(&(const_candidates[6]) == &(candidates.fv_candidates[0]));
-    CHECK(&(const_candidates[8]) == &(candidates.pv_candidates[0]));
-
-    try {
-        const_candidates[candidates.size()];
+        candidates.visit(candidates.size(), [](const auto&) { });
         FAIL("Should have thrown an exception");
     } catch (const std::out_of_range& e) {
         SUCCEED("Exception thrown");

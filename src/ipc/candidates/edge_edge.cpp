@@ -13,34 +13,38 @@ EdgeEdgeCandidate::EdgeEdgeCandidate(index_t _edge0_id, index_t _edge1_id)
 }
 
 double EdgeEdgeCandidate::compute_distance(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const EdgeEdgeDistanceType dtype) const
 {
     assert(positions.size() == 12);
     return edge_edge_distance(
         positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
-        positions.tail<3>(), known_dtype());
+        positions.tail<3>(), dtype);
 }
 
 VectorMax12d EdgeEdgeCandidate::compute_distance_gradient(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const EdgeEdgeDistanceType dtype) const
 {
     assert(positions.size() == 12);
     return edge_edge_distance_gradient(
         positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
-        positions.tail<3>(), known_dtype());
+        positions.tail<3>(), dtype);
 }
 
 MatrixMax12d EdgeEdgeCandidate::compute_distance_hessian(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const EdgeEdgeDistanceType dtype) const
 {
     assert(positions.size() == 12);
     return edge_edge_distance_hessian(
         positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
-        positions.tail<3>(), known_dtype());
+        positions.tail<3>(), dtype);
 }
 
 VectorMax4d EdgeEdgeCandidate::compute_coefficients(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const EdgeEdgeDistanceType dtype) const
 {
     assert(positions.size() == 12);
     Eigen::ConstRef<Eigen::Vector3d> ea0 = positions.head<3>();
@@ -49,13 +53,13 @@ VectorMax4d EdgeEdgeCandidate::compute_coefficients(
     Eigen::ConstRef<Eigen::Vector3d> eb1 = positions.tail<3>();
 
     // Project the point inside the triangle
-    auto dtype = known_dtype();
-    if (dtype == EdgeEdgeDistanceType::AUTO) {
-        dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    EdgeEdgeDistanceType resolved_dtype = dtype;
+    if (resolved_dtype == EdgeEdgeDistanceType::AUTO) {
+        resolved_dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
     }
 
     VectorMax4d coeffs(4);
-    switch (dtype) {
+    switch (resolved_dtype) {
     case EdgeEdgeDistanceType::EA0_EB0:
         coeffs << 1.0, 0.0, -1.0, 0.0;
         break;

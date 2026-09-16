@@ -9,7 +9,7 @@ namespace ipc {
 
 EdgeEdgeTangentialCollision::EdgeEdgeTangentialCollision(
     const EdgeEdgeNormalCollision& collision)
-    : EdgeEdgeCandidate(collision.edge0_id, collision.edge1_id)
+    : EdgeEdgeStencil(collision.edge0_id, collision.edge1_id)
 {
     this->weight = collision.weight;
     this->weight_gradient = collision.weight_gradient;

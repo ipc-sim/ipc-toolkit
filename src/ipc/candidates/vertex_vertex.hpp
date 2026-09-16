@@ -1,6 +1,7 @@
 #pragma once
 
-#include <ipc/candidates/collision_stencil.hpp>
+#include <ipc/candidates/stencil_adapter.hpp>
+#include <ipc/candidates/stencil_mixin.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Core>
@@ -10,14 +11,20 @@
 namespace ipc {
 
 /// @brief A candidate for vertex-vertex collision detection.
-class VertexVertexCandidate : virtual public CollisionStencil {
+class VertexVertexCandidate : public StencilMixin<VertexVertexCandidate> {
+    friend class StencilMixin<VertexVertexCandidate>;
+
 public:
+    /// @brief Construct a candidate with indeterminate edge IDs.
+    /// @note Keeping this trivial is what makes the type trivially copyable.
+    VertexVertexCandidate() = default;
+
     VertexVertexCandidate(index_t vertex0_id, index_t vertex1_id);
 
     // ------------------------------------------------------------------------
-    // CollisionStencil
+    // Stencil
 
-    int num_vertices() const override { return 2; }
+    constexpr static int num_vertices() { return 2; }
 
     /// @brief Get the indices of the vertices
     /// @param edges edge matrix of mesh
@@ -25,27 +32,26 @@ public:
     /// @return List of vertex indices
     std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const override
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
     {
         return { { vertex0_id, vertex1_id, -1, -1 } };
     }
 
-    using CollisionStencil::compute_coefficients;
-    using CollisionStencil::compute_distance;
-    using CollisionStencil::compute_distance_gradient;
-    using CollisionStencil::compute_distance_hessian;
+    using StencilMixin<VertexVertexCandidate>::compute_coefficients;
+    using StencilMixin<VertexVertexCandidate>::compute_distance;
+    using StencilMixin<VertexVertexCandidate>::compute_distance_gradient;
+    using StencilMixin<VertexVertexCandidate>::compute_distance_hessian;
 
-    double
-    compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override;
+    double compute_distance(Eigen::ConstRef<VectorMax12d> positions) const;
 
-    VectorMax12d compute_distance_gradient(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+    VectorMax12d
+    compute_distance_gradient(Eigen::ConstRef<VectorMax12d> positions) const;
 
-    MatrixMax12d compute_distance_hessian(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+    MatrixMax12d
+    compute_distance_hessian(Eigen::ConstRef<VectorMax12d> positions) const;
 
-    VectorMax4d compute_coefficients(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+    VectorMax4d
+    compute_coefficients(Eigen::ConstRef<VectorMax12d> positions) const;
 
     // ------------------------------------------------------------------------
 
@@ -56,7 +62,7 @@ public:
         const double min_distance = 0.0,
         const double tmax = 1.0,
         const NarrowPhaseCCD& narrow_phase_ccd =
-            DEFAULT_NARROW_PHASE_CCD) const override;
+            DEFAULT_NARROW_PHASE_CCD) const;
 
     // ------------------------------------------------------------------------
 
@@ -79,11 +85,16 @@ public:
     index_t vertex1_id;
 
 protected:
-    VectorMax3d compute_unnormalized_normal(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+    VectorMax3d
+    compute_unnormalized_normal(Eigen::ConstRef<VectorMax12d> positions) const;
 
     MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions) const;
 };
+
+/// @brief VertexVertexCandidate with the runtime-polymorphic stencil interface.
+///
+/// The base of the corresponding collision types.
+using VertexVertexStencil = StencilAdapter<VertexVertexCandidate>;
 
 } // namespace ipc

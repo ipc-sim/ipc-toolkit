@@ -50,10 +50,18 @@ void define_candidates(py::module_& m)
         .def("clear", &Candidates::clear)
         .def(
             "__getitem__",
-            [](Candidates& self, size_t i) -> CollisionStencil& {
-                return self[i];
+            // Python is dynamically typed, so the concrete candidate type is
+            // returned rather than a common base. The reference points into the
+            // vector that holds it, with the Candidates object kept alive for
+            // as long as the reference lives.
+            [](py::object self, size_t i) {
+                return self.cast<Candidates&>().visit(i, [&](auto& candidate) {
+                    return py::cast(
+                        &candidate, py::return_value_policy::reference_internal,
+                        self);
+                });
             },
-            py::return_value_policy::reference)
+            "i"_a)
         .def(
             "is_step_collision_free", &Candidates::is_step_collision_free,
             R"ipc_Qu8mg5v7(

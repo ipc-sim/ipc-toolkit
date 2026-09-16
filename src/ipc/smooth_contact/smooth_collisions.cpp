@@ -265,8 +265,9 @@ double SmoothCollisions::compute_minimum_distance(
     tbb::parallel_for(size_t(0), m_candidates.size(), [&](size_t i) {
         double& local_min_dist = storage.local();
 
-        const double dist = m_candidates[i].compute_distance(
-            m_candidates[i].dof(vertices, edges, faces));
+        const double dist = m_candidates.visit(i, [&](const auto& c) {
+            return c.compute_distance(c.dof(vertices, edges, faces));
+        });
 
         local_min_dist = std::min(dist, local_min_dist);
     });

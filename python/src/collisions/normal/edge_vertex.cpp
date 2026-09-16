@@ -6,7 +6,7 @@ using namespace ipc;
 
 void define_edge_vertex_normal_collision(py::module_& m)
 {
-    py::class_<EdgeVertexNormalCollision, EdgeVertexCandidate, NormalCollision>(
+    py::class_<EdgeVertexNormalCollision, EdgeVertexStencil, NormalCollision>(
         m, "EdgeVertexNormalCollision")
         .def(py::init<index_t, index_t>(), "edge_id"_a, "vertex_id"_a)
         .def(py::init<const EdgeVertexCandidate&>(), "candidate"_a);

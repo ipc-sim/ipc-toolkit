@@ -7,7 +7,7 @@ using namespace ipc;
 void define_vertex_vertex_normal_collision(py::module_& m)
 {
     py::class_<
-        VertexVertexNormalCollision, VertexVertexCandidate, NormalCollision>(
+        VertexVertexNormalCollision, VertexVertexStencil, NormalCollision>(
         m, "VertexVertexNormalCollision")
         .def(py::init<index_t, index_t>(), "", "vertex0_id"_a, "vertex1_id"_a)
         .def(py::init<const VertexVertexCandidate&>(), "vv_candidate"_a);

@@ -5,13 +5,13 @@
 
 namespace ipc {
 
-class EdgeVertexNormalCollision : public EdgeVertexCandidate,
+class EdgeVertexNormalCollision : public EdgeVertexStencil,
                                   public NormalCollision {
 public:
-    using EdgeVertexCandidate::EdgeVertexCandidate;
+    using EdgeVertexStencil::EdgeVertexStencil;
 
     EdgeVertexNormalCollision(const EdgeVertexCandidate& candidate)
-        : EdgeVertexCandidate(candidate)
+        : EdgeVertexStencil(candidate)
     {
     }
 
@@ -20,7 +20,7 @@ public:
         const index_t _vertex_id,
         const double _weight,
         const Eigen::SparseVector<double>& _weight_gradient)
-        : EdgeVertexCandidate(_edge_id, _vertex_id)
+        : EdgeVertexStencil(_edge_id, _vertex_id)
         , NormalCollision(_weight, _weight_gradient)
     {
     }

@@ -93,6 +93,20 @@ public:
     /// @return A const reference to the collision.
     const NormalCollision& operator[](size_t i) const;
 
+    /// @brief Apply a visitor to the collision at index i.
+    ///
+    /// Mirrors Candidates::visit so code can be written once for both. These
+    /// collisions are polymorphic, so the visitor sees a NormalCollision&.
+    ///
+    /// @param i The index of the collision.
+    /// @param f The visitor.
+    /// @return Whatever the visitor returns.
+    template <typename Visitor>
+    decltype(auto) visit(size_t i, Visitor&& f) const
+    {
+        return f((*this)[i]);
+    }
+
     /// @brief Get if the collision at i is a vertex-vertex collision.
     /// @param i The index of the collision.
     /// @return If the collision at i is a vertex-vertex collision.

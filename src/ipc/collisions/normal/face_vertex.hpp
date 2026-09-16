@@ -5,13 +5,13 @@
 
 namespace ipc {
 
-class FaceVertexNormalCollision : public FaceVertexCandidate,
+class FaceVertexNormalCollision : public FaceVertexStencil,
                                   public NormalCollision {
 public:
-    using FaceVertexCandidate::FaceVertexCandidate;
+    using FaceVertexStencil::FaceVertexStencil;
 
     FaceVertexNormalCollision(const FaceVertexCandidate& candidate)
-        : FaceVertexCandidate(candidate)
+        : FaceVertexStencil(candidate)
     {
     }
 
@@ -20,7 +20,7 @@ public:
         const index_t _vertex_id,
         const double _weight,
         const Eigen::SparseVector<double>& _weight_gradient)
-        : FaceVertexCandidate(_face_id, _vertex_id)
+        : FaceVertexStencil(_face_id, _vertex_id)
         , NormalCollision(_weight, _weight_gradient)
     {
     }

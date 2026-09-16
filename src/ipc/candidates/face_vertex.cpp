@@ -13,34 +13,38 @@ FaceVertexCandidate::FaceVertexCandidate(index_t _face_id, index_t _vertex_id)
 }
 
 double FaceVertexCandidate::compute_distance(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const PointTriangleDistanceType dtype) const
 {
     assert(positions.size() == 12);
     return point_triangle_distance(
         positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
-        positions.tail<3>(), known_dtype());
+        positions.tail<3>(), dtype);
 }
 
 VectorMax12d FaceVertexCandidate::compute_distance_gradient(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const PointTriangleDistanceType dtype) const
 {
     assert(positions.size() == 12);
     return point_triangle_distance_gradient(
         positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
-        positions.tail<3>(), known_dtype());
+        positions.tail<3>(), dtype);
 }
 
 MatrixMax12d FaceVertexCandidate::compute_distance_hessian(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const PointTriangleDistanceType dtype) const
 {
     assert(positions.size() == 12);
     return point_triangle_distance_hessian(
         positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
-        positions.tail<3>(), known_dtype());
+        positions.tail<3>(), dtype);
 }
 
 VectorMax4d FaceVertexCandidate::compute_coefficients(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const PointTriangleDistanceType dtype) const
 {
     assert(positions.size() == 12);
     Eigen::ConstRef<Eigen::Vector3d> p = positions.head<3>();
@@ -49,13 +53,13 @@ VectorMax4d FaceVertexCandidate::compute_coefficients(
     Eigen::ConstRef<Eigen::Vector3d> t2 = positions.tail<3>();
 
     // Project the point inside the triangle
-    auto dtype = known_dtype();
-    if (dtype == PointTriangleDistanceType::AUTO) {
-        dtype = point_triangle_distance_type(p, t0, t1, t2);
+    PointTriangleDistanceType resolved_dtype = dtype;
+    if (resolved_dtype == PointTriangleDistanceType::AUTO) {
+        resolved_dtype = point_triangle_distance_type(p, t0, t1, t2);
     }
 
     VectorMax4d coeffs(4);
-    switch (dtype) {
+    switch (resolved_dtype) {
     case PointTriangleDistanceType::P_T0:
         coeffs << 1.0, -1.0, 0.0, 0.0;
         break;

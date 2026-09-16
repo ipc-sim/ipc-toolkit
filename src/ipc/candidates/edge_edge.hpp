@@ -1,6 +1,7 @@
 #pragma once
 
-#include <ipc/candidates/collision_stencil.hpp>
+#include <ipc/candidates/stencil_adapter.hpp>
+#include <ipc/candidates/stencil_mixin.hpp>
 #include <ipc/distance/distance_type.hpp>
 
 #include <Eigen/Core>
@@ -10,14 +11,20 @@
 namespace ipc {
 
 /// @brief A candidate for edge-edge collision detection.
-class EdgeEdgeCandidate : virtual public CollisionStencil {
+class EdgeEdgeCandidate : public StencilMixin<EdgeEdgeCandidate> {
+    friend class StencilMixin<EdgeEdgeCandidate>;
+
 public:
+    /// @brief Construct a candidate with indeterminate edge IDs.
+    /// @note Keeping this trivial is what makes the type trivially copyable.
+    EdgeEdgeCandidate() = default;
+
     EdgeEdgeCandidate(index_t edge0_id, index_t edge1_id);
 
     // ------------------------------------------------------------------------
-    // CollisionStencil
+    // Stencil
 
-    int num_vertices() const override { return 4; }
+    constexpr static int num_vertices() { return 4; }
 
     /// @brief Get the vertex IDs for the edge-edge pair
     /// @param edges The edge connectivity matrix
@@ -25,28 +32,34 @@ public:
     /// @return An array of vertex IDs in the order: [ea0i, ea1i, eb0i, eb1i]
     std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const override
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
     {
         return { { edges(edge0_id, 0), edges(edge0_id, 1), //
                    edges(edge1_id, 0), edges(edge1_id, 1) } };
     }
 
-    using CollisionStencil::compute_coefficients;
-    using CollisionStencil::compute_distance;
-    using CollisionStencil::compute_distance_gradient;
-    using CollisionStencil::compute_distance_hessian;
+    using StencilMixin<EdgeEdgeCandidate>::compute_coefficients;
+    using StencilMixin<EdgeEdgeCandidate>::compute_distance;
+    using StencilMixin<EdgeEdgeCandidate>::compute_distance_gradient;
+    using StencilMixin<EdgeEdgeCandidate>::compute_distance_hessian;
 
-    double
-    compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override;
+    /// @param dtype The distance type, when it is known a priori.
+    /// Defaults to AUTO, which classifies the pair from the positions.
+    double compute_distance(
+        Eigen::ConstRef<VectorMax12d> positions,
+        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
 
     VectorMax12d compute_distance_gradient(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions,
+        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
 
     MatrixMax12d compute_distance_hessian(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions,
+        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
 
     VectorMax4d compute_coefficients(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions,
+        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
 
     // ------------------------------------------------------------------------
 
@@ -57,11 +70,12 @@ public:
         const double min_distance = 0.0,
         const double tmax = 1.0,
         const NarrowPhaseCCD& narrow_phase_ccd =
-            DEFAULT_NARROW_PHASE_CCD) const override;
+            DEFAULT_NARROW_PHASE_CCD) const;
 
     // ------------------------------------------------------------------------
 
-    virtual EdgeEdgeDistanceType known_dtype() const
+    /// @brief The distance type known a priori; AUTO for a plain candidate.
+    constexpr static EdgeEdgeDistanceType known_dtype()
     {
         return EdgeEdgeDistanceType::AUTO;
     }
@@ -85,11 +99,18 @@ public:
     index_t edge1_id;
 
 protected:
-    VectorMax3d compute_unnormalized_normal(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+    VectorMax3d
+    compute_unnormalized_normal(Eigen::ConstRef<VectorMax12d> positions) const;
 
     MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions) const;
 };
+
+/// @brief EdgeEdgeCandidate with the runtime-polymorphic stencil interface.
+///
+/// The base of the edge-edge collision types, which pin the distance type by
+/// overriding known_dtype().
+using EdgeEdgeStencil =
+    DTypeStencilAdapter<EdgeEdgeCandidate, EdgeEdgeDistanceType>;
 
 } // namespace ipc

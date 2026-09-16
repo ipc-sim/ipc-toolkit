@@ -9,6 +9,8 @@
 
 #include <Eigen/Core>
 
+#include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace ipc {
@@ -54,15 +56,60 @@ public:
     /// @brief Clear all collision candidates.
     void clear();
 
-    /// @brief Get a collision stencil by index.
-    /// @param i The index of the collision stencil.
-    /// @return A reference to the collision stencil.
-    CollisionStencil& operator[](size_t i);
+private:
+    /// @brief The body of both visit() overloads.
+    ///
+    /// Self is Candidates or const Candidates, so the visitor is handed a
+    /// mutable or const candidate to match the object it was called on.
+    template <typename Self, typename Visitor>
+    static decltype(auto) visit_impl(Self& self, size_t i, Visitor&& f)
+    {
+        if (i < self.vv_candidates.size()) {
+            return f(self.vv_candidates[i]);
+        }
+        i -= self.vv_candidates.size();
+        if (i < self.ev_candidates.size()) {
+            return f(self.ev_candidates[i]);
+        }
+        i -= self.ev_candidates.size();
+        if (i < self.ee_candidates.size()) {
+            return f(self.ee_candidates[i]);
+        }
+        i -= self.ee_candidates.size();
+        if (i < self.fv_candidates.size()) {
+            return f(self.fv_candidates[i]);
+        }
+        i -= self.fv_candidates.size();
+        if (i < self.pv_candidates.size()) {
+            return f(self.pv_candidates[i]);
+        }
+        throw std::out_of_range("Candidate index is out of range!");
+    }
 
-    /// @brief Get a collision stencil by index.
-    /// @param i The index of the collision stencil.
-    /// @return A const reference to the collision stencil.
-    const CollisionStencil& operator[](size_t i) const;
+public:
+    /// @brief Apply a visitor to the candidate at index i.
+    ///
+    /// The candidate types are not polymorphic, so they cannot be handed out
+    /// through a common base reference. The visitor is called with the concrete
+    /// candidate type instead, which also means the stencil operations it calls
+    /// are resolved statically.
+    ///
+    /// @param i The index of the candidate.
+    /// @param f The visitor, callable with each of the five candidate types.
+    /// @return Whatever the visitor returns.
+    /// @throws std::out_of_range if i is not a valid index.
+    template <typename Visitor> decltype(auto) visit(size_t i, Visitor&& f)
+    {
+        return visit_impl(*this, i, std::forward<Visitor>(f));
+    }
+
+    /// @brief Apply a visitor to the candidate at index i.
+    /// @see visit(size_t, Visitor&&)
+    template <typename Visitor>
+    decltype(auto) visit(size_t i, Visitor&& f) const
+    {
+        return visit_impl(*this, i, std::forward<Visitor>(f));
+    }
 
     /// @brief Get if the collision at i is a vertex-vertex collision.
     /// @param i The index of the collision.

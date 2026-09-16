@@ -6,10 +6,15 @@
 
 namespace ipc {
 
-class EdgeVertexTangentialCollision : public EdgeVertexCandidate,
+class EdgeVertexTangentialCollision : public EdgeVertexStencil,
                                       public TangentialCollision {
 public:
-    using EdgeVertexCandidate::EdgeVertexCandidate;
+    // The adapter also names dim/ndof (the stencil's dof-count overloads); keep
+    // this collision's own no-argument accessors.
+    using TangentialCollision::dim;
+    using TangentialCollision::ndof;
+
+    using EdgeVertexStencil::EdgeVertexStencil;
 
     EdgeVertexTangentialCollision(const EdgeVertexNormalCollision& collision);
 

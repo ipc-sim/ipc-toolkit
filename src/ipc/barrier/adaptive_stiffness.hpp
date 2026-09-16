@@ -58,12 +58,43 @@ double update_barrier_stiffness(
 /// @param local_hess Local hessian of the elasticity energy function.
 /// @param dmin Minimum distance between elements.
 /// @return The semi-implicit stiffness.
+/// @tparam StencilT The stencil type; any candidate or collision.
+template <typename StencilT>
 double semi_implicit_stiffness(
-    const CollisionStencil& stencil,
+    const StencilT& stencil,
     Eigen::ConstRef<VectorMax12d> vertices,
     Eigen::ConstRef<VectorMax4d> mass,
     Eigen::ConstRef<MatrixMax12d> local_hess,
-    const double dmin);
+    const double dmin)
+{
+    const unsigned N = stencil.num_vertices();
+    assert(vertices.size() % N == 0);
+    const unsigned dim = stencil.dim(vertices.size());
+
+    const VectorMax4d value = stencil.compute_coefficients(vertices);
+
+    // Compute the contact normal (i.e., the vector from the )
+    VectorMax3d normal = VectorMax3d::Zero(dim);
+    for (unsigned i = 0; i < N; ++i) {
+        normal += value[i] * vertices.segment(dim * i, dim);
+    }
+
+    // d²
+    const double distance = normal.norm() - dmin;
+    const double distance_sqr = distance * distance;
+
+    // average mass: mᵢ = cᵀMc / ‖c‖²
+    const double avg_mass =
+        value.dot(mass.asDiagonal() * value) / value.squaredNorm();
+
+    VectorMax12d w = VectorMax12d::Zero(dim * N);
+    for (unsigned i = 0; i < N; ++i) {
+        w.segment(dim * i, dim) = value[i] * normal;
+    }
+    w.normalize();
+
+    return avg_mass / distance_sqr + w.dot(local_hess * w);
+}
 
 /// @brief Compute the semi-implicit stiffness's for all collisions.
 /// @note See [Ando 2024] for details.

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <ipc/candidates/collision_stencil.hpp>
+#include <ipc/candidates/stencil_adapter.hpp>
+#include <ipc/candidates/stencil_mixin.hpp>
 #include <ipc/distance/distance_type.hpp>
 
 #include <Eigen/Core>
@@ -10,14 +11,20 @@
 namespace ipc {
 
 /// @brief A candidate for face-vertex collision detection.
-class FaceVertexCandidate : virtual public CollisionStencil {
+class FaceVertexCandidate : public StencilMixin<FaceVertexCandidate> {
+    friend class StencilMixin<FaceVertexCandidate>;
+
 public:
+    /// @brief Construct a candidate with indeterminate edge IDs.
+    /// @note Keeping this trivial is what makes the type trivially copyable.
+    FaceVertexCandidate() = default;
+
     FaceVertexCandidate(index_t face_id, index_t vertex_id);
 
     // ------------------------------------------------------------------------
-    // CollisionStencil
+    // Stencil
 
-    int num_vertices() const override { return 4; }
+    constexpr static int num_vertices() { return 4; }
 
     /// @brief Get the vertex IDs for the face-vertex pair
     /// @param edges The edge connectivity matrix
@@ -25,28 +32,36 @@ public:
     /// @return An array of vertex IDs in the order: [vi, f0i, f1i, f2i]
     std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const override
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
     {
         return { { vertex_id, faces(face_id, 0), faces(face_id, 1),
                    faces(face_id, 2) } };
     }
 
-    using CollisionStencil::compute_coefficients;
-    using CollisionStencil::compute_distance;
-    using CollisionStencil::compute_distance_gradient;
-    using CollisionStencil::compute_distance_hessian;
+    using StencilMixin<FaceVertexCandidate>::compute_coefficients;
+    using StencilMixin<FaceVertexCandidate>::compute_distance;
+    using StencilMixin<FaceVertexCandidate>::compute_distance_gradient;
+    using StencilMixin<FaceVertexCandidate>::compute_distance_hessian;
 
-    double
-    compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override;
+    double compute_distance(
+        Eigen::ConstRef<VectorMax12d> positions,
+        const PointTriangleDistanceType dtype =
+            PointTriangleDistanceType::AUTO) const;
 
     VectorMax12d compute_distance_gradient(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions,
+        const PointTriangleDistanceType dtype =
+            PointTriangleDistanceType::AUTO) const;
 
     MatrixMax12d compute_distance_hessian(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions,
+        const PointTriangleDistanceType dtype =
+            PointTriangleDistanceType::AUTO) const;
 
     VectorMax4d compute_coefficients(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions,
+        const PointTriangleDistanceType dtype =
+            PointTriangleDistanceType::AUTO) const;
 
     // ------------------------------------------------------------------------
 
@@ -57,11 +72,11 @@ public:
         const double min_distance = 0.0,
         const double tmax = 1.0,
         const NarrowPhaseCCD& narrow_phase_ccd =
-            DEFAULT_NARROW_PHASE_CCD) const override;
+            DEFAULT_NARROW_PHASE_CCD) const;
 
     // ------------------------------------------------------------------------
 
-    virtual PointTriangleDistanceType known_dtype() const
+    constexpr static PointTriangleDistanceType known_dtype()
     {
         return PointTriangleDistanceType::AUTO;
     }
@@ -85,11 +100,17 @@ public:
     index_t vertex_id;
 
 protected:
-    VectorMax3d compute_unnormalized_normal(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+    VectorMax3d
+    compute_unnormalized_normal(Eigen::ConstRef<VectorMax12d> positions) const;
 
     MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions) const;
 };
+
+/// @brief FaceVertexCandidate with the runtime-polymorphic stencil interface.
+///
+/// The base of the corresponding collision types.
+using FaceVertexStencil =
+    DTypeStencilAdapter<FaceVertexCandidate, PointTriangleDistanceType>;
 
 } // namespace ipc

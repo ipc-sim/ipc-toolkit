@@ -243,14 +243,21 @@ void TrustRegion::planar_filter_step(
     }
 
     tbb::parallel_for(size_t(0), candidates.size(), [&](size_t i) {
-        const CollisionStencil& c = candidates[i];
-        const auto ids = c.vertex_ids(mesh.edges(), mesh.faces());
-        const int nv = c.num_vertices();
-        const VectorMax12d pos = c.dof(vertices, mesh.edges(), mesh.faces());
-
+        // The candidate types are not polymorphic, so take what is needed
+        // from the visitor and work with values from here on.
         // dv = c_first − c_second; positive coeffs → first primitive
+        std::array<index_t, CollisionStencil::STENCIL_SIZE> ids {};
+        int nv = 0;
+        VectorMax12d pos;
         VectorMax4d coeffs;
-        const VectorMax3d dv = c.compute_distance_vector(pos, coeffs);
+        VectorMax3d dv;
+        candidates.visit(i, [&](const auto& c) {
+            ids = c.vertex_ids(mesh.edges(), mesh.faces());
+            nv = c.num_vertices();
+            pos = c.dof(vertices, mesh.edges(), mesh.faces());
+            dv = c.compute_distance_vector(pos, coeffs);
+        });
+
         const double dist = dv.norm();
         if (dist < 1e-10) {
             return;

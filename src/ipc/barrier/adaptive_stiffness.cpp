@@ -85,42 +85,6 @@ double update_barrier_stiffness(
 // License: Apache v2.0
 //
 
-double semi_implicit_stiffness(
-    const CollisionStencil& stencil,
-    Eigen::ConstRef<VectorMax12d> vertices,
-    Eigen::ConstRef<VectorMax4d> mass,
-    Eigen::ConstRef<MatrixMax12d> local_hess,
-    const double dmin)
-{
-    const unsigned N = stencil.num_vertices();
-    assert(vertices.size() % N == 0);
-    const unsigned dim = stencil.dim(vertices.size());
-
-    const VectorMax4d value = stencil.compute_coefficients(vertices);
-
-    // Compute the contact normal (i.e., the vector from the )
-    VectorMax3d normal = VectorMax3d::Zero(dim);
-    for (unsigned i = 0; i < N; ++i) {
-        normal += value[i] * vertices.segment(dim * i, dim);
-    }
-
-    // d²
-    const double distance = normal.norm() - dmin;
-    const double distance_sqr = distance * distance;
-
-    // average mass: mᵢ = cᵀMc / ‖c‖²
-    const double avg_mass =
-        value.dot(mass.asDiagonal() * value) / value.squaredNorm();
-
-    VectorMax12d w = VectorMax12d::Zero(dim * N);
-    for (unsigned i = 0; i < N; ++i) {
-        w.segment(dim * i, dim) = value[i] * normal;
-    }
-    w.normalize();
-
-    return avg_mass / distance_sqr + w.dot(local_hess * w);
-}
-
 template <typename StencilsT>
 Eigen::VectorXd semi_implicit_stiffness(
     const CollisionMesh& mesh,
@@ -141,40 +105,42 @@ Eigen::VectorXd semi_implicit_stiffness(
     Eigen::VectorXd stiffnesses(collisions.size());
 
     for (size_t ci = 0; ci < collisions.size(); ci++) {
-        const CollisionStencil& collision = collisions[ci];
-        const unsigned N = collision.num_vertices();
+        stiffnesses[ci] = collisions.visit(ci, [&](const auto& collision) {
+            const unsigned N = collision.num_vertices();
 
-        const VectorMax12d positions =
-            collision.dof(vertices, mesh.edges(), mesh.faces());
+            const VectorMax12d positions =
+                collision.dof(vertices, mesh.edges(), mesh.faces());
 
-        std::array<index_t, 4> vertex_ids =
-            collision.vertex_ids(mesh.edges(), mesh.faces());
-        if (hess.rows() == mesh.full_ndof()) {
-            for (int i = 0; i < N; i++) {
-                vertex_ids[i] = mesh.to_full_vertex_id(vertex_ids[i]);
+            std::array<index_t, 4> vertex_ids =
+                collision.vertex_ids(mesh.edges(), mesh.faces());
+            if (hess.rows() == mesh.full_ndof()) {
+                for (int i = 0; i < N; i++) {
+                    vertex_ids[i] = mesh.to_full_vertex_id(vertex_ids[i]);
+                }
             }
-        }
 
-        VectorMax4d local_mass(collision.num_vertices());
-        for (unsigned i = 0; i < collision.num_vertices(); i++) {
-            local_mass[i] = vertex_masses[vertex_ids[i]];
-        }
+            VectorMax4d local_mass(collision.num_vertices());
+            for (unsigned i = 0; i < collision.num_vertices(); i++) {
+                local_mass[i] = vertex_masses[vertex_ids[i]];
+            }
 
-        MatrixMax12d local_hess = MatrixMax12d::Zero(dim * N, dim * N);
-        for (unsigned i = 0; i < N; ++i) {
-            for (unsigned j = 0; j < N; ++j) {
-                for (unsigned k = 0; k < dim; ++k) {
-                    for (unsigned l = 0; l < dim; ++l) {
-                        // NOTE: Assumes DOF are flattened in row-major order
-                        local_hess(dim * i + k, dim * j + l) = hess.coeff(
-                            dim * vertex_ids[i] + k, dim * vertex_ids[j] + l);
+            MatrixMax12d local_hess = MatrixMax12d::Zero(dim * N, dim * N);
+            for (unsigned i = 0; i < N; ++i) {
+                for (unsigned j = 0; j < N; ++j) {
+                    for (unsigned k = 0; k < dim; ++k) {
+                        for (unsigned l = 0; l < dim; ++l) {
+                            // NOTE: Assumes DOF are flattened in row-major order
+                            local_hess(dim * i + k, dim * j + l) = hess.coeff(
+                                dim * vertex_ids[i] + k,
+                                dim * vertex_ids[j] + l);
+                        }
                     }
                 }
             }
-        }
 
-        stiffnesses[ci] = semi_implicit_stiffness(
-            collision, positions, local_mass, local_hess, dmin);
+            return semi_implicit_stiffness(
+                collision, positions, local_mass, local_hess, dmin);
+        });
     }
 
     return stiffnesses;
