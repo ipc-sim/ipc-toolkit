@@ -2,7 +2,18 @@
 # Create Python module for IPC Toolkit
 include(pybind11)
 
-pybind11_add_module(ipctk)
+if(IPC_TOOLKIT_WITH_CUDA)
+  # NO_EXTRAS turns off both pybind11's LTO and its strip step, but only LTO is a problem here.
+  pybind11_add_module(ipctk NO_EXTRAS)
+  if(DEFINED CMAKE_BUILD_TYPE)
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" IPC_TOOLKIT_BUILD_TYPE_UPPER)
+    if(NOT MSVC AND NOT "${IPC_TOOLKIT_BUILD_TYPE_UPPER}" MATCHES DEBUG|RELWITHDEBINFO|NONE)
+      pybind11_strip(ipctk)
+    endif()
+  endif()
+else()
+  pybind11_add_module(ipctk)
+endif()
 
 add_subdirectory(src) # Add sources to ipctk
 target_include_directories(ipctk PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
