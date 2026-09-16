@@ -7,8 +7,8 @@ using namespace ipc;
 void define_edge_vertex_tangential_collision(py::module_& m)
 {
     py::class_<
-        EdgeVertexTangentialCollision, EdgeVertexCandidate,
-        TangentialCollision>(m, "EdgeVertexTangentialCollision")
+        EdgeVertexTangentialCollision, EdgeVertexStencil, TangentialCollision>(
+        m, "EdgeVertexTangentialCollision")
         .def(py::init<const EdgeVertexNormalCollision&>(), "collision"_a)
         .def(
             py::init<

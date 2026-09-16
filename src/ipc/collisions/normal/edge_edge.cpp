@@ -11,7 +11,7 @@ EdgeEdgeNormalCollision::EdgeEdgeNormalCollision(
     const index_t _edge1_id,
     const double _eps_x,
     const EdgeEdgeDistanceType _dtype)
-    : EdgeEdgeCandidate(_edge0_id, _edge1_id)
+    : EdgeEdgeStencil(_edge0_id, _edge1_id)
     , eps_x(_eps_x)
     , dtype(_dtype)
 {
@@ -21,7 +21,7 @@ EdgeEdgeNormalCollision::EdgeEdgeNormalCollision(
     const EdgeEdgeCandidate& candidate,
     const double _eps_x,
     const EdgeEdgeDistanceType _dtype)
-    : EdgeEdgeCandidate(candidate)
+    : EdgeEdgeStencil(candidate)
     , eps_x(_eps_x)
     , dtype(_dtype)
 {
@@ -34,7 +34,7 @@ EdgeEdgeNormalCollision::EdgeEdgeNormalCollision(
     const double _weight,
     const Eigen::SparseVector<double>& _weight_gradient,
     const EdgeEdgeDistanceType _dtype)
-    : EdgeEdgeCandidate(_edge0_id, _edge1_id)
+    : EdgeEdgeStencil(_edge0_id, _edge1_id)
     , NormalCollision(_weight, _weight_gradient)
     , eps_x(_eps_x)
     , dtype(_dtype)

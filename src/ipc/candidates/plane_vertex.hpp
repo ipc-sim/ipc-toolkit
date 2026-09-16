@@ -1,51 +1,59 @@
 #pragma once
 
+#include <ipc/candidates/stencil_adapter.hpp>
+#include <ipc/candidates/stencil_mixin.hpp>
 #include <ipc/collisions/normal/normal_collision.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
-class PlaneVertexCandidate : virtual public CollisionStencil {
+class PlaneVertexCandidate : public StencilMixin<PlaneVertexCandidate> {
+    friend class StencilMixin<PlaneVertexCandidate>;
+
 public:
+    /// @brief Construct a candidate with indeterminate edge IDs.
+    /// @note Keeping this trivial is what makes the type trivially copyable.
+    PlaneVertexCandidate() = default;
+
     PlaneVertexCandidate(
         const Eigen::Hyperplane<double, 3>& plane, const index_t vertex_id);
 
-    int num_vertices() const override { return 1; }
+    constexpr static int num_vertices() { return 1; }
 
     std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
-        Eigen::ConstRef<Eigen::MatrixXi> faces) const override
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
     {
         return { { vertex_id, -1, -1, -1 } };
     }
 
-    using CollisionStencil::compute_coefficients;
-    using CollisionStencil::compute_distance;
-    using CollisionStencil::compute_distance_gradient;
-    using CollisionStencil::compute_distance_hessian;
+    using StencilMixin<PlaneVertexCandidate>::compute_coefficients;
+    using StencilMixin<PlaneVertexCandidate>::compute_distance;
+    using StencilMixin<PlaneVertexCandidate>::compute_distance_gradient;
+    using StencilMixin<PlaneVertexCandidate>::compute_distance_hessian;
 
     /// @brief Compute the distance between the point and plane.
     /// @param point Point's position.
     /// @return Distance of the stencil.
-    double compute_distance(Eigen::ConstRef<VectorMax12d> point) const override;
+    double compute_distance(Eigen::ConstRef<VectorMax12d> point) const;
 
     /// @brief Compute the gradient of the distance w.r.t. the point's positions.
     /// @param point Point's position.
     /// @return Distance gradient w.r.t. the point's positions.
-    VectorMax12d compute_distance_gradient(
-        Eigen::ConstRef<VectorMax12d> point) const override;
+    VectorMax12d
+    compute_distance_gradient(Eigen::ConstRef<VectorMax12d> point) const;
 
     /// @brief Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
     /// @param point Point's position.
     /// @return Distance Hessian w.r.t. the point's positions.
-    MatrixMax12d compute_distance_hessian(
-        Eigen::ConstRef<VectorMax12d> point) const override;
+    MatrixMax12d
+    compute_distance_hessian(Eigen::ConstRef<VectorMax12d> point) const;
 
     /// @brief Compute the coefficients of the stencil.
     /// @param positions Vertex positions.
     /// @return Coefficients of the stencil.
-    VectorMax4d compute_coefficients(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+    VectorMax4d
+    compute_coefficients(Eigen::ConstRef<VectorMax12d> positions) const;
 
     /// @brief Perform narrow-phase CCD on the candidate.
     /// @param[in] vertices_t0 Stencil vertices at the start of the time step.
@@ -62,7 +70,7 @@ public:
         const double min_distance = 0.0,
         const double tmax = 1.0,
         const NarrowPhaseCCD& narrow_phase_ccd =
-            DEFAULT_NARROW_PHASE_CCD) const override;
+            DEFAULT_NARROW_PHASE_CCD) const;
 
     /// @brief The plane of the candidate.
     Eigen::Hyperplane<double, 3> plane;
@@ -83,14 +91,19 @@ protected:
     /// @brief Compute the normal vector of the stencil.
     /// @param positions Vertex positions.
     /// @return Normal vector of the stencil.
-    VectorMax3d compute_unnormalized_normal(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+    VectorMax3d
+    compute_unnormalized_normal(Eigen::ConstRef<VectorMax12d> positions) const;
 
     /// @brief Compute the Jacobian of the normal vector of the stencil.
     /// @param positions Vertex positions.
     /// @return Jacobian of the normal vector of the stencil.
     MatrixMax<double, 3, 12> compute_unnormalized_normal_jacobian(
-        Eigen::ConstRef<VectorMax12d> positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions) const;
 };
+
+/// @brief PlaneVertexCandidate with the runtime-polymorphic stencil interface.
+///
+/// The base of the corresponding collision types.
+using PlaneVertexStencil = StencilAdapter<PlaneVertexCandidate>;
 
 } // namespace ipc
