@@ -42,7 +42,7 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.74c816e3f9967dd6e.min.css?v=6cfe2491" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.6efbe22605a23fcd6.min.css?v=b2ceb110" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
         <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=2bd09638" />
@@ -22988,7 +22988,7 @@
 </div>
 </figure>
 <p>GPU Linear Bounding Volume Hierarchy (<a class="reference internal" href="#classipc_1_1cuda_1_1_l_b_v_h"><span class="std std-ref">LBVH</span></a>) broad phase. </p>
-<p>A first-class GPU counterpart to ipc::LBVH: it builds the vertex/edge/face AABBs and their BVHs, and runs the traversal and mesh-connectivity filtering, entirely on the device. Construction uses Morton codes + the Apetrei [2014] single-pass bottom-up build and reuses the 32-byte <a class="reference internal" href="#structipc_1_1_l_b_v_h_1_1_node"><span class="std std-ref">ipc::LBVH::Node</span></a> layout, so the device tree can be copied back to the host and validated against &amp;#8212; or traversed by &amp;#8212; the CPU code. The build, the scalar descent, and the shared-vertex exclusion are the same ipc::details functions <a class="reference internal" href="#classipc_1_1_l_b_v_h"><span class="std std-ref">ipc::LBVH</span></a> runs; only the parallel launches, the sort, and the atomics are CUDA’s.</p>
+<p>A first-class GPU counterpart to ipc::LBVH: it builds the vertex/edge/face AABBs and their BVHs, and runs the traversal and mesh-connectivity filtering, entirely on the device. Construction uses Morton codes + the Apetrei [2014] single-pass bottom-up build and reuses the 32-byte <a class="reference internal" href="#structipc_1_1_l_b_v_h_1_1_node"><span class="std std-ref">ipc::LBVH::Node</span></a> layout, so the device tree can be copied back to the host and validated against – or traversed by – the CPU code. The build, the scalar descent, and the shared-vertex exclusion are the same ipc::details functions <a class="reference internal" href="#classipc_1_1_l_b_v_h"><span class="std std-ref">ipc::LBVH</span></a> runs; only the parallel launches, the sort, and the atomics are CUDA’s.</p>
 <p>Detection runs the BVH descent (<a class="reference internal" href="#classipc_1_1_a_a_b_b"><span class="std std-ref">AABB</span></a> overlap + triangular dedup) and the connectivity (shared-vertex) exclusion on the device. The user vertex filter (can_vertices_collide) is honored on the device only when it is the default accept-all filter; a non-trivial filter is applied on the host while materializing the device-emitted (connectivity-filtered) candidates. Either way the output matches the CPU <a class="reference internal" href="#classipc_1_1_l_b_v_h"><span class="std std-ref">ipc::LBVH</span></a> exactly for any filter.</p>
 <p>All device-side primitive and vertex ids are 32-bit, independent of ipc::index_t: <a class="reference internal" href="#structipc_1_1_l_b_v_h_1_1_node"><span class="std std-ref">ipc::LBVH::Node</span></a> stores its primitive id as an int32_t, which already caps every <a class="reference internal" href="#classipc_1_1cuda_1_1_l_b_v_h"><span class="std std-ref">LBVH</span></a> at 2^31 - 1 primitives, and the connectivity and candidate buffers use the same width so a downstream kernel reads one consistent id type (see <a class="reference internal" href="#structipc_1_1cuda_1_1_l_b_v_h_1_1_device_candidate_view"><span class="std std-ref">DeviceCandidateView</span></a>).</p>
 <p>The detect_*() methods are const, as the <a class="reference internal" href="#classipc_1_1_broad_phase"><span class="std std-ref">BroadPhase</span></a> interface requires, but share device buffers; concurrent calls on one object are serialized by an internal mutex. Device memory is retained across <a class="reference internal" href="#classipc_1_1cuda_1_1_l_b_v_h_1a6821bfd570f8b6180d888648a2f702db"><span class="std std-ref">clear()</span></a> and <a class="reference internal" href="#classipc_1_1cuda_1_1_l_b_v_h_1aa356831a755d9351321ac970fd1270b2"><span class="std std-ref">build()</span></a> (the candidate buffers keep their high-water-mark capacity so a per-frame call allocates nothing) and released by the destructor. </p>
@@ -23510,7 +23510,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Sep 16, 2026
+    Oct 07, 2026
   </span>
 
     
