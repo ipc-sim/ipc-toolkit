@@ -1286,11 +1286,6 @@ TEST_CASE(
                     1e-9));
         }
 
-        // Each quadrature point's Hessian is projected, so their sum is PSD.
-        const auto [lambda_min, lambda_max] = eigenvalue_range(
-            potential.hessian(collisions, mesh, V, PSDProjectionMethod::CLAMP));
-        CHECK(lambda_min >= -std::max(1e-10, 1e-10 * std::abs(lambda_max)));
-
         if (!check_hessian) {
             return;
         }
@@ -1373,6 +1368,38 @@ TEST_CASE(
         // Rounding leaves P_E pairs ~1e-17 from a switch at orders 7 and 14.
         run_checks(false);
     }
+}
+
+// Each 2D quadrature point's Hessian is projected, so their sum is PSD.
+TEST_CASE("ESP potential 2D Hessian PSD", "[esp_potential], [esp_potential_2d]")
+{
+    const int quadrature_order = GENERATE(1, 2, 7);
+    const PSDProjectionMethod psd_method =
+        GENERATE(PSDProjectionMethod::CLAMP, PSDProjectionMethod::ABS);
+    const ESPParameters params(0.6, 1., quadrature_order);
+
+    Eigen::MatrixXd V(8, 2);
+    Eigen::MatrixXi E(8, 2);
+    SECTION("corners")
+    {
+        V << -1., 1., -1., 0., 0., 0., .01, .5, 0., 1., 1., 0., 1., 1., .02,
+            .49;
+        E << 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 5, 6, 6, 7, 7, 5;
+    }
+    SECTION("squares")
+    {
+        V << -1., 1., -1., 0., -.1, 0., -.1, 1., .1, 1., .1, 0., 1., 0., 1., 1.;
+        E << 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4;
+    }
+    const CollisionMesh mesh = make_2d_collision_mesh(V, E);
+
+    ESPCollisions collisions;
+    collisions.build(mesh, V, params);
+    REQUIRE(!collisions.empty());
+
+    const auto [lambda_min, lambda_max] = eigenvalue_range(
+        ESPPotential(params).hessian(collisions, mesh, V, psd_method));
+    CHECK(lambda_min >= -std::max(1e-10, 1e-10 * std::abs(lambda_max)));
 }
 
 // 3D FACE QUADRATURE TESTS //
