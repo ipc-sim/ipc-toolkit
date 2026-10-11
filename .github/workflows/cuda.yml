@@ -51,12 +51,25 @@ jobs:
         uses: SimenB/github-actions-cpu-cores@v2
         id: cpu-cores
 
+      # FindSIMD compiles with -march=native, which bakes the building runner's
+      # ISA into every cached object file, but ccache hashes the flag string and
+      # not the CPU it expands to. Without a CPU component in the cache key,
+      # objects built on one runner model get restored onto another, and a
+      # translation unit compiled fresh on the new CPU then disagrees with the
+      # cached ones about xsimd::default_arch. Key the cache on the CPU so it
+      # only restores onto matching hardware.
+      - name: CPU fingerprint
+        run: |
+          CPU=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)
+          echo "CPU: $CPU"
+          echo "CPU_KEY=$(printf '%s' "$CPU" | sha256sum | cut -c1-12)" >> "$GITHUB_ENV"
+
       - name: Cache Build
         id: cache-build
         uses: actions/cache@v5
         with:
           path: ${{ env.CACHE_PATH }}
-          key: ${{ runner.os }}-${{ matrix.config }}-cache
+          key: ${{ runner.os }}-${{ matrix.config }}-${{ env.CPU_KEY }}-cache
 
       - name: Prepare ccache
         run: |
