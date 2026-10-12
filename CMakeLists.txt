@@ -82,15 +82,10 @@ if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   endif()
 endif()
 
-if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-  option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
-  option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
-else()
-  # If this is not the top-level project, we don't want to build tests or Python
-  # bindings. This is useful for projects that use IPC Toolkit as a submodule.
-  set(IPC_TOOLKIT_BUILD_TESTS  OFF CACHE BOOL "Build unit-tests"      FORCE)
-  set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings" FORCE)
-endif()
+# If this is not the top-level project, we don't build tests or Python bindings
+# by default. This is useful for projects that use IPC Toolkit as a submodule.
+option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"      ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
 
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                    ON)
@@ -139,7 +134,17 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Verify Options
 ################################################################################
 
-# CUDA support
+# Check for CUDA support
+if (IPC_TOOLKIT_WITH_CUDA)
+  include(CheckLanguage)
+  check_language(CUDA)
+  if (NOT CMAKE_CUDA_COMPILER)
+    message(WARNING "CUDA support requested but no CUDA compiler found. Continuing without CUDA.")
+    set(IPC_TOOLKIT_WITH_CUDA OFF)
+  endif()
+endif()
+
+# Enable CUDA support if requested
 if(IPC_TOOLKIT_WITH_CUDA)
   # If CMAKE_CUDA_ARCHITECTURES was not specified, set it to native.
   if(DEFINED CMAKE_CUDA_ARCHITECTURES)
@@ -173,7 +178,10 @@ if(IPC_TOOLKIT_WITH_SIMD)
     message(STATUS "SIMD support found: ${SIMD_CXX_FLAGS}")
   else()
     message(WARNING "SIMD support requested but not found. Continuing without SIMD.")
-    set(IPC_TOOLKIT_WITH_SIMD OFF CACHE BOOL "Enable SIMD" FORCE)
+    # We shadow the cache entry with a normal variable instead of forcing the
+    # cache off. Forcing would overwrite the user's request, and the option
+    # would stay OFF in this build directory even after SIMD becomes available.
+    set(IPC_TOOLKIT_WITH_SIMD OFF)
   endif()
 endif()
 
