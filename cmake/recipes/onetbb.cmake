@@ -19,43 +19,18 @@ option(TBB_PREFER_STATIC "Use the static version of TBB for the alias target" ON
 unset(TBB_DIR CACHE)
 
 function(onetbb_import_target)
-    macro(push_variable var value)
-        if(DEFINED CACHE{${var}})
-            set(ONETBB_OLD_${var}_VALUE "${${var}}")
-            set(ONETBB_OLD_${var}_TYPE CACHE_TYPE)
-        elseif(DEFINED ${var})
-            set(ONETBB_OLD_${var}_VALUE "${${var}}")
-            set(ONETBB_OLD_${var}_TYPE NORMAL_TYPE)
-        else()
-            set(ONETBB_OLD_${var}_TYPE NONE_TYPE)
-        endif()
-        set(${var} "${value}" CACHE PATH "" FORCE)
-    endmacro()
-
-    macro(pop_variable var)
-        if(ONETBB_OLD_${var}_TYPE STREQUAL CACHE_TYPE)
-            set(${var} "${ONETBB_OLD_${var}_VALUE}" CACHE PATH "" FORCE)
-        elseif(ONETBB_OLD_${var}_TYPE STREQUAL NORMAL_TYPE)
-            unset(${var} CACHE)
-            set(${var} "${ONETBB_OLD_${var}_VALUE}")
-        elseif(ONETBB_OLD_${var}_TYPE STREQUAL NONE_TYPE)
-            unset(${var} CACHE)
-        else()
-            message(FATAL_ERROR "Trying to pop a variable that has not been pushed: ${var}")
-        endif()
-    endmacro()
-
+    # We set BUILD_SHARED_LIBS as a normal variable. oneTBB's subdirectory
+    # inherits it, and it disappears when this function returns, so the caller's
+    # value is restored for free.
     if(TBB_PREFER_STATIC)
-        push_variable(BUILD_SHARED_LIBS OFF)
+        set(BUILD_SHARED_LIBS OFF)
     else()
-        push_variable(BUILD_SHARED_LIBS ON)
+        set(BUILD_SHARED_LIBS ON)
     endif()
 
     set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME tbb)
     include(CPM)
     CPMAddPackage("gh:uxlfoundation/oneTBB@2022.3.0")
-
-    pop_variable(BUILD_SHARED_LIBS)
 endfunction()
 
 onetbb_import_target()
