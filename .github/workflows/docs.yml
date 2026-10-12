@@ -39,8 +39,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ env.CACHE_PATH }}
-          key: docs-cache
-          restore-keys: Linux-Python-cache
+          key: docs-ccache
 
       - name: Prepare Ccache
         run: |
@@ -105,7 +104,18 @@ jobs:
           done
           cd ..
 
+      # On Linux, explicitly build for x86-64-v3 instead of -march=native. This
+      # avoids issues with ccache restoring from a runner with a different ISA.
+      - name: Check x86-64-v3 support
+        run: |
+          for f in avx2 bmi1 bmi2 f16c fma abm movbe xsave; do
+            grep -qw "$f" /proc/cpuinfo || { echo "::error::Runner CPU lacks $f, which x86-64-v3 requires"; exit 1; }
+          done
+          echo "CPU: $(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)"
+
       - name: Build ipctk
+        env:
+          CMAKE_ARGS: -DSIMD_CXX_FLAGS=-march=x86-64-v3
         run: |
           pip install --verbose .
           ccache --show-stats
