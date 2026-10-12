@@ -81,8 +81,7 @@ jobs:
       # objects crashed with SIGILL. An explicit baseline makes the flag string
       # describe the generated code, so one cache works on every runner CPU.
       # Tight-Inclusion still adds -march=native for its own objects, but it
-      # also passes -mno-avx512f, which caps them at AVX2. coverage.yml keeps
-      # -march=native so CI still compiles the code users get by default.
+      # also passes -mno-avx512f, which caps them at AVX2.
       # Windows already passes explicit /arch flags, so its objects do not
       # depend on the runner either. macOS still builds with -march=native,
       # but nearly every runner is the same Apple M1, so we share one cache

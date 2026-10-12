@@ -37,38 +37,33 @@ jobs:
         uses: SimenB/github-actions-cpu-cores@v2
         id: cpu-cores
 
-      # FindSIMD and Tight-Inclusion both compile with -march=native, which
-      # bakes the building runner's ISA into every cached object file. ccache
-      # hashes the literal flag string, not what it expands to, so restored
-      # objects are only safe on a runner with the same ISA.
-      # The CPU model name has not been enough to guarantee that: EPYC 9V74
-      # runners restored each other's objects and crashed with SIGILL. We also
-      # hash the flags the compiler expands -march=native to, which is exactly
-      # what ends up in the object files. We keep the model name in the hash too,
-      # so the key is never weaker than before.
-      # This job stays on -march=native on purpose, so CI still compiles the
-      # code users get by default. The other Linux jobs build for x86-64-v3
-      # instead and share one cache across runner CPUs.
-      - name: CPU fingerprint
+      # We build for x86-64-v3 (AVX2, FMA, BMI1/2, LZCNT, F16C) instead of
+      # -march=native. ccache hashes the literal flag string, not what
+      # -march=native expands to, so native objects are only safe on a runner
+      # with the same ISA, and EPYC 9V74 runners that restored each other's
+      # objects crashed with SIGILL. An explicit baseline makes the flag string
+      # describe the generated code, so one cache works on every runner CPU.
+      # Tight-Inclusion still adds -march=native for its own objects, but it
+      # also passes -mno-avx512f, which caps them at AVX2.
+      - name: Check x86-64-v3 support
         run: |
-          CPU=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)
-          ISA=$(echo | c++ -march=native -E -v - 2>&1 | grep -oE -- ' -m[a-z0-9=._+-]+' | sort -u | tr -d '\n')
-          echo "CPU: $CPU"
-          echo "ISA:$ISA"
-          echo "CPU_KEY=$(printf '%s\n%s' "$CPU" "$ISA" | sha256sum | cut -c1-12)" >> "$GITHUB_ENV"
+          for f in avx2 bmi1 bmi2 f16c fma abm movbe xsave; do
+            grep -qw "$f" /proc/cpuinfo || { echo "::error::Runner CPU lacks $f, which x86-64-v3 requires"; exit 1; }
+          done
+          echo "CPU: $(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)"
 
       - name: Cache Build
         id: cache-build
         uses: actions/cache@v5
         with:
           path: ${{ env.CACHE_PATH }}
-          key: coverage-${{ env.CPU_KEY }}-cache
+          key: coverage-cache
 
       - name: Prepare ccache
         run: |
           ccache --max-size=1.0G
           ccache -V && ccache --show-config
-          ccache --show-stats && ccache --zero-stats\
+          ccache --show-stats && ccache --zero-stats
 
       - name: Configure
         run: |
@@ -77,7 +72,8 @@ jobs:
           cmake .. \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
             -DIPC_TOOLKIT_WITH_CODE_COVERAGE=ON \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DSIMD_CXX_FLAGS=-march=x86-64-v3 \
+            -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: |
