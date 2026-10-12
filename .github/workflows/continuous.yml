@@ -98,6 +98,9 @@ jobs:
           ccache -V && ccache --show-config
           ccache --show-stats && ccache --zero-stats
 
+      # Debug keeps the asserts (NDEBUG stays undefined) and -O0 but drops -g.
+      # Debug info made the Debug ccache about 20x larger than Release, and CI
+      # never reads it: assert and Catch2 messages carry __FILE__ and __LINE__.
       - name: Configure (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
@@ -105,6 +108,8 @@ jobs:
           cd build
           cmake .. \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
+            -DCMAKE_C_FLAGS_DEBUG=-O0 \
+            -DCMAKE_CXX_FLAGS_DEBUG=-O0 \
             $SIMD_ARGS \
             -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 

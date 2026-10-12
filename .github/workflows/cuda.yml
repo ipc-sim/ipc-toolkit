@@ -76,6 +76,11 @@ jobs:
           ccache -V && ccache --show-config
           ccache --show-stats && ccache --zero-stats
 
+      # Debug keeps the asserts (NDEBUG stays undefined) and -O0 but drops -g.
+      # Debug info made the Debug ccache about 20x larger than Release, and CI
+      # never reads it: assert and Catch2 messages carry __FILE__ and __LINE__.
+      # The CUDA Debug flags are emptied instead of set to -O0, which nvcc would
+      # also apply to the device code.
       - name: Configure
         run: |
           mkdir -p build
@@ -83,6 +88,9 @@ jobs:
           cmake .. \
             -DIPC_TOOLKIT_WITH_CUDA=ON \
             -DSIMD_CXX_FLAGS=-march=x86-64-v3 \
+            -DCMAKE_C_FLAGS_DEBUG=-O0 \
+            -DCMAKE_CXX_FLAGS_DEBUG=-O0 \
+            -DCMAKE_CUDA_FLAGS_DEBUG= \
             -DCMAKE_CUDA_ARCHITECTURES=75 \
             -DSCALABLE_CCD_CUDA_ARCHITECTURES=75 \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
