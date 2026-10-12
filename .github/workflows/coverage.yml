@@ -46,6 +46,9 @@ jobs:
       # hash the flags the compiler expands -march=native to, which is exactly
       # what ends up in the object files. We keep the model name in the hash too,
       # so the key is never weaker than before.
+      # This job stays on -march=native on purpose, so CI still compiles the
+      # code users get by default. The other Linux jobs build for x86-64-v3
+      # instead and share one cache across runner CPUs.
       - name: CPU fingerprint
         run: |
           CPU=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)

@@ -91,12 +91,12 @@ jobs:
           cd ..
 
       # We build ipctk without ccache on purpose. It compiles with -march=native
-      # (from FindSIMD, plus Tight-Inclusion's own flags), and ccache hashes that
-      # flag string, not the CPU it expands to. A cached object could therefore
-      # be restored onto a runner that lacks some of its instructions, which
-      # crashed `import ipctk` with SIGILL when Sphinx started. The tradeoff is a
-      # cold build of about 5 minutes instead of about 1, which is fine because
-      # docs only build on pushes to main.
+      # (from FindSIMD, plus Tight-Inclusion's own flags), and ccache hashes
+      # that flag string, not the CPU it expands to. A cached object could
+      # therefore be restored onto a runner that lacks some of its
+      # instructions, which crashed `import ipctk` with SIGILL when Sphinx
+      # started. The tradeoff is a cold build of about 5 minutes instead of
+      # about 1, which is fine because docs only build on pushes to main.
       - name: Build ipctk
         run: pip install --verbose .
 
