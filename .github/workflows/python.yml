@@ -64,11 +64,15 @@ jobs:
           choco install ccache
           "CACHE_PATH=${env:LOCALAPPDATA}\ccache" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      # We share one cache across runner CPUs. The Linux build sets
-      # IPCTK_WITH_SIMD=0, so only Tight-Inclusion still uses -march=native, and
-      # it also passes -mno-avx512f, which caps its objects at AVX2. Windows
-      # passes explicit /arch flags. macOS builds with -march=native, but nearly
-      # every runner is the same Apple M1.
+      # On Linux, explicitly build for x86-64-v3 instead of -march=native. This
+      # avoids issues with ccache restoring from a runner with a different ISA.
+      - name: Check x86-64-v3 support (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          for f in avx2 bmi1 bmi2 f16c fma abm movbe xsave; do
+            grep -qw "$f" /proc/cpuinfo || { echo "::error::Runner CPU lacks $f, which x86-64-v3 requires"; exit 1; }
+          done
+          echo "CPU: $(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)"
 
       - name: Cache Build
         id: cache-build
@@ -85,7 +89,7 @@ jobs:
 
       - name: Build and Install
         env:
-          IPCTK_WITH_SIMD: ${{ runner.os == 'Linux' && '0' || '1' }}
+          CMAKE_ARGS: ${{ runner.os == 'Linux' && '-DSIMD_CXX_FLAGS=-march=x86-64-v3' || '' }}
         run: |
           pip install --verbose . && ccache --show-stats
 
