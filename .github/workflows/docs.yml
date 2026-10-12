@@ -29,24 +29,9 @@ jobs:
       - name: Requirements
         run: |
           sudo apt-get update
-          sudo apt-get install doxygen python3-sphinx graphviz ccache
-          echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
+          sudo apt-get install doxygen python3-sphinx graphviz
           python -m pip install --upgrade pip
           pip install -r docs/requirements.txt
-
-      - name: Cache Build
-        id: cache-build
-        uses: actions/cache@v5
-        with:
-          path: ${{ env.CACHE_PATH }}
-          key: docs-cache
-          restore-keys: Linux-Python-cache
-
-      - name: Prepare Ccache
-        run: |
-          ccache --max-size=1.0G
-          ccache -V && ccache --show-config
-          ccache --show-stats && ccache --zero-stats
 
       - name: Copy release docs
         run: |
@@ -105,10 +90,14 @@ jobs:
           done
           cd ..
 
+      # We build ipctk without ccache on purpose. Its dependencies compile with
+      # -march=native, and ccache hashes that flag string, not the CPU it expands
+      # to. A cached object could therefore be restored onto a runner that lacks
+      # some of its instructions, which crashed `import ipctk` with SIGILL when
+      # Sphinx started. The tradeoff is a cold build of about 5 minutes instead of
+      # about 1, which is fine because docs only build on pushes to main.
       - name: Build ipctk
-        run: |
-          pip install --verbose .
-          ccache --show-stats
+        run: pip install --verbose .
 
       - name: Build docs
         run: |
