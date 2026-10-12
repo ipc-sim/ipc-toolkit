@@ -74,10 +74,10 @@ jobs:
         uses: SimenB/github-actions-cpu-cores@v2
         id: cpu-cores
 
-      # FindSIMD, MeshFEMCore, and Tight-Inclusion all compile with
-      # -march=native, which bakes the building runner's ISA into every cached
-      # object file. ccache hashes the literal flag string, not what it expands
-      # to, so restored objects are only safe on a runner with the same ISA.
+      # FindSIMD and Tight-Inclusion both compile with -march=native, which
+      # bakes the building runner's ISA into every cached object file. ccache
+      # hashes the literal flag string, not what it expands to, so restored
+      # objects are only safe on a runner with the same ISA.
       # The CPU model name has not been enough to guarantee that: EPYC 9V74
       # runners restored each other's objects and crashed with SIGILL. On Linux
       # we also hash the flags the compiler expands -march=native to, which is
