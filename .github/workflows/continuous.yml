@@ -74,18 +74,8 @@ jobs:
         uses: SimenB/github-actions-cpu-cores@v2
         id: cpu-cores
 
-      # On Linux we build for x86-64-v3 (AVX2, FMA, BMI1/2, LZCNT, F16C) instead
-      # of -march=native. ccache hashes the literal flag string, not what
-      # -march=native expands to, so native objects are only safe on a runner
-      # with the same ISA, and EPYC 9V74 runners that restored each other's
-      # objects crashed with SIGILL. An explicit baseline makes the flag string
-      # describe the generated code, so one cache works on every runner CPU.
-      # Tight-Inclusion still adds -march=native for its own objects, but it
-      # also passes -mno-avx512f, which caps them at AVX2.
-      # Windows already passes explicit /arch flags, so its objects do not
-      # depend on the runner either. macOS still builds with -march=native,
-      # but nearly every runner is the same Apple M1, so we share one cache
-      # there too.
+      # On Linux, explicitly build for x86-64-v3 instead of -march=native. This
+      # avoids issues with ccache restoring from a runner with a different ISA.
       - name: Check x86-64-v3 support (Linux)
         if: runner.os == 'Linux'
         run: |
