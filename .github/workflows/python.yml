@@ -64,45 +64,18 @@ jobs:
           choco install ccache
           "CACHE_PATH=${env:LOCALAPPDATA}\ccache" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      # FindSIMD and Tight-Inclusion both compile with -march=native, which
-      # bakes the building runner's ISA into every cached object file. ccache
-      # hashes the literal flag string, not what it expands to, so restored
-      # objects are only safe on a runner with the same ISA.
-      # The CPU model name has not been enough to guarantee that: EPYC 9V74
-      # runners restored each other's objects and crashed with SIGILL. On Linux
-      # we also hash the flags the compiler expands -march=native to, which is
-      # exactly what ends up in the object files. We keep the model name in the
-      # hash too, so the key is never weaker than before.
-      - name: CPU fingerprint (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          if [ "$RUNNER_OS" = "Linux" ]; then
-            CPU=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)
-            ISA=$(echo | c++ -march=native -E -v - 2>&1 | grep -oE -- ' -m[a-z0-9=._+-]+' | sort -u | tr -d '\n')
-            echo "ISA:$ISA"
-            KEY=$(printf '%s\n%s' "$CPU" "$ISA" | sha256sum | cut -c1-12)
-          else
-            CPU=$(sysctl -n machdep.cpu.brand_string)
-            KEY=$(printf '%s' "$CPU" | shasum -a 256 | cut -c1-12)
-          fi
-          echo "CPU: $CPU"
-          echo "CPU_KEY=$KEY" >> "$GITHUB_ENV"
-
-      - name: CPU fingerprint (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1 -ExpandProperty Name
-          Write-Host "CPU: $cpu"
-          $stream = [IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes($cpu))
-          $key = (Get-FileHash -InputStream $stream -Algorithm SHA256).Hash.Substring(0, 12)
-          "CPU_KEY=$key" | Out-File -FilePath $env:GITHUB_ENV -Append
+      # We share one cache across runner CPUs. The Linux build sets
+      # IPCTK_WITH_SIMD=0, so only Tight-Inclusion still uses -march=native, and
+      # it also passes -mno-avx512f, which caps its objects at AVX2. Windows
+      # passes explicit /arch flags. macOS builds with -march=native, but nearly
+      # every runner is the same Apple M1.
 
       - name: Cache Build
         id: cache-build
         uses: actions/cache@v5
         with:
           path: ${{ env.CACHE_PATH }}
-          key: ${{ runner.os }}-Python${{ matrix.python-version }}-${{ env.CPU_KEY }}-cache
+          key: ${{ runner.os }}-Python${{ matrix.python-version }}-cache
 
       - name: Prepare Ccache
         run: |
