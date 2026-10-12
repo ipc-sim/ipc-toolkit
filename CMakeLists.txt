@@ -170,17 +170,31 @@ endif()
 
 # SIMD support
 if(IPC_TOOLKIT_WITH_SIMD)
-  # Figure out SIMD support
-  message(STATUS "Testing SIMD capabilities...")
-  find_package(SIMD)
-  if (SIMD_CXX_FLAGS)
-    message(STATUS "SIMD support found: ${SIMD_CXX_FLAGS}")
+  if(SIMD_CXX_FLAGS)
+    # The flags were given on the command line, or cached by an earlier
+    # configure, so we use them as they are instead of probing the host. We only
+    # check that the compiler accepts them. If they are rejected we stop with an
+    # error instead of falling back to a build without SIMD, because a silent
+    # fallback would let a typo in the flags pass as a working non-SIMD build.
+    include(ipc_toolkit_filter_flags)
+    ipc_toolkit_check_cxx_flags(SIMD_CXX_FLAGS SIMD_CXX_FLAGS_ARE_VALID)
+    if(NOT SIMD_CXX_FLAGS_ARE_VALID)
+      message(FATAL_ERROR "SIMD_CXX_FLAGS=\"${SIMD_CXX_FLAGS}\" is not accepted by the compiler. Unset it (-USIMD_CXX_FLAGS) to auto-detect the flags, or pass -DIPC_TOOLKIT_WITH_SIMD=OFF to build without SIMD.")
+    endif()
+    message(STATUS "Using SIMD flags: ${SIMD_CXX_FLAGS}")
   else()
-    message(WARNING "SIMD support requested but not found. Continuing without SIMD.")
-    # We shadow the cache entry with a normal variable instead of forcing the
-    # cache off. Forcing would overwrite the user's request, and the option
-    # would stay OFF in this build directory even after SIMD becomes available.
-    set(IPC_TOOLKIT_WITH_SIMD OFF)
+    # Figure out SIMD support
+    message(STATUS "Testing SIMD capabilities...")
+    find_package(SIMD)
+    if (SIMD_CXX_FLAGS)
+      message(STATUS "SIMD support found: ${SIMD_CXX_FLAGS}")
+    else()
+      message(WARNING "SIMD support requested but not found. Continuing without SIMD.")
+      # We shadow the cache entry with a normal variable instead of forcing the
+      # cache off. Forcing would overwrite the user's request, and the option
+      # would stay OFF in this build directory even after SIMD becomes available.
+      set(IPC_TOOLKIT_WITH_SIMD OFF)
+    endif()
   endif()
 endif()
 
