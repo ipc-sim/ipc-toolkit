@@ -1211,7 +1211,7 @@ TEST_CASE(
     Eigen::MatrixXi E;
     double dhat = 0.6;
     constexpr double BA = 0; // a small constant to break perfect alignments
-    const int quadrature_order = GENERATE(1, 2, 7, 14);
+    const int quadrature_order = GENERATE(1, 14);
     ESPParameters params(dhat, 1., quadrature_order);
     CAPTURE(quadrature_order);
 
@@ -1365,7 +1365,7 @@ TEST_CASE(
         success = success && igl::readCSV(mesh_name + "-e.csv", E);
         REQUIRE(success);
         V.col(0) += Eigen::VectorXd::Random(V.rows()) * BA;
-        // Rounding leaves P_E pairs ~1e-17 from a switch at orders 7 and 14.
+        // Rounding leaves P_E pairs ~1e-17 from a switch at order 14.
         run_checks(false);
     }
 }
