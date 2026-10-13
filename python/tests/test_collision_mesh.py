@@ -3,7 +3,12 @@ import time
 import find_ipctk
 import numpy as np
 import scipy
-from ipctk import CollisionMesh, make_sparse_filter, make_vertex_patches_filter
+from ipctk import (
+    CollisionMesh,
+    NormalCollisions,
+    make_sparse_filter,
+    make_vertex_patches_filter,
+)
 
 
 def test_collision_mesh():
@@ -155,6 +160,91 @@ def test_face_normals_2d_raises():
 
     try:
         mesh.face_normals(V)
+        assert False
+    except ValueError:
+        pass
+
+
+def _two_segments():
+    V = np.array([[0, 0], [1, 0], [0, 0.1], [1, 0.1]], dtype=float)
+    E = np.array([[0, 1], [2, 3]], dtype=int)
+    return V, E
+
+
+def test_custom_areas_become_collision_weights():
+    V, E = _two_segments()
+    scale = 2 * np.pi * 3.0
+
+    default_mesh = CollisionMesh(V, E)
+    default_collisions = NormalCollisions()
+    default_collisions.use_area_weighting = True
+    default_collisions.build(default_mesh, V, dhat=0.2)
+
+    mesh = CollisionMesh(V, E)
+    mesh.vertex_areas = scale * mesh.vertex_areas
+    mesh.edge_areas = scale * mesh.edge_areas
+    assert np.allclose(mesh.vertex_areas, scale * default_mesh.vertex_areas)
+    assert np.allclose(mesh.edge_areas, scale * default_mesh.edge_areas)
+
+    collisions = NormalCollisions()
+    collisions.use_area_weighting = True
+    collisions.build(mesh, V, dhat=0.2)
+
+    assert len(collisions) > 0
+    assert len(collisions) == len(default_collisions)
+    for i in range(len(collisions)):
+        assert np.isclose(
+            collisions[i].weight, scale * default_collisions[i].weight)
+
+
+def test_invalid_custom_areas_are_rejected():
+    V, E = _two_segments()
+    mesh = CollisionMesh(V, E)
+    original = mesh.vertex_areas.copy()
+
+    for bad in [np.ones(3), np.zeros(4), np.full(4, np.nan)]:
+        try:
+            mesh.vertex_areas = bad
+            assert False
+        except (ValueError, RuntimeError):
+            pass
+    try:
+        mesh.edge_areas = np.ones(3)
+        assert False
+    except (ValueError, RuntimeError):
+        pass
+
+    assert np.array_equal(mesh.vertex_areas, original)
+
+
+def test_custom_areas_and_area_jacobians_are_exclusive():
+    V, E = _two_segments()
+
+    # Setting after initializing the Jacobians
+    mesh = CollisionMesh(V, E)
+    mesh.init_area_jacobians()
+    try:
+        mesh.vertex_areas = 2 * mesh.vertex_areas
+        assert False
+    except (ValueError, RuntimeError):
+        pass
+
+    # Initializing after setting
+    mesh = CollisionMesh(V, E)
+    mesh.vertex_areas = 2 * mesh.vertex_areas
+    try:
+        mesh.init_area_jacobians()
+        assert False
+    except (ValueError, RuntimeError):
+        pass
+
+
+def test_area_getters_are_read_only_views():
+    # In-place edits must fail loudly instead of bypassing the validating setter.
+    V, E = _two_segments()
+    mesh = CollisionMesh(V, E)
+    try:
+        mesh.vertex_areas[0] = 5.0
         assert False
     except ValueError:
         pass
