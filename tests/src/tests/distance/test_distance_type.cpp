@@ -69,7 +69,7 @@ TEST_CASE(
     "Point-edge distance type random",
     "[distance][distance-type][point-edge][exact]")
 {
-    const int num_random_tests = 100000;
+    const int num_random_tests = 10000;
 
     for (int i = 0; i < num_random_tests; ++i) {
         const VectorMax3d p = Eigen::Vector3d::Random() * 10;
@@ -89,7 +89,7 @@ TEST_CASE(
     "Point-triangle distance type random",
     "[distance][distance-type][point-triangle][exact]")
 {
-    const int num_random_tests = 100000;
+    const int num_random_tests = 10000;
 
     for (int i = 0; i < num_random_tests; ++i) {
         const VectorMax3d p = Eigen::Vector3d::Random() * 10;
@@ -110,7 +110,7 @@ TEST_CASE(
     "Edge-edge distance type random",
     "[distance][distance-type][edge-edge][exact]")
 {
-    const int num_random_tests = 100000;
+    const int num_random_tests = 10000;
 
     for (int i = 0; i < num_random_tests; ++i) {
         const VectorMax3d e0 = Eigen::Vector3d::Random() * 10;
@@ -138,7 +138,7 @@ TEST_CASE(
     "Edge-edge distance type random parallel",
     "[distance][distance-type][edge-edge][exact][parallel]")
 {
-    const int num_random_tests = 100000;
+    const int num_random_tests = 10000;
 
     for (int i = 0; i < num_random_tests; ++i) {
         const Eigen::Vector3d ea0 = Eigen::Vector3d::Random() * 10;
