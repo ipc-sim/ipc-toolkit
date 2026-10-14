@@ -60,8 +60,8 @@ public:
     }
     int size() const
     {
-        return vv_collisions.size() + ev_collisions.size()
-            + fv_collisions.size();
+        return m_vv_collisions.size() + m_ev_collisions.size()
+            + m_fv_collisions.size();
     }
 
     ESPCollision& operator[](int i);
@@ -110,10 +110,10 @@ public:
     index_t vertex_ids_inverse(index_t id) const;
 
 private:
-    std::vector<VVType> vv_collisions;
-    std::vector<EVType> ev_collisions;
+    std::vector<VVType> m_vv_collisions;
+    std::vector<EVType> m_ev_collisions;
     std::vector<ESPCollisionTemplate<Face3P1, Vertex3>>
-        fv_collisions; // unused in DIM=2
+        m_fv_collisions; // unused in DIM=2
 
     std::array<index_t, 2> m_primitive_ids { { -1, -1 } };
 

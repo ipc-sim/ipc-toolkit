@@ -83,12 +83,12 @@ void ESPCollisionDict<pType, DIM>::initialize(
                 auto ptr = std::dynamic_pointer_cast<
                     ESPCollisionTemplate<Vertex2, Vertex2>>(val);
                 assert(ptr);
-                vv_collisions.push_back(*ptr);
+                m_vv_collisions.push_back(*ptr);
             } else {
                 auto ptr = std::dynamic_pointer_cast<
                     ESPCollisionTemplate<Vertex3, Vertex3>>(val);
                 assert(ptr);
-                vv_collisions.push_back(*ptr);
+                m_vv_collisions.push_back(*ptr);
             }
             break;
         case ESPCollisionType::EDGE_VERTEX:
@@ -96,12 +96,12 @@ void ESPCollisionDict<pType, DIM>::initialize(
                 auto ptr = std::dynamic_pointer_cast<
                     ESPCollisionTemplate<Vertex2, Edge2P1>>(val);
                 assert(ptr);
-                ev_collisions.push_back(*ptr);
+                m_ev_collisions.push_back(*ptr);
             } else {
                 auto ptr = std::dynamic_pointer_cast<
                     ESPCollisionTemplate<Edge3P1, Vertex3>>(val);
                 assert(ptr);
-                ev_collisions.push_back(*ptr);
+                m_ev_collisions.push_back(*ptr);
             }
             break;
         case ESPCollisionType::FACE_VERTEX:
@@ -109,7 +109,7 @@ void ESPCollisionDict<pType, DIM>::initialize(
                 auto ptr = std::dynamic_pointer_cast<
                     ESPCollisionTemplate<Face3P1, Vertex3>>(val);
                 assert(ptr);
-                fv_collisions.push_back(*ptr);
+                m_fv_collisions.push_back(*ptr);
             } else {
                 log_and_throw_error(
                     "FACE_VERTEX collision type not supported in 2D dict");
@@ -131,16 +131,16 @@ ESPCollision& ESPCollisionDict<pType, DIM>::operator[](int i)
 template <PointType pType, int DIM>
 const ESPCollision& ESPCollisionDict<pType, DIM>::operator[](int i) const
 {
-    if (i < vv_collisions.size()) {
-        return vv_collisions[i];
+    if (i < m_vv_collisions.size()) {
+        return m_vv_collisions[i];
     } else {
-        i -= vv_collisions.size();
-        if (i < ev_collisions.size()) {
-            return ev_collisions[i];
+        i -= m_vv_collisions.size();
+        if (i < m_ev_collisions.size()) {
+            return m_ev_collisions[i];
         } else {
-            i -= ev_collisions.size();
-            if (i < fv_collisions.size()) {
-                return fv_collisions[i];
+            i -= m_ev_collisions.size();
+            if (i < m_fv_collisions.size()) {
+                return m_fv_collisions[i];
             } else {
                 log_and_throw_error("Invalid index!");
             }

@@ -8,9 +8,13 @@ namespace ipc {
 
 class ESPPotential {
 public:
+    /// @brief Construct an ESP potential.
+    /// @param _params ESP parameters.
+    /// @param _use_near_far Normalize the quadrature weights (3D only); see
+    ///        use_near_far().
     ESPPotential(const ESPParameters& _params, const bool _use_near_far = true)
-        : params(_params)
-        , use_near_far(_use_near_far)
+        : m_params(_params)
+        , m_use_near_far(_use_near_far)
     {
     }
 
@@ -83,18 +87,19 @@ public:
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const;
 
-    bool get_use_near_far() const { return use_near_far; }
-
-protected:
-    /// @brief ESP parameters for collision potential
-    ESPParameters params;
     /// @brief Whether to normalize the quadrature weights so they sum to 1,
     ///        splitting near and far contributions when 0 < dbar_factor <= 2.
     ///        The far part is nonzero for dbar_factor < 2 (e.g., at 1) and
     ///        vanishes identically at 2, where the split equals the unsplit
     ///        normalized potential. 3D only: the 2D potential is never
     ///        normalized.
-    const bool use_near_far;
+    bool use_near_far() const { return m_use_near_far; }
+
+protected:
+    /// @brief ESP parameters for collision potential
+    ESPParameters m_params;
+    /// @brief See use_near_far().
+    const bool m_use_near_far;
 };
 
 } // namespace ipc

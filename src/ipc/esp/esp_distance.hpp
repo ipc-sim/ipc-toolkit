@@ -76,17 +76,17 @@ Eigen::Vector<T, 2> line_line_closest_point_pairs_uv(
     return Eigen::Vector<T, 2>(sN, tN) / fac;
 }
 
-/// @brief Local coordinate on edge (e0, e1), clamped to [0, 1], of its point
-/// closest to the line through (e2, e3). ESP edge-edge terms exist only for
+/// @brief Local coordinate on edge (ea0, ea1), clamped to [0, 1], of its point
+/// closest to the line through (eb0, eb1). ESP edge-edge terms exist only for
 /// EA_EB pairs, where this is the closest point between the edges.
 template <typename T>
 T closest_point_uv(
-    Eigen::ConstRef<Eigen::Vector3<T>> e0,
-    Eigen::ConstRef<Eigen::Vector3<T>> e1,
-    Eigen::ConstRef<Eigen::Vector3<T>> e2,
-    Eigen::ConstRef<Eigen::Vector3<T>> e3)
+    Eigen::ConstRef<Eigen::Vector3<T>> ea0,
+    Eigen::ConstRef<Eigen::Vector3<T>> ea1,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb0,
+    Eigen::ConstRef<Eigen::Vector3<T>> eb1)
 {
-    T uv = line_line_closest_point_pairs_uv<T>(e0, e1, e2, e3)(0);
+    T uv = line_line_closest_point_pairs_uv<T>(ea0, ea1, eb0, eb1)(0);
 
     if (uv < 0.) {
         uv = 0.;

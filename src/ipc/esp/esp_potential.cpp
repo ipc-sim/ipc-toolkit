@@ -54,7 +54,7 @@ double ESPPotential::operator()(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
-    assert(X.rows() == mesh.num_vertices());
+    assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
 
     if (collisions.empty()) {
         return 0;
@@ -65,7 +65,7 @@ double ESPPotential::operator()(
     if (mesh.dim() == 2) {
         tbb::enumerable_thread_specific<double> potential_storage(0.0);
         const GaussLobatto::Rule& rule =
-            GaussLobatto::get_rule(params.quad_order);
+            GaussLobatto::get_rule(m_params.quad_order);
 
         // Collect active edge ids into a flat vector for parallel indexing.
         std::vector<index_t> active_edges;
@@ -83,7 +83,7 @@ double ESPPotential::operator()(
                     const auto& qp_dicts =
                         collisions.maps().edge_collisions_2d.at(ei);
                     const double L = mesh.edge_area(ei);
-                    const double w_edge = params.area_weights ? L : 1.;
+                    const double w_edge = m_params.area_weights ? L : 1.;
                     const index_t e0 = mesh.edges()(ei, 0);
                     const index_t e1 = mesh.edges()(ei, 1);
 
@@ -101,7 +101,7 @@ double ESPPotential::operator()(
                         total += w_edge * qp.weight
                             * PointPotentialHelper::
                                 evaluate_potential_at_edge_qp(
-                                     X_ext, dict, params);
+                                     X_ext, dict, m_params);
                     }
                 }
             });
@@ -115,22 +115,22 @@ double ESPPotential::operator()(
 
             // Split near and far for every dbar_factor in (0, 2]. At 0 the
             // edge-edge terms are skipped, so the weights are constant.
-            const double dbar_factor = params.dbar_factor();
-            const bool use_nf = use_near_far && dbar_factor > 0;
+            const double dbar_factor = m_params.dbar_factor();
+            const bool use_nf = m_use_near_far && dbar_factor > 0;
             const bool skip_ee =
                 (dbar_factor == 0); // Skip EE pairs when dbar_factor == 0
 
             std::unique_ptr<NearFarBarrier> nf_barrier;
             if (use_nf) {
                 nf_barrier = std::make_unique<NearFarBarrier>(
-                    params.barrier, dbar_factor);
+                    m_params.barrier, dbar_factor);
             }
 
             auto loop_body = [&](const tbb::blocked_range<index_t>& r) {
                 double& total = potential_storage.local();
                 for (index_t f = r.begin(); f < r.end(); f++) {
                     const double area = mesh.face_areas()(f);
-                    const double w = params.area_weights ? (area / 9.) : 1.;
+                    const double w = m_params.area_weights ? (area / 9.) : 1.;
 
                     double total_w = 0, total_w_near = 0, total_w_far = 0;
                     double total_p = 0, total_p_near = 0, total_p_far = 0;
@@ -189,7 +189,7 @@ double ESPPotential::operator()(
 
                                 double mollifier =
                                     Math<double>::cubic_spline(
-                                        dist / params.ee_support())
+                                        dist / m_params.ee_support())
                                     * 1.5;
                                 mollifier *= edge_edge_mollifier<double>(
                                     X.row(ea).transpose(),
@@ -199,14 +199,14 @@ double ESPPotential::operator()(
                                 mollifier = pow_int(
                                     mollifier,
                                     mollifier_order_for_barrier(
-                                        params.barrier));
+                                        m_params.barrier));
 
                                 if (use_nf) {
                                     const double p_near = PointPotentialHelper::
                                         evaluate_potential_at_edge_edge_closest_point_with_cached_collisions_near(
                                             VertexMatrixView<3>(
                                                 X, ee_closest_point),
-                                            *(iter->second), params, dtype,
+                                            *(iter->second), m_params, dtype,
                                             *nf_barrier);
                                     total_w_near += mollifier;
                                     total_p_near += mollifier * p_near;
@@ -215,7 +215,7 @@ double ESPPotential::operator()(
                                         evaluate_potential_at_edge_edge_closest_point_with_cached_collisions(
                                             VertexMatrixView<3>(
                                                 X, ee_closest_point),
-                                            *(iter->second), params, dtype);
+                                            *(iter->second), m_params, dtype);
                                     total_w += mollifier;
                                     total_p += mollifier * P_val;
                                 }
@@ -224,8 +224,8 @@ double ESPPotential::operator()(
                     }
 
                     // Face-interior quadrature points from
-                    // params.get_quad_rule().
-                    const auto& face_quad_rule = params.get_quad_rule();
+                    // params.quad_rule().
+                    const auto& face_quad_rule = m_params.quad_rule();
                     {
                         auto iter = collisions.maps().face_collisions.find(f);
                         for (size_t qi = 0; qi < face_quad_rule.size(); qi++) {
@@ -249,7 +249,7 @@ double ESPPotential::operator()(
                                     auto [fq_near, fq_far] = PointPotentialHelper::
                                         evaluate_potential_at_face_interior_point_with_cached_collisions_nearfar(
                                             VertexMatrixView<3>(X, q_pos),
-                                            *iter->second[qi], params,
+                                            *iter->second[qi], m_params,
                                             *nf_barrier);
                                     total_p_near += FACE_QUADRATURE_WEIGHT_SCALE
                                         * qp.weight * fq_near;
@@ -259,7 +259,7 @@ double ESPPotential::operator()(
                                     const double fq_val = PointPotentialHelper::
                                         evaluate_potential_at_face_interior_point_with_cached_collisions(
                                             VertexMatrixView<3>(X, q_pos),
-                                            *iter->second[qi], params);
+                                            *iter->second[qi], m_params);
                                     total_p += FACE_QUADRATURE_WEIGHT_SCALE
                                         * qp.weight * fq_val;
                                 }
@@ -285,14 +285,14 @@ double ESPPotential::operator()(
                                 if (use_nf) {
                                     auto [vt_near, vt_far] = PointPotentialHelper::
                                         evaluate_potential_at_vertex_with_cached_collisions_nearfar(
-                                            X, *(iter->second), params,
+                                            X, *(iter->second), m_params,
                                             *nf_barrier);
                                     total_p_near += vt_near;
                                     total_p_far += vt_far;
                                 } else {
                                     const double vt_val = PointPotentialHelper::
                                         evaluate_potential_at_vertex_with_cached_collisions(
-                                            X, *(iter->second), params);
+                                            X, *(iter->second), m_params);
                                     total_p += vt_val;
                                 }
                             }
@@ -307,7 +307,7 @@ double ESPPotential::operator()(
                         total += w
                             * (total_p_near / total_w_near
                                + total_p_far / total_w_far);
-                    } else if (use_near_far) {
+                    } else if (m_use_near_far) {
                         assert(total_w > 0);
                         total += w * (total_p / total_w);
                     } else {
@@ -332,7 +332,7 @@ Eigen::VectorXd ESPPotential::gradient(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
-    assert(X.rows() == mesh.num_vertices());
+    assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
 
     if (collisions.empty()) {
         return Eigen::VectorXd::Zero(X.size());
@@ -345,7 +345,7 @@ Eigen::VectorXd ESPPotential::gradient(
 
     if (mesh.dim() == 2) {
         const GaussLobatto::Rule& rule =
-            GaussLobatto::get_rule(params.quad_order);
+            GaussLobatto::get_rule(m_params.quad_order);
 
         std::vector<index_t> active_edges;
         active_edges.reserve(collisions.maps().edge_collisions_2d.size());
@@ -363,7 +363,7 @@ Eigen::VectorXd ESPPotential::gradient(
                     const auto& qp_dicts =
                         collisions.maps().edge_collisions_2d.at(ei);
                     const double L = mesh.edge_area(ei);
-                    const double w_edge = params.area_weights ? L : 1.;
+                    const double w_edge = m_params.area_weights ? L : 1.;
                     const index_t e0 = mesh.edges()(ei, 0);
                     const index_t e1 = mesh.edges()(ei, 1);
 
@@ -383,7 +383,7 @@ Eigen::VectorXd ESPPotential::gradient(
                             w_edge * qp.weight
                             * PointPotentialHelper::
                                 evaluate_potential_gradient_at_edge_qp(
-                                    X_ext, dict, params, lambda);
+                                    X_ext, dict, m_params, lambda);
 
                         local_gradient_to_global_gradient(
                             local_grad, dict.vertex_ids(), dim, global_grad);
@@ -394,15 +394,15 @@ Eigen::VectorXd ESPPotential::gradient(
         {
             using T = ADGrad<12>;
 
-            const double dbar_factor = params.dbar_factor();
-            const bool use_nf_grad = use_near_far && dbar_factor > 0;
+            const double dbar_factor = m_params.dbar_factor();
+            const bool use_nf_grad = m_use_near_far && dbar_factor > 0;
             const bool skip_ee_grad = (dbar_factor == 0);
 
             auto loop_body = [&](const tbb::blocked_range<index_t>& r) {
                 Eigen::VectorXd& grad = storage.local();
                 for (index_t f = r.begin(); f < r.end(); f++) {
                     const double area = mesh.face_areas()(f);
-                    const double w = params.area_weights ? (area / 9.) : 1.;
+                    const double w = m_params.area_weights ? (area / 9.) : 1.;
                     // Pass 1: collect all quadrature contributions for this
                     // face
                     struct EEGradEntry {
@@ -427,7 +427,7 @@ Eigen::VectorXd ESPPotential::gradient(
                     std::unique_ptr<NearFarBarrier> nf_barrier;
                     if (use_nf_grad) {
                         nf_barrier = std::make_unique<NearFarBarrier>(
-                            params.barrier, params.dbar_factor());
+                            m_params.barrier, m_params.dbar_factor());
                     }
 
                     for (index_t le = 0; le < 3; le++) {
@@ -498,7 +498,7 @@ Eigen::VectorXd ESPPotential::gradient(
                                     X.row(ed).transpose(), dist_sqr.val);
 
                                 T mollifier = Math<T>::cubic_spline(
-                                                  dist / params.ee_support())
+                                                  dist / m_params.ee_support())
                                     * 1.5;
                                 mollifier *= edge_edge_mollifier<T>(
                                     positionsT.row(0).transpose(),
@@ -509,7 +509,7 @@ Eigen::VectorXd ESPPotential::gradient(
                                 mollifier = pow_int(
                                     mollifier,
                                     mollifier_order_for_barrier(
-                                        params.barrier));
+                                        m_params.barrier));
 
                                 const ESPCollisionDict<PointType::EDGE>& dict =
                                     *(iter->second);
@@ -525,25 +525,25 @@ Eigen::VectorXd ESPPotential::gradient(
                                 if (use_nf_grad) {
                                     P = PointPotentialHelper::
                                         evaluate_potential_at_edge_edge_closest_point_with_cached_collisions_near(
-                                            X_extended, dict, params, dtype,
+                                            X_extended, dict, m_params, dtype,
                                             *nf_barrier);
                                 } else {
                                     P = PointPotentialHelper::
                                         evaluate_potential_at_edge_edge_closest_point_with_cached_collisions(
-                                            X_extended, dict, params, dtype);
+                                            X_extended, dict, m_params, dtype);
                                 }
                                 Eigen::VectorXd grad_p;
                                 if (use_nf_grad) {
                                     grad_p = PointPotentialHelper::
                                         evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions_near<
                                             T>(
-                                            X_extended, dict, params,
+                                            X_extended, dict, m_params,
                                             ee_closest_point_T, *nf_barrier);
                                 } else {
                                     grad_p = PointPotentialHelper::
                                         evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions<
                                             T>(
-                                            X_extended, dict, params,
+                                            X_extended, dict, m_params,
                                             ee_closest_point_T);
                                 }
 
@@ -560,7 +560,7 @@ Eigen::VectorXd ESPPotential::gradient(
                     }
 
                     // Face-interior quadrature points
-                    const auto& face_quad_rule = params.get_quad_rule();
+                    const auto& face_quad_rule = m_params.quad_rule();
                     {
                         auto iter = collisions.maps().face_collisions.find(f);
                         for (size_t qi = 0; qi < face_quad_rule.size(); qi++) {
@@ -584,10 +584,10 @@ Eigen::VectorXd ESPPotential::gradient(
                                 if (use_nf_grad) {
                                     auto [P_n, P_f] = PointPotentialHelper::
                                         evaluate_potential_at_face_interior_point_with_cached_collisions_nearfar(
-                                            X_qp, dict, params, *nf_barrier);
+                                            X_qp, dict, m_params, *nf_barrier);
                                     auto [grad_n, grad_f] = PointPotentialHelper::
                                         evaluate_potential_gradient_at_face_interior_point_with_cached_collisions_nearfar(
-                                            X_qp, dict, params, qp.lambda,
+                                            X_qp, dict, m_params, qp.lambda,
                                             *nf_barrier);
                                     const_cache.push_back(
                                         ConstGradEntry {
@@ -600,11 +600,12 @@ Eigen::VectorXd ESPPotential::gradient(
                                 } else {
                                     const double P = PointPotentialHelper::
                                         evaluate_potential_at_face_interior_point_with_cached_collisions(
-                                            X_qp, dict, params);
+                                            X_qp, dict, m_params);
                                     const Eigen::VectorXd grad_p =
                                         PointPotentialHelper::
                                             evaluate_potential_gradient_at_face_interior_point_with_cached_collisions(
-                                                X_qp, dict, params, qp.lambda);
+                                                X_qp, dict, m_params,
+                                                qp.lambda);
                                     const_cache.push_back(
                                         ConstGradEntry {
                                             &dict.dofs(),
@@ -631,11 +632,11 @@ Eigen::VectorXd ESPPotential::gradient(
                                 if (use_nf_grad) {
                                     auto [P_n, P_f] = PointPotentialHelper::
                                         evaluate_potential_at_vertex_with_cached_collisions_nearfar(
-                                            X, (*iter->second), params,
+                                            X, (*iter->second), m_params,
                                             *nf_barrier);
                                     auto [grad_n, grad_f] = PointPotentialHelper::
                                         evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
-                                            X, (*iter->second), params,
+                                            X, (*iter->second), m_params,
                                             *nf_barrier);
                                     const_cache.push_back(
                                         ConstGradEntry {
@@ -645,11 +646,11 @@ Eigen::VectorXd ESPPotential::gradient(
                                 } else {
                                     const double P = PointPotentialHelper::
                                         evaluate_potential_at_vertex_with_cached_collisions(
-                                            X, (*iter->second), params);
+                                            X, (*iter->second), m_params);
                                     const Eigen::VectorXd grad_p =
                                         PointPotentialHelper::
                                             evaluate_potential_gradient_at_vertex_with_cached_collisions(
-                                                X, (*iter->second), params);
+                                                X, (*iter->second), m_params);
                                     const_cache.push_back(
                                         ConstGradEntry {
                                             &(*iter->second).dofs(), grad_p,
@@ -675,7 +676,7 @@ Eigen::VectorXd ESPPotential::gradient(
                             grad(*e.dofs) += (w / total_w_near) * e.grad_p_near
                                 + (w / total_w_far) * e.grad_p_far;
                         }
-                    } else if (use_near_far) {
+                    } else if (m_use_near_far) {
                         // Normalized but without NearFarBarrier splitting
                         // (only reached at dbar_factor = 0, which skips the
                         // edge-edge terms, so the weights are constant)
@@ -718,7 +719,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
     Eigen::ConstRef<Eigen::MatrixXd> X,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
-    assert(X.rows() == mesh.num_vertices());
+    assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
 
     if (collisions.empty()) {
         return Eigen::SparseMatrix<double>(X.size(), X.size());
@@ -734,7 +735,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
 
     if (mesh.dim() == 2) {
         const GaussLobatto::Rule& rule =
-            GaussLobatto::get_rule(params.quad_order);
+            GaussLobatto::get_rule(m_params.quad_order);
 
         std::vector<index_t> active_edges;
         active_edges.reserve(collisions.maps().edge_collisions_2d.size());
@@ -752,7 +753,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                     const auto& qp_dicts =
                         collisions.maps().edge_collisions_2d.at(ei);
                     const double L = mesh.edge_area(ei);
-                    const double w_edge = params.area_weights ? L : 1.;
+                    const double w_edge = m_params.area_weights ? L : 1.;
                     const index_t e0 = mesh.edges()(ei, 0);
                     const index_t e1 = mesh.edges()(ei, 1);
 
@@ -772,7 +773,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                             w_edge * qp.weight
                             * PointPotentialHelper::
                                 evaluate_potential_hessian_at_edge_qp(
-                                    X_ext, dict, params, lambda,
+                                    X_ext, dict, m_params, lambda,
                                     project_hessian_to_psd);
 
                         local_hessian_to_global_triplets(
@@ -794,8 +795,8 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
         // involved DOFs. At dbar_factor = 0 the edge-edge terms are skipped,
         // so B = C = 0 and the per-stencil projections suffice; with
         // use_near_far = false the local-projection path is used.
-        const double dbar_factor_hess = params.dbar_factor();
-        const bool use_nf_hess = use_near_far && dbar_factor_hess > 0;
+        const double dbar_factor_hess = m_params.dbar_factor();
+        const bool use_nf_hess = m_use_near_far && dbar_factor_hess > 0;
         const bool skip_ee_hess = (dbar_factor_hess == 0);
         const bool combined_psd_projection =
             use_nf_hess && project_hessian_to_psd != PSDProjectionMethod::NONE;
@@ -809,7 +810,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                 auto& hess_triplets = storage.local();
                 for (index_t f = r.begin(); f < r.end(); f++) {
                     const double area = mesh.face_areas()(f);
-                    const double w = params.area_weights ? (area / 9.) : 1.;
+                    const double w = m_params.area_weights ? (area / 9.) : 1.;
 
                     // Pass 1: collect all quadrature contributions for this
                     // face
@@ -843,7 +844,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                     std::unique_ptr<NearFarBarrier> nf_barrier;
                     if (use_nf_hess) {
                         nf_barrier = std::make_unique<NearFarBarrier>(
-                            params.barrier, params.dbar_factor());
+                            m_params.barrier, m_params.dbar_factor());
                     }
 
                     for (index_t le = 0; le < 3; le++) {
@@ -914,7 +915,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                     X.row(ed).transpose(), dist_sqr.val);
 
                                 T mollifier = Math<T>::cubic_spline(
-                                                  dist / params.ee_support())
+                                                  dist / m_params.ee_support())
                                     * 1.5;
                                 mollifier *= edge_edge_mollifier<T>(
                                     positionsT.row(0).transpose(),
@@ -925,7 +926,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                 mollifier = pow_int(
                                     mollifier,
                                     mollifier_order_for_barrier(
-                                        params.barrier));
+                                        m_params.barrier));
 
                                 const ESPCollisionDict<PointType::EDGE>& dict =
                                     *(iter->second);
@@ -942,29 +943,29 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                 if (use_nf_hess) {
                                     P = PointPotentialHelper::
                                         evaluate_potential_at_edge_edge_closest_point_with_cached_collisions_near(
-                                            X_extended, dict, params, dtype,
+                                            X_extended, dict, m_params, dtype,
                                             *nf_barrier);
                                     grad_p = PointPotentialHelper::
                                         evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions_near<
                                             T>(
-                                            X_extended, dict, params,
+                                            X_extended, dict, m_params,
                                             ee_closest_point_T, *nf_barrier);
                                     base_hess = PointPotentialHelper::
                                         evaluate_potential_hessian_at_edge_edge_closest_point_with_cached_collisions_near(
-                                            X_extended, dict, params,
+                                            X_extended, dict, m_params,
                                             ee_closest_point_T, *nf_barrier);
                                 } else {
                                     P = PointPotentialHelper::
                                         evaluate_potential_at_edge_edge_closest_point_with_cached_collisions(
-                                            X_extended, dict, params, dtype);
+                                            X_extended, dict, m_params, dtype);
                                     grad_p = PointPotentialHelper::
                                         evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions<
                                             T>(
-                                            X_extended, dict, params,
+                                            X_extended, dict, m_params,
                                             ee_closest_point_T);
                                     base_hess = PointPotentialHelper::
                                         evaluate_potential_hessian_at_edge_edge_closest_point_with_cached_collisions(
-                                            X_extended, dict, params,
+                                            X_extended, dict, m_params,
                                             ee_closest_point_T);
                                 }
                                 Eigen::MatrixXd local_hess =
@@ -1019,7 +1020,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                     }
 
                     // Face-interior quadrature points
-                    const auto& face_quad_rule = params.get_quad_rule();
+                    const auto& face_quad_rule = m_params.quad_rule();
                     {
                         auto iter = collisions.maps().face_collisions.find(f);
                         for (size_t qi = 0; qi < face_quad_rule.size(); qi++) {
@@ -1046,14 +1047,14 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                 if (use_nf_hess) {
                                     auto [P_n, P_f] = PointPotentialHelper::
                                         evaluate_potential_at_face_interior_point_with_cached_collisions_nearfar(
-                                            X_qp, dict, params, *nf_barrier);
+                                            X_qp, dict, m_params, *nf_barrier);
                                     auto [grad_n, grad_f] = PointPotentialHelper::
                                         evaluate_potential_gradient_at_face_interior_point_with_cached_collisions_nearfar(
-                                            X_qp, dict, params, qp.lambda,
+                                            X_qp, dict, m_params, qp.lambda,
                                             *nf_barrier);
                                     auto [hess_n, hess_f] = PointPotentialHelper::
                                         evaluate_potential_hessian_at_face_interior_point_with_cached_collisions_nearfar(
-                                            X_qp, dict, params, qp.lambda,
+                                            X_qp, dict, m_params, qp.lambda,
                                             inner_psd_method, *nf_barrier);
                                     entry.p_near = FACE_QUADRATURE_WEIGHT_SCALE
                                         * qp.weight * P_n;
@@ -1078,17 +1079,18 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                         * qp.weight
                                         * PointPotentialHelper::
                                             evaluate_potential_at_face_interior_point_with_cached_collisions(
-                                                       X_qp, dict, params);
+                                                       X_qp, dict, m_params);
                                     entry.grad_p_near =
                                         FACE_QUADRATURE_WEIGHT_SCALE * qp.weight
                                         * PointPotentialHelper::
                                             evaluate_potential_gradient_at_face_interior_point_with_cached_collisions(
-                                                X_qp, dict, params, qp.lambda);
+                                                X_qp, dict, m_params,
+                                                qp.lambda);
                                     entry.local_hess_near =
                                         FACE_QUADRATURE_WEIGHT_SCALE * qp.weight
                                         * PointPotentialHelper::
                                             evaluate_potential_hessian_at_face_interior_point_with_cached_collisions(
-                                                X_qp, dict, params, qp.lambda,
+                                                X_qp, dict, m_params, qp.lambda,
                                                 inner_psd_method);
                                     entry.p_far = 0;
                                     entry.grad_p_far = Eigen::VectorXd::Zero(0);
@@ -1120,13 +1122,13 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                 if (use_nf_hess) {
                                     auto [P_n, P_f] = PointPotentialHelper::
                                         evaluate_potential_at_vertex_with_cached_collisions_nearfar(
-                                            X, dict, params, *nf_barrier);
+                                            X, dict, m_params, *nf_barrier);
                                     auto [grad_n, grad_f] = PointPotentialHelper::
                                         evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
-                                            X, dict, params, *nf_barrier);
+                                            X, dict, m_params, *nf_barrier);
                                     auto [hess_n, hess_f] = PointPotentialHelper::
                                         evaluate_potential_hessian_at_vertex_with_cached_collisions_nearfar(
-                                            X, dict, params, inner_psd_method,
+                                            X, dict, m_params, inner_psd_method,
                                             *nf_barrier);
                                     entry.p_near = P_n;
                                     entry.p_far = P_f;
@@ -1139,14 +1141,15 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                 } else {
                                     entry.p_near = PointPotentialHelper::
                                         evaluate_potential_at_vertex_with_cached_collisions(
-                                            X, dict, params);
+                                            X, dict, m_params);
                                     entry.grad_p_near = PointPotentialHelper::
                                         evaluate_potential_gradient_at_vertex_with_cached_collisions(
-                                            X, dict, params);
+                                            X, dict, m_params);
                                     entry
                                         .local_hess_near = PointPotentialHelper::
                                         evaluate_potential_hessian_at_vertex_with_cached_collisions(
-                                            X, dict, params, inner_psd_method);
+                                            X, dict, m_params,
+                                            inner_psd_method);
                                     entry.p_far = 0;
                                     entry.grad_p_far = Eigen::VectorXd::Zero(0);
                                     entry.local_hess_far =
@@ -1418,7 +1421,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                 }
                             }
                         }
-                    } else if (use_near_far) {
+                    } else if (m_use_near_far) {
                         // Normalized but without NearFarBarrier splitting
                         // (only reached at dbar_factor = 0, which skips the
                         // edge-edge terms, so the weights are constant)
@@ -1534,14 +1537,14 @@ double ESPPotential::operator()(
     const ESPCollision& collision,
     Eigen::ConstRef<Eigen::VectorXd> positions) const
 {
-    return collision.weight * collision(positions, params);
+    return collision.weight * collision(positions, m_params);
 }
 
 Eigen::VectorXd ESPPotential::gradient(
     const ESPCollision& collision,
     Eigen::ConstRef<Eigen::VectorXd> positions) const
 {
-    return collision.weight * collision.gradient(positions, params);
+    return collision.weight * collision.gradient(positions, m_params);
 }
 
 Eigen::MatrixXd ESPPotential::hessian(
@@ -1550,7 +1553,7 @@ Eigen::MatrixXd ESPPotential::hessian(
     const PSDProjectionMethod project_hessian_to_psd) const
 {
     Eigen::MatrixXd hess =
-        collision.weight * collision.hessian(positions, params);
+        collision.weight * collision.hessian(positions, m_params);
     return project_to_psd(hess, project_hessian_to_psd);
 }
 

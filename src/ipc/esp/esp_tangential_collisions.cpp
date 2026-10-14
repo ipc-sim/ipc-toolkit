@@ -257,7 +257,7 @@ void TangentialCollisions::build(
         // depending on normalize_weights. total_w_f sums active EE mollifiers
         // and either face quadrature weights (when active) or 3 (for the 3
         // face vertices, when face quadrature is not active).
-        const auto& face_quad_rule = params.get_quad_rule();
+        const auto& face_quad_rule = params.quad_rule();
         const bool has_face_quad = !face_quad_rule.empty();
         double sum_face_qp_w = 0.0;
         for (const auto& qp : face_quad_rule) {

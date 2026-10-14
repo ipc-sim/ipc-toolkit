@@ -30,27 +30,27 @@ public:
 
     int n_dofs() const override
     {
-        return primitive_a.n_dofs() + primitive_b.n_dofs();
+        return m_primitive_a.n_dofs() + m_primitive_b.n_dofs();
     }
     ESPCollisionType type() const override;
 
     std::pair<index_t, index_t> get_hash() const override
     {
-        return std::make_pair(primitive_a.id(), primitive_b.id());
+        return std::make_pair(m_primitive_a.id(), m_primitive_b.id());
     }
 
     std::array<index_t, 3> get_typed_hash() const override
     {
-        return { { static_cast<index_t>(type()), primitive_a.id(),
-                   primitive_b.id() } };
+        return { { static_cast<index_t>(type()), m_primitive_a.id(),
+                   m_primitive_b.id() } };
     }
 
     index_t operator[](int idx) const override
     {
         if (idx == 0) {
-            return primitive_a.id();
+            return m_primitive_a.id();
         } else if (idx == 1) {
-            return primitive_b.id();
+            return m_primitive_b.id();
         } else {
             throw std::runtime_error("Invalid index in ESP collision!");
         }
@@ -58,13 +58,13 @@ public:
 
     int num_vertices() const override
     {
-        return primitive_a.n_vertices() + primitive_b.n_vertices();
+        return m_primitive_a.n_vertices() + m_primitive_b.n_vertices();
     }
 
     index_t vertex_id(index_t i) const override;
 
-    size_t n_vertices_a() const override { return primitive_a.n_vertices(); }
-    size_t n_vertices_b() const override { return primitive_b.n_vertices(); }
+    size_t n_vertices_a() const override { return m_primitive_a.n_vertices(); }
+    size_t n_vertices_b() const override { return m_primitive_b.n_vertices(); }
 
     double operator()(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
@@ -107,8 +107,8 @@ public:
         const NearFarBarrier* nf_barrier) const override;
 
 private:
-    PrimitiveA primitive_a;
-    PrimitiveB primitive_b;
+    PrimitiveA m_primitive_a;
+    PrimitiveB m_primitive_b;
 };
 
 // Keep old name as alias for backward compatibility within this codebase

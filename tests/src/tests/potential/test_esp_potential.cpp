@@ -890,11 +890,11 @@ TEST_CASE("ESP parameters dbar_factor range", "[esp_potential]")
 TEST_CASE("ESP face quadrature rule validation", "[esp_potential]")
 {
     ESPParameters params(0.1);
-    CHECK(params.get_quad_rule().empty());
+    CHECK(params.quad_rule().empty());
 
     const FaceQuadRule centroid = { { { { 1. / 3, 1. / 3, 1. / 3 } }, 1.0 } };
     CHECK_NOTHROW(params.set_quad_rule(centroid));
-    REQUIRE(params.get_quad_rule().size() == 1);
+    REQUIRE(params.quad_rule().size() == 1);
 
     // A zero weight is allowed as long as the weights sum to a positive value.
     CHECK_NOTHROW(params.set_quad_rule(
@@ -903,7 +903,7 @@ TEST_CASE("ESP face quadrature rule validation", "[esp_potential]")
             { { { 0., 1., 0. } }, 0.5 },
             { { { 0., 0., 1. } }, 0.0 },
         }));
-    CHECK(params.get_quad_rule().size() == 3);
+    CHECK(params.quad_rule().size() == 3);
 
     // Degree-3 rule with a negative centroid weight (listed last, so the check
     // must reach it): its barrier term would be unbounded below.
@@ -914,7 +914,7 @@ TEST_CASE("ESP face quadrature rule validation", "[esp_potential]")
         { { { 1. / 3, 1. / 3, 1. / 3 } }, -27. / 48 },
     };
     CHECK_THROWS_AS(params.set_quad_rule(negative), std::invalid_argument);
-    CHECK(params.get_quad_rule().size() == 3); // unchanged on failure
+    CHECK(params.quad_rule().size() == 3); // unchanged on failure
 
     CHECK_THROWS_AS(
         params.set_quad_rule({ { { { 1. / 3, 1. / 3, 1. / 3 } }, 0.0 } }),
@@ -930,7 +930,7 @@ TEST_CASE("ESP face quadrature rule validation", "[esp_potential]")
                 }),
             std::invalid_argument);
     }
-    CHECK(params.get_quad_rule().size() == 3); // unchanged on failure
+    CHECK(params.quad_rule().size() == 3); // unchanged on failure
 
     // A point outside the face (negative barycentric coordinate) or with a
     // non-finite coordinate is rejected.
@@ -944,10 +944,10 @@ TEST_CASE("ESP face quadrature rule validation", "[esp_potential]")
                 }),
             std::invalid_argument);
     }
-    CHECK(params.get_quad_rule().size() == 3); // unchanged on failure
+    CHECK(params.quad_rule().size() == 3); // unchanged on failure
 
     CHECK_NOTHROW(params.set_quad_rule({})); // back to vertex integration
-    CHECK(params.get_quad_rule().empty());
+    CHECK(params.quad_rule().empty());
 }
 
 TEST_CASE("ESP 2D Gauss-Lobatto weights are positive", "[esp_potential]")

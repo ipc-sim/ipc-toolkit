@@ -349,13 +349,13 @@ namespace {
 template <int dim>
 ArbitraryPointESP<dim>::ArbitraryPointESP(
     const CollisionMesh& _mesh, ESPParameters _params)
-    : mesh(_mesh)
-    , params(std::move(_params))
+    : m_mesh(_mesh)
+    , m_params(std::move(_params))
 {
-    if (mesh.dim() != dim) {
+    if (m_mesh.dim() != dim) {
         log_and_throw_error(
             "ArbitraryPointESP<{}> requires a {}D mesh (got {}D)!", dim, dim,
-            mesh.dim());
+            m_mesh.dim());
     }
 
     // Inclusion-exclusion weights (supplemental S2): the weights of the
@@ -367,24 +367,24 @@ ArbitraryPointESP<dim>::ArbitraryPointESP(
     // with the closed-mesh signs instead, the potential is exactly zero beyond
     // a straight boundary edge of an open sheet, where it should be b(d). An
     // edge in no face and an isolated vertex get one.
-    edge_weights.assign(mesh.num_edges(), 1);
-    vertex_weights.assign(mesh.num_vertices(), 1);
-    for (int f = 0; f < mesh.faces().rows(); f++) {
+    m_edge_weights.assign(m_mesh.num_edges(), 1);
+    m_vertex_weights.assign(m_mesh.num_vertices(), 1);
+    for (int f = 0; f < m_mesh.faces().rows(); f++) {
         for (int j = 0; j < 3; j++) {
-            --edge_weights[mesh.faces_to_edges()(f, j)];
-            ++vertex_weights[mesh.faces()(f, j)];
+            --m_edge_weights[m_mesh.faces_to_edges()(f, j)];
+            ++m_vertex_weights[m_mesh.faces()(f, j)];
         }
     }
-    for (int e = 0; e < mesh.edges().rows(); e++) {
-        --vertex_weights[mesh.edges()(e, 0)];
-        --vertex_weights[mesh.edges()(e, 1)];
+    for (int e = 0; e < m_mesh.edges().rows(); e++) {
+        --m_vertex_weights[m_mesh.edges()(e, 0)];
+        --m_vertex_weights[m_mesh.edges()(e, 1)];
     }
 }
 
 template <int dim>
 void ArbitraryPointESP<dim>::update(Eigen::ConstRef<Eigen::MatrixXd> V)
 {
-    point_bvh.update(V, mesh);
+    m_point_bvh.update(V, m_mesh);
 }
 
 template <int dim>
@@ -392,12 +392,12 @@ double ArbitraryPointESP<dim>::operator()(
     Eigen::ConstRef<Eigen::MatrixXd> V, Eigen::ConstRef<Point> q) const
 {
     const PointCollisions<dim>& collisions = build_point_collisions<dim>(
-        point_bvh, mesh, params, edge_weights, vertex_weights, V, q);
+        m_point_bvh, m_mesh, m_params, m_edge_weights, m_vertex_weights, V, q);
     const VertexMatrixView<dim> V_view(V, q);
 
     double value = 0.0;
     collisions.for_each([&](const auto& cc) {
-        value += cc.weight * cc(stencil_positions<dim>(cc, V_view), params);
+        value += cc.weight * cc(stencil_positions<dim>(cc, V_view), m_params);
     });
     return value;
 }
@@ -408,14 +408,14 @@ auto ArbitraryPointESP<dim>::gradient(
     -> Gradient
 {
     const PointCollisions<dim>& collisions = build_point_collisions<dim>(
-        point_bvh, mesh, params, edge_weights, vertex_weights, V, q);
+        m_point_bvh, m_mesh, m_params, m_edge_weights, m_vertex_weights, V, q);
     const VertexMatrixView<dim> V_view(V, q);
     const index_t vid = static_cast<index_t>(V.rows());
 
     Gradient grad = Gradient::Zero();
     collisions.for_each([&](const auto& cc) {
-        const VectorMax<double, ESPCollision::ELEMENT_SIZE> g =
-            cc.weight * cc.gradient(stencil_positions<dim>(cc, V_view), params);
+        const VectorMax<double, ESPCollision::ELEMENT_SIZE> g = cc.weight
+            * cc.gradient(stencil_positions<dim>(cc, V_view), m_params);
         grad += g.template segment<dim>(dim * query_slot(cc, vid));
     });
     return grad;
@@ -427,7 +427,7 @@ auto ArbitraryPointESP<dim>::hessian(
     -> Hessian
 {
     const PointCollisions<dim>& collisions = build_point_collisions<dim>(
-        point_bvh, mesh, params, edge_weights, vertex_weights, V, q);
+        m_point_bvh, m_mesh, m_params, m_edge_weights, m_vertex_weights, V, q);
     const VertexMatrixView<dim> V_view(V, q);
     const index_t vid = static_cast<index_t>(V.rows());
 
@@ -436,9 +436,9 @@ auto ArbitraryPointESP<dim>::hessian(
         const int j = dim * query_slot(cc, vid);
         // One Hessian temporary (ELEMENT_SIZE^2 doubles on the stack), read
         // through a block of the scaled expression rather than copied.
-        H +=
-            (cc.hessian(stencil_positions<dim>(cc, V_view), params) * cc.weight)
-                .template block<dim, dim>(j, j);
+        H += (cc.hessian(stencil_positions<dim>(cc, V_view), m_params)
+              * cc.weight)
+                 .template block<dim, dim>(j, j);
     });
     return H;
 }
@@ -449,7 +449,7 @@ auto ArbitraryPointESP<dim>::evaluate(
     -> std::tuple<double, Gradient, Hessian>
 {
     const PointCollisions<dim>& collisions = build_point_collisions<dim>(
-        point_bvh, mesh, params, edge_weights, vertex_weights, V, q);
+        m_point_bvh, m_mesh, m_params, m_edge_weights, m_vertex_weights, V, q);
     const VertexMatrixView<dim> V_view(V, q);
     const index_t vid = static_cast<index_t>(V.rows());
 
@@ -462,13 +462,13 @@ auto ArbitraryPointESP<dim>::evaluate(
             stencil_positions<dim>(cc, V_view);
         const int j = dim * query_slot(cc, vid);
 
-        value += cc.weight * cc(dof, params);
+        value += cc.weight * cc(dof, m_params);
 
         const VectorMax<double, ESPCollision::ELEMENT_SIZE> g =
-            cc.weight * cc.gradient(dof, params);
+            cc.weight * cc.gradient(dof, m_params);
         grad += g.template segment<dim>(j);
 
-        H += (cc.weight * cc.hessian(dof, params))
+        H += (cc.weight * cc.hessian(dof, m_params))
                  .template block<dim, dim>(j, j);
     });
 

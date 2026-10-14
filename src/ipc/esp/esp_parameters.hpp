@@ -5,10 +5,8 @@
 
 #include <algorithm>
 #include <array>
-#include <atomic>
 #include <cmath>
 #include <cstdint>
-#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -46,10 +44,10 @@ struct ESPParameters {
         const IntegrationType _integration_type = IntegrationType::NORMAL)
         : dhat(_dhat)
         , dbar(_dbar_factor * dhat)
-        , dbar_factor_value(_dbar_factor)
         , quad_order(_quad_order)
         , area_weights(_area_weights)
         , integration_type(_integration_type)
+        , m_dbar_factor(_dbar_factor)
     {
         if (std::isnan(_dbar_factor) || _dbar_factor < 0 || _dbar_factor > 2) {
             throw std::invalid_argument(
@@ -62,7 +60,6 @@ struct ESPParameters {
 
     const double dhat;
     const double dbar;
-    const double dbar_factor_value;
 
     /// Barrier evaluated on each pair's unsquared distance d with activation
     /// distance dhat, in 2D and 3D. With an InversePowerBarrier of power p, the
@@ -78,7 +75,8 @@ struct ESPParameters {
     bool area_weights;
     const IntegrationType integration_type;
 
-    double dbar_factor() const { return dbar_factor_value; }
+    /// @brief Near/far split parameter dbar / dhat, in [0, 2].
+    double dbar_factor() const { return m_dbar_factor; }
 
     /// @brief Support of the edge-edge (edge point) weights: min(dbar, dhat).
     /// Edge-edge pairs farther apart than this get no quadrature point.
@@ -86,7 +84,7 @@ struct ESPParameters {
 
     /// Face quadrature rule (3D). Empty (default) integrates over the face
     /// vertices instead; quad_order does not affect 3D.
-    const FaceQuadRule& get_quad_rule() const { return m_face_quad_rule; }
+    const FaceQuadRule& quad_rule() const { return m_face_quad_rule; }
 
     /// @brief Set the face quadrature rule (3D).
     /// @param rule Quadrature points in barycentric coordinates with their
@@ -141,35 +139,9 @@ struct ESPParameters {
         m_face_quad_rule = std::move(rule);
     }
 
-    /// Record a distance passed to the barrier; tracks the running minimum
-    /// across all threads. Copies of this struct share the same tracker
-    /// (shared_ptr), so pass-by-value sites still update the original.
-    void record_dist(double d) const
-    {
-        auto& a = *m_min_dist_seen;
-        double cur = a.load(std::memory_order_relaxed);
-        while (d < cur
-               && !a.compare_exchange_weak(cur, d, std::memory_order_relaxed)) {
-        }
-    }
-
-    double min_dist_seen() const
-    {
-        return m_min_dist_seen->load(std::memory_order_relaxed);
-    }
-
-    void reset_min_dist() const
-    {
-        m_min_dist_seen->store(
-            std::numeric_limits<double>::infinity(), std::memory_order_relaxed);
-    }
-
 private:
+    const double m_dbar_factor;
     FaceQuadRule m_face_quad_rule;
-
-    std::shared_ptr<std::atomic<double>> m_min_dist_seen =
-        std::make_shared<std::atomic<double>>(
-            std::numeric_limits<double>::infinity());
 };
 
 } // namespace ipc

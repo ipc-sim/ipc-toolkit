@@ -272,7 +272,7 @@ void QuadratureCollisionsBuilder::build_face_collisions(
     const size_t end_i)
 {
     const CollisionMesh& mesh = point_potential->mesh;
-    const auto& face_quad_rule = point_potential->params.get_quad_rule();
+    const auto& face_quad_rule = point_potential->params.quad_rule();
     if (face_quad_rule.empty()) {
         return;
     }

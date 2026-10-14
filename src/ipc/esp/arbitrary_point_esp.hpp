@@ -86,12 +86,12 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> V, Eigen::ConstRef<Point> q) const;
 
 private:
-    const CollisionMesh& mesh;
-    ESPParameters params;
-    ArbitraryPointBVH point_bvh;
+    const CollisionMesh& m_mesh;
+    ESPParameters m_params;
+    ArbitraryPointBVH m_point_bvh;
     /// Inclusion-exclusion weight of each edge and each vertex (every face
     /// has weight one), from the mesh connectivity; see the constructor.
-    std::vector<int> edge_weights, vertex_weights;
+    std::vector<int> m_edge_weights, m_vertex_weights;
 };
 
 extern template class ArbitraryPointESP<2>;

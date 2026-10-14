@@ -12,6 +12,7 @@
 namespace ipc {
 class ESPCollisions {
 public:
+    /// @brief Create an empty collision set; build() fills it.
     ESPCollisions();
     virtual ~ESPCollisions();
 
@@ -78,7 +79,9 @@ public:
     /// @note Defined in the internal header esp_collision_maps.hpp, so that
     /// this header does not pull in Abseil, a private dependency.
     struct Maps;
+    /// @brief Get the collision sets of the quadrature points.
     Maps& maps() { return *m_maps; }
+    /// @brief Get the collision sets of the quadrature points.
     const Maps& maps() const { return *m_maps; }
 
 private:

@@ -28,7 +28,7 @@ void ESPCollisions::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const ESPParameters& params)
 {
-    assert(vertices.rows() == mesh.num_vertices());
+    assert(static_cast<size_t>(vertices.rows()) == mesh.num_vertices());
 
     clear();
 
@@ -63,7 +63,7 @@ void ESPCollisions::build(
 
         // Face quadrature includes the face vertices, so vertices are only
         // integrated separately when there is no face quadrature rule.
-        const bool use_face_quadrature = !params.get_quad_rule().empty();
+        const bool use_face_quadrature = !params.quad_rule().empty();
 
         std::vector<index_t> vertices_to_process;
         if (!use_face_quadrature) {
@@ -125,7 +125,7 @@ void ESPCollisions::build(
     const ESPParameters& params,
     BroadPhase* broad_phase)
 {
-    assert(vertices.rows() == mesh.num_vertices());
+    assert(static_cast<size_t>(vertices.rows()) == mesh.num_vertices());
 
     double inflation_radius =
         params.dhat / 2; // TODO use dbar for EE collisions broad phase
@@ -226,7 +226,7 @@ std::string ESPCollisions::to_string(
 double ESPCollisions::compute_minimum_distance(
     const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
-    assert(vertices.rows() == mesh.num_vertices());
+    assert(static_cast<size_t>(vertices.rows()) == mesh.num_vertices());
 
     if (m_candidates.empty()) {
         return std::numeric_limits<double>::infinity();

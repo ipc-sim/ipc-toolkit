@@ -50,60 +50,6 @@ protected:
     index_t m_id;
 };
 
-namespace {
-    // Helper function to find the vertices adjacent to a given vertex in a 2D
-    // mesh.
-    std::vector<index_t>
-    find_vertex_neighbors_2D(const CollisionMesh& mesh, const index_t v_id)
-    {
-        assert(mesh.dim() == 2);
-        std::array<index_t, 2> neighbors;
-        std::fill(neighbors.begin(), neighbors.end(), v_id);
-        for (const auto& edge_id : mesh.vertex_edge_adjacencies()[v_id]) {
-            const auto& edge = mesh.edges().row(edge_id);
-            if (edge[0] == v_id) {
-                neighbors[0] = edge[1];
-            } else {
-                neighbors[1] = edge[0];
-            }
-        }
-        std::vector<index_t> neighbors_ordered;
-        for (index_t n : neighbors) {
-            if (n != v_id) {
-                neighbors_ordered.push_back(n);
-            }
-        }
-        return neighbors_ordered;
-    }
-} // namespace
-
-/// @brief 2D vertex primitive with neighbor storage, for OGC.
-class Vertex2ogc : public ESPPrimitive {
-public:
-    static constexpr int N_CORE_POINTS = 1;
-    static constexpr int N_POINTS = 1;
-    static constexpr int DIM = 2;
-    static constexpr int N_DOFS = N_POINTS * DIM;
-
-    Vertex2ogc(
-        const index_t id, const CollisionMesh& mesh, const Eigen::MatrixXd& V)
-        : ESPPrimitive(id)
-    {
-        n_verts = 0;
-        m_vertex_ids[n_verts++] = id;
-        std::vector<index_t> neighbors = find_vertex_neighbors_2D(mesh, id);
-        for (const auto& neighbor_id : neighbors) {
-            m_vertex_ids[n_verts++] = neighbor_id;
-        }
-    }
-
-    int n_vertices() const override { return n_verts; }
-    int n_dofs() const override { return n_vertices() * DIM; }
-
-private:
-    int n_verts;
-};
-
 class Edge2P1 : public ESPPrimitive {
 public:
     static constexpr int N_CORE_POINTS = 2;

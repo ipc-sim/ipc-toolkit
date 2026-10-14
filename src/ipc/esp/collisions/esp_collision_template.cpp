@@ -67,16 +67,16 @@ template <> std::string ESPCollisionTemplate<Vertex2, Edge2P1>::name() const
 template <typename PrimitiveA, typename PrimitiveB>
 ESPCollisionTemplate<PrimitiveA, PrimitiveB>::ESPCollisionTemplate(
     index_t _primitive0, index_t _primitive1, const CollisionMesh& mesh)
-    : primitive_a(_primitive0, mesh)
-    , primitive_b(_primitive1, mesh)
+    : m_primitive_a(_primitive0, mesh)
+    , m_primitive_b(_primitive1, mesh)
 {
 }
 
 template <>
 ESPCollisionTemplate<Vertex3, Vertex3>::ESPCollisionTemplate(
     index_t _primitive0, index_t _primitive1, const CollisionMesh& mesh)
-    : primitive_a(std::min(_primitive0, _primitive1), mesh)
-    , primitive_b(std::max(_primitive0, _primitive1), mesh)
+    : m_primitive_a(std::min(_primitive0, _primitive1), mesh)
+    , m_primitive_b(std::max(_primitive0, _primitive1), mesh)
 {
 }
 
@@ -85,12 +85,12 @@ ESPCollisionTemplate<Vertex3, Vertex3>::ESPCollisionTemplate(
 template <typename PrimitiveA, typename PrimitiveB>
 index_t ESPCollisionTemplate<PrimitiveA, PrimitiveB>::vertex_id(index_t i) const
 {
-    if (i < static_cast<index_t>(primitive_a.n_vertices())) {
-        return primitive_a.vertex_id(i);
+    if (i < static_cast<index_t>(m_primitive_a.n_vertices())) {
+        return m_primitive_a.vertex_id(i);
     }
-    i -= primitive_a.n_vertices();
-    assert(static_cast<index_t>(primitive_b.n_vertices()) > i);
-    return primitive_b.vertex_id(i);
+    i -= m_primitive_a.n_vertices();
+    assert(static_cast<index_t>(m_primitive_b.n_vertices()) > i);
+    return m_primitive_b.vertex_id(i);
 }
 
 // ---- generic stubs ----
@@ -218,7 +218,6 @@ double ESPCollisionTemplate<Vertex3, Vertex3>::operator()(
         (positions.template head<3>() - positions.template segment<3>(3))
             .norm();
     const double eps = params.dhat;
-    params.record_dist(dist);
     return (*params.barrier)(dist, eps);
 }
 
@@ -238,7 +237,6 @@ double ESPCollisionTemplate<Edge3P1, Vertex3>::operator()(
     const double dist = sqrt(point_edge_distance(
         positions.template segment<3>(6), positions.template head<3>(),
         positions.template segment<3>(3)));
-    params.record_dist(dist);
     return (*params.barrier)(dist, eps);
 }
 
@@ -258,7 +256,6 @@ double ESPCollisionTemplate<Face3P1, Vertex3>::operator()(
     const double dist = sqrt(point_triangle_distance(
         positions.template segment<3>(9), positions.template head<3>(),
         positions.template segment<3>(3), positions.template segment<3>(6)));
-    params.record_dist(dist);
     return (*params.barrier)(dist, eps);
 }
 
@@ -271,7 +268,6 @@ auto ESPCollisionTemplate<Vertex3, Vertex3>::gradient(
     const double dist =
         (positions.template head<3>() - positions.template tail<3>()).norm();
     const double eps = params.dhat;
-    params.record_dist(dist);
     const double deriv =
         params.barrier->first_derivative(dist, eps) / (dist * 2.);
     Vector6d grad =
@@ -298,7 +294,6 @@ auto ESPCollisionTemplate<Edge3P1, Vertex3>::gradient(
         positions.template segment<3>(6), positions.template head<3>(),
         positions.template segment<3>(3), dtype));
     const double eps = params.dhat;
-    params.record_dist(dist);
     const double deriv =
         params.barrier->first_derivative(dist, eps) / (dist * 2.);
     Vector9d grad = point_edge_distance_gradient(
@@ -327,7 +322,6 @@ auto ESPCollisionTemplate<Face3P1, Vertex3>::gradient(
         positions.template segment<3>(3), positions.template segment<3>(6),
         dtype));
     const double eps = params.dhat;
-    params.record_dist(dist);
     const double deriv =
         params.barrier->first_derivative(dist, eps) / (dist * 2.);
     Vector12d grad = point_triangle_distance_gradient(
@@ -349,7 +343,6 @@ auto ESPCollisionTemplate<Vertex3, Vertex3>::hessian(
     const double dist =
         (positions.template head<3>() - positions.template tail<3>()).norm();
     const double eps = params.dhat;
-    params.record_dist(dist);
     double deriv1 = params.barrier->first_derivative(dist, eps);
     double deriv2 = params.barrier->second_derivative(dist, eps);
     deriv2 = deriv2 / (4 * dist * dist) - deriv1 / (4 * dist * dist * dist);
@@ -379,7 +372,6 @@ auto ESPCollisionTemplate<Edge3P1, Vertex3>::hessian(
         positions.template segment<3>(6), positions.template head<3>(),
         positions.template segment<3>(3), dtype));
     const double eps = params.dhat;
-    params.record_dist(dist);
     double deriv1 = params.barrier->first_derivative(dist, eps);
     double deriv2 = params.barrier->second_derivative(dist, eps);
     deriv2 = deriv2 / (4 * dist * dist) - deriv1 / (4 * dist * dist * dist);
@@ -414,7 +406,6 @@ auto ESPCollisionTemplate<Face3P1, Vertex3>::hessian(
         positions.template segment<3>(3), positions.template segment<3>(6),
         dtype));
     const double eps = params.dhat;
-    params.record_dist(dist);
     double deriv1 = params.barrier->first_derivative(dist, eps);
     double deriv2 = params.barrier->second_derivative(dist, eps);
     deriv2 = deriv2 / (4 * dist * dist) - deriv1 / (4 * dist * dist * dist);
@@ -445,7 +436,6 @@ ESPCollisionTemplate<Vertex3, Vertex3>::operator_nearfar(
         (positions.template head<3>() - positions.template segment<3>(3))
             .norm();
     const double eps = params.dhat;
-    params.record_dist(dist);
     return { nf_barrier->near_value(dist, eps),
              nf_barrier->far_value(dist, eps) };
 }
@@ -461,7 +451,6 @@ ESPCollisionTemplate<Edge3P1, Vertex3>::operator_nearfar(
         positions.template segment<3>(6), positions.template head<3>(),
         positions.template segment<3>(3)));
     const double eps = params.dhat;
-    params.record_dist(dist);
     return { nf_barrier->near_value(dist, eps),
              nf_barrier->far_value(dist, eps) };
 }
@@ -477,7 +466,6 @@ ESPCollisionTemplate<Face3P1, Vertex3>::operator_nearfar(
         positions.template segment<3>(9), positions.template head<3>(),
         positions.template segment<3>(3), positions.template segment<3>(6)));
     const double eps = params.dhat;
-    params.record_dist(dist);
     return { nf_barrier->near_value(dist, eps),
              nf_barrier->far_value(dist, eps) };
 }
@@ -495,7 +483,6 @@ ESPCollisionTemplate<Vertex3, Vertex3>::gradient_nearfar(
     const double dist =
         (positions.template head<3>() - positions.template tail<3>()).norm();
     const double eps = params.dhat;
-    params.record_dist(dist);
     const double deriv_near =
         nf_barrier->first_derivative_near(dist, eps) / (dist * 2.);
     const double deriv_far =
@@ -525,7 +512,6 @@ ESPCollisionTemplate<Edge3P1, Vertex3>::gradient_nearfar(
         positions.template segment<3>(6), positions.template head<3>(),
         positions.template segment<3>(3), dtype));
     const double eps = params.dhat;
-    params.record_dist(dist);
     const double deriv_near =
         nf_barrier->first_derivative_near(dist, eps) / (dist * 2.);
     const double deriv_far =
@@ -561,7 +547,6 @@ ESPCollisionTemplate<Face3P1, Vertex3>::gradient_nearfar(
         positions.template segment<3>(3), positions.template segment<3>(6),
         dtype));
     const double eps = params.dhat;
-    params.record_dist(dist);
     const double deriv_near =
         nf_barrier->first_derivative_near(dist, eps) / (dist * 2.);
     const double deriv_far =
@@ -594,7 +579,6 @@ ESPCollisionTemplate<Vertex3, Vertex3>::hessian_nearfar(
     const double dist =
         (positions.template head<3>() - positions.template tail<3>()).norm();
     const double eps = params.dhat;
-    params.record_dist(dist);
     double deriv1_near = nf_barrier->first_derivative_near(dist, eps);
     double deriv2_near = nf_barrier->second_derivative_near(dist, eps);
     double deriv1_far = nf_barrier->first_derivative_far(dist, eps);
@@ -635,7 +619,6 @@ ESPCollisionTemplate<Edge3P1, Vertex3>::hessian_nearfar(
         positions.template segment<3>(6), positions.template head<3>(),
         positions.template segment<3>(3), dtype));
     const double eps = params.dhat;
-    params.record_dist(dist);
     double deriv1_near = nf_barrier->first_derivative_near(dist, eps);
     double deriv2_near = nf_barrier->second_derivative_near(dist, eps);
     double deriv1_far = nf_barrier->first_derivative_far(dist, eps);
@@ -682,7 +665,6 @@ ESPCollisionTemplate<Face3P1, Vertex3>::hessian_nearfar(
         positions.template segment<3>(3), positions.template segment<3>(6),
         dtype));
     const double eps = params.dhat;
-    params.record_dist(dist);
     double deriv1_near = nf_barrier->first_derivative_near(dist, eps);
     double deriv2_near = nf_barrier->second_derivative_near(dist, eps);
     double deriv1_far = nf_barrier->first_derivative_far(dist, eps);
@@ -750,7 +732,6 @@ double ESPCollisionTemplate<Vertex2, Vertex2>::operator()(
     const double dist =
         (positions.template head<2>() - positions.template tail<2>()).norm();
     const double eps = params.dhat;
-    params.record_dist(dist);
     return (*params.barrier)(dist, eps);
 }
 
@@ -770,7 +751,6 @@ double ESPCollisionTemplate<Vertex2, Edge2P1>::operator()(
     const double dist = std::sqrt(point_edge_distance(
         positions.template head<2>(), positions.template segment<2>(2),
         positions.template segment<2>(4)));
-    params.record_dist(dist);
     return (*params.barrier)(dist, eps);
 }
 
@@ -782,7 +762,6 @@ auto ESPCollisionTemplate<Vertex2, Vertex2>::gradient(
     const double dist =
         (positions.template head<2>() - positions.template tail<2>()).norm();
     const double eps = params.dhat;
-    params.record_dist(dist);
     const double deriv =
         params.barrier->first_derivative(dist, eps) / (dist * 2.0);
     const VectorMax6d g = point_point_distance_gradient(
@@ -806,7 +785,6 @@ auto ESPCollisionTemplate<Vertex2, Edge2P1>::gradient(
         positions.template head<2>(), positions.template segment<2>(2),
         positions.template segment<2>(4), dtype));
     const double eps = params.dhat;
-    params.record_dist(dist);
     const double deriv =
         params.barrier->first_derivative(dist, eps) / (dist * 2.0);
     const VectorMax9d g = point_edge_distance_gradient(
@@ -824,7 +802,6 @@ auto ESPCollisionTemplate<Vertex2, Vertex2>::hessian(
     const double dist =
         (positions.template head<2>() - positions.template tail<2>()).norm();
     const double eps = params.dhat;
-    params.record_dist(dist);
     double deriv1 = params.barrier->first_derivative(dist, eps);
     double deriv2 = params.barrier->second_derivative(dist, eps);
     deriv2 = deriv2 / (4 * dist * dist) - deriv1 / (4 * dist * dist * dist);
@@ -853,7 +830,6 @@ auto ESPCollisionTemplate<Vertex2, Edge2P1>::hessian(
         positions.template head<2>(), positions.template segment<2>(2),
         positions.template segment<2>(4), dtype));
     const double eps = params.dhat;
-    params.record_dist(dist);
     double deriv1 = params.barrier->first_derivative(dist, eps);
     double deriv2 = params.barrier->second_derivative(dist, eps);
     deriv2 = deriv2 / (4 * dist * dist) - deriv1 / (4 * dist * dist * dist);

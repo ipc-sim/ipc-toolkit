@@ -98,7 +98,7 @@ void ArbitraryPointBVH::update(
     // Zero inflation: the query radius is applied to the query point's own
     // box at query time instead, so a single build serves queries at any
     // radius.
-    bvh.build(V, mesh.edges(), mesh.faces(), /*inflation_radius=*/0.0);
+    m_bvh.build(V, mesh.edges(), mesh.faces(), /*inflation_radius=*/0.0);
 }
 
 void ArbitraryPointBVH::query_point(
@@ -113,9 +113,9 @@ void ArbitraryPointBVH::query_point(
     face_ids.clear();
 
     const LBVH::Node qnode = point_query_node(q, radius);
-    query_point_vs_bvh(bvh.vertex_nodes(), qnode, vertex_ids);
-    query_point_vs_bvh(bvh.edge_nodes(), qnode, edge_ids);
-    query_point_vs_bvh(bvh.face_nodes(), qnode, face_ids);
+    query_point_vs_bvh(m_bvh.vertex_nodes(), qnode, vertex_ids);
+    query_point_vs_bvh(m_bvh.edge_nodes(), qnode, edge_ids);
+    query_point_vs_bvh(m_bvh.face_nodes(), qnode, face_ids);
 }
 
 } // namespace ipc

@@ -746,7 +746,7 @@ void check_esp_friction_force_jacobian(
 
     CAPTURE(
         mu, epsv_times_h, params.dhat, normal_stiffness, collisions.size(),
-        normalize_weights, params.get_quad_rule().size());
+        normalize_weights, params.quad_rule().size());
 
     TangentialCollisions friction_collisions;
     friction_collisions.build(

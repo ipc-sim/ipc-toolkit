@@ -44,7 +44,7 @@ public:
         std::vector<index_t>& face_ids) const;
 
 private:
-    LBVH bvh;
+    LBVH m_bvh;
 };
 
 } // namespace ipc
