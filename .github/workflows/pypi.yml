@@ -135,19 +135,21 @@ jobs:
           CIBW_TEST_COMMAND_WINDOWS: python {project}/python/tests/check_cuda_wheel.py
 
       # PyPI rejects files over 100 MB unless the project has a raised limit.
+      # We use plain bash because not every runner has `python` on PATH.
       - name: Report wheel size
         shell: bash
         run: |
-          python - <<'EOF' | tee -a "$GITHUB_STEP_SUMMARY"
-          import pathlib, sys
-          limit = 100 * 1000 * 1000
-          too_big = False
-          for wheel in sorted(pathlib.Path("wheelhouse").glob("*.whl")):
-              size = wheel.stat().st_size
-              too_big |= size > limit
-              print(f"- `{wheel.name}`: {size / 1e6:.1f} MB")
-          sys.exit(1 if too_big else 0)
-          EOF
+          status=0
+          for wheel in wheelhouse/*.whl; do
+            size=$(wc -c < "$wheel" | tr -d ' ')
+            mb=$(awk -v s="$size" 'BEGIN { printf "%.1f", s / 1e6 }')
+            echo "- \`$(basename "$wheel")\`: $mb MB" | tee -a "$GITHUB_STEP_SUMMARY"
+            if [ "$size" -gt 100000000 ]; then
+              echo "::error::$(basename "$wheel") is over PyPI's 100 MB limit"
+              status=1
+            fi
+          done
+          exit $status
 
       - uses: actions/upload-artifact@v7
         with:
