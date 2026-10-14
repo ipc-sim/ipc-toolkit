@@ -65,13 +65,14 @@ jobs:
       # CIBW_BEFORE_ALL_LINUX), but cibuildwheel builds the Windows wheels on
       # the runner itself, so the toolkit goes there. Install it before
       # msvc-dev-cmd so its bin dir is on the PATH that msvc-dev-cmd snapshots.
-      # The subpackages are the ones cuda.yml documents.
+      # In 12.8, nvcc still bundles nvvm and crt, which 13.x (cuda.yml) splits
+      # into their own subpackages; naming them here would abort the install.
       - name: Install CUDA Toolkit (Windows)
         if: runner.os == 'Windows'
         uses: Jimver/cuda-toolkit@v0.2.35
         with:
           cuda: '12.8.1'
-          sub-packages: '["nvcc", "nvvm", "cudart", "crt", "thrust"]'
+          sub-packages: '["nvcc", "cudart", "thrust"]'
           method: 'network'
           use-github-cache: false
 
