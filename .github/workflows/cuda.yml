@@ -12,6 +12,11 @@ on:
       - 'python/**'
       - 'CMakeLists.txt'
 
+# The job reads the repository and nothing else. The simulator's action uses
+# no token or secrets, and installs packages only from Ubuntu and NVIDIA.
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
@@ -41,11 +46,13 @@ jobs:
           sudo apt-get install ccache
           echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
 
-      - name: cuda-toolkit
-        uses: Jimver/cuda-toolkit@v0.2.30
+      # CUDA and a simulated GPU: the runners have none, so PantheonSim runs the
+      # tests' kernels on the CPU. It checks results, not performance.
+      - name: cuda-toolkit and simulated GPU
+        uses: pantheongpu/setup-pantheonsim@052a0ac31bf6ec72a471d51aae29b7cbd090c6bf # v0.1.1
         with:
-          sub-packages: '["nvcc"]'
-          method: 'network'
+          gpu: nvidia/t4
+          cuda-toolkit: '12.8'
 
       - name: Get number of CPU cores
         uses: SimenB/github-actions-cpu-cores@v2
@@ -95,9 +102,15 @@ jobs:
             -DSCALABLE_CCD_CUDA_ARCHITECTURES=75 \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
             -DIPC_TOOLKIT_BUILD_PYTHON=ON \
-            -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+            -DCMAKE_CUDA_RUNTIME_LIBRARY=Shared
 
       - name: Build
         run: |
           cmake --build build -j ${{ steps.cpu-cores.outputs.count }}
           ccache --show-stats
+
+      # The GPU unit tests, minus the CCD and STQ ones on the cloth and puffer
+      # ball meshes, which take several minutes each on a simulated GPU.
+      - name: Tests
+        run: build/tests/ipc_toolkit_tests "[gpu]~[ccd]~[.],[cuda]~[stq]~[.]"
