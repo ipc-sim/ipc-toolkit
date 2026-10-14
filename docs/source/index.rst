@@ -43,6 +43,7 @@
     cpp-api/ccd.rst
     cpp-api/collision_mesh.rst
     cpp-api/distance.rst
+    cpp-api/esp.rst
     cpp-api/friction.rst
     cpp-api/intersections.rst
     cpp-api/interval.rst
@@ -64,6 +65,7 @@
     python-api/ccd.rst
     python-api/collision_mesh.rst
     python-api/distance.rst
+    python-api/esp.rst
     python-api/friction.rst
     python-api/intersections.rst
     python-api/interval.rst
