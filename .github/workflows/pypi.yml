@@ -36,7 +36,9 @@ jobs:
     name: Build wheels on ${{ matrix.name }} (${{ matrix.python-version }} ${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      # A pull request run should report every platform's result, but a
+      # release should stop as soon as any wheel fails.
+      fail-fast: ${{ github.event_name != 'pull_request' }}
       matrix:
         # windows-latest ships MSVC 19.5x (VS 2026), which CUDA 12.8 rejects, so
         # the Windows wheels build on the VS 2022 image.
