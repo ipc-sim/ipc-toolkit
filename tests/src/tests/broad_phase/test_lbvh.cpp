@@ -3,9 +3,14 @@
 #include <tests/config.hpp>
 #include <tests/utils.hpp>
 
+#include <tests/broad_phase/lbvh_validation.hpp>
+
+#include <ipc/broad_phase/brute_force.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/utils/profiler.hpp>
+
+#include <igl/edges.h>
 
 #include <tbb/parallel_sort.h>
 
@@ -13,66 +18,7 @@
 #include <catch2/benchmark/catch_benchmark.hpp>
 
 using namespace ipc;
-
-namespace {
-
-bool is_aabb_union(
-    const LBVH::Node& parent,
-    const LBVH::Node& childA,
-    const LBVH::Node& childB)
-{
-    AABB children;
-    children.min = childA.aabb_min.min(childB.aabb_min).cast<double>();
-    children.max = childA.aabb_max.max(childB.aabb_max).cast<double>();
-    constexpr float EPS = 1e-4f;
-    return (abs(parent.aabb_max.cast<double>() - children.max) < EPS).all()
-        && (abs(parent.aabb_min.cast<double>() - children.min) < EPS).all();
-}
-
-void traverse_lbvh(
-    const LBVH::Nodes& lbvh_nodes,
-    const uint32_t index,
-    std::vector<bool>& visited)
-{
-    const LBVH::Node& node = lbvh_nodes[index];
-    CHECK(node.is_valid());
-
-    if (node.is_leaf()) {
-        // leaf
-        CHECK(!visited[index]);
-        visited[index] = true;
-    } else {
-        // inner node
-        CHECK(!visited[index]);
-        visited[index] = true;
-
-        // verify aabbs
-        LBVH::Node childA = lbvh_nodes[node.left];
-        LBVH::Node childB = lbvh_nodes[node.right];
-
-        {
-            CAPTURE(
-                index, node.left, node.right, node.aabb_min.transpose(),
-                childA.aabb_min.transpose(), childB.aabb_min.transpose(),
-                node.aabb_max.transpose(), childA.aabb_max.transpose(),
-                childB.aabb_max.transpose());
-            CHECK(is_aabb_union(node, childA, childB));
-        }
-
-        // continue traversal
-        traverse_lbvh(lbvh_nodes, node.left, visited);
-        traverse_lbvh(lbvh_nodes, node.right, visited);
-    }
-}
-
-void check_valid_lbvh_nodes(const LBVH::Nodes& lbvh_nodes)
-{
-    std::vector<bool> visited(lbvh_nodes.size(), false);
-    traverse_lbvh(lbvh_nodes, 0, visited);
-    REQUIRE(
-        std::all_of(visited.begin(), visited.end(), [](bool v) { return v; }));
-}
-} // namespace
+using ipc::tests::check_valid_lbvh_nodes;
 
 TEST_CASE("LBVH::build", "[broad_phase][lbvh]")
 {
@@ -285,6 +231,140 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
 #endif
 }
 
+TEST_CASE("LBVH single-primitive trees", "[broad_phase][lbvh]")
+{
+    // A BVH over a single primitive is one node, which is both the root and a
+    // leaf. When such a BVH is the traversal TARGET the descent takes a
+    // dedicated branch, because the root cannot be descended into. Only two
+    // detections put a BVH there that can have one node -- face-vertex (the
+    // face BVH) and edge-face (the edge BVH) -- and the meshes the other tests
+    // load never reduce either to a single primitive.
+    //
+    // One face and one edge, sharing no vertices so the connectivity filter
+    // keeps the pair, and inflated enough that the AABBs actually overlap.
+    Eigen::MatrixXd vertices(5, 3);
+    vertices << 0.00, 0.00, 0.00, // 0 |
+        1.00, 0.00, 0.00,         // 1 |- the face
+        0.00, 1.00, 0.00,         // 2 |
+        0.05, 0.05, 0.05,         // 3 |- the edge
+        0.15, 0.05, 0.05;         // 4 |
+
+    Eigen::MatrixXi edges(1, 2);
+    edges << 3, 4;
+
+    Eigen::MatrixXi faces(1, 3);
+    faces << 0, 1, 2;
+
+    constexpr double inflation_radius = 0.1;
+
+    LBVH lbvh;
+    lbvh.build(vertices, edges, faces, inflation_radius);
+
+    BruteForce brute_force;
+    brute_force.build(vertices, edges, faces, inflation_radius);
+
+    // The branch under test is only reached if these really are single nodes.
+    REQUIRE(lbvh.face_nodes().size() == 1);
+    REQUIRE(lbvh.edge_nodes().size() == 1);
+
+    // The LBVH rounds its AABBs outward to floats, so it may report a superset
+    // of the exact (double-precision) brute-force set, never a subset.
+    {
+        std::vector<FaceVertexCandidate> fv_candidates, expected;
+        lbvh.detect_face_vertex_candidates(fv_candidates);
+        brute_force.detect_face_vertex_candidates(expected);
+
+        // Without this the checks below would pass on an empty set, which is
+        // exactly what a broken single-node branch would produce.
+        REQUIRE(!expected.empty());
+        CHECK(fv_candidates.size() >= expected.size());
+        CHECK(contains_all_candidates(fv_candidates, expected));
+    }
+
+    {
+        std::vector<EdgeFaceCandidate> ef_candidates, expected;
+        lbvh.detect_edge_face_candidates(ef_candidates);
+        brute_force.detect_edge_face_candidates(expected);
+
+        REQUIRE(!expected.empty());
+        CHECK(ef_candidates.size() >= expected.size());
+        CHECK(contains_all_candidates(ef_candidates, expected));
+    }
+
+    // The remaining types traverse multi-node targets here, but are cheap to
+    // check on a mesh this small.
+    {
+        std::vector<VertexVertexCandidate> vv_candidates, expected;
+        lbvh.detect_vertex_vertex_candidates(vv_candidates);
+        brute_force.detect_vertex_vertex_candidates(expected);
+        CHECK(contains_all_candidates(vv_candidates, expected));
+    }
+
+    {
+        std::vector<EdgeVertexCandidate> ev_candidates, expected;
+        lbvh.detect_edge_vertex_candidates(ev_candidates);
+        brute_force.detect_edge_vertex_candidates(expected);
+        REQUIRE(!expected.empty());
+        CHECK(contains_all_candidates(ev_candidates, expected));
+    }
+
+    // The device build reaches the same branch through the same shared code;
+    // its parity with these trees is checked in test_gpu_lbvh.cu, where a
+    // missing GPU skips rather than fails.
+}
+
+// A planar mesh with no inflation has zero-width vertex boxes along z, so the
+// Morton normalization domain is degenerate on that axis. The reciprocal width
+// must be 0 there, not infinity: 0 * inf is NaN, and converting NaN to an
+// integer code is undefined. The tree must still be valid and complete.
+TEST_CASE("LBVH degenerate domain", "[broad_phase][lbvh]")
+{
+    // A 4x4 grid of vertices in the z = 0 plane, triangulated.
+    constexpr int N = 4;
+    Eigen::MatrixXd vertices(N * N, 3);
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            vertices.row(N * i + j) << i, j, 0.0;
+        }
+    }
+    Eigen::MatrixXi faces(2 * (N - 1) * (N - 1), 3);
+    for (int i = 0, f = 0; i < N - 1; ++i) {
+        for (int j = 0; j < N - 1; ++j) {
+            const int v00 = N * i + j, v10 = v00 + N;
+            faces.row(f++) << v00, v10, v00 + 1;
+            faces.row(f++) << v10, v10 + 1, v00 + 1;
+        }
+    }
+    Eigen::MatrixXi edges;
+    igl::edges(faces, edges);
+
+    // Inflation 0 keeps the z extent of every box exactly zero.
+    LBVH lbvh;
+    lbvh.build(vertices, edges, faces, /*inflation_radius=*/0);
+
+    check_valid_lbvh_nodes(lbvh.vertex_nodes());
+    check_valid_lbvh_nodes(lbvh.edge_nodes());
+    check_valid_lbvh_nodes(lbvh.face_nodes());
+
+    // And the result still matches brute force (a superset, as usual).
+    BruteForce brute_force;
+    brute_force.build(vertices, edges, faces, 0);
+    {
+        std::vector<EdgeEdgeCandidate> candidates, expected;
+        lbvh.detect_edge_edge_candidates(candidates);
+        brute_force.detect_edge_edge_candidates(expected);
+        REQUIRE(!expected.empty()); // coplanar neighbors do overlap
+        CHECK(contains_all_candidates(candidates, expected));
+    }
+    {
+        std::vector<FaceVertexCandidate> candidates, expected;
+        lbvh.detect_face_vertex_candidates(candidates);
+        brute_force.detect_face_vertex_candidates(expected);
+        REQUIRE(!expected.empty());
+        CHECK(contains_all_candidates(candidates, expected));
+    }
+}
+
 TEST_CASE(
     "Benchmark LBVH::detect_edge_edge_candidates",
     "[!benchmark][broad_phase][lbvh]")
@@ -344,6 +424,8 @@ TEST_CASE(
         lbvh->detect_edge_edge_candidates(ee_candidates);
         return ee_candidates.size();
     };
+    // The cuda::LBVH counterpart lives in test_gpu_lbvh.cu, behind the GPU
+    // skip.
 }
 
 TEST_CASE("Benchmark LBVH::build", "[!benchmark][broad_phase][lbvh]")
@@ -388,5 +470,7 @@ TEST_CASE("Benchmark LBVH::build", "[!benchmark][broad_phase][lbvh]")
                 vertices_t0, vertices_t1, edges, faces, inflation_radius);
             return lbvh->edge_nodes().size();
         };
+        // The cuda::LBVH counterpart lives in test_gpu_lbvh.cu, behind the
+        // GPU skip.
     }
 }

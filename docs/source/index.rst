@@ -133,6 +133,11 @@ We provide Python bindings for functions in the toolkit using `pybind11 <https:/
 
 **Contributing**
 
+.. figure:: https://contrib.rocks/image?repo=ipc-sim/ipc-toolkit
+   :align: center
+   :alt: Top contributors to the IPC Toolkit.
+   :target: https://github.com/ipc-sim/ipc-toolkit/graphs/contributors?all=1
+
 This project is open to contributors! Contributions can come in the form of feature requests, bug fixes, documentation, tutorials, and the like. We highly recommend filing an Issue first before submitting a Pull Request.
 
 Simply fork this repository and make a Pull Request! We would appreciate:
@@ -141,6 +146,12 @@ Simply fork this repository and make a Pull Request! We would appreciate:
 * Bug Reports
 * Documentation
 * Testing
+
+..
+   .. image:: https://api.star-history.com/chart?repos=ipc-sim/ipc-toolkit&type=date&legend=top-left
+      :align: center
+      :alt: Star History Chart
+      :target: https://www.star-history.com/?repos=ipc-sim%2Fipc-toolkit&type=date&releases=&legend=bottom-right
 
 **Citation**
 

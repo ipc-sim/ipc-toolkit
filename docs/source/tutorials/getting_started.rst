@@ -539,7 +539,7 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
                 collision_mesh, vertices_t0, vertices_t1,
                 broad_phase=ipctk.LBVH())
 
-Possible values for ``broad_phase`` are: ``BruteForce`` (parallel brute force culling), ``HashGrid``, ``SpatialHash`` (implementation from the original IPC codebase), ``LBVH`` (CPU implementation of :cite:t:`Karras2012HPG` using TBB), ``SweepAndPrune`` (a.k.a. Sort-and-Sweep from :cite:t:`Baraff1992PhD`), or ``SweepAndTiniestQueue`` (method of :cite:t:`Belgrod2023Time`; requires CUDA). The default is ``LBVH``.
+Possible values for ``broad_phase`` are: ``BruteForce`` (parallel brute force culling), ``HashGrid``, ``SpatialHash`` (implementation from the original IPC codebase), ``LBVH`` (CPU implementation of :cite:t:`Karras2012HPG` using TBB), ``SweepAndPrune`` (a.k.a. Sort-and-Sweep from :cite:t:`Baraff1992PhD`), ``SweepAndTiniestQueue`` (method of :cite:t:`Belgrod2023Time`; requires CUDA), or ``cuda.LBVH`` (``ipc::cuda::LBVH`` in C++; the GPU counterpart of ``LBVH``, building and traversing the same hierarchy on the device; requires CUDA). The default is ``LBVH``.
 
 Narrow-Phase
 ^^^^^^^^^^^^

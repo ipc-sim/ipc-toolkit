@@ -8,6 +8,7 @@
 #include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/broad_phase/sweep_and_prune.hpp>
 #ifdef IPC_TOOLKIT_WITH_CUDA
+#include <ipc/broad_phase/cuda/lbvh.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 #endif
 
@@ -30,6 +31,7 @@ std::vector<std::shared_ptr<BroadPhase>> broad_phases()
         std::make_shared<SweepAndPrune>(),
 #ifdef IPC_TOOLKIT_WITH_CUDA
         std::make_shared<SweepAndTiniestQueue>(),
+        std::make_shared<cuda::LBVH>(),
 #endif
     } };
 }

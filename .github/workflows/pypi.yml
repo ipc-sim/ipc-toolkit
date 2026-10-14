@@ -50,6 +50,11 @@ jobs:
           CIBW_ARCHS_MACOS: ${{ matrix.arch }}
           CIBW_BUILD: ${{ matrix.python-version }}-*
           CIBW_SKIP: "cp38-* pp* *musllinux* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
+          # Without this the wheel takes -march=native from whichever runner built it,
+          # and can contain AVX-512 that users' CPUs lack. x86-64-v3 is the baseline
+          # the 1.6.0 wheels already required (AVX2, FMA, BMI1/2, LZCNT). The build
+          # runs in a manylinux container, so it has to go through cibuildwheel.
+          CIBW_ENVIRONMENT_LINUX: CMAKE_ARGS="-DSIMD_CXX_FLAGS=-march=x86-64-v3"
 
       - uses: actions/upload-artifact@v7
         with:

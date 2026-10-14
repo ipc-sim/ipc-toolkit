@@ -39,14 +39,14 @@ public:
         const Eigen::Vector<double, DIM>& d,
         const VectorMax<double, MAX_SIZE>& x) const;
 
-    /// @brief
-    /// @tparam scalar
-    /// @param direc normalized
-    /// @param v
-    /// @param direc points from v to the other point
-    /// @param neighbors follow counter-clockwise order
-    /// @param params
-    /// @return
+    /// @brief Compute the smooth point term for this vertex.
+    /// @tparam scalar The scalar type.
+    /// @tparam n_verts The compile-time row count of X, or -1 if dynamic.
+    /// @param X Local vertex positions, one per row: this vertex first,
+    ///     followed by its one-ring neighbors in counter-clockwise order.
+    /// @param direc Direction pointing from this vertex to the other point.
+    ///     It is normalized internally, so it need not arrive normalized.
+    /// @return The product of the weight, normal, and tangent terms.
     template <typename scalar, int n_verts = -1>
     scalar smooth_point3_term(
         const Eigen::Matrix<scalar, n_verts, 3>& X,

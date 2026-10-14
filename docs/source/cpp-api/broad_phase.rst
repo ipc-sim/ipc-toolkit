@@ -40,7 +40,18 @@ Sweep and Prune
 Sweep and Tiniest Queue
 -----------------------
 
-.. .. doxygenclass:: ipc::SweepAndTiniestQueueGPU
+Requires CUDA (``IPC_TOOLKIT_WITH_CUDA``).
+
+.. doxygenclass:: ipc::SweepAndTiniestQueue
+    :allow-dot-graphs:
+
+LBVH (CUDA)
+-----------
+
+Requires CUDA (``IPC_TOOLKIT_WITH_CUDA``).
+
+.. doxygenclass:: ipc::cuda::LBVH
+    :allow-dot-graphs:
 
 AABB
 ----

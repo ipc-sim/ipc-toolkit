@@ -82,15 +82,10 @@ if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   endif()
 endif()
 
-if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-  option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
-  option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
-else()
-  # If this is not the top-level project, we don't want to build tests or Python
-  # bindings. This is useful for projects that use IPC Toolkit as a submodule.
-  set(IPC_TOOLKIT_BUILD_TESTS  OFF CACHE BOOL "Build unit-tests"      FORCE)
-  set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings" FORCE)
-endif()
+# If this is not the top-level project, we don't build tests or Python bindings
+# by default. This is useful for projects that use IPC Toolkit as a submodule.
+option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"      ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
 
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                    ON)
@@ -138,7 +133,17 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Verify Options
 ################################################################################
 
-# CUDA support
+# Check for CUDA support
+if (IPC_TOOLKIT_WITH_CUDA)
+  include(CheckLanguage)
+  check_language(CUDA)
+  if (NOT CMAKE_CUDA_COMPILER)
+    message(WARNING "CUDA support requested but no CUDA compiler found. Continuing without CUDA.")
+    set(IPC_TOOLKIT_WITH_CUDA OFF)
+  endif()
+endif()
+
+# Enable CUDA support if requested
 if(IPC_TOOLKIT_WITH_CUDA)
   # If CMAKE_CUDA_ARCHITECTURES was not specified, set it to native.
   if(DEFINED CMAKE_CUDA_ARCHITECTURES)
@@ -165,14 +170,31 @@ endif()
 
 # SIMD support
 if(IPC_TOOLKIT_WITH_SIMD)
-  # Figure out SIMD support
-  message(STATUS "Testing SIMD capabilities...")
-  find_package(SIMD)
-  if (SIMD_CXX_FLAGS)
-    message(STATUS "SIMD support found: ${SIMD_CXX_FLAGS}")
+  if(SIMD_CXX_FLAGS)
+    # The flags were given on the command line, or cached by an earlier
+    # configure, so we use them as they are instead of probing the host. We only
+    # check that the compiler accepts them. If they are rejected we stop with an
+    # error instead of falling back to a build without SIMD, because a silent
+    # fallback would let a typo in the flags pass as a working non-SIMD build.
+    include(ipc_toolkit_filter_flags)
+    ipc_toolkit_check_cxx_flags(SIMD_CXX_FLAGS SIMD_CXX_FLAGS_ARE_VALID)
+    if(NOT SIMD_CXX_FLAGS_ARE_VALID)
+      message(FATAL_ERROR "SIMD_CXX_FLAGS=\"${SIMD_CXX_FLAGS}\" is not accepted by the compiler. Unset it (-USIMD_CXX_FLAGS) to auto-detect the flags, or pass -DIPC_TOOLKIT_WITH_SIMD=OFF to build without SIMD.")
+    endif()
+    message(STATUS "Using SIMD flags: ${SIMD_CXX_FLAGS}")
   else()
-    message(WARNING "SIMD support requested but not found. Continuing without SIMD.")
-    set(IPC_TOOLKIT_WITH_SIMD OFF CACHE BOOL "Enable SIMD" FORCE)
+    # Figure out SIMD support
+    message(STATUS "Testing SIMD capabilities...")
+    find_package(SIMD)
+    if (SIMD_CXX_FLAGS)
+      message(STATUS "SIMD support found: ${SIMD_CXX_FLAGS}")
+    else()
+      message(WARNING "SIMD support requested but not found. Continuing without SIMD.")
+      # We shadow the cache entry with a normal variable instead of forcing the
+      # cache off. Forcing would overwrite the user's request, and the option
+      # would stay OFF in this build directory even after SIMD becomes available.
+      set(IPC_TOOLKIT_WITH_SIMD OFF)
+    endif()
   endif()
 endif()
 
@@ -344,14 +366,13 @@ if(IPC_TOOLKIT_WITH_SIMD)
     # compiled twice and the nvcc pass owns the float and double
     # instantiations (see ipc_toolkit_shared_device_sources.cmake), so without
     # this they would be the only scalar code in the library built without
-    # SIMD support. Hand the flags to the host compiler nvcc drives rather
-    # than to nvcc itself.
-    set(SIMD_CUDA_HOST_FLAGS "")
-    foreach(simd_flag IN LISTS SIMD_CXX_FLAGS)
-      list(APPEND SIMD_CUDA_HOST_FLAGS "-Xcompiler=${simd_flag}")
-    endforeach()
-    target_compile_options(ipc_toolkit PUBLIC
-      "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:${SIMD_CUDA_HOST_FLAGS}>")
+    # SIMD support. ipc_toolkit_filter_nvcc_flags() hands the flags to the
+    # host compiler nvcc drives (via -Xcompiler) rather than to nvcc itself,
+    # keeping only those that pass compiles with.
+    include(ipc_toolkit_filter_flags)
+    set(SIMD_CUDA_HOST_FLAGS ${SIMD_CXX_FLAGS})
+    ipc_toolkit_filter_nvcc_flags(SIMD_CUDA_HOST_FLAGS)
+    target_compile_options(ipc_toolkit PUBLIC ${SIMD_CUDA_HOST_FLAGS})
   endif()
 
   # Link against cross-platform xsimd library

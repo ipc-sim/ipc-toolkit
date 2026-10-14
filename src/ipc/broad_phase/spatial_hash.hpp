@@ -58,9 +58,10 @@ public: // constructor
     }
 
     /// @brief Build the spatial hash from vertex boxes.
-    /// @param vertex_boxes AABB boxes for each vertex.
+    /// @param _vertex_boxes AABB boxes for each vertex.
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
+    /// @param _dim Dimension of the simulation (2D or 3D)
     void build(
         const AABBs& _vertex_boxes,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
@@ -101,12 +102,11 @@ public: // constructor
         double inflation_radius,
         double voxel_size);
 
-    /// @brief Build the spatial hash for static collision detection.
-
     /// @brief Build the spatial hash from vertex boxes.
     /// @param vertex_boxes AABB boxes for each vertex.
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
+    /// @param dim Dimension of the simulation (2D or 3D)
     /// @param voxel_size Size of the voxels used in the spatial hash.
     void build(
         const AABBs& vertex_boxes,

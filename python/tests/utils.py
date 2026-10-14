@@ -45,6 +45,8 @@ def broad_phases():
     yield ipctk.SpatialHash()
     yield ipctk.LBVH()
     yield ipctk.SweepAndPrune()
+    if hasattr(ipctk.cuda, "LBVH"):  # only in CUDA builds
+        yield ipctk.cuda.LBVH()
 
 
 def finite_jacobian(x, f, h=1e-8):
