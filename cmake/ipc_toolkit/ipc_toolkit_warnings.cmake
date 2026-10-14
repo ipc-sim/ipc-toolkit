@@ -245,4 +245,13 @@ if(IPC_TOOLKIT_WITH_CUDA)
   target_compile_options(ipc_toolkit_warnings INTERFACE
     "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:SHELL:-Werror all-warnings>"
     "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:SHELL:-Werror cross-execution-space-call>")
+
+  # With an MSVC host, the front end flags two warnings inside spdlog's bundled
+  # fmt (#128 "loop is not reachable" and #2417 "constexpr constructor calls
+  # non-constexpr function"), even though it is an -isystem include. Under
+  # all-warnings these fail the build, and we can't fix third-party code, so we
+  # suppress them for MSVC hosts only. This is safe because the Linux build
+  # still turns both into errors, so our own code stays covered.
+  target_compile_options(ipc_toolkit_warnings INTERFACE
+    "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>,$<CXX_COMPILER_ID:MSVC>>:-diag-suppress=128,2417>")
 endif()
