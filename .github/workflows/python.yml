@@ -64,41 +64,22 @@ jobs:
           choco install ccache
           "CACHE_PATH=${env:LOCALAPPDATA}\ccache" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      # FindSIMD compiles with -march=native, which bakes the building runner's
-      # ISA into every cached object file, but ccache hashes the flag string and
-      # not the CPU it expands to. Without a CPU component in the cache key,
-      # objects built on one runner model get restored onto another, and a
-      # translation unit compiled fresh on the new CPU then disagrees with the
-      # cached ones about xsimd::default_arch. Key the cache on the CPU so it
-      # only restores onto matching hardware.
-      - name: CPU fingerprint (Linux/macOS)
-        if: runner.os != 'Windows'
+      # On Linux, explicitly build for x86-64-v3 instead of -march=native. This
+      # avoids issues with ccache restoring from a runner with a different ISA.
+      - name: Check x86-64-v3 support (Linux)
+        if: runner.os == 'Linux'
         run: |
-          if [ "$RUNNER_OS" = "Linux" ]; then
-            CPU=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)
-            KEY=$(printf '%s' "$CPU" | sha256sum | cut -c1-12)
-          else
-            CPU=$(sysctl -n machdep.cpu.brand_string)
-            KEY=$(printf '%s' "$CPU" | shasum -a 256 | cut -c1-12)
-          fi
-          echo "CPU: $CPU"
-          echo "CPU_KEY=$KEY" >> "$GITHUB_ENV"
-
-      - name: CPU fingerprint (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1 -ExpandProperty Name
-          Write-Host "CPU: $cpu"
-          $stream = [IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes($cpu))
-          $key = (Get-FileHash -InputStream $stream -Algorithm SHA256).Hash.Substring(0, 12)
-          "CPU_KEY=$key" | Out-File -FilePath $env:GITHUB_ENV -Append
+          for f in avx2 bmi1 bmi2 f16c fma abm movbe xsave; do
+            grep -qw "$f" /proc/cpuinfo || { echo "::error::Runner CPU lacks $f, which x86-64-v3 requires"; exit 1; }
+          done
+          echo "CPU: $(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)"
 
       - name: Cache Build
         id: cache-build
         uses: actions/cache@v5
         with:
           path: ${{ env.CACHE_PATH }}
-          key: ${{ runner.os }}-Python${{ matrix.python-version }}-${{ env.CPU_KEY }}-cache
+          key: ${{ runner.os }}-Python${{ matrix.python-version }}-cache
 
       - name: Prepare Ccache
         run: |
@@ -108,7 +89,7 @@ jobs:
 
       - name: Build and Install
         env:
-          IPCTK_WITH_SIMD: ${{ runner.os == 'Linux' && '0' || '1' }}
+          CMAKE_ARGS: ${{ runner.os == 'Linux' && '-DSIMD_CXX_FLAGS=-march=x86-64-v3' || '' }}
         run: |
           pip install --verbose . && ccache --show-stats
 

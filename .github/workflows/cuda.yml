@@ -58,25 +58,24 @@ jobs:
         uses: SimenB/github-actions-cpu-cores@v2
         id: cpu-cores
 
-      # FindSIMD compiles with -march=native, which bakes the building runner's
-      # ISA into every cached object file, but ccache hashes the flag string and
-      # not the CPU it expands to. Without a CPU component in the cache key,
-      # objects built on one runner model get restored onto another, and a
-      # translation unit compiled fresh on the new CPU then disagrees with the
-      # cached ones about xsimd::default_arch. Key the cache on the CPU so it
-      # only restores onto matching hardware.
-      - name: CPU fingerprint
+      # On Linux, explicitly build for x86-64-v3 instead of -march=native. This
+      # avoids issues with ccache restoring from a runner with a different ISA.
+      - name: Check x86-64-v3 support
         run: |
-          CPU=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)
-          echo "CPU: $CPU"
-          echo "CPU_KEY=$(printf '%s' "$CPU" | sha256sum | cut -c1-12)" >> "$GITHUB_ENV"
+          for f in avx2 bmi1 bmi2 f16c fma abm movbe xsave; do
+            grep -qw "$f" /proc/cpuinfo || { echo "::error::Runner CPU lacks $f, which x86-64-v3 requires"; exit 1; }
+          done
+          echo "CPU: $(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)"
 
+      # The CUDA key gets its own prefix because continuous.yml uses the same
+      # <os>-<config> names, and cache entries are immutable. Whichever workflow
+      # saved first would otherwise own the entry for both builds.
       - name: Cache Build
         id: cache-build
         uses: actions/cache@v5
         with:
           path: ${{ env.CACHE_PATH }}
-          key: ${{ runner.os }}-${{ matrix.config }}-${{ env.CPU_KEY }}-cache
+          key: cuda-${{ runner.os }}-${{ matrix.config }}-cache
 
       - name: Prepare ccache
         run: |
@@ -84,12 +83,21 @@ jobs:
           ccache -V && ccache --show-config
           ccache --show-stats && ccache --zero-stats
 
+      # Debug keeps the asserts (NDEBUG stays undefined) and -O0 but drops -g.
+      # Debug info made the Debug ccache about 20x larger than Release, and CI
+      # never reads it: assert and Catch2 messages carry __FILE__ and __LINE__.
+      # The CUDA Debug flags are emptied instead of set to -O0, which nvcc would
+      # also apply to the device code.
       - name: Configure
         run: |
           mkdir -p build
           cd build
           cmake .. \
             -DIPC_TOOLKIT_WITH_CUDA=ON \
+            -DSIMD_CXX_FLAGS=-march=x86-64-v3 \
+            -DCMAKE_C_FLAGS_DEBUG=-O0 \
+            -DCMAKE_CXX_FLAGS_DEBUG=-O0 \
+            -DCMAKE_CUDA_FLAGS_DEBUG= \
             -DCMAKE_CUDA_ARCHITECTURES=75 \
             -DSCALABLE_CCD_CUDA_ARCHITECTURES=75 \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
