@@ -65,10 +65,6 @@ jobs:
           choco install ccache
           "CACHE_PATH=${env:LOCALAPPDATA}\ccache" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Install Ninja
-        if: runner.os == 'Windows'
-        uses: seanmiddleditch/gha-setup-ninja@master
-
       # Install CUDA before msvc-dev-cmd so the toolkit's bin dir lands on PATH
       # before msvc-dev-cmd snapshots PATH into GITHUB_ENV for later steps.
       # (check_language(CUDA) still does not reliably autodetect nvcc on this
@@ -95,6 +91,7 @@ jobs:
       # On Linux, explicitly build for x86-64-v3 instead of -march=native. This
       # avoids issues with ccache restoring from a runner with a different ISA.
       - name: Check x86-64-v3 support
+        if: runner.os == 'Linux'
         run: |
           for f in avx2 bmi1 bmi2 f16c fma abm movbe xsave; do
             grep -qw "$f" /proc/cpuinfo || { echo "::error::Runner CPU lacks $f, which x86-64-v3 requires"; exit 1; }
@@ -112,6 +109,7 @@ jobs:
           key: cuda-${{ runner.os }}-${{ matrix.config }}-cache
 
       - name: Prepare ccache
+        shell: bash
         run: |
           ccache --max-size=1.0G
           ccache -V && ccache --show-config
@@ -139,12 +137,17 @@ jobs:
             -DIPC_TOOLKIT_BUILD_PYTHON=ON \
             -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 
+      # MSVC's default Debug flags include /Zi, which ccache cannot cache, so we
+      # drop it the same way the Linux configure drops -g.
       - name: Configure (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
           cmake -G Ninja ^
             -DIPC_TOOLKIT_WITH_CUDA=ON ^
+            -DCMAKE_C_FLAGS_DEBUG="/Od /Ob0 /RTC1" ^
+            -DCMAKE_CXX_FLAGS_DEBUG="/Od /Ob0 /RTC1" ^
+            -DCMAKE_CUDA_FLAGS_DEBUG= ^
             -DCMAKE_CUDA_ARCHITECTURES=75 ^
             -DSCALABLE_CCD_CUDA_ARCHITECTURES=75 ^
             -DIPC_TOOLKIT_BUILD_TESTS=ON ^
@@ -154,7 +157,11 @@ jobs:
             -B build ^
             -S .
 
+      # Use bash on every runner. Windows' default pwsh reports only the last
+      # native command's exit code, so a failed build followed by a successful
+      # `ccache --show-stats` would pass the step.
       - name: Build
+        shell: bash
         run: |
           cmake --build build -j ${{ steps.cpu-cores.outputs.count }}
           ccache --show-stats
