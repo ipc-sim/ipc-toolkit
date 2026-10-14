@@ -59,7 +59,9 @@ LBVH (CUDA)
 ``ipctk.cuda.LBVH`` is the GPU counterpart of ``ipctk.LBVH`` (C++:
 ``ipc::cuda::LBVH``). The ``ipctk.cuda`` submodule mirrors the C++ ``ipc::cuda``
 namespace; its classes exist only when ``ipctk`` is built with CUDA
-(``IPC_TOOLKIT_WITH_CUDA``), which the documentation build is not.
+(``IPC_TOOLKIT_WITH_CUDA``), which the documentation build is not. The CUDA
+wheels also import on machines without a GPU, where using ``ipctk.cuda.LBVH``
+raises; check ``ipctk.cuda.is_available()`` first.
 
 .. .. autoclass:: ipctk.cuda.LBVH
 ..

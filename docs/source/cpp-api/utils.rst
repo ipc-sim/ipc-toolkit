@@ -7,6 +7,11 @@ Logger
 .. doxygenfunction:: ipc::logger
 .. doxygenfunction:: ipc::set_logger
 
+CUDA Availability
+-----------------
+
+.. doxygenfunction:: ipc::cuda::is_available
+
 Positive Semi-Definite Projection
 ---------------------------------
 
