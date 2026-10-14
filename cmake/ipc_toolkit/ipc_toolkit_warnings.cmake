@@ -9,14 +9,10 @@ endif()
 
 # Flags above don't make sense for MSVC
 if(MSVC)
-  set(IPC_TOOLKIT_WARNING_FLAGS
-    /W4 # High warning level (MSVC equivalent of -Wall -Wextra; /Wall is
-        # unusably noisy, enabling off-by-default warnings like C4711/C4710/
-        # C4514/C4820/C5045)
-    /MP # Multi-processor compilation
-    # Silence /W4 warnings that have no counterpart in our GCC/Clang flag set
-    # (-Wall -Wextra -Wpedantic, with -Wconversion intentionally off), so the
-    # MSVC output matches the other compilers:
+  # Silence /W4 warnings that have no counterpart in our GCC/Clang flag set
+  # (-Wall -Wextra -Wpedantic, with -Wconversion intentionally off), so the
+  # MSVC output matches the other compilers. The CUDA host pass reuses these.
+  set(IPC_TOOLKIT_MSVC_DISABLED_WARNINGS
     /wd4250 # 'inherits via dominance' (benign; from virtual inheritance)
     /wd4244 # conversion, possible loss of data (GCC: -Wconversion, off)
     /wd4267 # size_t -> smaller conversion   (GCC: -Wconversion, off)
@@ -26,6 +22,13 @@ if(MSVC)
             # fires here because the Windows CI builds Release: asserts (and the
             # params they use) are compiled out, and the collision-stencil
             # virtual overrides legitimately ignore some params.
+  )
+  set(IPC_TOOLKIT_WARNING_FLAGS
+    /W4 # High warning level (MSVC equivalent of -Wall -Wextra; /Wall is
+        # unusably noisy, enabling off-by-default warnings like C4711/C4710/
+        # C4514/C4820/C5045)
+    /MP # Multi-processor compilation
+    ${IPC_TOOLKIT_MSVC_DISABLED_WARNINGS}
   )
 else()
   set(IPC_TOOLKIT_WARNING_FLAGS
@@ -226,6 +229,14 @@ if(IPC_TOOLKIT_WITH_CUDA AND NOT MSVC)
   )
   ipc_toolkit_filter_nvcc_flags(IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS)
   target_compile_options(ipc_toolkit_warnings INTERFACE ${IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS})
+elseif(IPC_TOOLKIT_WITH_CUDA)
+  # With an MSVC host, we only forward the disabled warnings. nvcc's
+  # `-Werror all-warnings` (below) also makes the host compiler treat its
+  # warnings as errors, so without these the host pass fails on things the C++
+  # build already silences, like C4068 for our `#pragma GCC` directives.
+  set(IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS ${IPC_TOOLKIT_MSVC_DISABLED_WARNINGS})
+  ipc_toolkit_filter_nvcc_flags(IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS)
+  target_compile_options(ipc_toolkit_warnings INTERFACE ${IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS})
 endif()
 
 # The device pass has no -Wall; nvcc's own diagnostics are few, and these are
@@ -245,4 +256,13 @@ if(IPC_TOOLKIT_WITH_CUDA)
   target_compile_options(ipc_toolkit_warnings INTERFACE
     "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:SHELL:-Werror all-warnings>"
     "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:SHELL:-Werror cross-execution-space-call>")
+
+  # With an MSVC host, the front end flags two warnings inside spdlog's bundled
+  # fmt (#128 "loop is not reachable" and #2417 "constexpr constructor calls
+  # non-constexpr function"), even though it is an -isystem include. Under
+  # all-warnings these fail the build, and we can't fix third-party code, so we
+  # suppress them for MSVC hosts only. This is safe because the Linux build
+  # still turns both into errors, so our own code stays covered.
+  target_compile_options(ipc_toolkit_warnings INTERFACE
+    "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>,$<CXX_COMPILER_ID:MSVC>>:-diag-suppress=128,2417>")
 endif()
