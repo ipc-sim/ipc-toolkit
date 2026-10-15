@@ -388,9 +388,9 @@ namespace {
                     "{} has size {} but expected {}", name, areas.size(),
                     expected_size));
         }
-        if (!areas.allFinite() || (areas.array() <= 0).any()) {
+        if (!areas.allFinite() || (areas.array() < 0).any()) {
             throw std::invalid_argument(
-                fmt::format("{} must be finite and positive", name));
+                fmt::format("{} must be finite and non-negative", name));
         }
     }
 } // namespace

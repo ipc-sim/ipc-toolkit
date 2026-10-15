@@ -291,7 +291,7 @@ public:
     /// @brief Override the vertex areas used as collision weights.
     /// @note Use this when the quadrature weight of a vertex is not its barycentric area (e.g., axisymmetric models where each vertex stands for a ring of contact). Collisions built before this call keep their old weights.
     /// @note Custom areas do not support shape derivatives: this throws if the area Jacobians were already initialized, and init_area_jacobians() throws afterwards.
-    /// @param vertex_areas New vertex areas (size num_vertices()). Must be finite and positive.
+    /// @param vertex_areas New vertex areas (size num_vertices()). Must be finite and non-negative (zero is allowed, e.g., for axisymmetric primitives on the symmetry axis).
     void set_vertex_areas(Eigen::ConstRef<Eigen::VectorXd> vertex_areas);
 
     /// @brief Get the gradient of the barycentric area of a vertex wrt the rest positions of all points.
@@ -317,7 +317,7 @@ public:
 
     /// @brief Override the edge areas used as collision weights.
     /// @note See set_vertex_areas() for the caveats on stale collisions and shape derivatives.
-    /// @param edge_areas New edge areas (size num_edges()). Must be finite and positive.
+    /// @param edge_areas New edge areas (size num_edges()). Must be finite and non-negative (zero is allowed, e.g., for axisymmetric primitives on the symmetry axis).
     void set_edge_areas(Eigen::ConstRef<Eigen::VectorXd> edge_areas);
 
     /// @brief Get the gradient of the barycentric area of an edge wrt the rest positions of all points.

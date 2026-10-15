@@ -202,7 +202,7 @@ def test_invalid_custom_areas_are_rejected():
     mesh = CollisionMesh(V, E)
     original = mesh.vertex_areas.copy()
 
-    for bad in [np.ones(3), np.zeros(4), np.full(4, np.nan)]:
+    for bad in [np.ones(3), np.full(4, -1.0), np.full(4, np.nan), np.full(4, np.inf)]:
         try:
             mesh.vertex_areas = bad
             assert False
@@ -248,3 +248,18 @@ def test_area_getters_are_read_only_views():
         assert False
     except ValueError:
         pass
+
+
+def test_zero_custom_areas_drop_their_collisions():
+    # E.g., axisymmetric primitives on the symmetry axis have no ring area.
+    V, E = _two_segments()
+    mesh = CollisionMesh(V, E)
+    mesh.vertex_areas = np.zeros(4)
+    mesh.edge_areas = np.zeros(2)
+
+    collisions = NormalCollisions()
+    collisions.use_area_weighting = True
+    collisions.build(mesh, V, dhat=0.2)
+
+    # Zero-weight collisions are dropped, so no contact force is produced.
+    assert len(collisions) == 0
