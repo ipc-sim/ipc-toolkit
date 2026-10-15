@@ -33,9 +33,11 @@ PYBIND11_MODULE(ipctk, m)
     define_voxel_size_heuristic(m);
 
     // GPU implementations, mirroring the C++ ipc::cuda namespace. The submodule
-    // always exists; its classes are defined only in CUDA builds.
+    // always exists, as does is_available(); its classes are defined only in
+    // CUDA builds.
     py::module_ cuda = m.def_submodule(
         "cuda", "GPU (CUDA) implementations; populated only in CUDA builds.");
+    define_cuda_is_available(cuda);
     define_cuda_lbvh(cuda);
 
     // candidates
