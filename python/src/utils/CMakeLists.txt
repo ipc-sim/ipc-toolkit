@@ -1,4 +1,5 @@
 set(SOURCES
+  cuda_is_available.cpp
   eigen_ext.cpp
   hessian_assembler.cpp
   logger.cpp

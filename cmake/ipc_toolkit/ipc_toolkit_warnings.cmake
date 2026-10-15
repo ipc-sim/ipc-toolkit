@@ -263,6 +263,12 @@ if(IPC_TOOLKIT_WITH_CUDA)
   # all-warnings these fail the build, and we can't fix third-party code, so we
   # suppress them for MSVC hosts only. This is safe because the Linux build
   # still turns both into errors, so our own code stays covered.
+  #
+  # CUDA 12.x's libcu++ <cmath> also trips #221 ("floating-point value does not
+  # fit in required floating-point type") because it uses INFINITY, which the
+  # Windows UCRT defines as an overflowing constant, (float)(1e+300 * 1e+300).
+  # CUDA 13 no longer does, but the Python wheels build with 12.8 for its
+  # older driver requirement, so we suppress #221 alongside the others.
   target_compile_options(ipc_toolkit_warnings INTERFACE
-    "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>,$<CXX_COMPILER_ID:MSVC>>:-diag-suppress=128,2417>")
+    "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>,$<CXX_COMPILER_ID:MSVC>>:-diag-suppress=128,221,2417>")
 endif()
