@@ -12,6 +12,11 @@ on:
       - 'python/**'
       - 'CMakeLists.txt'
 
+# The job reads the repository and nothing else. The simulator's action uses
+# no token or secrets, and installs packages only from Ubuntu and NVIDIA.
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
@@ -22,30 +27,80 @@ env:
 
 jobs:
   Build:
-    name: CUDA (${{ matrix.config }})
-    runs-on: ubuntu-latest
+    name: ${{ matrix.name }} CUDA (${{ matrix.config }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        config:
-          - Debug
-          - Release
+        os: [ubuntu-latest, windows-latest]
+        config: [Debug, Release]
+        exclude:
+          # The Windows toolkit install can't run in parallel jobs, so Windows
+          # only builds Debug.
+          - os: windows-latest
+            config: Release
+        include:
+          - os: ubuntu-latest
+            name: Linux
+          - os: windows-latest
+            name: Windows
+            # Windows splits the toolkit into finer components than Linux and an
+            # invalid component name aborts the whole install, so name exactly
+            # what the build needs (per the Windows installer subpackage list):
+            #   nvcc   - compiler front-end (nvcc, cudafe++, ptxas, nvlink)
+            #   nvvm   - device compiler backend (cicc); nvcc alone omits it
+            #   cudart - cuda_runtime.h + runtime library
+            #   crt    - crt/host_config.h
+            #   thrust - Thrust, and the CUB/libcudacxx headers it bundles
+            # ("cccl"/"cub" are not valid Windows installer subpackage names.)
+            cuda_subpackages: '["nvcc", "nvvm", "cudart", "crt", "thrust"]'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 10
 
-      - name: Dependencies
+      - name: Dependencies (Linux)
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get install ccache
           echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
 
-      - name: cuda-toolkit
-        uses: Jimver/cuda-toolkit@v0.2.30
+      - name: Dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install ccache
+          "CACHE_PATH=${env:LOCALAPPDATA}\ccache" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      # CUDA and a simulated GPU: the runners have none, so PantheonSim runs the
+      # tests' kernels on the CPU. It checks results, not performance. It only
+      # supports Linux, so Windows installs the toolkit alone and only builds.
+      - name: Install CUDA Toolkit and simulated GPU (Linux)
+        if: runner.os == 'Linux'
+        uses: pantheongpu/setup-pantheonsim@052a0ac31bf6ec72a471d51aae29b7cbd090c6bf # v0.1.1
         with:
-          sub-packages: '["nvcc"]'
+          gpu: nvidia/t4
+          cuda-toolkit: '12.8'
+
+      # Install CUDA before msvc-dev-cmd so the toolkit's bin dir lands on PATH
+      # before msvc-dev-cmd snapshots PATH into GITHUB_ENV for later steps.
+      # (check_language(CUDA) still does not reliably autodetect nvcc on this
+      # runner even with it on PATH, so the Windows configure also passes
+      # -DCMAKE_CUDA_COMPILER explicitly.) We use CUDA 13 here and 12 on Linux,
+      # so CI compiles against both CCCL 2 and CCCL 3.
+      - name: Install CUDA Toolkit (Windows)
+        if: runner.os == 'Windows'
+        uses: Jimver/cuda-toolkit@v0.2.35
+        with:
+          cuda: '13.2.0'
+          sub-packages: ${{ matrix.cuda_subpackages }}
           method: 'network'
+
+      - name: Setup MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
       - name: Get number of CPU cores
         uses: SimenB/github-actions-cpu-cores@v2
@@ -54,6 +109,7 @@ jobs:
       # On Linux, explicitly build for x86-64-v3 instead of -march=native. This
       # avoids issues with ccache restoring from a runner with a different ISA.
       - name: Check x86-64-v3 support
+        if: runner.os == 'Linux'
         run: |
           for f in avx2 bmi1 bmi2 f16c fma abm movbe xsave; do
             grep -qw "$f" /proc/cpuinfo || { echo "::error::Runner CPU lacks $f, which x86-64-v3 requires"; exit 1; }
@@ -71,6 +127,7 @@ jobs:
           key: cuda-${{ runner.os }}-${{ matrix.config }}-cache
 
       - name: Prepare ccache
+        shell: bash
         run: |
           ccache --max-size=1.0G
           ccache -V && ccache --show-config
@@ -81,7 +138,8 @@ jobs:
       # never reads it: assert and Catch2 messages carry __FILE__ and __LINE__.
       # The CUDA Debug flags are emptied instead of set to -O0, which nvcc would
       # also apply to the device code.
-      - name: Configure
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
         run: |
           mkdir -p build
           cd build
@@ -95,9 +153,40 @@ jobs:
             -DSCALABLE_CCD_CUDA_ARCHITECTURES=75 \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
             -DIPC_TOOLKIT_BUILD_PYTHON=ON \
-            -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+            -DCMAKE_CUDA_RUNTIME_LIBRARY=Shared
 
+      # MSVC's default Debug flags include /Zi, which ccache cannot cache, so we
+      # drop it the same way the Linux configure drops -g.
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          cmake -G Ninja ^
+            -DIPC_TOOLKIT_WITH_CUDA=ON ^
+            -DCMAKE_C_FLAGS_DEBUG="/Od /Ob0 /RTC1" ^
+            -DCMAKE_CXX_FLAGS_DEBUG="/Od /Ob0 /RTC1" ^
+            -DCMAKE_CUDA_FLAGS_DEBUG= ^
+            -DCMAKE_CUDA_ARCHITECTURES=75 ^
+            -DSCALABLE_CCD_CUDA_ARCHITECTURES=75 ^
+            -DIPC_TOOLKIT_BUILD_TESTS=ON ^
+            -DIPC_TOOLKIT_BUILD_PYTHON=ON ^
+            -DCMAKE_CUDA_COMPILER="%CUDA_PATH%\bin\nvcc.exe" ^
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
+            -B build ^
+            -S .
+
+      # Use bash on every runner. Windows' default pwsh reports only the last
+      # native command's exit code, so a failed build followed by a successful
+      # `ccache --show-stats` would pass the step.
       - name: Build
+        shell: bash
         run: |
           cmake --build build -j ${{ steps.cpu-cores.outputs.count }}
           ccache --show-stats
+
+      # The GPU unit tests, minus the CCD and STQ ones on the cloth and puffer
+      # ball meshes, which take several minutes each on a simulated GPU.
+      - name: Tests
+        if: runner.os == 'Linux'
+        run: build/tests/ipc_toolkit_tests "[gpu]~[ccd]~[.],[cuda]~[stq]~[.]"
