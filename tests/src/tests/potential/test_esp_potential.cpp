@@ -45,7 +45,9 @@ struct TriMeshData {
 TriMeshData load_triangle_mesh(const std::string& path)
 {
     TriMeshData data;
-    igl::read_triangle_mesh(path, data.V, data.F);
+    // Fail loudly if the mesh is missing (e.g., an outdated test-data
+    // checkout) instead of running the tests on an empty mesh.
+    REQUIRE(igl::read_triangle_mesh(path, data.V, data.F));
     igl::edges(data.F, data.E);
     data.mesh = CollisionMesh(data.V, data.E, data.F);
     return data;
@@ -54,8 +56,7 @@ TriMeshData load_triangle_mesh(const std::string& path)
 TriMeshData load_wrapped_sphere()
 {
     return load_triangle_mesh(
-        (tests::DATA_DIR / "../src/tests/potential/wrapped_sphere.obj")
-            .string());
+        (tests::DATA_DIR / "wrapped_sphere.obj").string());
 }
 
 /// Smallest and largest eigenvalues of a symmetric sparse matrix. Only the
@@ -428,8 +429,8 @@ TEST_CASE(
     "Convergent Quadrature Zero on Sphere",
     "[esp_potential], [esp_potential_3d]")
 {
-    auto [V, E, F, mesh] = load_triangle_mesh(
-        (tests::DATA_DIR / "../src/tests/potential/sphere.obj").string());
+    auto [V, E, F, mesh] =
+        load_triangle_mesh((tests::DATA_DIR / "sphere.obj").string());
 
     const double dhat = 0.2;
     const double dbar_factor = GENERATE(1.0, 0.9);
