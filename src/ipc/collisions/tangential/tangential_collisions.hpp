@@ -115,6 +115,9 @@ public:
     ///        weights). Unlike ESPPotential with use_near_far = true, near and
     ///        far parts are not normalized separately. 3D only.
     /// @param blend_mu Function to blend vertex-based coefficients of friction. Defaults to average.
+    /// @throws std::invalid_argument if params' quadrature differs from the
+    ///         one collisions were built with (see
+    ///         ESPCollisions::check_quadrature()).
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,

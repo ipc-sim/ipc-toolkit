@@ -21,6 +21,7 @@ public:
     /// @param vertices Vertices of the collision mesh.
     /// @param params ESP parameters.
     /// @param broad_phase Broad-phase method to use (default if nullptr).
+    /// @throws std::invalid_argument if params.quad_order < 1 in 2D.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
@@ -33,6 +34,7 @@ public:
     /// @param mesh The collision mesh.
     /// @param vertices Vertices of the collision mesh.
     /// @param params ESP parameters.
+    /// @throws std::invalid_argument if params.quad_order < 1 in 2D.
     void build(
         const Candidates& _candidates,
         const CollisionMesh& mesh,
@@ -68,6 +70,20 @@ public:
     /// @brief Number of contact candidates
     int n_candidates() const { return m_candidates.size(); }
 
+    /// @brief Check that params use the quadrature this set was built with.
+    ///
+    /// The quadrature collision sets hold one entry per quadrature point of
+    /// the rule used in build(): the Gauss-Lobatto edge rule of order
+    /// params.quad_order in 2D, or params.quad_rule() in 3D. ESPPotential and
+    /// the ESP friction build evaluate those entries with their own
+    /// parameters, so a different rule would pair the wrong points with the
+    /// wrong weights or read past the stored entries. A set that was never
+    /// built (or was cleared) holds no entries and accepts any parameters.
+    /// @param params Parameters about to be used with this set.
+    /// @throws std::invalid_argument if params' quadrature differs from the
+    ///         one used in build().
+    void check_quadrature(const ESPParameters& params) const;
+
 public:
     /// @brief Collision candidates
     Candidates m_candidates;
@@ -86,5 +102,12 @@ public:
 
 private:
     std::unique_ptr<Maps> m_maps;
+
+    /// @brief Mesh dimension of the last build(), or 0 if never built.
+    int m_dim = 0;
+    /// @brief Gauss-Lobatto edge quadrature order of the last 2D build().
+    int m_quad_order = 0;
+    /// @brief Face quadrature rule of the last 3D build().
+    FaceQuadRule m_face_quad_rule;
 };
 } // namespace ipc

@@ -28,6 +28,9 @@ void TangentialCollisions::build(
 {
     assert(mu_s.size() == vertices.rows());
     assert(mu_k.size() == vertices.rows());
+    // The quadrature loops below index params' rule by the collision sets'
+    // per-point entries, so the two must come from the same rule.
+    collisions.check_quadrature(params);
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();

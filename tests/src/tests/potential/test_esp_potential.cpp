@@ -888,6 +888,99 @@ TEST_CASE("ESP parameters dbar_factor range", "[esp_potential]")
     CHECK_THROWS_AS(ESPParameters(0.1, std::nan("")), std::invalid_argument);
 }
 
+TEST_CASE("ESP parameters reject an invalid dhat", "[esp_potential]")
+{
+    // Zero dhat would silently disable contact, and a negative or non-finite
+    // one would give the broad phase a negative or NaN inflation radius.
+    const double dhat = GENERATE(
+        0.0, -0.1, std::nan(""), std::numeric_limits<double>::infinity());
+    CAPTURE(dhat);
+    CHECK_THROWS_AS(ESPParameters(dhat), std::invalid_argument);
+}
+
+TEST_CASE("ESP parameters reject a negative quad_order", "[esp_potential]")
+{
+    // 3D ignores quad_order, so zero is accepted here; 2D builds require at
+    // least 1 (see the 2D quadrature mismatch test).
+    CHECK_NOTHROW(ESPParameters(0.1, 0.2, 0));
+    CHECK_THROWS_AS(ESPParameters(0.1, 0.2, -1), std::invalid_argument);
+}
+
+TEST_CASE(
+    "ESP 2D evaluation requires the build's quadrature order",
+    "[esp_potential], [esp_potential_2d]")
+{
+    // Two parallel segments 0.05 apart.
+    Eigen::MatrixXd V(4, 2);
+    V << -1, 0, 1, 0, -1, 0.05, 1, 0.05;
+    Eigen::MatrixXi E(2, 2);
+    E << 0, 1, 2, 3;
+    const CollisionMesh mesh = make_2d_collision_mesh(V, E);
+
+    const ESPParameters params(0.1, 1.0, /*quad_order=*/2);
+    ESPCollisions collisions;
+    collisions.build(mesh, V, params);
+    REQUIRE(!collisions.empty());
+    CHECK(ESPPotential(params)(collisions, mesh, V) > 0);
+
+    // A different order has a different number of points per edge than the
+    // collision sets store.
+    const int other_order = GENERATE(1, 3);
+    CAPTURE(other_order);
+    const ESPPotential other(ESPParameters(0.1, 1.0, other_order));
+    CHECK_THROWS_AS(other(collisions, mesh, V), std::invalid_argument);
+    CHECK_THROWS_AS(other.gradient(collisions, mesh, V), std::invalid_argument);
+    CHECK_THROWS_AS(other.hessian(collisions, mesh, V), std::invalid_argument);
+
+    // 2D edge quadrature needs at least one point per edge.
+    CHECK_THROWS_AS(
+        collisions.build(mesh, V, ESPParameters(0.1, 1.0, 0)),
+        std::invalid_argument);
+}
+
+TEST_CASE(
+    "ESP 3D evaluation requires the build's face quadrature rule",
+    "[esp_potential], [esp_potential_3d]")
+{
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    REQUIRE(tests::load_mesh("two-cubes-close.ply", V, E, F));
+    const CollisionMesh mesh(V, E, F);
+
+    ESPParameters params(0.1, 1.0);
+    params.set_quad_rule(make_face_quad_rule("edge-midpoints"));
+    ESPCollisions collisions;
+    collisions.build(mesh, V, params);
+    REQUIRE(!collisions.empty());
+    CHECK(ESPPotential(params)(collisions, mesh, V) > 0);
+
+    // An empty rule is what an ESPPotential constructed before
+    // set_quad_rule() holds, since it copies the parameters. The other rules
+    // have fewer points, more points, or the same points with other weights.
+    const std::string other_rule =
+        GENERATE("empty", "centroid", "vertices+centroid", "reweighted");
+    CAPTURE(other_rule);
+    ESPParameters other_params(0.1, 1.0);
+    if (other_rule == "centroid") {
+        other_params.set_quad_rule({ { { { 1. / 3, 1. / 3, 1. / 3 } }, 1. } });
+    } else if (other_rule == "vertices+centroid") {
+        other_params.set_quad_rule(make_face_quad_rule(other_rule));
+    } else if (other_rule == "reweighted") {
+        FaceQuadRule rule = make_face_quad_rule("edge-midpoints");
+        rule[0].weight *= 2;
+        other_params.set_quad_rule(rule);
+    }
+
+    const ESPPotential other(other_params);
+    CHECK_THROWS_AS(other(collisions, mesh, V), std::invalid_argument);
+    CHECK_THROWS_AS(other.gradient(collisions, mesh, V), std::invalid_argument);
+    CHECK_THROWS_AS(other.hessian(collisions, mesh, V), std::invalid_argument);
+
+    // Clearing the set forgets the build's rule along with its collisions.
+    collisions.clear();
+    CHECK(other(collisions, mesh, V) == 0);
+}
+
 TEST_CASE("ESP face quadrature rule validation", "[esp_potential]")
 {
     ESPParameters params(0.1);

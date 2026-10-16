@@ -264,6 +264,9 @@ void define_esp_potential(py::module& m)
                 quad_order: Gauss-Lobatto edge quadrature order (2D).
                 area_weights: Whether to weight the quadrature by area.
                 integration_type: Which obstacle primitives to integrate.
+
+            Raises:
+                ValueError: If dhat is not positive and finite, dbar_factor is not in [0, 2], or quad_order is negative.
             )ipc_Qu8mg5v7",
             py::arg("dhat"), py::arg("dbar_factor") = 0.2,
             py::arg("quad_order") = 1, py::arg("area_weights") = true,

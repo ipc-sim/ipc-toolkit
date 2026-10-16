@@ -55,6 +55,7 @@ double ESPPotential::operator()(
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
     assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
+    collisions.check_quadrature(m_params);
 
     if (collisions.empty()) {
         return 0;
@@ -333,6 +334,7 @@ Eigen::VectorXd ESPPotential::gradient(
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
     assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
+    collisions.check_quadrature(m_params);
 
     if (collisions.empty()) {
         return Eigen::VectorXd::Zero(X.size());
@@ -720,6 +722,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
     const PSDProjectionMethod project_hessian_to_psd) const
 {
     assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
+    collisions.check_quadrature(m_params);
 
     if (collisions.empty()) {
         return Eigen::SparseMatrix<double>(X.size(), X.size());

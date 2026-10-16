@@ -967,6 +967,64 @@ TEST_CASE("ESP friction with zero normal stiffness", "[friction-esp]")
         CHECK(friction_collisions.empty());
     }
 }
+TEST_CASE("ESP friction requires the build's quadrature", "[friction-esp]")
+{
+    SECTION("2D")
+    {
+        const ESPParameters params(0.6, 1., 2);
+        Eigen::MatrixXd V(8, 2);
+        Eigen::MatrixXi E(8, 2), F;
+        V << -1., 1., -1., 0., -.1, 0., -.1, 1., .1, 1., .1, 0., 1., 0., 1., 1.;
+        E << 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4;
+        const CollisionMesh mesh(
+            std::vector<bool>(V.rows(), true),
+            std::vector<bool>(V.rows(), false), V, E, F);
+
+        ESPCollisions collisions;
+        collisions.build(mesh, V, params);
+        REQUIRE(!collisions.empty());
+
+        const Eigen::VectorXd mu = Eigen::VectorXd::Ones(V.rows());
+        TangentialCollisions friction_collisions;
+        CHECK_NOTHROW(
+            friction_collisions.build(mesh, V, collisions, params, 1., mu, mu));
+        CHECK_THROWS_AS(
+            friction_collisions.build(
+                mesh, V, collisions, ESPParameters(0.6, 1., 3), 1., mu, mu),
+            std::invalid_argument);
+    }
+
+    SECTION("3D")
+    {
+        const double dhat = 0.1;
+        Eigen::MatrixXd X;
+        Eigen::MatrixXi E, F;
+        REQUIRE(tests::load_mesh("two-cubes-close.ply", X, E, F));
+        const CollisionMesh mesh(X, E, F);
+        ESPParameters params(dhat, 1.);
+        params.set_quad_rule(
+            {
+                { { { 0., .5, .5 } }, 1. / 3 },
+                { { { .5, 0., .5 } }, 1. / 3 },
+                { { { .5, .5, 0. } }, 1. / 3 },
+            });
+
+        ESPCollisions collisions;
+        collisions.build(mesh, X, params);
+        REQUIRE(!collisions.empty());
+
+        const Eigen::VectorXd mu = Eigen::VectorXd::Ones(X.rows());
+        TangentialCollisions friction_collisions;
+        CHECK_NOTHROW(
+            friction_collisions.build(mesh, X, collisions, params, 1., mu, mu));
+        // Freshly constructed parameters have no face quadrature rule.
+        CHECK_THROWS_AS(
+            friction_collisions.build(
+                mesh, X, collisions, ESPParameters(dhat, 1.), 1., mu, mu),
+            std::invalid_argument);
+    }
+}
+
 TEST_CASE(
     "Smooth friction force no_mu and no_contact_force_multiplier",
     "[friction-smooth][force][no-mu]")

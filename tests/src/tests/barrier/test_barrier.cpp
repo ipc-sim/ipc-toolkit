@@ -14,6 +14,7 @@
 #include <igl/edges.h>
 
 #include <cmath>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -399,6 +400,18 @@ TEST_CASE("point term normal derivatives", "[deriv]")
 
         CHECK((y_hess - fhess).norm() <= 1e-7 * fhess.norm());
     }
+}
+
+TEST_CASE("Inverse-power barrier requires a positive power", "[barrier]")
+{
+    CHECK_NOTHROW(InversePowerBarrier(0.5));
+
+    // p = 0 would stay bounded at contact, p < 0 would attract, and a
+    // non-finite power would poison every evaluation.
+    const double power = GENERATE(
+        0.0, -1.0, std::nan(""), std::numeric_limits<double>::infinity());
+    CAPTURE(power);
+    CHECK_THROWS_AS(InversePowerBarrier(power), std::invalid_argument);
 }
 
 TEST_CASE("Barrier derivatives", "[barrier]")

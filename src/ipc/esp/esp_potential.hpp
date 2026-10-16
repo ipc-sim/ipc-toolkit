@@ -27,6 +27,9 @@ public:
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
     /// @returns The potential for a set of collisions.
+    /// @throws std::invalid_argument if the potential's quadrature differs
+    ///         from the one collisions were built with (see
+    ///         ESPCollisions::check_quadrature()).
     double operator()(
         const ESPCollisions& collisions,
         const CollisionMesh& mesh,
@@ -37,6 +40,9 @@ public:
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
     /// @returns The gradient of the potential w.r.t. X. This will have a size of |X|.
+    /// @throws std::invalid_argument if the potential's quadrature differs
+    ///         from the one collisions were built with (see
+    ///         ESPCollisions::check_quadrature()).
     Eigen::VectorXd gradient(
         const ESPCollisions& collisions,
         const CollisionMesh& mesh,
@@ -51,6 +57,9 @@ public:
     ///        projected as a whole, since its weight-derivative terms are
     ///        indefinite; otherwise each stencil's block is projected.
     /// @returns The Hessian of the potential w.r.t. X. This will have a size of |X|×|X|.
+    /// @throws std::invalid_argument if the potential's quadrature differs
+    ///         from the one collisions were built with (see
+    ///         ESPCollisions::check_quadrature()).
     virtual Eigen::SparseMatrix<double> hessian(
         const ESPCollisions& collisions,
         const CollisionMesh& mesh,

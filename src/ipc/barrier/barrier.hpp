@@ -8,6 +8,8 @@
 
 #include <cmath>
 #include <memory>
+#include <stdexcept>
+#include <string>
 
 namespace ipc {
 
@@ -420,7 +422,17 @@ public:
 class InversePowerBarrier : public Barrier {
 public:
     /// @param power The power \f$p > 0\f$ controlling the singularity at d = 0.
-    explicit InversePowerBarrier(const double power) : m_power(power) { }
+    /// @throws std::invalid_argument if power is not positive and finite. With
+    ///         p = 0 the barrier stays bounded at contact (allowing
+    ///         interpenetration), and with p < 0 it attracts instead of repels.
+    explicit InversePowerBarrier(const double power) : m_power(power)
+    {
+        if (!std::isfinite(power) || power <= 0) {
+            throw std::invalid_argument(
+                "InversePowerBarrier power " + std::to_string(power)
+                + " must be positive and finite.");
+        }
+    }
 
     /// @brief b(d) = h(d, d̂) / d^p.
     /// @param d Distance (must be > 0 for a finite value).

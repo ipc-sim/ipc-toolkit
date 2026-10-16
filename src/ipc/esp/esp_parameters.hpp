@@ -30,12 +30,17 @@ struct ESPParameters {
         NO_OBST ///< Skip obstacle sources entirely, may miss collisions!
     };
 
+    /// @param _dhat Activation distance of the barrier; must be positive and
+    ///        finite.
     /// @param _dbar_factor Near/far split parameter dbar / dhat, in
     ///        [0, 2]. The far part of the barrier vanishes identically at 2,
     ///        so the split tends continuously to the unsplit potential; the
     ///        edge-edge weights use the support min(dbar, dhat) (ee_support).
     ///        0 disables edge-edge contact.
-    /// @throws std::invalid_argument if _dbar_factor is not in [0, 2].
+    /// @param _quad_order Gauss-Lobatto edge quadrature order (2D); see
+    ///        quad_order.
+    /// @throws std::invalid_argument if _dhat is not positive and finite, if
+    ///         _dbar_factor is not in [0, 2], or if _quad_order is negative.
     ESPParameters(
         const double _dhat,
         const double _dbar_factor = 0.2,
@@ -49,6 +54,18 @@ struct ESPParameters {
         , integration_type(_integration_type)
         , m_dbar_factor(_dbar_factor)
     {
+        // A zero dhat silently disables contact, and a negative or non-finite
+        // one produces negative or NaN broad-phase inflation radii.
+        if (!std::isfinite(_dhat) || _dhat <= 0) {
+            throw std::invalid_argument(
+                "dhat " + std::to_string(_dhat)
+                + " must be positive and finite.");
+        }
+        if (_quad_order < 0) {
+            throw std::invalid_argument(
+                "quad_order " + std::to_string(_quad_order)
+                + " must be non-negative.");
+        }
         if (std::isnan(_dbar_factor) || _dbar_factor < 0 || _dbar_factor > 2) {
             throw std::invalid_argument(
                 "dbar_factor " + std::to_string(_dbar_factor)
@@ -68,7 +85,8 @@ struct ESPParameters {
     std::shared_ptr<Barrier> barrier =
         std::make_shared<NormalizedClampedLogBarrier<>>();
     /// Gauss-Lobatto edge quadrature order (2D): order n uses n + 1 points and
-    /// must be at least 1 in 2D. Unused in 3D.
+    /// must be at least 1 in 2D (ESPCollisions::build() checks this). Unused
+    /// in 3D, where any non-negative value is accepted.
     const int quad_order;
     /// Weight each face by its area / 9 (3D), or each edge by its area
     /// (CollisionMesh::edge_area(), 2D). If false, every weight is 1.
