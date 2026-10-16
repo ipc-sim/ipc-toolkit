@@ -116,8 +116,6 @@ void define_smooth_potential(py::module_& m)
             &GCPParameters::set_adaptive_dhat_ratio,
             "Ratio of the distance to the interaction set in the rest "
             "configuration used as the per-element adaptive dhat.");
-    // Deprecated name from before the smooth_contact -> gcp rename
-    m.attr("SmoothContactParameters") = m.attr("GCPParameters");
 
     py::class_<GCPPotential>(m, "GCPPotential")
         .def(
@@ -234,8 +232,6 @@ void define_smooth_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             "collision"_a, "x"_a,
             "project_hessian_to_psd"_a = PSDProjectionMethod::NONE);
-    // Deprecated name from before the smooth_contact -> gcp rename
-    m.attr("SmoothContactPotential") = m.attr("GCPPotential");
 }
 
 void define_esp_potential(py::module& m)

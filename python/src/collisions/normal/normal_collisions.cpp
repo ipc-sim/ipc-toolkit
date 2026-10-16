@@ -348,8 +348,6 @@ void define_normal_collisions(py::module_& m)
                 The index of the primitive.
             )ipc_Qu8mg5v7",
             "i"_a);
-    // Deprecated name from before the smooth_contact -> gcp rename
-    m.attr("SmoothCollision2") = m.attr("GCPCollision2");
 
     define_smooth_collision_template<
         GCPCollisionTemplate<Edge2, Point2>, GCPCollision>(
@@ -359,8 +357,6 @@ void define_normal_collisions(py::module_& m)
         m, "Point2Point2Collision");
 
     define_smooth_collisions(m, "GCPCollisions");
-    // Deprecated name from before the smooth_contact -> gcp rename
-    m.attr("SmoothCollisions") = m.attr("GCPCollisions");
 
     define_esp_collisions(m);
 }

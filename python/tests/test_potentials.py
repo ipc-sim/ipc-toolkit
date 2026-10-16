@@ -258,7 +258,8 @@ class TestGCPAliases(unittest.TestCase):
             ("SmoothContactParameters", "GCPParameters"),
             ("SmoothContactPotential", "GCPPotential"),
         ]:
-            self.assertIs(getattr(ipctk, old), getattr(ipctk, new))
+            with self.assertWarns(DeprecationWarning):
+                self.assertIs(getattr(ipctk, old), getattr(ipctk, new))
 
 
 class TestESPPotential(unittest.TestCase):
