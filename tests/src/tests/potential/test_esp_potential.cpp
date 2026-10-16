@@ -249,6 +249,26 @@ inline EeLimitSweepStats ee_limit_fd_sweep(
     return stats;
 }
 
+// Two closed tetrahedra, apex to apex along z and separated by a gap. Each apex
+// has valence 3, so ESP has to resolve the vertex-vertex contact through the
+// vertex-vertex and edge-vertex candidates.
+inline void build_apex_to_apex_tets(
+    const double gap,
+    Eigen::MatrixXd& V,
+    Eigen::MatrixXi& E,
+    Eigen::MatrixXi& F)
+{
+    const double c = std::cos(2 * M_PI / 3), s = std::sin(2 * M_PI / 3);
+    const double r = std::cos(M_PI / 3), q = std::sin(M_PI / 3);
+    V.resize(8, 3);
+    V << 0, 0, gap / 2, 1, 0, 1, c, s, 1, c, -s, 1, //
+        0, 0, -gap / 2, r, q, -1, -1, 0, -1, r, -q, -1;
+    F.resize(8, 3);
+    F << 0, 2, 1, 0, 3, 2, 0, 1, 3, 1, 2, 3, //
+        4, 5, 6, 4, 6, 7, 4, 7, 5, 5, 7, 6;
+    igl::edges(F, E);
+}
+
 } // anonymous namespace
 
 // When the edge-edge closest point approaches the end points of the edge, the
@@ -757,6 +777,7 @@ TEST_CASE(
     REQUIRE(E(0, 0) == E(1, 0));
     Candidates candidates;
     candidates.ee_candidates.emplace_back(0, 1);
+    candidates.has_all_types = true; // We fill every type we need by hand.
     ESPCollisions collisions;
     collisions.build(candidates, mesh, V, params);
     CHECK(collisions.empty());
@@ -767,6 +788,98 @@ TEST_CASE(
     candidates.ee_candidates = { EdgeEdgeCandidate(0, 6) };
     collisions.build(candidates, mesh, V, params);
     CHECK(!collisions.empty());
+}
+
+TEST_CASE(
+    "ESP contact is unaffected by distant codim. primitives",
+    "[esp_potential], [esp_potential_3d]")
+{
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    build_apex_to_apex_tets(0.05, V, E, F);
+    const ESPParameters params(0.1);
+    const ESPPotential potential(params);
+
+    const CollisionMesh clean_mesh(V, E, F);
+    ESPCollisions collisions;
+    collisions.build(clean_mesh, V, params);
+    const double expected_energy = potential(collisions, clean_mesh, V);
+    const Eigen::VectorXd expected_grad =
+        potential.gradient(collisions, clean_mesh, V);
+    REQUIRE(expected_energy > 0);
+
+    // Three stray vertices far from the tets, optionally with two of them
+    // joined into a dangling edge.
+    const bool add_codim_edge = GENERATE(false, true);
+    CAPTURE(add_codim_edge);
+
+    Eigen::MatrixXd V_codim(V.rows() + 3, 3);
+    V_codim << V, 50, 50, 50, -50, -50, -50, -49, -50, -50;
+    Eigen::MatrixXi E_codim = E;
+    if (add_codim_edge) {
+        E_codim.conservativeResize(E.rows() + 1, Eigen::NoChange);
+        E_codim.bottomRows<1>() << 9, 10;
+    }
+    const CollisionMesh mesh(V_codim, E_codim, F);
+    REQUIRE(mesh.num_codim_vertices() > 0);
+    REQUIRE(mesh.num_codim_edges() == (add_codim_edge ? 1 : 0));
+
+    collisions.build(mesh, V_codim, params);
+    CHECK(
+        potential(collisions, mesh, V_codim)
+        == Catch::Approx(expected_energy).epsilon(1e-12));
+
+    const Eigen::VectorXd grad = potential.gradient(collisions, mesh, V_codim);
+    CHECK(
+        (grad.head(expected_grad.size()) - expected_grad).norm()
+        <= 1e-12 * expected_grad.norm());
+    CHECK(grad.tail(grad.size() - expected_grad.size()).isZero());
+}
+
+TEST_CASE(
+    "ESP collisions reject 3D candidates without all types",
+    "[esp_potential], [esp_potential_3d]")
+{
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    build_apex_to_apex_tets(0.05, V, E, F);
+    const CollisionMesh mesh(V, E, F);
+    const ESPParameters params(0.1);
+    const double inflation_radius = params.dhat / 2;
+
+    ESPCollisions collisions;
+
+    SECTION("IPC candidates")
+    {
+        Candidates candidates;
+        candidates.build(mesh, V, inflation_radius);
+        CHECK_THROWS_AS(
+            collisions.build(candidates, mesh, V, params),
+            std::invalid_argument);
+    }
+
+    SECTION("Trajectory candidates")
+    {
+        Candidates candidates;
+        candidates.build(mesh, V, V, inflation_radius);
+        CHECK_THROWS_AS(
+            collisions.build(candidates, mesh, V, params),
+            std::invalid_argument);
+    }
+
+    SECTION("All-types candidates")
+    {
+        Candidates candidates;
+        candidates.build(mesh, V, inflation_radius, nullptr, true);
+        collisions.build(candidates, mesh, V, params);
+
+        ESPCollisions expected;
+        expected.build(mesh, V, params);
+        const ESPPotential potential(params);
+        CHECK(
+            potential(collisions, mesh, V)
+            == Catch::Approx(potential(expected, mesh, V)).epsilon(1e-12));
+    }
 }
 
 TEST_CASE("ESP collision dict index out of range", "[esp_potential]")

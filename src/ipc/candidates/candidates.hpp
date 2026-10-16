@@ -26,7 +26,8 @@ public:
     /// @param inflation_radius Amount to inflate the bounding boxes.
     /// @param broad_phase Broad phase method to use.
     /// @param all_types Also detect the candidate types only ESP needs (see
-    ///                  BroadPhase::detect_collision_candidates).
+    ///                  BroadPhase::detect_collision_candidates). Recorded in
+    ///                  has_all_types.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
@@ -36,6 +37,8 @@ public:
 
     /// @brief Initialize the set of continuous collision detection candidates.
     /// @note Assumes the trajectory is linear.
+    /// @note These candidates never include the ESP-only types, so
+    ///       has_all_types is false afterwards.
     /// @param mesh The surface of the collision mesh.
     /// @param vertices_t0 Surface vertex starting positions (rowwise).
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
@@ -275,6 +278,15 @@ public:
 
     std::vector<EdgeFaceCandidate> ef_candidates;
     std::vector<FaceFaceCandidate> ff_candidates;
+
+    /// @brief Whether these candidates include the types only ESP needs.
+    ///
+    /// In 3D, all_types adds whole-mesh vertex-vertex, edge-vertex, edge-face,
+    /// and face-face candidates. ESPCollisions needs them and NormalCollisions
+    /// would double count them, so both check this flag in 3D and throw on a
+    /// mismatch. build() and clear() set it; if you fill the candidate lists
+    /// by hand, set it to match what you filled.
+    bool has_all_types = false;
 
 private:
     static bool default_is_active(double candidate) { return true; }

@@ -55,6 +55,8 @@ public:
     /// @param vertices Vertices of the collision mesh.
     /// @param dhat The activation distance of the barrier.
     /// @param  dmin  Minimum distance.
+    /// @throws std::invalid_argument In 3D, if the candidates were built with
+    ///         all_types = true (see Candidates::has_all_types).
     void build(
         const Candidates& candidates,
         const CollisionMesh& mesh,

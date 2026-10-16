@@ -10,7 +10,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
 
-#include <stdexcept> // std::out_of_range
+#include <stdexcept> // std::out_of_range, std::invalid_argument
 
 namespace ipc {
 
@@ -41,6 +41,16 @@ void NormalCollisions::build(
 {
     assert(vertices.rows() == mesh.num_vertices());
     IPC_TOOLKIT_PROFILE_BLOCK("NormalCollisions::build(candidates)");
+
+    // In 3D, all_types adds whole-mesh vertex-vertex and edge-vertex
+    // candidates. The edge-edge and face-vertex candidates already produce
+    // those contacts, and the builder merges matching collisions by adding
+    // their weights, so the barrier would be over-counted. We reject these
+    // candidates instead of silently returning the wrong energy.
+    if (mesh.dim() == 3 && candidates.has_all_types) {
+        throw std::invalid_argument(
+            "NormalCollisions::build: 3D candidates must be built with all_types = false");
+    }
 
     clear();
 

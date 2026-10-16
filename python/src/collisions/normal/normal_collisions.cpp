@@ -195,6 +195,9 @@ void define_normal_collisions(py::module_& m)
                 vertices: Vertices of the collision mesh.
                 dhat: The activation distance of the barrier.
                 dmin:  Minimum distance.
+
+            Raises:
+                ValueError: In 3D, if the candidates were built with all_types=True.
             )ipc_Qu8mg5v7",
             "candidates"_a, "mesh"_a, "vertices"_a, "dhat"_a, "dmin"_a = 0)
         .def(

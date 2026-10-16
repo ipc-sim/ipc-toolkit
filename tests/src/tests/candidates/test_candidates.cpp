@@ -1,9 +1,12 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/candidates/edge_face.hpp>
 #include <ipc/candidates/face_face.hpp>
 #include <ipc/candidates/plane_vertex.hpp>
+
+#include <algorithm>
 
 using namespace ipc;
 
@@ -188,4 +191,51 @@ TEST_CASE("Candidates adjacency sets", "[candidates]")
     CHECK(candidates.vv_set(mesh, 2) == std::set<index_t> { 0, 1 });
     CHECK(candidates.ve_set(2).count(0) == 1);
     CHECK(candidates.vf_set(2).empty());
+}
+
+TEST_CASE(
+    "All-types candidates keep whole-mesh pairs alongside codim. primitives",
+    "[candidates]")
+{
+    // Two triangles meet tip to tip (vertices 0 and 3). Far away, a codim.
+    // vertex (9) sits next to a dangling edge (7, 8), and vertex 6 is stray.
+    Eigen::MatrixXd V(10, 3);
+    V << 0, 0, 0.025, 1, 0, 1, -1, 0, 1,   //
+        0, 0, -0.025, 0, 1, -1, 0, -1, -1, //
+        50, 50, 50,                        //
+        -50, -50, -50, -49, -50, -50, -49.5, -50, -49.99;
+    Eigen::MatrixXi F(2, 3);
+    F << 0, 1, 2, 3, 4, 5;
+    Eigen::MatrixXi E(7, 2);
+    E << 0, 1, 1, 2, 2, 0, 3, 4, 4, 5, 5, 3, 7, 8;
+    const CollisionMesh mesh(V, E, F);
+    REQUIRE(mesh.num_codim_vertices() == 2);
+    REQUIRE(mesh.num_codim_edges() == 1);
+
+    const auto contains = [](const auto& list, const auto& candidate) {
+        return std::find(list.begin(), list.end(), candidate) != list.end();
+    };
+
+    const bool all_types = GENERATE(false, true);
+    CAPTURE(all_types);
+
+    Candidates candidates;
+    candidates.build(mesh, V, /*inflation_radius=*/0.05, nullptr, all_types);
+    CHECK(candidates.has_all_types == all_types);
+
+    // Both builds find the codim. edge next to the codim. vertex.
+    CHECK(contains(candidates.ev_candidates, EdgeVertexCandidate(6, 9)));
+
+    if (all_types) {
+        // The tips are a surface vertex-vertex pair, which only all_types
+        // detects. The codim. primitives must not replace it.
+        CHECK(contains(candidates.vv_candidates, VertexVertexCandidate(0, 3)));
+    }
+
+    candidates.clear();
+    CHECK(!candidates.has_all_types);
+
+    // Trajectory candidates never include the ESP-only types.
+    candidates.build(mesh, V, V, /*inflation_radius=*/0.05);
+    CHECK(!candidates.has_all_types);
 }

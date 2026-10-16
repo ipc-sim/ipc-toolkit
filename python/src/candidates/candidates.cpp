@@ -269,5 +269,8 @@ void define_candidates(py::module_& m)
         .def_readwrite("ev_candidates", &Candidates::ev_candidates)
         .def_readwrite("ee_candidates", &Candidates::ee_candidates)
         .def_readwrite("fv_candidates", &Candidates::fv_candidates)
-        .def_readwrite("pv_candidates", &Candidates::pv_candidates);
+        .def_readwrite("pv_candidates", &Candidates::pv_candidates)
+        .def_readwrite(
+            "has_all_types", &Candidates::has_all_types,
+            "Whether these candidates include the types only ESP needs (set by build(all_types=...)).");
 }

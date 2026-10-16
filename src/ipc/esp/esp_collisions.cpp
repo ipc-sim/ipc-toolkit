@@ -36,6 +36,16 @@ void ESPCollisions::build(
                 "quad_order {} must be at least 1 in 2D.", params.quad_order));
     }
 
+    // In 3D, ESP corrects each point's face contacts by inclusion-exclusion
+    // over the nearby edges and vertices, which it finds through the
+    // vertex-vertex, edge-vertex, edge-face, and face-face candidates. Without
+    // them, the energy is still finite but wrong (over-counted, or even
+    // attractive), so we reject candidates that were not built with all_types.
+    if (mesh.dim() == 3 && !_candidates.has_all_types) {
+        throw std::invalid_argument(
+            "ESPCollisions::build: 3D candidates must be built with all_types = true");
+    }
+
     clear();
 
     if (&_candidates != &m_candidates) {

@@ -35,6 +35,8 @@ public:
     /// @param vertices Vertices of the collision mesh.
     /// @param params ESP parameters.
     /// @throws std::invalid_argument if params.quad_order < 1 in 2D.
+    /// @throws std::invalid_argument In 3D, if the candidates were not built
+    ///         with all_types = true (see Candidates::has_all_types).
     void build(
         const Candidates& _candidates,
         const CollisionMesh& mesh,

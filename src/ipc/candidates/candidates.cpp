@@ -79,9 +79,17 @@ void Candidates::build(
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(*this, all_types);
+    has_all_types = all_types;
+
+    // In 3D, all_types already detects vertex-vertex and edge-vertex
+    // candidates over the whole mesh, which includes every codim. primitive.
+    // We skip the codim. passes below in that case because their detectors
+    // clear their output first, so they would replace the whole-mesh lists
+    // with the codim.-only ones.
+    const bool detect_codim = !all_types || dim != 3;
 
     // Codim. vertices to codim. vertices:
-    if (mesh.num_codim_vertices()) {
+    if (detect_codim && mesh.num_codim_vertices()) {
         broad_phase->clear();
         broad_phase->build(
             vertices(mesh.codim_vertices(), Eigen::all), //
@@ -98,7 +106,8 @@ void Candidates::build(
     // Only need this in 3D because in 2D, the codim. edges are the same as the
     // edges of the boundary. Only need codim. edge to codim. vertex because
     // codim. edge to non-codim. vertex is the same as edge-edge or face-vertex.
-    if (dim == 3 && mesh.num_codim_vertices() && mesh.num_codim_edges()) {
+    if (detect_codim && dim == 3 && mesh.num_codim_vertices()
+        && mesh.num_codim_edges()) {
         // Extract the vertices of the codim. edges
         Eigen::MatrixXd CE_V; // vertices of codim. edges
         Eigen::MatrixXi CE;   // codim. edges (indices into CEV)
@@ -514,6 +523,7 @@ void Candidates::clear()
     ef_candidates.clear();
     ff_candidates.clear();
     pv_candidates.clear();
+    has_all_types = false;
     m_sets.reset();
 }
 
