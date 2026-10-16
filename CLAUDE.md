@@ -76,6 +76,18 @@ cd build/test && ctest --verbose -R "test_name_pattern"
 ./build/test/ipc_toolkit_tests "[tag]"
 ```
 
+### Python Tests
+
+Python binding tests live in `python/tests/` and use **nose2** (listed in `python/tests/requirements.txt`). They are plain `test_*` functions with bare `assert`s, not pytest fixtures or `unittest` classes. `find_ipctk` locates a built `ipctk` module, so build the bindings first (`cmake --build --preset=python`).
+
+```bash
+# Run all Python tests
+cd python/tests && python -m nose2 -v
+
+# Run one test file
+cd python/tests && python -m nose2 -v test_collision_mesh
+```
+
 ### Benchmarks
 
 Benchmarks are hidden Catch2 cases tagged `[!benchmark]`, so they don't run by
