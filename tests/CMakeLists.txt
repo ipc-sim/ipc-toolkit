@@ -70,10 +70,9 @@ if(IPC_TOOLKIT_WITH_MESHFEM_SPARSE)
   target_link_libraries(ipc_toolkit_tests PRIVATE MeshFEM::Sparse)
 endif()
 
-# The exact distance-type reference in the tests uses geogram directly.
-if(IPC_TOOLKIT_WITH_GEOGRAM)
-  target_link_libraries(ipc_toolkit_tests PRIVATE geogram::geogram)
-endif()
+# The exact distance-type reference in the tests uses geogram's exact
+# arithmetic directly.
+target_link_libraries(ipc_toolkit_tests PRIVATE geogram::multi_precision)
 
 if(IPC_TOOLKIT_WITH_CUDA)
   # We need to explicitly state that we need all CUDA files in the particle

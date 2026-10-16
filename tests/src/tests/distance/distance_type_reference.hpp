@@ -2,32 +2,21 @@
 #include <tests/utils.hpp>
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_triangle.hpp>
-#include <geogram/numerics/exact_geometry.h>
-// geogram 1.10 no longer pulls this in transitively via exact_geometry.h.
-#include <geogram/numerics/predicates.h>
+#include <ipc/distance/exact_vector.hpp>
 
 using namespace ipc;
-using ExReal = GEO::expansion_nt; // exact scalar type
-using ExVec3 = GEO::vec3E;        // exact vector
+using ExReal = ExactReal;    // exact scalar type
+using ExVec3 = ExactVector3; // exact vector
 
 // Mirrors the relative sin² threshold of ipc::edge_edge_distance_type's
 // parallel-edge handling (and ipc::PARALLEL_THRESHOLD).
 constexpr double REFERENCE_PARALLEL_THRESHOLD = 2.5e-16;
 
-inline void init_pck()
-{ // TODO init once in main
-    static bool initialized = false;
-    if (!initialized) {
-        GEO::PCK::initialize();
-        initialized = true;
-    }
-}
+inline void init_pck() { init_exact_arithmetic(); }
+
 inline ExVec3 make_exact(Eigen::ConstRef<VectorMax3d> v)
 {
-    ExReal x { v.x() };
-    ExReal y { v.y() };
-    ExReal z { v.size() < 3 ? 0 : v.z() }; // compatibility with 2D vectors
-    return ExVec3(std::move(x), std::move(y), std::move(z));
+    return ExVec3::from(v.data(), int(v.size())); // z = 0 for 2D vectors
 }
 inline PointEdgeDistanceType point_edge_distance_type_reference(
     Eigen::ConstRef<VectorMax3d> p_,
@@ -40,9 +29,9 @@ inline PointEdgeDistanceType point_edge_distance_type_reference(
     const ExVec3 e1 = make_exact(e1_);
     const ExVec3 e = e1 - e0;
 
-    if (dot(e, p - e0) <= 0) {
+    if (e.dot(p - e0) <= 0) {
         return PointEdgeDistanceType::P_E0; // PP (p-e0)
-    } else if (dot(-e, p - e1) <= 0) {
+    } else if ((-e).dot(p - e1) <= 0) {
         return PointEdgeDistanceType::P_E1; // PP (p-e1)
     } else {
         return PointEdgeDistanceType::P_E; // PE
@@ -69,25 +58,25 @@ inline PointTriangleDistanceType point_triangle_distance_type_reference(
     const ExVec3 r1 = p - t1;
     const ExVec3 r2 = p - t2;
 
-    if (dot(r0, e0) <= 0 && dot(r0, e2) >= 0) {
+    if (r0.dot(e0) <= 0 && r0.dot(e2) >= 0) {
         return PointTriangleDistanceType::P_T0;
     }
-    if (dot(r1, e1) <= 0 && dot(r1, e0) >= 0) {
+    if (r1.dot(e1) <= 0 && r1.dot(e0) >= 0) {
         return PointTriangleDistanceType::P_T1;
     }
-    if (dot(r2, e2) <= 0 && dot(r2, e1) >= 0) {
+    if (r2.dot(e2) <= 0 && r2.dot(e1) >= 0) {
         return PointTriangleDistanceType::P_T2;
     }
 
-    const ExVec3 n = cross(e0, -e1);
+    const ExVec3 n = e0.cross(-e1);
 
-    if (dot(n, cross(r0, e0)) <= 0 && dot(r0, e0) > 0 && dot(r1, e0) < 0) {
+    if (n.dot(r0.cross(e0)) <= 0 && r0.dot(e0) > 0 && r1.dot(e0) < 0) {
         return PointTriangleDistanceType::P_E0;
     }
-    if (dot(n, cross(r1, e1)) <= 0 && dot(r1, e1) > 0 && dot(r2, e1) < 0) {
+    if (n.dot(r1.cross(e1)) <= 0 && r1.dot(e1) > 0 && r2.dot(e1) < 0) {
         return PointTriangleDistanceType::P_E1;
     }
-    if (dot(n, cross(r2, e2)) <= 0 && dot(r2, e2) > 0 && dot(r0, e2) < 0) {
+    if (n.dot(r2.cross(e2)) <= 0 && r2.dot(e2) > 0 && r0.dot(e2) < 0) {
         return PointTriangleDistanceType::P_E2;
     }
 
@@ -110,11 +99,11 @@ inline bool is_parallel_edge_edge_reference(
     const ExVec3 u = ea1 - ea0;
     const ExVec3 v = eb1 - eb0;
 
-    const ExReal cross_norm_sqr = cross(u, v).length2();
+    const ExReal cross_norm_sqr = u.cross(v).squared_norm();
     if constexpr (REFERENCE_PARALLEL_THRESHOLD == 0.0)
         return cross_norm_sqr == 0;
-    const ExReal a = u.length2();
-    const ExReal c = v.length2();
+    const ExReal a = u.squared_norm();
+    const ExReal c = v.squared_norm();
     return cross_norm_sqr < a * c * REFERENCE_PARALLEL_THRESHOLD;
 }
 
@@ -131,9 +120,9 @@ inline EdgeEdgeDistanceType edge_edge_parallel_distance_type_reference(
     const ExVec3 eb1 = make_exact(eb1_);
 
     const ExVec3 ea = ea1 - ea0;
-    const ExReal ea_len_sqr = ea.length2();
-    const ExReal alpha_N = dot(eb0 - ea0, ea);
-    const ExReal beta_N = dot(eb1 - ea0, ea);
+    const ExReal ea_len_sqr = ea.squared_norm();
+    const ExReal alpha_N = (eb0 - ea0).dot(ea);
+    const ExReal beta_N = (eb1 - ea0).dot(ea);
 
     uint8_t eac; // 0: EA0, 1: EA1, 2: EA
     uint8_t ebc; // 0: EB0, 1: EB1, 2: EB
@@ -188,11 +177,11 @@ inline EdgeEdgeDistanceType edge_edge_distance_type_reference(
     const ExVec3 v = eb1 - eb0;
     const ExVec3 w = ea0 - eb0;
 
-    const ExReal a = u.length2(); // always ≥ 0
-    const ExReal b = dot(u, v);
-    const ExReal c = v.length2(); // always ≥ 0
-    const ExReal d = dot(u, w);
-    const ExReal e = dot(v, w);
+    const ExReal a = u.squared_norm(); // always ≥ 0
+    const ExReal b = u.dot(v);
+    const ExReal c = v.squared_norm(); // always ≥ 0
+    const ExReal d = u.dot(w);
+    const ExReal e = v.dot(w);
     const ExReal D = a * c - b * b; // always ≥ 0
 
     // Degenerate cases should not happen in practice, but we handle them
@@ -205,7 +194,7 @@ inline EdgeEdgeDistanceType edge_edge_distance_type_reference(
     }
 
     // Special handling for parallel edges
-    const ExReal cross_norm_sqr = cross(u, v).length2();
+    const ExReal cross_norm_sqr = u.cross(v).squared_norm();
     bool is_parallel;
     if (parallel_threshold == 0.0) {
         is_parallel = (cross_norm_sqr == 0);

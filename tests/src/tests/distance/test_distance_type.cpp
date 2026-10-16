@@ -10,9 +10,7 @@
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
-#ifdef IPC_TOOLKIT_WITH_GEOGRAM
 #include "distance_type_reference.hpp"
-#endif
 
 #include <array>
 
@@ -62,9 +60,8 @@ TEST_CASE("Point-edge distance type", "[distance][distance-type][point-edge]")
     }
 }
 
-#ifdef IPC_TOOLKIT_WITH_GEOGRAM
 // These compare the shipped classifiers, standard and exact, against an
-// exact-arithmetic reference, which is only available when geogram is enabled.
+// exact-arithmetic reference.
 TEST_CASE(
     "Point-edge distance type random",
     "[distance][distance-type][point-edge][exact]")
@@ -170,12 +167,10 @@ TEST_CASE(
     }
 }
 
-#endif // IPC_TOOLKIT_WITH_GEOGRAM
-
-// The *_exact classifiers must agree with each other whether or not their
-// predicates are exact (geogram), e.g., a point-triangle P_E0 implies a
-// point-edge P_E on that edge. ESP relies on this. The points are placed on or
-// near the region boundaries, where rounding makes the predicates near-ties.
+// The *_exact classifiers must agree with each other, e.g., a point-triangle
+// P_E0 implies a point-edge P_E on that edge. ESP relies on this. The points
+// are placed on or near the region boundaries, where rounding makes the
+// predicates near-ties.
 TEST_CASE(
     "Exact distance-type classifiers are mutually consistent",
     "[distance][distance-type][exact]")

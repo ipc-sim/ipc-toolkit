@@ -98,7 +98,6 @@ digraph "IPC Toolkit Dependencies" {
     // MeshFEMSparse -> Eigen3_Eigen
     "node17" -> "node9" [color = "#8FB976";];
     // MeshFEMSparse -> tbb
-    "node18" [label = "geogram\n(geogram::geogram)";shape = box;style = "rounded,filled";fillcolor = "#CCE7F8";color = "#6596B2";];
-    "node5" -> "node18" [color = "#BE6562"; style = "dashed";];
-    // ipc_toolkit -> geogram (IPC_TOOLKIT_WITH_GEOGRAM)
+    "node18" [label = "geogram\n(geogram::multi_precision)";shape = box;style = "rounded,filled";fillcolor = "#CCE7F8";color = "#6596B2";];
+    "node5" -> "node18" [color = "#BE6562";];
 }

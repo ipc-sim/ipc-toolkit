@@ -48,6 +48,10 @@ These dependencies are all `permissively licensed <license.html>`_, and we list 
       - Automatic differentiation for testing and in non-performance critical smooth contact functions
       - MIT
       - `github.com/microsoft/TinyAD <https://github.com/patr-schm/TinyAD>`_
+    * - geogram (MultiPrecision PSM)
+      - Exact arithmetic for the exact distance-type classification used by the ESP potential. We only use the lightweight, two-file MultiPrecision PSM, not the full geogram library.
+      - BSD-3-Clause
+      - `github.com/BrunoLevy/geogram <https://github.com/BrunoLevy/geogram/releases>`_
 
 Optional Dependencies
 ---------------------
@@ -93,12 +97,6 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - `github.com/MeshFEM/MeshFEMSparse <https://github.com/MeshFEM/MeshFEMSparse>`_
       - |:white_check_mark:|
       - ``IPC_TOOLKIT_WITH_MESHFEM_SPARSE``
-    * - geogram
-      - Exact geometric predicates for the exact distance-type classification used by the ESP potential
-      - BSD-3-Clause
-      - `github.com/BrunoLevy/geogram <https://github.com/BrunoLevy/geogram>`_
-      - |:white_check_mark:|
-      - ``IPC_TOOLKIT_WITH_GEOGRAM``
     * - nlohmann/json
       - JSON parsing for profiler and tests
       - MIT
@@ -135,7 +133,7 @@ Some of these libraries are enabled by default, and some are not. You can enable
     ``MeshFEMSparse`` (and its transitive dependency ``MeshFEMCore``) is downloaded source-only and compiled into a minimal static library (matrix data structures and assembly routines; no sparse direct solvers). When enabled (the default), :cpp:func:`ipc::Potential::hessian` assembles through the block-CSC backend — several times faster than the triplet-based assembly, with identical results up to floating-point summation order — and a :cpp:class:`ipc::MeshFEMHessianAssembler` held across :cpp:func:`ipc::Potential::assemble_hessian` calls additionally reuses the sparsity pattern between assemblies. It requires ``IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT=RowMajor`` (the default; the option is automatically disabled otherwise).
 
 .. note::
-    ``geogram`` makes the distance-type classifiers in ``ipc/distance/distance_type_exact.hpp`` (used by the ESP potential) exact. With ``IPC_TOOLKIT_WITH_GEOGRAM`` set to ``OFF``, the same predicates are evaluated in floating point, still consistently across the classifiers, and a warning is logged the first time they are used.
+    ``geogram`` makes the distance-type classifiers in ``ipc/distance/distance_type_exact.hpp`` (used by the ESP potential) exact. We only download geogram's standalone MultiPrecision Pluggable Software Module (its exact ``expansion_nt`` arithmetic, two source files with no dependencies) from the geogram release and compile it into a small static library, rather than building all of geogram. We compile it with its namespace renamed from ``GEO`` to ``ipc_geogram``, so it can coexist with a full copy of geogram linked by a downstream project (e.g., PolyFEM). The archive's optional CGAL example is deleted after download and never built.
 
 .. warning::
     ``filib`` is licensed under `LGPL-2.1 <https://github.com/zfergus/filib/blob/main/LICENSE>`_ and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynamic linkage requires copying the ``.so``/``.dylib``/``.dll`` file to the binary directory or system path. To enable this, set the CMake option ``FILIB_BUILD_SHARED_LIBS`` to ``ON`` and add this CMake code to copy the shared library object to the binary directory:

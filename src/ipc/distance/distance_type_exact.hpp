@@ -6,20 +6,17 @@
 
 namespace ipc {
 
-constexpr double PARALLEL_THRESHOLD {
-    2.5e-16
-}; // TODO set to zero eventually (requires geogram)
+constexpr double PARALLEL_THRESHOLD { 2.5e-16 }; // TODO set to zero eventually
 
 /// @brief Runtime switch between the standard analytic distance-type routines
 /// and the predicate-based implementations. Controls
 /// point_edge_distance_type_exact, point_triangle_distance_type_exact, and
 /// edge_edge_distance_type_exact. Defaults to predicate-based.
 ///
-/// The predicates are exact when IPC Toolkit is built with geogram
-/// (IPC_TOOLKIT_WITH_GEOGRAM) and evaluated in floating point otherwise. Either
-/// way, the three classifications are mutually consistent (e.g., a
-/// point-triangle P_E0 implies a point-edge P_E on that edge); the standard
-/// routines do not guarantee this.
+/// The predicates are exact (floating-point filters with an exact fallback), so
+/// the three classifications are mutually consistent (e.g., a point-triangle
+/// P_E0 implies a point-edge P_E on that edge); the standard routines do not
+/// guarantee this.
 class DistanceTypeConfig {
 public:
     static DistanceTypeConfig& instance()
@@ -39,9 +36,8 @@ private:
     bool m_use_standard = false;
 };
 
-/// @brief Determine the closest pair between a point and edge, using sign
-/// predicates that are exact when geogram is available (see
-/// DistanceTypeConfig), or the standard analytic implementation when
+/// @brief Determine the closest pair between a point and edge, using exact sign
+/// predicates, or the standard analytic implementation when
 /// DistanceTypeConfig prefers it.
 /// @param p The point.
 /// @param e0 The first vertex of the edge.
@@ -52,9 +48,8 @@ PointEdgeDistanceType point_edge_distance_type_exact(
     Eigen::ConstRef<VectorMax3d> e0,
     Eigen::ConstRef<VectorMax3d> e1);
 
-/// @brief Determine the closest pair between a point and triangle, using sign
-/// predicates that are exact when geogram is available (see
-/// DistanceTypeConfig).
+/// @brief Determine the closest pair between a point and triangle, using exact
+/// sign predicates (see DistanceTypeConfig).
 /// @param p The point.
 /// @param t0 The first vertex of the triangle.
 /// @param t1 The second vertex of the triangle.
@@ -66,8 +61,8 @@ PointTriangleDistanceType point_triangle_distance_type_exact(
     Eigen::ConstRef<Eigen::Vector3d> t1,
     Eigen::ConstRef<Eigen::Vector3d> t2);
 
-/// @brief Determine the closest pair between two edges, using sign predicates
-/// that are exact when geogram is available (see DistanceTypeConfig).
+/// @brief Determine the closest pair between two edges, using exact sign
+/// predicates (see DistanceTypeConfig).
 /// @param ea0 The first vertex of the first edge.
 /// @param ea1 The second vertex of the first edge.
 /// @param eb0 The first vertex of the second edge.

@@ -4,46 +4,36 @@
 
 #include <Eigen/Geometry>
 
-#include <array>
-
-#ifdef IPC_TOOLKIT_WITH_GEOGRAM
+// fp_filters.h must come first: the PSM #defines FPG_UNCERTAIN_VALUE (to the
+// same value), which would otherwise clobber the constant's declaration.
+// clang-format off
 #include "fp_filters.h"
-
-#include <geogram/numerics/exact_geometry.h>
-// geogram 1.10 no longer pulls this in transitively via exact_geometry.h.
-#include <geogram/numerics/predicates.h>
-#endif
+#include "exact_vector.hpp"
+// clang-format on
 
 namespace ipc {
 
 namespace {
 
-#ifdef IPC_TOOLKIT_WITH_GEOGRAM
     // The predicates below take raw coordinate pointers and live in this
     // translation unit, so a classification's whole chain of filtered
     // predicates inlines into its public entry point. The entry point converts
-    // its arguments, checks DistanceTypeConfig, and initializes geogram's PCK
-    // once, instead of once per nested point-edge test. Only the exact
-    // fallbacks, taken when a filter is inconclusive, stay out of line.
+    // its arguments, checks DistanceTypeConfig, and initializes the exact
+    // arithmetic once, instead of once per nested point-edge test. Only the
+    // exact fallbacks, taken when a filter is inconclusive, stay out of line.
 
-    using ExReal = GEO::expansion_nt; // exact scalar type
-    using ExVec3 = GEO::vec3E;        // exact vector type
+    using ExReal = ExactReal;
+    using ExVec3 = ExactVector3;
 
-    void init_predicates()
-    {
-        struct PckInit {
-            PckInit() { GEO::PCK::initialize(); }
-        };
-        static PckInit _;
-    }
+    void init_predicates() { init_exact_arithmetic(); }
 
     /// @brief Exact copy of a 2D or 3D point (z = 0 in 2D).
     ExVec3 make_exact(const double* v, const int dim)
     {
-        return ExVec3(ExReal(v[0]), ExReal(v[1]), ExReal(dim == 3 ? v[2] : 0));
+        return ExVec3::from(v, dim);
     }
 
-    int exact_sign(const ExReal& s) { return (s > 0) ? 1 : ((s < 0) ? -1 : 0); }
+    int exact_sign(const ExReal& s) { return int(s.sign()); }
 
     // -- Exact fallbacks ------------------------------------------------------
 
@@ -55,7 +45,7 @@ namespace {
         const ExVec3 p0 = make_exact(_p0, dim);
         const ExVec3 p1 = make_exact(_p1, dim);
         const ExVec3 p2 = make_exact(_p2, dim);
-        return exact_sign(dot(p1 - p0, p2 - p0));
+        return exact_sign((p1 - p0).dot(p2 - p0));
     }
 
     /// @brief Sign of dot(cross(p1-p0, p2-p0), cross(p3-p0, p1-p0)) in exact
@@ -73,7 +63,7 @@ namespace {
         const ExVec3 p2 = make_exact(_p2, 3);
         const ExVec3 p3 = make_exact(_p3, 3);
         return exact_sign(
-            dot(cross(p1 - p0, p2 - p0), cross(p3 - p0, p1 - p0)));
+            (p1 - p0).cross(p2 - p0).dot((p3 - p0).cross(p1 - p0)));
     }
 
     /// @brief Sign of dot(cross(p1-p0, p2-p0), cross(p3-p0, p1-p2)) in exact
@@ -91,7 +81,7 @@ namespace {
         const ExVec3 p2 = make_exact(_p2, 3);
         const ExVec3 p3 = make_exact(_p3, 3);
         return exact_sign(
-            dot(cross(p1 - p0, p2 - p0), cross(p3 - p0, p1 - p2)));
+            (p1 - p0).cross(p2 - p0).dot((p3 - p0).cross(p1 - p2)));
     }
 
     // -- Filtered predicates --------------------------------------------------
@@ -132,89 +122,6 @@ namespace {
             ? s
             : cross_dot_cross_2_exact(p0, p1, p2, p3);
     }
-
-#else
-    // Without geogram, the same predicates are evaluated in double precision.
-    // Their signs are not exact, but the classifiers below are built only from
-    // them, so the classifications stay mutually consistent as long as each
-    // predicate returns the same sign for the same arguments at every call
-    // site. E.g., a point-triangle P_E0 implies a point-edge P_E on that edge,
-    // which ESP asserts. Each predicate is kept out of line so that the
-    // compiler cannot contract (FMA) its arithmetic differently per call site.
-
-#if defined(_MSC_VER)
-#define IPC_DISTANCE_TYPE_NOINLINE __declspec(noinline)
-#else
-#define IPC_DISTANCE_TYPE_NOINLINE __attribute__((noinline))
-#endif
-
-    void init_predicates()
-    {
-        static const bool warned = [] {
-            logger().warn(
-                "IPC Toolkit was built without geogram, so the "
-                "*_distance_type_exact functions use floating-point "
-                "predicates: consistent with each other, but not exact. "
-                "Build with IPC_TOOLKIT_WITH_GEOGRAM=ON for exact "
-                "predicates.");
-            return true;
-        }();
-        (void)warned;
-    }
-
-    int sign(const double x) { return (x > 0) - (x < 0); }
-
-    /// @brief Sign of dot(p1-p0, p2-p0).
-    template <int dim>
-    IPC_DISTANCE_TYPE_NOINLINE int
-    dot3(const double* p0, const double* p1, const double* p2)
-    {
-        double s = 0;
-        for (int i = 0; i < dim; ++i) {
-            s += (p1[i] - p0[i]) * (p2[i] - p0[i]);
-        }
-        return sign(s);
-    }
-
-    using Vec3 = std::array<double, 3>;
-
-    /// @brief b - a.
-    Vec3 sub(const double* b, const double* a)
-    {
-        return { { b[0] - a[0], b[1] - a[1], b[2] - a[2] } };
-    }
-
-    /// @brief Sign of dot(cross(a, b), cross(c, d)).
-    int
-    cross_dot_cross(const Vec3& a, const Vec3& b, const Vec3& c, const Vec3& d)
-    {
-        const double n0 = a[1] * b[2] - a[2] * b[1];
-        const double n1 = a[2] * b[0] - a[0] * b[2];
-        const double n2 = a[0] * b[1] - a[1] * b[0];
-        const double m0 = c[1] * d[2] - c[2] * d[1];
-        const double m1 = c[2] * d[0] - c[0] * d[2];
-        const double m2 = c[0] * d[1] - c[1] * d[0];
-        return sign(n0 * m0 + n1 * m1 + n2 * m2);
-    }
-
-    /// @brief Sign of dot(cross(p1-p0, p2-p0), cross(p3-p0, p1-p0)).
-    IPC_DISTANCE_TYPE_NOINLINE int cross_dot_cross_1(
-        const double* p0, const double* p1, const double* p2, const double* p3)
-    {
-        const Vec3 u = sub(p1, p0);
-        return cross_dot_cross(u, sub(p2, p0), sub(p3, p0), u);
-    }
-
-    /// @brief Sign of dot(cross(p1-p0, p2-p0), cross(p3-p0, p1-p2)).
-    IPC_DISTANCE_TYPE_NOINLINE int cross_dot_cross_2(
-        const double* p0, const double* p1, const double* p2, const double* p3)
-    {
-        return cross_dot_cross(
-            sub(p1, p0), sub(p2, p0), sub(p3, p0), sub(p1, p2));
-    }
-
-#undef IPC_DISTANCE_TYPE_NOINLINE
-#endif
 
     // -- Classifiers ----------------------------------------------------------
 
@@ -358,7 +265,6 @@ bool is_parallel_edge_edge(
     Eigen::ConstRef<Eigen::Vector3d> _eb0,
     Eigen::ConstRef<Eigen::Vector3d> _eb1)
 {
-#ifdef IPC_TOOLKIT_WITH_GEOGRAM
     if constexpr (PARALLEL_THRESHOLD == 0.0) {
         init_predicates();
         // TODO use a zero filter?
@@ -371,19 +277,10 @@ bool is_parallel_edge_edge(
         const ExVec3 ea1 = make_exact(_ea1.data(), 3);
         const ExVec3 eb0 = make_exact(_eb0.data(), 3);
         const ExVec3 eb1 = make_exact(_eb1.data(), 3);
-        const ExReal cross_norm_sqr = cross(ea1 - ea0, eb1 - eb0).length2();
-        return cross_norm_sqr == 0;
+        return exact_sign((ea1 - ea0).cross(eb1 - eb0).squared_norm()) == 0;
     } else {
         return is_almost_parallel_edge_edge(_ea0, _ea1, _eb0, _eb1);
     }
-#else
-    // Without geogram the exact test is unavailable; PARALLEL_THRESHOLD must
-    // be non-zero for the thresholded test to be meaningful.
-    static_assert(
-        PARALLEL_THRESHOLD != 0.0,
-        "PARALLEL_THRESHOLD == 0 requires the exact predicates (geogram).");
-    return is_almost_parallel_edge_edge(_ea0, _ea1, _eb0, _eb1);
-#endif
 }
 
 EdgeEdgeDistanceType edge_edge_distance_type_exact(
