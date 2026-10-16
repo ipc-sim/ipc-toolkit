@@ -8,6 +8,7 @@
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/esp/esp_collisions.hpp>
 #include <ipc/esp/esp_potential.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
 
 #include <igl/edges.h>
 #include <igl/PI.h>
@@ -59,6 +60,50 @@ const std::vector<bool> LOWER_OBSTACLE = { false, false, false, false,
                                            true,  true,  true,  true };
 
 constexpr double DHAT = 0.6;
+
+// An obstacle whose tip, a vertex shared by several obstacle edges, points at a
+// deformable surface from height h. In 3D, the tip is the apex of a tetrahedron
+// above the interior edge (0, 1) of a two-triangle sheet. In 2D, it is the apex
+// of a coarse Λ above the apex (vertex 0) of a fine V. Vertex 0 is deformable
+// in both, and the tip is the last vertex before the obstacle's other vertices.
+Eigen::MatrixXd apex_vertices(const int dim, const double h)
+{
+    Eigen::MatrixXd V;
+    if (dim == 3) {
+        V.resize(8, 3);
+        V << -1, 0, 0, 1, 0, 0, 0, -2, 0, 0, 2, 0,               // sheet
+            0, 0, h, 0.3, 0, 3, -0.15, 0.26, 3, -0.15, -0.26, 3; // tetrahedron
+    } else {
+        V.resize(6, 2);
+        V << 0, 0, -0.1, -0.1, 0.1, -0.1, // V
+            0, h, -1, 1 + h, 1, 1 + h;    // Λ
+    }
+    return V;
+}
+
+index_t apex_obstacle_tip(const int dim) { return dim == 3 ? 4 : 3; }
+
+CollisionMesh apex_mesh(const int dim)
+{
+    const Eigen::MatrixXd V = apex_vertices(dim, 0.05);
+    std::vector<bool> obstacle(V.rows(), false);
+    std::fill(obstacle.begin() + apex_obstacle_tip(dim), obstacle.end(), true);
+
+    Eigen::MatrixXi E, F;
+    if (dim == 3) {
+        F.resize(6, 3);
+        F << 0, 2, 1, 0, 1, 3, //
+            4, 5, 6, 4, 6, 7, 4, 7, 5, 5, 7, 6;
+        igl::edges(F, E);
+    } else {
+        E.resize(4, 2);
+        E << 1, 0, 0, 2, 4, 3, 3, 5;
+    }
+
+    return CollisionMesh(
+        std::vector<bool>(V.rows(), true), std::vector<bool>(V.rows(), false),
+        obstacle, V, E, F);
+}
 
 } // namespace
 
@@ -134,8 +179,11 @@ TEST_CASE("Collision mesh obstacle flags", "[collision_mesh][obstacle]")
 
 TEST_CASE("Normal collisions skip obstacles", "[collisions][obstacle]")
 {
-    const CollisionMesh mesh = star_mesh(LOWER_OBSTACLE);
+    CollisionMesh mesh = star_mesh(LOWER_OBSTACLE);
     const Eigen::MatrixXd& V = mesh.rest_positions();
+    // A ground plane just below the obstacle's tip (vertex 7).
+    mesh.planes.emplace_back(
+        Eigen::Vector3d::UnitZ(), Eigen::Vector3d(0, 0, -1.1));
 
     NormalCollisions all;
     all.build(mesh, V, DHAT);
@@ -154,9 +202,13 @@ TEST_CASE("Normal collisions skip obstacles", "[collisions][obstacle]")
         for (const auto& fv : c.fv_collisions) {
             n += mesh.is_obstacle_vertex(fv.vertex_id);
         }
+        for (const auto& pv : c.pv_collisions) {
+            n += mesh.is_obstacle_vertex(pv.vertex_id);
+        }
         return n;
     };
     REQUIRE(count_obstacle_vertices(all) > 0);
+    REQUIRE(!all.pv_collisions.empty());
     CHECK(count_obstacle_vertices(skipped) == 0);
     CHECK(skipped.size() < all.size());
 
@@ -180,6 +232,89 @@ TEST_CASE("Normal collisions skip obstacles", "[collisions][obstacle]")
     none.set_skip_obstacles(true);
     none.build(all_obstacle, V, DHAT);
     CHECK(none.empty());
+}
+
+TEST_CASE(
+    "Skipping obstacles keeps the barrier repulsive", "[collisions][obstacle]")
+{
+    using CollisionSetType = NormalCollisions::CollisionSetType;
+
+    const int dim = GENERATE(2, 3);
+    const CollisionSetType type =
+        GENERATE(CollisionSetType::IPC, CollisionSetType::IMPROVED_MAX_APPROX);
+    const bool use_area_weighting = GENERATE(false, true);
+    CAPTURE(dim, type, use_area_weighting);
+
+    const CollisionMesh mesh = apex_mesh(dim);
+    const index_t tip = apex_obstacle_tip(dim);
+    constexpr double dhat = 0.1;
+    const BarrierPotential barrier(dhat, 1.0);
+
+    // As the tip approaches the deformable surface, the energy must grow and
+    // push the two apart. The improved max approximation's corrections used to
+    // outweigh the one-sided contact here, making the barrier attractive.
+    double prev_energy = 0;
+    for (const double h : { 0.05, 0.01, 1e-3, 1e-5 }) {
+        CAPTURE(h);
+        const Eigen::MatrixXd V = apex_vertices(dim, h);
+
+        NormalCollisions collisions;
+        collisions.set_use_area_weighting(use_area_weighting);
+        collisions.set_collision_set_type(type);
+        collisions.set_skip_obstacles(true);
+        collisions.build(mesh, V, dhat);
+
+        const double energy = barrier(collisions, mesh, V);
+        CHECK(energy > prev_energy);
+        prev_energy = energy;
+
+        // The last coordinate points from the deformable surface to the tip.
+        const Eigen::VectorXd grad = barrier.gradient(collisions, mesh, V);
+        CHECK(grad[dim * tip + dim - 1] < 0);
+        CHECK(grad[dim - 1] > 0);
+    }
+}
+
+TEST_CASE(
+    "Obstacle size does not change edge-edge contact stiffness",
+    "[collisions][obstacle]")
+{
+    using CollisionSetType = NormalCollisions::CollisionSetType;
+
+    // A short deformable edge crossing under an obstacle edge of varying
+    // length.
+    const double obstacle_length = GENERATE(0.2, 2.0, 20.0);
+    const CollisionSetType type =
+        GENERATE(CollisionSetType::IPC, CollisionSetType::IMPROVED_MAX_APPROX);
+    CAPTURE(obstacle_length, type);
+
+    constexpr double dhat = 0.05;
+    const auto potential_value = [&](const double length, const bool skip) {
+        Eigen::MatrixXd V(4, 3);
+        V << -0.1, 0, 0, 0.1, 0, 0, //
+            0, -length / 2, 0.01, 0, length / 2, 0.01;
+        Eigen::MatrixXi E(2, 2);
+        E << 0, 1, 2, 3;
+        const CollisionMesh mesh(
+            std::vector<bool>(4, true), std::vector<bool>(4, false),
+            { false, false, true, true }, V, E, Eigen::MatrixXi());
+
+        NormalCollisions collisions;
+        collisions.set_use_area_weighting(true);
+        collisions.set_collision_set_type(type);
+        collisions.set_skip_obstacles(skip);
+        collisions.build(mesh, V, dhat);
+        return BarrierPotential(dhat, 1.0)(collisions, mesh, V);
+    };
+
+    // Two equal edges contribute equally, so integrating only over the
+    // deformable one gives half the two-sided energy, whatever the obstacle's
+    // size.
+    const double two_sided = potential_value(0.2, false);
+    REQUIRE(two_sided > 0);
+    CHECK(
+        potential_value(obstacle_length, true)
+        == Catch::Approx(two_sided / 2).epsilon(1e-12));
 }
 
 TEST_CASE("ESP integration types", "[esp_potential][obstacle]")

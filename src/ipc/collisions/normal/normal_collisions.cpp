@@ -129,6 +129,9 @@ void NormalCollisions::build(
     NormalCollisionsBuilder::merge(storage, *this);
 
     for (const auto& [plane, vertex_id] : candidates.pv_candidates) {
+        if (m_skip_obstacles && mesh.is_obstacle_vertex(vertex_id)) {
+            continue;
+        }
         const double d = plane.signedDistance(vertices.row(vertex_id));
         if (d < dhat + dmin) {
             const double weight =

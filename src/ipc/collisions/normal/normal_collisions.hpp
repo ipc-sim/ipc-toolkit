@@ -193,9 +193,14 @@ public:
 
     /// @brief Set if the collision set skips obstacle surfaces.
     /// Obstacles are marked with CollisionMesh's obstacle_vertex. When set,
-    /// collisions are integrated over non-obstacle surfaces only: pairs whose
-    /// vertex is an obstacle and edge-edge pairs between two obstacle edges
-    /// are dropped, and edge-edge pairs with one obstacle edge get half weight.
+    /// collisions are integrated over non-obstacle surfaces only: edge-vertex,
+    /// face-vertex, and plane-vertex pairs whose vertex is an obstacle are
+    /// dropped, as are vertex-vertex and edge-edge pairs between two
+    /// obstacles. A vertex-vertex or edge-edge pair with one obstacle keeps
+    /// only the non-obstacle primitive's share of the weight: with area
+    /// weighting, the obstacle's area no longer contributes; without it, the
+    /// weight is halved. The IMPROVED_MAX_APPROX corrections follow the same
+    /// rule, so the net weights stay non-negative.
     /// @warning This must be set before the collisions are built.
     /// @param skip_obstacles If the collision set should skip obstacle surfaces.
     void set_skip_obstacles(const bool skip_obstacles)

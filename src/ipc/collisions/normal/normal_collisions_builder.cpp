@@ -33,6 +33,12 @@ void NormalCollisionsBuilder::add_vertex_vertex_collision(
 {
     const auto& [vi, vj] = candidate;
 
+    const bool is_obstacle_vi = skip_obstacles && mesh.is_obstacle_vertex(vi);
+    const bool is_obstacle_vj = skip_obstacles && mesh.is_obstacle_vertex(vj);
+    if (is_obstacle_vi && is_obstacle_vj) {
+        return;
+    }
+
     const double distance =
         point_point_distance(vertices.row(vi), vertices.row(vj));
     if (!is_active(distance)) {
@@ -40,18 +46,25 @@ void NormalCollisionsBuilder::add_vertex_vertex_collision(
     }
 
     // ÷ 2 to handle double counting. Sum vertex areas because duplicate
-    // vertex-vertex candidates were removed.
-    const double weight = use_area_weighting
-        ? (0.5 * (mesh.vertex_area(vi) + mesh.vertex_area(vj)))
-        : 1;
+    // vertex-vertex candidates were removed. When we skip obstacles, we drop
+    // the obstacle vertex's half of the integral, so only the non-obstacle
+    // vertex's area contributes.
+    double weight = is_obstacle_vi || is_obstacle_vj ? 0.5 : 1;
+    if (use_area_weighting) {
+        weight = 0.5
+            * ((is_obstacle_vi ? 0 : mesh.vertex_area(vi))
+               + (is_obstacle_vj ? 0 : mesh.vertex_area(vj)));
+    }
 
     Eigen::SparseVector<double> weight_gradient;
     if (enable_shape_derivatives) {
-        weight_gradient = use_area_weighting
-            ? (0.5
-               * (mesh.vertex_area_gradient(vi)
-                  + mesh.vertex_area_gradient(vj)))
-            : Eigen::SparseVector<double>(vertices.size());
+        weight_gradient = Eigen::SparseVector<double>(vertices.size());
+        if (use_area_weighting && !is_obstacle_vi) {
+            weight_gradient += 0.5 * mesh.vertex_area_gradient(vi);
+        }
+        if (use_area_weighting && !is_obstacle_vj) {
+            weight_gradient += 0.5 * mesh.vertex_area_gradient(vj);
+        }
     }
 
     VertexVertexNormalCollision vv(vi, vj, weight, weight_gradient);
@@ -190,23 +203,26 @@ void NormalCollisionsBuilder::add_edge_edge_collision(
         ee_cross_norm_sqr < eps_x ? EdgeEdgeDistanceType::EA_EB : actual_dtype;
 
     // ÷ 4 to handle double counting and PT + EE for correct integration.
-    // Sum edge areas because duplicate edge candidates were removed.
-    double weight = use_area_weighting
-        ? (0.25 * (mesh.edge_area(eai) + mesh.edge_area(ebi)))
-        : 1;
+    // Sum edge areas because duplicate edge candidates were removed. When we
+    // skip obstacles, we drop the obstacle edge's half of the integral, so
+    // only the non-obstacle edge's area contributes. Halving the summed weight
+    // instead would keep part of the obstacle's area, making the contact
+    // stiffer whenever the obstacle is coarser than the deformable surface.
+    double weight = is_obstacle_ea || is_obstacle_eb ? 0.5 : 1;
+    if (use_area_weighting) {
+        weight = 0.25
+            * ((is_obstacle_ea ? 0 : mesh.edge_area(eai))
+               + (is_obstacle_eb ? 0 : mesh.edge_area(ebi)));
+    }
 
     Eigen::SparseVector<double> weight_gradient;
     if (enable_shape_derivatives) {
-        weight_gradient = use_area_weighting
-            ? (0.25
-               * (mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi)))
-            : Eigen::SparseVector<double>(vertices.size());
-    }
-
-    if (is_obstacle_ea || is_obstacle_eb) {
-        weight /= 2;
-        if (enable_shape_derivatives) {
-            weight_gradient /= 2;
+        weight_gradient = Eigen::SparseVector<double>(vertices.size());
+        if (use_area_weighting && !is_obstacle_ea) {
+            weight_gradient += 0.25 * mesh.edge_area_gradient(eai);
+        }
+        if (use_area_weighting && !is_obstacle_eb) {
+            weight_gradient += 0.25 * mesh.edge_area_gradient(ebi);
         }
     }
 
@@ -369,6 +385,12 @@ void NormalCollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collision(
     const auto add_weight = [&](const size_t vi, const size_t vj,
                                 double& weight,
                                 Eigen::SparseVector<double>& weight_gradient) {
+        // This corrects the edge-vertex terms integrated over vi, which we
+        // dropped if vi is an obstacle.
+        if (skip_obstacles && mesh.is_obstacle_vertex(vi)) {
+            return;
+        }
+
         const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vj];
         const bool is_vi_incident = std::binary_search(
             incident_vertices.begin(), incident_vertices.end(), vi);
@@ -412,6 +434,12 @@ void NormalCollisionsBuilder::add_face_vertex_positive_vertex_vertex_collision(
     const auto add_weight = [&](const size_t vi, const size_t vj,
                                 double& weight,
                                 Eigen::SparseVector<double>& weight_gradient) {
+        // This corrects the face-vertex terms integrated over vi, which we
+        // dropped if vi is an obstacle.
+        if (skip_obstacles && mesh.is_obstacle_vertex(vi)) {
+            return;
+        }
+
         const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vj];
         assert(
             std::is_sorted(incident_vertices.begin(), incident_vertices.end()));
@@ -454,6 +482,12 @@ void NormalCollisionsBuilder::add_face_vertex_negative_edge_vertex_collision(
     const auto& [ei, vi] = candidate;
     assert(vi != mesh.edges()(ei, 0) && vi != mesh.edges()(ei, 1));
 
+    // This corrects the face-vertex terms integrated over vi, which we dropped
+    // if vi is an obstacle.
+    if (skip_obstacles && mesh.is_obstacle_vertex(vi)) {
+        return;
+    }
+
     const auto& incident_vertices = mesh.edge_vertex_adjacencies()[ei];
     assert(std::is_sorted(incident_vertices.begin(), incident_vertices.end()));
     const bool is_vi_incident = std::binary_search(
@@ -494,9 +528,20 @@ void NormalCollisionsBuilder::add_edge_edge_negative_edge_vertex_collision(
     const index_t ea0 = mesh.edges()(ea, 0), ea1 = mesh.edges()(ea, 1);
     assert(p != ea0 && p != ea1);
 
-    // ÷ 4 to handle double counting and PT + EE for correct integration
-    const double weight =
-        use_area_weighting ? (-0.25 * mesh.edge_area(ea)) : -1;
+    // This corrects the edge-edge terms integrated over ea, which we dropped
+    // if ea is an obstacle.
+    if (skip_obstacles && mesh.is_obstacle_edge(ea)) {
+        return;
+    }
+
+    // ÷ 4 to handle double counting and PT + EE for correct integration.
+    // Without area weighting, edge-edge pairs with one obstacle edge have half
+    // weight, so we halve their correction too. Otherwise, the k edges incident
+    // to an obstacle p would sum to k/2 - (k - 1) < 0 for k ≥ 3.
+    double weight = use_area_weighting ? (-0.25 * mesh.edge_area(ea)) : -1;
+    if (!use_area_weighting && skip_obstacles && mesh.is_obstacle_vertex(p)) {
+        weight = -0.5;
+    }
     Eigen::SparseVector<double> weight_gradient;
     if (enable_shape_derivatives) {
         weight_gradient = use_area_weighting
