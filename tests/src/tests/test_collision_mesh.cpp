@@ -3,6 +3,8 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <ipc/collision_mesh.hpp>
+#include <ipc/collisions/normal/normal_collisions.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/config.hpp>
 
 using namespace ipc;
@@ -248,6 +250,85 @@ TEST_CASE("face_normals", "[collision_mesh][face_normals]")
         REQUIRE(N.size() == flipped.num_faces());
         for (const Eigen::Vector3d& n : N) {
             CHECK(n.isApprox(-Eigen::Vector3d::UnitZ()));
+        }
+    }
+}
+
+TEST_CASE("User-provided collision mesh areas", "[collision_mesh][areas]")
+{
+    // Two parallel horizontal segments, close enough to collide.
+    Eigen::MatrixXd V(4, 2);
+    V << 0, 0, 1, 0, 0, 0.1, 1, 0.1;
+    Eigen::MatrixXi E(2, 2);
+    E << 0, 1, 2, 3;
+
+    CollisionMesh mesh(V, E);
+    const Eigen::VectorXd default_areas = mesh.vertex_areas();
+
+    SECTION("Custom areas become the collision weights")
+    {
+        const double scale = 2 * M_PI * 3.0;
+        mesh.set_vertex_areas(scale * default_areas);
+        mesh.set_edge_areas(scale * mesh.edge_areas());
+
+        NormalCollisions collisions;
+        collisions.set_use_area_weighting(true);
+        collisions.build(mesh, V, /*dhat=*/0.2);
+        REQUIRE(collisions.size() > 0);
+
+        NormalCollisions default_collisions;
+        default_collisions.set_use_area_weighting(true);
+        const CollisionMesh default_mesh(V, E);
+        default_collisions.build(default_mesh, V, /*dhat=*/0.2);
+        REQUIRE(default_collisions.size() == collisions.size());
+
+        for (size_t i = 0; i < collisions.size(); ++i) {
+            CHECK(
+                collisions[i].weight
+                == Catch::Approx(scale * default_collisions[i].weight));
+        }
+    }
+
+    SECTION("Zero areas drop their collisions and exert no contact force")
+    {
+        // E.g., axisymmetric primitives on the symmetry axis have no ring area.
+        mesh.set_vertex_areas(Eigen::VectorXd::Zero(mesh.num_vertices()));
+        mesh.set_edge_areas(Eigen::VectorXd::Zero(mesh.num_edges()));
+
+        NormalCollisions collisions;
+        collisions.set_use_area_weighting(true);
+        collisions.build(mesh, V, /*dhat=*/0.2);
+        CHECK(collisions.empty());
+
+        const BarrierPotential potential(/*dhat=*/0.2, /*kappa=*/1.0);
+        CHECK(potential(collisions, mesh, V) == 0);
+        const Eigen::VectorXd grad = potential.gradient(collisions, mesh, V);
+        CHECK(grad.allFinite());
+        CHECK(grad.isZero());
+    }
+
+    SECTION("Invalid areas are rejected")
+    {
+        CHECK_THROWS(mesh.set_vertex_areas(Eigen::VectorXd::Ones(3)));
+        CHECK_THROWS(mesh.set_vertex_areas(Eigen::VectorXd::Constant(4, -1)));
+        CHECK_THROWS(mesh.set_edge_areas(Eigen::VectorXd::Ones(3)));
+        CHECK_THROWS(
+            mesh.set_edge_areas(Eigen::VectorXd::Constant(2, std::nan(""))));
+        CHECK(mesh.vertex_areas() == default_areas);
+    }
+
+    SECTION("Custom areas and area Jacobians are mutually exclusive")
+    {
+        SECTION("Setting after initializing Jacobians")
+        {
+            mesh.init_area_jacobians();
+            CHECK_THROWS(mesh.set_vertex_areas(default_areas));
+            CHECK_THROWS(mesh.set_edge_areas(mesh.edge_areas()));
+        }
+        SECTION("Initializing after setting")
+        {
+            mesh.set_vertex_areas(2 * default_areas);
+            CHECK_THROWS(mesh.init_area_jacobians());
         }
     }
 }
