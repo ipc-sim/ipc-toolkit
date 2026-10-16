@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
-#include <cstdio>
 #include <map>
 #include <mutex>
 #include <sstream>
