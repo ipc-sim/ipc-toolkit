@@ -357,7 +357,7 @@ public:
 
     /// @brief Get the area of the faces (3D).
     const Eigen::VectorXd& face_areas() const { return m_face_areas; }
-  
+
     /// @brief Override the vertex areas used as collision weights.
     /// @note Use this when the quadrature weight of a vertex is not its barycentric area (e.g., axisymmetric models where each vertex stands for a ring of contact). Collisions built before this call keep their old weights.
     /// @note Custom areas do not support shape derivatives: this throws if the area Jacobians were already initialized, and init_area_jacobians() throws afterwards.

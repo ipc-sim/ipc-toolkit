@@ -64,6 +64,12 @@ target_include_directories(geogram_multi_precision SYSTEM PUBLIC
     "$<BUILD_INTERFACE:${GEOGRAM_MULTI_PRECISION_DIR}>"
 )
 
+# The PSM header assumes geogram is a shared library unless told otherwise. On
+# MSVC that marks every symbol __declspec(dllimport), which breaks linking
+# against our static build, so we define GEO_STATIC_LIBS for the library and
+# everything that includes its header.
+target_compile_definitions(geogram_multi_precision PUBLIC GEO_STATIC_LIBS)
+
 target_compile_features(geogram_multi_precision PUBLIC cxx_std_17)
 set_target_properties(geogram_multi_precision PROPERTIES
     POSITION_INDEPENDENT_CODE ON
