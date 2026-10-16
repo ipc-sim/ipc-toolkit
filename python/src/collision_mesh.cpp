@@ -455,9 +455,14 @@ void define_collision_mesh(py::module_& m)
                 Barycentric area of vertex vi.
             )ipc_Qu8mg5v7",
             "vi"_a)
-        .def_property_readonly(
+        .def_property(
             "vertex_areas", &CollisionMesh::vertex_areas,
-            "Get the barycentric area of the vertices.")
+            &CollisionMesh::set_vertex_areas,
+            R"ipc_Qu8mg5v7(
+            The vertex areas used as collision weights (barycentric by default).
+
+            Setting custom areas (e.g., 2πR·ds for axisymmetric models) does not support shape derivatives and must be done before init_area_jacobians(). Collisions built earlier keep their old weights.
+            )ipc_Qu8mg5v7")
         .def(
             "vertex_area_gradient",
             [](const CollisionMesh& self,
@@ -486,9 +491,14 @@ void define_collision_mesh(py::module_& m)
                 Barycentric area of edge ei.
             )ipc_Qu8mg5v7",
             "ei"_a)
-        .def(
+        .def_property(
             "edge_areas", &CollisionMesh::edge_areas,
-            "Get the barycentric area of the edges.")
+            &CollisionMesh::set_edge_areas,
+            R"ipc_Qu8mg5v7(
+            The edge areas used as collision weights (barycentric by default).
+
+            See vertex_areas for the caveats on custom areas.
+            )ipc_Qu8mg5v7")
         .def(
             "edge_area_gradient",
             [](const CollisionMesh& self,
