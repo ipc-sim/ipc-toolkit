@@ -81,17 +81,17 @@ lobatto_set(int n, std::vector<double>& xtab, std::vector<double>& weight)
 
     The quadrature rule:
 
-      Sum ( 1 <= I <= ORDER ) WEIGHt[I) * F ( XTAb[I) )
+      Sum ( 1 <= I <= N ) WEIGHT[I] * F ( XTAB[I] )
 
     The quadrature rule will integrate exactly all polynomials up to
-    X**(2*ORDER-3).
+    X^(2*N-3).
 
     The Lobatto rule is distinguished by the fact that both endpoints
     (-1 and 1) are always abscissas.
 
   Licensing:
 
-    This code is distributed under the GNU LGPL license.
+    This code is distributed under the MIT license.
 
   Modified:
 
@@ -100,6 +100,11 @@ lobatto_set(int n, std::vector<double>& xtab, std::vector<double>& weight)
   Author:
 
     John Burkardt
+
+  Source:
+
+    https://people.sc.fsu.edu/~jburkardt/c_src/quad_rule/quad_rule.c
+    (adapted to std::vector and exceptions)
 
   Reference:
 
@@ -122,12 +127,12 @@ lobatto_set(int n, std::vector<double>& xtab, std::vector<double>& weight)
 
   Parameters:
 
-    Input, int ORDER, the order.
-    ORDER must be between 2 and 20.
+    Input, int N, the order.
+    N must be between 2 and 20.
 
-    Output, double XTAB[ORDER], the abscissas.
+    Output, double XTAB[N], the abscissas.
 
-    Output, double WEIGHT[ORDER], the weights.
+    Output, double WEIGHT[N], the weights.
 */
 {
     xtab.resize(n);
@@ -635,23 +640,29 @@ lobatto_compute(int n1, std::vector<double>& x, std::vector<double>& w)
       Sum ( 1 <= I <= N ) WEIGHT(I) * F ( XTAB(I) )
 
     The quadrature rule will integrate exactly all polynomials up to
-    X**(2*N-3).
+    X^(2*N-3).
 
     The Lobatto rule is distinguished by the fact that both endpoints
     (-1 and 1) are always abscissas.
 
   Licensing:
 
-    This code is distributed under the GNU LGPL license.
+    This code is distributed under the MIT license.
 
   Modified:
 
-    04 February 2007
+    28 May 2014
 
   Author:
 
     Original MATLAB version by Greg von Winckel.
-    C version by John Burkardt.
+    This version by John Burkardt.
+
+  Source:
+
+    https://people.sc.fsu.edu/~jburkardt/c_src/quad_rule/quad_rule.c
+    (adapted to std::vector and exceptions; orders up to 20 come from
+    lobatto_set)
 
   Reference:
 
@@ -690,7 +701,7 @@ lobatto_compute(int n1, std::vector<double>& x, std::vector<double>& w)
 {
     int i;
     int j;
-    double test, error;
+    double test;
     double tolerance;
     const int n = n1 + 1;
 
@@ -748,15 +759,12 @@ lobatto_compute(int n1, std::vector<double>& x, std::vector<double>& w)
                     / (static_cast<double>(n) * p[i + (n - 1) * n]);
         }
 
-        error = 0.0;
+        test = 0.0;
         for (i = 0; i < n; i++) {
-            test = fabs(x[i] - xold[i]);
-            if (test > error) {
-                error = test;
-            }
+            test = std::fmax(test, std::fabs(x[i] - xold[i]));
         }
 
-    } while (tolerance < error);
+    } while (tolerance < test);
 
     // Reverse order of x.
     for (int ii = 0; ii < n / 2; ++ii) {

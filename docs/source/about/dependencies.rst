@@ -135,6 +135,9 @@ Some of these libraries are enabled by default, and some are not. You can enable
 .. note::
     ``geogram`` makes the distance-type classifiers in ``ipc/distance/distance_type_exact.hpp`` (used by the ESP potential) exact. We only download geogram's standalone MultiPrecision Pluggable Software Module (its exact ``expansion_nt`` arithmetic, two source files with no dependencies) from the geogram release and compile it into a small static library, rather than building all of geogram. We compile it with its namespace renamed from ``GEO`` to ``ipc_geogram``, so it can coexist with a full copy of geogram linked by a downstream project (e.g., PolyFEM). The archive's optional CGAL example is deleted after download and never built.
 
+.. note::
+    The Gauss–Lobatto quadrature used by the ESP potential (``ipc/esp/collisions/esp_quadrature.hpp``) is adapted from John Burkardt's `quad_rule <https://people.sc.fsu.edu/~jburkardt/c_src/quad_rule/quad_rule.html>`_ library, which is distributed under the MIT license.
+
 .. warning::
     ``filib`` is licensed under `LGPL-2.1 <https://github.com/zfergus/filib/blob/main/LICENSE>`_ and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynamic linkage requires copying the ``.so``/``.dylib``/``.dll`` file to the binary directory or system path. To enable this, set the CMake option ``FILIB_BUILD_SHARED_LIBS`` to ``ON`` and add this CMake code to copy the shared library object to the binary directory:
 
