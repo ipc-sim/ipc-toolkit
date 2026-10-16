@@ -2140,10 +2140,10 @@
           <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh.edge_areas" class="md-nav__link">
     
-      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
     
     <span class="md-ellipsis">
-      <span title="ipctk.CollisionMesh.edge_areas (Python method) — Get the barycentric area of the edges."><span>edge_<wbr>areas</span></span>
+      <span title="ipctk.CollisionMesh.edge_areas (Python property) — The edge areas used as collision weights (barycentric by default)."><span>edge_<wbr>areas</span></span>
     </span>
   </a>
   
@@ -2663,7 +2663,7 @@
       <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
     
     <span class="md-ellipsis">
-      <span title="ipctk.CollisionMesh.vertex_areas (Python property) — Get the barycentric area of the vertices."><span>vertex_<wbr>areas</span></span>
+      <span title="ipctk.CollisionMesh.vertex_areas (Python property) — The vertex areas used as collision weights (barycentric by default)."><span>vertex_<wbr>areas</span></span>
     </span>
   </a>
   
@@ -3685,10 +3685,10 @@
           <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh.edge_areas" class="md-nav__link">
     
-      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
     
     <span class="md-ellipsis">
-      <span title="ipctk.CollisionMesh.edge_areas (Python method) — Get the barycentric area of the edges."><span>edge_<wbr>areas</span></span>
+      <span title="ipctk.CollisionMesh.edge_areas (Python property) — The edge areas used as collision weights (barycentric by default)."><span>edge_<wbr>areas</span></span>
     </span>
   </a>
   
@@ -4208,7 +4208,7 @@
       <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
     
     <span class="md-ellipsis">
-      <span title="ipctk.CollisionMesh.vertex_areas (Python property) — Get the barycentric area of the vertices."><span>vertex_<wbr>areas</span></span>
+      <span title="ipctk.CollisionMesh.vertex_areas (Python property) — The vertex areas used as collision weights (barycentric by default)."><span>vertex_<wbr>areas</span></span>
     </span>
   </a>
   
@@ -4381,13 +4381,16 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edge_vertex_adjacencies" title="ipctk.CollisionMesh.edge_vertex_adjacencies (Python property) — Get the edge-vertex adjacency matrix."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_vertex_adjacencies</span></code></a></p></td>
 <td><p>Get the edge-vertex adjacency matrix.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.vertex_areas" title="ipctk.CollisionMesh.vertex_areas (Python property) — Get the barycentric area of the vertices."><code class="xref py py-obj docutils literal notranslate"><span class="pre">vertex_areas</span></code></a></p></td>
-<td><p>Get the barycentric area of the vertices.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.vertex_areas" title="ipctk.CollisionMesh.vertex_areas (Python property) — The vertex areas used as collision weights (barycentric by default)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">vertex_areas</span></code></a></p></td>
+<td><p>The vertex areas used as collision weights (barycentric by default).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.can_collide" title="ipctk.CollisionMesh.can_collide (Python property) — A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide."><code class="xref py py-obj docutils literal notranslate"><span class="pre">can_collide</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edge_areas" title="ipctk.CollisionMesh.edge_areas (Python property) — The edge areas used as collision weights (barycentric by default)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_areas</span></code></a></p></td>
+<td><p>The edge areas used as collision weights (barycentric by default).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.can_collide" title="ipctk.CollisionMesh.can_collide (Python property) — A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide."><code class="xref py py-obj docutils literal notranslate"><span class="pre">can_collide</span></code></a></p></td>
 <td><p>A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.planes" title="ipctk.CollisionMesh.planes (Python property) — A vector of planes in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">planes</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.planes" title="ipctk.CollisionMesh.planes (Python property) — A vector of planes in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">planes</span></code></a></p></td>
 <td><p>A vector of planes in the collision mesh.</p></td>
 </tr>
 </tbody>
@@ -4442,19 +4445,16 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edge_area" title="ipctk.CollisionMesh.edge_area (Python method) — Get the barycentric area of an edge."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_area</span></code></a>(self, ei)</p></td>
 <td><p>Get the barycentric area of an edge.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edge_areas" title="ipctk.CollisionMesh.edge_areas (Python method) — Get the barycentric area of the edges."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_areas</span></code></a>(self)</p></td>
-<td><p>Get the barycentric area of the edges.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edge_area_gradient" title="ipctk.CollisionMesh.edge_area_gradient (Python method) — Get the gradient of the barycentric area of an edge wrt the rest positions of all points."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_area_gradient</span></code></a>(self, ei)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edge_area_gradient" title="ipctk.CollisionMesh.edge_area_gradient (Python method) — Get the gradient of the barycentric area of an edge wrt the rest positions of all points."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_area_gradient</span></code></a>(self, ei)</p></td>
 <td><p>Get the gradient of the barycentric area of an edge wrt the rest positions of all points.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.are_area_jacobians_initialized" title="ipctk.CollisionMesh.are_area_jacobians_initialized (Python method) — Determine if the area Jacobians have been initialized by calling init_area_jacobians()."><code class="xref py py-obj docutils literal notranslate"><span class="pre">are_area_jacobians_initialized</span></code></a>(self)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.are_area_jacobians_initialized" title="ipctk.CollisionMesh.are_area_jacobians_initialized (Python method) — Determine if the area Jacobians have been initialized by calling init_area_jacobians()."><code class="xref py py-obj docutils literal notranslate"><span class="pre">are_area_jacobians_initialized</span></code></a>(self)</p></td>
 <td><p>Determine if the area Jacobians have been initialized by calling init_area_jacobians().</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.construct_is_on_surface" title="ipctk.CollisionMesh.construct_is_on_surface (Python method) — Construct a vector of bools indicating whether each vertex is on the surface."><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_is_on_surface</span></code></a>(num_vertices, edges)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.construct_is_on_surface" title="ipctk.CollisionMesh.construct_is_on_surface (Python method) — Construct a vector of bools indicating whether each vertex is on the surface."><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_is_on_surface</span></code></a>(num_vertices, edges)</p></td>
 <td><p>Construct a vector of bools indicating whether each vertex is on the surface.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.construct_faces_to_edges" title="ipctk.CollisionMesh.construct_faces_to_edges (Python method) — Construct a matrix that maps from the faces' edges to rows in the edges matrix."><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_faces_to_edges</span></code></a>(faces, edges)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.construct_faces_to_edges" title="ipctk.CollisionMesh.construct_faces_to_edges (Python method) — Construct a matrix that maps from the faces' edges to rows in the edges matrix."><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_faces_to_edges</span></code></a>(faces, edges)</p></td>
 <td><p>Construct a matrix that maps from the faces' edges to rows in the edges matrix.</p></td>
 </tr>
 </tbody>
@@ -4673,10 +4673,11 @@ displacement_map: The displacement mapping from displacements on the full mesh t
 </dl>
 </dd></dl>
 
-<dl class="py method objdesc">
+<dl class="py property objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.edge_areas">
-<span class="sig-name descname"><span class="pre">edge_areas</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.edge_areas" title="ipctk.CollisionMesh.edge_areas.self (Python parameter)"><span class="n"><span class="pre">self</span></span></a></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'[m,</span> <span class="pre">1]'</span></span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.edge_areas" title="Link to this definition">¶</a></dt>
-<dd><p>Get the barycentric area of the edges.</p>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge_areas</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'[m,</span> <span class="pre">1]'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.edge_areas" title="Link to this definition">¶</a></dt>
+<dd><p>The edge areas used as collision weights (barycentric by default).</p>
+<p>See vertex_areas for the caveats on custom areas.</p>
 </dd></dl>
 
 <dl class="py property objdesc">
@@ -4941,7 +4942,8 @@ In Python, a <cite>Hyperplane</cite> can be constructed from either:</p>
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.vertex_areas">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_areas</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'[m,</span> <span class="pre">1]'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_areas" title="Link to this definition">¶</a></dt>
-<dd><p>Get the barycentric area of the vertices.</p>
+<dd><p>The vertex areas used as collision weights (barycentric by default).</p>
+<p>Setting custom areas (e.g., 2πR·ds for axisymmetric models) does not support shape derivatives and must be done before init_area_jacobians(). Collisions built earlier keep their old weights.</p>
 </dd></dl>
 
 <dl class="py property objdesc">
@@ -4994,7 +4996,7 @@ In Python, a <cite>Hyperplane</cite> can be constructed from either:</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Oct 15, 2026
+    Oct 16, 2026
   </span>
 
     
