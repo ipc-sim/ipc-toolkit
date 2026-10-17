@@ -55,6 +55,8 @@ public:
     /// @param vertices Vertices of the collision mesh.
     /// @param dhat The activation distance of the barrier.
     /// @param  dmin  Minimum distance.
+    /// @throws std::invalid_argument In 3D, if the candidates were built with
+    ///         all_types = true (see Candidates::has_all_types).
     void build(
         const Candidates& candidates,
         const CollisionMesh& mesh,
@@ -188,10 +190,31 @@ public:
     /// @brief Plane-vertex normal collisions.
     std::vector<PlaneVertexNormalCollision> pv_collisions;
 
+    /// @brief Get if the collision set skips obstacle surfaces.
+    bool skip_obstacles() const { return m_skip_obstacles; }
+
+    /// @brief Set if the collision set skips obstacle surfaces.
+    /// Obstacles are marked with CollisionMesh's obstacle_vertex. When set,
+    /// collisions are integrated over non-obstacle surfaces only: edge-vertex,
+    /// face-vertex, and plane-vertex pairs whose vertex is an obstacle are
+    /// dropped, as are vertex-vertex and edge-edge pairs between two
+    /// obstacles. A vertex-vertex or edge-edge pair with one obstacle keeps
+    /// only the non-obstacle primitive's share of the weight: with area
+    /// weighting, the obstacle's area no longer contributes; without it, the
+    /// weight is halved. The IMPROVED_MAX_APPROX corrections follow the same
+    /// rule, so the net weights stay non-negative.
+    /// @warning This must be set before the collisions are built.
+    /// @param skip_obstacles If the collision set should skip obstacle surfaces.
+    void set_skip_obstacles(const bool skip_obstacles)
+    {
+        m_skip_obstacles = skip_obstacles;
+    }
+
 protected:
     CollisionSetType m_collision_set_type = CollisionSetType::IPC;
     bool m_use_area_weighting = false;
     bool m_enable_shape_derivatives = false;
+    bool m_skip_obstacles = false;
 };
 
 } // namespace ipc

@@ -9,6 +9,8 @@
 
 #include <Eigen/Core>
 
+#include <memory>
+#include <set>
 #include <vector>
 
 namespace ipc {
@@ -23,14 +25,20 @@ public:
     /// @param vertices Surface vertex positions (rowwise).
     /// @param inflation_radius Amount to inflate the bounding boxes.
     /// @param broad_phase Broad phase method to use.
+    /// @param all_types Also detect the candidate types only ESP needs (see
+    ///                  BroadPhase::detect_collision_candidates). Recorded in
+    ///                  has_all_types.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double inflation_radius = 0,
-        BroadPhase* broad_phase = nullptr);
+        BroadPhase* broad_phase = nullptr,
+        const bool all_types = false);
 
     /// @brief Initialize the set of continuous collision detection candidates.
     /// @note Assumes the trajectory is linear.
+    /// @note These candidates never include the ESP-only types, so
+    ///       has_all_types is false afterwards.
     /// @param mesh The surface of the collision mesh.
     /// @param vertices_t0 Surface vertex starting positions (rowwise).
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
@@ -236,6 +244,31 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const;
 
+    /// @brief Build per-primitive adjacency sets from the candidates.
+    /// @note Required before calling any of the *_set() queries below.
+    void convert_candidates_to_sets();
+
+    /// @brief Vertices near vertex id (2D: also the endpoints of nearby edges).
+    std::set<index_t> vv_set(const CollisionMesh& mesh, index_t id) const;
+    /// @brief Edges near vertex id.
+    std::set<index_t> ve_set(index_t id) const;
+    /// @brief Faces near vertex id.
+    std::set<index_t> vf_set(index_t id) const;
+
+    /// @brief Vertices near edge id, including its endpoints.
+    std::set<index_t> ev_set(const CollisionMesh& mesh, index_t id) const;
+    /// @brief Edges near or adjacent to edge id, excluding id.
+    std::set<index_t> ee_set(const CollisionMesh& mesh, index_t id) const;
+    /// @brief Faces near or adjacent to edge id, excluding faces containing id.
+    std::set<index_t> ef_set(const CollisionMesh& mesh, index_t id) const;
+
+    /// @brief Vertices near face id, including its corners.
+    std::set<index_t> fv_set(const CollisionMesh& mesh, index_t id) const;
+    /// @brief Edges near or adjacent to face id.
+    std::set<index_t> fe_set(const CollisionMesh& mesh, index_t id) const;
+    /// @brief Faces near or adjacent to face id, excluding id.
+    std::set<index_t> ff_set(const CollisionMesh& mesh, index_t id) const;
+
 public:
     std::vector<VertexVertexCandidate> vv_candidates;
     std::vector<EdgeVertexCandidate> ev_candidates;
@@ -243,8 +276,29 @@ public:
     std::vector<FaceVertexCandidate> fv_candidates;
     std::vector<PlaneVertexCandidate> pv_candidates;
 
+    std::vector<EdgeFaceCandidate> ef_candidates;
+    std::vector<FaceFaceCandidate> ff_candidates;
+
+    /// @brief Whether these candidates include the types only ESP needs.
+    ///
+    /// In 3D, all_types adds whole-mesh vertex-vertex, edge-vertex, edge-face,
+    /// and face-face candidates. ESPCollisions needs them and NormalCollisions
+    /// would double count them, so both check this flag in 3D and throw on a
+    /// mismatch. build() and clear() set it; if you fill the candidate lists
+    /// by hand, set it to match what you filled.
+    bool has_all_types = false;
+
 private:
     static bool default_is_active(double candidate) { return true; }
+
+    /// @brief Adjacency sets built by convert_candidates_to_sets().
+    ///
+    /// Held behind a pointer so this public header does not need
+    /// ipc/utils/unordered_map_and_set.hpp, which pulls in Abseil -- a private
+    /// dependency of the library that consumers (e.g. the Python bindings) do
+    /// not link against.
+    struct AdjacencySets;
+    std::shared_ptr<AdjacencySets> m_sets;
 };
 
 } // namespace ipc

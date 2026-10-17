@@ -1,7 +1,10 @@
 set(SOURCES
   distance_type.hpp
+  distance_type_exact.cpp
+  distance_type_exact.hpp
   edge_edge.hpp
   edge_edge_mollifier.hpp
+  exact_vector.hpp
   line_line.hpp
   point_edge.hpp
   point_line.hpp

@@ -1,9 +1,12 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/candidates/edge_face.hpp>
 #include <ipc/candidates/face_face.hpp>
 #include <ipc/candidates/plane_vertex.hpp>
+
+#include <algorithm>
 
 using namespace ipc;
 
@@ -158,4 +161,81 @@ TEST_CASE("Plane-Vertex Candidate", "[candidates][plane-vertex]")
     CHECK(PlaneVertexCandidate(plane, 1) != PlaneVertexCandidate(plane, 2));
     CHECK(PlaneVertexCandidate(plane, 1) < PlaneVertexCandidate(plane, 2));
     CHECK(!(PlaneVertexCandidate(plane, 2) < PlaneVertexCandidate(plane, 1)));
+}
+
+TEST_CASE("Candidates adjacency sets", "[candidates]")
+{
+    // Vertex 2 is 0.05 above the middle of edge 0.
+    Eigen::MatrixXd V(4, 2);
+    V << 0, 0, 1, 0, 0.5, 0.05, 3, 3;
+    Eigen::MatrixXi E(2, 2);
+    E << 0, 1, 2, 3;
+    const CollisionMesh mesh(V, E, Eigen::MatrixXi());
+
+    // Before convert_candidates_to_sets(), every query is empty.
+    Candidates candidates;
+    CHECK(candidates.vv_set(mesh, 0).empty());
+    CHECK(candidates.ve_set(0).empty());
+    CHECK(candidates.vf_set(0).empty());
+    CHECK(candidates.ev_set(mesh, 0).empty());
+    CHECK(candidates.ee_set(mesh, 0).empty());
+    CHECK(candidates.ef_set(mesh, 0).empty());
+    CHECK(candidates.fv_set(mesh, 0).empty());
+    CHECK(candidates.fe_set(mesh, 0).empty());
+    CHECK(candidates.ff_set(mesh, 0).empty());
+
+    candidates.build(mesh, V, /*inflation_radius=*/0.1);
+    REQUIRE(!candidates.ev_candidates.empty());
+    candidates.convert_candidates_to_sets();
+    // In 2D, vv_set also holds the endpoints of the edges near the vertex.
+    CHECK(candidates.vv_set(mesh, 2) == std::set<index_t> { 0, 1 });
+    CHECK(candidates.ve_set(2).count(0) == 1);
+    CHECK(candidates.vf_set(2).empty());
+}
+
+TEST_CASE(
+    "All-types candidates keep whole-mesh pairs alongside codim. primitives",
+    "[candidates]")
+{
+    // Two triangles meet tip to tip (vertices 0 and 3). Far away, a codim.
+    // vertex (9) sits next to a dangling edge (7, 8), and vertex 6 is stray.
+    Eigen::MatrixXd V(10, 3);
+    V << 0, 0, 0.025, 1, 0, 1, -1, 0, 1,   //
+        0, 0, -0.025, 0, 1, -1, 0, -1, -1, //
+        50, 50, 50,                        //
+        -50, -50, -50, -49, -50, -50, -49.5, -50, -49.99;
+    Eigen::MatrixXi F(2, 3);
+    F << 0, 1, 2, 3, 4, 5;
+    Eigen::MatrixXi E(7, 2);
+    E << 0, 1, 1, 2, 2, 0, 3, 4, 4, 5, 5, 3, 7, 8;
+    const CollisionMesh mesh(V, E, F);
+    REQUIRE(mesh.num_codim_vertices() == 2);
+    REQUIRE(mesh.num_codim_edges() == 1);
+
+    const auto contains = [](const auto& list, const auto& candidate) {
+        return std::find(list.begin(), list.end(), candidate) != list.end();
+    };
+
+    const bool all_types = GENERATE(false, true);
+    CAPTURE(all_types);
+
+    Candidates candidates;
+    candidates.build(mesh, V, /*inflation_radius=*/0.05, nullptr, all_types);
+    CHECK(candidates.has_all_types == all_types);
+
+    // Both builds find the codim. edge next to the codim. vertex.
+    CHECK(contains(candidates.ev_candidates, EdgeVertexCandidate(6, 9)));
+
+    if (all_types) {
+        // The tips are a surface vertex-vertex pair, which only all_types
+        // detects. The codim. primitives must not replace it.
+        CHECK(contains(candidates.vv_candidates, VertexVertexCandidate(0, 3)));
+    }
+
+    candidates.clear();
+    CHECK(!candidates.has_all_types);
+
+    // Trajectory candidates never include the ESP-only types.
+    candidates.build(mesh, V, V, /*inflation_radius=*/0.05);
+    CHECK(!candidates.has_all_types);
 }

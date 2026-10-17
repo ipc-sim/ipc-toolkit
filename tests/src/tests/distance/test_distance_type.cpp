@@ -6,8 +6,13 @@
 #include <catch2/generators/catch_generators_random.hpp>
 
 #include <ipc/distance/distance_type.hpp>
+#include <ipc/distance/distance_type_exact.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
+
+#include "distance_type_reference.hpp"
+
+#include <array>
 
 using namespace ipc;
 
@@ -51,6 +56,221 @@ TEST_CASE("Point-edge distance type", "[distance][distance-type][point-edge]")
             CHECK(dtype == PointEdgeDistanceType::P_E1);
         } else {
             CHECK(dtype == PointEdgeDistanceType::P_E);
+        }
+    }
+}
+
+// These compare the shipped classifiers, standard and exact, against an
+// exact-arithmetic reference.
+TEST_CASE(
+    "Point-edge distance type random",
+    "[distance][distance-type][point-edge][exact]")
+{
+    const int num_random_tests = 10000;
+
+    for (int i = 0; i < num_random_tests; ++i) {
+        const VectorMax3d p = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d e0 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d e1 = Eigen::Vector3d::Random() * 10;
+
+        const PointEdgeDistanceType dtype_ref =
+            point_edge_distance_type_reference(p, e0, e1);
+
+        CAPTURE(p.transpose(), e0.transpose(), e1.transpose());
+        CHECK(point_edge_distance_type(p, e0, e1) == dtype_ref);
+        CHECK(point_edge_distance_type_exact(p, e0, e1) == dtype_ref);
+    }
+}
+
+TEST_CASE(
+    "Point-triangle distance type random",
+    "[distance][distance-type][point-triangle][exact]")
+{
+    const int num_random_tests = 10000;
+
+    for (int i = 0; i < num_random_tests; ++i) {
+        const VectorMax3d p = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d t0 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d t1 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d t2 = Eigen::Vector3d::Random() * 10;
+
+        const PointTriangleDistanceType dtype_ref =
+            point_triangle_distance_type_reference(p, t0, t1, t2);
+
+        CAPTURE(p.transpose(), t0.transpose(), t1.transpose(), t2.transpose());
+        CHECK(point_triangle_distance_type(p, t0, t1, t2) == dtype_ref);
+        CHECK(point_triangle_distance_type_exact(p, t0, t1, t2) == dtype_ref);
+    }
+}
+
+TEST_CASE(
+    "Edge-edge distance type random",
+    "[distance][distance-type][edge-edge][exact]")
+{
+    const int num_random_tests = 10000;
+
+    for (int i = 0; i < num_random_tests; ++i) {
+        const VectorMax3d e0 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d e1 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d e2 = Eigen::Vector3d::Random() * 10;
+        const VectorMax3d e3 = Eigen::Vector3d::Random() * 10;
+
+        const EdgeEdgeDistanceType dtype_ref =
+            edge_edge_distance_type_reference(e0, e1, e2, e3);
+
+        CAPTURE(e0.transpose(), e1.transpose(), e2.transpose(), e3.transpose());
+        CHECK(edge_edge_distance_type(e0, e1, e2, e3) == dtype_ref);
+        CHECK(edge_edge_distance_type_exact(e0, e1, e2, e3) == dtype_ref);
+    }
+}
+
+// Nearly parallel random edges. ipc::edge_edge_distance_type unconditionally
+// uses the thresholded analytic classifier (no exact-predicate mode), so the
+// reference must be called with the *same* threshold to stay comparable:
+// with a threshold of 0 (a fully exact reference), this comparison would fail
+// on ~20% of samples, because the reference would then only take the
+// parallel-classifier branch for exactly-parallel edges while the shipped
+// classifier takes it for the much larger near-parallel set.
+TEST_CASE(
+    "Edge-edge distance type random parallel",
+    "[distance][distance-type][edge-edge][exact][parallel]")
+{
+    const int num_random_tests = 10000;
+
+    for (int i = 0; i < num_random_tests; ++i) {
+        const Eigen::Vector3d ea0 = Eigen::Vector3d::Random() * 10;
+        const Eigen::Vector3d ea1 = Eigen::Vector3d::Random() * 10;
+
+        Eigen::Vector3d eb0 = ea0;
+        Eigen::Vector3d eb1 = ea1;
+
+        const double amount = Eigen::Vector3d::Random()(0);
+        const int axis = i % 3;
+        eb0[axis] += amount;
+        eb1[axis] += amount;
+
+        if (i % 2 == 0)
+            eb1 += Eigen::Vector3d::Random() * ((ea1 - ea0).norm() * 1e-20);
+
+        const EdgeEdgeDistanceType dtype_ref =
+            edge_edge_distance_type_reference(ea0, ea1, eb0, eb1);
+
+        CAPTURE(
+            ea0.transpose(), ea1.transpose(), eb0.transpose(), eb1.transpose());
+        CHECK(edge_edge_distance_type(ea0, ea1, eb0, eb1) == dtype_ref);
+        // The exact classifier has no parallel branch; its callers skip the
+        // pairs is_parallel_edge_edge flags.
+        if (!is_parallel_edge_edge(ea0, ea1, eb0, eb1)) {
+            CHECK(
+                edge_edge_distance_type_exact(ea0, ea1, eb0, eb1) == dtype_ref);
+        }
+    }
+}
+
+// The *_exact classifiers must agree with each other, e.g., a point-triangle
+// P_E0 implies a point-edge P_E on that edge. ESP relies on this. The points
+// are placed on or near the region boundaries, where rounding makes the
+// predicates near-ties.
+TEST_CASE(
+    "Exact distance-type classifiers are mutually consistent",
+    "[distance][distance-type][exact]")
+{
+    using PE = PointEdgeDistanceType;
+    using PT = PointTriangleDistanceType;
+    using EE = EdgeEdgeDistanceType;
+
+    const auto pe = [](const Eigen::Vector3d& p, const Eigen::Vector3d& e0,
+                       const Eigen::Vector3d& e1) {
+        return point_edge_distance_type_exact(p, e0, e1);
+    };
+
+    const std::array<double, 7> params { { -0.5, 0, 1.0 / 3.0, 0.5, 0.7, 1,
+                                           1.5 } };
+    const std::array<double, 3> offsets { { 0, 1e-3, 1 } };
+    const int n_random = 50;
+
+    for (int i = 0; i < n_random; i++) {
+        const Eigen::Vector3d t0 = Eigen::Vector3d::Random();
+        const Eigen::Vector3d t1 = Eigen::Vector3d::Random();
+        const Eigen::Vector3d t2 = Eigen::Vector3d::Random();
+        const Eigen::Vector3d n = (t1 - t0).cross(t2 - t0).normalized();
+
+        for (const double a : params) {
+            for (const double b : params) {
+                for (const double c : offsets) {
+                    const Eigen::Vector3d p =
+                        t0 + a * (t1 - t0) + b * (t2 - t0) + c * n;
+                    CAPTURE(i, a, b, c);
+
+                    switch (point_triangle_distance_type_exact(p, t0, t1, t2)) {
+                    case PT::P_T0:
+                        CHECK(pe(p, t0, t1) == PE::P_E0);
+                        CHECK(pe(p, t0, t2) == PE::P_E0);
+                        break;
+                    case PT::P_T1:
+                        CHECK(pe(p, t1, t2) == PE::P_E0);
+                        CHECK(pe(p, t1, t0) == PE::P_E0);
+                        break;
+                    case PT::P_T2:
+                        CHECK(pe(p, t2, t0) == PE::P_E0);
+                        CHECK(pe(p, t2, t1) == PE::P_E0);
+                        break;
+                    case PT::P_E0:
+                        CHECK(pe(p, t0, t1) == PE::P_E);
+                        CHECK(pe(p, t1, t0) == PE::P_E);
+                        break;
+                    case PT::P_E1:
+                        CHECK(pe(p, t1, t2) == PE::P_E);
+                        CHECK(pe(p, t2, t1) == PE::P_E);
+                        break;
+                    case PT::P_E2:
+                        CHECK(pe(p, t2, t0) == PE::P_E);
+                        CHECK(pe(p, t0, t2) == PE::P_E);
+                        break;
+                    default:
+                        break;
+                    }
+
+                    // Edge-edge: ea = (t0, t1), eb = (t2, p).
+                    const Eigen::Vector3d &ea0 = t0, &ea1 = t1, &eb0 = t2;
+                    const Eigen::Vector3d& eb1 = p;
+                    if (is_parallel_edge_edge(ea0, ea1, eb0, eb1)) {
+                        continue;
+                    }
+                    switch (edge_edge_distance_type_exact(ea0, ea1, eb0, eb1)) {
+                    case EE::EA0_EB0:
+                        CHECK(pe(ea0, eb0, eb1) == PE::P_E0);
+                        CHECK(pe(eb0, ea0, ea1) == PE::P_E0);
+                        break;
+                    case EE::EA0_EB1:
+                        CHECK(pe(ea0, eb0, eb1) == PE::P_E1);
+                        CHECK(pe(eb1, ea0, ea1) == PE::P_E0);
+                        break;
+                    case EE::EA1_EB0:
+                        CHECK(pe(ea1, eb0, eb1) == PE::P_E0);
+                        CHECK(pe(eb0, ea0, ea1) == PE::P_E1);
+                        break;
+                    case EE::EA1_EB1:
+                        CHECK(pe(ea1, eb0, eb1) == PE::P_E1);
+                        CHECK(pe(eb1, ea0, ea1) == PE::P_E1);
+                        break;
+                    case EE::EA_EB0:
+                        CHECK(pe(eb0, ea0, ea1) == PE::P_E);
+                        break;
+                    case EE::EA_EB1:
+                        CHECK(pe(eb1, ea0, ea1) == PE::P_E);
+                        break;
+                    case EE::EA0_EB:
+                        CHECK(pe(ea0, eb0, eb1) == PE::P_E);
+                        break;
+                    case EE::EA1_EB:
+                        CHECK(pe(ea1, eb0, eb1) == PE::P_E);
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
         }
     }
 }
@@ -564,5 +784,33 @@ TEST_CASE(
         CAPTURE(c.name);
         CHECK(
             point_triangle_distance_type(c.p, c.t0, c.t1, c.t2) == c.expected);
+    }
+}
+
+TEST_CASE(
+    "Exact distance types with the standard classifiers",
+    "[distance][distance-type]")
+{
+    // Restore the default even if a check fails.
+    struct Restore {
+        ~Restore() { DistanceTypeConfig::instance().set_use_standard(false); }
+    } restore;
+    DistanceTypeConfig::instance().set_use_standard(true);
+    REQUIRE(DistanceTypeConfig::instance().use_standard());
+
+    for (int i = 0; i < 100; ++i) {
+        const Eigen::Vector3d p = Eigen::Vector3d::Random(),
+                              a = Eigen::Vector3d::Random(),
+                              b = Eigen::Vector3d::Random(),
+                              c = Eigen::Vector3d::Random();
+        CHECK(
+            point_edge_distance_type_exact(p, a, b)
+            == point_edge_distance_type(p, a, b));
+        CHECK(
+            point_triangle_distance_type_exact(p, a, b, c)
+            == point_triangle_distance_type(p, a, b, c));
+        CHECK(
+            edge_edge_distance_type_exact(p, a, b, c)
+            == edge_edge_distance_type(p, a, b, c));
     }
 }

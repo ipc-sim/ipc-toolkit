@@ -583,7 +583,7 @@ MatrixMax12d TangentialPotential::force_jacobian(
     return J;
 }
 
-Eigen::VectorXd TangentialPotential::smooth_contact_force(
+Eigen::VectorXd TangentialPotential::gcp_force(
     const TangentialCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
@@ -604,7 +604,7 @@ Eigen::VectorXd TangentialPotential::smooth_contact_force(
         velocities.size(), dim, collisions.size(),
         [&](const size_t i) -> VectorMaxNd {
             const auto& collision = collisions[i];
-            return smooth_contact_force(
+            return gcp_force(
                 collision, collision.dof(rest_positions, edges, faces),
                 collision.dof(lagged_displacements, edges, faces),
                 collision.dof(velocities, edges, faces), no_mu);
@@ -612,13 +612,13 @@ Eigen::VectorXd TangentialPotential::smooth_contact_force(
         [&](const size_t i) { return collisions[i].vertex_ids(edges, faces); });
 }
 
-Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
+Eigen::SparseMatrix<double> TangentialPotential::gcp_force_jacobian(
     const TangentialCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
     Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
     Eigen::ConstRef<Eigen::MatrixXd> velocities,
-    const SmoothContactParameters& params,
+    const GCPParameters& params,
     const DiffWRT wrt,
     const double dmin,
     const bool no_mu) const
@@ -647,7 +647,7 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
         // contact force
         const MatrixMaxNd local_force_jacobian =
             collision.normal_force_magnitude
-            * smooth_contact_force_jacobian_unit(
+            * gcp_force_jacobian_unit(
                 collision, collision.dof(lagged_positions, edges, faces),
                 collision.dof(velocities, edges, faces), wrt, false);
 
@@ -661,7 +661,7 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
         }
 
         // The term that includes derivatives of normal contact force
-        const VectorMaxNd local_force = smooth_contact_force(
+        const VectorMaxNd local_force = gcp_force(
             collision, collision.dof(rest_positions, edges, faces),
             collision.dof(lagged_displacements, edges, faces),
             collision.dof(velocities, edges, faces), false, true);
@@ -670,7 +670,7 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
         Eigen::VectorXd normal_force_grad;
         std::vector<index_t> cc_vert_ids;
         Eigen::MatrixXd Xt = rest_positions + lagged_displacements;
-        auto cc = collision.smooth_collision;
+        auto cc = collision.gcp_collision;
         const Eigen::VectorXd contact_grad = cc->gradient(cc->dof(Xt), params);
         const Eigen::MatrixXd contact_hess = cc->hessian(cc->dof(Xt), params);
         normal_force_grad =
@@ -694,7 +694,7 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
     return jacobian;
 }
 
-TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
+TangentialPotential::VectorMaxNd TangentialPotential::gcp_force(
     const TangentialCollision& collision,
     Eigen::ConstRef<VectorMaxNd> rest_positions,       // = x
     Eigen::ConstRef<VectorMaxNd> lagged_displacements, // = u
@@ -758,8 +758,7 @@ TangentialPotential::VectorMaxNd TangentialPotential::smooth_contact_force(
         * mu_f1_over_norm_tau * T * tau_aniso;
 }
 
-TangentialPotential::MatrixMaxNd
-TangentialPotential::smooth_contact_force_jacobian_unit(
+TangentialPotential::MatrixMaxNd TangentialPotential::gcp_force_jacobian_unit(
     const TangentialCollision& collision,
     Eigen::ConstRef<VectorMaxNd> lagged_positions, // = x + u^t
     Eigen::ConstRef<VectorMaxNd> velocities,       // = v

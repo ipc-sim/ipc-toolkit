@@ -10,7 +10,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
 
-#include <stdexcept> // std::out_of_range
+#include <stdexcept> // std::out_of_range, std::invalid_argument
 
 namespace ipc {
 
@@ -42,6 +42,16 @@ void NormalCollisions::build(
     assert(vertices.rows() == mesh.num_vertices());
     IPC_TOOLKIT_PROFILE_BLOCK("NormalCollisions::build(candidates)");
 
+    // In 3D, all_types adds whole-mesh vertex-vertex and edge-vertex
+    // candidates. The edge-edge and face-vertex candidates already produce
+    // those contacts, and the builder merges matching collisions by adding
+    // their weights, so the barrier would be over-counted. We reject these
+    // candidates instead of silently returning the wrong energy.
+    if (mesh.dim() == 3 && candidates.has_all_types) {
+        throw std::invalid_argument(
+            "NormalCollisions::build: 3D candidates must be built with all_types = false");
+    }
+
     clear();
 
     // Cull the candidates by measuring the distance and dropping those that are
@@ -52,7 +62,7 @@ void NormalCollisions::build(
 
     tbb::enumerable_thread_specific<NormalCollisionsBuilder> storage(
         use_area_weighting(), enable_shape_derivatives(),
-        collision_set_type() == CollisionSetType::OGC);
+        collision_set_type() == CollisionSetType::OGC, m_skip_obstacles);
 
     tbb::parallel_for(
         size_t(0), candidates.vv_candidates.size(), [&](size_t i) {
@@ -129,6 +139,9 @@ void NormalCollisions::build(
     NormalCollisionsBuilder::merge(storage, *this);
 
     for (const auto& [plane, vertex_id] : candidates.pv_candidates) {
+        if (m_skip_obstacles && mesh.is_obstacle_vertex(vertex_id)) {
+            continue;
+        }
         const double d = plane.signedDistance(vertices.row(vertex_id));
         if (d < dhat + dmin) {
             const double weight =

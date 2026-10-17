@@ -19,6 +19,8 @@ public:
 
     int num_vertices() const override { return 4; }
 
+    std::string name() const override { return "fv"; }
+
     /// @brief Get the vertex IDs for the face-vertex pair
     /// @param edges The edge connectivity matrix
     /// @param faces The face connectivity matrix

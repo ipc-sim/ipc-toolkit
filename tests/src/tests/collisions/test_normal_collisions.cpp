@@ -9,6 +9,8 @@
 
 #include <igl/edges.h>
 
+#include <stdexcept>
+
 using namespace ipc;
 
 TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
@@ -305,6 +307,65 @@ TEST_CASE("Plane-Vertex NormalCollision", "[collision][plane-vertex]")
     CHECK(
         c.compute_distance_hessian(Eigen::Vector3d(0, 2, 0))
         == 2 * n * n.transpose());
+}
+
+TEST_CASE(
+    "Normal collisions reject 3D candidates with all types", "[collisions]")
+{
+    constexpr double dhat = 0.1;
+
+    // Two triangles tip to tip, 0.05 apart.
+    Eigen::MatrixXd V(6, 3);
+    V << 0, 0, 0.025, 1, 0, 1, -1, 0, 1, //
+        0, 0, -0.025, 0, 1, -1, 0, -1, -1;
+    Eigen::MatrixXi F(2, 3);
+    F << 0, 1, 2, 3, 4, 5;
+    Eigen::MatrixXi E;
+    igl::edges(F, E);
+    const CollisionMesh mesh(V, E, F);
+
+    NormalCollisions expected;
+    expected.build(mesh, V, dhat);
+    REQUIRE(!expected.empty());
+
+    NormalCollisions collisions;
+    Candidates candidates;
+
+    candidates.build(mesh, V, dhat / 2);
+    collisions.build(candidates, mesh, V, dhat);
+    CHECK(collisions.size() == expected.size());
+
+    candidates.build(mesh, V, dhat / 2, nullptr, /*all_types=*/true);
+    CHECK_THROWS_AS(
+        collisions.build(candidates, mesh, V, dhat), std::invalid_argument);
+}
+
+TEST_CASE(
+    "Normal collisions accept 2D candidates with all types", "[collisions]")
+{
+    constexpr double dhat = 0.1;
+
+    // Vertex 2 is 0.05 above the middle of edge 0.
+    Eigen::MatrixXd V(4, 2);
+    V << 0, 0, 1, 0, 0.5, 0.05, 0.5, 1;
+    Eigen::MatrixXi E(2, 2);
+    E << 0, 1, 2, 3;
+    const CollisionMesh mesh(V, E);
+
+    NormalCollisions expected;
+    expected.build(mesh, V, dhat);
+    REQUIRE(!expected.empty());
+
+    // In 2D, all_types adds no candidate types, so the result is unchanged.
+    Candidates candidates;
+    candidates.build(mesh, V, dhat / 2, nullptr, /*all_types=*/true);
+    NormalCollisions collisions;
+    collisions.build(candidates, mesh, V, dhat);
+
+    const BarrierPotential barrier(dhat, 1.0);
+    CHECK(
+        barrier(collisions, mesh, V)
+        == Catch::Approx(barrier(expected, mesh, V)).epsilon(1e-12));
 }
 
 TEST_CASE("NormalCollisions::is_*", "[collisions]")

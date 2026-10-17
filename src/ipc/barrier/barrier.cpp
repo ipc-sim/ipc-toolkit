@@ -5,8 +5,12 @@
 // inequality constraints on a function.
 #include "barrier.hpp"
 
+#include <ipc/math/math.hpp>
 #include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/simd.hpp>
+
+#include <cmath>
+#include <limits>
 
 namespace ipc {
 
@@ -209,6 +213,147 @@ T TwoStageBarrier<T>::second_derivative(const T d, const T dhat) const
         d < T(0.5) * dhat, [&] { return (T(0.25) * sqr(dhat)) / sqr(d); }, //
         d < dhat, [&] { return T(1); },                                    //
         [&] { return T(0); });
+}
+
+// ============================================================================
+
+void InversePowerBarrier::h_and_derivs(
+    const double d, const double dhat, double& h, double& dh, double& ddh)
+{
+    const double t = 2.0 * d / dhat;
+    double B, dB, ddB;
+    if (t < 1.0) {
+        B = 2.0 / 3.0 - t * t + 0.5 * t * t * t;
+        dB = -2.0 * t + 1.5 * t * t;
+        ddB = -2.0 + 3.0 * t;
+    } else if (t < 2.0) {
+        const double s = 2.0 - t;
+        B = s * s * s / 6.0;
+        dB = -s * s / 2.0;
+        ddB = s;
+    } else {
+        h = dh = ddh = 0.0;
+        return;
+    }
+    // h = 2*B(t), dh/dd = 2*B'(t)*(dt/dd) = 2*B'*(2/dhat) = 4/dhat * B'
+    h = 2.0 * B;
+    dh = 4.0 / dhat * dB;
+    ddh = 8.0 / (dhat * dhat) * ddB;
+}
+
+double InversePowerBarrier::operator()(const double d, const double dhat) const
+{
+    if (d <= 0.0) {
+        return std::numeric_limits<double>::infinity();
+    }
+    double h, dh, ddh;
+    h_and_derivs(d, dhat, h, dh, ddh);
+    if (h == 0.0) {
+        return 0.0;
+    }
+    return h / std::pow(d, m_power);
+}
+
+double
+InversePowerBarrier::first_derivative(const double d, const double dhat) const
+{
+    if (d <= 0.0 || d >= dhat) {
+        return 0.0;
+    }
+    double h, dh, ddh;
+    h_and_derivs(d, dhat, h, dh, ddh);
+    // b'(d) = (dh·d − p·h) / d^(p+1)
+    return (dh * d - m_power * h) / std::pow(d, m_power + 1.0);
+}
+
+double
+InversePowerBarrier::second_derivative(const double d, const double dhat) const
+{
+    if (d <= 0.0 || d >= dhat) {
+        return 0.0;
+    }
+    double h, dh, ddh;
+    h_and_derivs(d, dhat, h, dh, ddh);
+    // b''(d) = (ddh·d² − 2p·dh·d + p(p+1)·h) / d^(p+2)
+    const double d2 = d * d;
+    return (ddh * d2 - 2.0 * m_power * dh * d + m_power * (m_power + 1.0) * h)
+        / std::pow(d, m_power + 2.0);
+}
+
+// ============================================================================
+
+double NearFarBarrier::near_value(const double d, const double dhat) const
+{
+    const double dhat_end = m_alpha * dhat;
+    const double dhat_start = -dhat_end / 2.0;
+    return (*m_base_barrier)(d, dhat)
+        * (1.0 - Math<double>::smooth_heaviside(d, dhat_start, dhat_end));
+}
+
+double NearFarBarrier::far_value(const double d, const double dhat) const
+{
+    const double dhat_end = m_alpha * dhat;
+    const double dhat_start = -dhat_end / 2.0;
+    return (*m_base_barrier)(d, dhat)
+        * Math<double>::smooth_heaviside(d, dhat_start, dhat_end);
+}
+
+double
+NearFarBarrier::first_derivative_near(const double d, const double dhat) const
+{
+    const double dhat_end = m_alpha * dhat;
+    const double dhat_start = -dhat_end / 2.0;
+    const double b = (*m_base_barrier)(d, dhat);
+    const double bp = m_base_barrier->first_derivative(d, dhat);
+    const double w = Math<double>::smooth_heaviside(d, dhat_start, dhat_end);
+    const double wp =
+        Math<double>::smooth_heaviside_grad(d, dhat_start, dhat_end);
+    return bp * (1.0 - w) - b * wp;
+}
+
+double
+NearFarBarrier::first_derivative_far(const double d, const double dhat) const
+{
+    const double dhat_end = m_alpha * dhat;
+    const double dhat_start = -dhat_end / 2.0;
+    const double b = (*m_base_barrier)(d, dhat);
+    const double bp = m_base_barrier->first_derivative(d, dhat);
+    const double w = Math<double>::smooth_heaviside(d, dhat_start, dhat_end);
+    const double wp =
+        Math<double>::smooth_heaviside_grad(d, dhat_start, dhat_end);
+    return bp * w + b * wp;
+}
+
+double
+NearFarBarrier::second_derivative_near(const double d, const double dhat) const
+{
+    const double dhat_end = m_alpha * dhat;
+    const double dhat_start = -dhat_end / 2.0;
+    const double b = (*m_base_barrier)(d, dhat);
+    const double bp = m_base_barrier->first_derivative(d, dhat);
+    const double bpp = m_base_barrier->second_derivative(d, dhat);
+    const double w = Math<double>::smooth_heaviside(d, dhat_start, dhat_end);
+    const double wp =
+        Math<double>::smooth_heaviside_grad(d, dhat_start, dhat_end);
+    const double wpp =
+        Math<double>::smooth_heaviside_hess(d, dhat_start, dhat_end);
+    return bpp * (1.0 - w) - 2.0 * bp * wp - b * wpp;
+}
+
+double
+NearFarBarrier::second_derivative_far(const double d, const double dhat) const
+{
+    const double dhat_end = m_alpha * dhat;
+    const double dhat_start = -dhat_end / 2.0;
+    const double b = (*m_base_barrier)(d, dhat);
+    const double bp = m_base_barrier->first_derivative(d, dhat);
+    const double bpp = m_base_barrier->second_derivative(d, dhat);
+    const double w = Math<double>::smooth_heaviside(d, dhat_start, dhat_end);
+    const double wp =
+        Math<double>::smooth_heaviside_grad(d, dhat_start, dhat_end);
+    const double wpp =
+        Math<double>::smooth_heaviside_hess(d, dhat_start, dhat_end);
+    return bpp * w + 2.0 * bp * wp + b * wpp;
 }
 
 // ============================================================================

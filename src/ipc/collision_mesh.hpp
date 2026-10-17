@@ -39,6 +39,34 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> edges = Eigen::MatrixXi(),
         Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi(),
         const Eigen::SparseMatrix<double>& displacement_map =
+            Eigen::SparseMatrix<double>())
+        : CollisionMesh(
+              include_vertex,
+              orient_vertex,
+              std::vector<bool>(full_rest_positions.rows(), false),
+              full_rest_positions,
+              edges,
+              faces,
+              displacement_map)
+    {
+    }
+
+    /// @brief Construct a new Collision Mesh object from a full mesh vertices.
+    /// @param include_vertex Vector of bools indicating whether each vertex should be included in the collision mesh.
+    /// @param orient_vertex Vector of bools indicating whether each vertex is orientable.
+    /// @param obstacle_vertex Vector of bools indicating whether each vertex comes from an obstacle.
+    /// @param full_rest_positions The vertices of the full mesh at rest (|V| × dim).
+    /// @param edges The edges of the collision mesh indexed into the full mesh vertices (|E| × 2).
+    /// @param faces The faces of the collision mesh indexed into the full mesh vertices (|F| × 3).
+    /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
+    CollisionMesh(
+        const std::vector<bool>& include_vertex,
+        const std::vector<bool>& orient_vertex,
+        const std::vector<bool>& obstacle_vertex,
+        Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXi> edges = Eigen::MatrixXi(),
+        Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi(),
+        const Eigen::SparseMatrix<double>& displacement_map =
             Eigen::SparseMatrix<double>());
 
     /// @brief Helper function that automatically builds include_vertex using construct_is_on_surface.
@@ -108,6 +136,45 @@ public:
     bool is_orient_vertex(const index_t i) const
     {
         return m_is_orient_vertex[i];
+    }
+
+    /// @brief Check if vertex i is from an obstacle.
+    bool is_obstacle_vertex(const index_t i) const
+    {
+        return m_is_obstacle_vertex[i];
+    }
+
+    /// @brief Check if edge i is from an obstacle.
+    /// @note This checks if all vertices of the edge are obstacle vertices.
+    /// @throws std::runtime_error if some but not all vertices are obstacle vertices.
+    bool is_obstacle_edge(const index_t i) const
+    {
+        const auto& edge_v_indices = edges().row(i);
+        const bool v0_is_obstacle = is_obstacle_vertex(edge_v_indices(0));
+        const bool v1_is_obstacle = is_obstacle_vertex(edge_v_indices(1));
+
+        if (v0_is_obstacle != v1_is_obstacle) {
+            throw std::runtime_error(
+                "Edge has a mix of obstacle and non-obstacle vertices.");
+        }
+        return v0_is_obstacle;
+    }
+
+    /// @brief Check if face i is from an obstacle.
+    /// @note This checks if all vertices of the face are obstacle vertices.
+    /// @throws std::runtime_error if some but not all vertices are obstacle vertices.
+    bool is_obstacle_face(const index_t i) const
+    {
+        const auto& face_v_indices = faces().row(i);
+        const bool v0_is_obstacle = is_obstacle_vertex(face_v_indices(0));
+        const bool v1_is_obstacle = is_obstacle_vertex(face_v_indices(1));
+        const bool v2_is_obstacle = is_obstacle_vertex(face_v_indices(2));
+        if ((v0_is_obstacle != v1_is_obstacle)
+            || (v1_is_obstacle != v2_is_obstacle)) {
+            throw std::runtime_error(
+                "Face has a mix of obstacle and non-obstacle vertices.");
+        }
+        return v0_is_obstacle;
     }
 
     /// @brief Get the indices of codimensional edges of the collision mesh (|CE| × 1).
@@ -288,6 +355,9 @@ public:
     /// @brief Get the barycentric area of the vertices.
     const Eigen::VectorXd& vertex_areas() const { return m_vertex_areas; }
 
+    /// @brief Get the area of the faces (3D).
+    const Eigen::VectorXd& face_areas() const { return m_face_areas; }
+
     /// @brief Override the vertex areas used as collision weights.
     /// @note Use this when the quadrature weight of a vertex is not its barycentric area (e.g., axisymmetric models where each vertex stands for a ring of contact). Collisions built before this call keep their old weights.
     /// @note Custom areas do not support shape derivatives: this throws if the area Jacobians were already initialized, and init_area_jacobians() throws afterwards.
@@ -402,6 +472,8 @@ protected:
     std::vector<bool> m_is_codim_vertex;
     /// @brief The mask of orientable vertices (|V|).
     std::vector<bool> m_is_orient_vertex;
+    /// @brief The mask of obstacle vertices (|V|).
+    std::vector<bool> m_is_obstacle_vertex;
     /// @brief The indices of codimensional vertices (|CV| × 1).
     Eigen::VectorXi m_codim_vertices;
     /// @brief The mask of codimensional edges (|E|).
@@ -464,6 +536,10 @@ protected:
     Eigen::VectorXd m_edge_areas;
     /// @brief Were the areas overridden by the user (so the Jacobians no longer match)?
     bool m_has_custom_areas = false;
+
+    /// @brief Face areas
+    /// 3D: per-face area
+    Eigen::VectorXd m_face_areas;
 
     // Stored as a std::vector so it is easier to access the rows directly.
     /// @brief The rows of the Jacobian of the vertex areas vector.

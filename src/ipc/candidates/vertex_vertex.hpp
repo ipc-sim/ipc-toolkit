@@ -19,6 +19,8 @@ public:
 
     int num_vertices() const override { return 2; }
 
+    std::string name() const override { return "vv"; }
+
     /// @brief Get the indices of the vertices
     /// @param edges edge matrix of mesh
     /// @param faces face matrix of mesh
