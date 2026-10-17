@@ -177,6 +177,8 @@ private:
 
     /// @brief Whether the edge is orientable. If false, the normal term is not applied.
     bool orientable;
+    double m_rest_sq_length; ///< Rest-shape squared edge length (quadrature
+                             ///< weight, constant)
 };
 
 } // namespace ipc
