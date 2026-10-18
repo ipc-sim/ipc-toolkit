@@ -90,7 +90,8 @@ private:
     ESPParameters m_params;
     ArbitraryPointBVH m_point_bvh;
     /// Inclusion-exclusion weight of each edge and each vertex (every face
-    /// has weight one), from the mesh connectivity; see the constructor.
+    /// has weight one), from the mesh connectivity; see
+    /// compute_inclusion_exclusion_weights().
     std::vector<int> m_edge_weights, m_vertex_weights;
 };
 

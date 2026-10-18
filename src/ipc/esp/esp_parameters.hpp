@@ -89,7 +89,9 @@ struct ESPParameters {
     /// in 3D, where any non-negative value is accepted.
     const int quad_order;
     /// Weight each face by its area / 9 (3D), or each edge by its area
-    /// (CollisionMesh::edge_area(), 2D). If false, every weight is 1.
+    /// (CollisionMesh::edge_area(), 2D). In 3D, an edge in no face is weighted
+    /// by its edge area / 4 and an isolated vertex by its vertex area. If
+    /// false, every weight is 1.
     bool area_weights;
     const IntegrationType integration_type;
 

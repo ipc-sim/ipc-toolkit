@@ -65,6 +65,9 @@ void ESPCollisions::build(
         tbb::enumerable_thread_specific<ESPCollisionsBuilder<2>> storage {
             ESPCollisionsBuilder<2>()
         };
+        // Built once (not per thread) since it computes the mesh's
+        // inclusion-exclusion weights.
+        const PointPotential point_potential(mesh, candidates, params);
 
         // Standard mode: loop over all edges with per-QP collision dicts.
         tbb::parallel_for(
@@ -72,29 +75,46 @@ void ESPCollisions::build(
             [&](const tbb::blocked_range<size_t>& r) {
                 ESPCollisionsBuilder<2>& local_storage = storage.local();
                 local_storage.build_edge_collisions(
-                    mesh, vertices, candidates, params, r.begin(), r.end());
+                    point_potential, vertices, r.begin(), r.end());
             });
         ESPCollisionsBuilder<2>::merge(storage, *this);
     } else {
-        // Compute vertex mask: which vertices to process.
+        // A vertex sample needs a collision dict only if something is near
+        // it, so we mark every vertex of a vertex candidate.
         std::vector<bool> vertex_mask(mesh.num_vertices(), false);
-
-        // Standard mode: only process vertices in face-vertex candidates.
         for (const auto& candidate : candidates.fv_candidates) {
             vertex_mask[candidate.vertex_id] = true;
         }
+        for (const auto& candidate : candidates.ev_candidates) {
+            vertex_mask[candidate.vertex_id] = true;
+        }
+        for (const auto& candidate : candidates.vv_candidates) {
+            vertex_mask[candidate.vertex0_id] = true;
+            vertex_mask[candidate.vertex1_id] = true;
+        }
 
-        // Face quadrature includes the face vertices, so vertices are only
-        // integrated separately when there is no face quadrature rule.
+        // Face quadrature includes the face vertices, so a face's vertices
+        // are only integrated separately when there is no face quadrature
+        // rule. Edges in no face and isolated vertices have no face
+        // quadrature, so ESPPotential always integrates over their vertices.
         const bool use_face_quadrature = !params.quad_rule().empty();
+        std::vector<bool> is_vertex_sample(
+            mesh.num_vertices(), !use_face_quadrature);
+        if (use_face_quadrature) {
+            for (const index_t ei : mesh.codim_edges()) {
+                is_vertex_sample[mesh.edges()(ei, 0)] = true;
+                is_vertex_sample[mesh.edges()(ei, 1)] = true;
+            }
+            for (const index_t vi : mesh.codim_vertices()) {
+                is_vertex_sample[vi] = true;
+            }
+        }
 
         std::vector<index_t> vertices_to_process;
-        if (!use_face_quadrature) {
-            vertices_to_process.reserve(mesh.num_vertices());
-            for (int i = 0; i < mesh.num_vertices(); ++i) {
-                if (vertex_mask[i]) {
-                    vertices_to_process.push_back(i);
-                }
+        vertices_to_process.reserve(mesh.num_vertices());
+        for (int i = 0; i < mesh.num_vertices(); ++i) {
+            if (vertex_mask[i] && is_vertex_sample[i]) {
+                vertices_to_process.push_back(i);
             }
         }
 
@@ -108,16 +128,13 @@ void ESPCollisions::build(
         tbb::enumerable_thread_specific<QuadratureCollisionsBuilder> storage(
             QuadratureCollisionsBuilder(mesh, candidates, params));
 
-        if (!use_face_quadrature) {
-            tbb::parallel_for(
-                tbb::blocked_range<size_t>(0, vertices_to_process.size()),
-                [&](const tbb::blocked_range<size_t>& r) {
-                    QuadratureCollisionsBuilder& local_storage =
-                        storage.local();
-                    local_storage.build_vertex_collisions(
-                        vertices, vertices_to_process, r.begin(), r.end());
-                });
-        }
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(0, vertices_to_process.size()),
+            [&](const tbb::blocked_range<size_t>& r) {
+                QuadratureCollisionsBuilder& local_storage = storage.local();
+                local_storage.build_vertex_collisions(
+                    vertices, vertices_to_process, r.begin(), r.end());
+            });
 
         if (use_face_quadrature) {
             tbb::parallel_for(

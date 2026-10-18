@@ -20,14 +20,14 @@ namespace ipc {
 using IntegrationType = ESPParameters::IntegrationType;
 
 void ESPCollisionsBuilder<2>::build_edge_collisions(
-    const CollisionMesh& mesh,
+    const PointPotential& point_potential,
     Eigen::ConstRef<Eigen::MatrixXd> V,
-    const Candidates& candidates,
-    const ESPParameters& params,
     size_t start,
     size_t end)
 {
-    const PointPotential pp(mesh, candidates, params);
+    const CollisionMesh& mesh = point_potential.mesh;
+    const Candidates& candidates = point_potential.candidates;
+    const ESPParameters& params = point_potential.params;
     const GaussLobatto::Rule& rule = GaussLobatto::get_rule(params.quad_order);
 
     for (size_t edge_idx = start; edge_idx < end; ++edge_idx) {
@@ -58,7 +58,8 @@ void ESPCollisionsBuilder<2>::build_edge_collisions(
         for (const auto& qp : rule) {
             const std::array<double, 2> lambda = { { 1.0 - qp.xi, qp.xi } };
             size_t n = 0;
-            auto dict = pp.build_collisions_at_edge_qp(V, ei, lambda, dhat, n);
+            auto dict = point_potential.build_collisions_at_edge_qp(
+                V, ei, lambda, dhat, n);
             if (dict && dict->size() > 0) {
                 has_any = true;
             }

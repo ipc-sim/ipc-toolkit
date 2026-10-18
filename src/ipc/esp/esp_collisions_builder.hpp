@@ -29,11 +29,11 @@ public:
     /// For each edge ei in [start, end), places Gauss-Lobatto QPs on ei and
     /// finds nearby vertices/edges from candidates.ev_set(mesh, ei) and
     /// candidates.ee_set(mesh, ei). Results are stored in edge_collisions_2d.
+    /// @param point_potential Holds the mesh, candidates, parameters, and the
+    ///        mesh's inclusion-exclusion weights, shared by every thread.
     void build_edge_collisions(
-        const CollisionMesh& mesh,
+        const PointPotential& point_potential,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const Candidates& candidates,
-        const ESPParameters& params,
         size_t start,
         size_t end);
 

@@ -62,15 +62,22 @@ PointPotential::build_collisions_at_vertex(
         }
     }
 
+    // Every collision takes the inclusion-exclusion weight of the element it
+    // came from (faces have weight one), even after being reduced to a
+    // sub-feature. An element of weight zero (a boundary edge or vertex)
+    // contributes nothing.
     for (const auto& other_e : e_set) {
         if (filter_obstacles && mesh.is_obstacle_edge(other_e)) {
+            continue;
+        }
+        if (edge_weights[other_e] == 0) {
             continue;
         }
         ++num_collision_pairs;
         if (std::shared_ptr<ESPCollision> pair =
                 ESPCollisionsBuilder<3>::reduce_point_edge_collision(
                     EdgeVertexCandidate(other_e, vid), params, mesh, V_view)) {
-            pair->weight = -1;
+            pair->weight = edge_weights[other_e];
             insert_pair(pairs, std::move(pair));
         }
     }
@@ -79,13 +86,15 @@ PointPotential::build_collisions_at_vertex(
         if (filter_obstacles && mesh.is_obstacle_vertex(other_v)) {
             continue;
         }
-        if ((V.row(vid) - V.row(other_v)).squaredNorm()
-            >= params.dhat * params.dhat) {
+        if (vertex_weights[other_v] == 0
+            || (V.row(vid) - V.row(other_v)).squaredNorm()
+                >= params.dhat * params.dhat) {
             continue;
         }
         std::shared_ptr<ESPCollision> pair =
             std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
                 vid, other_v, mesh);
+        pair->weight = vertex_weights[other_v];
         ++num_collision_pairs;
         insert_pair(pairs, std::move(pair));
     }
@@ -238,17 +247,21 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
             && params.integration_type
                 != ESPParameters::IntegrationType::BRUTE_FORCE;
 
+        // As in build_collisions_at_vertex(), every collision takes the
+        // inclusion-exclusion weight of the element it came from.
         for (const auto& other_v : v_set) {
             if (filter_obstacles_e && mesh.is_obstacle_vertex(other_v)) {
                 continue;
             }
-            if ((V_view(vid) - V_view(other_v)).squaredNorm()
-                >= params.dhat * params.dhat) {
+            if (vertex_weights[other_v] == 0
+                || (V_view(vid) - V_view(other_v)).squaredNorm()
+                    >= params.dhat * params.dhat) {
                 continue;
             }
             auto pair =
                 std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
                     vid, other_v, mesh);
+            pair->weight = vertex_weights[other_v];
             ++num_collision_pairs;
             insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
         }
@@ -256,6 +269,10 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
         // ee_set and ef_set exclude e0 and the faces containing it.
         for (const auto& other_e : e_set) {
             if (filter_obstacles_e && mesh.is_obstacle_edge(other_e)) {
+                continue;
+            }
+            const int edge_weight = edge_weights[other_e];
+            if (edge_weight == 0) {
                 continue;
             }
 
@@ -277,7 +294,7 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
                     std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
                         vid, mesh.edges()(other_e, 0), mesh);
                 ++num_collision_pairs;
-                pair->weight = -1;
+                pair->weight = edge_weight;
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
@@ -286,7 +303,7 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
                     std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
                         vid, mesh.edges()(other_e, 1), mesh);
                 ++num_collision_pairs;
-                pair->weight = -1;
+                pair->weight = edge_weight;
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
@@ -295,7 +312,7 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
                     std::make_shared<ESPCollisionTemplate<Edge3P1, Vertex3>>(
                         other_e, vid, mesh);
                 ++num_collision_pairs;
-                pair->weight = -1;
+                pair->weight = edge_weight;
                 insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
                 break;
             }
@@ -653,10 +670,13 @@ PointPotential::build_collisions_at_face_interior_point(
                 || mesh.edges()(other_e, 1) == corner_vertex)) {
             continue;
         }
+        if (edge_weights[other_e] == 0) {
+            continue;
+        }
         ++num_collision_pairs;
         if (auto pair = ESPCollisionsBuilder<3>::reduce_point_edge_collision(
                 EdgeVertexCandidate(other_e, vid), params, mesh, V_view)) {
-            pair->weight = -1;
+            pair->weight = edge_weights[other_e];
             insert_pair(pairs, std::shared_ptr<ESPCollision>(pair));
         }
     }
@@ -665,7 +685,7 @@ PointPotential::build_collisions_at_face_interior_point(
         if (filter_obstacles_f && mesh.is_obstacle_vertex(other_v)) {
             continue;
         }
-        if (other_v == corner_vertex) {
+        if (other_v == corner_vertex || vertex_weights[other_v] == 0) {
             continue;
         }
         if ((V_view(vid) - V_view(other_v)).squaredNorm()
@@ -675,6 +695,7 @@ PointPotential::build_collisions_at_face_interior_point(
         std::shared_ptr<ESPCollision> pair =
             std::make_shared<ESPCollisionTemplate<Vertex3, Vertex3>>(
                 vid, other_v, mesh);
+        pair->weight = vertex_weights[other_v];
         ++num_collision_pairs;
         insert_pair(pairs, std::move(pair));
     }
@@ -846,9 +867,14 @@ PointPotential::build_collisions_at_edge_qp(
     num_collision_pairs = 0;
     const double dhat2 = dhat * dhat;
 
-    // VV pairs (weight=-1): for each nearby vertex within dhat of the QP.
+    // Every collision takes the inclusion-exclusion weight of the element it
+    // came from: in 2D, edges have weight one and a vertex 1 - (edges at it),
+    // so -1 on a closed curve, 0 at an open polyline's end, and +1 for an
+    // isolated vertex.
+
+    // VV pairs: for each nearby vertex within dhat of the QP.
     for (const index_t vj : candidates.ev_set(mesh, ei)) {
-        if (vj == corner_vertex) {
+        if (vj == corner_vertex || vertex_weights[vj] == 0) {
             continue;
         }
         if (filter_obstacles && mesh.is_obstacle_vertex(vj)) {
@@ -862,11 +888,11 @@ PointPotential::build_collisions_at_edge_qp(
         std::shared_ptr<ESPCollision> vv_pair =
             std::make_shared<ESPCollisionTemplate<Vertex2, Vertex2>>(
                 virtual_vid, vj, mesh);
-        vv_pair->weight = -1;
+        vv_pair->weight = vertex_weights[vj];
         insert_pair(pairs, std::move(vv_pair));
     }
 
-    // EV pairs (weight=+1): iterate ee_set directly.
+    // EV pairs: iterate ee_set directly.
     std::unordered_set<index_t> processed_edges;
     processed_edges.insert(ei);
     for (const index_t ej : candidates.ee_set(mesh, ei)) {

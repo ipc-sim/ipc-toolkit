@@ -5,8 +5,10 @@
 #include "ipc/distance/point_triangle.hpp"
 #include "ipc/esp/esp_collisions.hpp"
 #include "ipc/esp/esp_distance.hpp"
+#include "ipc/esp/inclusion_exclusion_weights.hpp"
 
 #include <array>
+#include <vector>
 
 namespace ipc {
 namespace PointPotentialHelper {
@@ -197,6 +199,7 @@ public:
         , candidates(_candidates)
         , params(_params)
     {
+        compute_inclusion_exclusion_weights(mesh, edge_weights, vertex_weights);
     }
 
     std::unique_ptr<ESPCollisionDict<PointType::VERTEX>>
@@ -236,5 +239,10 @@ public:
     const CollisionMesh& mesh;
     const Candidates& candidates;
     const ESPParameters params;
+    /// Inclusion-exclusion weight of each edge and each vertex (every face
+    /// has weight one); see compute_inclusion_exclusion_weights(). Every
+    /// collision a builder emits takes the weight of the mesh element it came
+    /// from, so open meshes and lower-dimensional pieces get the right signs.
+    std::vector<int> edge_weights, vertex_weights;
 };
 } // namespace ipc

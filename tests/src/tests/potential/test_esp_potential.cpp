@@ -5,6 +5,7 @@
 #include <catch2/catch_approx.hpp>
 
 #include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/esp/arbitrary_point_esp.hpp>
 #include <ipc/esp/esp_potential.hpp>
 #include <ipc/distance/line_line.hpp>
 
@@ -670,9 +671,13 @@ TEST_CASE(
         <= 1e-12 * hess.norm());
 }
 
-TEST_CASE("ESP potential on a 3D mesh without faces", "[esp_potential]")
+TEST_CASE(
+    "ESP potential on a 3D mesh without faces",
+    "[esp_potential], [esp_potential_3d]")
 {
-    // Two crossing segments 0.05 apart: an edge-edge pair but no faces.
+    // Two crossing segments 0.05 apart: an edge-edge pair but no faces. The
+    // segments are rods, so they must repel each other even though no face
+    // carries the integral.
     Eigen::MatrixXd V(4, 3);
     V << -1, 0, 0, 1, 0, 0, 0, -1, 0.05, 0, 1, 0.05;
     Eigen::MatrixXi E(2, 2);
@@ -684,12 +689,160 @@ TEST_CASE("ESP potential on a 3D mesh without faces", "[esp_potential]")
     collisions.build(mesh, V, params);
     REQUIRE(!collisions.empty());
 
+    const bool use_near_far = GENERATE(true, false);
+    CAPTURE(use_near_far);
+    const ESPPotential potential(params, use_near_far);
+    CHECK(potential(collisions, mesh, V) > 0);
+
+    // Pulling the rods apart lowers the energy, so the force pushes them
+    // apart.
+    const Eigen::VectorXd grad = potential.gradient(collisions, mesh, V);
+    REQUIRE(grad.size() == V.size());
+    CHECK(grad(2) + grad(5) > 0);
+    CHECK(grad(8) + grad(11) < 0);
+
+    // The collision set changes with the positions here, so the finite
+    // differences rebuild it.
+    const auto energy = [&](const Eigen::VectorXd& x) {
+        const Eigen::MatrixXd V_ = fd::unflatten(x, 3);
+        ESPCollisions collisions_;
+        collisions_.build(mesh, V_, params);
+        return potential(collisions_, mesh, V_);
+    };
+    const auto gradient = [&](const Eigen::VectorXd& x) {
+        const Eigen::MatrixXd V_ = fd::unflatten(x, 3);
+        ESPCollisions collisions_;
+        collisions_.build(mesh, V_, params);
+        return potential.gradient(collisions_, mesh, V_);
+    };
+
+    Eigen::VectorXd fgrad;
+    fd::finite_gradient(fd::flatten(V), energy, fgrad);
+    CHECK(fd::compare_gradient(grad, fgrad));
+
+    const Eigen::MatrixXd hess = potential.hessian(collisions, mesh, V);
+    REQUIRE(hess.rows() == V.size());
+    REQUIRE(hess.cols() == V.size());
+    Eigen::MatrixXd fhess;
+    fd::finite_jacobian(fd::flatten(V), gradient, fhess);
+    CHECK(fd::compare_hessian(hess, fhess, 1e-3));
+}
+
+// A vertex beside the boundary edge of an open sheet sees the sheet's face
+// reduced to that edge, and nothing else: a boundary edge has weight zero.
+// With the closed-mesh signs, the edge's -1 cancels the face's +1 and the
+// vertex feels nothing at any distance.
+TEST_CASE(
+    "ESP potential beside an open sheet's boundary",
+    "[esp_potential], [esp_potential_3d]")
+{
+    // A unit-square sheet in z = 0 and a tet whose apex approaches the
+    // sheet's boundary edge x = 0 from outside, in the sheet's plane.
+    Eigen::MatrixXd V(8, 3);
+    V << 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0,                   // sheet
+        0, 0.5, 0, -1, 0.2, -0.3, -1, 0.8, -0.3, -1, 0.5, 0.4; // tet
+    Eigen::MatrixXi F(6, 3);
+    F << 0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 4, 7, 5, 5, 7, 6;
+    Eigen::MatrixXi E;
+    igl::edges(F, E);
+    const CollisionMesh mesh(V, E, F);
+
+    const ESPParameters params(0.1);
     const ESPPotential potential(params);
-    CHECK(potential.gradient(collisions, mesh, V).size() == V.size());
-    const Eigen::SparseMatrix<double> hess =
-        potential.hessian(collisions, mesh, V);
-    CHECK(hess.rows() == V.size());
-    CHECK(hess.cols() == V.size());
+    const auto energy_at = [&](const double h) {
+        Eigen::MatrixXd V_ = V;
+        V_(4, 0) = -h;
+        ESPCollisions collisions;
+        collisions.build(mesh, V_, params);
+        return potential(collisions, mesh, V_);
+    };
+
+    const double h = GENERATE(0.05, 0.01, 0.001);
+    CAPTURE(h);
+    const double e = energy_at(h);
+    CHECK(e > 0);
+    CHECK(energy_at(h / 2) > e); // repulsive: rises as the apex approaches
+}
+
+// An isolated vertex is its own integration element with a single sample, so
+// with unit weights its ESP is exactly the pointwise potential of the rest of
+// the mesh at its position. We cross-check that against ArbitraryPointESP on a
+// mesh of the rest alone.
+TEST_CASE(
+    "ESP potential of an isolated vertex matches ArbitraryPointESP",
+    "[esp_potential], [esp_potential_3d]")
+{
+    const std::string target_name =
+        GENERATE("triangle interior", "open sheet boundary", "rod");
+    const std::string quad_rule = GENERATE("none", "vertices+centroid");
+    const bool use_near_far = GENERATE(true, false);
+    CAPTURE(target_name, quad_rule, use_near_far);
+
+    // Each target keeps its vertices and, under a face quadrature rule, its
+    // face quadrature points more than dhat from q, so only q's own sample
+    // sees contact.
+    Eigen::MatrixXd V_target;
+    Eigen::MatrixXi E_target, F_target(0, 3);
+    Eigen::RowVector3d q;
+    if (target_name == "triangle interior") {
+        V_target.resize(3, 3);
+        V_target << 0, 0, 0, 1, 0, 0, 0, 1, 0;
+        F_target.resize(1, 3);
+        F_target << 0, 1, 2;
+        q << 0.15, 0.6, 0.05;
+    } else if (target_name == "open sheet boundary") {
+        V_target.resize(4, 3);
+        V_target << 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0;
+        F_target.resize(2, 3);
+        F_target << 0, 1, 2, 0, 2, 3;
+        q << -0.05, 0.5, 0;
+    } else { // a bent rod: two edges in no face
+        V_target.resize(3, 3);
+        V_target << 0, 0, 0, 1, 0, 0, 2, 0.2, 0;
+        E_target.resize(2, 2);
+        E_target << 0, 1, 1, 2;
+        q << 0.5, 0.05, 0;
+    }
+    if (F_target.rows() > 0) {
+        igl::edges(F_target, E_target);
+    }
+
+    ESPParameters params(0.1, 0.2, 1, /*area_weights=*/false);
+    if (quad_rule != "none") {
+        params.set_quad_rule(make_face_quad_rule(quad_rule));
+    }
+
+    // The full mesh: the target plus the isolated vertex q.
+    const index_t qi = V_target.rows();
+    Eigen::MatrixXd V(qi + 1, 3);
+    V << V_target, q;
+    const CollisionMesh mesh(V, E_target, F_target);
+    REQUIRE(mesh.is_codim_vertex(qi));
+
+    ESPCollisions collisions;
+    collisions.build(mesh, V, params);
+    const ESPPotential potential(params, use_near_far);
+
+    const CollisionMesh target(V_target, E_target, F_target);
+    ArbitraryPointESP<3> pointwise(target, params);
+    pointwise.update(V_target);
+    const auto [expected, expected_grad, expected_hess] =
+        pointwise.evaluate(V_target, q);
+    REQUIRE(expected > 0);
+
+    CHECK(
+        potential(collisions, mesh, V)
+        == Catch::Approx(expected).epsilon(1e-12));
+
+    const Eigen::VectorXd grad = potential.gradient(collisions, mesh, V);
+    CHECK(
+        (grad.segment<3>(3 * qi) - expected_grad).norm()
+        <= 1e-10 * expected_grad.norm());
+
+    const Eigen::MatrixXd hess = potential.hessian(collisions, mesh, V);
+    CHECK(
+        (hess.block<3, 3>(3 * qi, 3 * qi) - expected_hess).norm()
+        <= 1e-10 * expected_hess.norm());
 }
 
 TEST_CASE("ESP collisions accessors", "[esp_potential], [esp_potential_3d]")
@@ -1303,7 +1456,7 @@ TEST_CASE("ESP potential codim", "[esp_potential], [esp_potential_2d]")
 
     ESPPotential potential(params);
     double energy = potential(collisions, mesh, vertices);
-    CHECK(energy != 0);
+    CHECK(energy > 0);
 
     // Gradient
     const Eigen::VectorXd grad = potential.gradient(collisions, mesh, vertices);
@@ -1334,6 +1487,67 @@ TEST_CASE("ESP potential codim", "[esp_potential], [esp_potential_2d]")
 
     REQUIRE(hess.squaredNorm() > 1e-8);
     CHECK((hess - fhess).norm() / hess.norm() < 1e-3);
+}
+
+// The ends of an open polyline have weight zero and an isolated vertex has
+// weight one, so a free edge alone feels nothing and an isolated vertex is
+// repelled by an edge. With the closed-curve signs (every vertex -1) the free
+// edge pulls itself shorter and the vertex is attracted to the edge, with an
+// energy unbounded below.
+TEST_CASE(
+    "ESP potential 2D on open and codimensional pieces",
+    "[esp_potential], [esp_potential_2d]")
+{
+    // Even orders put a quadrature point at the edge's midpoint, right under
+    // the isolated vertex below.
+    const int quadrature_order = GENERATE(2, 4);
+    CAPTURE(quadrature_order);
+
+    SECTION("free edge")
+    {
+        Eigen::MatrixXd V(2, 2);
+        V << 0, 0, 1, 0;
+        Eigen::MatrixXi E(1, 2);
+        E << 0, 1;
+        const CollisionMesh mesh = make_2d_collision_mesh(V, E);
+
+        const ESPParameters params(2, 1., quadrature_order);
+        ESPCollisions collisions;
+        collisions.build(mesh, V, params);
+        const ESPPotential potential(params);
+        CHECK(potential(collisions, mesh, V) == 0);
+        CHECK(potential.gradient(collisions, mesh, V).squaredNorm() == 0);
+    }
+
+    SECTION("isolated vertex above an edge")
+    {
+        const double h = GENERATE(0.1, 1e-2, 1e-5);
+        CAPTURE(h);
+        Eigen::MatrixXd V(3, 2);
+        V << 0, 0, 1, 0, 0.5, h;
+        Eigen::MatrixXi E(1, 2);
+        E << 0, 1;
+        const CollisionMesh mesh = make_2d_collision_mesh(V, E);
+
+        const ESPParameters params(0.5, 1., quadrature_order);
+        const ESPPotential potential(params);
+        const auto energy_at = [&](const double y) {
+            Eigen::MatrixXd V_ = V;
+            V_(2, 1) = y;
+            ESPCollisions collisions;
+            collisions.build(mesh, V_, params);
+            return potential(collisions, mesh, V_);
+        };
+
+        const double e = energy_at(h);
+        CHECK(e > 0);
+        CHECK(energy_at(h / 2) > e);
+
+        // The force on the vertex points away from the edge.
+        ESPCollisions collisions;
+        collisions.build(mesh, V, params);
+        CHECK(potential.gradient(collisions, mesh, V)(5) < 0);
+    }
 }
 
 TEST_CASE("ESP potential 2D no forces", "[esp_potential], [esp_potential_2d]")

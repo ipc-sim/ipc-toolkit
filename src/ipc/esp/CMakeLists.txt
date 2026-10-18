@@ -13,6 +13,8 @@ set(SOURCES
   esp_potential.cpp
   esp_potential.hpp
   esp_tangential_collisions.cpp
+  inclusion_exclusion_weights.cpp
+  inclusion_exclusion_weights.hpp
   quadrature_potential.cpp
   quadrature_potential.hpp
 )

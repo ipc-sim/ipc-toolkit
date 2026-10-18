@@ -47,6 +47,84 @@ namespace {
         }
         return r;
     }
+
+    // An element we integrate the 3D potential over: a face, an edge in no
+    // face (e.g., a rod), or a vertex in no edge (e.g., a particle). Each
+    // element's potential is the weighted average of the pointwise potential
+    // at its samples: its vertices (a face's only without a face quadrature
+    // rule, since the rule includes them), its face quadrature points (faces
+    // only), and the closest points of its edges' edge-edge pairs.
+    //
+    // A rod or particle has no face, so without elements of its own it would
+    // get exactly zero potential, however close it comes to anything.
+    struct IntegrationElement {
+        index_t face = -1; ///< Face id, or -1 for an edge or vertex element
+        std::array<index_t, 3> edges {}; ///< Edges whose edge-edge pairs count
+        int num_edges = 0;
+        std::array<index_t, 3> vertices {}; ///< Vertex samples
+        int num_vertices = 0;
+        double weight = 1; ///< Outer weight of the element's average
+    };
+
+    const FaceQuadRule NO_FACE_QUADRATURE;
+
+    // We number the elements faces first, then edges in no face, then
+    // vertices in no edge.
+    size_t num_integration_elements(const CollisionMesh& mesh)
+    {
+        return mesh.num_faces() + mesh.num_codim_edges()
+            + mesh.num_codim_vertices();
+    }
+
+    IntegrationElement integration_element(
+        const CollisionMesh& mesh, const ESPParameters& params, size_t k)
+    {
+        // With area weights, a face weighs its area over the square of its
+        // vertex count, area / 9. We give an edge in no face the same rule,
+        // length / 4, and an isolated vertex its vertex area (one by
+        // default). These have different units, so on a mesh that mixes
+        // faces with rods or particles the barrier stiffness has to be chosen
+        // with that in mind.
+        IntegrationElement elem;
+        if (k < mesh.num_faces()) {
+            const auto f = static_cast<index_t>(k);
+            elem.face = f;
+            elem.num_edges = 3;
+            for (int j = 0; j < 3; j++) {
+                elem.edges[j] = mesh.faces_to_edges()(f, j);
+            }
+            // The face quadrature rule includes the face vertices, so we
+            // only sample them separately when there is no rule.
+            if (params.quad_rule().empty()) {
+                elem.num_vertices = 3;
+                for (int j = 0; j < 3; j++) {
+                    elem.vertices[j] = mesh.faces()(f, j);
+                }
+            }
+            elem.weight = params.area_weights ? mesh.face_areas()(f) / 9. : 1.;
+            return elem;
+        }
+        k -= mesh.num_faces();
+
+        if (k < mesh.num_codim_edges()) {
+            const index_t e = mesh.codim_edges()[k];
+            elem.num_edges = 1;
+            elem.edges[0] = e;
+            elem.num_vertices = 2;
+            elem.vertices[0] = mesh.edges()(e, 0);
+            elem.vertices[1] = mesh.edges()(e, 1);
+            elem.weight = params.area_weights ? mesh.edge_area(e) / 4. : 1.;
+            return elem;
+        }
+        k -= mesh.num_codim_edges();
+
+        assert(k < mesh.num_codim_vertices());
+        const index_t v = mesh.codim_vertices()[k];
+        elem.num_vertices = 1;
+        elem.vertices[0] = v;
+        elem.weight = params.area_weights ? mesh.vertex_area(v) : 1.;
+        return elem;
+    }
 } // namespace
 
 double ESPPotential::operator()(
@@ -127,17 +205,18 @@ double ESPPotential::operator()(
                     m_params.barrier, dbar_factor);
             }
 
-            auto loop_body = [&](const tbb::blocked_range<index_t>& r) {
+            auto loop_body = [&](const tbb::blocked_range<size_t>& r) {
                 double& total = potential_storage.local();
-                for (index_t f = r.begin(); f < r.end(); f++) {
-                    const double area = mesh.face_areas()(f);
-                    const double w = m_params.area_weights ? (area / 9.) : 1.;
+                for (size_t k = r.begin(); k < r.end(); k++) {
+                    const IntegrationElement elem =
+                        integration_element(mesh, m_params, k);
+                    const double w = elem.weight;
 
                     double total_w = 0, total_w_near = 0, total_w_far = 0;
                     double total_p = 0, total_p_near = 0, total_p_far = 0;
 
-                    for (index_t le = 0; le < 3; le++) {
-                        const index_t edge_id = mesh.faces_to_edges()(f, le);
+                    for (int le = 0; le < elem.num_edges; le++) {
+                        const index_t edge_id = elem.edges[le];
                         const index_t ea = mesh.edges()(edge_id, 0);
                         const index_t eb = mesh.edges()(edge_id, 1);
 
@@ -225,10 +304,13 @@ double ESPPotential::operator()(
                     }
 
                     // Face-interior quadrature points from
-                    // params.quad_rule().
-                    const auto& face_quad_rule = m_params.quad_rule();
+                    // params.quad_rule() (faces only).
+                    const FaceQuadRule& face_quad_rule = elem.face >= 0
+                        ? m_params.quad_rule()
+                        : NO_FACE_QUADRATURE;
                     {
-                        auto iter = collisions.maps().face_collisions.find(f);
+                        auto iter =
+                            collisions.maps().face_collisions.find(elem.face);
                         for (size_t qi = 0; qi < face_quad_rule.size(); qi++) {
                             const auto& qp = face_quad_rule[qi];
                             if (use_nf) {
@@ -242,10 +324,12 @@ double ESPPotential::operator()(
                             }
                             if (iter
                                 != collisions.maps().face_collisions.end()) {
-                                const Eigen::RowVector3d q_pos =
-                                    qp.lambda[0] * X.row(mesh.faces()(f, 0))
-                                    + qp.lambda[1] * X.row(mesh.faces()(f, 1))
-                                    + qp.lambda[2] * X.row(mesh.faces()(f, 2));
+                                const Eigen::RowVector3d q_pos = qp.lambda[0]
+                                        * X.row(mesh.faces()(elem.face, 0))
+                                    + qp.lambda[1]
+                                        * X.row(mesh.faces()(elem.face, 1))
+                                    + qp.lambda[2]
+                                        * X.row(mesh.faces()(elem.face, 2));
                                 if (use_nf) {
                                     auto [fq_near, fq_far] = PointPotentialHelper::
                                         evaluate_potential_at_face_interior_point_with_cached_collisions_nearfar(
@@ -268,41 +352,37 @@ double ESPPotential::operator()(
                         }
                     }
 
-                    // Only integrate on vertices explicitly if there is no
-                    // ESP quadrature, since that includes verts
-                    if (face_quad_rule.empty()) {
-                        for (index_t lv = 0; lv < 3; lv++) {
-                            const index_t v = mesh.faces()(f, lv);
+                    // Vertex samples (see integration_element())
+                    for (int lv = 0; lv < elem.num_vertices; lv++) {
+                        const index_t v = elem.vertices[lv];
+                        if (use_nf) {
+                            total_w_near += 1.;
+                            total_w_far += 1.;
+                        } else {
+                            total_w += 1.;
+                        }
+                        if (auto iter =
+                                collisions.maps().vertex_collisions.find(v);
+                            iter != collisions.maps().vertex_collisions.end()) {
                             if (use_nf) {
-                                total_w_near += 1.;
-                                total_w_far += 1.;
+                                auto [vt_near, vt_far] = PointPotentialHelper::
+                                    evaluate_potential_at_vertex_with_cached_collisions_nearfar(
+                                        X, *(iter->second), m_params,
+                                        *nf_barrier);
+                                total_p_near += vt_near;
+                                total_p_far += vt_far;
                             } else {
-                                total_w += 1.;
-                            }
-                            if (auto iter =
-                                    collisions.maps().vertex_collisions.find(v);
-                                iter
-                                != collisions.maps().vertex_collisions.end()) {
-                                if (use_nf) {
-                                    auto [vt_near, vt_far] = PointPotentialHelper::
-                                        evaluate_potential_at_vertex_with_cached_collisions_nearfar(
-                                            X, *(iter->second), m_params,
-                                            *nf_barrier);
-                                    total_p_near += vt_near;
-                                    total_p_far += vt_far;
-                                } else {
-                                    const double vt_val = PointPotentialHelper::
-                                        evaluate_potential_at_vertex_with_cached_collisions(
-                                            X, *(iter->second), m_params);
-                                    total_p += vt_val;
-                                }
+                                const double vt_val = PointPotentialHelper::
+                                    evaluate_potential_at_vertex_with_cached_collisions(
+                                        X, *(iter->second), m_params);
+                                total_p += vt_val;
                             }
                         }
                     }
 
                     if (use_nf) {
-                        // The face's own vertices or quadrature points always
-                        // add a positive weight to both totals.
+                        // The element's own vertices or quadrature points
+                        // always add a positive weight to both totals.
                         assert(total_w_near >= total_w_far - 1e-14);
                         assert(total_w_far > 0);
                         total += w
@@ -318,7 +398,8 @@ double ESPPotential::operator()(
             };
 
             tbb::parallel_for(
-                tbb::blocked_range<index_t>(0, mesh.num_faces()), loop_body);
+                tbb::blocked_range<size_t>(0, num_integration_elements(mesh)),
+                loop_body);
 
             for (const auto& local_potential : potential_storage) {
                 result += local_potential;
@@ -400,11 +481,12 @@ Eigen::VectorXd ESPPotential::gradient(
             const bool use_nf_grad = m_use_near_far && dbar_factor > 0;
             const bool skip_ee_grad = (dbar_factor == 0);
 
-            auto loop_body = [&](const tbb::blocked_range<index_t>& r) {
+            auto loop_body = [&](const tbb::blocked_range<size_t>& r) {
                 Eigen::VectorXd& grad = storage.local();
-                for (index_t f = r.begin(); f < r.end(); f++) {
-                    const double area = mesh.face_areas()(f);
-                    const double w = m_params.area_weights ? (area / 9.) : 1.;
+                for (size_t k = r.begin(); k < r.end(); k++) {
+                    const IntegrationElement elem =
+                        integration_element(mesh, m_params, k);
+                    const double w = elem.weight;
                     // Pass 1: collect all quadrature contributions for this
                     // face
                     struct EEGradEntry {
@@ -432,8 +514,8 @@ Eigen::VectorXd ESPPotential::gradient(
                             m_params.barrier, m_params.dbar_factor());
                     }
 
-                    for (index_t le = 0; le < 3; le++) {
-                        const index_t edge_id = mesh.faces_to_edges()(f, le);
+                    for (int le = 0; le < elem.num_edges; le++) {
+                        const index_t edge_id = elem.edges[le];
                         const index_t ea = mesh.edges()(edge_id, 0);
                         const index_t eb = mesh.edges()(edge_id, 1);
 
@@ -561,10 +643,13 @@ Eigen::VectorXd ESPPotential::gradient(
                         }
                     }
 
-                    // Face-interior quadrature points
-                    const auto& face_quad_rule = m_params.quad_rule();
+                    // Face-interior quadrature points (faces only)
+                    const FaceQuadRule& face_quad_rule = elem.face >= 0
+                        ? m_params.quad_rule()
+                        : NO_FACE_QUADRATURE;
                     {
-                        auto iter = collisions.maps().face_collisions.find(f);
+                        auto iter =
+                            collisions.maps().face_collisions.find(elem.face);
                         for (size_t qi = 0; qi < face_quad_rule.size(); qi++) {
                             const auto& qp = face_quad_rule[qi];
                             const double qp_weight_scale =
@@ -577,10 +662,12 @@ Eigen::VectorXd ESPPotential::gradient(
                             if (iter != collisions.maps().face_collisions.end()
                                 && qi < iter->second.size()) {
                                 const auto& dict = *iter->second[qi];
-                                const Eigen::RowVector3d q_pos =
-                                    qp.lambda[0] * X.row(mesh.faces()(f, 0))
-                                    + qp.lambda[1] * X.row(mesh.faces()(f, 1))
-                                    + qp.lambda[2] * X.row(mesh.faces()(f, 2));
+                                const Eigen::RowVector3d q_pos = qp.lambda[0]
+                                        * X.row(mesh.faces()(elem.face, 0))
+                                    + qp.lambda[1]
+                                        * X.row(mesh.faces()(elem.face, 1))
+                                    + qp.lambda[2]
+                                        * X.row(mesh.faces()(elem.face, 2));
                                 VertexMatrixView<3> X_qp(X, q_pos);
 
                                 if (use_nf_grad) {
@@ -619,45 +706,42 @@ Eigen::VectorXd ESPPotential::gradient(
                         }
                     }
 
-                    if (face_quad_rule.empty()) {
-                        for (index_t lv = 0; lv < 3; lv++) {
-                            const index_t v = mesh.faces()(f, lv);
-                            total_w += 1.;
+                    // Vertex samples (see integration_element())
+                    for (int lv = 0; lv < elem.num_vertices; lv++) {
+                        const index_t v = elem.vertices[lv];
+                        total_w += 1.;
+                        if (use_nf_grad) {
+                            total_w_near += 1.0;
+                            total_w_far += 1.0;
+                        }
+                        if (auto iter =
+                                collisions.maps().vertex_collisions.find(v);
+                            iter != collisions.maps().vertex_collisions.end()) {
                             if (use_nf_grad) {
-                                total_w_near += 1.0;
-                                total_w_far += 1.0;
-                            }
-                            if (auto iter =
-                                    collisions.maps().vertex_collisions.find(v);
-                                iter
-                                != collisions.maps().vertex_collisions.end()) {
-                                if (use_nf_grad) {
-                                    auto [P_n, P_f] = PointPotentialHelper::
-                                        evaluate_potential_at_vertex_with_cached_collisions_nearfar(
-                                            X, (*iter->second), m_params,
-                                            *nf_barrier);
-                                    auto [grad_n, grad_f] = PointPotentialHelper::
-                                        evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
-                                            X, (*iter->second), m_params,
-                                            *nf_barrier);
-                                    const_cache.push_back(
-                                        ConstGradEntry {
-                                            &(*iter->second).dofs(), grad_n,
-                                            grad_f, P_n, P_f });
-                                    total_p_near += P_n;
-                                } else {
-                                    const double P = PointPotentialHelper::
-                                        evaluate_potential_at_vertex_with_cached_collisions(
-                                            X, (*iter->second), m_params);
-                                    const Eigen::VectorXd grad_p =
-                                        PointPotentialHelper::
-                                            evaluate_potential_gradient_at_vertex_with_cached_collisions(
-                                                X, (*iter->second), m_params);
-                                    const_cache.push_back(
-                                        ConstGradEntry {
-                                            &(*iter->second).dofs(), grad_p,
-                                            Eigen::VectorXd::Zero(0), P, 0 });
-                                }
+                                auto [P_n, P_f] = PointPotentialHelper::
+                                    evaluate_potential_at_vertex_with_cached_collisions_nearfar(
+                                        X, (*iter->second), m_params,
+                                        *nf_barrier);
+                                auto [grad_n, grad_f] = PointPotentialHelper::
+                                    evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
+                                        X, (*iter->second), m_params,
+                                        *nf_barrier);
+                                const_cache.push_back(
+                                    ConstGradEntry { &(*iter->second).dofs(),
+                                                     grad_n, grad_f, P_n,
+                                                     P_f });
+                                total_p_near += P_n;
+                            } else {
+                                const double P = PointPotentialHelper::
+                                    evaluate_potential_at_vertex_with_cached_collisions(
+                                        X, (*iter->second), m_params);
+                                const Eigen::VectorXd grad_p = PointPotentialHelper::
+                                    evaluate_potential_gradient_at_vertex_with_cached_collisions(
+                                        X, (*iter->second), m_params);
+                                const_cache.push_back(
+                                    ConstGradEntry {
+                                        &(*iter->second).dofs(), grad_p,
+                                        Eigen::VectorXd::Zero(0), P, 0 });
                             }
                         }
                     }
@@ -702,7 +786,8 @@ Eigen::VectorXd ESPPotential::gradient(
             };
 
             tbb::parallel_for(
-                tbb::blocked_range<index_t>(0, mesh.num_faces()), loop_body);
+                tbb::blocked_range<size_t>(0, num_integration_elements(mesh)),
+                loop_body);
         }
     }
 
@@ -809,11 +894,12 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
         {
             using T = ADHessian<12>;
 
-            auto loop_body = [&](const tbb::blocked_range<index_t>& r) {
+            auto loop_body = [&](const tbb::blocked_range<size_t>& r) {
                 auto& hess_triplets = storage.local();
-                for (index_t f = r.begin(); f < r.end(); f++) {
-                    const double area = mesh.face_areas()(f);
-                    const double w = m_params.area_weights ? (area / 9.) : 1.;
+                for (size_t k = r.begin(); k < r.end(); k++) {
+                    const IntegrationElement elem =
+                        integration_element(mesh, m_params, k);
+                    const double w = elem.weight;
 
                     // Pass 1: collect all quadrature contributions for this
                     // face
@@ -850,8 +936,8 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                             m_params.barrier, m_params.dbar_factor());
                     }
 
-                    for (index_t le = 0; le < 3; le++) {
-                        const index_t edge_id = mesh.faces_to_edges()(f, le);
+                    for (int le = 0; le < elem.num_edges; le++) {
+                        const index_t edge_id = elem.edges[le];
                         const index_t ea = mesh.edges()(edge_id, 0);
                         const index_t eb = mesh.edges()(edge_id, 1);
 
@@ -1022,10 +1108,13 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                         }
                     }
 
-                    // Face-interior quadrature points
-                    const auto& face_quad_rule = m_params.quad_rule();
+                    // Face-interior quadrature points (faces only)
+                    const FaceQuadRule& face_quad_rule = elem.face >= 0
+                        ? m_params.quad_rule()
+                        : NO_FACE_QUADRATURE;
                     {
-                        auto iter = collisions.maps().face_collisions.find(f);
+                        auto iter =
+                            collisions.maps().face_collisions.find(elem.face);
                         for (size_t qi = 0; qi < face_quad_rule.size(); qi++) {
                             const auto& qp = face_quad_rule[qi];
                             total_w += FACE_QUADRATURE_WEIGHT_SCALE * qp.weight;
@@ -1038,10 +1127,12 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                             if (iter != collisions.maps().face_collisions.end()
                                 && qi < iter->second.size()) {
                                 const auto& dict = *iter->second[qi];
-                                const Eigen::RowVector3d q_pos =
-                                    qp.lambda[0] * X.row(mesh.faces()(f, 0))
-                                    + qp.lambda[1] * X.row(mesh.faces()(f, 1))
-                                    + qp.lambda[2] * X.row(mesh.faces()(f, 2));
+                                const Eigen::RowVector3d q_pos = qp.lambda[0]
+                                        * X.row(mesh.faces()(elem.face, 0))
+                                    + qp.lambda[1]
+                                        * X.row(mesh.faces()(elem.face, 1))
+                                    + qp.lambda[2]
+                                        * X.row(mesh.faces()(elem.face, 2));
                                 VertexMatrixView<3> X_qp(X, q_pos);
                                 ConstHessEntry entry;
                                 entry.vertex_ids = &dict.vertex_ids();
@@ -1105,61 +1196,57 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                         }
                     }
 
-                    if (face_quad_rule.empty()) {
-                        for (index_t lv = 0; lv < 3; lv++) {
-                            const index_t v = mesh.faces()(f, lv);
-                            total_w += 1.;
-                            if (use_nf_hess) {
-                                total_w_near += 1.0;
-                                total_w_far += 1.0;
-                            }
-                            if (auto iter =
-                                    collisions.maps().vertex_collisions.find(v);
-                                iter
-                                != collisions.maps().vertex_collisions.end()) {
-                                const auto& dict = *iter->second;
-                                ConstHessEntry entry;
-                                entry.vertex_ids = &dict.vertex_ids();
-                                entry.dofs = &dict.dofs();
+                    // Vertex samples (see integration_element())
+                    for (int lv = 0; lv < elem.num_vertices; lv++) {
+                        const index_t v = elem.vertices[lv];
+                        total_w += 1.;
+                        if (use_nf_hess) {
+                            total_w_near += 1.0;
+                            total_w_far += 1.0;
+                        }
+                        if (auto iter =
+                                collisions.maps().vertex_collisions.find(v);
+                            iter != collisions.maps().vertex_collisions.end()) {
+                            const auto& dict = *iter->second;
+                            ConstHessEntry entry;
+                            entry.vertex_ids = &dict.vertex_ids();
+                            entry.dofs = &dict.dofs();
 
-                                if (use_nf_hess) {
-                                    auto [P_n, P_f] = PointPotentialHelper::
-                                        evaluate_potential_at_vertex_with_cached_collisions_nearfar(
-                                            X, dict, m_params, *nf_barrier);
-                                    auto [grad_n, grad_f] = PointPotentialHelper::
-                                        evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
-                                            X, dict, m_params, *nf_barrier);
-                                    auto [hess_n, hess_f] = PointPotentialHelper::
-                                        evaluate_potential_hessian_at_vertex_with_cached_collisions_nearfar(
-                                            X, dict, m_params, inner_psd_method,
-                                            *nf_barrier);
-                                    entry.p_near = P_n;
-                                    entry.p_far = P_f;
-                                    entry.grad_p_near = grad_n;
-                                    entry.grad_p_far = grad_f;
-                                    entry.local_hess_near = hess_n;
-                                    entry.local_hess_far = hess_f;
-                                    total_p_near += entry.p_near;
-                                    total_p_far += entry.p_far;
-                                } else {
-                                    entry.p_near = PointPotentialHelper::
-                                        evaluate_potential_at_vertex_with_cached_collisions(
-                                            X, dict, m_params);
-                                    entry.grad_p_near = PointPotentialHelper::
-                                        evaluate_potential_gradient_at_vertex_with_cached_collisions(
-                                            X, dict, m_params);
-                                    entry
-                                        .local_hess_near = PointPotentialHelper::
-                                        evaluate_potential_hessian_at_vertex_with_cached_collisions(
-                                            X, dict, m_params,
-                                            inner_psd_method);
-                                    entry.p_far = 0;
-                                    entry.grad_p_far = Eigen::VectorXd::Zero(0);
-                                    entry.local_hess_far =
-                                        Eigen::MatrixXd::Zero(0, 0);
-                                }
-                                const_cache.push_back(std::move(entry));
+                            if (use_nf_hess) {
+                                auto [P_n, P_f] = PointPotentialHelper::
+                                    evaluate_potential_at_vertex_with_cached_collisions_nearfar(
+                                        X, dict, m_params, *nf_barrier);
+                                auto [grad_n, grad_f] = PointPotentialHelper::
+                                    evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
+                                        X, dict, m_params, *nf_barrier);
+                                auto [hess_n, hess_f] = PointPotentialHelper::
+                                    evaluate_potential_hessian_at_vertex_with_cached_collisions_nearfar(
+                                        X, dict, m_params, inner_psd_method,
+                                        *nf_barrier);
+                                entry.p_near = P_n;
+                                entry.p_far = P_f;
+                                entry.grad_p_near = grad_n;
+                                entry.grad_p_far = grad_f;
+                                entry.local_hess_near = hess_n;
+                                entry.local_hess_far = hess_f;
+                                total_p_near += entry.p_near;
+                                total_p_far += entry.p_far;
+                            } else {
+                                entry.p_near = PointPotentialHelper::
+                                    evaluate_potential_at_vertex_with_cached_collisions(
+                                        X, dict, m_params);
+                                entry.grad_p_near = PointPotentialHelper::
+                                    evaluate_potential_gradient_at_vertex_with_cached_collisions(
+                                        X, dict, m_params);
+                                entry.local_hess_near = PointPotentialHelper::
+                                    evaluate_potential_hessian_at_vertex_with_cached_collisions(
+                                        X, dict, m_params, inner_psd_method);
+                                entry.p_far = 0;
+                                entry.grad_p_far = Eigen::VectorXd::Zero(0);
+                                entry.local_hess_far =
+                                    Eigen::MatrixXd::Zero(0, 0);
                             }
+                            const_cache.push_back(std::move(entry));
                         }
                     }
 
@@ -1452,7 +1539,8 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
             };
 
             tbb::parallel_for(
-                tbb::blocked_range<index_t>(0, mesh.num_faces()), loop_body);
+                tbb::blocked_range<size_t>(0, num_integration_elements(mesh)),
+                loop_body);
         }
     }
 

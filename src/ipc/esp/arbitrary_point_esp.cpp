@@ -5,6 +5,7 @@
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/esp/collisions/esp_collision_template.hpp>
 #include <ipc/esp/collisions/vertex_matrix_view.hpp>
+#include <ipc/esp/inclusion_exclusion_weights.hpp>
 
 #include <array>
 #include <cassert>
@@ -358,27 +359,11 @@ ArbitraryPointESP<dim>::ArbitraryPointESP(
             m_mesh.dim());
     }
 
-    // Inclusion-exclusion weights (supplemental S2): the weights of the
-    // elements containing any point of the mesh sum to one. Faces take one, so
-    // an edge takes 1 - (faces on it) and a vertex 1 - (edges at it) + (faces
-    // at it), each face at a vertex having two of its edges there. A closed
-    // mesh gets the alternating +1/-1/+1 (2D: edges +1, vertices -1). A
-    // boundary edge or vertex, and an open polyline's end, gets zero (S4);
-    // with the closed-mesh signs instead, the potential is exactly zero beyond
-    // a straight boundary edge of an open sheet, where it should be b(d). An
-    // edge in no face and an isolated vertex get one.
-    m_edge_weights.assign(m_mesh.num_edges(), 1);
-    m_vertex_weights.assign(m_mesh.num_vertices(), 1);
-    for (int f = 0; f < m_mesh.faces().rows(); f++) {
-        for (int j = 0; j < 3; j++) {
-            --m_edge_weights[m_mesh.faces_to_edges()(f, j)];
-            ++m_vertex_weights[m_mesh.faces()(f, j)];
-        }
-    }
-    for (int e = 0; e < m_mesh.edges().rows(); e++) {
-        --m_vertex_weights[m_mesh.edges()(e, 0)];
-        --m_vertex_weights[m_mesh.edges()(e, 1)];
-    }
+    // Inclusion-exclusion weights from the mesh connectivity: the alternating
+    // signs on a closed mesh, zero on boundary edges and vertices, and one on
+    // edges in no face and isolated vertices.
+    compute_inclusion_exclusion_weights(
+        m_mesh, m_edge_weights, m_vertex_weights);
 }
 
 template <int dim>
