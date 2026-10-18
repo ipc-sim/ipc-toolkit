@@ -931,13 +931,11 @@ TEST_CASE("ESP collision stencils", "[esp_potential]")
         CHECK_THROWS_AS(vv[2], std::runtime_error);
         CHECK_THROWS_AS(
             vv.dof(Eigen::MatrixXd::Zero(4, 4)), std::runtime_error);
+        const Eigen::MatrixXd Z22 = Eigen::MatrixXd::Zero(2, 2);
+        const Eigen::MatrixXd Z23 = Eigen::MatrixXd::Zero(2, 3);
+        CHECK_THROWS_AS(VertexMatrixView<3>(Z22), std::runtime_error);
         CHECK_THROWS_AS(
-            VertexMatrixView<3>(Eigen::MatrixXd::Zero(2, 2)),
-            std::runtime_error);
-        CHECK_THROWS_AS(
-            VertexMatrixView<3>(
-                Eigen::MatrixXd::Zero(2, 3), Eigen::MatrixXd::Zero(1, 2)),
-            std::runtime_error);
+            VertexMatrixView<3>(Z23, Z22.topRows(1)), std::runtime_error);
     }
 
     SECTION("2D")
@@ -1849,4 +1847,78 @@ TEST_CASE("Face Quadrature Hessian PSD", "[esp_potential], [esp_potential_3d]")
                 << " lambda_min=" << lambda_min
                 << " lambda_max=" << lambda_max);
     REQUIRE(lambda_min >= -tol);
+}
+
+// A block of a taller matrix, such as `V_big.topRows(n)`, binds to the
+// potential's vertex argument without a copy, so its columns are further apart
+// than its row count. The potential must read it exactly like the equivalent
+// contiguous matrix, both when building the collisions and when evaluating.
+TEST_CASE(
+    "ESP potential reads a strided vertex matrix like a contiguous one",
+    "[esp_potential]")
+{
+    const bool use_near_far = GENERATE(true, false);
+
+    Eigen::MatrixXd V;
+    CollisionMesh mesh;
+    double dhat = 0.15;
+    int quad_order = 0;
+    FaceQuadRule face_quad_rule;
+    SECTION("3D vertex quadrature")
+    {
+        TriMeshData data = load_wrapped_sphere();
+        V = data.V;
+        mesh = data.mesh;
+    }
+    SECTION("3D face quadrature")
+    {
+        TriMeshData data = load_wrapped_sphere();
+        V = data.V;
+        mesh = data.mesh;
+        face_quad_rule = make_face_quad_rule("vertices+centroid");
+    }
+    SECTION("2D")
+    {
+        // Two rectangles 0.2 apart.
+        V.resize(8, 2);
+        V << -1, 1, -1, 0, -.1, 0, -.1, 1, .1, 1, .1, 0, 1, 0, 1, 1;
+        Eigen::MatrixXi E(8, 2);
+        E << 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4;
+        mesh = make_2d_collision_mesh(V, E);
+        dhat = 0.6;
+        quad_order = 2;
+    }
+    ESPParameters params(dhat, 1., quad_order);
+    params.set_quad_rule(face_quad_rule);
+
+    // The rows below V hold values far from the mesh, so reading them instead
+    // of V changes the result.
+    Eigen::MatrixXd V_big =
+        Eigen::MatrixXd::Constant(V.rows() + 7, V.cols(), 1e3);
+    V_big.topRows(V.rows()) = V;
+    const auto V_strided = V_big.topRows(V.rows());
+
+    ESPCollisions collisions, strided_collisions;
+    collisions.build(mesh, V, params);
+    strided_collisions.build(mesh, V_strided, params);
+    REQUIRE(!collisions.empty());
+    CHECK(strided_collisions.size() == collisions.size());
+
+    const ESPPotential potential(params, use_near_far);
+    const double P = potential(collisions, mesh, V);
+    REQUIRE(P != 0);
+    const Eigen::VectorXd g = potential.gradient(collisions, mesh, V);
+    const Eigen::SparseMatrix<double> H =
+        potential.hessian(collisions, mesh, V);
+
+    for (const ESPCollisions* c : { &collisions, &strided_collisions }) {
+        CHECK(
+            potential(*c, mesh, V_strided) == Catch::Approx(P).epsilon(1e-12));
+        CHECK(
+            (potential.gradient(*c, mesh, V_strided) - g).norm()
+            <= 1e-12 * g.norm());
+        CHECK(
+            (potential.hessian(*c, mesh, V_strided) - H).norm()
+            <= 1e-12 * H.norm());
+    }
 }

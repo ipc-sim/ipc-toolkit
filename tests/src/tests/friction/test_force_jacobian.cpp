@@ -1025,6 +1025,88 @@ TEST_CASE("ESP friction requires the build's quadrature", "[friction-esp]")
     }
 }
 
+// The friction build reads the vertices through views of the vertex matrix,
+// so a block of a taller matrix (whose columns are further apart than its row
+// count) must give the same stencils as the equivalent contiguous matrix.
+TEST_CASE(
+    "ESP friction reads a strided vertex matrix like a contiguous one",
+    "[friction-esp]")
+{
+    const bool normalize_weights = GENERATE(true, false);
+
+    Eigen::MatrixXd V, U;
+    CollisionMesh mesh;
+    double dhat = 0.15;
+    int quad_order = 0;
+    FaceQuadRule face_quad_rule;
+    SECTION("2D")
+    {
+        V.resize(8, 2);
+        V << -1., 1., -1., 0., -.1, 0., -.1, 1., .1, 1., .1, 0., 1., 0., 1., 1.;
+        Eigen::MatrixXi E(8, 2), F;
+        E << 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4;
+        mesh = CollisionMesh(
+            std::vector<bool>(V.rows(), true),
+            std::vector<bool>(V.rows(), false), V, E, F);
+        U = Eigen::MatrixXd::Zero(V.rows(), V.cols());
+        U.topRows(4).col(1).array() = 0.05; // slide the left rectangle
+        dhat = 0.6;
+        quad_order = 2;
+    }
+    // Slide the upper surface of the 3D scene along x.
+    const auto load_3d_scene = [&]() {
+        const ESPFrictionSceneData3D scene =
+            esp_friction_scene_generator_3d(dhat * 0.5);
+        V = scene.X;
+        mesh = CollisionMesh(V, scene.E, scene.F);
+        U = Eigen::MatrixXd::Zero(V.rows(), V.cols());
+        for (int v : scene.upper_vertices) {
+            U(v, 0) = 0.05;
+        }
+    };
+    SECTION("3D vertex quadrature") { load_3d_scene(); }
+    SECTION("3D face quadrature")
+    {
+        load_3d_scene();
+        quad_order = 1;
+        face_quad_rule = make_vertex_plus_centroid_quad_rule();
+    }
+    ESPParameters params(dhat, 1., quad_order);
+    params.set_quad_rule(face_quad_rule);
+
+    ESPCollisions collisions;
+    collisions.build(mesh, V, params);
+    REQUIRE(!collisions.empty());
+
+    // The rows below V hold values far from the mesh, so reading them instead
+    // of V changes the stencils.
+    Eigen::MatrixXd V_big =
+        Eigen::MatrixXd::Constant(V.rows() + 7, V.cols(), 1e3);
+    V_big.topRows(V.rows()) = V;
+
+    const Eigen::VectorXd mu = Eigen::VectorXd::Ones(V.rows());
+    TangentialCollisions friction_collisions, strided_friction_collisions;
+    friction_collisions.build(
+        mesh, V, collisions, params, /*normal_stiffness=*/1., mu, mu,
+        normalize_weights);
+    strided_friction_collisions.build(
+        mesh, V_big.topRows(V.rows()), collisions, params,
+        /*normal_stiffness=*/1., mu, mu, normalize_weights);
+    REQUIRE(!friction_collisions.empty());
+    CHECK(strided_friction_collisions.size() == friction_collisions.size());
+
+    const FrictionPotential D(/*epsv_times_h=*/1.);
+    const double value = D(friction_collisions, mesh, U);
+    const Eigen::VectorXd grad = D.gradient(friction_collisions, mesh, U);
+    REQUIRE(grad.norm() > 0);
+    CHECK(
+        std::abs(D(strided_friction_collisions, mesh, U) - value)
+        <= 1e-12 * std::abs(value));
+    CHECK(
+        (D.gradient(strided_friction_collisions, mesh, U) - grad).norm()
+        <= 1e-12 * grad.norm());
+}
+
 TEST_CASE(
     "Smooth friction force no_mu and no_contact_force_multiplier",
     "[friction-smooth][force][no-mu]")

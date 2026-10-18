@@ -32,7 +32,7 @@ namespace {
 
 std::unique_ptr<ESPCollisionDict<PointType::VERTEX>>
 PointPotential::build_collisions_at_vertex(
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const index_t vid,
     size_t& num_collision_pairs) const
 {
@@ -98,7 +98,7 @@ PointPotential::build_collisions_at_vertex(
 
 double
 PointPotentialHelper::evaluate_potential_at_vertex_with_cached_collisions(
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const ESPCollisionDict<PointType::VERTEX>& collisions,
     const ESPParameters& params)
 {
@@ -113,7 +113,7 @@ PointPotentialHelper::evaluate_potential_at_vertex_with_cached_collisions(
 
 Eigen::VectorXd PointPotentialHelper::
     evaluate_potential_gradient_at_vertex_with_cached_collisions(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params)
 {
@@ -135,7 +135,7 @@ Eigen::VectorXd PointPotentialHelper::
 
 Eigen::MatrixXd PointPotentialHelper::
     evaluate_potential_hessian_at_vertex_with_cached_collisions(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params,
         PSDProjectionMethod project_to_psd)
@@ -171,7 +171,7 @@ Eigen::MatrixXd PointPotentialHelper::
 
 std::unique_ptr<ESPCollisionDict<PointType::EDGE>>
 PointPotential::build_collisions_at_edge_edge_closest_point(
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const index_t e0,
     const index_t e1,
     EdgeEdgeDistanceType dtype,
@@ -553,7 +553,7 @@ Eigen::MatrixXd PointPotentialHelper::
 
 std::unique_ptr<ESPCollisionDict<PointType::FACE>>
 PointPotential::build_collisions_at_face_interior_point(
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const index_t fid,
     const std::array<double, 3>& lambda,
     size_t& num_collision_pairs) const
@@ -814,7 +814,7 @@ Eigen::MatrixXd PointPotentialHelper::
 
 std::unique_ptr<ESPCollisionDict<PointType::EDGE, 2>>
 PointPotential::build_collisions_at_edge_qp(
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const index_t ei,
     const std::array<double, 2>& lambda,
     const double dhat,
@@ -1037,7 +1037,7 @@ Eigen::MatrixXd PointPotentialHelper::evaluate_potential_hessian_at_edge_qp(
 
 std::pair<double, double> PointPotentialHelper::
     evaluate_potential_at_vertex_with_cached_collisions_nearfar(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params,
         const NearFarBarrier& nf_barrier)
@@ -1054,7 +1054,7 @@ std::pair<double, double> PointPotentialHelper::
 
 std::pair<Eigen::VectorXd, Eigen::VectorXd> PointPotentialHelper::
     evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params,
         const NearFarBarrier& nf_barrier)
@@ -1084,7 +1084,7 @@ std::pair<Eigen::VectorXd, Eigen::VectorXd> PointPotentialHelper::
 
 std::pair<Eigen::MatrixXd, Eigen::MatrixXd> PointPotentialHelper::
     evaluate_potential_hessian_at_vertex_with_cached_collisions_nearfar(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params,
         PSDProjectionMethod project_to_psd,

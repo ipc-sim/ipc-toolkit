@@ -31,7 +31,7 @@ public:
     /// candidates.ee_set(mesh, ei). Results are stored in edge_collisions_2d.
     void build_edge_collisions(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const Candidates& candidates,
         const ESPParameters& params,
         size_t start,
@@ -72,7 +72,7 @@ public:
 
     void add_face_vertex_collisions(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<FaceVertexCandidate>& candidates,
         const ESPParameters& params,
         const size_t start_i,
@@ -80,7 +80,7 @@ public:
 
     void add_face_vertex_negative_edge_vertex_collisions(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<EdgeVertexCandidate>& candidates,
         const ESPParameters& params,
         const size_t start_i,
@@ -88,7 +88,7 @@ public:
 
     void add_face_vertex_positive_vertex_vertex_collisions(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<VertexVertexCandidate>& candidates,
         const ESPParameters& params,
         const size_t start_i,
@@ -99,7 +99,7 @@ public:
 
     void add_negative_edge_edge_edge_collisions(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<std::array<index_t, 3>>& candidates,
         const ESPParameters& params,
         const double dhat,
@@ -108,7 +108,7 @@ public:
 
     void add_edge_edge_face_collisions(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<std::array<index_t, 3>>& candidates,
         const ESPParameters& params,
         const double dhat,
@@ -117,7 +117,7 @@ public:
 
     void add_edge_edge_vertex_collisions(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<std::array<index_t, 3>>& candidates,
         const ESPParameters& params,
         const double dhat,
@@ -161,19 +161,19 @@ public:
     ~QuadratureCollisionsBuilder();
 
     void build_vertex_collisions(
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<index_t>& vertex_indices,
         size_t start,
         size_t end);
 
     void build_face_collisions(
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<index_t>& face_indices,
         size_t start,
         size_t end);
 
     void build_edge_edge_collisions(
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<EdgeEdgeCandidate>& ee_candidates,
         const size_t start_i,
         const size_t end_i);

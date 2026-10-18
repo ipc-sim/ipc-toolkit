@@ -185,6 +185,57 @@ TEST_CASE(
     REQUIRE(hess.isZero());
 }
 
+namespace {
+
+// Evaluate the potential on V and on the same vertices stored as the top rows
+// of a taller matrix, whose columns are further apart than V's row count. Both
+// must give the same value, gradient and Hessian.
+template <int dim>
+void check_strided_vertices_match(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V,
+    const double dhat,
+    const Eigen::RowVector<double, dim>& q)
+{
+    Eigen::MatrixXd V_big = Eigen::MatrixXd::Constant(V.rows() + 7, dim, 1e3);
+    V_big.topRows(V.rows()) = V;
+    const auto V_strided = V_big.topRows(V.rows());
+
+    const ESPParameters params(dhat);
+    ArbitraryPointESP<dim> potential(mesh, params);
+    ArbitraryPointESP<dim> strided_potential(mesh, params);
+    potential.update(V);
+    strided_potential.update(V_strided);
+
+    const auto [value, grad, hess] = potential.evaluate(V, q);
+    REQUIRE(value != 0.0);
+    CHECK(strided_potential(V_strided, q) == value);
+    CHECK(strided_potential.gradient(V_strided, q) == grad);
+    CHECK(strided_potential.hessian(V_strided, q) == hess);
+}
+
+} // namespace
+
+TEST_CASE(
+    "Arbitrary Point ESP reads a strided vertex matrix like a contiguous one",
+    "[esp_potential],[arbitrary_point_esp]")
+{
+    SECTION("3D")
+    {
+        Fixture fx;
+        check_strided_vertices_match<3>(
+            fx.mesh, fx.V, fx.dhat, fx.near_surface_point(0.3));
+    }
+    SECTION("2D")
+    {
+        Fixture2D fx;
+        for (const Eigen::RowVector2d& q :
+             { fx.near_edge_point(0.3), fx.near_corner_point(0.3) }) {
+            check_strided_vertices_match<2>(fx.mesh, fx.V, fx.dhat, q);
+        }
+    }
+}
+
 TEST_CASE(
     "Arbitrary Point ESP 2D: zero beyond dhat",
     "[esp_potential],[arbitrary_point_esp]")

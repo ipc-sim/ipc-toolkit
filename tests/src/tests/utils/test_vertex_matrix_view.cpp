@@ -127,3 +127,67 @@ TEST_CASE("VertexMatrixView empty matrix B", "[vertex_matrix_view]")
         }
     }
 }
+
+TEST_CASE(
+    "VertexMatrixView reads strided and row-major matrices",
+    "[vertex_matrix_view]")
+{
+    const Eigen::MatrixXd A = Eigen::MatrixXd::Random(4, 3);
+    const Eigen::MatrixXd B = Eigen::MatrixXd::Random(2, 3);
+    Eigen::MatrixXd AB(6, 3);
+    AB << A, B;
+
+    // Embed A and B in taller matrices so each column is further from the
+    // next than the number of rows the view sees.
+    Eigen::MatrixXd A_big = Eigen::MatrixXd::Random(10, 3);
+    A_big.topRows(4) = A;
+    Eigen::MatrixXd B_big = Eigen::MatrixXd::Random(3, 5);
+    B_big.block<2, 3>(1, 2) = B;
+    const Eigen::Matrix<double, -1, 3, Eigen::RowMajor> A_row_major = A;
+
+    const auto check_matches = [](const VertexMatrixView<3>& view,
+                                  const Eigen::MatrixXd& expected) {
+        REQUIRE(view.rows() == expected.rows());
+        for (index_t i = 0; i < view.rows(); i++) {
+            CHECK(view(i) == expected.row(i));
+        }
+    };
+
+    SECTION("Block")
+    {
+        check_matches(VertexMatrixView<3>(A_big.topRows(4)), A);
+        check_matches(
+            VertexMatrixView<3>(A_big.topRows(4), B_big.block<2, 3>(1, 2)), AB);
+    }
+    SECTION("Ref")
+    {
+        // A const Ref binds blocks without a copy, so the view must use the
+        // Ref's outer stride.
+        const Eigen::Ref<const Eigen::MatrixXd> A_ref = A_big.topRows(4);
+        REQUIRE(A_ref.data() == A_big.data());
+        const VertexMatrixView<3> view(A_ref, B);
+        CHECK(view.m_a == A_big.data());
+        check_matches(view, AB);
+    }
+    SECTION("Map with outer stride")
+    {
+        const Eigen::Map<const Eigen::MatrixXd, 0, Eigen::OuterStride<>> A_map(
+            A_big.data(), 4, 3, Eigen::OuterStride<>(A_big.rows()));
+        check_matches(VertexMatrixView<3>(A_map), A);
+    }
+    SECTION("Row-major")
+    {
+        const VertexMatrixView<3> view(A_row_major, B);
+        CHECK(view.m_a == A_row_major.data());
+        check_matches(view, AB);
+    }
+    SECTION("Row vector")
+    {
+        const Eigen::RowVector3d q = B.row(1);
+        const VertexMatrixView<3> view(A_big.topRows(4), q);
+        CHECK(view.m_b == q.data());
+        Eigen::MatrixXd Aq(5, 3);
+        Aq << A, q;
+        check_matches(view, Aq);
+    }
+}

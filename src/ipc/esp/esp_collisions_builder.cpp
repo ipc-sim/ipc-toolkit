@@ -21,7 +21,7 @@ using IntegrationType = ESPParameters::IntegrationType;
 
 void ESPCollisionsBuilder<2>::build_edge_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
     const Candidates& candidates,
     const ESPParameters& params,
     size_t start,
@@ -223,7 +223,7 @@ QuadratureCollisionsBuilder::QuadratureCollisionsBuilder(
 }
 
 void QuadratureCollisionsBuilder::build_vertex_collisions(
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<index_t>& vertex_indices,
     const size_t start_i,
     const size_t end_i)
@@ -266,7 +266,7 @@ void QuadratureCollisionsBuilder::build_vertex_collisions(
 }
 
 void QuadratureCollisionsBuilder::build_face_collisions(
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<index_t>& face_indices,
     const size_t start_i,
     const size_t end_i)
@@ -328,7 +328,7 @@ void QuadratureCollisionsBuilder::build_face_collisions(
 }
 
 void QuadratureCollisionsBuilder::build_edge_edge_collisions(
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<EdgeEdgeCandidate>& ee_candidates,
     const size_t start_i,
     const size_t end_i)

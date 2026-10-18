@@ -11,39 +11,39 @@
 namespace ipc {
 namespace PointPotentialHelper {
     double evaluate_potential_at_vertex_with_cached_collisions(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params);
 
     Eigen::VectorXd
     evaluate_potential_gradient_at_vertex_with_cached_collisions(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params);
 
     Eigen::MatrixXd evaluate_potential_hessian_at_vertex_with_cached_collisions(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params,
         PSDProjectionMethod project_to_psd);
 
     std::pair<double, double>
     evaluate_potential_at_vertex_with_cached_collisions_nearfar(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params,
         const NearFarBarrier& nf_barrier);
 
     std::pair<Eigen::VectorXd, Eigen::VectorXd>
     evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params,
         const NearFarBarrier& nf_barrier);
 
     std::pair<Eigen::MatrixXd, Eigen::MatrixXd>
     evaluate_potential_hessian_at_vertex_with_cached_collisions_nearfar(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params,
         PSDProjectionMethod project_to_psd,
@@ -201,13 +201,13 @@ public:
 
     std::unique_ptr<ESPCollisionDict<PointType::VERTEX>>
     build_collisions_at_vertex(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         index_t vid,
         size_t& num_collision_pairs) const;
 
     std::unique_ptr<ESPCollisionDict<PointType::EDGE>>
     build_collisions_at_edge_edge_closest_point(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         index_t e0,
         index_t e1,
         EdgeEdgeDistanceType dtype,
@@ -215,7 +215,7 @@ public:
 
     std::unique_ptr<ESPCollisionDict<PointType::FACE>>
     build_collisions_at_face_interior_point(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         index_t fid,
         const std::array<double, 3>& lambda,
         size_t& num_collision_pairs) const;
@@ -227,7 +227,7 @@ public:
     /// @param dhat Distance threshold for this edge.
     std::unique_ptr<ESPCollisionDict<PointType::EDGE, 2>>
     build_collisions_at_edge_qp(
-        const Eigen::MatrixXd& V,
+        Eigen::ConstRef<Eigen::MatrixXd> V,
         index_t ei,
         const std::array<double, 2>& lambda,
         double dhat,
