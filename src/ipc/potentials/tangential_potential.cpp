@@ -759,6 +759,26 @@ TangentialPotential::VectorMaxNd TangentialPotential::gcp_force(
         * mu_f1_over_norm_tau * T * tau_aniso;
 }
 
+Eigen::MatrixXd TangentialPotential::gcp_force_jacobian(
+    const TangentialCollision& collision,
+    Eigen::ConstRef<VectorMaxNd> rest_positions,       // = x
+    Eigen::ConstRef<VectorMaxNd> lagged_displacements, // = u
+    Eigen::ConstRef<VectorMaxNd> velocities,           // = v
+    const DiffWRT wrt,
+    const bool no_mu) const
+{
+    assert(rest_positions.size() == lagged_displacements.size());
+    assert(rest_positions.size() == velocities.size());
+
+    // The force depends on x and u only through x + u, so the Jacobian is the
+    // same for either of them. We scale the unit Jacobian by the cached normal
+    // force N, which gcp_force() also treats as a constant.
+    return collision.normal_force_magnitude
+        * gcp_force_jacobian_unit(
+               collision, rest_positions + lagged_displacements, velocities,
+               wrt, no_mu);
+}
+
 TangentialPotential::MatrixMaxNd TangentialPotential::gcp_force_jacobian_unit(
     const TangentialCollision& collision,
     Eigen::ConstRef<VectorMaxNd> lagged_positions, // = x + u^t

@@ -1219,6 +1219,73 @@ TEST_CASE(
 }
 
 TEST_CASE(
+    "Smooth friction force jacobian of a single collision",
+    "[friction-smooth][force-jacobian]")
+{
+#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32)) && !defined(NDEBUG)
+    SKIP(
+        "'Smooth friction force jacobian of a single collision' test is "
+        "skipped in debug mode");
+#endif
+    using DiffWRT = FrictionPotential::DiffWRT;
+    const DiffWRT wrt = GENERATE(
+        DiffWRT::REST_POSITIONS, DiffWRT::LAGGED_DISPLACEMENTS,
+        DiffWRT::VELOCITIES);
+
+    GCPFrictionData data = smooth_friction_data_generator_3d();
+    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, params, barrier_stiffness] =
+        data;
+
+    const Eigen::MatrixXd& X = V0;
+    const Eigen::MatrixXd Ut = Eigen::MatrixXd::Zero(X.rows(), X.cols());
+    const Eigen::MatrixXd velocities = V1 - V0;
+    const CollisionMesh mesh(X, E, F);
+
+    TangentialCollisions friction_collisions;
+    friction_collisions.build(
+        mesh, X + Ut, collisions, params, barrier_stiffness,
+        Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
+        Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
+    if (friction_collisions.empty()) {
+        return;
+    }
+    friction_collisions.update_lagged_anisotropic_friction_coefficients(
+        mesh, X, Ut, velocities);
+
+    const FrictionPotential D(epsv_times_h);
+    for (size_t i = 0; i < friction_collisions.size(); i++) {
+        const TangentialCollision& collision = friction_collisions[i];
+        const Eigen::VectorXd x = collision.dof(X, E, F);
+        const Eigen::VectorXd u = collision.dof(Ut, E, F);
+        const Eigen::VectorXd v = collision.dof(velocities, E, F);
+
+        const Eigen::MatrixXd J = D.gcp_force_jacobian(collision, x, u, v, wrt);
+
+        // The single-collision force, as a function of the variable we
+        // differentiate with respect to.
+        const auto force = [&](const Eigen::VectorXd& y) -> Eigen::VectorXd {
+            switch (wrt) {
+            case DiffWRT::REST_POSITIONS:
+                return D.gcp_force(collision, y, u, v);
+            case DiffWRT::LAGGED_DISPLACEMENTS:
+                return D.gcp_force(collision, x, y, v);
+            default:
+                return D.gcp_force(collision, x, u, y);
+            }
+        };
+        const Eigen::VectorXd& y0 = wrt == DiffWRT::REST_POSITIONS ? x
+            : wrt == DiffWRT::LAGGED_DISPLACEMENTS                 ? u
+                                                                   : v;
+        Eigen::MatrixXd fd_J;
+        fd::finite_jacobian(
+            y0, force, fd_J, fd::AccuracyOrder::FOURTH, 1e-6 * params.dhat);
+
+        CAPTURE(i, static_cast<int>(wrt));
+        CHECK((J - fd_J).norm() <= 1e-7 * std::max(J.norm(), 1e-8));
+    }
+}
+
+TEST_CASE(
     "Smooth friction force jacobian 3D", "[friction-smooth][force-jacobian]")
 {
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32)) && !defined(NDEBUG)

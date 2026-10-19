@@ -163,13 +163,26 @@ public:
         const bool no_mu = false,
         const bool no_contact_force_multiplier = false) const;
 
+    /// @brief Compute the Jacobian of gcp_force() for a single collision.
+    ///
+    /// Like gcp_force(), this holds the collision's cached normal force
+    /// magnitude fixed. Its derivative involves the vertices of the GCP
+    /// collision rather than this stencil, so the collision-set overload adds
+    /// it separately.
+    /// @param collision The collision
+    /// @param rest_positions Rest positions of the stencil's vertices.
+    /// @param lagged_displacements Lagged displacements of the stencil's vertices.
+    /// @param velocities Current velocities of the stencil's vertices.
+    /// @param wrt Variable to differentiate the friction force with respect to.
+    /// @param no_mu Whether to not multiply by mu
+    /// @return Friction force Jacobian
     Eigen::MatrixXd gcp_force_jacobian(
         const TangentialCollision& collision,
         Eigen::ConstRef<VectorMaxNd> rest_positions,       // = x
         Eigen::ConstRef<VectorMaxNd> lagged_displacements, // = u
         Eigen::ConstRef<VectorMaxNd> velocities,           // = v
         const DiffWRT wrt,
-        const bool no_mu) const;
+        const bool no_mu = false) const;
 
     /// @brief Compute the friction force Jacobian assuming the contact force magnitude being 1.
     /// @param collision The collision
@@ -233,6 +246,22 @@ public:
         return gcp_force(
             collision, rest_positions, lagged_displacements, velocities, no_mu,
             no_contact_force_multiplier);
+    }
+
+    [[deprecated(
+        "smooth_contact_force_jacobian is deprecated. Use "
+        "gcp_force_jacobian instead.")]]
+    Eigen::MatrixXd smooth_contact_force_jacobian(
+        const TangentialCollision& collision,
+        Eigen::ConstRef<VectorMaxNd> rest_positions,
+        Eigen::ConstRef<VectorMaxNd> lagged_displacements,
+        Eigen::ConstRef<VectorMaxNd> velocities,
+        const DiffWRT wrt,
+        const bool no_mu = false) const
+    {
+        return gcp_force_jacobian(
+            collision, rest_positions, lagged_displacements, velocities, wrt,
+            no_mu);
     }
 
     [[deprecated(
