@@ -1077,6 +1077,34 @@ TEST_CASE(
     }
 }
 
+TEST_CASE(
+    "ESP collisions describe and count their 2D edge quadrature contacts",
+    "[esp_potential][esp_potential_2d]")
+{
+    // Two unit squares 0.2 apart, well within dhat of each other.
+    Eigen::MatrixXd V(8, 2);
+    V << -1., 1., -1., 0., -.1, 0., -.1, 1., .1, 1., .1, 0., 1., 0., 1., 1.;
+    Eigen::MatrixXi E(8, 2), F;
+    E << 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4;
+    const CollisionMesh mesh(V, E, F);
+    const ESPParameters params(0.6, 1., 2);
+
+    ESPCollisions collisions;
+    collisions.build(mesh, V, params);
+    REQUIRE(!collisions.empty());
+
+    const std::string description = collisions.to_string(mesh, V, params);
+    // One line per collision pair, each starting on a new line.
+    CHECK(
+        static_cast<size_t>(
+            std::count(description.begin(), description.end(), '\n'))
+        == collisions.size());
+    CHECK(description.find("edge [") != std::string::npos);
+
+    // Every stored pair was counted when it was built.
+    CHECK(collisions.num_quadrature_collision_pairs >= collisions.size());
+}
+
 TEST_CASE("ESP collision dict index out of range", "[esp_potential]")
 {
     ESPCollisionDict<PointType::VERTEX> dict;

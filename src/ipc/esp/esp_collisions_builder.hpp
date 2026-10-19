@@ -50,6 +50,8 @@ public:
         index_t,
         std::vector<std::unique_ptr<ESPCollisionDict<PointType::EDGE, 2>>>>>
         edge_collisions_2d;
+
+    size_t num_collision_pairs = 0;
 };
 
 template <> class ESPCollisionsBuilder<3> {

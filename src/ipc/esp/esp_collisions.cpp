@@ -291,6 +291,19 @@ std::string ESPCollisions::to_string(
             }
         }
     }
+    // Same for the 2D edge quadrature points.
+    for (const auto& ccs : m_maps->edge_collisions_2d) {
+        for (size_t qi = 0; qi < ccs.second.size(); qi++) {
+            const auto& dict = *ccs.second[qi];
+            for (int i = 0; i < dict.size(); i++) {
+                const auto& cc = dict[i];
+                ss << "\n";
+                ss << fmt::format(
+                    "edge [{}]: {} point {} ({} {}) weight {}", cc.name(),
+                    ccs.first, qi, cc[0], cc[1], cc.weight);
+            }
+        }
+    }
 
     return ss.str();
 }

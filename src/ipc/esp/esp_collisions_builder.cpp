@@ -72,6 +72,7 @@ void ESPCollisionsBuilder<2>::build_edge_collisions(
                 has_any = true;
             }
             qp_dicts.push_back(std::move(dict));
+            num_collision_pairs += n;
         }
 
         if (has_any) {
@@ -97,6 +98,8 @@ void ESPCollisionsBuilder<2>::merge(
             merged_collisions.maps().edge_collisions_2d.insert(
                 std::make_pair(ei, std::move(dicts)));
         }
+        merged_collisions.num_quadrature_collision_pairs +=
+            builder.num_collision_pairs;
     }
 
     logger().trace("2D edge QP collision pairs: {}.", total_pairs);
