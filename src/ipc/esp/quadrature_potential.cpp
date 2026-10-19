@@ -1174,89 +1174,66 @@ double PointPotentialHelper::
     return near_sum;
 }
 
-template <>
-std::enable_if_t<IsADGrad<ADGrad<12>>::value, Eigen::VectorXd>
+template <typename ADType>
+std::enable_if_t<
+    IsADGrad<ADType>::value || IsADHessian<ADType>::value,
+    Eigen::VectorXd>
 PointPotentialHelper::
+    evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions_near(
+        VertexMatrixView<3> V_extended,
+        const ESPCollisionDict<PointType::EDGE>& collisions,
+        const ESPParameters& params,
+        Eigen::ConstRef<Eigen::Vector3<ADType>> q,
+        const NearFarBarrier& nf_barrier)
+{
+    const index_t n_real_vertices = V_extended.rows() - 1;
+    Eigen::VectorXd grad =
+        Eigen::VectorXd::Zero(collisions.vertex_ids().size() * 3);
+    for (int ci = 0; ci < collisions.size(); ci++) {
+        const auto& cc = collisions[ci];
+        auto [gn, gf] =
+            cc.gradient_nearfar(cc.dof(V_extended), params, &nf_barrier);
+        Eigen::VectorXd g = cc.weight * gn;
+        for (index_t i = 0; i < cc.num_vertices(); i++) {
+            const index_t global_id = cc.vertex_id(i);
+            if (global_id == n_real_vertices) {
+                const Vector12d local_grad =
+                    (q(0) * g(3 * i + 0) + q(1) * g(3 * i + 1)
+                     + q(2) * g(3 * i + 2))
+                        .grad;
+                // distribute grad wrt virtual vertex to real edge vertices
+                for (index_t lv = 0; lv < 4; lv++) {
+                    grad.segment<3>(3 * collisions.primary_local_ids()[lv]) +=
+                        local_grad.segment<3>(lv * 3);
+                }
+            } else {
+                assert(global_id < n_real_vertices);
+                grad.segment<3>(3 * collisions.vertex_ids_inverse(global_id)) +=
+                    g.segment<3>(i * 3);
+            }
+        }
+    }
+
+    return grad;
+}
+
+template Eigen::VectorXd PointPotentialHelper::
     evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions_near<
         ADGrad<12>>(
         VertexMatrixView<3> V_extended,
         const ESPCollisionDict<PointType::EDGE>& collisions,
         const ESPParameters& params,
         Eigen::ConstRef<Eigen::Vector3<ADGrad<12>>> q,
-        const NearFarBarrier& nf_barrier)
-{
-    const index_t n_real_vertices = V_extended.rows() - 1;
-    Eigen::VectorXd grad =
-        Eigen::VectorXd::Zero(collisions.vertex_ids().size() * 3);
-    for (int ci = 0; ci < collisions.size(); ci++) {
-        const auto& cc = collisions[ci];
-        auto [gn, gf] =
-            cc.gradient_nearfar(cc.dof(V_extended), params, &nf_barrier);
-        Eigen::VectorXd g = cc.weight * gn;
-        for (index_t i = 0; i < cc.num_vertices(); i++) {
-            const index_t global_id = cc.vertex_id(i);
-            if (global_id == n_real_vertices) {
-                const Vector12d local_grad =
-                    (q(0) * g(3 * i + 0) + q(1) * g(3 * i + 1)
-                     + q(2) * g(3 * i + 2))
-                        .grad;
-                // distribute grad wrt virtual vertex to real edge vertices
-                for (index_t lv = 0; lv < 4; lv++) {
-                    grad.segment<3>(3 * collisions.primary_local_ids()[lv]) +=
-                        local_grad.segment<3>(lv * 3);
-                }
-            } else {
-                assert(global_id < n_real_vertices);
-                grad.segment<3>(3 * collisions.vertex_ids_inverse(global_id)) +=
-                    g.segment<3>(i * 3);
-            }
-        }
-    }
+        const NearFarBarrier& nf_barrier);
 
-    return grad;
-}
-
-template <>
-std::enable_if_t<IsADHessian<ADHessian<12>>::value, Eigen::VectorXd>
-PointPotentialHelper::
+template Eigen::VectorXd PointPotentialHelper::
     evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions_near<
         ADHessian<12>>(
         VertexMatrixView<3> V_extended,
         const ESPCollisionDict<PointType::EDGE>& collisions,
         const ESPParameters& params,
         Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> q,
-        const NearFarBarrier& nf_barrier)
-{
-    const index_t n_real_vertices = V_extended.rows() - 1;
-    Eigen::VectorXd grad =
-        Eigen::VectorXd::Zero(collisions.vertex_ids().size() * 3);
-    for (int ci = 0; ci < collisions.size(); ci++) {
-        const auto& cc = collisions[ci];
-        auto [gn, gf] =
-            cc.gradient_nearfar(cc.dof(V_extended), params, &nf_barrier);
-        Eigen::VectorXd g = cc.weight * gn;
-        for (index_t i = 0; i < cc.num_vertices(); i++) {
-            const index_t global_id = cc.vertex_id(i);
-            if (global_id == n_real_vertices) {
-                const Vector12d local_grad =
-                    (q(0) * g(3 * i + 0) + q(1) * g(3 * i + 1)
-                     + q(2) * g(3 * i + 2))
-                        .grad;
-                // distribute grad wrt virtual vertex to real edge vertices
-                for (index_t lv = 0; lv < 4; lv++) {
-                    grad.segment<3>(3 * collisions.primary_local_ids()[lv]) +=
-                        local_grad.segment<3>(lv * 3);
-                }
-            } else {
-                assert(global_id < n_real_vertices);
-                grad.segment<3>(3 * collisions.vertex_ids_inverse(global_id)) +=
-                    g.segment<3>(i * 3);
-            }
-        }
-    }
-
-    return grad;
-}
+        const NearFarBarrier& nf_barrier);
 
 Eigen::MatrixXd PointPotentialHelper::
     evaluate_potential_hessian_at_edge_edge_closest_point_with_cached_collisions_near(

@@ -115,6 +115,78 @@ private:
     PrimitiveB m_primitive_b;
 };
 
+// We define the members below as explicit specializations in
+// esp_collision_template.cpp, and every translation unit that uses one must
+// see its declaration first; otherwise the program is ill-formed (no
+// diagnostic required). In particular, the vertex-vertex constructor sorts its
+// two ids, which ArbitraryPointESP relies on.
+
+template <>
+ESPCollisionTemplate<Vertex3, Vertex3>::ESPCollisionTemplate(
+    index_t primitive0, index_t primitive1, const CollisionMesh& mesh);
+
+#define IPC_DECLARE_ESP_COLLISION_SPECIALIZATIONS(A, B)                        \
+    template <> std::string ESPCollisionTemplate<A, B>::name() const;          \
+    template <> ESPCollisionType ESPCollisionTemplate<A, B>::type() const;     \
+    template <>                                                                \
+    double ESPCollisionTemplate<A, B>::compute_distance(                       \
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const;                      \
+    template <>                                                                \
+    double ESPCollisionTemplate<A, B>::operator()(                             \
+        Eigen::ConstRef<VectorMax<double, ESPCollision::ELEMENT_SIZE>>         \
+            positions,                                                         \
+        const ESPParameters& params) const;                                    \
+    template <>                                                                \
+    VectorMax<double, ESPCollision::ELEMENT_SIZE>                              \
+    ESPCollisionTemplate<A, B>::gradient(                                      \
+        Eigen::ConstRef<VectorMax<double, ESPCollision::ELEMENT_SIZE>>         \
+            positions,                                                         \
+        const ESPParameters& params) const;                                    \
+    template <>                                                                \
+    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>  \
+    ESPCollisionTemplate<A, B>::hessian(                                       \
+        Eigen::ConstRef<VectorMax<double, ESPCollision::ELEMENT_SIZE>>         \
+            positions,                                                         \
+        const ESPParameters& params) const
+
+#define IPC_DECLARE_ESP_COLLISION_NEARFAR_SPECIALIZATIONS(A, B)                \
+    template <>                                                                \
+    std::pair<double, double> ESPCollisionTemplate<A, B>::operator_nearfar(    \
+        Eigen::ConstRef<VectorMax<double, ESPCollision::ELEMENT_SIZE>>         \
+            positions,                                                         \
+        const ESPParameters& params, const NearFarBarrier* nf_barrier) const;  \
+    template <>                                                                \
+    std::pair<                                                                 \
+        VectorMax<double, ESPCollision::ELEMENT_SIZE>,                         \
+        VectorMax<double, ESPCollision::ELEMENT_SIZE>>                         \
+    ESPCollisionTemplate<A, B>::gradient_nearfar(                              \
+        Eigen::ConstRef<VectorMax<double, ESPCollision::ELEMENT_SIZE>>         \
+            positions,                                                         \
+        const ESPParameters& params, const NearFarBarrier* nf_barrier) const;  \
+    template <>                                                                \
+    std::pair<                                                                 \
+        MatrixMax<                                                             \
+            double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>,   \
+        MatrixMax<                                                             \
+            double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>>   \
+    ESPCollisionTemplate<A, B>::hessian_nearfar(                               \
+        Eigen::ConstRef<VectorMax<double, ESPCollision::ELEMENT_SIZE>>         \
+            positions,                                                         \
+        const ESPParameters& params, const NearFarBarrier* nf_barrier) const
+
+IPC_DECLARE_ESP_COLLISION_SPECIALIZATIONS(Vertex3, Vertex3);
+IPC_DECLARE_ESP_COLLISION_SPECIALIZATIONS(Edge3P1, Vertex3);
+IPC_DECLARE_ESP_COLLISION_SPECIALIZATIONS(Face3P1, Vertex3);
+IPC_DECLARE_ESP_COLLISION_SPECIALIZATIONS(Vertex2, Vertex2);
+IPC_DECLARE_ESP_COLLISION_SPECIALIZATIONS(Vertex2, Edge2P1);
+
+IPC_DECLARE_ESP_COLLISION_NEARFAR_SPECIALIZATIONS(Vertex3, Vertex3);
+IPC_DECLARE_ESP_COLLISION_NEARFAR_SPECIALIZATIONS(Edge3P1, Vertex3);
+IPC_DECLARE_ESP_COLLISION_NEARFAR_SPECIALIZATIONS(Face3P1, Vertex3);
+
+#undef IPC_DECLARE_ESP_COLLISION_SPECIALIZATIONS
+#undef IPC_DECLARE_ESP_COLLISION_NEARFAR_SPECIALIZATIONS
+
 // Keep old name as alias for backward compatibility within this codebase
 template <typename PrimitiveA, typename PrimitiveB>
 using ESPCollision3DTemplate = ESPCollisionTemplate<PrimitiveA, PrimitiveB>;
