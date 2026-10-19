@@ -19,7 +19,7 @@ void ESPCollisionDict<pType, DIM>::initialize(
         m_primary_vertex_ids[i] = primary_vertex_ids[i];
     }
 
-    assert(m_primitive_ids.size() <= m_primary_vertex_ids.size());
+    assert(primitive_ids.size() <= m_primitive_ids.size());
     for (int i = 0; i < primitive_ids.size(); i++) {
         m_primitive_ids[i] = primitive_ids[i];
     }
