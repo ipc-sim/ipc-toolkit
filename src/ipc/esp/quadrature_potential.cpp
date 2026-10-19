@@ -214,8 +214,11 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
         < params.dhat * params.dhat) {
         double closest_uv = 0;
         if (dtype == EdgeEdgeDistanceType::EA_EB) {
-            closest_uv = line_line_closest_point_pairs_uv<double>(
-                V.row(e00), V.row(e01), V.row(e10), V.row(e11))(0);
+            // We clamp to the edge, as ESPPotential does when it evaluates
+            // this pair, because for nearly parallel edges the unclamped
+            // solve can land a hair past an endpoint.
+            closest_uv = closest_point_uv<double>(
+                V.row(e00), V.row(e01), V.row(e10), V.row(e11));
         } else if (dtype == EdgeEdgeDistanceType::EA_EB0) {
             Eigen::RowVector3d p = V.row(e10);
             Eigen::RowVector3d d = p - V.row(e00);

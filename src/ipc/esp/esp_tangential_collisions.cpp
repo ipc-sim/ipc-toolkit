@@ -426,10 +426,9 @@ void TangentialCollisions::build(
 
             // Compute virtual vertex position on edge e0
             // (same logic as quadrature_potential.cpp)
-            double closest_uv = line_line_closest_point_pairs_uv<double>(
+            const double closest_uv = closest_point_uv<double>(
                 vertices.row(e00).transpose(), vertices.row(e01).transpose(),
-                vertices.row(e10).transpose(),
-                vertices.row(e11).transpose())(0);
+                vertices.row(e10).transpose(), vertices.row(e11).transpose());
             if (!std::isfinite(closest_uv)) {
                 continue;
             }

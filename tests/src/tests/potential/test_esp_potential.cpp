@@ -32,6 +32,7 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <random>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -1180,6 +1181,141 @@ TEST_CASE("ESP edge-edge distance helpers", "[esp_potential]")
     const Eigen::Vector3d hb0(-1, -1, 1), hb1(-1, 1, 1);
     CHECK(closest_point_uv<double>(ea0, ea1, gb0, gb1) == 1.0);
     CHECK(closest_point_uv<double>(ea0, ea1, hb0, hb1) == 0.0);
+}
+
+// Edges just above the parallel threshold (sin²θ ≈ 2.5e-16) are still EA_EB
+// pairs, so the builder places a virtual vertex at their closest point. These
+// two pairs once put it 2.2 edge lengths off the edge (with FMA) or made
+// ESPCollisions::build throw (without FMA). The exact closest-point
+// parameters come from rational arithmetic on the same doubles.
+TEST_CASE(
+    "ESP closest point of nearly parallel edges stays on both edges",
+    "[esp_potential], [esp_potential_3d]")
+{
+    struct NearParallelPair {
+        Eigen::Vector3d ea0, ea1, eb0, eb1;
+        double s, t; // exact closest-point parameters on edges a and b
+    };
+    const NearParallelPair p = GENERATE(
+        values<NearParallelPair>({
+            { Eigen::Vector3d(
+                  -0.2270162012615336, -0.037097538696173923,
+                  0.24897999838085089),
+              Eigen::Vector3d(
+                  -0.95435862566408902, -0.54571710280362784,
+                  1.0400682050760843),
+              Eigen::Vector3d(
+                  -0.35558625789861842, -0.12718485650007386,
+                  0.38892518786460573),
+              Eigen::Vector3d(
+                  -0.94859663947219408, -0.54186805484382239,
+                  1.033908195533616),
+              0.42851486912107406, 0.3086223761078891 },
+            { Eigen::Vector3d(
+                  -0.97676019036967865, 0.37790242165616783,
+                  -3.4459492857995926),
+              Eigen::Vector3d(
+                  -1.3277219282265249, 0.58419418412471269,
+                  -2.4629010958870214),
+              Eigen::Vector3d(
+                  -1.0428448425578856, 0.41555483262155285,
+                  -3.2623999701070976),
+              Eigen::Vector3d(
+                  -1.3887808876763006, 0.61889254451729769,
+                  -2.2934288586893583),
+              0.37398578721715675, 0.1899773688708917 },
+        }));
+
+    REQUIRE(!is_parallel_edge_edge(p.ea0, p.ea1, p.eb0, p.eb1));
+    REQUIRE(
+        edge_edge_distance_type_exact(p.ea0, p.ea1, p.eb0, p.eb1)
+        == EdgeEdgeDistanceType::EA_EB);
+
+    const Eigen::Vector2d st =
+        line_line_closest_point_pairs_uv<double>(p.ea0, p.ea1, p.eb0, p.eb1);
+    CHECK(st(0) == Catch::Approx(p.s).margin(1e-3));
+    CHECK(st(1) == Catch::Approx(p.t).margin(1e-3));
+    CHECK(
+        closest_point_uv<double>(p.ea0, p.ea1, p.eb0, p.eb1)
+        == Catch::Approx(p.s).margin(1e-3));
+
+    // Both pairs are within the edge-edge support, so the builder places a
+    // virtual vertex at their closest point.
+    Eigen::MatrixXd V(4, 3);
+    V << p.ea0.transpose(), p.ea1.transpose(), p.eb0.transpose(),
+        p.eb1.transpose();
+    Eigen::MatrixXi E(2, 2);
+    E << 0, 1, 2, 3;
+    const CollisionMesh mesh(V, E, Eigen::MatrixXi());
+
+    const ESPParameters params(0.01);
+    ESPCollisions collisions;
+    REQUIRE_NOTHROW(collisions.build(mesh, V, params));
+    CHECK(!collisions.empty());
+
+    const ESPPotential potential(params);
+    const double energy = potential(collisions, mesh, V);
+    CHECK(std::isfinite(energy));
+    CHECK(energy > 0);
+    CHECK(potential.gradient(collisions, mesh, V).allFinite());
+}
+
+TEST_CASE(
+    "ESP closest point of random nearly parallel edges is accurate",
+    "[esp_potential], [esp_potential_3d]")
+{
+    const double scale = GENERATE(0.01, 1.0, 100.0);
+    CAPTURE(scale);
+
+    // We build each pair around a known closest pair: P on edge a at s and
+    // Q on edge b at t, separated along the common normal by less than the
+    // edge-edge support.
+    std::mt19937_64 rng(12345);
+    std::uniform_real_distribution<double> uniform(0, 1);
+    std::normal_distribution<double> gaussian(0, 1);
+    const auto random_vector = [&] {
+        return Eigen::Vector3d(gaussian(rng), gaussian(rng), gaussian(rng));
+    };
+    const double ee_support = ESPParameters(0.01 * scale).ee_support();
+
+    int num_tested = 0;
+    for (int i = 0; i < 2000; i++) {
+        const Eigen::Vector3d dir_a = random_vector().normalized();
+        Eigen::Vector3d perp = random_vector();
+        perp = (perp - perp.dot(dir_a) * dir_a).normalized();
+        const double sin2 = 2.5e-16 + 5.5e-16 * uniform(rng);
+        const double theta = std::asin(std::sqrt(sin2));
+        const Eigen::Vector3d dir_b =
+            std::cos(theta) * dir_a + std::sin(theta) * perp;
+
+        const Eigen::Vector3d u = scale * (0.5 + uniform(rng)) * dir_a;
+        const Eigen::Vector3d v = scale * (0.5 + uniform(rng)) * dir_b;
+        const double s = 0.1 + 0.8 * uniform(rng);
+        const double t = 0.1 + 0.8 * uniform(rng);
+        const double gap = ee_support * (0.05 + 0.9 * uniform(rng));
+
+        const Eigen::Vector3d ea0 = scale * random_vector();
+        const Eigen::Vector3d ea1 = ea0 + u;
+        const Eigen::Vector3d eb0 =
+            ea0 + s * u + gap * dir_a.cross(dir_b).normalized() - t * v;
+        const Eigen::Vector3d eb1 = eb0 + v;
+
+        // Only pairs the builder keeps reach the closest-point solve.
+        if (is_parallel_edge_edge(ea0, ea1, eb0, eb1)
+            || edge_edge_distance_type_exact(ea0, ea1, eb0, eb1)
+                != EdgeEdgeDistanceType::EA_EB) {
+            continue;
+        }
+        num_tested++;
+
+        CAPTURE(i, sin2, s, t);
+        const Eigen::Vector2d st =
+            line_line_closest_point_pairs_uv<double>(ea0, ea1, eb0, eb1);
+        REQUIRE(st.allFinite());
+        CHECK(st(0) == Catch::Approx(s).margin(0.05));
+        CHECK(st(1) == Catch::Approx(t).margin(0.05));
+    }
+    CHECK(num_tested > 1000);
 }
 
 TEST_CASE("ESP parameters dbar_factor range", "[esp_potential]")

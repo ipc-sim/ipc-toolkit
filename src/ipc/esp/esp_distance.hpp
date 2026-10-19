@@ -62,15 +62,19 @@ Eigen::Vector<T, 2> line_line_closest_point_pairs_uv(
     const Eigen::Vector3<T> v = eb1 - eb0;
     const Eigen::Vector3<T> w = ea0 - eb0;
 
-    const T a = u.squaredNorm();
-    const T b = u.dot(v);
-    const T c = v.squaredNorm();
-    const T d = u.dot(w);
-    const T e = v.dot(w);
-
-    const T sN = (b * e - c * d);
-    const T tN = (a * e - b * d);
-    const T fac = a * c - pow(b, 2);
+    // We write this solve with cross products instead of the textbook dot
+    // products, whose denominator is (u·u)(v·v) − (u·v)². Lagrange's identity
+    // makes the two forms equal, but for nearly parallel edges (u·u)(v·v) and
+    // (u·v)² agree to almost every digit, so their difference can round to
+    // zero or below and the numerators lose all their digits too. That put
+    // closest points edge lengths off the edge. The cross product u × v stays
+    // accurate down to the builder's parallel threshold, which tests this same
+    // ‖u × v‖², so every pair the builder keeps has a positive denominator
+    // here.
+    const Eigen::Vector3<T> n = u.cross(v);
+    const T fac = n.squaredNorm();
+    const T sN = n.dot(v.cross(w));
+    const T tN = n.dot(u.cross(w));
     assert(fac > 0);
 
     return Eigen::Vector<T, 2>(sN, tN) / fac;
