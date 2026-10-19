@@ -157,22 +157,32 @@ TEST_CASE("Collision mesh obstacle flags", "[collision_mesh][obstacle]")
         }
     }
 
-    SECTION("Mixed edges and faces throw")
+    SECTION("Edges and faces touching a dynamic vertex are dynamic")
     {
+        // Vertex 0 of the dynamic body is flagged as an obstacle, like the end
+        // of a rope anchored to a static object.
         std::vector<bool> obstacle = LOWER_OBSTACLE;
         obstacle[0] = true;
         const CollisionMesh mesh = star_mesh(obstacle);
         for (int e = 0; e < mesh.num_edges(); e++) {
-            const bool v0 = mesh.edges()(e, 0) == 0;
-            const bool v1 = mesh.edges()(e, 1) == 0;
-            if (v0 || v1) {
-                CHECK_THROWS(mesh.is_obstacle_edge(e));
-            }
+            CHECK(mesh.is_obstacle_edge(e) == (mesh.edges()(e, 0) >= 4));
         }
-        for (int f = 0; f < 4; f++) {
-            if ((mesh.faces().row(f).array() == 0).any()) {
-                CHECK_THROWS(mesh.is_obstacle_face(f));
-            }
+        for (int f = 0; f < mesh.num_faces(); f++) {
+            CHECK(mesh.is_obstacle_face(f) == (f >= 4));
+        }
+    }
+
+    SECTION("Mask must cover the full mesh")
+    {
+        const CollisionMesh star = star_mesh(LOWER_OBSTACLE);
+        const Eigen::MatrixXd& V = star.rest_positions();
+        const std::vector<bool> all(V.rows(), true);
+        for (const size_t size : { V.rows() - 1, V.rows() + 1 }) {
+            CHECK_THROWS_AS(
+                CollisionMesh(
+                    all, all, std::vector<bool>(size, false), V, star.edges(),
+                    star.faces()),
+                std::invalid_argument);
         }
     }
 }
@@ -472,4 +482,112 @@ TEST_CASE(
     CHECK(
         potential_value(IntegrationType::NO_OBST)
         == Catch::Approx(expected / 2).epsilon(1e-12));
+}
+
+TEST_CASE(
+    "ESP integrates edges and faces with mixed obstacle flags",
+    "[esp_potential][obstacle]")
+{
+    using IntegrationType = ESPParameters::IntegrationType;
+
+    const int dim = GENERATE(2, 3);
+    CAPTURE(dim);
+
+    // In 3D, the star with one dynamic vertex flagged as an obstacle. In 2D, a
+    // rope hanging from the top right corner of a static block, 0.05 from its
+    // side; the rope's first edge has one obstacle and one dynamic vertex.
+    CollisionMesh mesh;
+    double dhat;
+    if (dim == 3) {
+        std::vector<bool> obstacle = LOWER_OBSTACLE;
+        obstacle[0] = true;
+        mesh = star_mesh(obstacle);
+        dhat = DHAT;
+    } else {
+        Eigen::MatrixXd V(6, 2);
+        V << -0.5, 0, -0.5, -1, 0.5, -1, 0.5, 0, // block
+            0.55, -0.3, 0.55, -0.7;              // rope
+        Eigen::MatrixXi E(6, 2);
+        E << 0, 1, 1, 2, 2, 3, 3, 0, 3, 4, 4, 5;
+        mesh = CollisionMesh(
+            std::vector<bool>(6, true), std::vector<bool>(6, false),
+            { true, true, true, true, false, false }, V, E, Eigen::MatrixXi());
+        dhat = 0.1;
+    }
+    const Eigen::MatrixXd& V = mesh.rest_positions();
+
+    const auto potential_value = [&](const CollisionMesh& m,
+                                     const IntegrationType type) {
+        const ESPParameters params(dhat, 1.0, 1, true, type);
+        ESPCollisions collisions;
+        collisions.build(m, V, params);
+        return ESPPotential(params)(collisions, m, V);
+    };
+
+    // BRUTE_FORCE ignores the flags, so it matches the unflagged mesh.
+    const CollisionMesh unflagged(V, mesh.edges(), mesh.faces());
+    const double expected =
+        potential_value(unflagged, IntegrationType::BRUTE_FORCE);
+    REQUIRE(expected > 0);
+    CHECK(
+        potential_value(mesh, IntegrationType::BRUTE_FORCE)
+        == Catch::Approx(expected).epsilon(1e-12));
+
+    // The mixed primitives move, so the filtered types integrate them too.
+    for (const auto type :
+         { IntegrationType::NORMAL, IntegrationType::NO_OBST }) {
+        CAPTURE(type);
+        double value = 0;
+        REQUIRE_NOTHROW(value = potential_value(mesh, type));
+        CHECK(value > 0);
+    }
+}
+
+TEST_CASE(
+    "ESP NORMAL integration sees dynamic edges near obstacle corners in 2D",
+    "[esp_potential][obstacle]")
+{
+    using IntegrationType = ESPParameters::IntegrationType;
+
+    // A dynamic box resting on a static obstacle whose top lies under the
+    // box's bottom edge but has no vertex near it: a spike pointing at the
+    // edge, or a block narrower than the box. Only the obstacle's corner
+    // vertices are close to the box, so the box's edge reaches the obstacle's
+    // edges through those corners.
+    const bool spike = GENERATE(true, false);
+    const double gap = GENERATE(0.05, 0.01, 1e-3, 1e-6);
+    const int quad_order = GENERATE(1, 2);
+    CAPTURE(spike, gap, quad_order);
+
+    Eigen::MatrixXd V(spike ? 7 : 8, 2);
+    V.topRows(4) << -1, gap, 1, gap, 1, gap + 1, -1, gap + 1;
+    Eigen::MatrixXi E(spike ? 7 : 8, 2);
+    E.topRows(4) << 0, 1, 1, 2, 2, 3, 3, 0;
+    if (spike) {
+        V.bottomRows(3) << 0, 0, -0.5, -1, 0.5, -1;
+        E.bottomRows(3) << 4, 5, 5, 6, 6, 4;
+    } else {
+        V.bottomRows(4) << -0.5, 0, -0.5, -1, 0.5, -1, 0.5, 0;
+        E.bottomRows(4) << 4, 5, 5, 6, 6, 7, 7, 4;
+    }
+    std::vector<bool> obstacle(V.rows(), true);
+    std::fill_n(obstacle.begin(), 4, false);
+    const CollisionMesh mesh(
+        std::vector<bool>(V.rows(), true), std::vector<bool>(V.rows(), false),
+        obstacle, V, E, Eigen::MatrixXi());
+
+    const auto potential_value = [&](const IntegrationType type) {
+        const ESPParameters params(0.1, 0.2, quad_order, true, type);
+        ESPCollisions collisions;
+        collisions.build(mesh, V, params);
+        return ESPPotential(params)(collisions, mesh, V);
+    };
+
+    // No two obstacle primitives are within dhat of each other, so NORMAL has
+    // nothing to drop and must match BRUTE_FORCE.
+    const double expected = potential_value(IntegrationType::BRUTE_FORCE);
+    REQUIRE(expected > 0);
+    CHECK(
+        potential_value(IntegrationType::NORMAL)
+        == Catch::Approx(expected).epsilon(1e-12));
 }

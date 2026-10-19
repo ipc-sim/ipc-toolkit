@@ -55,11 +55,12 @@ public:
     /// @brief Construct a new Collision Mesh object from a full mesh vertices.
     /// @param include_vertex Vector of bools indicating whether each vertex should be included in the collision mesh.
     /// @param orient_vertex Vector of bools indicating whether each vertex is orientable.
-    /// @param obstacle_vertex Vector of bools indicating whether each vertex comes from an obstacle.
+    /// @param obstacle_vertex Vector of bools indicating whether each vertex comes from an obstacle. Like include_vertex, it is indexed by full mesh vertex (|V|).
     /// @param full_rest_positions The vertices of the full mesh at rest (|V| × dim).
     /// @param edges The edges of the collision mesh indexed into the full mesh vertices (|E| × 2).
     /// @param faces The faces of the collision mesh indexed into the full mesh vertices (|F| × 3).
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
+    /// @throws std::invalid_argument if obstacle_vertex does not have one entry per full mesh vertex.
     CollisionMesh(
         const std::vector<bool>& include_vertex,
         const std::vector<bool>& orient_vertex,
@@ -146,36 +147,24 @@ public:
     }
 
     /// @brief Check if edge i is from an obstacle.
-    /// @note This checks if all vertices of the edge are obstacle vertices.
-    /// @throws std::runtime_error if some but not all vertices are obstacle vertices.
+    /// @note An edge is an obstacle only if both of its vertices are obstacle
+    /// vertices. An edge with one dynamic vertex still moves, so we treat it
+    /// as dynamic (e.g., a rope whose end is anchored to a static obstacle).
     bool is_obstacle_edge(const index_t i) const
     {
-        const auto& edge_v_indices = edges().row(i);
-        const bool v0_is_obstacle = is_obstacle_vertex(edge_v_indices(0));
-        const bool v1_is_obstacle = is_obstacle_vertex(edge_v_indices(1));
-
-        if (v0_is_obstacle != v1_is_obstacle) {
-            throw std::runtime_error(
-                "Edge has a mix of obstacle and non-obstacle vertices.");
-        }
-        return v0_is_obstacle;
+        return is_obstacle_vertex(edges()(i, 0))
+            && is_obstacle_vertex(edges()(i, 1));
     }
 
     /// @brief Check if face i is from an obstacle.
-    /// @note This checks if all vertices of the face are obstacle vertices.
-    /// @throws std::runtime_error if some but not all vertices are obstacle vertices.
+    /// @note A face is an obstacle only if all three of its vertices are
+    /// obstacle vertices. As with edges, a face touching a dynamic vertex
+    /// moves, so we treat it as dynamic.
     bool is_obstacle_face(const index_t i) const
     {
-        const auto& face_v_indices = faces().row(i);
-        const bool v0_is_obstacle = is_obstacle_vertex(face_v_indices(0));
-        const bool v1_is_obstacle = is_obstacle_vertex(face_v_indices(1));
-        const bool v2_is_obstacle = is_obstacle_vertex(face_v_indices(2));
-        if ((v0_is_obstacle != v1_is_obstacle)
-            || (v1_is_obstacle != v2_is_obstacle)) {
-            throw std::runtime_error(
-                "Face has a mix of obstacle and non-obstacle vertices.");
-        }
-        return v0_is_obstacle;
+        return is_obstacle_vertex(faces()(i, 0))
+            && is_obstacle_vertex(faces()(i, 1))
+            && is_obstacle_vertex(faces()(i, 2));
     }
 
     /// @brief Get the indices of codimensional edges of the collision mesh (|CE| × 1).

@@ -39,11 +39,19 @@ void ESPCollisionsBuilder<2>::build_edge_collisions(
         }
         if (params.integration_type != IntegrationType::BRUTE_FORCE
             && mesh.is_obstacle_edge(ei)) {
-            const auto& ev = candidates.ev_set(mesh, ei);
+            // We consult the same sets build_collisions_at_edge_qp() reads.
+            // Checking ev_set alone misses dynamic edges near this edge's
+            // endpoints, which only appear in ee_set (through the endpoints'
+            // ve_set), and would drop real contact with the obstacle.
+            const auto v_set = candidates.ev_set(mesh, ei);
+            const auto e_set = candidates.ee_set(mesh, ei);
             const bool has_non_obstacle =
-                std::any_of(ev.begin(), ev.end(), [&](index_t v) {
-                    return !mesh.is_obstacle_vertex(v);
-                });
+                std::any_of(
+                    v_set.begin(), v_set.end(),
+                    [&](index_t v) { return !mesh.is_obstacle_vertex(v); })
+                || std::any_of(e_set.begin(), e_set.end(), [&](index_t e) {
+                       return !mesh.is_obstacle_edge(e);
+                   });
             if (!has_non_obstacle) {
                 continue;
             }
@@ -384,10 +392,10 @@ void QuadratureCollisionsBuilder::build_edge_edge_collisions(
         // Outside BRUTE_FORCE, at most one of the two edges is an obstacle
         // (see above), so an obstacle edge always has a dynamic candidate and
         // only NO_OBST skips it.
-        const bool ei_is_obs = mesh.is_obstacle_edge(ei);
-        const bool ej_is_obs = mesh.is_obstacle_edge(ej);
+        const bool skip_obstacles =
+            params.integration_type == IntegrationType::NO_OBST;
 
-        if (params.integration_type != IntegrationType::NO_OBST || !ei_is_obs) {
+        if (!skip_obstacles || !mesh.is_obstacle_edge(ei)) {
             size_t n = 0;
             auto dict =
                 point_potential->build_collisions_at_edge_edge_closest_point(
@@ -402,7 +410,7 @@ void QuadratureCollisionsBuilder::build_edge_edge_collisions(
             num_collision_pairs += n;
         }
 
-        if (params.integration_type != IntegrationType::NO_OBST || !ej_is_obs) {
+        if (!skip_obstacles || !mesh.is_obstacle_edge(ej)) {
             size_t n = 0;
             auto dict =
                 point_potential->build_collisions_at_edge_edge_closest_point(

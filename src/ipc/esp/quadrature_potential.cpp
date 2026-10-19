@@ -46,10 +46,11 @@ PointPotential::build_collisions_at_vertex(
 
     const VertexMatrixView<3> V_view(V);
 
-    const bool src_is_obstacle = mesh.is_obstacle_vertex(vid);
-    const bool filter_obstacles = src_is_obstacle
-        && params.integration_type
-            != ESPParameters::IntegrationType::BRUTE_FORCE;
+    // BRUTE_FORCE ignores the obstacle flags, so we test it first and never
+    // query them.
+    const bool filter_obstacles =
+        params.integration_type != ESPParameters::IntegrationType::BRUTE_FORCE
+        && mesh.is_obstacle_vertex(vid);
 
     for (const auto& other_f : f_set) {
         if (filter_obstacles && mesh.is_obstacle_face(other_f)) {
@@ -247,10 +248,9 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
             closest_uv * (V.row(e01) - V.row(e00)) + V.row(e00);
         VertexMatrixView<3> V_view(V, ee_closest_point);
 
-        const bool src_is_obstacle_e = mesh.is_obstacle_edge(e0);
-        const bool filter_obstacles_e = src_is_obstacle_e
-            && params.integration_type
-                != ESPParameters::IntegrationType::BRUTE_FORCE;
+        const bool filter_obstacles_e = params.integration_type
+                != ESPParameters::IntegrationType::BRUTE_FORCE
+            && mesh.is_obstacle_edge(e0);
 
         // As in build_collisions_at_vertex(), every collision takes the
         // inclusion-exclusion weight of the element it came from.
@@ -621,10 +621,9 @@ PointPotential::build_collisions_at_face_interior_point(
         }
     }
 
-    const bool src_is_obstacle_f = mesh.is_obstacle_face(fid);
-    const bool filter_obstacles_f = src_is_obstacle_f
-        && params.integration_type
-            != ESPParameters::IntegrationType::BRUTE_FORCE;
+    const bool filter_obstacles_f =
+        params.integration_type != ESPParameters::IntegrationType::BRUTE_FORCE
+        && mesh.is_obstacle_face(fid);
 
     for (const auto& other_f : f_set) {
         assert(other_f != fid);
@@ -863,10 +862,9 @@ PointPotential::build_collisions_at_edge_qp(
         corner_vertex = e0;
     }
 
-    const bool src_is_obstacle = mesh.is_obstacle_edge(ei);
-    const bool filter_obstacles = src_is_obstacle
-        && params.integration_type
-            != ESPParameters::IntegrationType::BRUTE_FORCE;
+    const bool filter_obstacles =
+        params.integration_type != ESPParameters::IntegrationType::BRUTE_FORCE
+        && mesh.is_obstacle_edge(ei);
 
     ESPCollisionPairMap pairs;
     num_collision_pairs = 0;

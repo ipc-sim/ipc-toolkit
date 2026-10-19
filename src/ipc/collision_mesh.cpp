@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <mutex>
+#include <stdexcept>
 
 namespace ipc {
 
@@ -100,7 +101,13 @@ CollisionMesh::CollisionMesh(
         m_is_orient_vertex[i] = orient_vertex[m_vertex_to_full_vertex[i]];
     }
 
-    assert(obstacle_vertex.size() == full_rest_positions.rows());
+    // An assert is not enough here: a mask sized to the collision vertices
+    // instead of the full mesh would be read out of bounds in Release builds.
+    if (obstacle_vertex.size() != full_rest_positions.rows()) {
+        log_and_throw_error<std::invalid_argument>(
+            "obstacle_vertex has {} entries, but the full mesh has {} vertices.",
+            obstacle_vertex.size(), full_rest_positions.rows());
+    }
     m_is_obstacle_vertex.assign(m_rest_positions.rows(), false);
     for (int i = 0; i < m_is_obstacle_vertex.size(); i++) {
         m_is_obstacle_vertex[i] = obstacle_vertex[m_vertex_to_full_vertex[i]];
