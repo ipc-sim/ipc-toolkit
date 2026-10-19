@@ -328,152 +328,170 @@ TEST_CASE(
     }
 }
 
+// The tests below check the inclusion-exclusion weights on inputs that are not
+// closed manifolds: an open sheet and an open polyline (boundary edges,
+// boundary vertices and polyline ends weigh zero, supplemental S4), a 3D
+// polyline in no face (its edges weigh one, its interior vertices minus one),
+// isolated vertices (one) and a 2D junction of three edges (minus two). On each
+// input the query points lie where the potential is the barrier of the
+// distance. With the closed-mesh signs instead, the potential is exactly zero
+// beyond a boundary edge, and edges in no face and 2D isolated vertices enter
+// as negative barriers.
+
 TEST_CASE(
-    "Arbitrary Point ESP: inclusion-exclusion weights on non-closed inputs",
+    "Arbitrary Point ESP: inclusion-exclusion weights on an open 3D sheet",
     "[esp_potential],[arbitrary_point_esp]")
 {
-    // Inputs that are not closed manifolds: an open sheet and an open
-    // polyline (boundary edges, boundary vertices and polyline ends weigh
-    // zero, supplemental S4), a 3D polyline in no face (its edges weigh one,
-    // its interior vertices minus one), isolated vertices (one) and a 2D
-    // junction of three edges (minus two). On each input the query points lie
-    // where the potential is the barrier of the distance. With the
-    // closed-mesh signs instead, the potential is exactly zero beyond a
-    // boundary edge, and edges in no face and 2D isolated vertices enter as
-    // negative barriers.
+    const Eigen::RowVector3d q = GENERATE(
+        Eigen::RowVector3d(1.2, 0.5, 0.0),  // beyond a boundary edge
+        Eigen::RowVector3d(1.1, 0.5, 0.2),  // beyond it, above the plane
+        Eigen::RowVector3d(1.2, 1.1, 0.1),  // beyond a boundary corner
+        Eigen::RowVector3d(0.9, 0.5, 0.1),  // inside, near the boundary
+        Eigen::RowVector3d(1.0, 0.5, 0.2),  // above a boundary vertex
+        Eigen::RowVector3d(0.5, 0.5, 0.2)); // above the interior vertex
+    CAPTURE(q);
+
     const double dhat = 0.5;
     ESPParameters params(dhat);
 
-    SECTION("3D sheet")
-    {
-        // The unit square at z = 0 as a 3x3 grid of vertices, 8 triangles.
-        Eigen::MatrixXd V(9, 3);
-        for (int i = 0; i < 9; i++) {
-            V.row(i) << (i % 3) / 2.0, (i / 3) / 2.0, 0;
-        }
-        Eigen::MatrixXi F(8, 3);
-        F << 0, 1, 4, 0, 4, 3, 1, 2, 5, 1, 5, 4, 3, 4, 7, 3, 7, 6, 4, 5, 8, 4,
-            8, 7;
-        Eigen::MatrixXi E;
-        igl::edges(F, E);
-        const CollisionMesh mesh(V, E, F);
-        ArbitraryPointESP<3> potential(mesh, params);
-        potential.update(V);
-
-        const Eigen::RowVector3d q = GENERATE(
-            Eigen::RowVector3d(1.2, 0.5, 0.0),  // beyond a boundary edge
-            Eigen::RowVector3d(1.1, 0.5, 0.2),  // beyond it, above the plane
-            Eigen::RowVector3d(1.2, 1.1, 0.1),  // beyond a boundary corner
-            Eigen::RowVector3d(0.9, 0.5, 0.1),  // inside, near the boundary
-            Eigen::RowVector3d(1.0, 0.5, 0.2),  // above a boundary vertex
-            Eigen::RowVector3d(0.5, 0.5, 0.2)); // above the interior vertex
-        CAPTURE(q);
-
-        const double dx = std::max({ 0.0, -q(0), q(0) - 1 });
-        const double dy = std::max({ 0.0, -q(1), q(1) - 1 });
-        const double d = std::sqrt(dx * dx + dy * dy + q(2) * q(2));
-        CHECK(potential(V, q) == Catch::Approx((*params.barrier)(d, dhat)));
-
-        Eigen::VectorXd fg;
-        fd::finite_gradient(
-            Eigen::VectorXd(q.transpose()),
-            [&](const Eigen::VectorXd& y) {
-                return potential(V, Eigen::RowVector3d(y.transpose()));
-            },
-            fg, fd::AccuracyOrder::SECOND, 1e-8);
-        const Eigen::Vector3d g = potential.gradient(V, q);
-        CHECK((fg - g).norm() < std::max(1e-8, fg.norm()) * 1e-5);
+    // The unit square at z = 0 as a 3x3 grid of vertices, 8 triangles.
+    Eigen::MatrixXd V(9, 3);
+    for (int i = 0; i < 9; i++) {
+        V.row(i) << (i % 3) / 2.0, (i / 3) / 2.0, 0;
     }
+    Eigen::MatrixXi F(8, 3);
+    F << 0, 1, 4, 0, 4, 3, 1, 2, 5, 1, 5, 4, 3, 4, 7, 3, 7, 6, 4, 5, 8, 4, 8, 7;
+    Eigen::MatrixXi E;
+    igl::edges(F, E);
+    const CollisionMesh mesh(V, E, F);
+    ArbitraryPointESP<3> potential(mesh, params);
+    potential.update(V);
 
-    SECTION("2D polyline")
-    {
-        // The segment [0, 1] x {0} as three edges.
-        Eigen::MatrixXd V(4, 2);
-        V << 0, 0, 1 / 3.0, 0, 2 / 3.0, 0, 1, 0;
-        Eigen::MatrixXi E(3, 2);
-        E << 0, 1, 1, 2, 2, 3;
-        const CollisionMesh mesh(V, E, Eigen::MatrixXi());
-        ArbitraryPointESP<2> potential(mesh, params);
-        potential.update(V);
+    const double dx = std::max({ 0.0, -q(0), q(0) - 1 });
+    const double dy = std::max({ 0.0, -q(1), q(1) - 1 });
+    const double d = std::sqrt(dx * dx + dy * dy + q(2) * q(2));
+    CHECK(potential(V, q) == Catch::Approx((*params.barrier)(d, dhat)));
 
-        const Eigen::RowVector2d q = GENERATE(
-            Eigen::RowVector2d(-0.2, 0.0),    // beyond an end
-            Eigen::RowVector2d(-0.1, 0.1),    // beyond it, off the line
-            Eigen::RowVector2d(0.1, 0.2),     // beside the line, near an end
-            Eigen::RowVector2d(1 / 3.0, 0.1), // above an interior vertex
-            Eigen::RowVector2d(0.5, -0.15));  // beside an edge interior
-        CAPTURE(q);
+    Eigen::VectorXd fg;
+    fd::finite_gradient(
+        Eigen::VectorXd(q.transpose()),
+        [&](const Eigen::VectorXd& y) {
+            return potential(V, Eigen::RowVector3d(y.transpose()));
+        },
+        fg, fd::AccuracyOrder::SECOND, 1e-8);
+    const Eigen::Vector3d g = potential.gradient(V, q);
+    CHECK((fg - g).norm() < std::max(1e-8, fg.norm()) * 1e-5);
+}
 
-        const double dx = std::max({ 0.0, -q(0), q(0) - 1 });
-        const double d = std::sqrt(dx * dx + q(1) * q(1));
-        CHECK(potential(V, q) == Catch::Approx((*params.barrier)(d, dhat)));
-    }
+TEST_CASE(
+    "Arbitrary Point ESP: inclusion-exclusion weights on an open 2D polyline",
+    "[esp_potential],[arbitrary_point_esp]")
+{
+    const Eigen::RowVector2d q = GENERATE(
+        Eigen::RowVector2d(-0.2, 0.0),    // beyond an end
+        Eigen::RowVector2d(-0.1, 0.1),    // beyond it, off the line
+        Eigen::RowVector2d(0.1, 0.2),     // beside the line, near an end
+        Eigen::RowVector2d(1 / 3.0, 0.1), // above an interior vertex
+        Eigen::RowVector2d(0.5, -0.15));  // beside an edge interior
+    CAPTURE(q);
 
-    SECTION("3D polyline in no face")
-    {
-        // The segment [0, 1] x {0} x {0} as three edges, no faces.
-        Eigen::MatrixXd V(4, 3);
-        V << 0, 0, 0, 1 / 3.0, 0, 0, 2 / 3.0, 0, 0, 1, 0, 0;
-        Eigen::MatrixXi E(3, 2);
-        E << 0, 1, 1, 2, 2, 3;
-        const CollisionMesh mesh(V, E, Eigen::MatrixXi());
-        ArbitraryPointESP<3> potential(mesh, params);
-        potential.update(V);
+    const double dhat = 0.5;
+    ESPParameters params(dhat);
 
-        const Eigen::RowVector3d q = GENERATE(
-            Eigen::RowVector3d(-0.2, 0.0, 0.0),    // beyond an end
-            Eigen::RowVector3d(0.1, 0.1, 0.1),     // beside it, near an end
-            Eigen::RowVector3d(1 / 3.0, 0.0, 0.2), // beside an interior vertex
-            Eigen::RowVector3d(0.5, -0.1, 0.1));   // beside an edge interior
-        CAPTURE(q);
+    // The segment [0, 1] x {0} as three edges.
+    Eigen::MatrixXd V(4, 2);
+    V << 0, 0, 1 / 3.0, 0, 2 / 3.0, 0, 1, 0;
+    Eigen::MatrixXi E(3, 2);
+    E << 0, 1, 1, 2, 2, 3;
+    const CollisionMesh mesh(V, E, Eigen::MatrixXi());
+    ArbitraryPointESP<2> potential(mesh, params);
+    potential.update(V);
 
-        const double dx = std::max({ 0.0, -q(0), q(0) - 1 });
-        const double d = std::sqrt(dx * dx + q(1) * q(1) + q(2) * q(2));
-        CHECK(potential(V, q) == Catch::Approx((*params.barrier)(d, dhat)));
-    }
+    const double dx = std::max({ 0.0, -q(0), q(0) - 1 });
+    const double d = std::sqrt(dx * dx + q(1) * q(1));
+    CHECK(potential(V, q) == Catch::Approx((*params.barrier)(d, dhat)));
+}
 
-    SECTION("isolated vertices")
-    {
-        const Eigen::MatrixXd V3 = Eigen::MatrixXd::Zero(1, 3);
-        const CollisionMesh mesh3(V3, Eigen::MatrixXi(), Eigen::MatrixXi());
-        ArbitraryPointESP<3> potential3(mesh3, params);
-        potential3.update(V3);
-        const Eigen::RowVector3d q3(0.1, -0.2, 0.15);
-        CHECK(
-            potential3(V3, q3)
-            == Catch::Approx((*params.barrier)(q3.norm(), dhat)));
+TEST_CASE(
+    "Arbitrary Point ESP: inclusion-exclusion weights on a 3D polyline in no "
+    "face",
+    "[esp_potential],[arbitrary_point_esp]")
+{
+    const Eigen::RowVector3d q = GENERATE(
+        Eigen::RowVector3d(-0.2, 0.0, 0.0),    // beyond an end
+        Eigen::RowVector3d(0.1, 0.1, 0.1),     // beside it, near an end
+        Eigen::RowVector3d(1 / 3.0, 0.0, 0.2), // beside an interior vertex
+        Eigen::RowVector3d(0.5, -0.1, 0.1));   // beside an edge interior
+    CAPTURE(q);
 
-        const Eigen::MatrixXd V2 = Eigen::MatrixXd::Zero(1, 2);
-        const CollisionMesh mesh2(V2, Eigen::MatrixXi(), Eigen::MatrixXi());
-        ArbitraryPointESP<2> potential2(mesh2, params);
-        potential2.update(V2);
-        const Eigen::RowVector2d q2(0.1, -0.2);
-        CHECK(
-            potential2(V2, q2)
-            == Catch::Approx((*params.barrier)(q2.norm(), dhat)));
-    }
+    const double dhat = 0.5;
+    ESPParameters params(dhat);
 
-    SECTION("2D junction")
-    {
-        // A bar (-1, 0)-(0, 0)-(1, 0) and a stem (0, 0)-(0, 1). Below the bar
-        // the ball around a query point meets the input in one connected
-        // piece, so the potential is the barrier of the distance.
-        Eigen::MatrixXd V(4, 2);
-        V << -1, 0, 0, 0, 1, 0, 0, 1;
-        Eigen::MatrixXi E(3, 2);
-        E << 0, 1, 1, 2, 1, 3;
-        const CollisionMesh mesh(V, E, Eigen::MatrixXi());
-        ArbitraryPointESP<2> potential(mesh, params);
-        potential.update(V);
+    // The segment [0, 1] x {0} x {0} as three edges, no faces.
+    Eigen::MatrixXd V(4, 3);
+    V << 0, 0, 0, 1 / 3.0, 0, 0, 2 / 3.0, 0, 0, 1, 0, 0;
+    Eigen::MatrixXi E(3, 2);
+    E << 0, 1, 1, 2, 2, 3;
+    const CollisionMesh mesh(V, E, Eigen::MatrixXi());
+    ArbitraryPointESP<3> potential(mesh, params);
+    potential.update(V);
 
-        const Eigen::RowVector2d q = GENERATE(
-            Eigen::RowVector2d(0.0, -0.2),    // below the junction
-            Eigen::RowVector2d(0.1, -0.1),    // below, beside the junction
-            Eigen::RowVector2d(-0.3, -0.25)); // below the bar
-        CAPTURE(q);
+    const double dx = std::max({ 0.0, -q(0), q(0) - 1 });
+    const double d = std::sqrt(dx * dx + q(1) * q(1) + q(2) * q(2));
+    CHECK(potential(V, q) == Catch::Approx((*params.barrier)(d, dhat)));
+}
 
-        CHECK(potential(V, q) == Catch::Approx((*params.barrier)(-q(1), dhat)));
-    }
+TEST_CASE(
+    "Arbitrary Point ESP: inclusion-exclusion weights on isolated vertices",
+    "[esp_potential],[arbitrary_point_esp]")
+{
+    const double dhat = 0.5;
+    ESPParameters params(dhat);
+
+    const Eigen::MatrixXd V3 = Eigen::MatrixXd::Zero(1, 3);
+    const CollisionMesh mesh3(V3, Eigen::MatrixXi(), Eigen::MatrixXi());
+    ArbitraryPointESP<3> potential3(mesh3, params);
+    potential3.update(V3);
+    const Eigen::RowVector3d q3(0.1, -0.2, 0.15);
+    CHECK(
+        potential3(V3, q3)
+        == Catch::Approx((*params.barrier)(q3.norm(), dhat)));
+
+    const Eigen::MatrixXd V2 = Eigen::MatrixXd::Zero(1, 2);
+    const CollisionMesh mesh2(V2, Eigen::MatrixXi(), Eigen::MatrixXi());
+    ArbitraryPointESP<2> potential2(mesh2, params);
+    potential2.update(V2);
+    const Eigen::RowVector2d q2(0.1, -0.2);
+    CHECK(
+        potential2(V2, q2)
+        == Catch::Approx((*params.barrier)(q2.norm(), dhat)));
+}
+
+TEST_CASE(
+    "Arbitrary Point ESP: inclusion-exclusion weights at a 2D junction",
+    "[esp_potential],[arbitrary_point_esp]")
+{
+    const Eigen::RowVector2d q = GENERATE(
+        Eigen::RowVector2d(0.0, -0.2),    // below the junction
+        Eigen::RowVector2d(0.1, -0.1),    // below, beside the junction
+        Eigen::RowVector2d(-0.3, -0.25)); // below the bar
+    CAPTURE(q);
+
+    const double dhat = 0.5;
+    ESPParameters params(dhat);
+
+    // A bar (-1, 0)-(0, 0)-(1, 0) and a stem (0, 0)-(0, 1). Below the bar the
+    // ball around a query point meets the input in one connected piece, so
+    // the potential is the barrier of the distance.
+    Eigen::MatrixXd V(4, 2);
+    V << -1, 0, 0, 0, 1, 0, 0, 1;
+    Eigen::MatrixXi E(3, 2);
+    E << 0, 1, 1, 2, 1, 3;
+    const CollisionMesh mesh(V, E, Eigen::MatrixXi());
+    ArbitraryPointESP<2> potential(mesh, params);
+    potential.update(V);
+
+    CHECK(potential(V, q) == Catch::Approx((*params.barrier)(-q(1), dhat)));
 }
 
 TEST_CASE(

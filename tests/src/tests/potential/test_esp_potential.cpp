@@ -1499,104 +1499,76 @@ TEST_CASE("ESP potential codim", "[esp_potential], [esp_potential_2d]")
 // repelled by an edge. With the closed-curve signs (every vertex -1) the free
 // edge pulls itself shorter and the vertex is attracted to the edge, with an
 // energy unbounded below.
+// Even quadrature orders put a quadrature point at the edge's midpoint, right
+// under the isolated vertex in the second test below.
 TEST_CASE(
-    "ESP potential 2D on open and codimensional pieces",
+    "ESP potential 2D on open and codimensional pieces: free edge",
     "[esp_potential], [esp_potential_2d]")
 {
-    // Even orders put a quadrature point at the edge's midpoint, right under
-    // the isolated vertex below.
     const int quadrature_order = GENERATE(2, 4);
     CAPTURE(quadrature_order);
 
-    SECTION("free edge")
-    {
-        Eigen::MatrixXd V(2, 2);
-        V << 0, 0, 1, 0;
-        Eigen::MatrixXi E(1, 2);
-        E << 0, 1;
-        const CollisionMesh mesh = make_2d_collision_mesh(V, E);
+    Eigen::MatrixXd V(2, 2);
+    V << 0, 0, 1, 0;
+    Eigen::MatrixXi E(1, 2);
+    E << 0, 1;
+    const CollisionMesh mesh = make_2d_collision_mesh(V, E);
 
-        const ESPParameters params(2, 1., quadrature_order);
-        ESPCollisions collisions;
-        collisions.build(mesh, V, params);
-        const ESPPotential potential(params);
-        CHECK(potential(collisions, mesh, V) == 0);
-        CHECK(potential.gradient(collisions, mesh, V).squaredNorm() == 0);
-    }
-
-    SECTION("isolated vertex above an edge")
-    {
-        const double h = GENERATE(0.1, 1e-2, 1e-5);
-        CAPTURE(h);
-        Eigen::MatrixXd V(3, 2);
-        V << 0, 0, 1, 0, 0.5, h;
-        Eigen::MatrixXi E(1, 2);
-        E << 0, 1;
-        const CollisionMesh mesh = make_2d_collision_mesh(V, E);
-
-        const ESPParameters params(0.5, 1., quadrature_order);
-        const ESPPotential potential(params);
-        const auto energy_at = [&](const double y) {
-            Eigen::MatrixXd V_ = V;
-            V_(2, 1) = y;
-            ESPCollisions collisions;
-            collisions.build(mesh, V_, params);
-            return potential(collisions, mesh, V_);
-        };
-
-        const double e = energy_at(h);
-        CHECK(e > 0);
-        CHECK(energy_at(h / 2) > e);
-
-        // The force on the vertex points away from the edge.
-        ESPCollisions collisions;
-        collisions.build(mesh, V, params);
-        CHECK(potential.gradient(collisions, mesh, V)(5) < 0);
-    }
+    const ESPParameters params(2, 1., quadrature_order);
+    ESPCollisions collisions;
+    collisions.build(mesh, V, params);
+    const ESPPotential potential(params);
+    CHECK(potential(collisions, mesh, V) == 0);
+    CHECK(potential.gradient(collisions, mesh, V).squaredNorm() == 0);
 }
 
-TEST_CASE("ESP potential 2D no forces", "[esp_potential], [esp_potential_2d]")
+TEST_CASE(
+    "ESP potential 2D on open and codimensional pieces: isolated vertex above "
+    "an edge",
+    "[esp_potential], [esp_potential_2d]")
 {
-    const auto method = make_default_broad_phase();
-    Eigen::MatrixXd V;
-    Eigen::MatrixXi E;
-    double dhat = 1.;
-    const int quadrature_order = GENERATE(1, 14);
-    ESPParameters params(dhat, 1., quadrature_order);
+    const int quadrature_order = GENERATE(2, 4);
+    const double h = GENERATE(0.1, 1e-2, 1e-5);
+    CAPTURE(quadrature_order, h);
 
-    std::string name;
-    SECTION("square_1")
-    {
-        name = "square_1";
-        V.resize(4, 2);
-        E.resize(4, 2);
-        V << -1., -1., 1., -1., 1., 1., -1., 1.;
-        E << 0, 1, 1, 2, 2, 3, 3, 0;
-    }
-    SECTION("square_2")
-    {
-        name = "square_2";
-        V.resize(8, 2);
-        E.resize(8, 2);
-        V << -1., -1., 0., -1., 1., -1., 1., 0., 1., 1., 0., 1., -1., 1., -1.,
-            0.;
-        E << 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 0;
-    }
-    SECTION("circle")
-    {
-        const int n = GENERATE(5, 6, 7, 8, 9, 10, 50, 100, 200);
-        name = "circle" + std::to_string(n);
-        V.resize(n, 2);
-        E.resize(n, 2);
-        for (int i = 0; i < n; i++) {
-            V(i, 0) = std::cos(2 * M_PI * i / n);
-            V(i, 1) = std::sin(2 * M_PI * i / n);
-        }
-        for (int i = 0; i < n; i++) {
-            E(i, 0) = i;
-            E(i, 1) = (i + 1) % n;
-        }
-    }
+    Eigen::MatrixXd V(3, 2);
+    V << 0, 0, 1, 0, 0.5, h;
+    Eigen::MatrixXi E(1, 2);
+    E << 0, 1;
+    const CollisionMesh mesh = make_2d_collision_mesh(V, E);
+
+    const ESPParameters params(0.5, 1., quadrature_order);
+    const ESPPotential potential(params);
+    const auto energy_at = [&](const double y) {
+        Eigen::MatrixXd V_ = V;
+        V_(2, 1) = y;
+        ESPCollisions collisions;
+        collisions.build(mesh, V_, params);
+        return potential(collisions, mesh, V_);
+    };
+
+    const double e = energy_at(h);
+    CHECK(e > 0);
+    CHECK(energy_at(h / 2) > e);
+
+    // The force on the vertex points away from the edge.
+    ESPCollisions collisions;
+    collisions.build(mesh, V, params);
+    CHECK(potential.gradient(collisions, mesh, V)(5) < 0);
+}
+
+namespace {
+
+/// Check that a closed 2D polygon whose edges are all farther than dhat apart
+/// gets no energy, forces, or stiffness.
+void check_esp_2d_no_forces(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const int quadrature_order)
+{
+    CAPTURE(quadrature_order);
+    const auto method = make_default_broad_phase();
+    const ESPParameters params(/*dhat=*/1., 1., quadrature_order);
 
     CollisionMesh mesh = make_2d_collision_mesh(V, E);
 
@@ -1607,8 +1579,6 @@ TEST_CASE("ESP potential 2D no forces", "[esp_potential], [esp_potential_2d]")
 
     ESPPotential potential(params);
     double energy = potential(collisions, mesh, V);
-    CAPTURE(name);
-    CAPTURE(quadrature_order);
     CHECK(energy == 0);
 
     Eigen::VectorXd grad = potential.gradient(collisions, mesh, V);
@@ -1618,123 +1588,171 @@ TEST_CASE("ESP potential 2D no forces", "[esp_potential], [esp_potential_2d]")
     CHECK(hess.squaredNorm() == 0);
 }
 
+} // namespace
+
+TEST_CASE("ESP potential 2D no forces", "[esp_potential], [esp_potential_2d]")
+{
+    const int quadrature_order = GENERATE(1, 14);
+
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E;
+    SECTION("square_1")
+    {
+        V.resize(4, 2);
+        E.resize(4, 2);
+        V << -1., -1., 1., -1., 1., 1., -1., 1.;
+        E << 0, 1, 1, 2, 2, 3, 3, 0;
+    }
+    SECTION("square_2")
+    {
+        V.resize(8, 2);
+        E.resize(8, 2);
+        V << -1., -1., 0., -1., 1., -1., 1., 0., 1., 1., 0., 1., -1., 1., -1.,
+            0.;
+        E << 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 0;
+    }
+
+    check_esp_2d_no_forces(V, E, quadrature_order);
+}
+
+TEST_CASE(
+    "ESP potential 2D no forces on a circle",
+    "[esp_potential], [esp_potential_2d]")
+{
+    const int quadrature_order = GENERATE(1, 14);
+    const int n = GENERATE(5, 6, 7, 8, 9, 10, 50, 100, 200);
+    CAPTURE(n);
+
+    // A regular n-gon inscribed in the unit circle.
+    Eigen::MatrixXd V(n, 2);
+    Eigen::MatrixXi E(n, 2);
+    for (int i = 0; i < n; i++) {
+        V(i, 0) = std::cos(2 * M_PI * i / n);
+        V(i, 1) = std::sin(2 * M_PI * i / n);
+        E(i, 0) = i;
+        E(i, 1) = (i + 1) % n;
+    }
+
+    check_esp_2d_no_forces(V, E, quadrature_order);
+}
+
+namespace {
+
+constexpr double BA = 0; // a small constant to break perfect alignments
+
+/// Check the 2D ESP gradient (and optionally the Hessian) against finite
+/// differences.
+///
+/// We check the Hessian against an FD of the analytic gradient on the set
+/// built at V: the potential is only C1 across a distance-type switch
+/// (point-line vs. point-point distance), so rebuilding at each step is not
+/// an option. The fixed set is valid as long as no stored Vertex2-Edge2P1
+/// pair (P_E) is within the FD step of a switch, since that collision
+/// asserts P_E. Exact ties are classified to endpoint types and are
+/// harmless, but rounding can leave P_E pairs ~1e-17 from a switch; as in
+/// the GCP tests, such configurations get the gradient check only.
+void check_esp_2d_finite_differences(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const int quadrature_order,
+    const bool check_hessian)
+{
+    CAPTURE(quadrature_order);
+    const auto method = make_default_broad_phase();
+    const ESPParameters params(/*dhat=*/0.6, 1., quadrature_order);
+
+    CollisionMesh mesh = make_2d_collision_mesh(V, E);
+
+    ESPCollisions collisions;
+    collisions.build(mesh, V, params, method.get());
+
+    REQUIRE(!collisions.empty());
+    REQUIRE(!has_intersections(mesh, V));
+
+    ESPPotential potential(params);
+    double energy = potential(collisions, mesh, V);
+    CHECK(energy > 0);
+
+    Eigen::VectorXd grad = potential.gradient(collisions, mesh, V);
+    REQUIRE(grad.squaredNorm() > 1e-8);
+
+    // Rebuild the collisions at each perturbed configuration: a
+    // collision's type encodes its distance type (e.g., Vertex2-Edge2P1
+    // only at P_E) and asserts it, so the set built at V cannot be
+    // evaluated across a switch, which the energy FD may cross.
+    const auto energy_at = [&](const Eigen::VectorXd& x) {
+        const Eigen::MatrixXd V_ = tests::unflatten(x, V.cols());
+        ESPCollisions collisions_;
+        collisions_.build(mesh, V_, params, method.get());
+        return potential(collisions_, mesh, V_);
+    };
+
+    CAPTURE(grad.norm());
+    if (V.size() <= 32) {
+        Eigen::VectorXd fgrad;
+        fd::finite_gradient(
+            tests::flatten(V), energy_at, fgrad, fd::AccuracyOrder::SECOND,
+            1e-8);
+        CAPTURE(fgrad.norm());
+        CHECK(
+            (grad - fgrad).norm() < std::max(
+                1e-4 * std::max({ grad.norm(), fgrad.norm(), 1e-8 }), 1e-9));
+    } else {
+        // A full finite difference with a rebuild per evaluation is too
+        // expensive on mesh_1 (880 DOFs), verify directional derivative
+        // only
+        Eigen::VectorXd test_dir(V.size());
+        for (int i = 0; i < test_dir.size(); i++) {
+            test_dir(i) = i;
+        }
+        test_dir.normalize();
+
+        Eigen::VectorXd fg;
+        fd::finite_gradient(
+            Eigen::VectorXd::Zero(1),
+            [&](const Eigen::VectorXd& y) {
+                return energy_at(tests::flatten(V) + test_dir * y(0));
+            },
+            fg, fd::AccuracyOrder::SECOND, 1e-8);
+        const double g_dir = grad.dot(test_dir);
+        CAPTURE(fg(0), g_dir);
+        CHECK(
+            std::abs(fg(0) - g_dir) < std::max(
+                1e-4 * std::max({ std::abs(fg(0)), std::abs(g_dir), 1e-8 }),
+                1e-9));
+    }
+
+    if (!check_hessian) {
+        return;
+    }
+
+    Eigen::MatrixXd hess = potential.hessian(collisions, mesh, V);
+    REQUIRE(hess.squaredNorm() > 1e-3);
+    Eigen::MatrixXd fhess;
+    fd::finite_jacobian(
+        tests::flatten(V),
+        [&](const Eigen::VectorXd& x) {
+            return potential.gradient(
+                collisions, mesh, tests::unflatten(x, V.cols()));
+        },
+        fhess, fd::AccuracyOrder::SECOND, 1e-12);
+    CAPTURE(hess.norm());
+    CAPTURE(fhess.norm());
+    CHECK(
+        (hess - fhess).norm()
+        < std::max(3e-3 * std::max({ hess.norm(), fhess.norm(), 1e-8 }), 1e-9));
+}
+
+} // namespace
+
 TEST_CASE(
     "ESP potential 2D finite differences",
     "[esp_potential], [esp_potential_2d]")
 {
-    const auto method = make_default_broad_phase();
+    const int quadrature_order = GENERATE(1, 14);
+
     Eigen::MatrixXd V;
     Eigen::MatrixXi E;
-    double dhat = 0.6;
-    constexpr double BA = 0; // a small constant to break perfect alignments
-    const int quadrature_order = GENERATE(1, 14);
-    ESPParameters params(dhat, 1., quadrature_order);
-    CAPTURE(quadrature_order);
-
-    // The Hessian is checked against an FD of the analytic gradient on the
-    // set built at V: the potential is only C1 across a distance-type switch
-    // (point-line vs. point-point distance), so rebuilding at each step is not
-    // an option. The fixed set is valid as long as no stored Vertex2-Edge2P1
-    // pair (P_E) is within the FD step of a switch, since that collision
-    // asserts P_E. Exact ties are classified to endpoint types and are
-    // harmless, but rounding can leave P_E pairs ~1e-17 from a switch; as in
-    // the GCP tests, such configurations get the gradient check only.
-    auto run_checks = [&](const bool check_hessian) {
-        CollisionMesh mesh = make_2d_collision_mesh(V, E);
-
-        ESPCollisions collisions;
-        collisions.build(mesh, V, params, method.get());
-
-        REQUIRE(!collisions.empty());
-        REQUIRE(!has_intersections(mesh, V));
-
-        ESPPotential potential(params);
-        double energy = potential(collisions, mesh, V);
-        CHECK(energy > 0);
-
-        Eigen::VectorXd grad = potential.gradient(collisions, mesh, V);
-        REQUIRE(grad.squaredNorm() > 1e-8);
-
-        // Rebuild the collisions at each perturbed configuration: a
-        // collision's type encodes its distance type (e.g., Vertex2-Edge2P1
-        // only at P_E) and asserts it, so the set built at V cannot be
-        // evaluated across a switch, which the energy FD may cross.
-        const auto energy_at = [&](const Eigen::VectorXd& x) {
-            const Eigen::MatrixXd V_ = tests::unflatten(x, V.cols());
-            ESPCollisions collisions_;
-            collisions_.build(mesh, V_, params, method.get());
-            return potential(collisions_, mesh, V_);
-        };
-
-        CAPTURE(grad.norm());
-        if (V.size() <= 32) {
-            Eigen::VectorXd fgrad;
-            fd::finite_gradient(
-                tests::flatten(V), energy_at, fgrad, fd::AccuracyOrder::SECOND,
-                1e-8);
-            CAPTURE(fgrad.norm());
-            CHECK(
-                (grad - fgrad).norm() < std::max(
-                    1e-4 * std::max({ grad.norm(), fgrad.norm(), 1e-8 }),
-                    1e-9));
-        } else {
-            // A full finite difference with a rebuild per evaluation is too
-            // expensive on mesh_1 (880 DOFs), verify directional derivative
-            // only
-            Eigen::VectorXd test_dir(V.size());
-            for (int i = 0; i < test_dir.size(); i++) {
-                test_dir(i) = i;
-            }
-            test_dir.normalize();
-
-            Eigen::VectorXd fg;
-            fd::finite_gradient(
-                Eigen::VectorXd::Zero(1),
-                [&](const Eigen::VectorXd& y) {
-                    return energy_at(tests::flatten(V) + test_dir * y(0));
-                },
-                fg, fd::AccuracyOrder::SECOND, 1e-8);
-            const double g_dir = grad.dot(test_dir);
-            CAPTURE(fg(0), g_dir);
-            CHECK(
-                std::abs(fg(0) - g_dir) < std::max(
-                    1e-4 * std::max({ std::abs(fg(0)), std::abs(g_dir), 1e-8 }),
-                    1e-9));
-        }
-
-        if (!check_hessian) {
-            return;
-        }
-
-        Eigen::MatrixXd hess = potential.hessian(collisions, mesh, V);
-        REQUIRE(hess.squaredNorm() > 1e-3);
-        Eigen::MatrixXd fhess;
-        fd::finite_jacobian(
-            tests::flatten(V),
-            [&](const Eigen::VectorXd& x) {
-                return potential.gradient(
-                    collisions, mesh, tests::unflatten(x, V.cols()));
-            },
-            fhess, fd::AccuracyOrder::SECOND, 1e-12);
-        CAPTURE(hess.norm());
-        CAPTURE(fhess.norm());
-        CHECK(
-            (hess - fhess).norm() < std::max(
-                3e-3 * std::max({ hess.norm(), fhess.norm(), 1e-8 }), 1e-9));
-    };
-
-    SECTION("Corners")
-    {
-        const double P0x = GENERATE(.01, -.01, 0.0);
-        const double P1y = GENERATE(.49, .5, .51);
-        CAPTURE(P0x, P1y);
-        V.resize(8, 2);
-        E.resize(8, 2);
-        V << -1., 1., -1., 0., 0., 0., P0x, .5 + BA, 0., 1., 1., 0., 1., 1.,
-            .02, P1y;
-        E << 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 5, 6, 6, 7, 7, 5;
-        run_checks(true);
-    }
 
     SECTION("squares")
     {
@@ -1747,7 +1765,7 @@ TEST_CASE(
             V << -1., 1. + BA, -1., 0. + BA, -.1, 0. + BA, -.1, 1. + BA, .1, 1.,
                 .1, 0., 1., 0., 1., 1.;
             // Rounding leaves P_E pairs ~1e-17 from a switch at order 14.
-            run_checks(false);
+            check_esp_2d_finite_differences(V, E, quadrature_order, false);
         }
         SECTION("vertical_squares")
         {
@@ -1755,7 +1773,7 @@ TEST_CASE(
             V << 0. + BA, -1., 1. + BA, -1., 1. + BA, -.1, 0. + BA, -.1, 0., .1,
                 1., .1, 1., 1., 0., 1.;
             // Rounding leaves P_E pairs ~1e-17 from a switch at order 14.
-            run_checks(false);
+            check_esp_2d_finite_differences(V, E, quadrature_order, false);
         }
     }
 
@@ -1769,7 +1787,7 @@ TEST_CASE(
         REQUIRE(success);
         V.col(0) += Eigen::VectorXd::Random(V.rows()) * BA;
         // The closest P_E pair is ~1e-11 from a switch, above h = 1e-12.
-        run_checks(true);
+        check_esp_2d_finite_differences(V, E, quadrature_order, true);
     }
 
     SECTION("mesh_2")
@@ -1782,8 +1800,25 @@ TEST_CASE(
         REQUIRE(success);
         V.col(0) += Eigen::VectorXd::Random(V.rows()) * BA;
         // Rounding leaves P_E pairs ~1e-17 from a switch at order 14.
-        run_checks(false);
+        check_esp_2d_finite_differences(V, E, quadrature_order, false);
     }
+}
+
+TEST_CASE(
+    "ESP potential 2D finite differences at corners",
+    "[esp_potential], [esp_potential_2d]")
+{
+    const int quadrature_order = GENERATE(1, 14);
+    const double P0x = GENERATE(.01, -.01, 0.0);
+    const double P1y = GENERATE(.49, .5, .51);
+    CAPTURE(P0x, P1y);
+
+    Eigen::MatrixXd V(8, 2);
+    Eigen::MatrixXi E(8, 2);
+    V << -1., 1., -1., 0., 0., 0., P0x, .5 + BA, 0., 1., 1., 0., 1., 1., .02,
+        P1y;
+    E << 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 5, 6, 6, 7, 7, 5;
+    check_esp_2d_finite_differences(V, E, quadrature_order, true);
 }
 
 // Each 2D quadrature point's Hessian is projected, so their sum is PSD.
