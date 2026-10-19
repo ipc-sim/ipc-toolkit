@@ -13,6 +13,7 @@
 #include "distance_type_reference.hpp"
 
 #include <array>
+#include <cmath>
 
 using namespace ipc;
 
@@ -124,47 +125,70 @@ TEST_CASE(
     }
 }
 
-// Nearly parallel random edges. ipc::edge_edge_distance_type unconditionally
-// uses the thresholded analytic classifier (no exact-predicate mode), so the
-// reference must be called with the *same* threshold to stay comparable:
-// with a threshold of 0 (a fully exact reference), this comparison would fail
-// on ~20% of samples, because the reference would then only take the
-// parallel-classifier branch for exactly-parallel edges while the shipped
-// classifier takes it for the much larger near-parallel set.
+// Nearly parallel random edges, with sin²θ between them spread across the
+// threshold of ipc::is_parallel_edge_edge (sin²θ < 2.5e-16), so we exercise
+// both sides of it.
+//
+// On the parallel side, ipc::edge_edge_distance_type takes its parallel branch,
+// so we compare it against the reference with the *same* threshold. With a
+// threshold of 0 (a fully exact reference), the reference would only take its
+// parallel branch for exactly parallel edges and the two would disagree.
+//
+// On the other side, the exact classifier must agree with the fully exact
+// reference. This is the regime ESP relies on: the edges are as close to
+// parallel as the threshold lets through, which is where the analytic
+// classifier's a·c - b² cancels down to rounding noise.
 TEST_CASE(
     "Edge-edge distance type random parallel",
     "[distance][distance-type][edge-edge][exact][parallel]")
 {
     const int num_random_tests = 10000;
+    int num_parallel = 0, num_not_parallel = 0;
 
     for (int i = 0; i < num_random_tests; ++i) {
         const Eigen::Vector3d ea0 = Eigen::Vector3d::Random() * 10;
         const Eigen::Vector3d ea1 = Eigen::Vector3d::Random() * 10;
+        const Eigen::Vector3d u = (ea1 - ea0).normalized();
 
-        Eigen::Vector3d eb0 = ea0;
-        Eigen::Vector3d eb1 = ea1;
+        // A unit direction perpendicular to edge a to rotate edge b towards.
+        Eigen::Vector3d n = Eigen::Vector3d::Random();
+        n = (n - n.dot(u) * u).normalized();
 
-        const double amount = Eigen::Vector3d::Random()(0);
-        const int axis = i % 3;
-        eb0[axis] += amount;
-        eb1[axis] += amount;
+        // We draw log₁₀(sin²θ) uniformly from [-18, -14], so about 60% of the
+        // pairs fall below the threshold. Edge b is 0.5-1.5x as long as edge a,
+        // in either orientation, and offset from it.
+        const Eigen::Vector3d r = Eigen::Vector3d::Random();
+        const double sin2_theta = std::pow(10.0, -16.0 + 2.0 * r[0]);
+        const double length =
+            (ea1 - ea0).norm() * (1.0 + 0.5 * r[1]) * (i % 2 == 0 ? 1.0 : -1.0);
 
-        if (i % 2 == 0)
-            eb1 += Eigen::Vector3d::Random() * ((ea1 - ea0).norm() * 1e-20);
-
-        const EdgeEdgeDistanceType dtype_ref =
-            edge_edge_distance_type_reference(ea0, ea1, eb0, eb1);
+        const Eigen::Vector3d eb0 = ea0 + Eigen::Vector3d::Random() * 5;
+        const Eigen::Vector3d eb1 = eb0
+            + length
+                * (std::sqrt(1 - sin2_theta) * u + std::sqrt(sin2_theta) * n);
 
         CAPTURE(
-            ea0.transpose(), ea1.transpose(), eb0.transpose(), eb1.transpose());
-        CHECK(edge_edge_distance_type(ea0, ea1, eb0, eb1) == dtype_ref);
-        // The exact classifier has no parallel branch; its callers skip the
-        // pairs is_parallel_edge_edge flags.
-        if (!is_parallel_edge_edge(ea0, ea1, eb0, eb1)) {
+            sin2_theta, ea0.transpose(), ea1.transpose(), eb0.transpose(),
+            eb1.transpose());
+        if (is_parallel_edge_edge(ea0, ea1, eb0, eb1)) {
+            ++num_parallel;
             CHECK(
-                edge_edge_distance_type_exact(ea0, ea1, eb0, eb1) == dtype_ref);
+                edge_edge_distance_type(ea0, ea1, eb0, eb1)
+                == edge_edge_distance_type_reference(ea0, ea1, eb0, eb1));
+        } else {
+            // The exact classifier has no parallel branch; its callers skip
+            // the pairs is_parallel_edge_edge flags.
+            ++num_not_parallel;
+            CHECK(
+                edge_edge_distance_type_exact(ea0, ea1, eb0, eb1)
+                == edge_edge_distance_type_reference(
+                    ea0, ea1, eb0, eb1, /*parallel_threshold=*/0.0));
         }
     }
+
+    // Both sides of the threshold must actually be exercised.
+    CHECK(num_parallel > num_random_tests / 4);
+    CHECK(num_not_parallel > num_random_tests / 4);
 }
 
 // The *_exact classifiers must agree with each other, e.g., a point-triangle
