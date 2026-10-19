@@ -43,3 +43,21 @@ If you are proposing a feature:
 * Keep the scope as narrow as possible, to make it easier to implement.
 * Remember that this is a volunteer-driven project, and that contributions
   are welcome :)
+
+## Continuous Integration
+
+### CUDA Jobs
+
+The CUDA workflow builds the CUDA code on Linux and Windows. On Linux it also
+runs the `[gpu]` and `[cuda]` unit tests, but GitHub-hosted runners have no GPU,
+so they run on a simulated NVIDIA T4
+([PantheonSim](https://github.com/pantheongpu/setup-pantheonsim)). A green CUDA
+job therefore means the kernels compile and give correct results, with these
+limits:
+
+* It does not measure performance.
+* It skips the CCD and STQ tests on the cloth and puffer ball meshes, which take
+  several minutes each on a simulated GPU.
+
+If your change touches CUDA code, please also run the full GPU test suite on
+real hardware.
