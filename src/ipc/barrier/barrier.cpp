@@ -282,8 +282,21 @@ InversePowerBarrier::second_derivative(const double d, const double dhat) const
 
 // ============================================================================
 
+bool NearFarBarrier::is_purely_near(const double d, const double dhat) const
+{
+    // The far weight H and all its derivatives are exactly zero at or below
+    // alpha * dhat / 2, so near = b and far = 0 there. We return those values
+    // directly instead of multiplying through, because the base barrier is +inf
+    // at d <= 0 (and InversePowerBarrier overflows to +inf for tiny d > 0), and
+    // inf * 0 would turn an exact contact into NaN.
+    return d <= 0.5 * m_alpha * dhat;
+}
+
 double NearFarBarrier::near_value(const double d, const double dhat) const
 {
+    if (is_purely_near(d, dhat)) {
+        return (*m_base_barrier)(d, dhat);
+    }
     const double dhat_end = m_alpha * dhat;
     const double dhat_start = -dhat_end / 2.0;
     return (*m_base_barrier)(d, dhat)
@@ -292,6 +305,9 @@ double NearFarBarrier::near_value(const double d, const double dhat) const
 
 double NearFarBarrier::far_value(const double d, const double dhat) const
 {
+    if (is_purely_near(d, dhat)) {
+        return 0.0;
+    }
     const double dhat_end = m_alpha * dhat;
     const double dhat_start = -dhat_end / 2.0;
     return (*m_base_barrier)(d, dhat)
@@ -301,10 +317,13 @@ double NearFarBarrier::far_value(const double d, const double dhat) const
 double
 NearFarBarrier::first_derivative_near(const double d, const double dhat) const
 {
+    const double bp = m_base_barrier->first_derivative(d, dhat);
+    if (is_purely_near(d, dhat)) {
+        return bp;
+    }
     const double dhat_end = m_alpha * dhat;
     const double dhat_start = -dhat_end / 2.0;
     const double b = (*m_base_barrier)(d, dhat);
-    const double bp = m_base_barrier->first_derivative(d, dhat);
     const double w = Math<double>::smooth_heaviside(d, dhat_start, dhat_end);
     const double wp =
         Math<double>::smooth_heaviside_grad(d, dhat_start, dhat_end);
@@ -314,6 +333,9 @@ NearFarBarrier::first_derivative_near(const double d, const double dhat) const
 double
 NearFarBarrier::first_derivative_far(const double d, const double dhat) const
 {
+    if (is_purely_near(d, dhat)) {
+        return 0.0;
+    }
     const double dhat_end = m_alpha * dhat;
     const double dhat_start = -dhat_end / 2.0;
     const double b = (*m_base_barrier)(d, dhat);
@@ -327,11 +349,14 @@ NearFarBarrier::first_derivative_far(const double d, const double dhat) const
 double
 NearFarBarrier::second_derivative_near(const double d, const double dhat) const
 {
+    const double bpp = m_base_barrier->second_derivative(d, dhat);
+    if (is_purely_near(d, dhat)) {
+        return bpp;
+    }
     const double dhat_end = m_alpha * dhat;
     const double dhat_start = -dhat_end / 2.0;
     const double b = (*m_base_barrier)(d, dhat);
     const double bp = m_base_barrier->first_derivative(d, dhat);
-    const double bpp = m_base_barrier->second_derivative(d, dhat);
     const double w = Math<double>::smooth_heaviside(d, dhat_start, dhat_end);
     const double wp =
         Math<double>::smooth_heaviside_grad(d, dhat_start, dhat_end);
@@ -343,6 +368,9 @@ NearFarBarrier::second_derivative_near(const double d, const double dhat) const
 double
 NearFarBarrier::second_derivative_far(const double d, const double dhat) const
 {
+    if (is_purely_near(d, dhat)) {
+        return 0.0;
+    }
     const double dhat_end = m_alpha * dhat;
     const double dhat_start = -dhat_end / 2.0;
     const double b = (*m_base_barrier)(d, dhat);

@@ -103,6 +103,15 @@ double BarrierPotential::gradient(
 {
     if (!m_use_squared_distance) {
         const double d = std::sqrt(distance_squared);
+        // Chain-ruling b'(d) to d/d(d²) divides by d, so exact contact would
+        // give 0/0 = NaN (or ±inf, which the zero ∇d² then turns into NaN).
+        // We return 0 there instead to match the squared mode, where the
+        // barriers report zero derivatives once the distance reaches 0 (for
+        // the log barriers the energy is +inf there, so a line search rejects
+        // the step either way).
+        if (d == 0) {
+            return 0;
+        }
         double db = barrier().first_derivative(d - dmin, dhat()) / (2.0 * d);
         if (use_physical_barrier()) {
             db *= dhat() / barrier().units(dhat());
@@ -125,6 +134,9 @@ double BarrierPotential::hessian(
 {
     if (!m_use_squared_distance) {
         const double d = std::sqrt(distance_squared);
+        if (d == 0) {
+            return 0; // Same reasoning as in gradient().
+        }
         const double b1 = barrier().first_derivative(d - dmin, dhat());
         const double b2 = barrier().second_derivative(d - dmin, dhat());
         double d2b =

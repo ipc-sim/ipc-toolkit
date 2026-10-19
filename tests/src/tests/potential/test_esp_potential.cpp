@@ -766,6 +766,36 @@ TEST_CASE(
     CHECK(energy_at(h / 2) > e); // repulsive: rises as the apex approaches
 }
 
+// A vertex resting exactly on another face's interior is an exact contact, so
+// the energy must be +inf (which a line search rejects), never NaN (which
+// slips past an E_new > E_old check).
+TEST_CASE(
+    "ESP potential is infinite at an exact contact",
+    "[esp_potential], [esp_potential_3d]")
+{
+    // A unit-square sheet in z = 0 and a tet whose apex touches the interior
+    // of the sheet's first face.
+    Eigen::MatrixXd V(8, 3);
+    V << 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0,            // sheet
+        0.6, 0.3, 0, 0.3, 0, 1, 0.9, 0, 1, 0.6, 0.6, 1; // tet
+    Eigen::MatrixXi F(6, 3);
+    F << 0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 4, 7, 5, 5, 7, 6;
+    Eigen::MatrixXi E;
+    igl::edges(F, E);
+    const CollisionMesh mesh(V, E, F);
+
+    const ESPParameters params(0.1);
+    ESPCollisions collisions;
+    collisions.build(mesh, V, params);
+    REQUIRE(!collisions.empty());
+
+    const bool use_near_far = GENERATE(true, false);
+    CAPTURE(use_near_far);
+    const double e = ESPPotential(params, use_near_far)(collisions, mesh, V);
+    CHECK(std::isinf(e));
+    CHECK(e > 0);
+}
+
 // An isolated vertex is its own integration element with a single sample, so
 // with unit weights its ESP is exactly the pointwise potential of the rest of
 // the mesh at its position. We cross-check that against ArbitraryPointESP on a
@@ -2061,6 +2091,57 @@ TEST_CASE("NearFarBarrier decomposition", "[esp_potential][barrier]")
     default:
         FAIL("Unknown barrier type");
     }
+}
+
+// At and below alpha * dhat / 2 the far weight vanishes, so the near part is
+// the whole barrier and the far part is exactly zero. This must hold even
+// where the base barrier is +inf (contact, penetration, or InversePowerBarrier
+// overflowing for tiny d), where multiplying by a zero weight would give NaN.
+TEST_CASE(
+    "NearFarBarrier keeps the whole barrier near at contact",
+    "[esp_potential][barrier]")
+{
+    const double dhat = 1e-3;
+    const double alpha = GENERATE(0.2, 2.0);
+    const double d = GENERATE(0.0, -1e-4, 1e-200);
+
+    const std::vector<std::shared_ptr<const Barrier>> bases {
+        std::make_shared<NormalizedClampedLogBarrier<>>(),
+        std::make_shared<ClampedLogBarrier<>>(),
+        std::make_shared<InversePowerBarrier>(2.0),
+        std::make_shared<CubicBarrier<>>(),
+    };
+    const size_t i = GENERATE(range<size_t>(0, 4));
+    const Barrier& base = *bases[i];
+    CAPTURE(alpha, d, i);
+
+    const NearFarBarrier nf(bases[i], alpha);
+
+    CHECK(nf.near_value(d, dhat) == base(d, dhat));
+    CHECK(nf.far_value(d, dhat) == 0.0);
+    CHECK(nf.first_derivative_near(d, dhat) == base.first_derivative(d, dhat));
+    CHECK(nf.first_derivative_far(d, dhat) == 0.0);
+    CHECK(
+        nf.second_derivative_near(d, dhat) == base.second_derivative(d, dhat));
+    CHECK(nf.second_derivative_far(d, dhat) == 0.0);
+
+    // The near + far = b identity holds at contact too, including b = +inf.
+    CHECK(nf.near_value(d, dhat) + nf.far_value(d, dhat) == base(d, dhat));
+}
+
+TEST_CASE(
+    "NearFarBarrier requires a positive split parameter",
+    "[esp_potential][barrier]")
+{
+    const auto base = std::make_shared<ClampedLogBarrier<>>();
+    CHECK_NOTHROW(NearFarBarrier(base, 0.2));
+
+    // At alpha = 0 the step collapses to a jump with NaN derivatives.
+    const double alpha = GENERATE(
+        0.0, -0.5, std::nan(""), std::numeric_limits<double>::infinity());
+    CAPTURE(alpha);
+    CHECK_THROWS_AS(NearFarBarrier(base, alpha), std::invalid_argument);
+    CHECK_THROWS_AS(NearFarBarrier(base.get(), alpha), std::invalid_argument);
 }
 
 // Same check with a face quadrature rule (params.set_quad_rule()), which adds

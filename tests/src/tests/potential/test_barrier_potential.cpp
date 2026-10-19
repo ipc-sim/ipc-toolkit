@@ -586,6 +586,36 @@ TEST_CASE(
         potential.force_magnitude_gradient(d * d, VectorMax12d::Zero(6), dmin));
 }
 
+// At exact contact the energy is +inf, but the gradient and Hessian must stay
+// finite in both distance modes so assembling them does not spread NaNs.
+TEST_CASE(
+    "Barrier potential derivatives are finite at exact contact",
+    "[potential][barrier_potential][gradient][hessian]")
+{
+    const double dhat = 0.1;
+    const double dmin = GENERATE(0.0, 0.01);
+    const std::shared_ptr<Barrier> barrier = GENERATE(
+        as<std::shared_ptr<Barrier>>(), std::make_shared<ClampedLogBarrier<>>(),
+        std::make_shared<InversePowerBarrier>(2.0));
+    const bool use_squared_distance = GENERATE(true, false);
+    CAPTURE(dmin, use_squared_distance);
+
+    const BarrierPotential potential(
+        barrier, dhat, /*stiffness=*/1.0, /*use_physical_barrier=*/false,
+        use_squared_distance);
+
+    VertexVertexNormalCollision collision(0, 1);
+    collision.dmin = dmin;
+
+    Vector6d x;
+    x.head<3>() << 0.1, -0.2, 0.3;
+    x.tail<3>() = x.head<3>();
+
+    CHECK(potential(collision, x) == std::numeric_limits<double>::infinity());
+    CHECK(potential.gradient(collision, x).allFinite());
+    CHECK(potential.hessian(collision, x).allFinite());
+}
+
 // -- Benchmarking ------------------------------------------------------------
 
 TEST_CASE(

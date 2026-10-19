@@ -489,19 +489,26 @@ private:
 /// \f\]
 ///
 /// where \f$H\f$ is a C² piecewise-cubic step rising from 0 at
-/// \f$d = \alpha\hat{d}/2\f$ to 1 at \f$d = \alpha\hat{d}\f$. For
-/// \f$\alpha \ge 2\f$ the far part vanishes identically, since \f$b = 0\f$ for
-/// \f$d \ge \hat{d}\f$. ESPPotential uses \f$\alpha =\f$ dbar_factor.
+/// \f$d = \alpha\hat{d}/2\f$ to 1 at \f$d = \alpha\hat{d}\f$. Below
+/// \f$\alpha\hat{d}/2\f$ the near part is exactly \f$b\f$ and the far part
+/// exactly 0, so the identity also holds at contact, where the log barriers
+/// give \f$b_\text{near} = +\infty\f$. For \f$\alpha \ge 2\f$ the far part
+/// vanishes identically, since \f$b = 0\f$ for \f$d \ge \hat{d}\f$.
+/// ESPPotential uses \f$\alpha =\f$ dbar_factor.
 class NearFarBarrier : public Barrier {
 public:
     /// @brief Construct a NearFarBarrier.
     /// @param base_barrier The base barrier function to use.
     /// @param alpha Split parameter: the far weight H rises from 0 at
     ///        d = alpha * dhat / 2 to 1 at d = alpha * dhat.
+    /// @throws std::invalid_argument if alpha is not positive and finite. At
+    ///         alpha = 0 the step H collapses to a jump and its derivatives
+    ///         are NaN.
     NearFarBarrier(const Barrier* const base_barrier, const double alpha)
         : m_base_barrier(base_barrier)
         , m_alpha(alpha)
     {
+        validate_alpha();
     }
 
     /// @brief Construct a NearFarBarrier holding shared ownership of the base
@@ -514,6 +521,7 @@ public:
         , m_base_barrier(m_base_barrier_owned.get())
         , m_alpha(alpha)
     {
+        validate_alpha();
     }
 
     /// @brief Evaluate the barrier function.
@@ -588,6 +596,19 @@ public:
     double second_derivative_far(const double d, const double dhat) const;
 
 private:
+    void validate_alpha() const
+    {
+        if (!std::isfinite(m_alpha) || m_alpha <= 0) {
+            throw std::invalid_argument(
+                "NearFarBarrier alpha " + std::to_string(m_alpha)
+                + " must be positive and finite.");
+        }
+    }
+
+    /// @brief Whether d lies where the far weight H vanishes identically
+    ///        (d <= alpha * dhat / 2), so near = b and far = 0.
+    bool is_purely_near(const double d, const double dhat) const;
+
     // Optional shared ownership; null when constructed from a raw pointer.
     const std::shared_ptr<const Barrier> m_base_barrier_owned;
     const Barrier* const m_base_barrier;
