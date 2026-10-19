@@ -814,6 +814,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
     }
 
     const int dim = X.cols();
+    const int n_verts = X.rows();
     const int ndof = X.size();
 
     const int max_triplets_size = int(1e7);
@@ -866,7 +867,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
 
                         local_hessian_to_global_triplets(
                             local_hess, dict.vertex_ids(), dim,
-                            *(hess_triplets.cache));
+                            *(hess_triplets.cache), n_verts);
                     }
                 }
             });
@@ -1331,11 +1332,20 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                 }
                             };
 
-                            // Maps a global DOF index (= vid*dim + d) to its
-                            // local index inside H_face.
+                            // Maps a global DOF index (vid * dim + d in
+                            // RowMajor, d * n_verts + vid in ColMajor) to its
+                            // local index inside H_face, which is always
+                            // vertex-interleaved.
                             auto global_dof_to_local = [&](index_t gd) {
-                                return vid_to_local.at(gd / dim) * dim
-                                    + static_cast<int>(gd % dim);
+                                if constexpr (
+                                    VERTEX_DERIVATIVE_LAYOUT
+                                    == Eigen::RowMajor) {
+                                    return vid_to_local.at(gd / dim) * dim
+                                        + static_cast<int>(gd % dim);
+                                } else {
+                                    return vid_to_local.at(gd % n_verts) * dim
+                                        + static_cast<int>(gd / n_verts);
+                                }
                             };
 
                             // Adds scale * sym(outer(g_vec, gradz_vec)) to
@@ -1425,8 +1435,8 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                 project_to_psd(H_face, project_hessian_to_psd);
 
                             local_hessian_to_global_triplets(
-                                H_face, union_vids, dim,
-                                *(hess_triplets.cache));
+                                H_face, union_vids, dim, *(hess_triplets.cache),
+                                n_verts);
                         } else {
                             // Adds scale * sym(outer(g_vec, gradz_vec)) to
                             // triplets.
@@ -1460,17 +1470,18 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                 local_hessian_to_global_triplets(
                                     (w / total_w_near) * e.local_hess,
                                     e.dict->vertex_ids(), dim,
-                                    *(hess_triplets.cache));
+                                    *(hess_triplets.cache), n_verts);
                             }
                             for (const auto& e : const_cache) {
                                 local_hessian_to_global_triplets(
                                     (w / total_w_near) * e.local_hess_near,
-                                    *e.vertex_ids, dim, *(hess_triplets.cache));
+                                    *e.vertex_ids, dim, *(hess_triplets.cache),
+                                    n_verts);
                                 if (total_w_far > 0) {
                                     local_hessian_to_global_triplets(
                                         (w / total_w_far) * e.local_hess_far,
                                         *e.vertex_ids, dim,
-                                        *(hess_triplets.cache));
+                                        *(hess_triplets.cache), n_verts);
                                 }
                             }
 
@@ -1482,7 +1493,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                     -(w * avg_P_near / total_w_near)
                                         * e.mol_hess,
                                     e.dict->primary_vertex_ids(), dim,
-                                    *(hess_triplets.cache));
+                                    *(hess_triplets.cache), n_verts);
                             }
 
                             // Term C: -(w/total_w_near²) * sym(G_near ⊗
@@ -1520,19 +1531,20 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                         for (const auto& e : const_cache) {
                             local_hessian_to_global_triplets(
                                 (w / total_w) * e.local_hess_near,
-                                *e.vertex_ids, dim, *(hess_triplets.cache));
+                                *e.vertex_ids, dim, *(hess_triplets.cache),
+                                n_verts);
                         }
                     } else {
                         // Unnormalized: H(w*p_sum) = w * H(p_sum)
                         for (const auto& e : ee_cache) {
                             local_hessian_to_global_triplets(
                                 w * e.local_hess, e.dict->vertex_ids(), dim,
-                                *(hess_triplets.cache));
+                                *(hess_triplets.cache), n_verts);
                         }
                         for (const auto& e : const_cache) {
                             local_hessian_to_global_triplets(
                                 w * e.local_hess_near, *e.vertex_ids, dim,
-                                *(hess_triplets.cache));
+                                *(hess_triplets.cache), n_verts);
                         }
                     }
                 }

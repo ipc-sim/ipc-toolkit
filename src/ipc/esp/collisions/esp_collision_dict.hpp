@@ -44,10 +44,18 @@ public:
     ESPCollisionDict() = default;
     ~ESPCollisionDict() = default;
 
+    /// @brief Gather the collision pairs and cache the vertex and DOF indices.
+    /// @param primitive_ids IDs of the primitives the query point lies on.
+    /// @param primary_vertex_ids Vertices of those primitives.
+    /// @param map Collision pairs of the query point.
+    /// @param n_total_vertices Number of vertices in the CollisionMesh. We need
+    ///        it to lay out the cached DOF indices in VERTEX_DERIVATIVE_LAYOUT
+    ///        order, since a ColMajor DOF index is d * n_total_vertices + vid.
     void initialize(
         const std::vector<index_t>& primitive_ids,
         const std::vector<index_t>& primary_vertex_ids,
-        const ESPCollisionPairMap& map);
+        const ESPCollisionPairMap& map,
+        index_t n_total_vertices);
 
     const std::array<index_t, 4>& primary_vertex_ids() const
     {
@@ -101,7 +109,8 @@ public:
 
     /* These functions are only available after calling initialize() */
 
-    // Global indices of DoFs
+    // Global indices of DoFs, in VERTEX_DERIVATIVE_LAYOUT order. Entry
+    // i * DIM + d is coordinate d of vertex_ids()[i].
     const std::vector<index_t>& dofs() const;
     const std::vector<index_t>& primary_dofs() const;
     // Global indices of vertices

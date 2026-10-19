@@ -10,6 +10,7 @@
 #include "ipc/esp/esp_collisions_builder.hpp"
 
 #include <array>
+#include <unordered_set>
 
 namespace ipc {
 namespace {
@@ -101,7 +102,8 @@ PointPotential::build_collisions_at_vertex(
     std::unique_ptr<ESPCollisionDict<PointType::VERTEX>> collisions =
         std::make_unique<ESPCollisionDict<PointType::VERTEX>>();
     collisions->initialize(
-        std::vector<index_t> { vid }, std::vector<index_t> { vid }, pairs);
+        std::vector<index_t> { vid }, std::vector<index_t> { vid }, pairs,
+        mesh.num_vertices());
     return collisions;
 }
 
@@ -409,7 +411,7 @@ PointPotential::build_collisions_at_edge_edge_closest_point(
         std::make_unique<ESPCollisionDict<PointType::EDGE>>();
     collisions->initialize(
         std::vector<index_t> { e0, e1 }, std::vector { e00, e01, e10, e11 },
-        pairs);
+        pairs, mesh.num_vertices());
     collisions->set_ee_dtype(dtype);
     return collisions;
 }
@@ -705,7 +707,7 @@ PointPotential::build_collisions_at_face_interior_point(
         std::vector<index_t> { fid },
         std::vector<index_t> { mesh.faces()(fid, 0), mesh.faces()(fid, 1),
                                mesh.faces()(fid, 2) },
-        pairs);
+        pairs, mesh.num_vertices());
     return collisions;
 }
 
@@ -944,7 +946,7 @@ PointPotential::build_collisions_at_edge_qp(
     }
 
     auto dict = std::make_unique<ESPCollisionDict<PointType::EDGE, 2>>();
-    dict->initialize({ ei }, { e0, e1 }, pairs);
+    dict->initialize({ ei }, { e0, e1 }, pairs, mesh.num_vertices());
     return dict;
 }
 

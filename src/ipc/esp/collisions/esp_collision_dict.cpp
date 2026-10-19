@@ -1,5 +1,6 @@
 #include "esp_collision_dict.hpp"
 
+#include <ipc/config.hpp>
 #include <ipc/esp/esp_collision_maps.hpp>
 
 #include <array>
@@ -10,7 +11,8 @@ template <PointType pType, int DIM>
 void ESPCollisionDict<pType, DIM>::initialize(
     const std::vector<index_t>& primitive_ids,
     const std::vector<index_t>& primary_vertex_ids,
-    const ESPCollisionPairMap& map)
+    const ESPCollisionPairMap& map,
+    const index_t n_total_vertices)
 {
     assert(primary_vertex_ids.size() <= m_primary_vertex_ids.size());
     for (int i = 0; i < primary_vertex_ids.size(); i++) {
@@ -55,11 +57,24 @@ void ESPCollisionDict<pType, DIM>::initialize(
         m_primary_local_ids[i] = vertex_ids_inverse(m_primary_vertex_ids[i]);
     }
 
+    // We cache the global DOF indices in the same layout the potential
+    // assembles its gradient and Hessian in, so callers can scatter with them
+    // directly.
+    assert(n_total_vertices > 0);
+    const auto global_dof = [n_total_vertices](index_t vid, index_t d) {
+        assert(vid < n_total_vertices);
+        if constexpr (VERTEX_DERIVATIVE_LAYOUT == Eigen::RowMajor) {
+            return vid * DIMENSION + d;
+        } else {
+            return d * n_total_vertices + vid;
+        }
+    };
+
     // Cache dofs
     m_dofs.resize(m_vertex_ids.size() * DIMENSION);
     for (int i = 0; i < m_vertex_ids.size(); i++) {
         for (int d = 0; d < DIMENSION; d++) {
-            m_dofs[i * DIMENSION + d] = m_vertex_ids[i] * DIMENSION + d;
+            m_dofs[i * DIMENSION + d] = global_dof(m_vertex_ids[i], d);
         }
     }
 
@@ -71,7 +86,7 @@ void ESPCollisionDict<pType, DIM>::initialize(
             break;
         }
         for (index_t d = 0; d < DIMENSION; d++) {
-            m_primary_dofs.push_back(i * DIMENSION + d);
+            m_primary_dofs.push_back(global_dof(i, d));
         }
     }
 

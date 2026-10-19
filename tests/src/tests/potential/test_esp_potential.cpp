@@ -1,4 +1,5 @@
 #include <tests/config.hpp>
+#include <tests/dof_layout.hpp>
 #include <tests/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -359,7 +360,7 @@ TEST_CASE(
         fd::finite_gradient(
             Eigen::VectorXd::Zero(1),
             [&](const Eigen::VectorXd& y) {
-                Eigen::MatrixXd V_ = V + fd::unflatten(test_dir, 3) * y(0);
+                Eigen::MatrixXd V_ = V + tests::unflatten(test_dir, 3) * y(0);
                 ESPCollisions collisions_;
                 collisions_.build(mesh, V_, params);
                 return potential(collisions_, mesh, V_);
@@ -378,7 +379,7 @@ TEST_CASE(
         fd::finite_jacobian(
             Eigen::VectorXd::Zero(1),
             [&](const Eigen::VectorXd& y) {
-                Eigen::MatrixXd V_ = V + fd::unflatten(test_dir, 3) * y(0);
+                Eigen::MatrixXd V_ = V + tests::unflatten(test_dir, 3) * y(0);
                 ESPCollisions collisions_;
                 collisions_.build(mesh, V_, params);
                 return potential.gradient(collisions_, mesh, V_);
@@ -415,9 +416,9 @@ TEST_CASE(
 
         Eigen::VectorXd fg;
         fd::finite_gradient(
-            fd::flatten(V),
+            tests::flatten(V),
             [&](const Eigen::VectorXd& y) {
-                Eigen::MatrixXd V_ = fd::unflatten(y, 3);
+                Eigen::MatrixXd V_ = tests::unflatten(y, 3);
                 ESPCollisions collisions_;
                 collisions_.build(mesh, V_, params);
                 return potential(collisions_, mesh, V_);
@@ -433,9 +434,9 @@ TEST_CASE(
 
         Eigen::MatrixXd fh;
         fd::finite_jacobian(
-            fd::flatten(V),
+            tests::flatten(V),
             [&](const Eigen::VectorXd& y) {
-                Eigen::MatrixXd V_ = fd::unflatten(y, 3);
+                Eigen::MatrixXd V_ = tests::unflatten(y, 3);
                 ESPCollisions collisions_;
                 collisions_.build(mesh, V_, params);
                 return potential.gradient(collisions_, mesh, V_);
@@ -516,11 +517,11 @@ TEST_CASE(
 
         Eigen::MatrixXd fh;
         fd::finite_jacobian(
-            fd::flatten(V)(indices),
+            Eigen::VectorXd(tests::flatten(V))(indices),
             [&](const Eigen::VectorXd& y) {
-                Eigen::VectorXd y_ = fd::flatten(V);
+                Eigen::VectorXd y_ = tests::flatten(V);
                 y_(indices) = y;
-                Eigen::MatrixXd V_fd = fd::unflatten(y_, 3);
+                Eigen::MatrixXd V_fd = tests::unflatten(y_, 3);
 
                 return PointPotentialHelper::
                     evaluate_potential_gradient_at_vertex_with_cached_collisions(
@@ -590,9 +591,9 @@ TEST_CASE(
     Eigen::VectorXd grad = potential.gradient(collisions, mesh, V);
     Eigen::VectorXd fgrad;
     fd::finite_gradient(
-        fd::flatten(V),
+        tests::flatten(V),
         [&](const Eigen::VectorXd& x) {
-            return potential(collisions, mesh, fd::unflatten(x, V.cols()));
+            return potential(collisions, mesh, tests::unflatten(x, V.cols()));
         },
         fgrad, fd::AccuracyOrder::SECOND, 1e-8);
 
@@ -698,33 +699,34 @@ TEST_CASE(
     // apart.
     const Eigen::VectorXd grad = potential.gradient(collisions, mesh, V);
     REQUIRE(grad.size() == V.size());
-    CHECK(grad(2) + grad(5) > 0);
-    CHECK(grad(8) + grad(11) < 0);
+    const Eigen::MatrixXd grad_V = tests::unflatten(grad, 3);
+    CHECK(grad_V(0, 2) + grad_V(1, 2) > 0);
+    CHECK(grad_V(2, 2) + grad_V(3, 2) < 0);
 
     // The collision set changes with the positions here, so the finite
     // differences rebuild it.
     const auto energy = [&](const Eigen::VectorXd& x) {
-        const Eigen::MatrixXd V_ = fd::unflatten(x, 3);
+        const Eigen::MatrixXd V_ = tests::unflatten(x, 3);
         ESPCollisions collisions_;
         collisions_.build(mesh, V_, params);
         return potential(collisions_, mesh, V_);
     };
     const auto gradient = [&](const Eigen::VectorXd& x) {
-        const Eigen::MatrixXd V_ = fd::unflatten(x, 3);
+        const Eigen::MatrixXd V_ = tests::unflatten(x, 3);
         ESPCollisions collisions_;
         collisions_.build(mesh, V_, params);
         return potential.gradient(collisions_, mesh, V_);
     };
 
     Eigen::VectorXd fgrad;
-    fd::finite_gradient(fd::flatten(V), energy, fgrad);
+    fd::finite_gradient(tests::flatten(V), energy, fgrad);
     CHECK(fd::compare_gradient(grad, fgrad));
 
     const Eigen::MatrixXd hess = potential.hessian(collisions, mesh, V);
     REQUIRE(hess.rows() == V.size());
     REQUIRE(hess.cols() == V.size());
     Eigen::MatrixXd fhess;
-    fd::finite_jacobian(fd::flatten(V), gradient, fhess);
+    fd::finite_jacobian(tests::flatten(V), gradient, fhess);
     CHECK(fd::compare_hessian(hess, fhess, 1e-3));
 }
 
@@ -836,12 +838,13 @@ TEST_CASE(
 
     const Eigen::VectorXd grad = potential.gradient(collisions, mesh, V);
     CHECK(
-        (grad.segment<3>(3 * qi) - expected_grad).norm()
+        (tests::unflatten(grad, 3).row(qi).transpose() - expected_grad).norm()
         <= 1e-10 * expected_grad.norm());
 
     const Eigen::MatrixXd hess = potential.hessian(collisions, mesh, V);
+    const std::array<int, 3> q_dofs = tests::vertex_dofs<3>(qi, V.rows());
     CHECK(
-        (hess.block<3, 3>(3 * qi, 3 * qi) - expected_hess).norm()
+        (hess(q_dofs, q_dofs) - expected_hess).norm()
         <= 1e-10 * expected_hess.norm());
 }
 
@@ -982,11 +985,13 @@ TEST_CASE(
         potential(collisions, mesh, V_codim)
         == Catch::Approx(expected_energy).epsilon(1e-12));
 
-    const Eigen::VectorXd grad = potential.gradient(collisions, mesh, V_codim);
+    // We compare per-vertex rows so the check holds in either DOF layout.
+    const Eigen::MatrixXd grad =
+        tests::unflatten(potential.gradient(collisions, mesh, V_codim), 3);
     CHECK(
-        (grad.head(expected_grad.size()) - expected_grad).norm()
+        (grad.topRows(V.rows()) - tests::unflatten(expected_grad, 3)).norm()
         <= 1e-12 * expected_grad.norm());
-    CHECK(grad.tail(grad.size() - expected_grad.size()).isZero());
+    CHECK(grad.bottomRows(3).isZero());
 }
 
 TEST_CASE(
@@ -1463,10 +1468,10 @@ TEST_CASE("ESP potential codim", "[esp_potential], [esp_potential_2d]")
 
     Eigen::VectorXd fgrad;
     fd::finite_gradient(
-        fd::flatten(vertices),
+        tests::flatten(vertices),
         [&](const Eigen::VectorXd& x) {
             return potential(
-                collisions, mesh, fd::unflatten(x, vertices.cols()));
+                collisions, mesh, tests::unflatten(x, vertices.cols()));
         },
         fgrad, fd::AccuracyOrder::SECOND, 1e-8);
 
@@ -1478,10 +1483,10 @@ TEST_CASE("ESP potential codim", "[esp_potential], [esp_potential_2d]")
 
     Eigen::MatrixXd fhess;
     fd::finite_jacobian(
-        fd::flatten(vertices),
+        tests::flatten(vertices),
         [&](const Eigen::VectorXd& x) {
             return potential.gradient(
-                collisions, mesh, fd::unflatten(x, vertices.cols()));
+                collisions, mesh, tests::unflatten(x, vertices.cols()));
         },
         fhess, fd::AccuracyOrder::SECOND, 1e-8);
 
@@ -1655,7 +1660,7 @@ TEST_CASE(
         // only at P_E) and asserts it, so the set built at V cannot be
         // evaluated across a switch, which the energy FD may cross.
         const auto energy_at = [&](const Eigen::VectorXd& x) {
-            const Eigen::MatrixXd V_ = fd::unflatten(x, V.cols());
+            const Eigen::MatrixXd V_ = tests::unflatten(x, V.cols());
             ESPCollisions collisions_;
             collisions_.build(mesh, V_, params, method.get());
             return potential(collisions_, mesh, V_);
@@ -1665,7 +1670,7 @@ TEST_CASE(
         if (V.size() <= 32) {
             Eigen::VectorXd fgrad;
             fd::finite_gradient(
-                fd::flatten(V), energy_at, fgrad, fd::AccuracyOrder::SECOND,
+                tests::flatten(V), energy_at, fgrad, fd::AccuracyOrder::SECOND,
                 1e-8);
             CAPTURE(fgrad.norm());
             CHECK(
@@ -1686,7 +1691,7 @@ TEST_CASE(
             fd::finite_gradient(
                 Eigen::VectorXd::Zero(1),
                 [&](const Eigen::VectorXd& y) {
-                    return energy_at(fd::flatten(V) + test_dir * y(0));
+                    return energy_at(tests::flatten(V) + test_dir * y(0));
                 },
                 fg, fd::AccuracyOrder::SECOND, 1e-8);
             const double g_dir = grad.dot(test_dir);
@@ -1705,10 +1710,10 @@ TEST_CASE(
         REQUIRE(hess.squaredNorm() > 1e-3);
         Eigen::MatrixXd fhess;
         fd::finite_jacobian(
-            fd::flatten(V),
+            tests::flatten(V),
             [&](const Eigen::VectorXd& x) {
                 return potential.gradient(
-                    collisions, mesh, fd::unflatten(x, V.cols()));
+                    collisions, mesh, tests::unflatten(x, V.cols()));
             },
             fhess, fd::AccuracyOrder::SECOND, 1e-12);
         CAPTURE(hess.norm());
@@ -1857,7 +1862,7 @@ TEST_CASE(
         fd::finite_gradient(
             Eigen::VectorXd::Zero(1),
             [&](const Eigen::VectorXd& y) {
-                Eigen::MatrixXd V_ = V + fd::unflatten(test_dir, 3) * y(0);
+                Eigen::MatrixXd V_ = V + tests::unflatten(test_dir, 3) * y(0);
                 ESPCollisions c;
                 c.build(mesh, V_, params);
                 return potential(c, mesh, V_);
@@ -1875,7 +1880,7 @@ TEST_CASE(
         fd::finite_jacobian(
             Eigen::VectorXd::Zero(1),
             [&](const Eigen::VectorXd& y) {
-                Eigen::MatrixXd V_ = V + fd::unflatten(test_dir, 3) * y(0);
+                Eigen::MatrixXd V_ = V + tests::unflatten(test_dir, 3) * y(0);
                 ESPCollisions c;
                 c.build(mesh, V_, params);
                 return potential.gradient(c, mesh, V_);
