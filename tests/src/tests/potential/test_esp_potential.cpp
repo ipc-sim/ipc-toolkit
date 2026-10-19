@@ -26,6 +26,8 @@
 #include <ipc/esp/collisions/esp_quadrature.hpp>
 #include <ipc/esp/collisions/vertex_matrix_view.hpp>
 
+#include <tbb/global_control.h>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -33,6 +35,10 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
+
+#ifndef _WIN32
+#include <pthread.h>
+#endif
 
 using namespace ipc;
 
@@ -2256,4 +2262,66 @@ TEST_CASE(
             (potential.hessian(*c, mesh, V_strided) - H).norm()
             <= 1e-12 * H.norm());
     }
+}
+
+// The ESP Hessian keeps its per-collision blocks on the stack, so their size
+// decides whether a caller's thread survives. macOS gives secondary threads
+// (std::thread included) a 512 KiB stack, and tbb::parallel_for also runs work
+// on the calling thread, so the Hessian has to fit there. We pin TBB to one
+// thread to make the calling thread do all of the work, then run the Hessian
+// on a pthread with exactly that stack size. Overflowing it crashes the test.
+TEST_CASE(
+    "ESP Hessian fits in a 512 KiB thread stack",
+    "[esp_potential], [esp_potential_3d]")
+{
+#ifdef _WIN32
+    SKIP("Uses pthreads to choose the thread's stack size");
+#else
+    // Two triangles 0.01 apart: vertex 3 sits over the interior of edge (0,1)
+    // and edge (3,4) crosses it, so we get vertex and edge-edge stencils.
+    Eigen::MatrixXd V(6, 3);
+    V << 0, 0, 0, 1, 0, 0, 0, 1, 0, //
+        0.5, -0.05, 0.01, 0.6, 0.6, 0.01, 0.2, 0.5, 0.01;
+    Eigen::MatrixXi F(2, 3);
+    F << 0, 1, 2, 3, 4, 5;
+    Eigen::MatrixXi E;
+    igl::edges(F, E);
+    const CollisionMesh mesh(V, E, F);
+
+    const ESPParameters params(0.1); // default 3D parameters
+    ESPCollisions collisions;
+    collisions.build(mesh, V, params);
+    REQUIRE(!collisions.empty());
+    const ESPPotential potential(params);
+
+    struct Job {
+        const ESPPotential& potential;
+        const ESPCollisions& collisions;
+        const CollisionMesh& mesh;
+        const Eigen::MatrixXd& V;
+        Eigen::SparseMatrix<double> hess;
+    } job { potential, collisions, mesh, V, {} };
+
+    const tbb::global_control single_thread(
+        tbb::global_control::max_allowed_parallelism, 1);
+
+    pthread_attr_t attr;
+    REQUIRE(pthread_attr_init(&attr) == 0);
+    REQUIRE(pthread_attr_setstacksize(&attr, 512 * 1024) == 0);
+    pthread_t thread;
+    REQUIRE(
+        pthread_create(
+            &thread, &attr,
+            [](void* arg) -> void* {
+                auto& j = *static_cast<Job*>(arg);
+                j.hess = j.potential.hessian(j.collisions, j.mesh, j.V);
+                return nullptr;
+            },
+            &job)
+        == 0);
+    REQUIRE(pthread_join(thread, nullptr) == 0);
+    pthread_attr_destroy(&attr);
+
+    CHECK(job.hess.nonZeros() > 0);
+#endif
 }

@@ -146,9 +146,9 @@ auto ESPCollisionTemplate<PrimitiveA, PrimitiveB>::gradient_nearfar(
     const NearFarBarrier* /*nf_barrier*/) const -> std::
     pair<VectorMax<double, ELEMENT_SIZE>, VectorMax<double, ELEMENT_SIZE>>
 {
-    const VectorMax<double, ELEMENT_SIZE> zero =
-        VectorMax<double, ELEMENT_SIZE>::Zero(positions.size());
-    return { zero, zero };
+    const auto n = positions.size();
+    return { VectorMax<double, ELEMENT_SIZE>::Zero(n),
+             VectorMax<double, ELEMENT_SIZE>::Zero(n) };
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
@@ -161,9 +161,8 @@ auto ESPCollisionTemplate<PrimitiveA, PrimitiveB>::hessian_nearfar(
         MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>>
 {
     const auto n = positions.size();
-    const MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE> zero =
-        MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>::Zero(n, n);
-    return { zero, zero };
+    return { MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>::Zero(n, n),
+             MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>::Zero(n, n) };
 }
 
 // ---- 3D specializations ----
@@ -489,10 +488,7 @@ ESPCollisionTemplate<Vertex3, Vertex3>::gradient_nearfar(
         nf_barrier->first_derivative_far(dist, eps) / (dist * 2.);
     Vector6d g = point_point_distance_gradient(
         positions.template head<3>(), positions.template tail<3>());
-    VectorMax<double, ESPCollision::ELEMENT_SIZE> g_near(6), g_far(6);
-    g_near.head(6) = deriv_near * g;
-    g_far.head(6) = deriv_far * g;
-    return { g_near, g_far };
+    return { deriv_near * g, deriv_far * g };
 }
 
 template <>
@@ -519,14 +515,8 @@ ESPCollisionTemplate<Edge3P1, Vertex3>::gradient_nearfar(
     Vector9d g = point_edge_distance_gradient(
         positions.template segment<3>(6), positions.template head<3>(),
         positions.template segment<3>(3), dtype);
-    Vector9d g_near = deriv_near * g;
-    Vector9d g_far = deriv_far * g;
-    g_near = g_near({ 3, 4, 5, 6, 7, 8, 0, 1, 2 }).eval();
-    g_far = g_far({ 3, 4, 5, 6, 7, 8, 0, 1, 2 }).eval();
-    VectorMax<double, ESPCollision::ELEMENT_SIZE> result_near(9), result_far(9);
-    result_near.head(9) = g_near;
-    result_far.head(9) = g_far;
-    return { result_near, result_far };
+    g = g({ 3, 4, 5, 6, 7, 8, 0, 1, 2 }).eval();
+    return { deriv_near * g, deriv_far * g };
 }
 
 template <>
@@ -555,15 +545,8 @@ ESPCollisionTemplate<Face3P1, Vertex3>::gradient_nearfar(
         positions.template segment<3>(9), positions.template head<3>(),
         positions.template segment<3>(3), positions.template segment<3>(6),
         dtype);
-    Vector12d g_near = deriv_near * g;
-    Vector12d g_far = deriv_far * g;
-    g_near = g_near({ 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2 }).eval();
-    g_far = g_far({ 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2 }).eval();
-    VectorMax<double, ESPCollision::ELEMENT_SIZE> result_near(12),
-        result_far(12);
-    result_near.head(12) = g_near;
-    result_far.head(12) = g_far;
-    return { result_near, result_far };
+    g = g({ 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2 }).eval();
+    return { deriv_near * g, deriv_far * g };
 }
 
 template <>
@@ -593,13 +576,8 @@ ESPCollisionTemplate<Vertex3, Vertex3>::hessian_nearfar(
         positions.template head<3>(), positions.template tail<3>());
     const Matrix6d h = point_point_distance_hessian(
         positions.template head<3>(), positions.template tail<3>());
-    Matrix6d hess_near = g * deriv2_near * g.transpose() + h * deriv1_near;
-    Matrix6d hess_far = g * deriv2_far * g.transpose() + h * deriv1_far;
-    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>
-        result_near(6, 6), result_far(6, 6);
-    result_near.block<6, 6>(0, 0) = hess_near;
-    result_far.block<6, 6>(0, 0) = hess_far;
-    return { result_near, result_far };
+    return { g * deriv2_near * g.transpose() + h * deriv1_near,
+             g * deriv2_far * g.transpose() + h * deriv1_far };
 }
 
 template <>
@@ -635,16 +613,11 @@ ESPCollisionTemplate<Edge3P1, Vertex3>::hessian_nearfar(
     const Matrix9d h = point_edge_distance_hessian(
         positions.template segment<3>(6), positions.template head<3>(),
         positions.template segment<3>(3), dtype);
-    Matrix9d hess_near = g * deriv2_near * g.transpose() + h * deriv1_near;
-    Matrix9d hess_far = g * deriv2_far * g.transpose() + h * deriv1_far;
-    std::vector<int> reorder { 3, 4, 5, 6, 7, 8, 0, 1, 2 };
-    hess_near = hess_near(reorder, reorder).eval();
-    hess_far = hess_far(reorder, reorder).eval();
-    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>
-        result_near(9, 9), result_far(9, 9);
-    result_near.block<9, 9>(0, 0) = hess_near;
-    result_far.block<9, 9>(0, 0) = hess_far;
-    return { result_near, result_far };
+    const Matrix9d hess_near =
+        g * deriv2_near * g.transpose() + h * deriv1_near;
+    const Matrix9d hess_far = g * deriv2_far * g.transpose() + h * deriv1_far;
+    const std::array<int, 9> reorder { { 3, 4, 5, 6, 7, 8, 0, 1, 2 } };
+    return { hess_near(reorder, reorder), hess_far(reorder, reorder) };
 }
 
 template <>
@@ -683,16 +656,12 @@ ESPCollisionTemplate<Face3P1, Vertex3>::hessian_nearfar(
         positions.template segment<3>(9), positions.template head<3>(),
         positions.template segment<3>(3), positions.template segment<3>(6),
         dtype);
-    Matrix12d hess_near = g * deriv2_near * g.transpose() + h * deriv1_near;
-    Matrix12d hess_far = g * deriv2_far * g.transpose() + h * deriv1_far;
-    std::vector<int> reorder { 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2 };
-    hess_near = hess_near(reorder, reorder).eval();
-    hess_far = hess_far(reorder, reorder).eval();
-    MatrixMax<double, ESPCollision::ELEMENT_SIZE, ESPCollision::ELEMENT_SIZE>
-        result_near(12, 12), result_far(12, 12);
-    result_near.block<12, 12>(0, 0) = hess_near;
-    result_far.block<12, 12>(0, 0) = hess_far;
-    return { result_near, result_far };
+    const Matrix12d hess_near =
+        g * deriv2_near * g.transpose() + h * deriv1_near;
+    const Matrix12d hess_far = g * deriv2_far * g.transpose() + h * deriv1_far;
+    const std::array<int, 12> reorder { { 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1,
+                                          2 } };
+    return { hess_near(reorder, reorder), hess_far(reorder, reorder) };
 }
 
 // ---- 2D specializations ----

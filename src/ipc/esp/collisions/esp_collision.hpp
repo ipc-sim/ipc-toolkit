@@ -25,8 +25,15 @@ enum class ESPCollisionType : uint8_t {
 /// @note Unlike NormalCollision, ESPCollision has to be reconstructed whenever vertices change position
 class ESPCollision {
 public:
-    static constexpr int MAX_VERT_3D = 20 * 2;
-    static constexpr int ELEMENT_SIZE = 3 * MAX_VERT_3D;
+    /// @brief Most vertices in any ESP stencil.
+    /// Every stencil pairs one primitive with a single vertex, so the largest
+    /// is a face and a vertex (Face3P1-Vertex3). We size the stencil buffers
+    /// for that instead of reusing GCP's neighborhood limit, because MatrixMax
+    /// stores its full capacity inline: at 120 DOF each Hessian put 115 KB on
+    /// the stack, enough to overflow a 512 KiB thread stack.
+    static constexpr int MAX_VERTICES = 4;
+    /// @brief Most DOF in any ESP stencil (gradient and Hessian buffer size).
+    static constexpr int ELEMENT_SIZE = 3 * MAX_VERTICES;
 
     ESPCollision() = default;
 

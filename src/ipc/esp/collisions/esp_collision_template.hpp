@@ -20,6 +20,9 @@ public:
     static constexpr int N_CORE_DOFS_B = PrimitiveB::N_CORE_POINTS * DIM;
     static constexpr int N_CORE_DOFS = N_CORE_POINTS * DIM;
     static constexpr int ELEMENT_SIZE = Super::ELEMENT_SIZE;
+    static_assert(
+        PrimitiveA::N_DOFS + PrimitiveB::N_DOFS <= ELEMENT_SIZE,
+        "ESPCollision::ELEMENT_SIZE is too small for this stencil");
 
     ESPCollisionTemplate(
         index_t primitive0, index_t primitive1, const CollisionMesh& mesh);
