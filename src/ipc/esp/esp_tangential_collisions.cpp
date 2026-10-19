@@ -23,8 +23,8 @@ void TangentialCollisions::build(
     const double normal_stiffness,
     Eigen::ConstRef<Eigen::VectorXd> mu_s,
     Eigen::ConstRef<Eigen::VectorXd> mu_k,
-    const bool normalize_weights,
-    const std::function<double(double, double)>& blend_mu)
+    const std::function<double(double, double)>& blend_mu,
+    const bool normalize_weights)
 {
     assert(mu_s.size() == vertices.rows());
     assert(mu_k.size() == vertices.rows());

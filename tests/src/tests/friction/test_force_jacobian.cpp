@@ -752,7 +752,8 @@ void check_esp_friction_force_jacobian(
     friction_collisions.build(
         mesh, X + Ut, collisions, params, normal_stiffness,
         Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
-        Eigen::VectorXd::Ones(mesh.num_vertices()) * mu, normalize_weights);
+        Eigen::VectorXd::Ones(mesh.num_vertices()) * mu,
+        TangentialCollisions::default_blend_mu, normalize_weights);
     CHECK(!friction_collisions.empty());
 
     const FrictionPotential D(epsv_times_h);
@@ -905,7 +906,8 @@ TEST_CASE(
     const Eigen::VectorXd mu = Eigen::VectorXd::Ones(X.rows());
     TangentialCollisions friction_collisions;
     friction_collisions.build(
-        mesh, X, collisions, params, 1.0, mu, mu, normalize_weights);
+        mesh, X, collisions, params, 1.0, mu, mu,
+        TangentialCollisions::default_blend_mu, normalize_weights);
     CHECK(!friction_collisions.ev_collisions.empty());
     CHECK(!friction_collisions.ee_collisions.empty());
     CHECK(!friction_collisions.fv_collisions.empty());
@@ -967,6 +969,37 @@ TEST_CASE("ESP friction with zero normal stiffness", "[friction-esp]")
         CHECK(friction_collisions.empty());
     }
 }
+
+TEST_CASE(
+    "ESP friction blends coefficients with a positionally passed blend_mu",
+    "[friction-esp]")
+{
+    // A blend that ignores its inputs makes every stencil's coefficients
+    // equal to its result, whatever the per-vertex values are.
+    const bool normalize_weights = GENERATE(true, false);
+    const double dhat = 0.15;
+    const ESPFrictionSceneData3D scene =
+        esp_friction_scene_generator_3d(dhat * 0.5);
+    const CollisionMesh mesh(scene.X, scene.E, scene.F);
+    const ESPParameters params(dhat, 1., 0);
+
+    ESPCollisions collisions;
+    collisions.build(mesh, scene.X, params);
+    REQUIRE(!collisions.empty());
+
+    const Eigen::VectorXd mu = Eigen::VectorXd::Ones(scene.X.rows());
+    TangentialCollisions friction_collisions;
+    friction_collisions.build(
+        mesh, scene.X, collisions, params, /*normal_stiffness=*/1., mu, mu,
+        [](double, double) { return 0.25; }, normalize_weights);
+    REQUIRE(!friction_collisions.empty());
+
+    for (size_t i = 0; i < friction_collisions.size(); i++) {
+        CHECK(friction_collisions[i].mu_s == 0.25);
+        CHECK(friction_collisions[i].mu_k == 0.25);
+    }
+}
+
 TEST_CASE("ESP friction requires the build's quadrature", "[friction-esp]")
 {
     SECTION("2D")
@@ -1088,10 +1121,11 @@ TEST_CASE(
     TangentialCollisions friction_collisions, strided_friction_collisions;
     friction_collisions.build(
         mesh, V, collisions, params, /*normal_stiffness=*/1., mu, mu,
-        normalize_weights);
+        TangentialCollisions::default_blend_mu, normalize_weights);
     strided_friction_collisions.build(
         mesh, V_big.topRows(V.rows()), collisions, params,
-        /*normal_stiffness=*/1., mu, mu, normalize_weights);
+        /*normal_stiffness=*/1., mu, mu, TangentialCollisions::default_blend_mu,
+        normalize_weights);
     REQUIRE(!friction_collisions.empty());
     CHECK(strided_friction_collisions.size() == friction_collisions.size());
 

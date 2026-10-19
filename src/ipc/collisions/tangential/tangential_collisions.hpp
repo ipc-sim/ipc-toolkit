@@ -110,11 +110,11 @@ public:
     /// @param normal_stiffness Stiffness of the normal potential.
     /// @param mu_s The static friction coefficient per vertex.
     /// @param mu_k The kinetic friction coefficient per vertex.
+    /// @param blend_mu Function to blend vertex-based coefficients of friction. Defaults to average.
     /// @param normalize_weights Divide each face's weight by its total weight
     ///        (vertex or face-rule weights plus the edge-edge mollifier
     ///        weights). Unlike ESPPotential with use_near_far = true, near and
     ///        far parts are not normalized separately. 3D only.
-    /// @param blend_mu Function to blend vertex-based coefficients of friction. Defaults to average.
     /// @throws std::invalid_argument if params' quadrature differs from the
     ///         one collisions were built with (see
     ///         ESPCollisions::check_quadrature()).
@@ -126,9 +126,9 @@ public:
         const double normal_stiffness,
         Eigen::ConstRef<Eigen::VectorXd> mu_s,
         Eigen::ConstRef<Eigen::VectorXd> mu_k,
-        const bool normalize_weights = true,
         const std::function<double(double, double)>& blend_mu =
-            default_blend_mu);
+            default_blend_mu,
+        const bool normalize_weights = true);
 
     /// @brief Set lagged effective μ to scalar mu_s/mu_k on every collision (after build).
     void reset_lagged_anisotropic_friction_coefficients();
