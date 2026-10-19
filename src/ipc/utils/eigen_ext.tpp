@@ -96,7 +96,7 @@ project_to_psd(
                 D.diagonal()[i] = std::abs(D.diagonal()[i]);
                 break;
             default:
-                throw std::runtime_error("Invalid type of PSD projection!");
+                log_and_throw_error("Invalid type of PSD projection!");
             }
         } else {
             break;

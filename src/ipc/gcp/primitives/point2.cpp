@@ -1,5 +1,7 @@
 #include "point2.hpp"
 
+#include <ipc/utils/logger.hpp>
+
 namespace ipc {
 
 namespace {
@@ -16,7 +18,7 @@ namespace {
             } else if (mesh.edges()(i, 1) == v) {
                 neighbors[1] = mesh.edges()(i, 0);
             } else {
-                throw std::runtime_error("Invalid edge-vertex adjacency!");
+                log_and_throw_error("Invalid edge-vertex adjacency!");
             }
         }
 

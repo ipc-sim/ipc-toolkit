@@ -57,19 +57,16 @@ struct ESPParameters {
         // A zero dhat silently disables contact, and a negative or non-finite
         // one produces negative or NaN broad-phase inflation radii.
         if (!std::isfinite(_dhat) || _dhat <= 0) {
-            throw std::invalid_argument(
-                "dhat " + std::to_string(_dhat)
-                + " must be positive and finite.");
+            log_and_throw_error<std::invalid_argument>(
+                "dhat {} must be positive and finite.", _dhat);
         }
         if (_quad_order < 0) {
-            throw std::invalid_argument(
-                "quad_order " + std::to_string(_quad_order)
-                + " must be non-negative.");
+            log_and_throw_error<std::invalid_argument>(
+                "quad_order {} must be non-negative.", _quad_order);
         }
         if (std::isnan(_dbar_factor) || _dbar_factor < 0 || _dbar_factor > 2) {
-            throw std::invalid_argument(
-                "dbar_factor " + std::to_string(_dbar_factor)
-                + " is not in [0, 2].");
+            log_and_throw_error<std::invalid_argument>(
+                "dbar_factor {} is not in [0, 2].", _dbar_factor);
         } else if (_dbar_factor == 0) {
             logger().warn("dbar_factor = 0 disables edge-edge contact.");
         }
@@ -123,22 +120,20 @@ struct ESPParameters {
         for (size_t i = 0; i < rule.size(); i++) {
             const double weight = rule[i].weight;
             if (!std::isfinite(weight) || weight < 0) {
-                throw std::invalid_argument(
-                    fmt::format(
-                        "Face quadrature point {} has negative or non-finite "
-                        "weight {}.",
-                        i, weight));
+                log_and_throw_error<std::invalid_argument>(
+                    "Face quadrature point {} has negative or non-finite "
+                    "weight {}.",
+                    i, weight);
             }
             weight_sum += weight;
 
             double lambda_sum = 0;
             for (const double lambda : rule[i].lambda) {
                 if (!std::isfinite(lambda) || lambda < 0) {
-                    throw std::invalid_argument(
-                        fmt::format(
-                            "Face quadrature point {} has negative or "
-                            "non-finite barycentric coordinate {}.",
-                            i, lambda));
+                    log_and_throw_error<std::invalid_argument>(
+                        "Face quadrature point {} has negative or "
+                        "non-finite barycentric coordinate {}.",
+                        i, lambda);
                 }
                 lambda_sum += lambda;
             }
@@ -147,7 +142,8 @@ struct ESPParameters {
             }
         }
         if (!rule.empty() && weight_sum == 0) {
-            throw std::invalid_argument("Face quadrature weights sum to zero.");
+            log_and_throw_error<std::invalid_argument>(
+                "Face quadrature weights sum to zero.");
         }
         for (const size_t i : not_affine) {
             const auto& l = rule[i].lambda;

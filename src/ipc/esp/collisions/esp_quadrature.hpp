@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ipc/utils/logger.hpp>
+
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
@@ -32,7 +34,7 @@ public:
     static const Rule& get_rule(int n)
     {
         if (n < 1) {
-            throw std::runtime_error("Order must be at least 1");
+            log_and_throw_error("Order must be at least 1");
         }
 
         static std::map<int, Rule> cache;
@@ -614,8 +616,8 @@ lobatto_set(int n, std::vector<double>& xtab, std::vector<double>& weight)
         weight[19] = 0.526315789473684210526315789474E-02;
     } break;
     default: {
-        throw std::domain_error(
-            "Legal values for lobatto_set are between 2 and 20.\n");
+        log_and_throw_error<std::domain_error>(
+            "Legal values for lobatto_set are between 2 and 20.");
     }
     }
 }
@@ -706,10 +708,9 @@ lobatto_compute(int n1, std::vector<double>& x, std::vector<double>& w)
     const int n = n1 + 1;
 
     if (n < 2) {
-        std::ostringstream oss;
-        oss << "Requested Gauss Lobatto rule with " << n
-            << " points, but n>=2 is required.\n";
-        throw std::runtime_error(oss.str());
+        log_and_throw_error(
+            "Requested Gauss Lobatto rule with {} points, but n>=2 is required.",
+            n);
     }
 
     if (n <= 20) {

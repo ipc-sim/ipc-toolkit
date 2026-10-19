@@ -9,6 +9,7 @@
 #include <ipc/distance/point_plane.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/logger.hpp>
 #include <ipc/utils/profiler.hpp>
 #include <ipc/utils/save_obj.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
@@ -548,7 +549,8 @@ CollisionStencil& Candidates::operator[](size_t i)
     if (i < pv_candidates.size()) {
         return pv_candidates[i];
     }
-    throw std::out_of_range("Candidate index is out of range!");
+    log_and_throw_error<std::out_of_range>(
+        "Candidate index {} is out of range! Total candidates: {}", i, size());
 }
 
 const CollisionStencil& Candidates::operator[](size_t i) const
@@ -572,7 +574,8 @@ const CollisionStencil& Candidates::operator[](size_t i) const
     if (i < pv_candidates.size()) {
         return pv_candidates[i];
     }
-    throw std::out_of_range("Candidate index is out of range!");
+    log_and_throw_error<std::out_of_range>(
+        "Candidate index {} is out of range! Total candidates: {}", i, size());
 }
 
 bool Candidates::is_vertex_vertex(size_t i) const

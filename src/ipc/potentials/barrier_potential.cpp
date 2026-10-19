@@ -2,6 +2,7 @@
 
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/barrier/barrier_force_magnitude.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include <cmath>
 #include <stdexcept>
@@ -39,7 +40,7 @@ double BarrierPotential::force_magnitude(
     const double distance_squared, const double dmin) const
 {
     if (!m_use_squared_distance) {
-        throw std::runtime_error(
+        log_and_throw_error(
             "BarrierPotential: force_magnitude not implemented for "
             "use_squared_distance=false");
     }
@@ -60,7 +61,7 @@ VectorMax12d BarrierPotential::force_magnitude_gradient(
     const double dmin) const
 {
     if (!m_use_squared_distance) {
-        throw std::runtime_error(
+        log_and_throw_error(
             "BarrierPotential: force_magnitude_gradient not implemented for "
             "use_squared_distance=false");
     }

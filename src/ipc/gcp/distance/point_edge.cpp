@@ -2,6 +2,7 @@
 
 #include <ipc/config.hpp>
 #include <ipc/tangent/closest_point.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace ipc {
 template <typename scalar, int dim>
@@ -209,7 +210,7 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(
         grad.middleCols(2 * dim, dim).diagonal().array() = -1.;
         break;
     default:
-        throw std::runtime_error("PointEdgeDistanceType not specified!");
+        log_and_throw_error("PointEdgeDistanceType not specified!");
     }
 #endif
 
@@ -267,7 +268,7 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(
         grad.middleCols(2 * dim, dim).diagonal().array() = -1.;
         break;
     default:
-        throw std::runtime_error("PointEdgeDistanceType not specified!");
+        log_and_throw_error("PointEdgeDistanceType not specified!");
     }
 #endif
 

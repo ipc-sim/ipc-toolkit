@@ -3,6 +3,7 @@
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/friction/smooth_mu.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/logger.hpp>
 #include <ipc/utils/profiler.hpp>
 
 #include <tbb/blocked_range.h>
@@ -467,7 +468,8 @@ TangentialCollision& TangentialCollisions::operator[](size_t i)
     if (i < pv_collisions.size()) {
         return pv_collisions[i];
     }
-    throw std::out_of_range("Friction collision index is out of range!");
+    log_and_throw_error<std::out_of_range>(
+        "Friction collision index is out of range!");
 }
 
 const TangentialCollision& TangentialCollisions::operator[](size_t i) const
@@ -491,7 +493,8 @@ const TangentialCollision& TangentialCollisions::operator[](size_t i) const
     if (i < pv_collisions.size()) {
         return pv_collisions[i];
     }
-    throw std::out_of_range("Friction collision index is out of range!");
+    log_and_throw_error<std::out_of_range>(
+        "Friction collision index is out of range!");
 }
 
 } // namespace ipc

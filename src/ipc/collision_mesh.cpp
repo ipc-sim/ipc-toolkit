@@ -391,14 +391,13 @@ namespace {
         const char* name)
     {
         if (areas.size() != expected_size) {
-            throw std::invalid_argument(
-                fmt::format(
-                    "{} has size {} but expected {}", name, areas.size(),
-                    expected_size));
+            log_and_throw_error<std::invalid_argument>(
+                "{} has size {} but expected {}", name, areas.size(),
+                expected_size);
         }
         if (!areas.allFinite() || (areas.array() < 0).any()) {
-            throw std::invalid_argument(
-                fmt::format("{} must be finite and non-negative", name));
+            log_and_throw_error<std::invalid_argument>(
+                "{} must be finite and non-negative", name);
         }
     }
 } // namespace
@@ -408,7 +407,7 @@ void CollisionMesh::set_vertex_areas(
 {
     check_areas(vertex_areas, num_vertices(), "vertex_areas");
     if (are_area_jacobians_initialized()) {
-        throw std::runtime_error(
+        log_and_throw_error(
             "Cannot set custom vertex areas after init_area_jacobians(): the area Jacobians would no longer match.");
     }
     m_vertex_areas = vertex_areas;
@@ -419,7 +418,7 @@ void CollisionMesh::set_edge_areas(Eigen::ConstRef<Eigen::VectorXd> edge_areas)
 {
     check_areas(edge_areas, num_edges(), "edge_areas");
     if (are_area_jacobians_initialized()) {
-        throw std::runtime_error(
+        log_and_throw_error(
             "Cannot set custom edge areas after init_area_jacobians(): the area Jacobians would no longer match.");
     }
     m_edge_areas = edge_areas;
@@ -429,7 +428,7 @@ void CollisionMesh::set_edge_areas(Eigen::ConstRef<Eigen::VectorXd> edge_areas)
 void CollisionMesh::init_area_jacobians()
 {
     if (m_has_custom_areas) {
-        throw std::runtime_error(
+        log_and_throw_error(
             "Cannot initialize area Jacobians after setting custom areas: shape derivatives are not supported with custom areas.");
     }
 
@@ -617,7 +616,7 @@ Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
             if (search != edge_map.end()) {
                 faces_to_edges(fi, fj) = search->second;
             } else {
-                throw std::runtime_error("Unable to find edge!");
+                log_and_throw_error("Unable to find edge!");
             }
         }
     }

@@ -2,6 +2,7 @@
 
 #include <ipc/utils/gradient_assembler.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
@@ -332,8 +333,7 @@ void NormalPotential::shape_derivative(
 
     // First term:
     if (collision.weight_gradient.size() <= 0) {
-        throw std::runtime_error(
-            "Shape derivative is not computed for collisions!");
+        log_and_throw_error("Shape derivative is not computed for collisions!");
     }
 
     if (collision.weight_gradient.nonZeros() > 0) {

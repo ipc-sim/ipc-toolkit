@@ -3,6 +3,7 @@
 #include <ipc/collisions/normal/normal_collisions_builder.hpp>
 #include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/logger.hpp>
 #include <ipc/utils/profiler.hpp>
 
 #include <tbb/blocked_range.h>
@@ -48,7 +49,7 @@ void NormalCollisions::build(
     // their weights, so the barrier would be over-counted. We reject these
     // candidates instead of silently returning the wrong energy.
     if (mesh.dim() == 3 && candidates.has_all_types) {
-        throw std::invalid_argument(
+        log_and_throw_error<std::invalid_argument>(
             "NormalCollisions::build: 3D candidates must be built with all_types = false");
     }
 
@@ -287,7 +288,7 @@ NormalCollision& NormalCollisions::operator[](size_t i)
     if (i < pv_collisions.size()) {
         return pv_collisions[i];
     }
-    throw std::out_of_range("Collision index is out of range!");
+    log_and_throw_error<std::out_of_range>("Collision index is out of range!");
 }
 
 const NormalCollision& NormalCollisions::operator[](size_t i) const
@@ -311,7 +312,7 @@ const NormalCollision& NormalCollisions::operator[](size_t i) const
     if (i < pv_collisions.size()) {
         return pv_collisions[i];
     }
-    throw std::out_of_range("Collision index is out of range!");
+    log_and_throw_error<std::out_of_range>("Collision index is out of range!");
 }
 
 bool NormalCollisions::is_vertex_vertex(size_t i) const

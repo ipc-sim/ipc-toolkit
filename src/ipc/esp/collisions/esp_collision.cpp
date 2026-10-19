@@ -3,6 +3,7 @@
 #include <ipc/config.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_point.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace ipc {
 
@@ -29,7 +30,7 @@ Eigen::VectorXd ESPCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
             x.segment<3>(i * 3) = X.row(vertex_id(i));
         }
     } else {
-        throw std::runtime_error("Invalid dimension!");
+        log_and_throw_error("Invalid dimension!");
     }
     return x;
 }

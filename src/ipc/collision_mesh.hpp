@@ -3,6 +3,7 @@
 #include <ipc/collision_filter.hpp>
 #include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace ipc {
 
@@ -295,7 +296,7 @@ public:
     const std::vector<std::vector<index_t>>& vertex_vertex_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Vertex-vertex adjacencies not initialized. Call init_adjacencies() first.");
         }
         return m_vertex_vertex_adjacencies;
@@ -305,7 +306,7 @@ public:
     const std::vector<std::vector<index_t>>& vertex_edge_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Vertex-edge adjacencies not initialized. Call init_adjacencies() first.");
         }
         return m_vertex_edge_adjacencies;
@@ -315,7 +316,7 @@ public:
     const std::vector<std::vector<index_t>>& vertex_face_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Vertex-face adjacencies not initialized. Call init_adjacencies() first.");
         }
         return m_vertex_face_adjacencies;
@@ -325,7 +326,7 @@ public:
     const std::vector<std::vector<index_t>>& edge_vertex_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Edge-vertex adjacencies not initialized. Call init_adjacencies() first.");
         }
         return m_edge_vertex_adjacencies;
@@ -371,7 +372,7 @@ public:
     vertex_area_gradient(const size_t vi) const
     {
         if (!are_area_jacobians_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Vertex area Jacobian not initialized. Call init_area_jacobians() first.");
         }
         return m_vertex_area_jacobian[vi];
@@ -396,7 +397,7 @@ public:
     const Eigen::SparseVector<double>& edge_area_gradient(const size_t ei) const
     {
         if (!are_area_jacobians_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Edge area Jacobian not initialized. Call init_area_jacobians() first.");
         }
         return m_edge_area_jacobian[ei];

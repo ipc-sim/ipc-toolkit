@@ -3,6 +3,7 @@
 #include "point_edge.hpp"
 
 #include <ipc/tangent/closest_point.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace ipc {
 
@@ -139,7 +140,7 @@ point_triangle_closest_point_direction_grad(
         break;
 
     default:
-        throw std::invalid_argument(
+        log_and_throw_error<std::invalid_argument>(
             "Invalid distance type for point-triangle distance!");
     }
 
@@ -227,7 +228,7 @@ point_triangle_closest_point_direction_hessian(
         break;
 
     default:
-        throw std::invalid_argument(
+        log_and_throw_error<std::invalid_argument>(
             "Invalid distance type for point-triangle distance!");
     }
 
@@ -291,7 +292,7 @@ Eigen::Vector3<scalar> point_triangle_closest_point_direction(
     }
 
     default: {
-        throw std::invalid_argument(
+        log_and_throw_error<std::invalid_argument>(
             "Invalid distance type for point-triangle distance!");
     }
     }

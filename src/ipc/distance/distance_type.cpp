@@ -250,19 +250,18 @@ void warn_degenerate_point_edge_host() noexcept
 
 void throw_invalid_distance_type_host(const char* function)
 {
-    throw std::invalid_argument(
-        fmt::format("{}: invalid distance type", function));
+    log_and_throw_error<std::invalid_argument>(
+        "{}: invalid distance type", function);
 }
 
 void throw_auto_requires_explicit_dtype_host(const char* function)
 {
-    throw std::invalid_argument(
-        fmt::format(
-            "{}: an explicit distance type is required for non-floating-point "
-            "scalars; resolving AUTO means comparing single ordered values, "
-            "which an autodiff, SIMD batch, or interval scalar does not "
-            "provide",
-            function));
+    log_and_throw_error<std::invalid_argument>(
+        "{}: an explicit distance type is required for non-floating-point "
+        "scalars; resolving AUTO means comparing single ordered values, "
+        "which an autodiff, SIMD batch, or interval scalar does not "
+        "provide",
+        function);
 }
 
 #endif // !__CUDACC__

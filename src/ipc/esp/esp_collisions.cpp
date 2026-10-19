@@ -5,6 +5,7 @@
 
 #include <ipc/esp/quadrature_potential.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/logger.hpp>
 #include <ipc/utils/world_bbox_diagonal_length.hpp>
 
 #include <tbb/blocked_range.h>
@@ -31,9 +32,8 @@ void ESPCollisions::build(
     assert(static_cast<size_t>(vertices.rows()) == mesh.num_vertices());
 
     if (mesh.dim() == 2 && params.quad_order < 1) {
-        throw std::invalid_argument(
-            fmt::format(
-                "quad_order {} must be at least 1 in 2D.", params.quad_order));
+        log_and_throw_error<std::invalid_argument>(
+            "quad_order {} must be at least 1 in 2D.", params.quad_order);
     }
 
     // In 3D, ESP corrects each point's face contacts by inclusion-exclusion
@@ -42,7 +42,7 @@ void ESPCollisions::build(
     // them, the energy is still finite but wrong (over-counted, or even
     // attractive), so we reject candidates that were not built with all_types.
     if (mesh.dim() == 3 && !_candidates.has_all_types) {
-        throw std::invalid_argument(
+        log_and_throw_error<std::invalid_argument>(
             "ESPCollisions::build: 3D candidates must be built with all_types = true");
     }
 
@@ -219,12 +219,11 @@ void ESPCollisions::clear()
 void ESPCollisions::check_quadrature(const ESPParameters& params) const
 {
     if (m_dim == 2 && params.quad_order != m_quad_order) {
-        throw std::invalid_argument(
-            fmt::format(
-                "ESPCollisions were built with quad_order {}, but the "
-                "parameters use quad_order {}. Use the same ESPParameters to "
-                "build the collisions and to evaluate them.",
-                m_quad_order, params.quad_order));
+        log_and_throw_error<std::invalid_argument>(
+            "ESPCollisions were built with quad_order {}, but the "
+            "parameters use quad_order {}. Use the same ESPParameters to "
+            "build the collisions and to evaluate them.",
+            m_quad_order, params.quad_order);
     }
 
     if (m_dim == 3) {
@@ -236,14 +235,13 @@ void ESPCollisions::check_quadrature(const ESPParameters& params) const
                                   && a.weight == b.weight;
                           });
         if (!same_rule) {
-            throw std::invalid_argument(
-                fmt::format(
-                    "ESPCollisions were built with a {}-point face quadrature "
-                    "rule, but the parameters use a different {}-point rule. "
-                    "Use the same ESPParameters to build the collisions and "
-                    "to evaluate them, and call set_quad_rule() before "
-                    "constructing ESPPotential, which copies the parameters.",
-                    m_face_quad_rule.size(), rule.size()));
+            log_and_throw_error<std::invalid_argument>(
+                "ESPCollisions were built with a {}-point face quadrature "
+                "rule, but the parameters use a different {}-point rule. "
+                "Use the same ESPParameters to build the collisions and "
+                "to evaluate them, and call set_quad_rule() before "
+                "constructing ESPPotential, which copies the parameters.",
+                m_face_quad_rule.size(), rule.size());
         }
     }
 }

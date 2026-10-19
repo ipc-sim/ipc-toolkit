@@ -7,6 +7,7 @@
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
@@ -71,7 +72,7 @@ void GCPCollisions::compute_adaptive_dhat(
             break;
         }
         default: {
-            throw std::runtime_error("Invalid collision type!");
+            log_and_throw_error("Invalid collision type!");
         }
         }
     }
@@ -216,7 +217,7 @@ GCPCollision& GCPCollisions::operator[](size_t i)
     if (i < collisions.size()) {
         return *collisions[i];
     }
-    throw std::out_of_range("Collision index is out of range!");
+    log_and_throw_error<std::out_of_range>("Collision index is out of range!");
 }
 
 const GCPCollision& GCPCollisions::operator[](size_t i) const
@@ -224,7 +225,7 @@ const GCPCollision& GCPCollisions::operator[](size_t i) const
     if (i < collisions.size()) {
         return *collisions[i];
     }
-    throw std::out_of_range("Collision index is out of range!");
+    log_and_throw_error<std::out_of_range>("Collision index is out of range!");
 }
 
 std::string GCPCollisions::to_string(

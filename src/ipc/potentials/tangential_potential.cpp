@@ -2,6 +2,7 @@
 
 #include <ipc/utils/gradient_assembler.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
@@ -120,7 +121,7 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
             const TangentialCollision& collision = collisions[i];
             assert(collision.weight_gradient.size() == rest_positions.size());
             if (collision.weight_gradient.size() != rest_positions.size()) {
-                throw std::runtime_error(
+                log_and_throw_error(
                     "Shape derivative is not computed for friction collision!");
             }
 

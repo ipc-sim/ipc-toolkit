@@ -3,6 +3,7 @@
 #include <ipc/collisions/normal/normal_collision.hpp>
 #include <ipc/gcp/common.hpp>
 #include <ipc/gcp/distance/primitive_distance.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace ipc {
 
@@ -112,7 +113,7 @@ public:
         } else if (idx == 1) {
             return primitive1;
         } else {
-            throw std::runtime_error("Invalid index in gcp_collision!");
+            log_and_throw_error("Invalid index in gcp_collision!");
         }
     }
 

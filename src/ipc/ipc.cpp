@@ -5,6 +5,7 @@
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/geometry/intersection.hpp>
+#include <ipc/utils/logger.hpp>
 #include <ipc/utils/world_bbox_diagonal_length.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
@@ -63,7 +64,7 @@ double compute_collision_free_stepsize(
 #ifdef IPC_TOOLKIT_WITH_CUDA
     if (broad_phase->name() == "SweepAndTiniestQueue") {
         if (vertices_t0.cols() != 3) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Sweep and Tiniest Queue is only supported in 3D!");
         }
         // Extract tolerance and max_iterations from narrow_phase_ccd if it's

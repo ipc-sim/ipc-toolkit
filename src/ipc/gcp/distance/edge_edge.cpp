@@ -4,6 +4,7 @@
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/tangent/closest_point.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include <unsupported/Eigen/KroneckerProduct>
 
@@ -305,7 +306,7 @@ Eigen::Vector3<scalar> edge_edge_closest_point_direction(
         return line_line_closest_point_direction<scalar>(ea0, ea1, eb0, eb1);
 
     default:
-        throw std::invalid_argument(
+        log_and_throw_error<std::invalid_argument>(
             "Invalid distance type for edge-edge distance!");
     }
 }
@@ -381,7 +382,7 @@ Eigen::Matrix<scalar, 3, 2> edge_edge_closest_point_pairs(
         break;
 
     default:
-        throw std::invalid_argument(
+        log_and_throw_error<std::invalid_argument>(
             "Invalid distance type for edge-edge distance!");
     }
 

@@ -3,6 +3,7 @@
 #include "esp_primitives.hpp"
 
 #include <ipc/barrier/barrier.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include <array>
 
@@ -55,7 +56,7 @@ public:
         } else if (idx == 1) {
             return m_primitive_b.id();
         } else {
-            throw std::runtime_error("Invalid index in ESP collision!");
+            log_and_throw_error("Invalid index in ESP collision!");
         }
     }
 

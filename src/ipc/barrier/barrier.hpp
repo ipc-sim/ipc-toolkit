@@ -5,6 +5,7 @@
 #pragma once
 
 #include <ipc/config.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include <cmath>
 #include <memory>
@@ -428,9 +429,9 @@ public:
     explicit InversePowerBarrier(const double power) : m_power(power)
     {
         if (!std::isfinite(power) || power <= 0) {
-            throw std::invalid_argument(
-                "InversePowerBarrier power " + std::to_string(power)
-                + " must be positive and finite.");
+            log_and_throw_error<std::invalid_argument>(
+                "InversePowerBarrier power {} must be positive and finite.",
+                power);
         }
     }
 
@@ -599,9 +600,9 @@ private:
     void validate_alpha() const
     {
         if (!std::isfinite(m_alpha) || m_alpha <= 0) {
-            throw std::invalid_argument(
-                "NearFarBarrier alpha " + std::to_string(m_alpha)
-                + " must be positive and finite.");
+            log_and_throw_error<std::invalid_argument>(
+                "NearFarBarrier alpha {} must be positive and finite.",
+                m_alpha);
         }
     }
 
