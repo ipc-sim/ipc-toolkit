@@ -5,13 +5,18 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <ipc/esp/arbitrary_point_bvh.hpp>
 #include <ipc/esp/arbitrary_point_esp.hpp>
 
 #include <finitediff.hpp>
 #include <igl/edges.h>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <cstdint>
+#include <numeric>
+#include <vector>
 
 using namespace ipc;
 
@@ -506,4 +511,70 @@ TEST_CASE(
     CHECK_THROWS_AS(
         ArbitraryPointESP<2>(fx3.mesh, ESPParameters(fx3.dhat)),
         std::runtime_error);
+}
+
+TEST_CASE(
+    "Arbitrary point BVH finds every edge of a deep, graded fan",
+    "[esp_potential][arbitrary_point_esp]")
+{
+    // A fan of edges from a hub at the origin, with their centers graded
+    // toward the hub one Morton bit at a time, so the edge tree is about as
+    // deep as a Morton-code build allows. Every edge's box contains the hub,
+    // so a tiny query box there overlaps the whole tree, and the traversal
+    // has to postpone a subtree at nearly every level on the way down.
+    constexpr double CELLS = 1 << 21; // Morton cells per axis in 3D
+    const auto cell = [&](const uint64_t c) {
+        return (static_cast<double>(c) + 0.5) / CELLS;
+    };
+
+    std::vector<Eigen::RowVector3d> points { Eigen::RowVector3d::Zero() };
+    std::vector<std::array<int, 2>> fan;
+    const auto add_edge = [&](const Eigen::RowVector3d& endpoint) {
+        points.push_back(endpoint);
+        fan.push_back({ { 0, static_cast<int>(points.size()) - 1 } });
+    };
+    // Each edge's center (half its endpoint) lies in Morton cell (x, y, z).
+    const auto add_edge_in_cell = [&](uint64_t x, uint64_t y, uint64_t z) {
+        add_edge(2 * Eigen::RowVector3d(cell(x), cell(y), cell(z)));
+    };
+    for (int i = 0; i < 20; ++i) {
+        const uint64_t c = uint64_t(1) << i;
+        add_edge_in_cell(c, 0, 0);
+        add_edge_in_cell(c, 0, 1);
+        add_edge_in_cell(0, c, 0);
+        add_edge_in_cell(0, c, 1);
+        add_edge_in_cell(0, 0, i == 0 ? 1 : c);
+        add_edge_in_cell(0, 0, i == 0 ? 1 : c + 1);
+    }
+    // Short edges whose centers share the hub's cell, so ties in the Morton
+    // code add further levels.
+    for (int k = 0; k < 64; ++k) {
+        add_edge(
+            Eigen::RowVector3d(cell(0) * (1 + 0.01 * k), cell(0), cell(0)));
+    }
+    // An isolated vertex that fixes the Morton domain to the unit cube.
+    points.emplace_back(1, 1, 1);
+
+    Eigen::MatrixXd V(points.size(), 3);
+    for (int i = 0; i < V.rows(); ++i) {
+        V.row(i) = points[i];
+    }
+    Eigen::MatrixXi E(fan.size(), 2);
+    for (int i = 0; i < E.rows(); ++i) {
+        E.row(i) << fan[i][0], fan[i][1];
+    }
+    const CollisionMesh mesh(V, E, Eigen::MatrixXi(0, 3));
+
+    ArbitraryPointBVH bvh;
+    bvh.update(V, mesh);
+
+    std::vector<index_t> vertex_ids, edge_ids, face_ids;
+    bvh.query_point(
+        Eigen::RowVector3d::Zero(), 1e-9, vertex_ids, edge_ids, face_ids);
+
+    std::vector<index_t> all_edges(E.rows());
+    std::iota(all_edges.begin(), all_edges.end(), 0);
+    std::sort(edge_ids.begin(), edge_ids.end());
+    CHECK(edge_ids == all_edges);
+    CHECK(face_ids.empty());
 }

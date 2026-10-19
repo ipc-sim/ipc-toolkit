@@ -11,10 +11,10 @@ namespace ipc {
 /// per vertex configuration and queried many times for arbitrary points in
 /// space.
 ///
-/// Wraps ipc::LBVH, reusing its Node/Nodes data structures and build() as
-/// they are; adds the point-vs-tree query LBVH's public API does not expose
-/// (LBVH's own traversal is a file-local template, not part of its public
-/// interface).
+/// Wraps ipc::LBVH, reusing its Node/Nodes data structures, build(), and
+/// traversal (ipc::details::traverse_lbvh) as they are; adds the
+/// point-vs-tree query that LBVH's public API, which only finds candidates
+/// between the mesh's own primitives, does not expose.
 ///
 /// The tree is built with zero box inflation (mirroring the pattern used by
 /// the potential-sampling tools this class is ported from): the query

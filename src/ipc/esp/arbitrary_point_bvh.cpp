@@ -1,6 +1,7 @@
 #include "arbitrary_point_bvh.hpp"
 
-#include <cassert>
+#include <ipc/broad_phase/details/lbvh_traverse.hpp>
+
 #include <vector>
 
 namespace ipc {
@@ -29,11 +30,11 @@ namespace {
         return n;
     }
 
-    /// @brief Stack-based traversal of a single LBVH tree against one query
-    /// box, collecting the primitive ids of every leaf whose AABB
-    /// intersects the query. LBVH's own traversal (lbvh.cpp) is a
-    /// file-local template used for tree-vs-tree queries; this is the
-    /// tree-vs-single-external-box equivalent, which LBVH does not expose.
+    /// @brief Collect the primitive ids of every leaf of one LBVH tree whose
+    /// AABB intersects the query box. We reuse LBVH's own descent
+    /// (details::traverse_lbvh), whose fixed-size stack is sized for the
+    /// deepest tree a Morton-code build can produce and throws instead of
+    /// overflowing.
     void query_point_vs_bvh(
         const LBVH::Nodes& bvh,
         const LBVH::Node& query,
@@ -43,51 +44,13 @@ namespace {
             return;
         }
 
-        // A single-primitive tree is one node, and that node is a leaf, so
-        // the descend-from-an-inner-root loop below would read the union's
-        // left/right through a leaf. Easy to hit in 2D (a one-edge mesh).
-        if (bvh.size() == 1) {
-            if (bvh[0].intersects(query)) {
-                hits.push_back(bvh[0].primitive_id);
-            }
-            return;
-        }
-
-        constexpr int MAX_STACK = 64;
-        int stack[MAX_STACK];
-        int sp = 0;
-        stack[sp++] = LBVH::Node::INVALID_POINTER;
-
-        int node_idx = 0; // root is always index 0
-        do {
-            const LBVH::Node& node = bvh[node_idx];
-            assert(node.is_inner());
-
-            const LBVH::Node& cl = bvh[node.left];
-            const LBVH::Node& cr = bvh[node.right];
-            const bool hl = cl.intersects(query);
-            const bool hr = cr.intersects(query);
-
-            if (hl && cl.is_leaf()) {
-                hits.push_back(cl.primitive_id);
-            }
-            if (hr && cr.is_leaf()) {
-                hits.push_back(cr.primitive_id);
-            }
-
-            const bool tl = hl && !cl.is_leaf();
-            const bool tr = hr && !cr.is_leaf();
-
-            if (!tl && !tr) {
-                node_idx = stack[--sp];
-            } else {
-                node_idx = tl ? node.left : node.right;
-                if (tl && tr) {
-                    assert(sp < MAX_STACK);
-                    stack[sp++] = node.right;
-                }
-            }
-        } while (node_idx != LBVH::Node::INVALID_POINTER);
+        details::traverse_lbvh</*triangular=*/false>(
+            /*query_leaf_idx=*/-1, bvh.data(), static_cast<int>(bvh.size()),
+            /*target_rightmost=*/nullptr,
+            [&](const LBVH::Node& node) { return node.intersects(query); },
+            [&](const LBVH::Node& leaf, int /*leaf_idx*/, bool /*mask*/) {
+                hits.push_back(leaf.primitive_id);
+            });
     }
 
 } // namespace
