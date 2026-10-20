@@ -62,6 +62,7 @@ void ESPCollisionDict<pType, DIM>::initialize(
     // directly.
     assert(n_total_vertices > 0);
     const auto global_dof = [n_total_vertices](index_t vid, index_t d) {
+        (void)n_total_vertices; // Suppress unused parameter warning
         assert(vid < n_total_vertices);
         if constexpr (VERTEX_DERIVATIVE_LAYOUT == Eigen::RowMajor) {
             return vid * DIMENSION + d;
