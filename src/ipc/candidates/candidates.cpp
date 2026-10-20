@@ -639,6 +639,9 @@ void Candidates::clear()
 
 CollisionStencil& Candidates::operator[](size_t i)
 {
+    // We keep the requested index for the error message, since i is reduced
+    // below as we walk past each list of candidates.
+    const size_t requested = i;
     if (i < vv_candidates.size()) {
         return vv_candidates[i];
     }
@@ -659,11 +662,15 @@ CollisionStencil& Candidates::operator[](size_t i)
         return pv_candidates[i];
     }
     log_and_throw_error<std::out_of_range>(
-        "Candidate index {} is out of range! Total candidates: {}", i, size());
+        "Candidate index {} is out of range! Total candidates: {}", requested,
+        size());
 }
 
 const CollisionStencil& Candidates::operator[](size_t i) const
 {
+    // We keep the requested index for the error message, since i is reduced
+    // below as we walk past each list of candidates.
+    const size_t requested = i;
     if (i < vv_candidates.size()) {
         return vv_candidates[i];
     }
@@ -684,7 +691,8 @@ const CollisionStencil& Candidates::operator[](size_t i) const
         return pv_candidates[i];
     }
     log_and_throw_error<std::out_of_range>(
-        "Candidate index {} is out of range! Total candidates: {}", i, size());
+        "Candidate index {} is out of range! Total candidates: {}", requested,
+        size());
 }
 
 bool Candidates::is_vertex_vertex(size_t i) const

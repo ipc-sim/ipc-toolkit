@@ -12,6 +12,7 @@
 #include <cmath>
 #include <functional>
 #include <set>
+#include <string>
 #include <vector>
 
 using namespace ipc;
@@ -74,7 +75,11 @@ TEST_CASE("Candidates", "[candidates]")
         FAIL("Should have thrown an exception");
     } catch (const std::out_of_range& e) {
         SUCCEED("Exception thrown");
-        CHECK(e.what() == std::string("Candidate index is out of range!"));
+        CHECK(
+            e.what()
+            == "Candidate index " + std::to_string(candidates.size())
+                + " is out of range! Total candidates: "
+                + std::to_string(candidates.size()));
     } catch (...) {
         FAIL("Uknown exception thrown");
     }
@@ -107,7 +112,11 @@ TEST_CASE("Candidates", "[candidates]")
         FAIL("Should have thrown an exception");
     } catch (const std::out_of_range& e) {
         SUCCEED("Exception thrown");
-        CHECK(e.what() == std::string("Candidate index is out of range!"));
+        CHECK(
+            e.what()
+            == "Candidate index " + std::to_string(candidates.size())
+                + " is out of range! Total candidates: "
+                + std::to_string(candidates.size()));
     } catch (...) {
         FAIL("Uknown exception thrown");
     }
