@@ -29,128 +29,6 @@
 namespace ipc {
 
 namespace {
-    /// @brief The nine ordered relations between primitive types. For example,
-    /// EV maps an edge id to the vertices near it, and VE maps a vertex id to
-    /// the edges near it.
-    enum Relation { VV, VE, VF, EV, EE, EF, FV, FE, FF, NUM_RELATIONS };
-
-    using IdPairs = std::vector<std::pair<index_t, index_t>>;
-
-    /// @brief Neighbor lists for ids 0 to n - 1, stored back to back.
-    ///
-    /// We use this compressed sparse row layout instead of a hash map of
-    /// std::set because every query only iterates a row. A row is then a
-    /// contiguous sorted range with no per-id allocation, and ids are dense
-    /// mesh indices, so a lookup is two array reads instead of a hash.
-    struct AdjacencyCsr {
-        std::vector<index_t> offsets { 0 };
-        std::vector<index_t> ids;
-
-        /// @brief The sorted neighbors of id, or an empty range if id has no
-        /// row.
-        std::pair<const index_t*, const index_t*> row(const index_t id) const
-        {
-            if (id < 0 || size_t(id) + 1 >= offsets.size()) {
-                return { nullptr, nullptr };
-            }
-            return { ids.data() + offsets[size_t(id)],
-                     ids.data() + offsets[size_t(id) + 1] };
-        }
-
-        /// @brief Group (row, neighbor) pairs by row, with each row sorted and
-        /// free of duplicates.
-        ///
-        /// Instead of sorting all the pairs at once, we count the pairs per
-        /// row, scatter them into place, and sort each row on its own. Rows are
-        /// short, so this builds several times faster than one global sort
-        /// (we measured 780k candidates on cloth-ball) and is linear apart
-        /// from the tiny per-row sorts.
-        static AdjacencyCsr from_pairs(const IdPairs& pairs)
-        {
-            index_t num_rows = 0;
-            for (const auto& [row, id] : pairs) {
-                num_rows = std::max(num_rows, row + 1);
-            }
-
-            std::vector<index_t> start(size_t(num_rows) + 1, 0);
-            for (const auto& [row, id] : pairs) {
-                ++start[size_t(row) + 1];
-            }
-            std::partial_sum(start.begin(), start.end(), start.begin());
-
-            std::vector<index_t> scattered(pairs.size());
-            std::vector<index_t> cursor(start.begin(), start.end() - 1);
-            for (const auto& [row, id] : pairs) {
-                scattered[size_t(cursor[size_t(row)]++)] = id;
-            }
-
-            AdjacencyCsr csr;
-            csr.offsets.assign(size_t(num_rows) + 1, 0);
-            csr.ids.reserve(scattered.size());
-            for (size_t r = 0; r < size_t(num_rows); ++r) {
-                const auto first = scattered.begin() + start[r];
-                auto last = scattered.begin() + start[r + 1];
-                std::sort(first, last);
-                last = std::unique(first, last);
-                csr.ids.insert(csr.ids.end(), first, last);
-                csr.offsets[r + 1] = index_t(csr.ids.size());
-            }
-            return csr;
-        }
-    };
-
-    void sort_unique(std::vector<index_t>& ids)
-    {
-        std::sort(ids.begin(), ids.end());
-        ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
-    }
-
-    /// @brief Remove id from a sorted, duplicate-free list if it is there.
-    void erase_sorted(std::vector<index_t>& ids, const index_t id)
-    {
-        const auto it = std::lower_bound(ids.begin(), ids.end(), id);
-        if (it != ids.end() && *it == id) {
-            ids.erase(it);
-        }
-    }
-
-    void append(
-        std::vector<index_t>& ids,
-        const std::pair<const index_t*, const index_t*> range)
-    {
-        ids.insert(ids.end(), range.first, range.second);
-    }
-
-    void append(std::vector<index_t>& ids, const std::vector<index_t>& more)
-    {
-        ids.insert(ids.end(), more.begin(), more.end());
-    }
-} // namespace
-
-// Definition of the pimpl declared in candidates.hpp. Kept in the .cpp so the
-// public header does not expose the storage layout.
-struct Candidates::AdjacencySets {
-    explicit AdjacencySets(const Candidates& candidates);
-
-    /// @brief The neighbors of a primitive.
-    ///
-    /// The neighbors of a vertex among edges (VE) and faces (VF) are exactly
-    /// the stored candidates, so we return a view of them. Every other relation
-    /// also merges in the neighbors that come from the mesh topology, which
-    /// builds a new list. The mesh is only needed for those, so it may be null
-    /// for VE and VF.
-    AdjList
-    query(Relation relation, const CollisionMesh* mesh, index_t id) const;
-
-    /// @brief The sorted neighbors of a primitive, merged with mesh topology.
-    std::vector<index_t>
-    merged(Relation relation, const CollisionMesh& mesh, index_t id) const;
-
-    /// @brief The candidate partners of each primitive, per relation.
-    std::array<AdjacencyCsr, NUM_RELATIONS> stored;
-};
-
-namespace {
     // Pad codim_edges because remove_unreferenced requires a N×3 matrix.
     Eigen::MatrixXi pad_edges(Eigen::ConstRef<Eigen::MatrixXi> E)
     {
@@ -868,13 +746,139 @@ bool Candidates::save_obj(
     return true;
 }
 
+// ============================================================================
+// Adjacency Sets
+// ============================================================================
+
+namespace {
+    /// @brief The nine ordered relations between primitive types. For example,
+    /// EV maps an edge id to the vertices near it, and VE maps a vertex id to
+    /// the edges near it.
+    enum Relation : char { VV, VE, VF, EV, EE, EF, FV, FE, FF, NUM_RELATIONS };
+
+    using IdPairs = std::vector<std::pair<index_t, index_t>>;
+
+    /// @brief Neighbor lists for ids 0 to n - 1, stored back to back.
+    ///
+    /// We use this compressed sparse row layout instead of a hash map of
+    /// std::set because every query only iterates a row. A row is then a
+    /// contiguous sorted range with no per-id allocation, and ids are dense
+    /// mesh indices, so a lookup is two array reads instead of a hash.
+    struct AdjacencyCSR {
+        std::vector<index_t> offsets { 0 };
+        std::vector<index_t> ids;
+
+        /// @brief The sorted neighbors of id, or an empty range if id has no
+        /// row.
+        std::pair<const index_t*, const index_t*> row(const index_t id) const
+        {
+            if (id < 0 || size_t(id) + 1 >= offsets.size()) {
+                return { nullptr, nullptr };
+            }
+            return { ids.data() + offsets[size_t(id)],
+                     ids.data() + offsets[size_t(id) + 1] };
+        }
+
+        /// @brief Group (row, neighbor) pairs by row, with each row sorted and
+        /// free of duplicates.
+        ///
+        /// Instead of sorting all the pairs at once, we count the pairs per
+        /// row, scatter them into place, and sort each row on its own. Rows are
+        /// short, so this builds several times faster than one global sort
+        /// (we measured 780k candidates on cloth-ball) and is linear apart
+        /// from the tiny per-row sorts.
+        static AdjacencyCSR from_pairs(const IdPairs& pairs)
+        {
+            index_t num_rows = 0;
+            for (const auto& [row, id] : pairs) {
+                num_rows = std::max(num_rows, row + 1);
+            }
+
+            std::vector<index_t> start(size_t(num_rows) + 1, 0);
+            for (const auto& [row, id] : pairs) {
+                ++start[size_t(row) + 1];
+            }
+            std::partial_sum(start.begin(), start.end(), start.begin());
+
+            std::vector<index_t> scattered(pairs.size());
+            std::vector<index_t> cursor(start.begin(), start.end() - 1);
+            for (const auto& [row, id] : pairs) {
+                scattered[size_t(cursor[size_t(row)]++)] = id;
+            }
+
+            AdjacencyCSR csr;
+            csr.offsets.assign(size_t(num_rows) + 1, 0);
+            csr.ids.reserve(scattered.size());
+            for (size_t r = 0; r < size_t(num_rows); ++r) {
+                const auto first = scattered.begin() + start[r];
+                auto last = scattered.begin() + start[r + 1];
+                std::sort(first, last);
+                last = std::unique(first, last);
+                csr.ids.insert(csr.ids.end(), first, last);
+                csr.offsets[r + 1] = index_t(csr.ids.size());
+            }
+            return csr;
+        }
+    };
+
+    void sort_unique(std::vector<index_t>& ids)
+    {
+        std::sort(ids.begin(), ids.end());
+        ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
+    }
+
+    /// @brief Remove id from a sorted, duplicate-free list if it is there.
+    void erase_sorted(std::vector<index_t>& ids, const index_t id)
+    {
+        const auto it = std::lower_bound(ids.begin(), ids.end(), id);
+        if (it != ids.end() && *it == id) {
+            ids.erase(it);
+        }
+    }
+
+    void append(
+        std::vector<index_t>& ids,
+        const std::pair<const index_t*, const index_t*> range)
+    {
+        ids.insert(ids.end(), range.first, range.second);
+    }
+
+    void append(std::vector<index_t>& ids, const std::vector<index_t>& more)
+    {
+        ids.insert(ids.end(), more.begin(), more.end());
+    }
+} // namespace
+
+// Definition of the pimpl declared in candidates.hpp. Kept in the .cpp so the
+// public header does not expose the storage layout.
+struct Candidates::AdjacencySets {
+    explicit AdjacencySets(const Candidates& candidates);
+
+    /// @brief The neighbors of a primitive.
+    ///
+    /// The neighbors of a vertex among edges (VE) and faces (VF) are exactly
+    /// the stored candidates, so we return a view of them. Every other relation
+    /// also merges in the neighbors that come from the mesh topology, which
+    /// builds a new list. The mesh is only needed for those, so it may be null
+    /// for VE and VF.
+    AdjacencyList
+    query(Relation relation, const CollisionMesh* mesh, index_t id) const;
+
+    /// @brief The sorted neighbors of a primitive, merged with mesh topology.
+    std::vector<index_t>
+    merged(Relation relation, const CollisionMesh& mesh, index_t id) const;
+
+    /// @brief The candidate partners of each primitive, per relation.
+    std::array<AdjacencyCSR, NUM_RELATIONS> stored;
+};
+
 Candidates::AdjacencySets::AdjacencySets(const Candidates& candidates)
 {
     // We build one relation at a time so only one pair list is alive at once.
     const auto build = [&](const Relation relation, const auto& fill) {
         IdPairs pairs;
         fill(pairs);
-        stored[relation] = AdjacencyCsr::from_pairs(pairs);
+        stored[relation] = AdjacencyCSR::from_pairs(pairs);
     };
 
     build(VV, [&](IdPairs& pairs) {
@@ -936,15 +940,15 @@ Candidates::AdjacencySets::AdjacencySets(const Candidates& candidates)
     });
 }
 
-AdjList Candidates::AdjacencySets::query(
+AdjacencyList Candidates::AdjacencySets::query(
     const Relation relation, const CollisionMesh* mesh, const index_t id) const
 {
     if (relation == VE || relation == VF) {
         const auto [first, last] = stored[relation].row(id);
-        return AdjList::view(first, size_t(last - first));
+        return AdjacencyList::view(first, size_t(last - first));
     }
     assert(mesh != nullptr);
-    return AdjList(merged(relation, *mesh, id));
+    return AdjacencyList(merged(relation, *mesh, id));
 }
 
 std::vector<index_t> Candidates::AdjacencySets::merged(
@@ -1047,43 +1051,43 @@ void Candidates::convert_candidates_to_sets()
     m_sets = std::make_shared<AdjacencySets>(*this);
 }
 
-AdjList Candidates::vv_set(const CollisionMesh& mesh, index_t id) const
+AdjacencyList Candidates::vv_set(const CollisionMesh& mesh, index_t id) const
 {
-    return m_sets ? m_sets->query(VV, &mesh, id) : AdjList();
+    return m_sets ? m_sets->query(VV, &mesh, id) : AdjacencyList();
 }
-AdjList Candidates::ve_set(index_t id) const
+AdjacencyList Candidates::ve_set(index_t id) const
 {
-    return m_sets ? m_sets->query(VE, nullptr, id) : AdjList();
+    return m_sets ? m_sets->query(VE, nullptr, id) : AdjacencyList();
 }
-AdjList Candidates::vf_set(index_t id) const
+AdjacencyList Candidates::vf_set(index_t id) const
 {
-    return m_sets ? m_sets->query(VF, nullptr, id) : AdjList();
-}
-
-AdjList Candidates::ev_set(const CollisionMesh& mesh, index_t id) const
-{
-    return m_sets ? m_sets->query(EV, &mesh, id) : AdjList();
-}
-AdjList Candidates::ee_set(const CollisionMesh& mesh, index_t id) const
-{
-    return m_sets ? m_sets->query(EE, &mesh, id) : AdjList();
-}
-AdjList Candidates::ef_set(const CollisionMesh& mesh, index_t id) const
-{
-    return m_sets ? m_sets->query(EF, &mesh, id) : AdjList();
+    return m_sets ? m_sets->query(VF, nullptr, id) : AdjacencyList();
 }
 
-AdjList Candidates::fv_set(const CollisionMesh& mesh, index_t id) const
+AdjacencyList Candidates::ev_set(const CollisionMesh& mesh, index_t id) const
 {
-    return m_sets ? m_sets->query(FV, &mesh, id) : AdjList();
+    return m_sets ? m_sets->query(EV, &mesh, id) : AdjacencyList();
 }
-AdjList Candidates::fe_set(const CollisionMesh& mesh, index_t id) const
+AdjacencyList Candidates::ee_set(const CollisionMesh& mesh, index_t id) const
 {
-    return m_sets ? m_sets->query(FE, &mesh, id) : AdjList();
+    return m_sets ? m_sets->query(EE, &mesh, id) : AdjacencyList();
 }
-AdjList Candidates::ff_set(const CollisionMesh& mesh, index_t id) const
+AdjacencyList Candidates::ef_set(const CollisionMesh& mesh, index_t id) const
 {
-    return m_sets ? m_sets->query(FF, &mesh, id) : AdjList();
+    return m_sets ? m_sets->query(EF, &mesh, id) : AdjacencyList();
+}
+
+AdjacencyList Candidates::fv_set(const CollisionMesh& mesh, index_t id) const
+{
+    return m_sets ? m_sets->query(FV, &mesh, id) : AdjacencyList();
+}
+AdjacencyList Candidates::fe_set(const CollisionMesh& mesh, index_t id) const
+{
+    return m_sets ? m_sets->query(FE, &mesh, id) : AdjacencyList();
+}
+AdjacencyList Candidates::ff_set(const CollisionMesh& mesh, index_t id) const
+{
+    return m_sets ? m_sets->query(FF, &mesh, id) : AdjacencyList();
 }
 
 } // namespace ipc

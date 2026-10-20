@@ -18,7 +18,7 @@
 using namespace ipc;
 
 namespace {
-std::vector<index_t> ids(const AdjList& list)
+std::vector<index_t> ids(const AdjacencyList& list)
 {
     return std::vector<index_t>(list.begin(), list.end());
 }
@@ -29,7 +29,7 @@ std::vector<index_t> ids(const std::set<index_t>& set)
 }
 
 // Whether the list is strictly ascending, i.e. sorted and free of duplicates.
-bool is_sorted_unique(const AdjList& list)
+bool is_sorted_unique(const AdjacencyList& list)
 {
     return std::adjacent_find(list.begin(), list.end(), std::greater_equal<>())
         == list.end();
@@ -77,9 +77,9 @@ TEST_CASE("Candidates", "[candidates]")
         SUCCEED("Exception thrown");
         CHECK(
             e.what()
-            == "Candidate index " + std::to_string(candidates.size())
-                + " is out of range! Total candidates: "
-                + std::to_string(candidates.size()));
+            == fmt::format(
+                "Candidate index {} is out of range! Total candidates: {}",
+                candidates.size(), candidates.size()));
     } catch (...) {
         FAIL("Uknown exception thrown");
     }
@@ -114,9 +114,9 @@ TEST_CASE("Candidates", "[candidates]")
         SUCCEED("Exception thrown");
         CHECK(
             e.what()
-            == "Candidate index " + std::to_string(candidates.size())
-                + " is out of range! Total candidates: "
-                + std::to_string(candidates.size()));
+            == fmt::format(
+                "Candidate index {} is out of range! Total candidates: {}",
+                candidates.size(), candidates.size()));
     } catch (...) {
         FAIL("Uknown exception thrown");
     }
@@ -334,7 +334,8 @@ TEST_CASE(
         vv[v].erase(v);
     }
 
-    const auto check = [&](const AdjList& list, const std::set<index_t>& want) {
+    const auto check = [&](const AdjacencyList& list,
+                           const std::set<index_t>& want) {
         CHECK(is_sorted_unique(list));
         CHECK(ids(list) == ids(want));
     };
