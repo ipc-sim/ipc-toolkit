@@ -11,6 +11,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace ipc {
 
@@ -420,7 +421,8 @@ public:
 /// is the power parameter. The window \f$h\f$ vanishes smoothly at
 /// \f$d = \hat{d}\f$ (C² contact), ensuring \f$b(d)=0\f$ for \f$d\ge\hat{d}\f$,
 /// while \f$b(d)\to+\infty\f$ as \f$d\to 0^+\f$.
-class InversePowerBarrier : public Barrier {
+template <typename T = double>
+class InversePowerBarrier : public BarrierBase<T> {
 public:
     /// @param power The power \f$p > 0\f$ controlling the singularity at d = 0.
     /// @throws std::invalid_argument if power is not positive and finite. With
@@ -439,33 +441,32 @@ public:
     /// @param d Distance (must be > 0 for a finite value).
     /// @param dhat Activation distance of the barrier.
     /// @return The value of the barrier function at d.
-    double operator()(const double d, const double dhat) const override;
+    T operator()(const T d, const T dhat) const override;
 
     /// @brief First derivative b'(d) = (h'·d − p·h) / d^(p+1).
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The first derivative of the barrier function at d.
-    double first_derivative(const double d, const double dhat) const override;
+    T first_derivative(const T d, const T dhat) const override;
 
     /// @brief Second derivative b''(d) = (h''·d² − 2p·h'·d + p(p+1)·h) / d^(p+2).
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The second derivative of the barrier function at d.
-    double second_derivative(const double d, const double dhat) const override;
+    T second_derivative(const T d, const T dhat) const override;
 
     /// @brief Get the units of the barrier function (d̂^{-p}).
     /// @param dhat The activation distance of the barrier.
     /// @return The units of the barrier function.
-    double units(const double dhat) const override
-    {
-        return 1.0 / std::pow(dhat, m_power);
-    }
+    T units(const T dhat) const override;
 
     /// @brief The power p used in the barrier.
     double power() const { return m_power; }
 
 private:
-    double m_power; ///< p > 0
+    /// @brief p > 0. We keep it as a double, whatever T is, because it is a
+    /// parameter of the barrier rather than a per-lane input.
+    double m_power;
 
     /// @brief Evaluate the B-spline window h(d, dhat) and its first two
     ///        derivatives with respect to d.
@@ -474,14 +475,14 @@ private:
     ///   B(t) = 2/3 - t² + t³/2        for 0 ≤ t < 1
     ///   B(t) = (2-t)³ / 6             for 1 ≤ t < 2
     ///   B(t) = 0                       for t ≥ 2
-    static void
-    h_and_derivs(double d, double dhat, double& h, double& dh, double& ddh);
+    static void h_and_derivs(T d, T dhat, T& h, T& dh, T& ddh);
 };
 
 /// @brief Near-Far barrier function.
 /// This barrier function takes another "base" barrier object as argument.
-/// All operations defined in Barrier defer the computation to its base barrier.
-/// In addition, it splits the base barrier \f$b\f$ into a near and a far part,
+/// All operations defined in BarrierBase defer the computation to its base
+/// barrier. In addition, it splits the base barrier \f$b\f$ into a near and a
+/// far part,
 ///
 /// \f\[
 ///     b_\text{near}(d) = b(d)\,(1 - H(d)), \quad
@@ -496,17 +497,22 @@ private:
 /// give \f$b_\text{near} = +\infty\f$. For \f$\alpha \ge 2\f$ the far part
 /// vanishes identically, since \f$b = 0\f$ for \f$d \ge \hat{d}\f$.
 /// ESPPotential uses \f$\alpha =\f$ dbar_factor.
-class NearFarBarrier : public Barrier {
+template <typename T = double> class NearFarBarrier : public BarrierBase<T> {
 public:
-    /// @brief Construct a NearFarBarrier.
-    /// @param base_barrier The base barrier function to use.
+    /// @brief Construct a NearFarBarrier that borrows its base barrier.
+    /// @param base_barrier The base barrier function to use. This does not take
+    ///        ownership, so the base barrier must outlive this object.
     /// @param alpha Split parameter: the far weight H rises from 0 at
     ///        d = alpha * dhat / 2 to 1 at d = alpha * dhat.
     /// @throws std::invalid_argument if alpha is not positive and finite. At
     ///         alpha = 0 the step H collapses to a jump and its derivatives
     ///         are NaN.
-    NearFarBarrier(const Barrier* const base_barrier, const double alpha)
-        : m_base_barrier(base_barrier)
+    NearFarBarrier(const BarrierBase<T>* const base_barrier, const double alpha)
+        // We use the aliasing constructor with an empty owner, so this
+        // shared_ptr points at base_barrier without owning it or allocating a
+        // control block. That lets both constructors share one member, and
+        // destroying this object never deletes the borrowed barrier.
+        : m_base_barrier(std::shared_ptr<void>(), base_barrier)
         , m_alpha(alpha)
     {
         validate_alpha();
@@ -517,9 +523,8 @@ public:
     /// already has a shared_ptr — it pins the base barrier for the lifetime of
     /// this object, eliminating dangling-pointer risk.
     NearFarBarrier(
-        std::shared_ptr<const Barrier> base_barrier, const double alpha)
-        : m_base_barrier_owned(std::move(base_barrier))
-        , m_base_barrier(m_base_barrier_owned.get())
+        std::shared_ptr<const BarrierBase<T>> base_barrier, const double alpha)
+        : m_base_barrier(std::move(base_barrier))
         , m_alpha(alpha)
     {
         validate_alpha();
@@ -529,7 +534,7 @@ public:
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The value of the barrier function at d.
-    double operator()(const double d, const double dhat) const override
+    T operator()(const T d, const T dhat) const override
     {
         return (*m_base_barrier)(d, dhat);
     }
@@ -538,7 +543,7 @@ public:
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The value of the first derivative of the barrier function at d.
-    double first_derivative(const double d, const double dhat) const override
+    T first_derivative(const T d, const T dhat) const override
     {
         return m_base_barrier->first_derivative(d, dhat);
     }
@@ -547,7 +552,7 @@ public:
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The value of the second derivative of the barrier function at d.
-    double second_derivative(const double d, const double dhat) const override
+    T second_derivative(const T d, const T dhat) const override
     {
         return m_base_barrier->second_derivative(d, dhat);
     }
@@ -555,48 +560,49 @@ public:
     /// @brief Get the units of the barrier function.
     /// @param dhat The activation distance of the barrier.
     /// @return The units of the barrier function.
-    double units(const double dhat) const override
-    {
-        return m_base_barrier->units(dhat);
-    }
+    T units(const T dhat) const override { return m_base_barrier->units(dhat); }
 
     /// @brief Evaluate the near part b(d) (1 - H(d)).
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The value of the near part at d.
-    double near_value(const double d, const double dhat) const;
+    T near_value(const T d, const T dhat) const;
 
     /// @brief Evaluate the far part b(d) H(d).
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The value of the far part at d.
-    double far_value(const double d, const double dhat) const;
+    T far_value(const T d, const T dhat) const;
 
     /// @brief Evaluate the first derivative of the near part wrt d.
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The first derivative of the near part at d.
-    double first_derivative_near(const double d, const double dhat) const;
+    T first_derivative_near(const T d, const T dhat) const;
 
     /// @brief Evaluate the first derivative of the far part wrt d.
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The first derivative of the far part at d.
-    double first_derivative_far(const double d, const double dhat) const;
+    T first_derivative_far(const T d, const T dhat) const;
 
     /// @brief Evaluate the second derivative of the near part wrt d.
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The second derivative of the near part at d.
-    double second_derivative_near(const double d, const double dhat) const;
+    T second_derivative_near(const T d, const T dhat) const;
 
     /// @brief Evaluate the second derivative of the far part wrt d.
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
     /// @return The second derivative of the far part at d.
-    double second_derivative_far(const double d, const double dhat) const;
+    T second_derivative_far(const T d, const T dhat) const;
 
 private:
+    /// @brief The result of comparing two T: a bool for a scalar, and a
+    /// per-lane mask for a batch.
+    using Mask = decltype(std::declval<T>() <= std::declval<T>());
+
     void validate_alpha() const
     {
         if (!std::isfinite(m_alpha) || m_alpha <= 0) {
@@ -608,11 +614,20 @@ private:
 
     /// @brief Whether d lies where the far weight H vanishes identically
     ///        (d <= alpha * dhat / 2), so near = b and far = 0.
-    bool is_purely_near(const double d, const double dhat) const;
+    Mask is_purely_near(const T d, const T dhat) const;
 
-    // Optional shared ownership; null when constructed from a raw pointer.
-    const std::shared_ptr<const Barrier> m_base_barrier_owned;
-    const Barrier* const m_base_barrier;
+    /// @brief The far weight H(d).
+    T far_weight(const T d, const T dhat) const;
+
+    /// @brief The first derivative of the far weight H wrt d.
+    T far_weight_first_derivative(const T d, const T dhat) const;
+
+    /// @brief The second derivative of the far weight H wrt d.
+    T far_weight_second_derivative(const T d, const T dhat) const;
+
+    /// @brief The base barrier. It owns the barrier when built from a
+    /// shared_ptr and only aliases it when built from a raw pointer.
+    const std::shared_ptr<const BarrierBase<T>> m_base_barrier;
     const double m_alpha;
 };
 

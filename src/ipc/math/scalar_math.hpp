@@ -41,6 +41,7 @@ namespace numext {
     IPC_TOOLKIT_DEFINE_STD(atan2)
     IPC_TOOLKIT_DEFINE_STD(fma)
     IPC_TOOLKIT_DEFINE_STD(log)
+    IPC_TOOLKIT_DEFINE_STD(pow)
     IPC_TOOLKIT_DEFINE_STD(sqrt)
 
 // This is a public header, so the macro does not outlive its use here.

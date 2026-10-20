@@ -146,11 +146,11 @@ make_2d_collision_mesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& E)
 
 inline std::shared_ptr<Barrier> make_inverse_quadratic_barrier()
 {
-    return std::make_shared<InversePowerBarrier>(2.0);
+    return std::make_shared<InversePowerBarrier<>>(2.0);
 }
 inline std::shared_ptr<Barrier> make_linear_inverse_barrier()
 {
-    return std::make_shared<InversePowerBarrier>(1.0);
+    return std::make_shared<InversePowerBarrier<>>(1.0);
 }
 
 struct EeLimitSweepStats {
@@ -1544,7 +1544,7 @@ TEST_CASE(
 {
     const double dhat = 0.1;
     const NormalizedClampedLogBarrier<> base;
-    const NearFarBarrier nf1(&base, 1.0), nf2(&base, 2.0);
+    const NearFarBarrier<> nf1(&base, 1.0), nf2(&base, 2.0);
     for (int i = 1; i < 100; i++) {
         const double d = dhat * i / 100.0;
         CAPTURE(d);
@@ -2188,7 +2188,7 @@ TEST_CASE("NearFarBarrier decomposition", "[esp_potential][barrier]")
         BarrierType::InversePower2);
 
     auto run_test = [&](const auto& base) {
-        NearFarBarrier nf(&base, alpha);
+        NearFarBarrier<> nf(&base, alpha);
 
         constexpr int N = 200;
         for (int i = 0; i < N; ++i) {
@@ -2253,10 +2253,10 @@ TEST_CASE("NearFarBarrier decomposition", "[esp_potential][barrier]")
         run_test(TwoStageBarrier<>());
         break;
     case BarrierType::InversePower1:
-        run_test(InversePowerBarrier(1.0));
+        run_test(InversePowerBarrier<>(1.0));
         break;
     case BarrierType::InversePower2:
-        run_test(InversePowerBarrier(2.0));
+        run_test(InversePowerBarrier<>(2.0));
         break;
     default:
         FAIL("Unknown barrier type");
@@ -2278,14 +2278,14 @@ TEST_CASE(
     const std::vector<std::shared_ptr<const Barrier>> bases {
         std::make_shared<NormalizedClampedLogBarrier<>>(),
         std::make_shared<ClampedLogBarrier<>>(),
-        std::make_shared<InversePowerBarrier>(2.0),
+        std::make_shared<InversePowerBarrier<>>(2.0),
         std::make_shared<CubicBarrier<>>(),
     };
     const size_t i = GENERATE(range<size_t>(0, 4));
     const Barrier& base = *bases[i];
     CAPTURE(alpha, d, i);
 
-    const NearFarBarrier nf(bases[i], alpha);
+    const NearFarBarrier<> nf(bases[i], alpha);
 
     CHECK(nf.near_value(d, dhat) == base(d, dhat));
     CHECK(nf.far_value(d, dhat) == 0.0);
@@ -2304,14 +2304,14 @@ TEST_CASE(
     "[esp_potential][barrier]")
 {
     const auto base = std::make_shared<ClampedLogBarrier<>>();
-    CHECK_NOTHROW(NearFarBarrier(base, 0.2));
+    CHECK_NOTHROW(NearFarBarrier<>(base, 0.2));
 
     // At alpha = 0 the step collapses to a jump with NaN derivatives.
     const double alpha = GENERATE(
         0.0, -0.5, std::nan(""), std::numeric_limits<double>::infinity());
     CAPTURE(alpha);
-    CHECK_THROWS_AS(NearFarBarrier(base, alpha), std::invalid_argument);
-    CHECK_THROWS_AS(NearFarBarrier(base.get(), alpha), std::invalid_argument);
+    CHECK_THROWS_AS(NearFarBarrier<>(base, alpha), std::invalid_argument);
+    CHECK_THROWS_AS(NearFarBarrier<>(base.get(), alpha), std::invalid_argument);
 }
 
 // Same check with a face quadrature rule (params.set_quad_rule()), which adds

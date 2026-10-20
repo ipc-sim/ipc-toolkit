@@ -32,7 +32,7 @@ namespace {
     int mollifier_order_for_barrier(const std::shared_ptr<Barrier>& barrier)
     {
         if (const auto* ip =
-                dynamic_cast<const InversePowerBarrier*>(barrier.get())) {
+                dynamic_cast<const InversePowerBarrier<>*>(barrier.get())) {
             const int p = static_cast<int>(std::lround(ip->power()));
             return std::max(1, p + 1);
         }
@@ -199,9 +199,9 @@ double ESPPotential::operator()(
             const bool skip_ee =
                 (dbar_factor == 0); // Skip EE pairs when dbar_factor == 0
 
-            std::unique_ptr<NearFarBarrier> nf_barrier;
+            std::unique_ptr<NearFarBarrier<>> nf_barrier;
             if (use_nf) {
-                nf_barrier = std::make_unique<NearFarBarrier>(
+                nf_barrier = std::make_unique<NearFarBarrier<>>(
                     m_params.barrier, dbar_factor);
             }
 
@@ -508,9 +508,9 @@ Eigen::VectorXd ESPPotential::gradient(
                     double total_w_near = 0, total_p_near = 0;
                     double total_w_far = 0;
 
-                    std::unique_ptr<NearFarBarrier> nf_barrier;
+                    std::unique_ptr<NearFarBarrier<>> nf_barrier;
                     if (use_nf_grad) {
-                        nf_barrier = std::make_unique<NearFarBarrier>(
+                        nf_barrier = std::make_unique<NearFarBarrier<>>(
                             m_params.barrier, m_params.dbar_factor());
                     }
 
@@ -931,9 +931,9 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                     [[maybe_unused]] double total_p_far = 0; // asserts only
 
                     // Construct NearFarBarrier if needed
-                    std::unique_ptr<NearFarBarrier> nf_barrier;
+                    std::unique_ptr<NearFarBarrier<>> nf_barrier;
                     if (use_nf_hess) {
-                        nf_barrier = std::make_unique<NearFarBarrier>(
+                        nf_barrier = std::make_unique<NearFarBarrier<>>(
                             m_params.barrier, m_params.dbar_factor());
                     }
 

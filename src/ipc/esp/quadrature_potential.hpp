@@ -34,14 +34,14 @@ namespace PointPotentialHelper {
         Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params,
-        const NearFarBarrier& nf_barrier);
+        const NearFarBarrier<>& nf_barrier);
 
     std::pair<Eigen::VectorXd, Eigen::VectorXd>
     evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
         Eigen::ConstRef<Eigen::MatrixXd> V,
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params,
-        const NearFarBarrier& nf_barrier);
+        const NearFarBarrier<>& nf_barrier);
 
     std::pair<Eigen::MatrixXd, Eigen::MatrixXd>
     evaluate_potential_hessian_at_vertex_with_cached_collisions_nearfar(
@@ -49,7 +49,7 @@ namespace PointPotentialHelper {
         const ESPCollisionDict<PointType::VERTEX>& collisions,
         const ESPParameters& params,
         PSDProjectionMethod project_to_psd,
-        const NearFarBarrier& nf_barrier);
+        const NearFarBarrier<>& nf_barrier);
 
     double evaluate_potential_at_edge_edge_closest_point_with_cached_collisions(
         VertexMatrixView<3> V_extended,
@@ -63,7 +63,7 @@ namespace PointPotentialHelper {
         const ESPCollisionDict<PointType::EDGE>& collisions,
         const ESPParameters& params,
         EdgeEdgeDistanceType dtype,
-        const NearFarBarrier& nf_barrier);
+        const NearFarBarrier<>& nf_barrier);
 
     /// @brief Compute the gradient of P(q) for a point q
     /// @return The gradient vector with respect to collisions.m_vertex_ids
@@ -90,7 +90,7 @@ namespace PointPotentialHelper {
         const ESPCollisionDict<PointType::EDGE>& collisions,
         const ESPParameters& params,
         Eigen::ConstRef<Eigen::Vector3<ADType>> q,
-        const NearFarBarrier& nf_barrier);
+        const NearFarBarrier<>& nf_barrier);
 
     Eigen::MatrixXd
     evaluate_potential_hessian_at_edge_edge_closest_point_with_cached_collisions(
@@ -105,7 +105,7 @@ namespace PointPotentialHelper {
         const ESPCollisionDict<PointType::EDGE>& collisions,
         const ESPParameters& params,
         Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> q,
-        const NearFarBarrier& nf_barrier);
+        const NearFarBarrier<>& nf_barrier);
 
     double evaluate_potential_at_face_interior_point_with_cached_collisions(
         VertexMatrixView<3> V_extended,
@@ -117,7 +117,7 @@ namespace PointPotentialHelper {
         VertexMatrixView<3> V_extended,
         const ESPCollisionDict<PointType::FACE>& collisions,
         const ESPParameters& params,
-        const NearFarBarrier& nf_barrier);
+        const NearFarBarrier<>& nf_barrier);
 
     /// @brief Gradient of the face-interior potential for an arbitrary
     ///   interior quadrature point q = λ0·v0 + λ1·v1 + λ2·v2.
@@ -146,7 +146,7 @@ namespace PointPotentialHelper {
         const ESPCollisionDict<PointType::FACE>& collisions,
         const ESPParameters& params,
         const std::array<double, 3>& lambda,
-        const NearFarBarrier& nf_barrier);
+        const NearFarBarrier<>& nf_barrier);
 
     std::pair<Eigen::MatrixXd, Eigen::MatrixXd>
     evaluate_potential_hessian_at_face_interior_point_with_cached_collisions_nearfar(
@@ -155,7 +155,7 @@ namespace PointPotentialHelper {
         const ESPParameters& params,
         const std::array<double, 3>& lambda,
         PSDProjectionMethod project_to_psd,
-        const NearFarBarrier& nf_barrier);
+        const NearFarBarrier<>& nf_barrier);
 
     // ---- 2D edge quadrature point helpers ----
 

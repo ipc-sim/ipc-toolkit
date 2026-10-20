@@ -130,14 +130,14 @@ public:
     virtual std::pair<double, double> operator_nearfar(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
         const ESPParameters& params,
-        const NearFarBarrier* nf_barrier) const = 0;
+        const NearFarBarrier<>* nf_barrier) const = 0;
 
     virtual std::
         pair<VectorMax<double, ELEMENT_SIZE>, VectorMax<double, ELEMENT_SIZE>>
         gradient_nearfar(
             Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
             const ESPParameters& params,
-            const NearFarBarrier* nf_barrier) const = 0;
+            const NearFarBarrier<>* nf_barrier) const = 0;
 
     virtual std::pair<
         MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>,
@@ -145,7 +145,7 @@ public:
     hessian_nearfar(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
         const ESPParameters& params,
-        const NearFarBarrier* nf_barrier) const = 0;
+        const NearFarBarrier<>* nf_barrier) const = 0;
 
     double weight = 1;
 };

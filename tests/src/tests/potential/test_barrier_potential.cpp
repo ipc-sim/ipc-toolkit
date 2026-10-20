@@ -543,7 +543,7 @@ TEST_CASE(
     const double stiffness = GENERATE(1.0, 3.5);
     const bool use_physical_barrier = GENERATE(false, true);
 
-    const auto barrier = std::make_shared<InversePowerBarrier>(2.0);
+    const auto barrier = std::make_shared<InversePowerBarrier<>>(2.0);
     const BarrierPotential potential(
         barrier, dhat, stiffness, use_physical_barrier,
         /*use_squared_distance=*/false);
@@ -596,7 +596,7 @@ TEST_CASE(
     const double dmin = GENERATE(0.0, 0.01);
     const std::shared_ptr<Barrier> barrier = GENERATE(
         as<std::shared_ptr<Barrier>>(), std::make_shared<ClampedLogBarrier<>>(),
-        std::make_shared<InversePowerBarrier>(2.0));
+        std::make_shared<InversePowerBarrier<>>(2.0));
     const bool use_squared_distance = GENERATE(true, false);
     CAPTURE(dmin, use_squared_distance);
 

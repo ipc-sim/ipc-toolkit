@@ -134,7 +134,7 @@ std::pair<double, double>
 ESPCollisionTemplate<PrimitiveA, PrimitiveB>::operator_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> /*positions*/,
     const ESPParameters& /*params*/,
-    const NearFarBarrier* /*nf_barrier*/) const
+    const NearFarBarrier<>* /*nf_barrier*/) const
 {
     return { 0.0, 0.0 };
 }
@@ -143,7 +143,7 @@ template <typename PrimitiveA, typename PrimitiveB>
 auto ESPCollisionTemplate<PrimitiveA, PrimitiveB>::gradient_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& /*params*/,
-    const NearFarBarrier* /*nf_barrier*/) const -> std::
+    const NearFarBarrier<>* /*nf_barrier*/) const -> std::
     pair<VectorMax<double, ELEMENT_SIZE>, VectorMax<double, ELEMENT_SIZE>>
 {
     const auto n = positions.size();
@@ -155,7 +155,7 @@ template <typename PrimitiveA, typename PrimitiveB>
 auto ESPCollisionTemplate<PrimitiveA, PrimitiveB>::hessian_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& /*params*/,
-    const NearFarBarrier* /*nf_barrier*/) const
+    const NearFarBarrier<>* /*nf_barrier*/) const
     -> std::pair<
         MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>,
         MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>>
@@ -429,7 +429,7 @@ std::pair<double, double>
 ESPCollisionTemplate<Vertex3, Vertex3>::operator_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
-    const NearFarBarrier* nf_barrier) const
+    const NearFarBarrier<>* nf_barrier) const
 {
     const double dist =
         (positions.template head<3>() - positions.template segment<3>(3))
@@ -444,7 +444,7 @@ std::pair<double, double>
 ESPCollisionTemplate<Edge3P1, Vertex3>::operator_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
-    const NearFarBarrier* nf_barrier) const
+    const NearFarBarrier<>* nf_barrier) const
 {
     const double dist = sqrt(point_edge_distance(
         positions.template segment<3>(6), positions.template head<3>(),
@@ -459,7 +459,7 @@ std::pair<double, double>
 ESPCollisionTemplate<Face3P1, Vertex3>::operator_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
-    const NearFarBarrier* nf_barrier) const
+    const NearFarBarrier<>* nf_barrier) const
 {
     const double dist = sqrt(point_triangle_distance(
         positions.template segment<3>(9), positions.template head<3>(),
@@ -476,7 +476,7 @@ std::pair<
 ESPCollisionTemplate<Vertex3, Vertex3>::gradient_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
-    const NearFarBarrier* nf_barrier) const
+    const NearFarBarrier<>* nf_barrier) const
 {
     assert(positions.size() == 6);
     const double dist =
@@ -498,7 +498,7 @@ std::pair<
 ESPCollisionTemplate<Edge3P1, Vertex3>::gradient_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
-    const NearFarBarrier* nf_barrier) const
+    const NearFarBarrier<>* nf_barrier) const
 {
     assert(positions.size() == 9);
     auto dtype = point_edge_distance_type_exact(
@@ -526,7 +526,7 @@ std::pair<
 ESPCollisionTemplate<Face3P1, Vertex3>::gradient_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
-    const NearFarBarrier* nf_barrier) const
+    const NearFarBarrier<>* nf_barrier) const
 {
     assert(positions.size() == 12);
     auto dtype = point_triangle_distance_type_exact(
@@ -556,7 +556,7 @@ std::pair<
 ESPCollisionTemplate<Vertex3, Vertex3>::hessian_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
-    const NearFarBarrier* nf_barrier) const
+    const NearFarBarrier<>* nf_barrier) const
 {
     assert(positions.size() == 6);
     const double dist =
@@ -587,7 +587,7 @@ std::pair<
 ESPCollisionTemplate<Edge3P1, Vertex3>::hessian_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
-    const NearFarBarrier* nf_barrier) const
+    const NearFarBarrier<>* nf_barrier) const
 {
     assert(positions.size() == 9);
     auto dtype = point_edge_distance_type_exact(
@@ -627,7 +627,7 @@ std::pair<
 ESPCollisionTemplate<Face3P1, Vertex3>::hessian_nearfar(
     Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
     const ESPParameters& params,
-    const NearFarBarrier* nf_barrier) const
+    const NearFarBarrier<>* nf_barrier) const
 {
     assert(positions.size() == 12);
     auto dtype = point_triangle_distance_type_exact(

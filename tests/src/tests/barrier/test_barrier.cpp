@@ -404,14 +404,14 @@ TEST_CASE("point term normal derivatives", "[deriv]")
 
 TEST_CASE("Inverse-power barrier requires a positive power", "[barrier]")
 {
-    CHECK_NOTHROW(InversePowerBarrier(0.5));
+    CHECK_NOTHROW(InversePowerBarrier<>(0.5));
 
     // p = 0 would stay bounded at contact, p < 0 would attract, and a
     // non-finite power would poison every evaluation.
     const double power = GENERATE(
         0.0, -1.0, std::nan(""), std::numeric_limits<double>::infinity());
     CAPTURE(power);
-    CHECK_THROWS_AS(InversePowerBarrier(power), std::invalid_argument);
+    CHECK_THROWS_AS(InversePowerBarrier<>(power), std::invalid_argument);
 }
 
 TEST_CASE("Barrier derivatives", "[barrier]")
@@ -451,15 +451,15 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     }
     SECTION("InversePower1")
     {
-        barrier = std::make_unique<ipc::InversePowerBarrier>(1.0);
+        barrier = std::make_unique<ipc::InversePowerBarrier<>>(1.0);
     }
     SECTION("InversePower2")
     {
-        barrier = std::make_unique<ipc::InversePowerBarrier>(2.0);
+        barrier = std::make_unique<ipc::InversePowerBarrier<>>(2.0);
     }
     SECTION("InversePower3")
     {
-        barrier = std::make_unique<ipc::InversePowerBarrier>(3.0);
+        barrier = std::make_unique<ipc::InversePowerBarrier<>>(3.0);
     }
 
     if (use_dist_sqr) {

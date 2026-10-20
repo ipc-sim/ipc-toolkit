@@ -94,13 +94,13 @@ public:
     std::pair<double, double> operator_nearfar(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
         const ESPParameters& params,
-        const NearFarBarrier* nf_barrier) const override;
+        const NearFarBarrier<>* nf_barrier) const override;
 
     std::pair<VectorMax<double, ELEMENT_SIZE>, VectorMax<double, ELEMENT_SIZE>>
     gradient_nearfar(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
         const ESPParameters& params,
-        const NearFarBarrier* nf_barrier) const override;
+        const NearFarBarrier<>* nf_barrier) const override;
 
     std::pair<
         MatrixMax<double, ELEMENT_SIZE, ELEMENT_SIZE>,
@@ -108,7 +108,7 @@ public:
     hessian_nearfar(
         Eigen::ConstRef<VectorMax<double, ELEMENT_SIZE>> positions,
         const ESPParameters& params,
-        const NearFarBarrier* nf_barrier) const override;
+        const NearFarBarrier<>* nf_barrier) const override;
 
 private:
     PrimitiveA m_primitive_a;
@@ -154,7 +154,8 @@ ESPCollisionTemplate<Vertex3, Vertex3>::ESPCollisionTemplate(
     std::pair<double, double> ESPCollisionTemplate<A, B>::operator_nearfar(    \
         Eigen::ConstRef<VectorMax<double, ESPCollision::ELEMENT_SIZE>>         \
             positions,                                                         \
-        const ESPParameters& params, const NearFarBarrier* nf_barrier) const;  \
+        const ESPParameters& params, const NearFarBarrier<>* nf_barrier)       \
+        const;                                                                 \
     template <>                                                                \
     std::pair<                                                                 \
         VectorMax<double, ESPCollision::ELEMENT_SIZE>,                         \
@@ -162,7 +163,8 @@ ESPCollisionTemplate<Vertex3, Vertex3>::ESPCollisionTemplate(
     ESPCollisionTemplate<A, B>::gradient_nearfar(                              \
         Eigen::ConstRef<VectorMax<double, ESPCollision::ELEMENT_SIZE>>         \
             positions,                                                         \
-        const ESPParameters& params, const NearFarBarrier* nf_barrier) const;  \
+        const ESPParameters& params, const NearFarBarrier<>* nf_barrier)       \
+        const;                                                                 \
     template <>                                                                \
     std::pair<                                                                 \
         MatrixMax<                                                             \
@@ -172,7 +174,7 @@ ESPCollisionTemplate<Vertex3, Vertex3>::ESPCollisionTemplate(
     ESPCollisionTemplate<A, B>::hessian_nearfar(                               \
         Eigen::ConstRef<VectorMax<double, ESPCollision::ELEMENT_SIZE>>         \
             positions,                                                         \
-        const ESPParameters& params, const NearFarBarrier* nf_barrier) const
+        const ESPParameters& params, const NearFarBarrier<>* nf_barrier) const
 
 IPC_DECLARE_ESP_COLLISION_SPECIALIZATIONS(Vertex3, Vertex3);
 IPC_DECLARE_ESP_COLLISION_SPECIALIZATIONS(Edge3P1, Vertex3);
