@@ -9,11 +9,60 @@
 
 #include <Eigen/Core>
 
+#include <algorithm>
+#include <cstddef>
 #include <memory>
-#include <set>
+#include <utility>
 #include <vector>
 
 namespace ipc {
+
+/// @brief A sorted list of unique primitive ids, as returned by the adjacency
+/// queries of Candidates.
+///
+/// The list either owns its ids or views ids stored inside the Candidates it
+/// came from. We use this instead of std::set because every caller only
+/// iterates, and a contiguous sorted range gives the same ascending order
+/// without allocating a tree node per id. The tradeoff is that a view is
+/// invalidated by clear() or convert_candidates_to_sets() on its Candidates.
+class AdjList {
+public:
+    AdjList() = default;
+
+    /// @brief Take ownership of ids that are already sorted and unique.
+    explicit AdjList(std::vector<index_t> sorted_unique_ids)
+        : m_owned(std::move(sorted_unique_ids))
+    {
+    }
+
+    /// @brief View ids owned elsewhere; they must stay alive and unchanged for
+    /// as long as the list is used.
+    static AdjList view(const index_t* data, const size_t size)
+    {
+        AdjList list;
+        list.m_view = data;
+        list.m_view_size = size;
+        list.m_is_view = true;
+        return list;
+    }
+
+    const index_t* begin() const { return m_is_view ? m_view : m_owned.data(); }
+    const index_t* end() const { return begin() + size(); }
+    size_t size() const { return m_is_view ? m_view_size : m_owned.size(); }
+    bool empty() const { return size() == 0; }
+
+    /// @brief Whether id is in the list (a binary search, since it is sorted).
+    bool contains(const index_t id) const
+    {
+        return std::binary_search(begin(), end(), id);
+    }
+
+private:
+    std::vector<index_t> m_owned;
+    const index_t* m_view = nullptr;
+    size_t m_view_size = 0;
+    bool m_is_view = false;
+};
 
 /// @brief A class for storing and managing collision candidates.
 class Candidates {
@@ -244,30 +293,33 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const;
 
-    /// @brief Build per-primitive adjacency sets from the candidates.
-    /// @note Required before calling any of the *_set() queries below.
+    /// @brief Build per-primitive adjacency lists from the candidates.
+    /// @note Required before calling any of the *_set() queries below, which
+    ///       return empty lists until then.
+    /// @note The ve_set() and vf_set() results view storage inside this
+    ///       object, so calling this again or clear() invalidates them.
     void convert_candidates_to_sets();
 
     /// @brief Vertices near vertex id (2D: also the endpoints of nearby edges).
-    std::set<index_t> vv_set(const CollisionMesh& mesh, index_t id) const;
+    AdjList vv_set(const CollisionMesh& mesh, index_t id) const;
     /// @brief Edges near vertex id.
-    std::set<index_t> ve_set(index_t id) const;
+    AdjList ve_set(index_t id) const;
     /// @brief Faces near vertex id.
-    std::set<index_t> vf_set(index_t id) const;
+    AdjList vf_set(index_t id) const;
 
     /// @brief Vertices near edge id, including its endpoints.
-    std::set<index_t> ev_set(const CollisionMesh& mesh, index_t id) const;
+    AdjList ev_set(const CollisionMesh& mesh, index_t id) const;
     /// @brief Edges near or adjacent to edge id, excluding id.
-    std::set<index_t> ee_set(const CollisionMesh& mesh, index_t id) const;
+    AdjList ee_set(const CollisionMesh& mesh, index_t id) const;
     /// @brief Faces near or adjacent to edge id, excluding faces containing id.
-    std::set<index_t> ef_set(const CollisionMesh& mesh, index_t id) const;
+    AdjList ef_set(const CollisionMesh& mesh, index_t id) const;
 
     /// @brief Vertices near face id, including its corners.
-    std::set<index_t> fv_set(const CollisionMesh& mesh, index_t id) const;
+    AdjList fv_set(const CollisionMesh& mesh, index_t id) const;
     /// @brief Edges near or adjacent to face id.
-    std::set<index_t> fe_set(const CollisionMesh& mesh, index_t id) const;
+    AdjList fe_set(const CollisionMesh& mesh, index_t id) const;
     /// @brief Faces near or adjacent to face id, excluding id.
-    std::set<index_t> ff_set(const CollisionMesh& mesh, index_t id) const;
+    AdjList ff_set(const CollisionMesh& mesh, index_t id) const;
 
 public:
     std::vector<VertexVertexCandidate> vv_candidates;
@@ -291,12 +343,11 @@ public:
 private:
     static bool default_is_active(double candidate) { return true; }
 
-    /// @brief Adjacency sets built by convert_candidates_to_sets().
+    /// @brief Adjacency lists built by convert_candidates_to_sets().
     ///
-    /// Held behind a pointer so this public header does not need
-    /// ipc/utils/unordered_map_and_set.hpp, which pulls in Abseil -- a private
-    /// dependency of the library that consumers (e.g. the Python bindings) do
-    /// not link against.
+    /// Held behind a shared pointer so this public header does not expose the
+    /// storage layout, and so copying a Candidates shares the lists instead of
+    /// copying their arrays.
     struct AdjacencySets;
     std::shared_ptr<AdjacencySets> m_sets;
 };

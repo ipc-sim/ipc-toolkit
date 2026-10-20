@@ -12,7 +12,6 @@
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/profiler.hpp>
 #include <ipc/utils/save_obj.hpp>
-#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <igl/remove_unreferenced.h>
 #include <tbb/blocked_range.h>
@@ -20,25 +19,135 @@
 #include <tbb/parallel_reduce.h>
 #include <tbb/parallel_sort.h>
 
+#include <algorithm>
+#include <array>
 #include <atomic>
+#include <cassert>
 #include <fstream>
+#include <numeric>
 
 namespace ipc {
 
-// Definition of the pimpl declared in candidates.hpp. Kept here so the public
-// header does not need to include Abseil (a private dependency).
+namespace {
+    /// @brief The nine ordered relations between primitive types. For example,
+    /// EV maps an edge id to the vertices near it, and VE maps a vertex id to
+    /// the edges near it.
+    enum Relation { VV, VE, VF, EV, EE, EF, FV, FE, FF, NUM_RELATIONS };
+
+    using IdPairs = std::vector<std::pair<index_t, index_t>>;
+
+    /// @brief Neighbor lists for ids 0 to n - 1, stored back to back.
+    ///
+    /// We use this compressed sparse row layout instead of a hash map of
+    /// std::set because every query only iterates a row. A row is then a
+    /// contiguous sorted range with no per-id allocation, and ids are dense
+    /// mesh indices, so a lookup is two array reads instead of a hash.
+    struct AdjacencyCsr {
+        std::vector<index_t> offsets { 0 };
+        std::vector<index_t> ids;
+
+        /// @brief The sorted neighbors of id, or an empty range if id has no
+        /// row.
+        std::pair<const index_t*, const index_t*> row(const index_t id) const
+        {
+            if (id < 0 || size_t(id) + 1 >= offsets.size()) {
+                return { nullptr, nullptr };
+            }
+            return { ids.data() + offsets[size_t(id)],
+                     ids.data() + offsets[size_t(id) + 1] };
+        }
+
+        /// @brief Group (row, neighbor) pairs by row, with each row sorted and
+        /// free of duplicates.
+        ///
+        /// Instead of sorting all the pairs at once, we count the pairs per
+        /// row, scatter them into place, and sort each row on its own. Rows are
+        /// short, so this builds several times faster than one global sort
+        /// (we measured 780k candidates on cloth-ball) and is linear apart
+        /// from the tiny per-row sorts.
+        static AdjacencyCsr from_pairs(const IdPairs& pairs)
+        {
+            index_t num_rows = 0;
+            for (const auto& [row, id] : pairs) {
+                num_rows = std::max(num_rows, row + 1);
+            }
+
+            std::vector<index_t> start(size_t(num_rows) + 1, 0);
+            for (const auto& [row, id] : pairs) {
+                ++start[size_t(row) + 1];
+            }
+            std::partial_sum(start.begin(), start.end(), start.begin());
+
+            std::vector<index_t> scattered(pairs.size());
+            std::vector<index_t> cursor(start.begin(), start.end() - 1);
+            for (const auto& [row, id] : pairs) {
+                scattered[size_t(cursor[size_t(row)]++)] = id;
+            }
+
+            AdjacencyCsr csr;
+            csr.offsets.assign(size_t(num_rows) + 1, 0);
+            csr.ids.reserve(scattered.size());
+            for (size_t r = 0; r < size_t(num_rows); ++r) {
+                const auto first = scattered.begin() + start[r];
+                auto last = scattered.begin() + start[r + 1];
+                std::sort(first, last);
+                last = std::unique(first, last);
+                csr.ids.insert(csr.ids.end(), first, last);
+                csr.offsets[r + 1] = index_t(csr.ids.size());
+            }
+            return csr;
+        }
+    };
+
+    void sort_unique(std::vector<index_t>& ids)
+    {
+        std::sort(ids.begin(), ids.end());
+        ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
+    }
+
+    /// @brief Remove id from a sorted, duplicate-free list if it is there.
+    void erase_sorted(std::vector<index_t>& ids, const index_t id)
+    {
+        const auto it = std::lower_bound(ids.begin(), ids.end(), id);
+        if (it != ids.end() && *it == id) {
+            ids.erase(it);
+        }
+    }
+
+    void append(
+        std::vector<index_t>& ids,
+        const std::pair<const index_t*, const index_t*> range)
+    {
+        ids.insert(ids.end(), range.first, range.second);
+    }
+
+    void append(std::vector<index_t>& ids, const std::vector<index_t>& more)
+    {
+        ids.insert(ids.end(), more.begin(), more.end());
+    }
+} // namespace
+
+// Definition of the pimpl declared in candidates.hpp. Kept in the .cpp so the
+// public header does not expose the storage layout.
 struct Candidates::AdjacencySets {
-    unordered_map<index_t, std::set<index_t>> vv;
-    unordered_map<index_t, std::set<index_t>> ve;
-    unordered_map<index_t, std::set<index_t>> vf;
+    explicit AdjacencySets(const Candidates& candidates);
 
-    unordered_map<index_t, std::set<index_t>> ev;
-    unordered_map<index_t, std::set<index_t>> ee;
-    unordered_map<index_t, std::set<index_t>> ef;
+    /// @brief The neighbors of a primitive.
+    ///
+    /// The neighbors of a vertex among edges (VE) and faces (VF) are exactly
+    /// the stored candidates, so we return a view of them. Every other relation
+    /// also merges in the neighbors that come from the mesh topology, which
+    /// builds a new list. The mesh is only needed for those, so it may be null
+    /// for VE and VF.
+    AdjList
+    query(Relation relation, const CollisionMesh* mesh, index_t id) const;
 
-    unordered_map<index_t, std::set<index_t>> fv;
-    unordered_map<index_t, std::set<index_t>> fe;
-    unordered_map<index_t, std::set<index_t>> ff;
+    /// @brief The sorted neighbors of a primitive, merged with mesh topology.
+    std::vector<index_t>
+    merged(Relation relation, const CollisionMesh& mesh, index_t id) const;
+
+    /// @brief The candidate partners of each primitive, per relation.
+    std::array<AdjacencyCsr, NUM_RELATIONS> stored;
 };
 
 namespace {
@@ -751,208 +860,222 @@ bool Candidates::save_obj(
     return true;
 }
 
+Candidates::AdjacencySets::AdjacencySets(const Candidates& candidates)
+{
+    // We build one relation at a time so only one pair list is alive at once.
+    const auto build = [&](const Relation relation, const auto& fill) {
+        IdPairs pairs;
+        fill(pairs);
+        stored[relation] = AdjacencyCsr::from_pairs(pairs);
+    };
+
+    build(VV, [&](IdPairs& pairs) {
+        pairs.reserve(2 * candidates.vv_candidates.size());
+        for (const auto& vv : candidates.vv_candidates) {
+            pairs.emplace_back(vv.vertex0_id, vv.vertex1_id);
+            pairs.emplace_back(vv.vertex1_id, vv.vertex0_id);
+        }
+    });
+    build(EE, [&](IdPairs& pairs) {
+        pairs.reserve(2 * candidates.ee_candidates.size());
+        for (const auto& ee : candidates.ee_candidates) {
+            pairs.emplace_back(ee.edge0_id, ee.edge1_id);
+            pairs.emplace_back(ee.edge1_id, ee.edge0_id);
+        }
+    });
+    build(FF, [&](IdPairs& pairs) {
+        pairs.reserve(2 * candidates.ff_candidates.size());
+        for (const auto& ff : candidates.ff_candidates) {
+            pairs.emplace_back(ff.face0_id, ff.face1_id);
+            pairs.emplace_back(ff.face1_id, ff.face0_id);
+        }
+    });
+    build(EV, [&](IdPairs& pairs) {
+        pairs.reserve(candidates.ev_candidates.size());
+        for (const auto& ev : candidates.ev_candidates) {
+            pairs.emplace_back(ev.edge_id, ev.vertex_id);
+        }
+    });
+    build(VE, [&](IdPairs& pairs) {
+        pairs.reserve(candidates.ev_candidates.size());
+        for (const auto& ev : candidates.ev_candidates) {
+            pairs.emplace_back(ev.vertex_id, ev.edge_id);
+        }
+    });
+    build(FV, [&](IdPairs& pairs) {
+        pairs.reserve(candidates.fv_candidates.size());
+        for (const auto& fv : candidates.fv_candidates) {
+            pairs.emplace_back(fv.face_id, fv.vertex_id);
+        }
+    });
+    build(VF, [&](IdPairs& pairs) {
+        pairs.reserve(candidates.fv_candidates.size());
+        for (const auto& fv : candidates.fv_candidates) {
+            pairs.emplace_back(fv.vertex_id, fv.face_id);
+        }
+    });
+    build(EF, [&](IdPairs& pairs) {
+        pairs.reserve(candidates.ef_candidates.size());
+        for (const auto& ef : candidates.ef_candidates) {
+            pairs.emplace_back(ef.edge_id, ef.face_id);
+        }
+    });
+    build(FE, [&](IdPairs& pairs) {
+        pairs.reserve(candidates.ef_candidates.size());
+        for (const auto& ef : candidates.ef_candidates) {
+            pairs.emplace_back(ef.face_id, ef.edge_id);
+        }
+    });
+}
+
+AdjList Candidates::AdjacencySets::query(
+    const Relation relation, const CollisionMesh* mesh, const index_t id) const
+{
+    if (relation == VE || relation == VF) {
+        const auto [first, last] = stored[relation].row(id);
+        return AdjList::view(first, size_t(last - first));
+    }
+    assert(mesh != nullptr);
+    return AdjList(merged(relation, *mesh, id));
+}
+
+std::vector<index_t> Candidates::AdjacencySets::merged(
+    const Relation relation, const CollisionMesh& mesh, const index_t id) const
+{
+    // Every case starts from the candidate partners, adds the primitives that
+    // share a vertex (or an edge) with this one in the mesh, and then removes
+    // whatever should not be its own neighbor.
+    // The mesh topology adds a handful of ids, so we reserve room for them up
+    // front. Otherwise the vector would regrow (and reallocate) while merging.
+    const auto partners = stored[relation].row(id);
+    std::vector<index_t> ids;
+    ids.reserve(size_t(partners.second - partners.first) + 16);
+    append(ids, partners);
+
+    switch (relation) {
+    case VV:
+        // In 2D, a vertex near an edge is near both of its endpoints.
+        if (mesh.dim() == 2) {
+            const auto [first, last] = stored[VE].row(id);
+            for (const index_t* ej = first; ej != last; ++ej) {
+                ids.push_back(mesh.edges()(*ej, 0));
+                ids.push_back(mesh.edges()(*ej, 1));
+            }
+        }
+        sort_unique(ids);
+        erase_sorted(ids, id);
+        break;
+
+    case EV:
+        for (index_t lv = 0; lv < 2; ++lv) {
+            ids.push_back(mesh.edges()(id, lv));
+        }
+        sort_unique(ids);
+        break;
+
+    case EE:
+        for (index_t lv = 0; lv < 2; ++lv) {
+            append(ids, mesh.vertices_to_edges()[mesh.edges()(id, lv)]);
+        }
+        // In 2D the broad phase never builds edge-edge candidates, so we
+        // reconstruct them from the edge-vertex ones, in both directions:
+        // (a) the edges at vertices that are near this edge, and
+        // (b) the edges near this edge's own endpoints.
+        if (mesh.dim() == 2) {
+            for (const index_t vj : merged(EV, mesh, id)) {
+                append(ids, mesh.vertices_to_edges()[vj]);
+            }
+            for (index_t lv = 0; lv < 2; ++lv) {
+                append(ids, stored[VE].row(mesh.edges()(id, lv)));
+            }
+        }
+        sort_unique(ids);
+        erase_sorted(ids, id);
+        break;
+
+    case EF:
+        for (index_t lv = 0; lv < 2; ++lv) {
+            append(ids, mesh.vertices_to_faces()[mesh.edges()(id, lv)]);
+        }
+        sort_unique(ids);
+        for (const index_t fid : mesh.edges_to_faces()[id]) {
+            erase_sorted(ids, fid);
+        }
+        break;
+
+    case FV:
+        for (index_t lv = 0; lv < 3; ++lv) {
+            ids.push_back(mesh.faces()(id, lv));
+        }
+        sort_unique(ids);
+        break;
+
+    case FE:
+        for (index_t lv = 0; lv < 3; ++lv) {
+            append(ids, mesh.vertices_to_edges()[mesh.faces()(id, lv)]);
+        }
+        sort_unique(ids);
+        break;
+
+    case FF:
+        for (index_t lv = 0; lv < 3; ++lv) {
+            append(ids, mesh.vertices_to_faces()[mesh.faces()(id, lv)]);
+        }
+        sort_unique(ids);
+        erase_sorted(ids, id);
+        break;
+
+    case VE:
+    case VF:
+    default:
+        // These are the stored lists, which are already sorted and unique.
+        break;
+    }
+    return ids;
+}
+
 void Candidates::convert_candidates_to_sets()
 {
-    m_sets = std::make_shared<AdjacencySets>();
-
-    for (const auto& vv : vv_candidates) {
-        m_sets->vv[vv.vertex0_id].insert(vv.vertex1_id);
-        m_sets->vv[vv.vertex1_id].insert(vv.vertex0_id);
-    }
-    for (const auto& ee : ee_candidates) {
-        m_sets->ee[ee.edge0_id].insert(ee.edge1_id);
-        m_sets->ee[ee.edge1_id].insert(ee.edge0_id);
-    }
-    for (const auto& ff : ff_candidates) {
-        m_sets->ff[ff.face0_id].insert(ff.face1_id);
-        m_sets->ff[ff.face1_id].insert(ff.face0_id);
-    }
-    for (const auto& ev : ev_candidates) {
-        m_sets->ev[ev.edge_id].insert(ev.vertex_id);
-        m_sets->ve[ev.vertex_id].insert(ev.edge_id);
-    }
-    for (const auto& fv : fv_candidates) {
-        m_sets->fv[fv.face_id].insert(fv.vertex_id);
-        m_sets->vf[fv.vertex_id].insert(fv.face_id);
-    }
-    for (const auto& ef : ef_candidates) {
-        m_sets->ef[ef.edge_id].insert(ef.face_id);
-        m_sets->fe[ef.face_id].insert(ef.edge_id);
-    }
+    m_sets = std::make_shared<AdjacencySets>(*this);
 }
 
-std::set<index_t>
-Candidates::vv_set(const CollisionMesh& mesh, index_t id) const
+AdjList Candidates::vv_set(const CollisionMesh& mesh, index_t id) const
 {
-    if (!m_sets) {
-        return {};
-    }
-
-    std::set<index_t> out;
-    if (auto iter = m_sets->vv.find(id); iter != m_sets->vv.end()) {
-        out = iter->second;
-    }
-
-    if (mesh.dim() == 2) {
-        for (const index_t ej : ve_set(id)) {
-            out.insert(mesh.edges()(ej, 0));
-            out.insert(mesh.edges()(ej, 1));
-        }
-    }
-    out.erase(id);
-    return out;
+    return m_sets ? m_sets->query(VV, &mesh, id) : AdjList();
 }
-std::set<index_t> Candidates::ve_set(index_t id) const
+AdjList Candidates::ve_set(index_t id) const
 {
-    if (!m_sets) {
-        return {};
-    }
-
-    if (auto iter = m_sets->ve.find(id); iter != m_sets->ve.end()) {
-        return iter->second;
-    }
-    return {};
+    return m_sets ? m_sets->query(VE, nullptr, id) : AdjList();
 }
-std::set<index_t> Candidates::vf_set(index_t id) const
+AdjList Candidates::vf_set(index_t id) const
 {
-    if (!m_sets) {
-        return {};
-    }
-
-    if (auto iter = m_sets->vf.find(id); iter != m_sets->vf.end()) {
-        return iter->second;
-    }
-    return {};
+    return m_sets ? m_sets->query(VF, nullptr, id) : AdjList();
 }
 
-std::set<index_t>
-Candidates::ev_set(const CollisionMesh& mesh, index_t id) const
+AdjList Candidates::ev_set(const CollisionMesh& mesh, index_t id) const
 {
-    if (!m_sets) {
-        return {};
-    }
-
-    std::set<index_t> out;
-    if (auto iter = m_sets->ev.find(id); iter != m_sets->ev.end()) {
-        out = iter->second;
-    }
-    for (index_t lv = 0; lv < 2; ++lv) {
-        out.insert(mesh.edges()(id, lv));
-    }
-    return out;
+    return m_sets ? m_sets->query(EV, &mesh, id) : AdjList();
 }
-std::set<index_t>
-Candidates::ee_set(const CollisionMesh& mesh, index_t id) const
+AdjList Candidates::ee_set(const CollisionMesh& mesh, index_t id) const
 {
-    if (!m_sets) {
-        return {};
-    }
-
-    std::set<index_t> out;
-    if (auto iter = m_sets->ee.find(id); iter != m_sets->ee.end()) {
-        out = iter->second;
-    }
-    for (index_t lv = 0; lv < 2; ++lv) {
-        for (index_t eid : mesh.vertices_to_edges()[mesh.edges()(id, lv)]) {
-            out.insert(eid);
-        }
-    }
-    // In 2D, EE candidates are never built by the broad phase. Reconstruct
-    // them from EV candidates symmetrically:
-    // (a) edges adjacent to vertices that are close to edge id (via ev_set)
-    // (b) edges that id's own endpoints are close to (via ve_set)
-    if (mesh.dim() == 2) {
-        for (const index_t vj : ev_set(mesh, id)) {
-            for (const index_t ej : mesh.vertices_to_edges()[vj]) {
-                out.insert(ej);
-            }
-        }
-        for (index_t lv = 0; lv < 2; ++lv) {
-            const index_t vi = mesh.edges()(id, lv);
-            for (const index_t ej : ve_set(vi)) {
-                out.insert(ej);
-            }
-        }
-    }
-    out.erase(id);
-    return out;
+    return m_sets ? m_sets->query(EE, &mesh, id) : AdjList();
 }
-std::set<index_t>
-Candidates::ef_set(const CollisionMesh& mesh, index_t id) const
+AdjList Candidates::ef_set(const CollisionMesh& mesh, index_t id) const
 {
-    if (!m_sets) {
-        return {};
-    }
-
-    std::set<index_t> out;
-    if (auto iter = m_sets->ef.find(id); iter != m_sets->ef.end()) {
-        out = iter->second;
-    }
-    for (index_t lv = 0; lv < 2; ++lv) {
-        const auto& faces = mesh.vertices_to_faces()[mesh.edges()(id, lv)];
-        for (int fid : faces) {
-            out.insert(fid);
-        }
-    }
-    for (const index_t fid : mesh.edges_to_faces()[id]) {
-        out.erase(fid);
-    }
-    return out;
+    return m_sets ? m_sets->query(EF, &mesh, id) : AdjList();
 }
 
-std::set<index_t>
-Candidates::fv_set(const CollisionMesh& mesh, index_t id) const
+AdjList Candidates::fv_set(const CollisionMesh& mesh, index_t id) const
 {
-    if (!m_sets) {
-        return {};
-    }
-
-    std::set<index_t> out;
-    if (auto iter = m_sets->fv.find(id); iter != m_sets->fv.end()) {
-        out = iter->second;
-    }
-    for (index_t lv = 0; lv < 3; ++lv) {
-        out.insert(mesh.faces()(id, lv));
-    }
-    return out;
+    return m_sets ? m_sets->query(FV, &mesh, id) : AdjList();
 }
-std::set<index_t>
-Candidates::fe_set(const CollisionMesh& mesh, index_t id) const
+AdjList Candidates::fe_set(const CollisionMesh& mesh, index_t id) const
 {
-    if (!m_sets) {
-        return {};
-    }
-
-    std::set<index_t> out;
-    if (auto iter = m_sets->fe.find(id); iter != m_sets->fe.end()) {
-        out = iter->second;
-    }
-    for (index_t lv = 0; lv < 3; ++lv) {
-        for (index_t eid : mesh.vertices_to_edges()[mesh.faces()(id, lv)]) {
-            out.insert(eid);
-        }
-    }
-    return out;
+    return m_sets ? m_sets->query(FE, &mesh, id) : AdjList();
 }
-std::set<index_t>
-Candidates::ff_set(const CollisionMesh& mesh, index_t id) const
+AdjList Candidates::ff_set(const CollisionMesh& mesh, index_t id) const
 {
-    if (!m_sets) {
-        return {};
-    }
-
-    std::set<index_t> out;
-    if (auto iter = m_sets->ff.find(id); iter != m_sets->ff.end()) {
-        out = iter->second;
-    }
-    for (index_t lv = 0; lv < 3; ++lv) {
-        const index_t vid = mesh.faces()(id, lv);
-        for (index_t fid : mesh.vertices_to_faces()[vid]) {
-            out.insert(fid);
-        }
-    }
-    out.erase(id);
-    return out;
+    return m_sets ? m_sets->query(FF, &mesh, id) : AdjList();
 }
 
 } // namespace ipc

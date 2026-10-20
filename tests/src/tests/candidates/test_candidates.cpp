@@ -6,9 +6,34 @@
 #include <ipc/candidates/face_face.hpp>
 #include <ipc/candidates/plane_vertex.hpp>
 
+#include <igl/edges.h>
+
 #include <algorithm>
+#include <cmath>
+#include <functional>
+#include <set>
+#include <vector>
 
 using namespace ipc;
+
+namespace {
+std::vector<index_t> ids(const AdjList& list)
+{
+    return std::vector<index_t>(list.begin(), list.end());
+}
+
+std::vector<index_t> ids(const std::set<index_t>& set)
+{
+    return std::vector<index_t>(set.begin(), set.end());
+}
+
+// Whether the list is strictly ascending, i.e. sorted and free of duplicates.
+bool is_sorted_unique(const AdjList& list)
+{
+    return std::adjacent_find(list.begin(), list.end(), std::greater_equal<>())
+        == list.end();
+}
+} // namespace
 
 TEST_CASE("Candidates", "[candidates]")
 {
@@ -188,9 +213,162 @@ TEST_CASE("Candidates adjacency sets", "[candidates]")
     REQUIRE(!candidates.ev_candidates.empty());
     candidates.convert_candidates_to_sets();
     // In 2D, vv_set also holds the endpoints of the edges near the vertex.
-    CHECK(candidates.vv_set(mesh, 2) == std::set<index_t> { 0, 1 });
-    CHECK(candidates.ve_set(2).count(0) == 1);
+    CHECK(ids(candidates.vv_set(mesh, 2)) == std::vector<index_t> { 0, 1 });
+    CHECK(candidates.ve_set(2).contains(0));
     CHECK(candidates.vf_set(2).empty());
+}
+
+// Two tetrahedra apex to apex, so every primitive pairing has candidates.
+TEST_CASE(
+    "Candidate adjacency lists join candidate partners with mesh neighbors",
+    "[candidates]")
+{
+    const double c = std::cos(2 * M_PI / 3), s = std::sin(2 * M_PI / 3);
+    const double r = std::cos(M_PI / 3), q = std::sin(M_PI / 3);
+    Eigen::MatrixXd V(8, 3);
+    V << 0, 0, 0.05, 1, 0, 1, c, s, 1, c, -s, 1, //
+        0, 0, -0.05, r, q, -1, -1, 0, -1, r, -q, -1;
+    Eigen::MatrixXi F(8, 3);
+    F << 0, 2, 1, 0, 3, 2, 0, 1, 3, 1, 2, 3, //
+        4, 5, 6, 4, 6, 7, 4, 7, 5, 5, 7, 6;
+    Eigen::MatrixXi E;
+    igl::edges(F, E);
+    const CollisionMesh mesh(V, E, F);
+
+    Candidates candidates;
+    candidates.build(
+        mesh, V, /*inflation_radius=*/1, /*broad_phase=*/nullptr,
+        /*all_types=*/true);
+    REQUIRE(!candidates.vv_candidates.empty());
+    REQUIRE(!candidates.ev_candidates.empty());
+    REQUIRE(!candidates.ee_candidates.empty());
+    REQUIRE(!candidates.fv_candidates.empty());
+    REQUIRE(!candidates.ef_candidates.empty());
+    REQUIRE(!candidates.ff_candidates.empty());
+    candidates.convert_candidates_to_sets();
+
+    // The expected neighbors, computed straight from the candidate lists and
+    // the mesh's vertex ids without using any of the adjacency structure.
+    const size_t nv = mesh.num_vertices(), ne = mesh.num_edges(),
+                 nf = mesh.num_faces();
+    std::vector<std::set<index_t>> vv(nv), ve(nv), vf(nv), ev(ne), ee(ne),
+        ef(ne), fv(nf), fe(nf), ff(nf);
+    for (const auto& [a, b] : candidates.vv_candidates) {
+        vv[a].insert(b);
+        vv[b].insert(a);
+    }
+    for (const auto& [e, v] : candidates.ev_candidates) {
+        ev[e].insert(v);
+        ve[v].insert(e);
+    }
+    for (const auto& [a, b] : candidates.ee_candidates) {
+        ee[a].insert(b);
+        ee[b].insert(a);
+    }
+    for (const auto& [f, v] : candidates.fv_candidates) {
+        fv[f].insert(v);
+        vf[v].insert(f);
+    }
+    for (const auto& [e, f] : candidates.ef_candidates) {
+        ef[e].insert(f);
+        fe[f].insert(e);
+    }
+    for (const auto& [a, b] : candidates.ff_candidates) {
+        ff[a].insert(b);
+        ff[b].insert(a);
+    }
+
+    const auto has_vertex = [&](const Eigen::MatrixXi& M, index_t i,
+                                index_t v) {
+        return (M.row(i).array() == v).any();
+    };
+    for (index_t e = 0; e < index_t(ne); ++e) {
+        for (index_t v : { mesh.edges()(e, 0), mesh.edges()(e, 1) }) {
+            ev[e].insert(v);
+            for (index_t other = 0; other < index_t(ne); ++other) {
+                if (has_vertex(mesh.edges(), other, v)) {
+                    ee[e].insert(other);
+                }
+            }
+            for (index_t f = 0; f < index_t(nf); ++f) {
+                if (has_vertex(mesh.faces(), f, v)) {
+                    ef[e].insert(f);
+                }
+            }
+        }
+        ee[e].erase(e);
+        for (index_t f = 0; f < index_t(nf); ++f) {
+            if (has_vertex(mesh.faces(), f, mesh.edges()(e, 0))
+                && has_vertex(mesh.faces(), f, mesh.edges()(e, 1))) {
+                ef[e].erase(f); // A face containing the edge is not near it.
+            }
+        }
+    }
+    for (index_t f = 0; f < index_t(nf); ++f) {
+        for (index_t lv = 0; lv < 3; ++lv) {
+            const index_t v = mesh.faces()(f, lv);
+            fv[f].insert(v);
+            for (index_t e = 0; e < index_t(ne); ++e) {
+                if (has_vertex(mesh.edges(), e, v)) {
+                    fe[f].insert(e);
+                }
+            }
+            for (index_t other = 0; other < index_t(nf); ++other) {
+                if (has_vertex(mesh.faces(), other, v)) {
+                    ff[f].insert(other);
+                }
+            }
+        }
+        ff[f].erase(f);
+    }
+    for (index_t v = 0; v < index_t(nv); ++v) {
+        vv[v].erase(v);
+    }
+
+    const auto check = [&](const AdjList& list, const std::set<index_t>& want) {
+        CHECK(is_sorted_unique(list));
+        CHECK(ids(list) == ids(want));
+    };
+    for (index_t v = 0; v < index_t(nv); ++v) {
+        CAPTURE(v);
+        check(candidates.vv_set(mesh, v), vv[v]);
+        check(candidates.ve_set(v), ve[v]);
+        check(candidates.vf_set(v), vf[v]);
+    }
+    for (index_t e = 0; e < index_t(ne); ++e) {
+        CAPTURE(e);
+        check(candidates.ev_set(mesh, e), ev[e]);
+        check(candidates.ee_set(mesh, e), ee[e]);
+        check(candidates.ef_set(mesh, e), ef[e]);
+    }
+    for (index_t f = 0; f < index_t(nf); ++f) {
+        CAPTURE(f);
+        check(candidates.fv_set(mesh, f), fv[f]);
+        check(candidates.fe_set(mesh, f), fe[f]);
+        check(candidates.ff_set(mesh, f), ff[f]);
+    }
+
+    SECTION("Ids with no candidates have empty vertex lists")
+    {
+        CHECK(candidates.ve_set(1000).empty());
+        CHECK(candidates.vf_set(-1).empty());
+    }
+
+    SECTION("A copy shares the lists")
+    {
+        const Candidates copy = candidates;
+        for (index_t v = 0; v < index_t(nv); ++v) {
+            CHECK(ids(copy.ve_set(v)) == ids(candidates.ve_set(v)));
+            CHECK(ids(copy.ee_set(mesh, v)) == ids(candidates.ee_set(mesh, v)));
+        }
+    }
+
+    SECTION("Clearing the candidates empties every query")
+    {
+        candidates.clear();
+        CHECK(candidates.ve_set(0).empty());
+        CHECK(candidates.ee_set(mesh, 0).empty());
+    }
 }
 
 TEST_CASE(
