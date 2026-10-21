@@ -7,16 +7,14 @@
 #include <cmath>
 #include <map>
 #include <mutex>
-#include <sstream>
 #include <stdexcept>
 #include <vector>
 
 namespace ipc {
-// M_PI is not standard C++: MSVC only defines it when _USE_MATH_DEFINES is set
-// before <cmath>, which a consumer of this header cannot be relied on to do.
-static constexpr double pi_v = 3.14159265358979323846;
 
+/// Compute the nodes and weights for Gauss-Lobatto quadrature of order n.
 void lobatto_compute(int n, std::vector<double>& x, std::vector<double>& w);
+
 /// A single edge quadrature point in [0, 1] with its weight.
 /// Parallel to FaceQuadPoint for face quadrature.
 struct EdgeQuadPoint {
@@ -701,6 +699,11 @@ lobatto_compute(int n1, std::vector<double>& x, std::vector<double>& w)
     Output, double W[N], the weights.
 */
 {
+    // M_PI is not standard C++: MSVC only defines it when _USE_MATH_DEFINES is
+    // set before <cmath>, which a consumer of this header cannot be relied on
+    // to do.
+    static constexpr double pi_v = 3.14159265358979323846;
+
     int i;
     int j;
     double test;
