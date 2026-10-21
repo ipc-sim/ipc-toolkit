@@ -226,6 +226,33 @@ Miscellaneous
 - Take the ``distance_squared`` functor of the private ``AdditiveCCD::additive_ccd`` helper as a template parameter rather than a ``std::function`` (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
 - Fix stale ``IPC_TOOLKIT_CCD_BENCHMARK_DIR`` and ``IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR`` references in the CMake status messages; the cache variables are ``IPC_TOOLKIT_TESTS_CCD_BENCHMARK_DIR`` and ``IPC_TOOLKIT_TESTS_NEW_CCD_BENCHMARK_DIR`` (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
 
+v1.6.1 (October 21, 2026)
+-------------------------
+
+This patch release backports non-API-breaking fixes and additions from ``main``.
+
+Highlights
+~~~~~~~~~~
+
+- Add :cpp:func:`ipc::CollisionMesh::set_vertex_areas` and :cpp:func:`ipc::CollisionMesh::set_edge_areas` (the ``vertex_areas`` and ``edge_areas`` properties in Python) to supply custom collision weights, e.g., :math:`2\pi R \, ds` for axisymmetric models. Areas must be finite and non-negative; collisions with zero weight are dropped. Custom areas do not support shape derivatives (`#273 <https://github.com/ipc-sim/ipc-toolkit/pull/273>`_, issue `#266 <https://github.com/ipc-sim/ipc-toolkit/issues/266>`_).
+- Fix missing PSD projection of mollified :math:`m \le 0` Hessian blocks (`#244 <https://github.com/ipc-sim/ipc-toolkit/pull/244>`_).
+- Expose the :math:`u`, :math:`v`, and :math:`t` coordinates of an edge–triangle intersection and add :cpp:func:`ipc::CollisionMesh::face_normals` (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_).
+- Fix a memory leak in the CUDA code by updating Scalable CCD (`#261 <https://github.com/ipc-sim/ipc-toolkit/pull/261>`_).
+
+CUDA
+~~~~
+
+- Fix CUDA architecture selection and optimize the LBVH Morton codes (`#252 <https://github.com/ipc-sim/ipc-toolkit/pull/252>`_).
+
+Build and CI
+~~~~~~~~~~~~
+
+- Fall back to the `GitHub mirror <https://github.com/eigen-mirror/eigen>`_ when cloning Eigen from GitLab fails (`#277 <https://github.com/ipc-sim/ipc-toolkit/pull/277>`_).
+- Fix CMake options being forced in the cache (`#268 <https://github.com/ipc-sim/ipc-toolkit/pull/268>`_).
+- Key the CUDA, Python, and coverage ccaches on the CPU (`#267 <https://github.com/ipc-sim/ipc-toolkit/pull/267>`_).
+- Drop ccache from the docs build (`#270 <https://github.com/ipc-sim/ipc-toolkit/pull/270>`_).
+- Publish to PyPI with Trusted Publishing for provenance attestations (`#278 <https://github.com/ipc-sim/ipc-toolkit/pull/278>`_).
+
 v1.6.0 (July 14, 2026)
 ----------------------
 
