@@ -1,4 +1,4 @@
-# Eigen (https://gitlab.com/libeigen/eigen)
+# Eigen (https://gitlab.com/libeigen/eigen, mirrored at https://github.com/eigen-mirror/eigen)
 # License: MPL 2.0
 if(TARGET Eigen3::Eigen)
     return()
@@ -10,10 +10,49 @@ option(EIGEN_DONT_VECTORIZE "Disable Eigen vectorization" OFF)
 message(STATUS "Third-party: creating target 'Eigen3::Eigen'")
 
 include(CPM)
+
+set(EIGEN_GIT_TAG 5.0.1)
+set(EIGEN_GITLAB_URL "https://gitlab.com/libeigen/eigen.git")
+set(EIGEN_GITHUB_URL "https://github.com/eigen-mirror/eigen.git")
+
+# Cloning from GitLab fails often enough in CI that we fall back to the GitHub
+# mirror, which carries the same tags and commits. A failed clone inside
+# CPMAddPackage is a fatal error we can't recover from, so instead we probe
+# GitLab up front with a cheap `git ls-remote` and pick the source before CPM
+# runs. We skip the probe whenever no download will happen: Eigen is already in
+# the CPM cache or this build's _deps, or the user pointed CPM at a local copy.
+if(CPM_SOURCE_CACHE)
+    set(EIGEN_DOWNLOAD_DIR "${CPM_SOURCE_CACHE}/eigen/${EIGEN_GIT_TAG}")
+else()
+    set(EIGEN_DOWNLOAD_DIR "${FETCHCONTENT_BASE_DIR}/eigen-src")
+endif()
+set(EIGEN_GIT_REPOSITORY "${EIGEN_GITLAB_URL}")
+# CPM only looks for git once it starts downloading, so we look for it here.
+find_package(Git QUIET)
+if(GIT_FOUND AND NOT (EXISTS "${EIGEN_DOWNLOAD_DIR}"
+        OR DEFINED CPM_eigen_SOURCE OR FETCHCONTENT_FULLY_DISCONNECTED))
+    execute_process(
+        COMMAND "${GIT_EXECUTABLE}" ls-remote --exit-code
+            "${EIGEN_GITLAB_URL}" "refs/tags/${EIGEN_GIT_TAG}"
+        RESULT_VARIABLE EIGEN_GITLAB_STATUS
+        OUTPUT_QUIET ERROR_QUIET
+        TIMEOUT 30
+    )
+    if(NOT EIGEN_GITLAB_STATUS EQUAL 0)
+        message(WARNING "Unable to reach ${EIGEN_GITLAB_URL}; "
+            "falling back to the GitHub mirror ${EIGEN_GITHUB_URL}.")
+        set(EIGEN_GIT_REPOSITORY "${EIGEN_GITHUB_URL}")
+    endif()
+endif()
+
 CPMAddPackage(
     NAME eigen
-    GITLAB_REPOSITORY libeigen/eigen
-    GIT_TAG 5.0.1
+    GIT_REPOSITORY "${EIGEN_GIT_REPOSITORY}"
+    GIT_TAG ${EIGEN_GIT_TAG}
+    # Both sources hold identical commits, so we key the cache on the tag alone.
+    # Otherwise CPM hashes the repository URL into the cache path and a
+    # fallback would re-clone Eigen even when the GitLab copy is already cached.
+    CUSTOM_CACHE_KEY ${EIGEN_GIT_TAG}
     DOWNLOAD_ONLY YES
 )
 
