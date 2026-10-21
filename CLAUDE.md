@@ -208,6 +208,10 @@ A before/after figure measures one quantity across many cases, so it is **horizo
 - **Category labels** — two lines, right-aligned against the axis: case name on the first line, its size and any variant/config on the second, separated by a middle dot (e.g. `"cloth-ball"` over `"3,012 · two-pass"`); the second line is smaller and greyed.
 - **Legend** — inside the plot, top right, vertical, no frame (`legend=dict(x=0.99, y=0.99, xanchor='right', yanchor='top', bgcolor='rgba(0,0,0,0)')`), no legend title; entries name themselves (`"before (main)"`, `"after"`).
 
+## Branch Naming
+
+Branch names must match `^(feature|bugfix|fix|refactor|docs|chore|test|release)\/.+` (e.g. `feature/cuda`, `fix/eigen-github-fallback`). The only exceptions are `main`, release branches matching `v[0-9.]*` (e.g. `v1.2.1`), and `gh-pages`.
+
 ## Writing PR Descriptions
 
 Start from `.github/pull_request_template.md` — keep its section skeleton (`# Description`, `## Type of change`, `# How Has This Been Tested?`, `# Checklist`), but write each section of the project's best PRs (e.g. [#246](https://github.com/ipc-sim/ipc-toolkit/pull/246), [#248](https://github.com/ipc-sim/ipc-toolkit/pull/248), [#230](https://github.com/ipc-sim/ipc-toolkit/pull/230), [#228](https://github.com/ipc-sim/ipc-toolkit/pull/228), [#222](https://github.com/ipc-sim/ipc-toolkit/pull/222), [#210](https://github.com/ipc-sim/ipc-toolkit/pull/210), [#207](https://github.com/ipc-sim/ipc-toolkit/pull/207), [#192](https://github.com/ipc-sim/ipc-toolkit/pull/192), [#188](https://github.com/ipc-sim/ipc-toolkit/pull/188)) instead of a one-line fill-in-the-blank.
