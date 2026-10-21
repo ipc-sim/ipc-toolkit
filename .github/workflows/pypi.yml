@@ -178,6 +178,15 @@ jobs:
     runs-on: ubuntu-latest
     # Pull requests only check that the wheels build.
     if: github.event_name != 'pull_request'
+    # We publish through PyPI's Trusted Publishing instead of an API token.
+    # The OIDC identity lets the publish action sign a provenance attestation
+    # for every file, which PyPI shows under each release's "Security" tab.
+    # The environment name must match the trusted publisher set up on PyPI.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ipctk
+    permissions:
+      id-token: write
     # upload to PyPI on every tag starting with 'v'
     # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     # alternatively, to publish when a GitHub Release is created, use the following rule:
@@ -197,12 +206,10 @@ jobs:
           merge-multiple: true
           path: dist
 
+      # Attestations are on by default, but only under Trusted Publishing;
+      # an API token silently skips them.
       - uses: pypa/gh-action-pypi-publish@v1.14.0
         with:
-          user: __token__
-          # To test:
+          # To test (needs its own trusted publisher on TestPyPI):
           # repository-url: https://test.pypi.org/legacy/
-          # password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          # To release:
-          password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true
