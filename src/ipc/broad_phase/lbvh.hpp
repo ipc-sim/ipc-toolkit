@@ -155,6 +155,26 @@ public:
     void detect_face_face_candidates(
         std::vector<FaceFaceCandidate>& candidates) const override;
 
+    /// @brief Find the primitives whose AABB is within a radius of a point.
+    ///
+    /// We test the built boxes against a box of half-width `radius` centered
+    /// at `q`, so this is a broad phase only: callers still need an exact
+    /// distance check. The tree is typically built with zero inflation so one
+    /// build serves queries at any radius, since we apply the radius to the
+    /// query box instead.
+    /// @param q Query point (2D or 3D, matching the mesh).
+    /// @param radius Half-width of the query box around q.
+    /// @param[out] vertex_ids Ids of the nearby vertices.
+    /// @param[out] edge_ids Ids of the nearby edges.
+    /// @param[out] face_ids Ids of the nearby faces. Empty in 2D, where no
+    ///        face tree is built.
+    void query_point(
+        Eigen::ConstRef<RowVectorMax3d> q,
+        double radius,
+        std::vector<index_t>& vertex_ids,
+        std::vector<index_t>& edge_ids,
+        std::vector<index_t>& face_ids) const;
+
     const Nodes& vertex_nodes() const { return vertex_bvh; }
     const Nodes& edge_nodes() const { return edge_bvh; }
     const Nodes& face_nodes() const { return face_bvh; }

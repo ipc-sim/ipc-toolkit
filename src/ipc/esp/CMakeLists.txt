@@ -1,6 +1,4 @@
 set(SOURCES
-  arbitrary_point_bvh.cpp
-  arbitrary_point_bvh.hpp
   arbitrary_point_esp.cpp
   arbitrary_point_esp.hpp
   esp_collision_maps.hpp

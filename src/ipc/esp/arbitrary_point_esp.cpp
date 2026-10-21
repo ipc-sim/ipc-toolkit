@@ -243,7 +243,7 @@ namespace {
     // The collisions at query point q, in the calling thread's scratch.
     template <int dim>
     const PointCollisions<dim>& build_point_collisions(
-        const ArbitraryPointBVH& point_bvh,
+        const LBVH& point_bvh,
         const CollisionMesh& mesh,
         const ESPParameters& params,
         const std::vector<int>& edge_weights,
@@ -369,7 +369,10 @@ ArbitraryPointESP<dim>::ArbitraryPointESP(
 template <int dim>
 void ArbitraryPointESP<dim>::update(Eigen::ConstRef<Eigen::MatrixXd> V)
 {
-    m_point_bvh.update(V, m_mesh);
+    // Zero inflation: LBVH::query_point applies the radius to the query box, so
+    // one build serves queries at any radius.
+    m_point_bvh.build(
+        V, m_mesh.edges(), m_mesh.faces(), /*inflation_radius=*/0.0);
 }
 
 template <int dim>

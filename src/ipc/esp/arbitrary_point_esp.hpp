@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ipc/collision_mesh.hpp>
-#include <ipc/esp/arbitrary_point_bvh.hpp>
+#include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/esp/collisions/esp_collision_dict.hpp>
 #include <ipc/esp/esp_parameters.hpp>
 
@@ -16,7 +16,7 @@ namespace ipc {
 ///
 /// Reuses the same collision-construction machinery as
 /// PointPotential::build_collisions_at_vertex / build_collisions_at_edge_qp
-/// (quadrature_potential.cpp): nearby primitives found by ArbitraryPointBVH
+/// (quadrature_potential.cpp): nearby primitives found by LBVH::query_point
 /// are classified with exact point-primitive distance-type predicates --
 /// which of a primitive's sub-features (face/edge/vertex in 3D,
 /// edge/vertex in 2D) the query's closest point actually falls on -- and
@@ -88,7 +88,7 @@ public:
 private:
     const CollisionMesh& m_mesh;
     ESPParameters m_params;
-    ArbitraryPointBVH m_point_bvh;
+    LBVH m_point_bvh;
     /// Inclusion-exclusion weight of each edge and each vertex (every face
     /// has weight one), from the mesh connectivity; see
     /// compute_inclusion_exclusion_weights().

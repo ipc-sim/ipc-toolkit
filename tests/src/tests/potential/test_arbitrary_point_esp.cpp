@@ -5,7 +5,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <ipc/esp/arbitrary_point_bvh.hpp>
+#include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/esp/arbitrary_point_esp.hpp>
 
 #include <finitediff.hpp>
@@ -565,8 +565,8 @@ TEST_CASE(
     }
     const CollisionMesh mesh(V, E, Eigen::MatrixXi(0, 3));
 
-    ArbitraryPointBVH bvh;
-    bvh.update(V, mesh);
+    LBVH bvh;
+    bvh.build(V, mesh.edges(), mesh.faces(), /*inflation_radius=*/0.0);
 
     std::vector<index_t> vertex_ids, edge_ids, face_ids;
     bvh.query_point(
