@@ -210,7 +210,7 @@ A before/after figure measures one quantity across many cases, so it is **horizo
 
 ## Branch Naming
 
-Branch names must match `^(feature|bugfix|fix|refactor|docs|chore|test|release)\/.+` (e.g. `feature/cuda`, `fix/eigen-github-fallback`). The only exceptions are `main`, release branches matching `v[0-9.]*` (e.g. `v1.2.1`), and `gh-pages`.
+Branch names must match `^(feature|bugfix|fix|refactor|docs|chore|test|release)\/.+` (e.g. `feature/cuda`, `fix/eigen-github-fallback`). The only exceptions are `main`, release branches matching `v[0-9.]*` (e.g. `v1.2.1`), maintenance branches matching `[0-9]+\.[0-9]+\.x` (e.g. `1.6.x`, which collects the cherry-picks for patch releases like v1.6.1), and `gh-pages`.
 
 ## Writing PR Descriptions
 
