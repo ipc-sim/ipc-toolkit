@@ -324,6 +324,10 @@ if(IPC_TOOLKIT_WITH_FILIB)
   target_link_libraries(ipc_toolkit PUBLIC filib::filib)
 endif()
 
+# Exact arithmetic (geogram's MultiPrecision PSM)
+include(geogram_multi_precision)
+target_link_libraries(ipc_toolkit PRIVATE geogram::multi_precision)
+
 # Block-accelerated Hessian assembly
 if(IPC_TOOLKIT_WITH_MESHFEM_SPARSE)
   include(meshfem_sparse)

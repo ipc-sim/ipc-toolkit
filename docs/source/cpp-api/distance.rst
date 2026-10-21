@@ -12,6 +12,17 @@ Distance Type
 .. doxygenfunction:: ipc::edge_edge_distance_type
 .. doxygenfunction:: ipc::point_triangle_distance_type
 
+Exact Distance Type
+-------------------
+
+.. doxygenclass:: ipc::DistanceTypeConfig
+    :allow-dot-graphs:
+
+.. doxygenfunction:: ipc::point_edge_distance_type_exact
+.. doxygenfunction:: ipc::edge_edge_distance_type_exact
+.. doxygenfunction:: ipc::point_triangle_distance_type_exact
+.. doxygenfunction:: ipc::is_parallel_edge_edge
+
 Edge-Edge Mollifier
 -------------------
 

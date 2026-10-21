@@ -5,8 +5,8 @@
 #include <tests/utils.hpp>
 
 #include <ipc/distance/point_edge.hpp>
-#include <ipc/smooth_contact/distance/point_edge.hpp>
-#include <ipc/smooth_contact/distance/primitive_distance.tpp>
+#include <ipc/gcp/distance/point_edge.hpp>
+#include <ipc/gcp/distance/primitive_distance.tpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <finitediff.hpp>

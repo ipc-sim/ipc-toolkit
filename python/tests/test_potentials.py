@@ -1,7 +1,8 @@
 """Tests for the potential bindings.
 
 Covers the Python-side input validation (which the C++ API only enforces with
-assert(), compiled out under NDEBUG) and the smooth-contact/GCP bindings.
+assert(), compiled out under NDEBUG) and the smooth-contact/GCP and ESP
+bindings.
 
 Uses unittest.TestCase so that assertRaises is available under both nose2 (the
 runner used in CI) and pytest, without adding a pytest dependency.
@@ -172,13 +173,13 @@ class TestBarrierPotentialProperties(unittest.TestCase):
         self.assertNotEqual(off(*args), on(*args))
 
 
-class TestSmoothContactParameters(unittest.TestCase):
+class TestGCPParameters(unittest.TestCase):
     def test_adaptive_dhat_ratio_default(self):
-        params = ipctk.SmoothContactParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
+        params = ipctk.GCPParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
         self.assertEqual(params.adaptive_dhat_ratio, 0.5)
 
     def test_adaptive_dhat_ratio_roundtrip(self):
-        params = ipctk.SmoothContactParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
+        params = ipctk.GCPParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
         for ratio in (0.1, 0.25, 0.9):
             params.adaptive_dhat_ratio = ratio
             self.assertEqual(params.adaptive_dhat_ratio, ratio)
@@ -196,9 +197,9 @@ class TestSmoothContactParameters(unittest.TestCase):
 
         counts = []
         for ratio in (0.1, 0.5, 0.9):
-            params = ipctk.SmoothContactParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
+            params = ipctk.GCPParameters(DHAT, 0.5, 0.0, 0.1, 0.0, 2)
             params.adaptive_dhat_ratio = ratio
-            collisions = ipctk.SmoothCollisions()
+            collisions = ipctk.GCPCollisions()
             collisions.compute_adaptive_dhat(mesh, rest, params)
             collisions.build(mesh, deformed, params, True)
             counts.append(len(collisions))
@@ -208,16 +209,16 @@ class TestSmoothContactParameters(unittest.TestCase):
         self.assertLess(counts[1], counts[2], f"not monotonic: {counts}")
 
 
-class TestSmoothCollisionsAdaptiveDhat(unittest.TestCase):
+class TestGCPCollisionsAdaptiveDhat(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.mesh, cls.rest = two_cubes()
-        cls.params = ipctk.SmoothContactParameters(
+        cls.params = ipctk.GCPParameters(
             DHAT, 0.5, 0.0, 0.1, 0.0, 2)
-        cls.potential = ipctk.SmoothContactPotential(cls.params)
+        cls.potential = ipctk.GCPPotential(cls.params)
 
     def _build(self, use_adaptive_dhat):
-        collisions = ipctk.SmoothCollisions()
+        collisions = ipctk.GCPCollisions()
         if use_adaptive_dhat:
             collisions.compute_adaptive_dhat(self.mesh, self.rest, self.params)
         collisions.build(self.mesh, self.rest, self.params, use_adaptive_dhat)
@@ -244,20 +245,54 @@ class TestSmoothCollisionsAdaptiveDhat(unittest.TestCase):
         np.testing.assert_array_equal(gradient, np.zeros_like(gradient))
 
     def test_broad_phase_argument_accepted(self):
-        collisions = ipctk.SmoothCollisions()
+        collisions = ipctk.GCPCollisions()
         collisions.compute_adaptive_dhat(
             self.mesh, self.rest, self.params, ipctk.LBVH())
 
 
-class TestSmoothContactPotentialNaming(unittest.TestCase):
-    """The Python class was previously exposed as "SmoothPotential", which did
-    not match the C++ name. Guard the rename in both directions."""
+class TestGCPAliases(unittest.TestCase):
+    def test_smooth_names_alias_gcp(self):
+        for old, new in [
+            ("SmoothCollision2", "GCPCollision2"),
+            ("SmoothCollisions", "GCPCollisions"),
+            ("SmoothContactParameters", "GCPParameters"),
+            ("SmoothContactPotential", "GCPPotential"),
+        ]:
+            with self.assertWarns(DeprecationWarning):
+                self.assertIs(getattr(ipctk, old), getattr(ipctk, new))
 
-    def test_matches_cpp_name(self):
-        self.assertTrue(hasattr(ipctk, "SmoothContactPotential"))
 
-    def test_old_name_removed(self):
-        self.assertFalse(hasattr(ipctk, "SmoothPotential"))
+class TestESPPotential(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.mesh, cls.rest = two_cubes()
+        cls.params = ipctk.ESPParameters(DHAT)
+        cls.potential = ipctk.ESPPotential(cls.params)
+        cls.collisions = ipctk.ESPCollisions()
+        cls.collisions.build(cls.mesh, cls.rest, cls.params)
+
+    def test_parameter_defaults(self):
+        self.assertTrue(self.params.area_weights)
+        self.assertEqual(
+            self.params.integration_type,
+            ipctk.ESPParameters.IntegrationType.NORMAL)
+
+    def test_gradient_matches_finite_differences(self):
+        args = (self.collisions, self.mesh)
+        self.assertGreater(self.potential(*args, self.rest), 0.0)
+
+        direction = np.random.default_rng(0).standard_normal(self.rest.shape)
+        h = 1e-7  # central differences are O(h^2) and the barrier is stiff
+        fd = (self.potential(*args, self.rest + h * direction)
+              - self.potential(*args, self.rest - h * direction)) / (2 * h)
+        gradient = self.potential.gradient(*args, self.rest)
+        self.assertAlmostEqual(
+            gradient @ direction.ravel() / fd, 1.0, places=5)
+
+    def test_hessian_shape(self):
+        hessian = self.potential.hessian(
+            self.collisions, self.mesh, self.rest)
+        self.assertEqual(hessian.shape, (self.rest.size, self.rest.size))
 
 
 if __name__ == "__main__":

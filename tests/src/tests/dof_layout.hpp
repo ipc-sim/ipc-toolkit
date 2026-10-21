@@ -25,6 +25,7 @@
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
+#include <array>
 #include <cassert>
 
 namespace ipc::tests {
@@ -46,6 +47,19 @@ inline auto flatten(const Eigen::MatrixXd& V)
 inline auto unflatten(const Eigen::VectorXd& x, int dim)
 {
     return x.reshaped<VERTEX_DERIVATIVE_LAYOUT>(x.size() / dim, dim);
+}
+
+/// The DOF indices of a vertex's coordinates in VERTEX_DERIVATIVE_LAYOUT
+/// order, e.g. to pick out that vertex's block of a global Hessian.
+template <int dim> inline std::array<int, dim> vertex_dofs(int vid, int n_verts)
+{
+    std::array<int, dim> dofs;
+    for (int d = 0; d < dim; ++d) {
+        dofs[d] = VERTEX_DERIVATIVE_LAYOUT == Eigen::RowMajor
+            ? vid * dim + d
+            : d * n_verts + vid;
+    }
+    return dofs;
 }
 
 // ─── Reorder FD results from RowMajor to VERTEX_DERIVATIVE_LAYOUT ──────────

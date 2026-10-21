@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <mutex>
+#include <stdexcept>
 
 namespace ipc {
 
@@ -32,6 +33,7 @@ CollisionMesh::CollisionMesh(
 CollisionMesh::CollisionMesh(
     const std::vector<bool>& include_vertex,
     const std::vector<bool>& orient_vertex,
+    const std::vector<bool>& obstacle_vertex,
     Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces,
@@ -97,6 +99,18 @@ CollisionMesh::CollisionMesh(
     m_is_orient_vertex.assign(m_rest_positions.rows(), false);
     for (int i = 0; i < m_is_orient_vertex.size(); i++) {
         m_is_orient_vertex[i] = orient_vertex[m_vertex_to_full_vertex[i]];
+    }
+
+    // An assert is not enough here: a mask sized to the collision vertices
+    // instead of the full mesh would be read out of bounds in Release builds.
+    if (obstacle_vertex.size() != full_rest_positions.rows()) {
+        log_and_throw_error<std::invalid_argument>(
+            "obstacle_vertex has {} entries, but the full mesh has {} vertices.",
+            obstacle_vertex.size(), full_rest_positions.rows());
+    }
+    m_is_obstacle_vertex.assign(m_rest_positions.rows(), false);
+    for (int i = 0; i < m_is_obstacle_vertex.size(); i++) {
+        m_is_obstacle_vertex[i] = obstacle_vertex[m_vertex_to_full_vertex[i]];
     }
 
     // Map faces and edges to only included vertices
@@ -342,9 +356,10 @@ void CollisionMesh::init_areas()
     Eigen::VectorXd vertex_face_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
     m_edge_areas.setConstant(m_edges.rows(), -1);
+    m_face_areas.setConstant(m_faces.rows(), -1);
     if (dim() == 3) {
         for (int i = 0; i < m_faces.rows(); i++) {
-            double face_area = triangle_area(
+            m_face_areas(i) = triangle_area(
                 m_rest_positions.row(m_faces(i, 0)),
                 m_rest_positions.row(m_faces(i, 1)),
                 m_rest_positions.row(m_faces(i, 2)));
@@ -352,11 +367,11 @@ void CollisionMesh::init_areas()
             for (int j = 0; j < m_faces.cols(); ++j) {
                 vertex_face_areas[m_faces(i, j)] =
                     std::max(vertex_face_areas[m_faces(i, j)], 0.0);
-                vertex_face_areas[m_faces(i, j)] += face_area / 3.0;
+                vertex_face_areas[m_faces(i, j)] += m_face_areas(i) / 3.0;
 
                 m_edge_areas[m_faces_to_edges(i, j)] =
                     std::max(m_edge_areas[m_faces_to_edges(i, j)], 0.0);
-                m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3.0;
+                m_edge_areas[m_faces_to_edges(i, j)] += m_face_areas(i) / 3.0;
             }
         }
     }
@@ -383,14 +398,13 @@ namespace {
         const char* name)
     {
         if (areas.size() != expected_size) {
-            throw std::invalid_argument(
-                fmt::format(
-                    "{} has size {} but expected {}", name, areas.size(),
-                    expected_size));
+            log_and_throw_error<std::invalid_argument>(
+                "{} has size {} but expected {}", name, areas.size(),
+                expected_size);
         }
         if (!areas.allFinite() || (areas.array() < 0).any()) {
-            throw std::invalid_argument(
-                fmt::format("{} must be finite and non-negative", name));
+            log_and_throw_error<std::invalid_argument>(
+                "{} must be finite and non-negative", name);
         }
     }
 } // namespace
@@ -400,7 +414,7 @@ void CollisionMesh::set_vertex_areas(
 {
     check_areas(vertex_areas, num_vertices(), "vertex_areas");
     if (are_area_jacobians_initialized()) {
-        throw std::runtime_error(
+        log_and_throw_error(
             "Cannot set custom vertex areas after init_area_jacobians(): the area Jacobians would no longer match.");
     }
     m_vertex_areas = vertex_areas;
@@ -411,7 +425,7 @@ void CollisionMesh::set_edge_areas(Eigen::ConstRef<Eigen::VectorXd> edge_areas)
 {
     check_areas(edge_areas, num_edges(), "edge_areas");
     if (are_area_jacobians_initialized()) {
-        throw std::runtime_error(
+        log_and_throw_error(
             "Cannot set custom edge areas after init_area_jacobians(): the area Jacobians would no longer match.");
     }
     m_edge_areas = edge_areas;
@@ -421,7 +435,7 @@ void CollisionMesh::set_edge_areas(Eigen::ConstRef<Eigen::VectorXd> edge_areas)
 void CollisionMesh::init_area_jacobians()
 {
     if (m_has_custom_areas) {
-        throw std::runtime_error(
+        log_and_throw_error(
             "Cannot initialize area Jacobians after setting custom areas: shape derivatives are not supported with custom areas.");
     }
 
@@ -609,7 +623,7 @@ Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
             if (search != edge_map.end()) {
                 faces_to_edges(fi, fj) = search->second;
             } else {
-                throw std::runtime_error("Unable to find edge!");
+                log_and_throw_error("Unable to find edge!");
             }
         }
     }

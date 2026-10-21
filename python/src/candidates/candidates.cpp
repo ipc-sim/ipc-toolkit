@@ -12,7 +12,7 @@ void define_candidates(py::module_& m)
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
-                const double, BroadPhase*>(&Candidates::build),
+                const double, BroadPhase*, const bool>(&Candidates::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of discrete collision detection candidates.
 
@@ -21,9 +21,10 @@ void define_candidates(py::module_& m)
                 vertices: Surface vertex positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
                 broad_phase: Broad phase to use.
+                all_types: Also detect the candidate types only ESP needs.
             )ipc_Qu8mg5v7",
             "mesh"_a, "vertices"_a, "inflation_radius"_a = 0,
-            "broad_phase"_a = nullptr)
+            "broad_phase"_a = nullptr, "all_types"_a = false)
         .def(
             "build",
             py::overload_cast<
@@ -268,5 +269,8 @@ void define_candidates(py::module_& m)
         .def_readwrite("ev_candidates", &Candidates::ev_candidates)
         .def_readwrite("ee_candidates", &Candidates::ee_candidates)
         .def_readwrite("fv_candidates", &Candidates::fv_candidates)
-        .def_readwrite("pv_candidates", &Candidates::pv_candidates);
+        .def_readwrite("pv_candidates", &Candidates::pv_candidates)
+        .def_readwrite(
+            "has_all_types", &Candidates::has_all_types,
+            "Whether these candidates include the types only ESP needs (set by build(all_types=...)).");
 }

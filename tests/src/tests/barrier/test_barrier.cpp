@@ -6,7 +6,7 @@
 
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/geometry/normal.hpp>
-#include <ipc/smooth_contact/primitives/point3.hpp>
+#include <ipc/gcp/primitives/point3.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 #include <ipc/math/math.hpp>
 
@@ -14,6 +14,7 @@
 #include <igl/edges.h>
 
 #include <cmath>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -249,7 +250,7 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
 
 TEST_CASE("point term derivatives", "[deriv]")
 {
-    ipc::SmoothContactParameters params(1, 1, 1, 0.01, 0, 2);
+    ipc::GCPParameters params(1, 1, 1, 0.01, 0, 2);
 
     Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
@@ -340,7 +341,7 @@ TEST_CASE("point term derivatives", "[deriv]")
 
 TEST_CASE("point term normal derivatives", "[deriv]")
 {
-    ipc::SmoothContactParameters params(1, 1, 1, 1, 0, 2);
+    ipc::GCPParameters params(1, 1, 1, 1, 0, 2);
 
     Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
@@ -401,6 +402,18 @@ TEST_CASE("point term normal derivatives", "[deriv]")
     }
 }
 
+TEST_CASE("Inverse-power barrier requires a positive power", "[barrier]")
+{
+    CHECK_NOTHROW(InversePowerBarrier<>(0.5));
+
+    // p = 0 would stay bounded at contact, p < 0 would attract, and a
+    // non-finite power would poison every evaluation.
+    const double power = GENERATE(
+        0.0, -1.0, std::nan(""), std::numeric_limits<double>::infinity());
+    CAPTURE(power);
+    CHECK_THROWS_AS(InversePowerBarrier<>(power), std::invalid_argument);
+}
+
 TEST_CASE("Barrier derivatives", "[barrier]")
 {
     bool use_dist_sqr = GENERATE(false, true);
@@ -435,6 +448,18 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     SECTION("TwoStage")
     {
         barrier = std::make_unique<ipc::TwoStageBarrier<>>();
+    }
+    SECTION("InversePower1")
+    {
+        barrier = std::make_unique<ipc::InversePowerBarrier<>>(1.0);
+    }
+    SECTION("InversePower2")
+    {
+        barrier = std::make_unique<ipc::InversePowerBarrier<>>(2.0);
+    }
+    SECTION("InversePower3")
+    {
+        barrier = std::make_unique<ipc::InversePowerBarrier<>>(3.0);
     }
 
     if (use_dist_sqr) {
@@ -474,7 +499,7 @@ TEST_CASE("Physical barrier", "[barrier]")
 {
     const bool use_dist_sqr = GENERATE(false, true);
 
-    ipc::ClampedLogBarrier original_barrier;
+    ipc::ClampedLogBarrier<> original_barrier;
     PhysicalBarrier new_barrier(use_dist_sqr);
 
     const double dhat =

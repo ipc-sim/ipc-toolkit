@@ -557,4 +557,63 @@ bool LBVH::can_faces_collide(size_t fai, size_t fbi) const
         fa0i, fa1i, fa2i, fb0i, fb1i, fb2i, can_vertices_collide);
 }
 
+namespace {
+    /// @brief Build a query node whose AABB is a cube of half-width `radius`
+    /// centered at p, for use with LBVH::Node::intersects(). Only the AABB is
+    /// meaningful.
+    ///
+    /// We pad a 2D point to (x, y, 0), which is what AABB does to 2D
+    /// primitives (it zero-fills the unused component), so the query's z range
+    /// [-radius, radius] straddles the tree's.
+    LBVH::Node
+    point_query_node(Eigen::ConstRef<RowVectorMax3d> p, const double radius)
+    {
+        Eigen::Array3d c = Eigen::Array3d::Zero();
+        c.head(p.size()) = p.transpose().array();
+
+        LBVH::Node n;
+        n.aabb_min = (c - radius).cast<float>();
+        n.aabb_max = (c + radius).cast<float>();
+        n.primitive_id = -1;
+        n.is_inner_marker = 0;
+        return n;
+    }
+
+    /// @brief Collect the primitive ids of every leaf of one tree that
+    /// intersects the query node. We reuse the descent of the pairwise
+    /// queries, whose fixed-size stack is sized for the deepest tree a
+    /// Morton-code build can produce and throws instead of overflowing.
+    void query_tree(
+        const LBVH::Nodes& bvh,
+        const LBVH::Node& query,
+        std::vector<index_t>& hits)
+    {
+        hits.clear();
+        if (bvh.empty()) {
+            return;
+        }
+
+        details::traverse_lbvh</*triangular=*/false>(
+            /*query_leaf_idx=*/-1, bvh.data(), static_cast<int>(bvh.size()),
+            /*target_rightmost=*/nullptr,
+            [&](const LBVH::Node& node) { return node.intersects(query); },
+            [&](const LBVH::Node& leaf, int /*leaf_idx*/, bool /*mask*/) {
+                hits.push_back(leaf.primitive_id);
+            });
+    }
+} // namespace
+
+void LBVH::query_point(
+    Eigen::ConstRef<RowVectorMax3d> q,
+    const double radius,
+    std::vector<index_t>& vertex_ids,
+    std::vector<index_t>& edge_ids,
+    std::vector<index_t>& face_ids) const
+{
+    const Node query = point_query_node(q, radius);
+    query_tree(vertex_bvh, query, vertex_ids);
+    query_tree(edge_bvh, query, edge_ids);
+    query_tree(face_bvh, query, face_ids);
+}
+
 } // namespace ipc
