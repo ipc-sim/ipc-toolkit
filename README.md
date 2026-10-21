@@ -1,5 +1,5 @@
 <p align="center">
-<a href="https://ipctk.xyz"><img alt="IPC Toolkit" src="docs/source/_static/logo.png" width="80%"></a>
+<a href="https://ipctk.xyz"><img alt="IPC Toolkit" src="docs/source/_static/logo.png"></a>
 </p>
 
 <p align="center">
