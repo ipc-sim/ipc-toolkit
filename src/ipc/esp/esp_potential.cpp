@@ -1,15 +1,14 @@
 #include "esp_potential.hpp"
 
-#include "ipc/barrier/barrier.hpp"
-#include "ipc/distance/edge_edge.hpp"
-#include "ipc/distance/edge_edge_mollifier.hpp"
-#include "ipc/esp/collisions/esp_quadrature.hpp"
-#include "ipc/esp/collisions/vertex_matrix_view.hpp"
-#include "ipc/esp/esp_collision_maps.hpp"
-#include "ipc/esp/esp_distance.hpp"
-#include "ipc/esp/quadrature_potential.hpp"
-#include "ipc/gcp/distance/mollifier.hpp"
-
+#include <ipc/barrier/barrier.hpp>
+#include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/edge_edge_mollifier.hpp>
+#include <ipc/esp/collisions/esp_quadrature.hpp>
+#include <ipc/esp/collisions/vertex_matrix_view.hpp>
+#include <ipc/esp/esp_collision_maps.hpp>
+#include <ipc/esp/esp_distance.hpp>
+#include <ipc/esp/quadrature_potential.hpp>
+#include <ipc/gcp/distance/mollifier.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
 #include <tbb/blocked_range.h>

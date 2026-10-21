@@ -1,9 +1,8 @@
 #pragma once
 
-#include "esp_primitives.hpp"
-#include "vertex_matrix_view.hpp"
-
 #include <ipc/barrier/barrier.hpp>
+#include <ipc/esp/collisions/esp_primitives.hpp>
+#include <ipc/esp/collisions/vertex_matrix_view.hpp>
 #include <ipc/esp/esp_parameters.hpp>
 #include <ipc/math/math.hpp>
 #include <ipc/utils/autodiff_types.hpp>

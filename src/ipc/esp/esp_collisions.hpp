@@ -1,11 +1,10 @@
 #pragma once
 
-#include "collisions/esp_collision.hpp"
-#include "collisions/esp_collision_dict.hpp"
-
 #include <ipc/collision_mesh.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/collisions/normal/edge_edge.hpp>
+#include <ipc/esp/collisions/esp_collision.hpp>
+#include <ipc/esp/collisions/esp_collision_dict.hpp>
 
 #include <memory>
 

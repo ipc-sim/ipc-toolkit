@@ -1,11 +1,10 @@
 #include "esp_collisions_builder.hpp"
 
-#include "collisions/esp_quadrature.hpp"
-
 #include <ipc/distance/distance_type_exact.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
+#include <ipc/esp/collisions/esp_quadrature.hpp>
 #include <ipc/esp/esp_collision_maps.hpp>
 #include <ipc/esp/esp_distance.hpp>
 #include <ipc/esp/quadrature_potential.hpp>

@@ -1,8 +1,7 @@
 #pragma once
-#include "esp_collision.hpp"
-#include "esp_primitives.hpp"
-
 #include <ipc/barrier/barrier.hpp>
+#include <ipc/esp/collisions/esp_collision.hpp>
+#include <ipc/esp/collisions/esp_primitives.hpp>
 #include <ipc/utils/logger.hpp>
 
 #include <array>

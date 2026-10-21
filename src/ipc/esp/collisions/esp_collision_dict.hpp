@@ -1,7 +1,6 @@
 #pragma once
-#include "esp_collision_template.hpp"
-
 #include <ipc/distance/distance_type.hpp>
+#include <ipc/esp/collisions/esp_collision_template.hpp>
 
 #include <array>
 #include <cstdint>

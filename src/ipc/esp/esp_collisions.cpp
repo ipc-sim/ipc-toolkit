@@ -1,8 +1,7 @@
 #include "esp_collisions.hpp"
 
-#include "esp_collision_maps.hpp"
-#include "esp_collisions_builder.hpp"
-
+#include <ipc/esp/esp_collision_maps.hpp>
+#include <ipc/esp/esp_collisions_builder.hpp>
 #include <ipc/esp/quadrature_potential.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/logger.hpp>
