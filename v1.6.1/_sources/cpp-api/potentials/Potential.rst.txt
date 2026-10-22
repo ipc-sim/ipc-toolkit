@@ -1,0 +1,4 @@
+Potential
+==========
+
+.. doxygenclass:: ipc::Potential

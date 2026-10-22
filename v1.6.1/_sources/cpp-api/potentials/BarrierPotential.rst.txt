@@ -1,0 +1,4 @@
+BarrierPotential
+================
+
+.. doxygenclass:: ipc::BarrierPotential
