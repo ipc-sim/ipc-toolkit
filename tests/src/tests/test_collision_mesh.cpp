@@ -7,6 +7,8 @@
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/config.hpp>
 
+#include <igl/PI.h>
+
 using namespace ipc;
 
 TEST_CASE("Collision mesh", "[collision_mesh]")
@@ -267,7 +269,7 @@ TEST_CASE("User-provided collision mesh areas", "[collision_mesh][areas]")
 
     SECTION("Custom areas become the collision weights")
     {
-        const double scale = 2 * M_PI * 3.0;
+        const double scale = 2 * igl::PI * 3.0;
         mesh.set_vertex_areas(scale * default_areas);
         mesh.set_edge_areas(scale * mesh.edge_areas());
 
