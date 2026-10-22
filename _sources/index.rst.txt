@@ -1,3 +1,5 @@
+:hide-toc:
+
 .. toctree::
     :caption: About
     :hidden:
@@ -84,8 +86,11 @@
     Code of Conduct <developers/code_of_conduct.md>
     developers/tools.rst
 
-.. image:: _static/logo.png
-    :alt: IPC Toolkit
+.. image:: _static/logo-light.svg#only-light
+   :alt: IPC Toolkit
+
+.. image:: _static/logo-dark.svg#only-dark
+   :alt: IPC Toolkit
 
 .. raw:: html
 
