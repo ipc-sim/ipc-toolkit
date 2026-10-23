@@ -220,6 +220,10 @@ autodoc_default_options = {
     "show-inheritance": True,
 }
 
+# PyTorch is an optional dependency of ipctk.torch, and the docs environment
+# doesn't install it. We mock it so autodoc can still import the module.
+autodoc_mock_imports = ["torch"]
+
 # -- GraphViz configuration ----------------------------------
 graphviz_output_format = "svg"
 

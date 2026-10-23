@@ -130,7 +130,9 @@ class CMakeBuild(build_ext):
 
 
 setup(
-    ext_modules=[CMakeExtension("ipctk")],
+    packages=["ipctk"],
+    package_dir={"": "python"},
+    ext_modules=[CMakeExtension("ipctk._ipctk")],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
 )

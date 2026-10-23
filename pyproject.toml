@@ -26,6 +26,9 @@ requires-python = ">=3.6"
 dependencies = ["numpy", "scipy"]
 keywords = ["IPC", "simulation", "physics", "science", "research"]
 
+[project.optional-dependencies]
+torch = ["torch"]
+
 [project.urls]
 "Homepage" = "https://ipctk.xyz"
 "Bug Tracker" = "https://github.com/ipc-sim/ipc-toolkit/issues"

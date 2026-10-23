@@ -73,6 +73,7 @@
     python-api/interval.rst
     python-api/normal_collisions.rst
     python-api/potentials.rst
+    python-api/torch.rst
     python-api/tangent.rst
     python-api/tangential_collisions.rst
     python-api/utils.rst

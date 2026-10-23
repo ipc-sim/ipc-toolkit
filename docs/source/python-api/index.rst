@@ -32,6 +32,8 @@ Python API
       - Functions for handling normal contact collisions.
     * - `Potentials <potentials.rst>`__
       - General potential energy functions for contact modeling.
+    * - `PyTorch <torch.rst>`__
+      - Autograd wrappers for potentials and distances (``ipctk.torch``).
     * - `Tangent <tangent.rst>`__
       - Utilities for tangent vector computations.
     * - `Tangential Collisions <tangential_collisions.rst>`__

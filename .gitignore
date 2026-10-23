@@ -651,6 +651,7 @@ docs/source/api
 !docs/Makefile
 logo
 ipctk
+!python/ipctk/
 
 # Python bindings
 !python/src/bindings*

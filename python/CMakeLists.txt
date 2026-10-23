@@ -16,6 +16,29 @@ endif()
 
 pybind11_add_module(ipctk)
 
+# ipctk is a Python package: the compiled bindings are its _ipctk submodule,
+# and the pure-Python files in python/ipctk/ sit next to them.
+set_target_properties(ipctk PROPERTIES OUTPUT_NAME _ipctk)
+
+# setup.py tells us where to put the extension and installs the Python files
+# itself. In a plain CMake build, we instead assemble an importable package in
+# the build tree, so adding <build>/python to sys.path is enough to import it.
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  set(IPCTK_PACKAGE_DIR "${CMAKE_CURRENT_BINARY_DIR}/ipctk")
+  # The generator expression stops multi-config generators (Xcode, Visual
+  # Studio) from appending a per-config subdirectory, which would separate the
+  # extension from the Python files.
+  set_target_properties(ipctk PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "$<1:${IPCTK_PACKAGE_DIR}>")
+  # configure_file re-runs whenever a source file changes, so edits to these
+  # files are picked up by the next build without a manual reconfigure.
+  foreach(PY_FILE __init__.py torch.py)
+    configure_file(
+      "${CMAKE_CURRENT_SOURCE_DIR}/ipctk/${PY_FILE}"
+      "${IPCTK_PACKAGE_DIR}/${PY_FILE}" COPYONLY)
+  endforeach()
+endif()
+
 add_subdirectory(src) # Add sources to ipctk
 target_include_directories(ipctk PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 

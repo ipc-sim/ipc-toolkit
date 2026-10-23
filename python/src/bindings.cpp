@@ -4,8 +4,16 @@
 #include <map>
 #include <string>
 
-PYBIND11_MODULE(ipctk, m)
+PYBIND11_MODULE(_ipctk, m)
 {
+    // The extension is imported as ipctk._ipctk and re-exported by the ipctk
+    // package. We rename it to "ipctk" before defining anything, because
+    // pybind11 stamps this name onto every class and function as __module__
+    // and uses it to register submodules (e.g., ipctk.filib) in sys.modules.
+    // This keeps the public names, reprs, docs, and pickles identical to when
+    // ipctk was a single extension module.
+    m.attr("__name__") = "ipctk";
+
     // py::options options;
     // options.disable_function_signatures();
 
