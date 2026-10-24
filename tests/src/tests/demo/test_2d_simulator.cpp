@@ -102,6 +102,11 @@ TEST_CASE("2D simulator gradient and hessian", "[2d][simulator]")
 
     Simulator::Settings settings;
     settings.body_dynamics = mode;
+    // Exercise the smooth (area-weighted / IMPROVED_MAX_APPROX) collision set:
+    // the default is now the conventional IPC set (rigid-ipc parity), whose
+    // non-smooth max approximation makes a near-boundary FD gradient check
+    // fail.
+    settings.use_area_weighting = true;
 
     // Two dynamic squares in contact (0.5·dhat gap). NOTE: both dynamic —
     // a STATIC body's pinned DOFs are zeroed in gradient() by design, which
@@ -203,6 +208,9 @@ TEST_CASE("2D friction slide", "[2d][friction][simulator]")
     settings.friction_coefficient = mu;
     settings.friction_iterations = -1;
     settings.velocity_conv_tol = 1e-3;
+    // Area-weighted (smooth) collision set for a tight friction-force check;
+    // the default is now the conventional IPC set (rigid-ipc parity).
+    settings.use_area_weighting = true;
 
     // Wide static floor (three squares would be nicer, but a stretched one
     // works): scale the floor square horizontally.

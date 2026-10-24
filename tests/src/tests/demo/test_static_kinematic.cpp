@@ -341,3 +341,41 @@ TEST_CASE("Joints reject non-dynamic bodies", "[kinematic][joints][simulator]")
         Simulator(bodies, initial_poses, joints, /*dt=*/0.01, settings),
         std::invalid_argument);
 }
+
+TEST_CASE("Minimum separation distance", "[minimum_separation][simulator]")
+{
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    load_cube(V, E, F);
+
+    // Drop a dynamic cube onto a static floor cube and return its resting
+    // height for a given minimum-separation distance.
+    const auto settle_y = [&](const double dmin) {
+        std::vector<Pose> poses(2, Pose::Identity(3));
+        poses[1].position = Eigen::Vector3d(0.0, 1.1, 0.0);
+
+        auto bodies = RigidBodies::build_from_meshes(
+            { V, V }, { E, E }, { F, F }, { 1000.0, 1000.0 }, poses);
+        (*bodies)[0].set_type(RigidBody::Type::STATIC);
+
+        Simulator::Settings settings;
+        settings.minimum_separation_distance = dmin;
+        // Area-weighted (smooth) collision set: the default is now the
+        // conventional IPC set (rigid-ipc parity), whose non-smooth max
+        // approximation struggles to converge at large min-separation (0.1).
+        settings.use_area_weighting = true;
+
+        Simulator sim(bodies, poses, /*dt=*/0.01, settings);
+        REQUIRE(sim.run(/*t_end=*/1.0));
+        return sim.poses()[1].position.y();
+    };
+
+    const double y_touch = settle_y(0.0);
+    const double dmin = 0.1;
+    const double y_gap = settle_y(dmin);
+
+    // A nonzero min-separation makes the dropped cube rest ~dmin higher (the
+    // barrier keeps the bodies at least dmin apart).
+    CHECK(y_gap > y_touch + 0.5 * dmin);
+    CHECK(y_gap == Catch::Approx(y_touch + dmin).margin(0.03));
+}

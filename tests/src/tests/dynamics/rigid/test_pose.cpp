@@ -232,6 +232,14 @@ TEST_CASE("Pose transform vertices Jacobian", "[rigid][pose][jacobian]")
         std::cout << "dV_dx_analytic:\n" << dV_dx_analytic << "\n\n";
         std::cout << "dV_dx_numerical:\n" << dV_dx_numerical << "\n\n";
     }
+
+    // The single-vertex Jacobian matches that vertex's rows.
+    for (int i = 0; i < NUM_VERTICES; ++i) {
+        CHECK(
+            fd::compare_jacobian(
+                p.transform_vertex_jacobian(V.row(i).transpose()),
+                dV_dx_numerical.middleRows(i * DIM, DIM)));
+    }
 }
 
 TEST_CASE("Pose transform vertices Hessian", "[rigid][pose][hessian]")
@@ -262,5 +270,13 @@ TEST_CASE("Pose transform vertices Hessian", "[rigid][pose][hessian]")
     if (!fd::compare_jacobian(d2V_dx2_analytic, d2V_dx2_numerical)) {
         std::cout << "dV_dx_analytic:\n" << d2V_dx2_analytic << "\n\n";
         std::cout << "dV_dx_numerical:\n" << d2V_dx2_numerical << "\n\n";
+    }
+
+    // The single-vertex Hessian matches that vertex's rows.
+    for (int i = 0; i < NUM_VERTICES; ++i) {
+        CHECK(
+            fd::compare_jacobian(
+                p.transform_vertex_hessian(V.row(i).transpose()),
+                d2V_dx2_numerical.middleRows(i * DIM, DIM)));
     }
 }

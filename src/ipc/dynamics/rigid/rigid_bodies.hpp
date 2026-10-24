@@ -3,6 +3,10 @@
 #include <ipc/dynamics/rigid/rigid_body.hpp>
 
 #include <memory>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace ipc::affine {
 struct Pose;
@@ -43,6 +47,9 @@ public:
     /// @param initial_poses A vector of initial poses for each rigid body mesh.
     /// @param convert_planes If true, any mesh with exactly two coplanar faces will be converted to a plane.
     /// @param is_dof_fixed Optional per-body fixed-DOF flags (empty means all free).
+    /// @param names Optional per-body names (empty means auto-generated). Plane
+    ///        bodies are pruned from the names alongside the geometry, and any
+    ///        empty or duplicate name is replaced with a unique default.
     /// @return A shared pointer to the constructed RigidBodies object
     static std::shared_ptr<RigidBodies> build_from_meshes(
         const std::vector<Eigen::MatrixXd>& rest_positions,
@@ -51,7 +58,8 @@ public:
         const std::vector<double>& densities,
         std::vector<Pose>& initial_poses,
         const bool convert_planes = false,
-        const std::vector<VectorMax6b>& is_dof_fixed = {});
+        const std::vector<VectorMax6b>& is_dof_fixed = {},
+        const std::vector<std::string>& names = {});
 
     /// @brief Get the vertices of the collision mesh given the poses of each rigid body.
     /// @param poses A vector of poses for each rigid body.
@@ -106,6 +114,22 @@ public:
     /// @brief Get the number of rigid bodies in the system.
     /// @return Number of rigid bodies.
     size_t num_bodies() const { return bodies.size(); }
+
+    /// @brief Get the name of the i-th rigid body.
+    /// @note Names are unique; unnamed bodies default to "Body{i}".
+    const std::string& body_name(size_t i) const { return m_body_names[i]; }
+
+    /// @brief Look up a rigid body index by name.
+    /// @param name The body name to look up.
+    /// @return The body index, or std::nullopt if no body has that name.
+    std::optional<size_t> body_index(const std::string& name) const
+    {
+        const auto it = m_name_to_index.find(name);
+        if (it == m_name_to_index.end()) {
+            return std::nullopt;
+        }
+        return it->second;
+    }
 
     /// @brief Number of codimensional (in no edge) vertices of body i.
     size_t body_num_codim_vertices(size_t i) const
@@ -242,6 +266,11 @@ public:
     }
 
 private:
+    /// @brief Populate @ref m_body_names / @ref m_name_to_index (num_bodies()
+    /// entries). Empty or missing names default to "Body{i}"; duplicates are
+    /// disambiguated with a ".{i}" suffix so every name is unique.
+    void assign_body_names(const std::vector<std::string>& names);
+
     /// @brief Rigid bodies in the system
     std::vector<RigidBody> bodies;
 
@@ -254,6 +283,12 @@ private:
     /// broad-phase passes for surface-mesh body pairs).
     std::vector<size_t> m_body_num_codim_vertices;
     std::vector<size_t> m_body_num_codim_edges;
+
+    /// Per-body names (aligned with @ref bodies); unique, defaulting to
+    /// "Body{i}" for unnamed bodies. Populated by @ref build_from_meshes.
+    std::vector<std::string> m_body_names;
+    /// Reverse lookup from body name to index.
+    std::unordered_map<std::string, size_t> m_name_to_index;
 };
 
 } // namespace ipc::rigid

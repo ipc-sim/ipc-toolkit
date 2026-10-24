@@ -1,3 +1,4 @@
+#include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/dynamics/affine/joints.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 
@@ -73,6 +74,9 @@ void define_simulator(py::module_& m)
             "Euler). The effective order ramps up from 1 over the first n "
             "steps.")
         .def_readwrite("dhat", &Simulator::Settings::dhat)
+        .def_readwrite(
+            "minimum_separation_distance",
+            &Simulator::Settings::minimum_separation_distance)
         .def_readwrite("gravity", &Simulator::Settings::gravity)
         .def_readwrite(
             "min_barrier_stiffness_scale",
@@ -195,7 +199,7 @@ void define_simulator(py::module_& m)
         .def_property_readonly("settings", &Simulator::settings)
         .def(
             "run", &Simulator::run, "t_end"_a,
-            "callback"_a = std::function<void(bool)>([](bool) { }))
+            "callback"_a = std::function<void(bool)>([](bool) {}))
         .def("step", &Simulator::step)
         .def("reset", &Simulator::reset)
         .def(
@@ -242,5 +246,12 @@ void define_simulator(py::module_& m)
              ``rigid_pose_history``. Pass to ``RigidBodies.vertices`` for
              rendering.
              )ipc_Qu8mg5v7")
-        .def_property_readonly("t", &Simulator::t);
+        .def_property_readonly("t", &Simulator::t)
+        .def_property_readonly(
+            "num_contacts",
+            [](const Simulator& sim) { return sim.normal_collisions().size(); },
+            "Number of active normal (barrier) contacts at the current state.")
+        .def_property_readonly(
+            "last_momentum_balance", &Simulator::last_momentum_balance,
+            "Momentum-balance residual of the last friction-lagging solve.");
 }

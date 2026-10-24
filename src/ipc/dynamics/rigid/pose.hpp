@@ -185,6 +185,27 @@ struct Pose {
     Eigen::MatrixXd
     transform_vertices_hessian(Eigen::ConstRef<Eigen::MatrixXd> V) const;
 
+    /// @brief Compute the Jacobian of a single transformed vertex with respect to the pose.
+    ///
+    /// This is the fixed-size counterpart of transform_vertices_jacobian for
+    /// per-contact code: the result lives on the stack, so we avoid a heap
+    /// allocation for every stencil vertex.
+    ///
+    /// @param v The vertex to transform (in body coordinates)
+    /// @return The Jacobian matrix of size dim x ndof
+    MatrixMax<double, 3, 6>
+    transform_vertex_jacobian(Eigen::ConstRef<VectorMax3d> v) const;
+
+    /// @brief Compute the Hessian of a single transformed vertex with respect to the pose.
+    ///
+    /// This is the fixed-size counterpart of transform_vertices_hessian. Column
+    /// j * ndof + i holds the second derivative with respect to DOFs i and j.
+    ///
+    /// @param v The vertex to transform (in body coordinates)
+    /// @return The Hessian matrix of size dim x (ndof * ndof)
+    MatrixMax<double, 3, 36>
+    transform_vertex_hessian(Eigen::ConstRef<VectorMax3d> v) const;
+
     /// @brief Compute the inverse of the pose.
     /// @return The inverse pose
     Pose inverse() const

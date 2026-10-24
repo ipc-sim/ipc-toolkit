@@ -75,7 +75,11 @@ void define_rigid_bodies(py::module_& m)
             "moment_of_inertia", &RigidBody::moment_of_inertia)
         .def_property_readonly("J", &RigidBody::J)
         .def_property_readonly("R0", &RigidBody::R0)
-        .def_property_readonly("external_force", &RigidBody::external_force)
+        .def_property(
+            "external_force", &RigidBody::external_force,
+            &RigidBody::set_external_force,
+            "Constant external force/torque (position = world force, rotation = "
+            "world torque); folded into the incremental potential each step.")
         .def_property(
             "type", &RigidBody::type, &RigidBody::set_type,
             "How this body is simulated (STATIC/KINEMATIC/DYNAMIC).")
@@ -95,7 +99,8 @@ void define_rigid_bodies(py::module_& m)
             py::init(&RigidBodies::build_from_meshes), "rest_positions"_a,
             "edges"_a, "faces"_a, "densities"_a, "initial_poses"_a,
             "convert_planes"_a = false,
-            "is_dof_fixed"_a = std::vector<VectorMax6b>())
+            "is_dof_fixed"_a = std::vector<VectorMax6b>(),
+            "names"_a = std::vector<std::string>())
         .def(
             "vertices",
             py::overload_cast<const std::vector<Pose>&>(
@@ -120,7 +125,14 @@ void define_rigid_bodies(py::module_& m)
         .def(
             "vertex_to_body", &RigidBodies::vertex_to_body,
             "Get the body index for a given collision-mesh vertex index.",
-            "vertex_id"_a);
+            "vertex_id"_a)
+        .def(
+            "body_name", &RigidBodies::body_name,
+            "Get the name of the i-th rigid body.", "index"_a)
+        .def(
+            "body_index", &RigidBodies::body_index,
+            "Look up a rigid body index by name (None if not found).",
+            "name"_a);
 
 #ifdef IPC_TOOLKIT_WITH_GLTF
     m.def(

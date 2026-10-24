@@ -7,6 +7,7 @@
 #include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/dynamics/affine/joints.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
+#include <ipc/dynamics/rigid/rigid_contact_hessian.hpp>
 #include <ipc/dynamics/time_integration/bdf.hpp>
 #include <ipc/geometry/normal.hpp> // cross_product_matrix
 #include <ipc/math/math.hpp>       // nearest_rotation
@@ -447,37 +448,65 @@ Simulator::full_hessian(Eigen::ConstRef<Eigen::VectorXd> x) const
     Eigen::SparseMatrix<double> hess = m_body_potentials->hessian(
         *m_bodies, x, s, body_psd, /*include_al=*/true);
 
-    // Barrier: chain the vertex-space Hessian to the DOFs (Jᵀ H J plus the
-    // second-order term for the rigid parameterization, which needs the
-    // vertex-space gradient).
+    // Contact terms are projected to PSD per contact (mirrors Rigid IPC).
+    const PSDProjectionMethod contact_psd = m_project_to_psd
+        ? PSDProjectionMethod::CLAMP
+        : PSDProjectionMethod::NONE;
     const Eigen::MatrixXd V = m_kinematics->world_vertices(x);
-    const Eigen::VectorXd barrier_grad =
-        m_barrier_potential->gradient(*m_normal_collisions, *m_bodies, V);
-    const Eigen::SparseMatrix<double> barrier_hess =
-        m_barrier_potential->hessian(
-            *m_normal_collisions, *m_bodies, V,
-            m_project_to_psd ? PSDProjectionMethod::CLAMP
-                             : PSDProjectionMethod::NONE);
 
-    hess = hess
-        + s * m_kinematics->map_vertex_hessian(x, barrier_grad, barrier_hess);
+    // Barrier contact Hessian.
+    if (is_affine()) {
+        // Affine parameterization is linear: project the per-contact vertex
+        // Hessian (interior) and map with Jᵀ H J.
+        const Eigen::VectorXd barrier_grad =
+            m_barrier_potential->gradient(*m_normal_collisions, *m_bodies, V);
+        const Eigen::SparseMatrix<double> barrier_hess =
+            m_barrier_potential->hessian(
+                *m_normal_collisions, *m_bodies, V, contact_psd);
+        hess = hess
+            + s
+                * m_kinematics->map_vertex_hessian(
+                    x, barrier_grad, barrier_hess);
+    } else {
+        // Rigid: form each contact's rigid-DOF block (Jᵀ H J + geometric term)
+        // and CLAMP-project the completed block per contact (following Rigid
+        // IPC's apply_chain_rule). Projecting after the indefinite geometric
+        // term is what keeps Newton conditioned on stiff contact.
+        const std::vector<rigid::Pose> poses =
+            rigid::Pose::to_poses(x, m_bodies->dim());
+        hess =
+            hess
+            + rigid::per_contact_rigid_hessian(
+                *m_bodies, poses, *m_normal_collisions, *m_barrier_potential, V,
+                /*gn_scale=*/s, /*geom_scale=*/s, contact_psd);
+    }
 
     if (friction_enabled() && !m_tangential_collisions->empty()) {
         // ∇²ₓ[(βΔt)³ D(v(x))] = (βΔt) Jᵀ ∇²ᵥD J + (βΔt)² Σ ∇ᵥD·d²V/dx²
-        // (∂v/∂V = 1/(βΔt) is constant); pass the pre-scaled vertex-space
-        // gradient/Hessian so map_vertex_hessian applies both pieces.
+        // (∂v/∂V = 1/(βΔt) is constant): the Gauss–Newton term carries an extra
+        // 1/(βΔt) = 1/velocity_scaling relative to the geometric term.
         const Eigen::MatrixXd velocities = friction_velocities(x);
-        const Eigen::VectorXd friction_grad = s
-            * m_friction_potential->gradient(
-                *m_tangential_collisions, *m_bodies, velocities);
-        const Eigen::SparseMatrix<double> friction_hess =
-            (s / m_time_integrator->velocity_scaling())
-            * m_friction_potential->hessian(
-                *m_tangential_collisions, *m_bodies, velocities,
-                m_project_to_psd ? PSDProjectionMethod::CLAMP
-                                 : PSDProjectionMethod::NONE);
-        hess = hess
-            + m_kinematics->map_vertex_hessian(x, friction_grad, friction_hess);
+        const double gn_scale = s / m_time_integrator->velocity_scaling();
+        if (is_affine()) {
+            const Eigen::VectorXd friction_grad = s
+                * m_friction_potential->gradient(
+                    *m_tangential_collisions, *m_bodies, velocities);
+            const Eigen::SparseMatrix<double> friction_hess = gn_scale
+                * m_friction_potential->hessian(
+                    *m_tangential_collisions, *m_bodies, velocities,
+                    contact_psd);
+            hess = hess
+                + m_kinematics->map_vertex_hessian(
+                    x, friction_grad, friction_hess);
+        } else {
+            const std::vector<rigid::Pose> poses =
+                rigid::Pose::to_poses(x, m_bodies->dim());
+            hess = hess
+                + rigid::per_contact_rigid_hessian(
+                       *m_bodies, poses, *m_tangential_collisions,
+                       *m_friction_potential, velocities, gn_scale,
+                       /*geom_scale=*/s, contact_psd);
+        }
     }
 
     return hess;
@@ -569,11 +598,13 @@ void Simulator::hessian(const TVector& v, THessian& hess)
 double Simulator::max_step_size(const TVector& v0, const TVector& v1)
 {
     // CCD filter: also updates the collision candidates for the swept
-    // interval.
+    // interval. The min-separation distance both widens the candidate
+    // inflation and is enforced as the CCD minimum gap.
+    const double dmin = m_settings.minimum_separation_distance;
     return m_kinematics->max_step_size(
         to_full(v0), to_full(v1),
-        INFLATION_RADIUS_MULTIPLIER * m_barrier_potential->dhat(),
-        m_broad_phase.get());
+        INFLATION_RADIUS_MULTIPLIER * m_barrier_potential->dhat() + dmin,
+        m_broad_phase.get(), dmin);
 }
 
 void Simulator::line_search_begin(const TVector& v0, const TVector& /*v1*/)
@@ -630,7 +661,7 @@ void Simulator::post_step(const polysolve::nonlinear::PostStepData& data)
     const double kappa = update_barrier_stiffness(
         m_prev_min_distance, min_distance, m_max_barrier_stiffness,
         m_barrier_potential->stiffness(), m_bbox_diagonal,
-        m_settings.dhat_epsilon_scale);
+        m_settings.dhat_epsilon_scale, m_settings.minimum_separation_distance);
 
     if (kappa != m_barrier_potential->stiffness()) {
         logger().debug(
@@ -701,7 +732,8 @@ void Simulator::initialize_barrier_stiffness(Eigen::ConstRef<Eigen::VectorXd> x)
     const double kappa = initial_barrier_stiffness(
         m_bbox_diagonal, m_barrier_potential->barrier(), dhat, average_mass,
         grad_energy, grad_barrier, m_max_barrier_stiffness,
-        m_settings.min_barrier_stiffness_scale);
+        m_settings.min_barrier_stiffness_scale,
+        m_settings.minimum_separation_distance);
     m_barrier_potential->set_stiffness(kappa / barrier_scale);
     m_max_barrier_stiffness /= barrier_scale;
 
@@ -880,15 +912,18 @@ void Simulator::update_collisions(
     Eigen::ConstRef<Eigen::VectorXd> x, bool update_candidates)
 {
     const Eigen::MatrixXd V = m_kinematics->world_vertices(x);
+    const double dmin = m_settings.minimum_separation_distance;
 
     if (update_candidates) {
+        // Widen the broad-phase inflation to cover the min-separation gap.
         m_kinematics->update_candidates(
-            x, INFLATION_RADIUS_MULTIPLIER * m_barrier_potential->dhat(),
+            x, INFLATION_RADIUS_MULTIPLIER * m_barrier_potential->dhat() + dmin,
             m_broad_phase.get());
     }
 
     m_normal_collisions->build(
-        m_kinematics->candidates(), *m_bodies, V, m_barrier_potential->dhat());
+        m_kinematics->candidates(), *m_bodies, V, m_barrier_potential->dhat(),
+        dmin);
 }
 
 void Simulator::initialize_friction_step()
@@ -1142,5 +1177,4 @@ void Simulator::reset()
     m_kinematic_drivers = m_initial_kinematic_drivers;
     rebuild_dof_mask();
 }
-
 } // namespace ipc::demo

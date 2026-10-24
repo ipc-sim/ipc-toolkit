@@ -141,20 +141,24 @@ Eigen::SparseMatrix<double> RigidToAffine::apply_hessian(
             rigid::rotation_to_matrix_hessian(theta);
 
         MatrixMax6d H = MatrixMax6d::Zero(rndof, rndof);
-        // pos-pos
+        // pos-pos: dy/dp = I, so this block passes straight through.
         H.topLeftCorner(d, d) = Ha.topLeftCorner(d, d);
-        // pos-rot and rot-pos (zero for our separable terms, general here)
+        // pos-rot and rot-pos: zero for every body term we sum today, but we
+        // still chain them so the result is exact for any affine Hessian.
         H.block(0, d, d, rot) = Ha.block(0, d, d, d * d) * dQ;
         H.block(d, 0, rot, d) = dQ.transpose() * Ha.block(d, 0, d * d, d);
         // rot-rot: (dQ)ᵀ Haa (dQ) + Σₖ (g_A)ₖ d²Qₖ/dθ²
-        MatrixMax3d H_rot = dQ.transpose() * Ha.block(d, d, d * d, d * d) * dQ;
-        H_rot += (d2Q.transpose() * g_affine.segment(i * andof + d, d * d))
-                     .reshaped(rot, rot);
-        // Project only the rotation block (position block is PSD by
-        // construction)
-        H.block(d, d, rot, rot) = project_to_psd(H_rot, project_hessian_to_psd);
+        H.block(d, d, rot, rot) =
+            dQ.transpose() * Ha.block(d, d, d * d, d * d) * dQ
+            + (d2Q.transpose() * g_affine.segment(i * andof + d, d * d))
+                  .reshaped(rot, rot);
 
-        blocks[i] = H;
+        // We project the whole per-body block instead of only rot-rot. When
+        // the coupling is zero the two agree, because the position block is
+        // already PSD. When it is not zero, projecting only rot-rot would not
+        // make the block PSD. The extra cost is one eigendecomposition of a
+        // ≤6×6 matrix per body.
+        blocks[i] = project_to_psd(H, project_hessian_to_psd);
     }
     return assemble_block_diagonal(blocks, rndof);
 }

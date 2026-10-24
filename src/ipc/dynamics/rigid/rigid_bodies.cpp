@@ -8,8 +8,6 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <memory>
-
 namespace ipc::rigid {
 
 Eigen::MatrixXd
@@ -33,13 +31,15 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
     const std::vector<double>& densities,
     std::vector<Pose>& initial_poses,
     const bool convert_planes,
-    const std::vector<VectorMax6b>& is_dof_fixed)
+    const std::vector<VectorMax6b>& is_dof_fixed,
+    const std::vector<std::string>& names)
 {
     assert(rest_positions.size() == edges.size());
     assert(rest_positions.size() == faces.size());
     assert(rest_positions.size() == densities.size());
     assert(
         is_dof_fixed.empty() || is_dof_fixed.size() == rest_positions.size());
+    assert(names.empty() || names.size() == rest_positions.size());
 
     if (rest_positions.empty()) {
         return nullptr;
@@ -156,6 +156,19 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
 
     bodies->planes = std::move(planes);
 
+    // Override the default names with the caller-provided names (pruning plane
+    // bodies to stay aligned with the built bodies).
+    if (!names.empty()) {
+        std::vector<std::string> nonplane_names;
+        nonplane_names.reserve(num_bodies);
+        for (size_t i = 0; i < names.size(); ++i) {
+            if (plane_bodies.count(i) == 0) {
+                nonplane_names.push_back(names[i]);
+            }
+        }
+        bodies->assign_body_names(nonplane_names);
+    }
+
     return bodies;
 }
 
@@ -229,6 +242,36 @@ RigidBodies::RigidBodies(
         return this->vertex_to_body(vi) != this->vertex_to_body(vj);
     };
     assert(!this->can_collide(0, 0));
+
+    // Default names ("Body{i}"); build_from_meshes overrides these when the
+    // caller supplies names.
+    assign_body_names({});
+}
+
+void RigidBodies::assign_body_names(const std::vector<std::string>& names)
+{
+    m_body_names.clear();
+    m_body_names.reserve(num_bodies());
+    m_name_to_index.clear();
+    m_name_to_index.reserve(num_bodies());
+
+    for (size_t i = 0; i < num_bodies(); ++i) {
+        std::string name = (i < names.size() && !names[i].empty())
+            ? names[i]
+            : ("Body" + std::to_string(i));
+
+        // Disambiguate duplicates so every name maps to a unique body.
+        if (m_name_to_index.count(name) > 0) {
+            std::string unique = name + "." + std::to_string(i);
+            while (m_name_to_index.count(unique) > 0) {
+                unique += "_";
+            }
+            name = std::move(unique);
+        }
+
+        m_name_to_index.emplace(name, i);
+        m_body_names.push_back(std::move(name));
+    }
 }
 
 Eigen::VectorXd RigidBodies::to_rigid_dof(

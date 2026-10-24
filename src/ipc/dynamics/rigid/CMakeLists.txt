@@ -9,6 +9,8 @@ set(SOURCES
   rigid_body.hpp
   rigid_candidates.cpp
   rigid_candidates.hpp
+  rigid_contact_hessian.cpp
+  rigid_contact_hessian.hpp
   rigid_trajectory.cpp
   rigid_trajectory.hpp
 )

@@ -37,6 +37,21 @@ void RigidCandidates::build(
 
     clear();
 
+    // A body participates in contact resolution only if it is DYNAMIC (free to
+    // respond to contact forces). STATIC and KINEMATIC bodies have prescribed
+    // trajectories, and analytic planes are fixed, so a contact between two
+    // non-dynamic participants (static-static / static-kinematic /
+    // kinematic-kinematic, and any of those against a plane) can never be
+    // resolved — and when such bodies overlap by construction (a common fixture
+    // pattern) the barrier evaluates on a negative distance and blows up to
+    // inf. Keep a candidate pair only if at least one participant is dynamic.
+    const auto is_dynamic = [&bodies](const index_t b) {
+        const RigidBody& body = bodies[b];
+        const VectorMax6b& fixed = body.is_dof_fixed();
+        const bool all_dof_fixed = fixed.size() > 0 && fixed.all();
+        return body.type() == RigidBody::Type::DYNAMIC && !all_dof_fixed;
+    };
+
     // World-space vertex positions at the interval endpoints (for the
     // plane-vertex candidates below; body-body candidates work in relative
     // body space and never need world-space vertices).
@@ -48,6 +63,10 @@ void RigidCandidates::build(
     for (const auto& plane : bodies.planes) {
         for (index_t vi = 0; vi < bodies.num_vertices(); ++vi) {
             const index_t b = bodies.vertex_to_body(vi);
+            // The plane is fixed; keep only vertices of dynamic bodies.
+            if (!is_dynamic(b)) {
+                continue;
+            }
             const double deviation = rigid_chord_deviation(
                 bodies.rest_positions().row(vi).norm(),
                 (poses_t1[b].rotation - poses_t0[b].rotation).norm());
@@ -111,6 +130,13 @@ void RigidCandidates::build(
     // internally parallelized.
     for (const VertexVertexCandidate& body_candidate : body_candidates) {
         auto [body_i, body_j] = body_candidate; // Body indices
+
+        // Skip pairs where neither body is dynamic (static/kinematic in any
+        // combination): a contact between two prescribed/fixed bodies can never
+        // be resolved.
+        if (!is_dynamic(body_i) && !is_dynamic(body_j)) {
+            continue;
+        }
 
         // Ensure bi has more vertices than bj to take advantage of log(n)
         // traversal (bj's leaves are iterated against bi's tree).

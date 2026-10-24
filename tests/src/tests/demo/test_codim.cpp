@@ -176,9 +176,20 @@ TEST_CASE("Codim point cloud drop", "[codim][simulator]")
     std::vector<Pose> initial_poses(2, Pose::Identity(3));
     initial_poses[0].position = Eigen::Vector3d(0, 0.2, 0);
 
+    // We let the falling cloud move only vertically. Points resting on points
+    // is an unstable equilibrium: once the clouds are offset sideways by more
+    // than the minimum separation, the points can pass each other without
+    // ever coming within it, so neither CCD nor the barrier has anything to
+    // stop. Whether a free cloud stays balanced would then depend on whether
+    // the solver keeps every Newton step exactly symmetric, which is not what
+    // this test is about.
+    VectorMax6b vertical_only(6);
+    vertical_only << true, false, true, true, true, true;
+
     auto bodies = RigidBodies::build_from_meshes(
         { V_cloud, V_cloud }, { E_cloud, E_cloud }, { F_cloud, F_cloud },
-        { 1000.0, 1000.0 }, initial_poses);
+        { 1000.0, 1000.0 }, initial_poses, /*convert_planes=*/false,
+        { vertical_only, VectorMax6b::Zero(6) });
     (*bodies)[1].set_type(RigidBody::Type::STATIC);
 
     Simulator sim(bodies, initial_poses, /*dt=*/0.01);

@@ -91,6 +91,9 @@ public:
         int bdf_order = 1;
         /// @brief Barrier activation distance.
         double dhat = 1e-3;
+        /// @brief Minimum separation distance (dmin): the barrier keeps bodies
+        /// at least this far apart. 0 disables (contact allowed down to touch).
+        double minimum_separation_distance = 0;
         /// @brief Gravitational acceleration.
         VectorMax3d gravity = Eigen::Vector3d(0, -9.81, 0);
         /// @brief Scale used to premultiply the minimum barrier stiffness.
@@ -136,7 +139,8 @@ public:
         /// Lan et al. recommend κ > 100 GPa to keep deformation negligible.
         double orthogonality_stiffness = 1e11;
         /// @brief Whether to use area weighting for the collision set.
-        bool use_area_weighting = true;
+        /// @note Default off, matching the original Rigid IPC.
+        bool use_area_weighting = false;
         /// @brief If true, stop the simulation when a step fails to converge.
         bool abort_on_convergence_failure = true;
         /// @brief Velocity convergence tolerance: converged when the proposed
@@ -648,5 +652,4 @@ protected:
     /// @brief Minimum distance at the previous Newton iterate (adaptive κ).
     double m_prev_min_distance = -1.0;
 };
-
 } // namespace ipc::demo

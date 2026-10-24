@@ -265,4 +265,49 @@ Pose::transform_vertices_hessian(Eigen::ConstRef<Eigen::MatrixXd> V) const
     return hess;
 }
 
+MatrixMax<double, 3, 6>
+Pose::transform_vertex_jacobian(Eigen::ConstRef<VectorMax3d> v) const
+{
+    const int dim = v.size();
+    assert(dim == position.size());
+
+    MatrixMax<double, 3, 6> jac(dim, ndof());
+
+    // Derivative w.r.t. position is identity
+    jac.leftCols(dim).setIdentity();
+
+    // Derivative w.r.t. rotation: d(R v)/dθⱼ = (dR/dθⱼ) v
+    const MatrixMax<double, 9, 3> dR_dtheta =
+        rotation_to_matrix_jacobian(rotation);
+    for (int j = 0; j < rotation.size(); ++j) {
+        jac.col(dim + j) = dR_dtheta.col(j).reshaped(dim, dim) * v;
+    }
+
+    return jac;
+}
+
+MatrixMax<double, 3, 36>
+Pose::transform_vertex_hessian(Eigen::ConstRef<VectorMax3d> v) const
+{
+    const int dim = v.size();
+    const int ndof = this->ndof();
+    assert(dim == position.size());
+
+    // The position Jacobian is constant, so only the rotation-rotation
+    // columns are nonzero.
+    MatrixMax<double, 3, 36> hess =
+        MatrixMax<double, 3, 36>::Zero(dim, ndof * ndof);
+
+    const MatrixMax<double, 9, 9> d2R_dtheta2 =
+        rotation_to_matrix_hessian(rotation);
+    for (int j = dim; j < ndof; ++j) {
+        for (int i = dim; i < ndof; ++i) {
+            const int k = (j - dim) * rotation.size() + (i - dim);
+            hess.col(j * ndof + i) = d2R_dtheta2.col(k).reshaped(dim, dim) * v;
+        }
+    }
+
+    return hess;
+}
+
 } // namespace ipc::rigid
