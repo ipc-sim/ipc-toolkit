@@ -140,6 +140,16 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
         initial_poses.erase(new_end, initial_poses.end());
     }
 
+    // The constructor indexes the per-body inputs by body, so we drop the
+    // plane entries to keep them aligned with the remaining meshes.
+    std::vector<double> nonplane_densities;
+    nonplane_densities.reserve(num_bodies);
+    for (size_t i = 0; i < densities.size(); ++i) {
+        if (plane_bodies.count(i) == 0) {
+            nonplane_densities.push_back(densities[i]);
+        }
+    }
+
     std::vector<VectorMax6b> nonplane_is_dof_fixed;
     if (!is_dof_fixed.empty()) {
         for (size_t i = 0; i < is_dof_fixed.size(); ++i) {
@@ -151,7 +161,7 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
 
     std::shared_ptr<RigidBodies> bodies = std::make_shared<RigidBodies>(
         concat_rest_positions, concat_edges, concat_faces, body_vertex_starts,
-        body_edge_starts, body_face_starts, densities, initial_poses,
+        body_edge_starts, body_face_starts, nonplane_densities, initial_poses,
         nonplane_is_dof_fixed);
 
     bodies->planes = std::move(planes);

@@ -78,3 +78,45 @@ TEST_CASE("RigidBodies::to_rigid_dof", "[rigid]")
         std::cout << "numerical:\n" << d2f_dx2_fd << "\n\n";
     }
 }
+TEST_CASE(
+    "Converting a plane keeps the other bodies' properties aligned", "[rigid]")
+{
+    Eigen::MatrixXd V_cube;
+    Eigen::MatrixXi E_cube, F_cube;
+    REQUIRE(tests::load_mesh("cube.ply", V_cube, E_cube, F_cube));
+
+    // A 2×2 square in the y = 0 plane, listed before the cubes.
+    Eigen::MatrixXd V_plane(4, 3);
+    V_plane << -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1;
+    Eigen::MatrixXi F_plane(2, 3);
+    F_plane << 0, 2, 1, 0, 3, 2;
+    Eigen::MatrixXi E_plane(5, 2);
+    E_plane << 0, 1, 1, 2, 2, 0, 2, 3, 3, 0;
+
+    VectorMax6b slider(6);
+    slider << false, true, true, true, true, true;
+
+    std::vector<Pose> initial_poses(3, Pose::Identity(3));
+    initial_poses[1].position = Eigen::Vector3d(0, 1, 0);
+    initial_poses[2].position = Eigen::Vector3d(3, 1, 0);
+
+    const auto bodies = RigidBodies::build_from_meshes(
+        { V_plane, V_cube, V_cube }, { E_plane, E_cube, E_cube },
+        { F_plane, F_cube, F_cube }, { 1.0, 500.0, 2000.0 }, initial_poses,
+        /*convert_planes=*/true, { VectorMax6b(), VectorMax6b(), slider },
+        { "ground", "light", "heavy" });
+
+    REQUIRE(bodies->planes.size() == 1);
+    REQUIRE(bodies->num_bodies() == 2);
+    REQUIRE(initial_poses.size() == 2);
+
+    // Each cube keeps the density, name, DOF mask, and pose it was given.
+    CHECK((*bodies)[0].density() == Catch::Approx(500.0));
+    CHECK((*bodies)[1].density() == Catch::Approx(2000.0));
+    CHECK(bodies->body_name(0) == "light");
+    CHECK(bodies->body_name(1) == "heavy");
+    CHECK(!(*bodies)[0].is_dof_fixed().any());
+    CHECK((*bodies)[1].is_dof_fixed() == slider);
+    CHECK(initial_poses[0].position.isApprox(Eigen::Vector3d(0, 1, 0)));
+    CHECK(initial_poses[1].position.isApprox(Eigen::Vector3d(3, 1, 0)));
+}
