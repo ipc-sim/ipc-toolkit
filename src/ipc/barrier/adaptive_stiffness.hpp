@@ -11,6 +11,7 @@
 namespace ipc {
 
 /// @brief Compute an inital barrier stiffness using the barrier potential gradient.
+/// @note This heuristic was designed for unweighted collisions. With area weighting and a physical barrier, the stiffness is a material parameter in the same units as Young's modulus, so choosing it directly relative to the elastic stiffness is usually more appropriate than adapting it. If you still use this function with weighted collisions, pass average_mass / mean(weight) as average_mass so the adaptive range accounts for the weights.
 /// @param[in] bbox_diagonal Length of the diagonal of the bounding box of the scene.
 /// @param[in] barrier Barrier function.
 /// @param[in] dhat Activation distance of the barrier.

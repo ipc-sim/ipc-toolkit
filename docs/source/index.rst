@@ -1,3 +1,5 @@
+:hide-toc:
+
 .. toctree::
     :caption: About
     :hidden:
@@ -43,6 +45,7 @@
     cpp-api/ccd.rst
     cpp-api/collision_mesh.rst
     cpp-api/distance.rst
+    cpp-api/esp.rst
     cpp-api/friction.rst
     cpp-api/intersections.rst
     cpp-api/interval.rst
@@ -64,6 +67,7 @@
     python-api/ccd.rst
     python-api/collision_mesh.rst
     python-api/distance.rst
+    python-api/esp.rst
     python-api/friction.rst
     python-api/intersections.rst
     python-api/interval.rst
@@ -82,8 +86,11 @@
     Code of Conduct <developers/code_of_conduct.md>
     developers/tools.rst
 
-.. image:: _static/logo.png
-    :alt: IPC Toolkit
+.. image:: _static/logo-light.svg#only-light
+   :alt: IPC Toolkit
+
+.. image:: _static/logo-dark.svg#only-dark
+   :alt: IPC Toolkit
 
 .. raw:: html
 
@@ -133,6 +140,11 @@ We provide Python bindings for functions in the toolkit using `pybind11 <https:/
 
 **Contributing**
 
+.. figure:: https://contrib.rocks/image?repo=ipc-sim/ipc-toolkit
+   :align: center
+   :alt: Top contributors to the IPC Toolkit.
+   :target: https://github.com/ipc-sim/ipc-toolkit/graphs/contributors?all=1
+
 This project is open to contributors! Contributions can come in the form of feature requests, bug fixes, documentation, tutorials, and the like. We highly recommend filing an Issue first before submitting a Pull Request.
 
 Simply fork this repository and make a Pull Request! We would appreciate:
@@ -141,6 +153,12 @@ Simply fork this repository and make a Pull Request! We would appreciate:
 * Bug Reports
 * Documentation
 * Testing
+
+..
+   .. image:: https://api.star-history.com/chart?repos=ipc-sim/ipc-toolkit&type=date&legend=top-left
+      :align: center
+      :alt: Star History Chart
+      :target: https://www.star-history.com/?repos=ipc-sim%2Fipc-toolkit&type=date&releases=&legend=bottom-right
 
 **Citation**
 

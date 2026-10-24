@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp> // for IPC_TOOLKIT_HOST_DEVICE
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/utils/default_init_allocator.hpp>
 
@@ -48,14 +49,20 @@ public:
 
 #pragma GCC diagnostic pop
 
+        // These are host/device so the CUDA broad phase (ipc::cuda::LBVH)
+        // traverses the same node with the same predicates as the CPU one.
+
         /// @brief Check if this node is an inner node.
-        bool is_inner() const { return is_inner_marker; }
+        IPC_TOOLKIT_HOST_DEVICE bool is_inner() const
+        {
+            return is_inner_marker;
+        }
 
         /// @brief Check if this node is a leaf node.
-        bool is_leaf() const { return !is_inner(); }
+        IPC_TOOLKIT_HOST_DEVICE bool is_leaf() const { return !is_inner(); }
 
         /// @brief Check if this node is valid.
-        bool is_valid() const
+        IPC_TOOLKIT_HOST_DEVICE bool is_valid() const
         {
             return is_inner()
                 ? (left != INVALID_POINTER && right != INVALID_POINTER)
@@ -63,7 +70,7 @@ public:
         }
 
         /// @brief Check if this node's AABB intersects with another node's AABB.
-        bool intersects(const Node& other) const
+        IPC_TOOLKIT_HOST_DEVICE bool intersects(const Node& other) const
         {
             return (aabb_min <= other.aabb_max).all()
                 && (other.aabb_min <= aabb_max).all();
@@ -84,18 +91,26 @@ public:
     /// Used to skip subtrees during triangular (self-collision) traversal.
     using RightmostLeaves = std::vector<int32_t, DefaultInitAllocator<int32_t>>;
 
-private:
-    struct ConstructionInfo {
+    /// @brief Per-internal-node scratch for the bottom-up build.
+    /// @tparam Counter The visitation counter's type: std::atomic<int> here,
+    /// and a plain int for the device build in ipc::cuda::LBVH, where
+    /// atomicAdd() supplies the atomicity.
+    /// @see ipc::details::build_hierarchy_from_leaf
+    template <typename Counter> struct ConstructionInfo {
         /// @brief Left range endpoint passed up by the left child.
-        int32_t left_range;
+        int left_range;
         /// @brief Right range endpoint passed up by the right child.
-        int32_t right_range;
+        int right_range;
         /// @brief Number of threads that arrived at this node.
-        std::atomic<int> visitation_count;
+        Counter visitation_count;
     };
 
-    using ConstructionInfos =
-        std::vector<ConstructionInfo, DefaultInitAllocator<ConstructionInfo>>;
+private:
+    using HostConstructionInfo = ConstructionInfo<std::atomic<int>>;
+
+    using ConstructionInfos = std::vector<
+        HostConstructionInfo,
+        DefaultInitAllocator<HostConstructionInfo>>;
 
 public:
     LBVH();
@@ -139,6 +154,26 @@ public:
     /// @param[out] candidates The candidate face-face collisions.
     void detect_face_face_candidates(
         std::vector<FaceFaceCandidate>& candidates) const override;
+
+    /// @brief Find the primitives whose AABB is within a radius of a point.
+    ///
+    /// We test the built boxes against a box of half-width `radius` centered
+    /// at `q`, so this is a broad phase only: callers still need an exact
+    /// distance check. The tree is typically built with zero inflation so one
+    /// build serves queries at any radius, since we apply the radius to the
+    /// query box instead.
+    /// @param q Query point (2D or 3D, matching the mesh).
+    /// @param radius Half-width of the query box around q.
+    /// @param[out] vertex_ids Ids of the nearby vertices.
+    /// @param[out] edge_ids Ids of the nearby edges.
+    /// @param[out] face_ids Ids of the nearby faces. Empty in 2D, where no
+    ///        face tree is built.
+    void query_point(
+        Eigen::ConstRef<RowVectorMax3d> q,
+        double radius,
+        std::vector<index_t>& vertex_ids,
+        std::vector<index_t>& edge_ids,
+        std::vector<index_t>& face_ids) const;
 
     const Nodes& vertex_nodes() const { return vertex_bvh; }
     const Nodes& edge_nodes() const { return edge_bvh; }

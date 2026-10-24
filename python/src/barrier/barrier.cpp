@@ -67,7 +67,8 @@ void define_barrier(py::module_& m)
                 The units of the barrier function.
             )ipc_Qu8mg5v7");
 
-    py::class_<ClampedLogBarrier, Barrier, std::shared_ptr<ClampedLogBarrier>>(
+    py::class_<
+        ClampedLogBarrier<>, Barrier, std::shared_ptr<ClampedLogBarrier<>>>(
         m, "ClampedLogBarrier",
         R"ipc_Qu8mg5v7(
         Smoothly clamped log barrier functions from [Li et al. 2020].
@@ -80,8 +81,8 @@ void define_barrier(py::module_& m)
         .def(py::init());
 
     py::class_<
-        NormalizedClampedLogBarrier, ClampedLogBarrier,
-        std::shared_ptr<NormalizedClampedLogBarrier>>(
+        NormalizedClampedLogBarrier<>, ClampedLogBarrier<>,
+        std::shared_ptr<NormalizedClampedLogBarrier<>>>(
         m, "NormalizedClampedLogBarrier",
         R"ipc_Qu8mg5v7(
         Normalized barrier function from [Li et al. 2023].
@@ -94,7 +95,7 @@ void define_barrier(py::module_& m)
         .def(py::init());
 
     py::class_<
-        ClampedLogSqBarrier, Barrier, std::shared_ptr<ClampedLogSqBarrier>>(
+        ClampedLogSqBarrier<>, Barrier, std::shared_ptr<ClampedLogSqBarrier<>>>(
         m, "ClampedLogSqBarrier",
         R"ipc_Qu8mg5v7(
         Clamped log barrier with a quadratic log term from [Huang et al. 2024].
@@ -106,7 +107,7 @@ void define_barrier(py::module_& m)
         )ipc_Qu8mg5v7")
         .def(py::init());
 
-    py::class_<CubicBarrier, Barrier, std::shared_ptr<CubicBarrier>>(
+    py::class_<CubicBarrier<>, Barrier, std::shared_ptr<CubicBarrier<>>>(
         m, "CubicBarrier", R"ipc_Qu8mg5v7(
         Cubic barrier function from [Ando 2024].
 
@@ -117,7 +118,7 @@ void define_barrier(py::module_& m)
         )ipc_Qu8mg5v7")
         .def(py::init());
 
-    py::class_<TwoStageBarrier, Barrier, std::shared_ptr<TwoStageBarrier>>(
+    py::class_<TwoStageBarrier<>, Barrier, std::shared_ptr<TwoStageBarrier<>>>(
         m, "TwoStageBarrier",
         R"ipc_Qu8mg5v7(
         Two-stage activation barrier from [Chen et al. 2025].
@@ -135,7 +136,7 @@ void define_barrier(py::module_& m)
         .def(py::init());
 
     m.def(
-        "barrier", &barrier, "d"_a, "dhat"_a,
+        "barrier", &barrier<>, "d"_a, "dhat"_a,
         R"ipc_Qu8mg5v7(
         Function that grows to infinity as d approaches 0 from the right.
 
@@ -152,7 +153,8 @@ void define_barrier(py::module_& m)
         )ipc_Qu8mg5v7");
 
     m.def(
-        "barrier_first_derivative", &barrier_first_derivative, "d"_a, "dhat"_a,
+        "barrier_first_derivative", &barrier_first_derivative<>, "d"_a,
+        "dhat"_a,
         R"ipc_Qu8mg5v7(
         Derivative of the barrier function.
 
@@ -170,7 +172,7 @@ void define_barrier(py::module_& m)
         )ipc_Qu8mg5v7");
 
     m.def(
-        "barrier_second_derivative", &barrier_second_derivative, "d"_a,
+        "barrier_second_derivative", &barrier_second_derivative<>, "d"_a,
         "dhat"_a,
         R"ipc_Qu8mg5v7(
         Second derivative of the barrier function.

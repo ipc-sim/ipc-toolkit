@@ -263,18 +263,18 @@ Putting it all together, a single simulation step using OGC looks like this:
             // 2. Warm start (Predict & Initialize)
             // x is current position, pred_x is x^t + dt * v^t
             trust_region.warm_start_time_step(
-                mesh, x, pred_x, collisions, dhat);
+                collision_mesh, x, pred_x, collisions, dhat);
 
             // 3. Solver Loop
             for (int i = 0; i < max_iterations; ++i) {
                 // Update trust region if too many vertices hit the bound in previous step
-                trust_region.update_if_needed(mesh, x, collisions, dhat);
+                trust_region.update_if_needed(collision_mesh, x, collisions, dhat);
 
                 // Compute search direction (Solver specific)
                 Eigen::MatrixXd dx = compute_search_direction(x, ...);
 
                 // Filter the step to respect OGC bounds
-                trust_region.filter_step(mesh, x, dx);
+                trust_region.filter_step(collision_mesh, x, dx);
 
                 // Update positions
                 x += dx;
@@ -293,18 +293,18 @@ Putting it all together, a single simulation step using OGC looks like this:
 
             # 2. Warm start (Predict & Initialize)
             trust_region.warm_start_time_step(
-                mesh, x, pred_x, collisions, dhat)
+                collision_mesh, x, pred_x, collisions, dhat)
 
             # 3. Solver Loop
             for i in range(max_iterations):
                 # Update trust region if needed
-                trust_region.update_if_needed(mesh, x, collisions, dhat)
+                trust_region.update_if_needed(collision_mesh, x, collisions, dhat)
 
                 # Compute search direction (Solver specific)
                 dx = compute_search_direction(x, ...)
 
                 # Filter the step to respect OGC bounds
-                trust_region.filter_step(mesh, x, dx)
+                trust_region.filter_step(collision_mesh, x, dx)
 
                 # Update positions
                 x += dx
@@ -416,9 +416,9 @@ Using ``planar_filter_step``
         .. code-block:: c++
 
             // Inside the solver loop, replace:
-            //   trust_region.filter_step(mesh, x, dx);
+            //   trust_region.filter_step(collision_mesh, x, dx);
             // with:
-            trust_region.planar_filter_step(mesh, x, dx);
+            trust_region.planar_filter_step(collision_mesh, x, dx);
 
             // Optionally tune the relaxation ratio via the struct member:
             // trust_region.relaxed_radius_scaling = 0.9; // default
@@ -428,9 +428,9 @@ Using ``planar_filter_step``
         .. code-block:: python
 
             # Inside the solver loop, replace:
-            #   trust_region.filter_step(mesh, x, dx)
+            #   trust_region.filter_step(collision_mesh, x, dx)
             # with:
-            trust_region.planar_filter_step(mesh, x, dx)
+            trust_region.planar_filter_step(collision_mesh, x, dx)
 
             # Optionally tune the relaxation ratio via the struct member:
             # trust_region.relaxed_radius_scaling = 0.9  # default
@@ -451,18 +451,18 @@ Full Optimization Loop with Planar-DAT
 
             // 2. Warm start (Predict & Initialize)
             trust_region.warm_start_time_step(
-                mesh, x, pred_x, collisions, dhat);
+                collision_mesh, x, pred_x, collisions, dhat);
 
             // 3. Solver Loop
             for (int i = 0; i < max_iterations; ++i) {
                 // Update trust region centers/radii if needed
-                trust_region.update_if_needed(mesh, x, collisions, dhat);
+                trust_region.update_if_needed(collision_mesh, x, collisions, dhat);
 
                 // Compute search direction (Solver specific)
                 Eigen::MatrixXd dx = compute_search_direction(x, ...);
 
                 // Filter step using Planar-DAT (direction-aware truncation)
-                trust_region.planar_filter_step(mesh, x, dx);
+                trust_region.planar_filter_step(collision_mesh, x, dx);
 
                 // Update positions
                 x += dx;
@@ -481,18 +481,18 @@ Full Optimization Loop with Planar-DAT
 
             # 2. Warm start (Predict & Initialize)
             trust_region.warm_start_time_step(
-                mesh, x, pred_x, collisions, dhat)
+                collision_mesh, x, pred_x, collisions, dhat)
 
             # 3. Solver Loop
             for i in range(max_iterations):
                 # Update trust region centers/radii if needed
-                trust_region.update_if_needed(mesh, x, collisions, dhat)
+                trust_region.update_if_needed(collision_mesh, x, collisions, dhat)
 
                 # Compute search direction (Solver specific)
                 dx = compute_search_direction(x, ...)
 
                 # Filter step using Planar-DAT (direction-aware truncation)
-                trust_region.planar_filter_step(mesh, x, dx)
+                trust_region.planar_filter_step(collision_mesh, x, dx)
 
                 # Update positions
                 x += dx

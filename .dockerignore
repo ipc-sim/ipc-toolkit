@@ -1,0 +1,20 @@
+# Shrinks the build context uploaded to the Docker daemon. Both dev containers
+# build .devcontainer/Dockerfile with the repo root as their context but never
+# COPY it in (the workspace is mounted at runtime), so this only speeds up
+# context transfer — it does not affect image contents.
+build/
+docs/_build/
+# The test data is ~120 MB and carries its own nested .git. It is fetched
+# inside the container when it is needed, never from the build context.
+tests/data/
+.ccache/
+*.o
+*.so
+*.a
+__pycache__/
+*.pyc
+.git/
+**/.git/
+.venv/
+venv/
+.DS_Store

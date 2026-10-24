@@ -1,0 +1,42 @@
+diff --git a/include/spdlog/fmt/bundled/base.h b/include/spdlog/fmt/bundled/base.h
+index 620456b..0740975 100644
+--- a/include/spdlog/fmt/bundled/base.h
++++ b/include/spdlog/fmt/bundled/base.h
+@@ -455,7 +455,14 @@ struct is_std_string_like<T, void_t<decltype(std::declval<T>().find_first_of(
+                           const typename T::value_type*> {};
+ 
+ // Check if the literal encoding is UTF-8.
++#if defined(__CUDACC__)
++// NVCC's device front-end (EDG) does not honor the host compiler's /utf-8
++// flag, so the compile-time probe below misfires. The host pass is compiled
++// with /utf-8, so UTF-8 is in fact enabled.
++enum { is_utf8_enabled = 1 };
++#else
+ enum { is_utf8_enabled = "\u00A7"[1] == '\xA7' };
++#endif
+ enum { use_utf8 = !FMT_WIN32 || is_utf8_enabled };
+ 
+ #ifndef FMT_UNICODE
+diff --git a/include/spdlog/fmt/bundled/format.h b/include/spdlog/fmt/bundled/format.h
+index 4a65300..2ce9069 100644
+--- a/include/spdlog/fmt/bundled/format.h
++++ b/include/spdlog/fmt/bundled/format.h
+@@ -3138,8 +3138,18 @@ constexpr auto fractional_part_rounding_thresholds(int index) -> uint32_t {
+   // It is equal to ceil(2^31 + 2^32/10^(k + 1)).
+   // These are stored in a string literal because we cannot have static arrays
+   // in constexpr functions and non-static ones are poorly optimized.
++#if defined(__CUDACC__)
++  // NVCC's device front-end (EDG) rejects char32_t hex escapes whose value has
++  // the high bit set ("character value is out of range"), so use an equivalent
++  // uint32_t array instead of a UTF-32 string literal.
++  constexpr uint32_t thresholds[] = {0x9999999au, 0x828f5c29u, 0x80418938u,
++                                     0x80068db9u, 0x8000a7c6u, 0x800010c7u,
++                                     0x800001aeu, 0x8000002bu};
++  return thresholds[index];
++#else
+   return U"\x9999999a\x828f5c29\x80418938\x80068db9\x8000a7c6\x800010c7"
+          U"\x800001ae\x8000002b"[index];
++#endif
+ }
+ 
+ template <typename Float>

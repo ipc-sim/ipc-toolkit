@@ -23,6 +23,11 @@ void define_tight_inclusion_ccd(py::module_& m)
             "BREADTH_FIRST_SEARCH",
             ticcd::CCDRootFindingMethod::BREADTH_FIRST_SEARCH,
             "Breadth first search")
+        .value(
+            "BUCKET_DEPTH_FIRST_SEARCH",
+            ticcd::CCDRootFindingMethod::BUCKET_DEPTH_FIRST_SEARCH,
+            "Depth first search with a dedicated traversal stack per time "
+            "lower bound")
         .export_values();
 
     m_ti.def(
@@ -61,7 +66,7 @@ void define_tight_inclusion_ccd(py::module_& m)
             max_iterations: Maximum number of solver iterations (default: 1e7). If negative, solver will run until convergence.
             filter: Filters calculated using get_numerical_error (default: (-1,-1,-1)). Use (-1,-1,-1) if checking a single query.
             no_zero_toi: Refine further if a zero TOI is produced (assuming not initially in contact).
-            ccd_method: Root finding method (default: BREADTH_FIRST_SEARCH).
+            ccd_method: Root finding method (default: BUCKET_DEPTH_FIRST_SEARCH).
 
         Returns:
             Tuple of:
@@ -75,7 +80,8 @@ void define_tight_inclusion_ccd(py::module_& m)
         "max_iterations"_a = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
         "filter"_a = ticcd::Array3::Constant(-1),
         "no_zero_toi"_a = ticcd::DEFAULT_NO_ZERO_TOI,
-        "ccd_method"_a = ticcd::CCDRootFindingMethod::BREADTH_FIRST_SEARCH);
+        "ccd_method"_a =
+            ticcd::CCDRootFindingMethod::BUCKET_DEPTH_FIRST_SEARCH);
 
     m_ti.def(
         "point_triangle_ccd",
@@ -113,7 +119,7 @@ void define_tight_inclusion_ccd(py::module_& m)
             max_iterations: Maximum number of solver iterations (default: 1e7). If negative, solver will run until convergence.
             filter: Filters calculated using get_numerical_error (default: (-1,-1,-1)). Use (-1,-1,-1) if checking a single query.
             no_zero_toi: Refine further if a zero TOI is produced (assuming not initially in contact).
-            ccd_method: Root finding method (default: BREADTH_FIRST_SEARCH).
+            ccd_method: Root finding method (default: BUCKET_DEPTH_FIRST_SEARCH).
 
         Returns:
             Tuple of:
@@ -127,7 +133,8 @@ void define_tight_inclusion_ccd(py::module_& m)
         "max_iterations"_a = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
         "filter"_a = ticcd::Array3::Constant(-1),
         "no_zero_toi"_a = ticcd::DEFAULT_NO_ZERO_TOI,
-        "ccd_method"_a = ticcd::CCDRootFindingMethod::BREADTH_FIRST_SEARCH);
+        "ccd_method"_a =
+            ticcd::CCDRootFindingMethod::BUCKET_DEPTH_FIRST_SEARCH);
 
     m_ti.def(
         "compute_ccd_filters",

@@ -1,18 +1,22 @@
 set(SOURCES
   autodiff_types.hpp
-  autodiff_types.hpp
   default_init_allocator.hpp
   eigen_ext.hpp
   eigen_ext.tpp
+  gradient_assembler.hpp
+  hessian_assembler.cpp
+  hessian_assembler.hpp
   local_to_global.hpp
   logger.cpp
   logger.hpp
   matrix_cache.cpp
   matrix_cache.hpp
+  meshfem_hessian_assembler.cpp
+  meshfem_hessian_assembler.hpp
   merge_thread_local.hpp
   profiler.cpp
   profiler.hpp
-  unordered_map_and_set.cpp
+  simd.hpp
   unordered_map_and_set.hpp
   vertex_to_min_edge.cpp
   vertex_to_min_edge.hpp
@@ -20,3 +24,7 @@ set(SOURCES
 )
 
 target_sources(ipc_toolkit PRIVATE ${SOURCES})
+
+if(IPC_TOOLKIT_WITH_CUDA)
+  add_subdirectory(cuda)
+endif()

@@ -11,6 +11,8 @@ Barrier
    ClampedLogSqBarrier.rst
    CubicBarrier.rst
    TwoStageBarrier.rst
+   InversePowerBarrier.rst
+   NearFarBarrier.rst
 
 Barrier functions and functionals.
 
@@ -34,6 +36,10 @@ Types
       - Normalized barrier function from [Li et al.].
     * - :cpp:class:`ipc::TwoStageBarrier`
       - Two-stage barrier function from [Chen et al. 2025].
+    * - :cpp:class:`ipc::InversePowerBarrier`
+      - Inverse-power barrier :math:`h(d,\hat{d})/d^p` with a C² cubic B-spline window.
+    * - :cpp:class:`ipc::NearFarBarrier`
+      - Splits a base barrier into near and far parts (used by the ESP potential).
 
 
 Functions
@@ -64,9 +70,9 @@ Functions
 Function Details
 ----------------
 
-.. doxygenfunction:: barrier(const double, const double)
-.. doxygenfunction:: barrier_first_derivative
-.. doxygenfunction:: barrier_second_derivative
+.. doxygenfunction:: barrier(const T d, const T dhat)
+.. doxygenfunction:: barrier_first_derivative(const T d, const T dhat)
+.. doxygenfunction:: barrier_second_derivative(const T d, const T dhat)
 
 Barrier Force Magnitude
 ~~~~~~~~~~~~~~~~~~~~~~~

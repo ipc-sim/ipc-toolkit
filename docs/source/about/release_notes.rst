@@ -6,6 +6,392 @@ Release Notes
 .. role:: cmake(code)
    :language: cmake
 
+v2.0.0 (alpha)
+--------------
+
+.. warning::
+   This is an in-development alpha release. The API is not yet stable.
+
+Highlights
+~~~~~~~~~~
+
+- Contact Hessian assembly is now block-accelerated. Local per-collision Hessians scatter straight into MeshFEMSparse :cite:p:`Mohammadian2026MeshFEM` block-CSC storage, and the full-mesh DOF map is folded into that scatter instead of being applied afterwards. Callers do not have to change anything to benefit: on Puffer-Ball (512k collisions) assembling a Hessian goes from 918 ms to 46 ms (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+- Templated distance, barrier, normal, tangent-basis, closest-point, relative-velocity, and area functions on the scalar type and dimension. This adds ``float`` support alongside ``double`` (and autodiff scalars where already supported). This is 1.5–4.8× faster for select functons; see Performance below (`#249 <https://github.com/ipc-sim/ipc-toolkit/pull/249>`_).
+- Update Tight Inclusion to ``1.1.0``, which adds a bucket depth-first-search root finder and makes it the default (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
+- Update the tutorials to match the current API, and fill the gaps in the Python bindings they depend on (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+
+New Features |:rocket:|
+~~~~~~~~~~~~~~~~~~~~~~~
+
+- Expose the intersection coordinates of an edge–triangle intersection through a new :cpp:func:`ipc::edge_triangle_intersection` overload, which reports the barycentric coordinates :math:`(u, v)` on the triangle and the parameter :math:`t` along the edge (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_).
+- Add :cpp:func:`ipc::CollisionMesh::face_normals`, computing the unit normal of each face for a given set of vertex positions (3D only) (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_).
+- Add :cpp:class:`ipc::cuda::LBVH`, a GPU broad phase that builds the vertex/edge/face AABBs and BVHs and runs the traversal and shared-vertex filtering on the device, producing the same candidates as :cpp:class:`ipc::LBVH` for any vertex filter (`#260 <https://github.com/ipc-sim/ipc-toolkit/pull/260>`_). Requires ``IPC_TOOLKIT_WITH_CUDA``; selectable through ``BroadPhaseMethod::LBVH_CUDA``.
+
+  - The Apetrei :cite:p:`Apetrei2014FastAS` bottom-up build, the BVH descent, and the shared-vertex exclusion are one ``ipc::details`` implementation shared by the CPU and CUDA broad phases; each platform supplies only its parallel launch, its sort, and its atomics.
+  - ``detect_*_candidates_device()`` return a view of the candidate pairs left on the device for a GPU-native pipeline.
+
+API Changes |:wrench:|
+~~~~~~~~~~~~~~~~~~~~~~
+
+- ``BroadPhase::detect_*_candidates()`` now uniformly **clear** their output vector first on every broad phase, so it holds exactly that detection's result (`#260 <https://github.com/ipc-sim/ipc-toolkit/pull/260>`_). Previously half the implementations overwrote and half appended; all in-library callers pass an empty vector, so their results are unchanged.
+- Add :cpp:func:`ipc::CollisionFilter::accepts_all`, true for a filter that holds no predicate (the default), so a broad phase can skip per-pair filtering entirely (`#260 <https://github.com/ipc-sim/ipc-toolkit/pull/260>`_). Composing with an accept-all filter now short-circuits: ``f | accept_all`` is accept-all and ``f & accept_all`` is ``f``.
+- Add ``BroadPhaseMethod::NUM_BROAD_PHASE_METHODS`` as a sentinel for the number of methods (`#260 <https://github.com/ipc-sim/ipc-toolkit/pull/260>`_).
+- Update Tight Inclusion from ``1.0.6`` to ``1.1.0`` (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
+
+  - Adds a ``BUCKET_DEPTH_FIRST_SEARCH`` root-finding method, which upstream makes the default for ``edgeEdgeCCD`` and ``vertexFaceCCD``.
+  - The method is exposed in the Python ``CCDRootFindingMethod`` enum, and ``ipctk.tight_inclusion.edge_edge_ccd`` and ``point_triangle_ccd`` now default to it so the bindings match the C++ default.
+
+- ``Potential::gradient`` and ``Potential::hessian`` take a new ``in_full_dof`` flag, folding the full-mesh DOF map into assembly (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_). Non-selection DOF maps fall back internally, so the flag is always safe to pass.
+- Add a ``HessianAssembler`` interface separating local derivative evaluation from global matrix construction (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+
+  - The previous triplet path lives on unchanged as ``TripletHessianAssembler`` and remains the fallback when the option is off.
+  - Hold a ``MeshFEMHessianAssembler`` across ``Potential::hessian`` calls to get sparsity-pattern reuse, or call ``block_matrix()`` for the native block-CSC matrix if your solver can consume it.
+
+- Move gradient assembly into a shared ``ipc::assemble_gradient`` (``ipc/utils/gradient_assembler.hpp``) that all five gradient-producing potentials route through (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+
+- Templatize the distance, tangent, friction, adhesion, and geometry functions on the scalar type.
+
+  - Functions now take a scalar template parameter ``T`` and are instantiated for ``float``, ``double``, ``xsimd::batch<float>``, and ``xsimd::batch<double>`` types.
+  - 💥 **[Breaking]** Mixed-precision calls no longer deduce: ``barrier(float_d, 0.001)`` must become ``barrier(float_d, 0.001f)``.
+  - 💥 **[Breaking]** The gradients/Hessians of the point-point, point-line, and point-edge distances and the ``normalization_*`` functions now return **fixed-size** Eigen types (e.g. ``Eigen::Vector<T, 3 * dim>``) when the argument type knows its dimension at compile time, and the previous ``VectorMax``/``MatrixMax`` types otherwise.
+  - The functions are now a two-layer API.
+
+    - The concrete kernels moved into ``ipc::detail`` and are templated on the scalar and the dimension (``template <typename T, int dim>``, or just ``<typename T>`` for the 3D-only).
+    - The public names in ``ipc`` are thin front ends templated on the argument expression types. They deduce ``T``, dispatch on the compile-time dimension when the arguments know it, and fall back to a single runtime branch on ``size()`` otherwise. Existing calls are unaffected.
+
+  - Autodiff scalars are supported for the value functions only; passing one to a ``*_gradient``/``*_hessian`` or to a ``*_distance_type`` predicate is a compile-time or ``AUTO``-dispatch error rather than silently wrong output.
+  - ``AUTO`` and the ``*_distance_type`` predicates are **not** available for batch scalars and throw ``std::invalid_argument``. The distance type is a per-lane property but the predicates return a single enum, so two lanes cannot report different closest features. Resolve the distance types scalar-side and group problems by type before batching.
+  - ``edge_edge_closest_point`` and ``point_triangle_closest_point`` solve their 2×2 symmetric positive-definite system in closed form instead of with ``A.ldlt().solve()``, whose pivot is scalar control flow a batch cannot take per-lane.
+
+    - Solve using Cramer's rule, which is a closed form for 2×2 systems. The determinant is computed in Kahan's fused multiply-add form to recover the rounding error of one product, so the solution stays accurate even when the two products cancel badly.
+    - The pivot in ``LDLT`` loses the same digits as the naive determinant, so it is no more accurate than the closed form.
+    - Measured against the exact solution of the same double inputs, the closed form and ``LDLT`` stay within about 2× of each other on well-conditioned systems, but at 1e-4 rad the closed form is accurate to 4e-17 relative where ``LDLT`` reaches only 2e-9.
+
+- Templatize the barrier classes on the scalar type.
+
+  - ``ipc::Barrier`` is now an alias for the class template ``ipc::BarrierBase<T>`` (defaulting to ``double``).
+  - 💥 **[Breaking]** The concrete barriers are now class templates and must be spelled with explicit template arguments (e.g., ``ipc::ClampedLogBarrier<>``).
+  - The free functions ``ipc::barrier``, ``ipc::barrier_first_derivative``, and ``ipc::barrier_second_derivative`` are now templates defaulting to ``double``.
+  - Replace ``if``/``else``` branches in the barrier functions with ``select_lazy`` cascades, so a batch may carry lanes on either side of ``dhat``. Single scalar inputs still only evaluate the active branch.
+
+- Add ``ipc::numext`` namespace containing an override for ``sqrt``, ``abs``, ``log``, ``fma``, and ``atan2``. For ``float`` and ``double`` they call ``std::``; for ``xsimd::batch<T>`` they call the corresponding ``xsimd`` function. This allows the templated distance and barrier functions to call ``numext::sqrt`` and friends without knowing whether they are operating on scalars or batches.
+- 💥 **[Breaking]** ``xsimd`` and ``SIMD_CXX_FLAGS`` are now linked/applied ``PUBLIC`` rather than ``PRIVATE``. ``xsimd::default_arch`` is selected from each translation unit's own compiler flags, so a consumer built without the library's SIMD flags would name a *different* batch type than the one instantiated and fail to link. This means consumers are now compiled with the detected SIMD flags (typically ``-march=native``); disable ``IPC_TOOLKIT_WITH_SIMD`` if that is not wanted.
+
+
+Performance |:zap:|
+~~~~~~~~~~~~~~~~~~~
+
+- Assemble the contact Hessian into MeshFEMSparse :cite:p:`Mohammadian2026MeshFEM` block-CSC storage rather than triplets, and fold the mesh's DOF map into that scatter (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+
+  Evaluating the local per-collision Hessians was only 2–8% of ``Potential::hessian`` across the eight benchmark scenes; the rest was building triplets, sorting them inside ``setFromTriplets``, and multiplying by the selection matrix twice in ``to_full_dof``.
+
+  .. figure:: https://github.com/user-attachments/assets/fdfb0d8f-e3ad-459f-88ae-bd2fea9b64a8
+     :align: center
+
+     Hessian assembly by stage. ``to_full_dof`` is absent from every MeshFEM bar because it is folded into the scatter, and local evaluation grows from a sliver to roughly half the bar — on the largest scenes the arithmetic is now the majority of the cost. Benchmarked on Apple Silicon, AppleClang 21, Release; median of three runs.
+
+- The speed-up comes from four independent steps, each measured against the triplet baseline in the same run (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+
+  .. figure:: https://github.com/user-attachments/assets/32709ba8-4365-4826-a8e8-17d4abf7d71d
+     :align: center
+
+     Ablation of the four steps, applied successively. Benchmarked on Apple Silicon, AppleClang 21, Release; median of three runs.
+
+  1. Fold ``to_full_dof`` into assembly (1.2–1.8×). When the DOF map is a plain selection matrix — which holds unless a custom displacement map was supplied — stencil vertex IDs are remapped during assembly and the two sparse products disappear. Non-selection maps fall back internally, so passing the new ``in_full_dof`` flag is always safe.
+  2. Assemble into block-CSC rather than triplets (2.6–15.3×). A block sparsity pattern is built from the collision stencils, then local Hessians scatter into the value array through a sorted column-merge with per-column locks — no triplet construction and no ``setFromTriplets`` sort.
+  3. Reuse the pattern across assemblies (3.2–24.8×). One assembler held across a Newton solve detects contact-set changes and rebuilds only when it must.
+  4. Skip change detection when the caller asserts the set is unchanged (3.8–30.9×).
+
+  Most of the win lands before any reuse. Reuse pays where pattern construction dominates and adds almost nothing on Rod-Twist, where detection costs about what a rebuild does — which is what the opt-in fast path in step 4 exists for.
+
+- Share one gradient-assembly routine across all vector-assembly paths, picking its strategy per call from the problem shape (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_).
+
+  Sparse contact buffers the local gradients in parallel and scatters them serially, costing one add per stencil slot; dense contact keeps per-thread accumulators and reduces them in parallel over DOF blocks. The crossover sits at roughly ``out_ndof`` > 4 × collisions.
+
+  .. figure:: https://github.com/user-attachments/assets/aceb3cb7-367f-4266-8493-7b6a4685ed01
+     :align: center
+
+     Gradient assembly, before and after, with the strategy selected per scene. Benchmarked on Apple Silicon, AppleClang 21, Release; median of three runs.
+
+- Replace the three 2×2 LDLT solves in ``ipc::point_triangle_distance_type`` with a closed form (`#249 <https://github.com/ipc-sim/ipc-toolkit/pull/249>`_).
+
+  - Each edge lies in the triangle's plane, so the 2×2 Gram matrix is diagonal and the solve collapses to two guarded divisions.
+  - Measured 10–13× faster standalone (104 → 8.6 ns) and 7.3× on the full AUTO distance query (93 → 12.8 ns).
+  - An error study over 10.8 million configurations (uniform, needle, cap, near-collinear, degenerate, in-plane, and coordinate scales from 1e-50 to 1e+50) found zero classification changes outside triangles collinear to within 1e-11 of their own edge length.
+
+- Dim-templated fixed-size kernels behind expression-templated front ends for the point-point, point-line, and point-edge distance functions and their gradients/Hessians, and for the ``normalization_*`` family (`#249 <https://github.com/ipc-sim/ipc-toolkit/pull/249>`_).
+
+  - ``point_line_distance`` 8.2 → 2.3 ns (3.5×), ``point_edge_distance`` 18.1 → 5.2 ns (3.5×), ``point_point_distance_hessian`` up to 5×, ``normalization_and_jacobian`` 3.4×.
+  - Mark small functions inline in the the header.
+
+- Recovering the compile-time dimension in the tangent, closest-point, relative-velocity, and area kernels is worth 1.5–4.8× on the call site that dominates in practice (`#249 <https://github.com/ipc-sim/ipc-toolkit/pull/249>`_):
+
+  .. list-table::
+     :widths: 40 15 15 15
+     :header-rows: 1
+     :align: center
+     :class: tight-table
+
+     * - Benchmark
+       - Before
+       - After
+       - Speedup
+     * - point_edge_closest_point
+       - 8.7 ns
+       - 1.8 ns
+       - 4.8x
+     * - point_edge_closest_point, Vector3d
+       - 4.7 ns
+       - 1.7 ns
+       - 2.8x
+     * - point_edge_closest_point_jacobian
+       - 14.9 ns
+       - 6.2 ns
+       - 2.4x
+     * - point_point_relative_velocity
+       - 5.5 ns
+       - 1.4 ns
+       - 3.9x
+     * - point_point_relative_velocity_jacobian
+       - 6.8 ns
+       - 1.8 ns
+       - 3.9x
+     * - edge_length
+       - 4.1 ns
+       - 1.3 ns
+       - 3.1x
+     * - point_edge_tangent_basis
+       - 7.1 ns
+       - 4.2 ns
+       - 1.7x
+     * - point_triangle_tangent_basis
+       - 7.7 ns
+       - 5.0 ns
+       - 1.5x
+
+- Branch once on the dimension in ``EdgeVertexCandidate::compute_distance_gradient``/``_hessian`` so the statically sized kernels are selected (3.1× on the gradient).
+- Move all cold ``throw`` bodies in the distance dispatch functions out of line behind ``[[noreturn]]`` helpers; constructing the exception inline consumed the caller's inlining budget (the single largest lever found: up to 2× by itself).
+
+Bug Fixes |:bug:|
+~~~~~~~~~~~~~~~~~
+
+- PSD-project the mollified Hessian block when the mollifier is zero (`#244 <https://github.com/ipc-sim/ipc-toolkit/pull/244>`_).
+
+  - ``NormalPotential::hessian()`` early-returned the block :math:`(\text{weight} \cdot f)\nabla^2 m` for exactly parallel edges (:math:`m = 0`) *without* projection, while every other path projects.
+  - Positive weights leave the block PSD, so this was harmless until ``IMPROVED_MAX_APPROX`` introduced negative-weight collisions, which made the block negative-(semi)definite and the assembled "PSD-projected" Hessian non-PSD.
+  - Because :math:`m = 0` is a global minimum of the mollifier, :math:`\nabla^2 m` is PSD and :math:`f(d) > 0`, so projecting the scalar weight is sufficient — no eigendecomposition needed.
+
+Python |:snake:|
+~~~~~~~~~~~~~~~~
+
+- 💥 **[Breaking]** Rename the ``SmoothPotential`` class to ``SmoothContactPotential`` to match the C++ name (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+- Fill gaps that made the GCP and convergent-formulation tutorials impossible to follow from Python (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_):
+
+  - Add ``SmoothCollisions.compute_adaptive_dhat``. Without it, adaptive dhat was unreachable even though ``build()`` accepts ``use_adaptive_dhat=True`` and requires this to be called first.
+  - Add the ``SmoothContactParameters.adaptive_dhat_ratio`` property.
+  - Add the ``BarrierPotential.stiffness`` and ``.use_physical_barrier`` properties, mirroring the C++ setters.
+
+- Validate preconditions in the bindings instead of relying on the C++ ``assert``\ s, which are compiled out under ``NDEBUG`` and would let a release build silently accept a bad value (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). ``BarrierPotential`` now raises ``ValueError`` for a non-positive or NaN ``dhat``/``stiffness`` and for a null barrier.
+- Bind ``edge_triangle_intersection()``, returning an ``(intersects, u, v, t)`` tuple since Python has no out-parameters, and ``CollisionMesh.face_normals()``, returning an (#F × 3) array to match the other per-element accessors (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_). ``face_normals()`` raises ``ValueError`` on a 2D mesh rather than invoking undefined behavior.
+- Add the ``ipctk.cuda`` submodule, mirroring the C++ ``ipc::cuda`` namespace, with ``ipctk.cuda.LBVH`` (``ipc::cuda::LBVH``) in CUDA builds (`#260 <https://github.com/ipc-sim/ipc-toolkit/pull/260>`_).
+
+Documentation
+~~~~~~~~~~~~~
+
+- Update the tutorials to match the current API (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). Every snippet is now verified: the C++ is extracted into a compile harness checked against the real headers, and the Python is run against a built ``ipctk``.
+
+  - ``ipc::point_triangle_ccd`` and the other free narrow-phase functions are now methods on :cpp:class:`ipc::NarrowPhaseCCD` subclasses; ``<ipc/ccd/ccd.hpp>`` no longer exists.
+  - The four ``*_nonlinear_ccd`` free functions are now :cpp:class:`ipc::NonlinearCCD` methods.
+  - ``CollisionStencil::ccd`` takes stencil vertices rather than ``(vertices, edges, faces)``; use ``dof()`` to gather them.
+  - ``TangentialCollisions::build`` no longer takes ``barrier_stiffness`` — stiffness now comes from the normal potential. The stale call still compiled in C++, silently binding ``barrier_stiffness`` to ``mu_s`` and ``mu`` to ``mu_k``.
+
+- Correct the note on conservative CCD (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_). :cpp:class:`ipc::TightInclusionCCD` does not scale the returned time of impact in the normal path; it inflates the minimum separation the query stops at, capped at ``1e-4``, and only scales the TOI in the fallback taken when that query returns a TOI below ``SMALL_TOI``. Because the cap usually binds, changing ``conservative_rescaling`` often has no effect at all.
+- Describe the narrow-phase alternatives accurately (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+
+  - ``InexactCCD`` is behind ``IPC_TOOLKIT_WITH_INEXACT_CCD``, which is off by default, so it is now marked opt-in.
+  - All three methods compute their margin as :math:`d_\min + (1 - r)(d_0 - d_\min)`; only :cpp:class:`ipc::TightInclusionCCD` caps the second term, which is why it reports a time of impact closer to the exact one.
+  - :cpp:class:`ipc::AdditiveCCD` is over 100× faster and reliable in practice; it does not account for rounding error in its distance computations, but the default 10% margin is large enough to avoid false negatives, at the cost of a less accurate time of impact and more false positives.
+
+- Add MeshFEM :cite:p:`Mohammadian2026MeshFEM` to the gallery.
+
+Refactor
+~~~~~~~~
+
+- Replace the duplicate squared-distance implementations in ``ipc/smooth_contact/distance/`` (``point_point_sqr_distance``, ``point_line_sqr_distance``, ``line_line_sqr_distance``, ``edge_edge_sqr_distance``, ``point_plane_sqr_distance``, ``point_triangle_sqr_distance``) with the now-templated functions from ``ipc/distance/``.
+
+Miscellaneous
+~~~~~~~~~~~~~
+
+- Add ``MeshFEMCore`` and ``MeshFEMSparse`` :cite:p:`Mohammadian2026MeshFEM` as dependencies, fetched with CPM (`#246 <https://github.com/ipc-sim/ipc-toolkit/pull/246>`_). Both are MIT licensed and build as small static targets — matrix data structures and assembly routines, without sparse direct solvers.
+- Take the ``distance_squared`` functor of the private ``AdditiveCCD::additive_ccd`` helper as a template parameter rather than a ``std::function`` (`#247 <https://github.com/ipc-sim/ipc-toolkit/pull/247>`_).
+- Fix stale ``IPC_TOOLKIT_CCD_BENCHMARK_DIR`` and ``IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR`` references in the CMake status messages; the cache variables are ``IPC_TOOLKIT_TESTS_CCD_BENCHMARK_DIR`` and ``IPC_TOOLKIT_TESTS_NEW_CCD_BENCHMARK_DIR`` (`#248 <https://github.com/ipc-sim/ipc-toolkit/pull/248>`_).
+
+v1.6.1 (October 21, 2026)
+-------------------------
+
+This patch release backports non-API-breaking fixes and additions from ``main``.
+
+Highlights
+~~~~~~~~~~
+
+- Add :cpp:func:`ipc::CollisionMesh::set_vertex_areas` and :cpp:func:`ipc::CollisionMesh::set_edge_areas` (the ``vertex_areas`` and ``edge_areas`` properties in Python) to supply custom collision weights, e.g., :math:`2\pi R \, ds` for axisymmetric models. Areas must be finite and non-negative; collisions with zero weight are dropped. Custom areas do not support shape derivatives (`#273 <https://github.com/ipc-sim/ipc-toolkit/pull/273>`_, issue `#266 <https://github.com/ipc-sim/ipc-toolkit/issues/266>`_).
+- Fix missing PSD projection of mollified :math:`m \le 0` Hessian blocks (`#244 <https://github.com/ipc-sim/ipc-toolkit/pull/244>`_).
+- Expose the :math:`u`, :math:`v`, and :math:`t` coordinates of an edge–triangle intersection and add :cpp:func:`ipc::CollisionMesh::face_normals` (`#245 <https://github.com/ipc-sim/ipc-toolkit/pull/245>`_).
+- Fix a memory leak in the CUDA code by updating Scalable CCD (`#261 <https://github.com/ipc-sim/ipc-toolkit/pull/261>`_).
+
+CUDA
+~~~~
+
+- Fix CUDA architecture selection and optimize the LBVH Morton codes (`#252 <https://github.com/ipc-sim/ipc-toolkit/pull/252>`_).
+
+Build and CI
+~~~~~~~~~~~~
+
+- Fall back to the `GitHub mirror <https://github.com/eigen-mirror/eigen>`_ when cloning Eigen from GitLab fails (`#277 <https://github.com/ipc-sim/ipc-toolkit/pull/277>`_).
+- Fix CMake options being forced in the cache (`#268 <https://github.com/ipc-sim/ipc-toolkit/pull/268>`_).
+- Key the CUDA, Python, and coverage ccaches on the CPU (`#267 <https://github.com/ipc-sim/ipc-toolkit/pull/267>`_).
+- Drop ccache from the docs build (`#270 <https://github.com/ipc-sim/ipc-toolkit/pull/270>`_).
+- Publish to PyPI with Trusted Publishing for provenance attestations (`#278 <https://github.com/ipc-sim/ipc-toolkit/pull/278>`_).
+
+v1.6.0 (July 14, 2026)
+----------------------
+
+Highlights
+~~~~~~~~~~
+
+- **LBVH is now the default broad phase**, replacing HashGrid. Combined with this release's LBVH optimizations, it is roughly 2× faster than the (now-removed) SimpleBVH and, because HashGrid scales poorly, several-fold faster (≈6–8× on large benchmark scenes) than the previous default (`#212 <https://github.com/ipc-sim/ipc-toolkit/pull/212>`_).
+- Add analytic plane-vertex collisions (`#216 <https://github.com/ipc-sim/ipc-toolkit/pull/216>`_).
+- Add anisotropic friction by `@antoinebou12 <https://github.com/antoinebou12>`_ (`#210 <https://github.com/ipc-sim/ipc-toolkit/pull/210>`_).
+- Add barrier stiffness (:math:`\kappa`) to :cpp:class:`ipc::BarrierPotential` and simplify the tangential API (`#215 <https://github.com/ipc-sim/ipc-toolkit/pull/215>`_).
+- Add composable collision filters (`#235 <https://github.com/ipc-sim/ipc-toolkit/pull/235>`_).
+
+Broad Phase
+~~~~~~~~~~~
+
+- Set the default broad phase to :cpp:class:`ipc::LBVH` (`#212 <https://github.com/ipc-sim/ipc-toolkit/pull/212>`_).
+
+  - LBVH outperforms the previous default (HashGrid) and all other methods across a range of scenes. On the benchmark scenes below it is ~1.5× faster than SimpleBVH (the fastest existing method) at baseline; with this release's pruning and bottom-up-build optimizations that grows to roughly 2× faster than SimpleBVH and ~6–8× faster than HashGrid.
+
+  .. figure:: https://github.com/user-attachments/assets/7a15bef6-24cd-4b79-9fbd-079f4dd8e431
+     :align: center
+
+     Total broad-phase performance across methods; LBVH is roughly 1.5× faster than the fastest existing method. Benchmarked on an Apple M2 Max (12 cores).
+
+- Remove the SimpleBVH dependency and the deprecated ``BVH`` broad phase (`#213 <https://github.com/ipc-sim/ipc-toolkit/pull/213>`_).
+
+  .. figure:: https://github.com/user-attachments/assets/71cd90ce-4097-4a2d-a48a-11672029396e
+     :align: center
+
+     LBVH construction is more than 3× faster than the removed BVH method. Benchmarked on an Apple M2 Max (12 cores).
+
+- Add rightmost-leaf pruning to LBVH self-collision traversal, skipping subtrees fully left of the query. 39% average speed-up in edge-edge traversal across benchmark scenes (`#222 <https://github.com/ipc-sim/ipc-toolkit/pull/222>`_).
+
+  - Also fixes three bugs in the OGC edge-edge feasibility check.
+
+- Optimize LBVH construction with a single bottom-up pass :cite:`Apetrei2014FastAS`, building the hierarchy and bounding boxes simultaneously instead of the two-pass build of :cite:t:`Karras2012HPG`. Up to 10% faster to build (`#230 <https://github.com/ipc-sim/ipc-toolkit/pull/230>`_).
+
+  .. figure:: https://github.com/user-attachments/assets/3f447f8f-210c-4873-8b32-965250b3ffa6
+     :align: center
+
+     Bottom-up :cite:`Apetrei2014FastAS` vs. two-pass :cite:`Karras2012HPG` LBVH construction, benchmarked on an Apple M3 Pro (11 cores).
+
+- Refactor the AABB, HashGrid, and LBVH parallel loops to use ``tbb::parallel_for`` with index ranges directly (`#228 <https://github.com/ipc-sim/ipc-toolkit/pull/228>`_).
+
+New Features |:rocket:|
+~~~~~~~~~~~~~~~~~~~~~~~
+
+- 💥 **[Breaking]** Add barrier stiffness and simplify the tangential API in `#215 <https://github.com/ipc-sim/ipc-toolkit/pull/215>`_
+
+  - Add a barrier stiffness :math:`\kappa` to :cpp:class:`ipc::BarrierPotential`: new constructors, member, and getter/setter, scaling the potential, gradient, and Hessian by :math:`\kappa`.
+  - Remove the redundant ``normal_stiffness`` parameter from the tangential collision constructors and :cpp:class:`ipc::TangentialPotential` interfaces, updating all call sites and Python bindings.
+
+- Add analytic plane-vertex collision support in `#216 <https://github.com/ipc-sim/ipc-toolkit/pull/216>`_
+
+  - Add :cpp:class:`ipc::PlaneVertexCandidate` and normal and tangential plane-vertex collisions, integrated into the collision builders.
+  - Add :cpp:member:`ipc::CollisionMesh::planes` (a list of ``Eigen::Hyperplane<double, 3>``) to represent infinite analytic planes such as a ground plane, with Python bindings.
+  - Remove the old ``implicits`` module.
+
+- Add anisotropic friction by `@antoinebou12 <https://github.com/antoinebou12>`_ in `#210 <https://github.com/ipc-sim/ipc-toolkit/pull/210>`_
+
+  - Per-contact tangent-space velocity scaling and optional :cite:t:`Erleben2019Matchstick` "matchstick" direction-dependent static/kinetic coefficients.
+  - Direction-dependent coefficients are lagged: refresh with :cpp:func:`ipc::TangentialCollisions::update_lagged_anisotropic_friction_coefficients` after ``build`` and whenever the lagged state changes.
+  - Default behavior remains isotropic. The directional model is active only in the 2D tangent space of 3D simulations.
+  - Tutorial available `here <https://ipctk.xyz/tutorials/advanced_friction.html>`__.
+
+- Implement the Gauss-Newton preconditioner from :cite:t:`Shen2024Preconditioned` in `#221 <https://github.com/ipc-sim/ipc-toolkit/pull/221>`_
+
+  - Add :cpp:class:`ipc::CollisionStencil` distance-vector utilities (``compute_distance_vector``, ``compute_distance_vector_jacobian``, and diagonal/Jacobian-contraction helpers).
+  - Add cumulative :cpp:class:`ipc::NormalPotential` Gauss-Newton routines (diagonal and quadratic form), parallelized with TBB.
+  - Exposed in the Python bindings with unit tests.
+
+- Add the Planar Divide-and-Truncate (Planar-DAT) trust-region filter for OGC :cite:t:`Chen2026DivideAndTruncate` in `#228 <https://github.com/ipc-sim/ipc-toolkit/pull/228>`_
+
+  - :cpp:func:`ipc::ogc::TrustRegion::planar_filter_step` is a direction-aware alternative to isotropic filtering: it computes a division plane per collision pair and truncates only motion toward the opposing primitive, reducing artificial damping and deadlock in dense-contact scenarios.
+  - Available in both C++ and Python.
+  - Tutorial available `here <https://ipctk.xyz/tutorials/ogc.html>`__.
+
+- Add composable collision filters in `#235 <https://github.com/ipc-sim/ipc-toolkit/pull/235>`_
+
+  - New :cpp:class:`ipc::CollisionFilter` (C++ and Python) wraps any ``bool(int, int)`` callable and composes via ``|`` (union), ``&`` (intersection), and ``!`` (negation).
+  - Factory functions for common cases: ``make_vertex_patches_filter``, ``make_static_obstacle_filter``, ``make_codim_cross_filter``, and ``make_connected_components_filter``.
+  - The `FAQ <https://ipctk.xyz/tutorials/faq.html>`__ is rewritten to document the new system with C++ and Python examples.
+
+- Add support for nonmanifold smooth edges in `#223 <https://github.com/ipc-sim/ipc-toolkit/pull/223>`_
+
+  - Generalize the ``Edge3`` primitive and ``smooth_edge3_term`` (and its derivatives) to an arbitrary number of adjacent faces.
+  - Change ``edges_to_faces`` from a fixed-size matrix to a vector of vectors and increase ``N_EDGE_NEIGHBORS_3D`` from 4 to 6.
+
+API Changes |:wrench:|
+~~~~~~~~~~~~~~~~~~~~~~
+
+- Configurable derivative layout in `#217 <https://github.com/ipc-sim/ipc-toolkit/pull/217>`_
+
+  - Add a ``VERTEX_DERIVATIVE_LAYOUT`` constant to ``ipc/config.hpp`` and parameterize the gradient, sparse-gradient, Hessian-triplet, and Jacobian-triplet assembly helpers with an optional row- or column-major global ordering (defaulting to ``VERTEX_DERIVATIVE_LAYOUT``).
+
+- 💥 **[Breaking]** Update the local 3rd-order tensor Jacobian layout in `#219 <https://github.com/ipc-sim/ipc-toolkit/pull/219>`_
+
+  - Store 3rd-order tensors as matrices following the convention in "Dynamic Deformables" :cite:p:`Kim2022DynamicDeformables`, easing tensor contractions in the chain rule.
+  - Rename the relative-velocity API from ``*_matrix``/``*_matrix_jacobian`` to ``*_jacobian``/``*_dx_dbeta`` across C++, Python, and documentation.
+
+- 💥 **[Breaking]** Refactor the nonlinear CCD into a :cpp:class:`ipc::NonlinearCCD` class in `#218 <https://github.com/ipc-sim/ipc-toolkit/pull/218>`_
+
+  - Encapsulate the point-point, point-edge, edge-edge, and point-triangle nonlinear CCD methods, replacing the previous free-function API.
+  - Update signatures to take ``Eigen::ConstRef`` and adjust the conservative-rescaling parameter handling.
+
+Bug Fixes |:bug:|
+~~~~~~~~~~~~~~~~~
+
+- Use a relative ``PARALLEL_THRESHOLD`` in ``edge_edge_distance_type`` to correctly classify nearly-collinear coplanar edges, and add defensive guards for mollified collisions at :math:`d=0`; adds a regression test (`#225 <https://github.com/ipc-sim/ipc-toolkit/pull/225>`_).
+- Fix a 2D GCP bug caused by a trivially loose ``Edge2`` active check by `@udaykusupati <https://github.com/udaykusupati>`_ in `#227 <https://github.com/ipc-sim/ipc-toolkit/pull/227>`_.
+- Skip the edge-edge planar filter for nearly-parallel edges with negligible approach velocity to avoid spurious truncation (`#232 <https://github.com/ipc-sim/ipc-toolkit/pull/232>`_).
+- Fix MSVC duplicate-symbol errors for ``PrimitiveDistance`` by adding explicit specialization declarations (`#237 <https://github.com/ipc-sim/ipc-toolkit/pull/237>`_).
+- Fix two bugs in the mollified edge-edge shape derivative (a wrong gradient factor and a missing outer-product term) by `@Huangzizhou <https://github.com/Huangzizhou>`_ in `#239 <https://github.com/ipc-sim/ipc-toolkit/pull/239>`_.
+
+Profiling |:stopwatch:|
+~~~~~~~~~~~~~~~~~~~~~~~
+
+- Add fine-grained profiling instrumentation throughout, recording only on the main thread (`#233 <https://github.com/ipc-sim/ipc-toolkit/pull/233>`_).
+- Add an optional Tracy frame profiler via the ``IPC_TOOLKIT_WITH_TRACY`` CMake option (`#234 <https://github.com/ipc-sim/ipc-toolkit/pull/234>`_).
+- Record profiler data on the TBB arena coordinator thread rather than by main-thread ID (`#236 <https://github.com/ipc-sim/ipc-toolkit/pull/236>`_).
+
+Python |:snake:|
+~~~~~~~~~~~~~~~~
+
+- Allow the thread limit to be set globally via the ``TBB_NUM_THREADS`` environment variable, applied on import of ``ipctk`` (`#242 <https://github.com/ipc-sim/ipc-toolkit/pull/242>`_).
+- Add the ``IPCTK_WITH_SIMD`` environment variable to disable SIMD in Python builds (`#231 <https://github.com/ipc-sim/ipc-toolkit/pull/231>`_).
+
+Miscellaneous
+~~~~~~~~~~~~~
+
+- Replace the ``maybe_parallel_for`` wrapper with direct ``tbb::parallel_for`` and ``tbb::enumerable_thread_specific`` (`#214 <https://github.com/ipc-sim/ipc-toolkit/pull/214>`_).
+- Clean up the closest-point auto-generated code (`#220 <https://github.com/ipc-sim/ipc-toolkit/pull/220>`_).
+- Update GitHub Actions to the latest major versions (`#224 <https://github.com/ipc-sim/ipc-toolkit/pull/224>`_).
+- Disable pedantic and unneeded MSVC compiler warnings.
+- Strip notebook outputs and add an ``nbstripout`` pre-commit hook (`#240 <https://github.com/ipc-sim/ipc-toolkit/pull/240>`_).
+- Updated dependencies:
+
+  - Bump finite-diff from ``v1.0.3`` to ``v1.0.4``
+
 v1.5.0 (Febuary 5, 2026)
 ------------------------
 
@@ -41,7 +427,7 @@ New Formulations
     - Added ``feasible_region.hpp`` and ``feasible_region.cpp`` containing geometric predicates (e.g., ``check_vertex_feasible_region``, ``is_edge_edge_feasible``) to verify if primitives are within valid non-penetrating regions.
     - Integrated feasible region checks into the ``NormalCollisions`` class to filter out invalid collision candidates. Enabled via ``set_collision_set_type(NormalCollisions::CollisionSetType::OGC)``.
 
-  - **Step Scaling:** Unlike the original paper's projection method, ``TrustRegion::filter_step`` scales the descent direction $\beta$ to keep vertices on the trust region boundary. This preserves the descent direction, ensuring compatibility with line-search-based solvers.
+  - **Step Scaling:** Unlike the original paper's projection method, ``TrustRegion::filter_step`` scales the descent direction :math:`\beta` to keep vertices on the trust region boundary. This preserves the descent direction, ensuring compatibility with line-search-based solvers.
   - Tutorial available `here <https://ipctk.xyz/tutorials/ogc.html>`__.
 
 Broad Phase
@@ -59,7 +445,6 @@ Broad Phase
 
       - More than 3x faster to build.
       - Up to 1.5x faster for candidate detection.
-      - Detailed performance charts available below.
 
     - Added ``python/examples/lbvh.py`` to demonstrate usage and visualization.
 
@@ -229,7 +614,7 @@ Python Specific
 - Add ``PyBroadPhase`` and ``PyNarrowPhaseCCD`` classes to wrap the :py:class:`ipctk.BroadPhase` and :py:class:`ipctk.NarrowPhaseCCD` classes, respectively, allowing for custom implementations of these classes in Python.
 - Add new constructors to candidate classes (:py:class:`ipctk.EdgeEdgeCandidate`, :py:class:`ipctk.EdgeFaceCandidate`, :py:class:`ipctk.EdgeVertexCandidate`, :py:class:`ipctk.FaceFaceCandidate`, :py:class:`ipctk.FaceVertexCandidate`, :py:class:`ipctk.VertexVertexCandidate`) that accept tuples for easier initialization.
 - Include a call to ``std::atexit`` to reset the thread limiter upon program exit to ensure proper cleanup.
-- :WARNING: Python :py:class:`ipctk.NarrowPhaseCCD` implementations will not work with multi-threading because of GIL locking.
+- |:warning:| Python :py:class:`ipctk.NarrowPhaseCCD` implementations will not work with multi-threading because of GIL locking.
 - Switch from ``py::arg`` to ``_a`` literals in `#168 <https://github.com/ipc-sim/ipc-toolkit/pull/168>`_
 
 Miscellaneous

@@ -9,7 +9,7 @@ BreakArrays: false
 BreakBeforeBinaryOperators: NonAssignment
 BreakStringLiterals: false
 ColumnLimit: 80
-CommentPragmas:  '^@.+'
+CommentPragmas:  '^(@|NOTE|TODO|WARNING|FIXME).+'
 FixNamespaceComments: true
 # Regroup includes with a priority system
 IncludeBlocks: Regroup

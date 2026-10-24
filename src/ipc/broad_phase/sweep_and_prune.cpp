@@ -102,6 +102,7 @@ void SweepAndPrune::clear()
 void SweepAndPrune::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
+    candidates.clear();
     std::vector<std::pair<int, int>> overlaps;
     scalable_ccd::sort_and_sweep(boxes->vertices, vv_sort_axis, overlaps);
 
@@ -115,6 +116,7 @@ void SweepAndPrune::detect_vertex_vertex_candidates(
 void SweepAndPrune::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
+    candidates.clear();
     std::vector<std::pair<int, int>> overlaps;
     scalable_ccd::sort_and_sweep(
         boxes->edges, boxes->vertices, ev_sort_axis, overlaps);
@@ -129,6 +131,7 @@ void SweepAndPrune::detect_edge_vertex_candidates(
 void SweepAndPrune::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
+    candidates.clear();
     std::vector<std::pair<int, int>> overlaps;
     scalable_ccd::sort_and_sweep(boxes->edges, ee_sort_axis, overlaps);
 
@@ -142,6 +145,7 @@ void SweepAndPrune::detect_edge_edge_candidates(
 void SweepAndPrune::detect_face_vertex_candidates(
     std::vector<FaceVertexCandidate>& candidates) const
 {
+    candidates.clear();
     std::vector<std::pair<int, int>> overlaps;
     scalable_ccd::sort_and_sweep(
         boxes->faces, boxes->vertices, fv_sort_axis, overlaps);
@@ -156,6 +160,7 @@ void SweepAndPrune::detect_face_vertex_candidates(
 void SweepAndPrune::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
+    candidates.clear();
     std::vector<std::pair<int, int>> overlaps;
     scalable_ccd::sort_and_sweep(
         boxes->edges, boxes->faces, ef_sort_axis, overlaps);
@@ -170,6 +175,7 @@ void SweepAndPrune::detect_edge_face_candidates(
 void SweepAndPrune::detect_face_face_candidates(
     std::vector<FaceFaceCandidate>& candidates) const
 {
+    candidates.clear();
     std::vector<std::pair<int, int>> overlaps;
     scalable_ccd::sort_and_sweep(boxes->faces, ff_sort_axis, overlaps);
 

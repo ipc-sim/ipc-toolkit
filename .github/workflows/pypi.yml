@@ -9,40 +9,93 @@ on:
   #     - pypi
   #     - main
   #     - python
-  # pull_request:
-  #   branches:
-  #     - main
+  # Build (but never upload) the wheels when their build changes, so the CUDA
+  # wheels' no-GPU check runs before a release depends on it.
+  pull_request:
+    paths:
+      - '.github/workflows/pypi.yml'
+      - 'python/tests/check_cuda_wheel.py'
+      - 'python/tests/test_cuda.py'
+      - 'setup.py'
+      - 'pyproject.toml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Every GPU generation from Turing (sm_75) to Blackwell (sm_120) gets
+  # prebuilt device code (SASS), so no supported GPU has to JIT-compile on first
+  # use. We embed PTX only for the newest one, so GPUs newer than this list can
+  # still JIT from it. We build with CUDA 12.8 instead of 13.x because the
+  # toolkit sets the minimum driver: 12.x needs 525+, while 13.x needs 580+.
+  CUDA_ARCHITECTURES: "75-real;80-real;86-real;90-real;100-real;120-real;120-virtual"
 
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.name }} (${{ matrix.python-version }} ${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      # A pull request run should report every platform's result, but a
+      # release should stop as soon as any wheel fails.
+      fail-fast: ${{ github.event_name != 'pull_request' }}
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # windows-latest ships MSVC 19.5x (VS 2026), which CUDA 12.8 rejects, so
+        # the Windows wheels build on the VS 2022 image.
+        os: [ubuntu-latest, macos-latest, windows-2022]
         python-version: [cp310, cp311, cp312, cp313, cp314]
         arch: [x86_64, arm64]
         exclude:
           - os: ubuntu-latest
             arch: arm64
-          - os: windows-latest
+          - os: windows-2022
             arch: arm64
           - os: macOS-latest
             arch: x86_64
         include:
           - os: ubuntu-latest
             name: Linux
-          - os: windows-latest
+          - os: windows-2022
             name: Windows
           - os: macOS-latest
             name: macOS
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+
+      # The Linux wheels install CUDA inside the manylinux container (see
+      # CIBW_BEFORE_ALL_LINUX), but cibuildwheel builds the Windows wheels on
+      # the runner itself, so the toolkit goes there. Install it before
+      # msvc-dev-cmd so its bin dir is on the PATH that msvc-dev-cmd snapshots.
+      # In 12.8, nvcc still bundles nvvm and crt, which 13.x (cuda.yml) splits
+      # into their own subpackages; naming them here would abort the install.
+      - name: Install CUDA Toolkit (Windows)
+        if: runner.os == 'Windows'
+        uses: Jimver/cuda-toolkit@v0.2.35
+        with:
+          cuda: '12.8.1'
+          sub-packages: '["nvcc", "cudart", "thrust"]'
+          method: 'network'
+          use-github-cache: false
+
+      # setup.py builds with the Visual Studio generator by default, which needs
+      # the toolkit's MSBuild integration. We use Ninja instead, as cuda.yml
+      # does, so we need MSVC's environment on PATH. check_language(CUDA) does
+      # not reliably find nvcc on this runner, so we name it with CUDACXX.
+      - name: Setup MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Use Ninja and nvcc (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          "CMAKE_GENERATOR=Ninja" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CUDACXX=$env:CUDA_PATH\bin\nvcc.exe" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3
+        uses: pypa/cibuildwheel@v4.1.0
         # to supply options, put them in 'env', like:
         env:
           MACOSX_DEPLOYMENT_TARGET: "11.0"
@@ -50,8 +103,57 @@ jobs:
           CIBW_ARCHS_MACOS: ${{ matrix.arch }}
           CIBW_BUILD: ${{ matrix.python-version }}-*
           CIBW_SKIP: "cp38-* pp* *musllinux* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
+          # Without this the wheel takes -march=native from whichever runner built it,
+          # and can contain AVX-512 that users' CPUs lack. x86-64-v3 is the baseline
+          # the 1.6.0 wheels already required (AVX2, FMA, BMI1/2, LZCNT). The build
+          # runs in a manylinux container, so it has to go through cibuildwheel.
+          #
+          # We keep CUDA's runtime static (the CMake default), so the wheel
+          # needs only the NVIDIA driver, and auditwheel has no libcudart to
+          # bundle. A machine without a driver still imports the module; its
+          # ipctk.cuda calls raise instead.
+          CIBW_ENVIRONMENT_LINUX: >-
+            CUDACXX=/usr/local/cuda-12.8/bin/nvcc
+            CMAKE_ARGS="-DSIMD_CXX_FLAGS=-march=x86-64-v3
+            -DIPC_TOOLKIT_WITH_CUDA=ON
+            -DCMAKE_CUDA_ARCHITECTURES=${{ env.CUDA_ARCHITECTURES }}
+            -DSCALABLE_CCD_CUDA_ARCHITECTURES=${{ env.CUDA_ARCHITECTURES }}"
+          CIBW_ENVIRONMENT_WINDOWS: >-
+            CMAKE_ARGS="-DIPC_TOOLKIT_WITH_CUDA=ON
+            -DCMAKE_CUDA_ARCHITECTURES=${{ env.CUDA_ARCHITECTURES }}
+            -DSCALABLE_CCD_CUDA_ARCHITECTURES=${{ env.CUDA_ARCHITECTURES }}"
+          # The manylinux_2_28 image is AlmaLinux 8 with GCC 14 (gcc-toolset-14),
+          # which CUDA 12.8 supports as a host compiler. We install only the
+          # compiler, the runtime, and the Thrust/CUB headers.
+          CIBW_BEFORE_ALL_LINUX: >-
+            curl -fsSL -o /etc/yum.repos.d/cuda-rhel8.repo
+            https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo &&
+            dnf install -y cuda-nvcc-12-8 cuda-cudart-devel-12-8 cuda-cccl-12-8 &&
+            g++ --version && /usr/local/cuda-12.8/bin/nvcc --version
+          # The runners have no GPU or NVIDIA driver, which is the case a CUDA
+          # wheel must survive: it has to import, report CUDA as unavailable,
+          # and raise (not crash) when its GPU classes are used anyway.
+          CIBW_TEST_COMMAND_LINUX: python {project}/python/tests/check_cuda_wheel.py
+          CIBW_TEST_COMMAND_WINDOWS: python {project}/python/tests/check_cuda_wheel.py
 
-      - uses: actions/upload-artifact@v4
+      # PyPI rejects files over 100 MB unless the project has a raised limit.
+      # We use plain bash because not every runner has `python` on PATH.
+      - name: Report wheel size
+        shell: bash
+        run: |
+          status=0
+          for wheel in wheelhouse/*.whl; do
+            size=$(wc -c < "$wheel" | tr -d ' ')
+            mb=$(awk -v s="$size" 'BEGIN { printf "%.1f", s / 1e6 }')
+            echo "- \`$(basename "$wheel")\`: $mb MB" | tee -a "$GITHUB_STEP_SUMMARY"
+            if [ "$size" -gt 100000000 ]; then
+              echo "::error::$(basename "$wheel") is over PyPI's 100 MB limit"
+              status=1
+            fi
+          done
+          exit $status
+
+      - uses: actions/upload-artifact@v7
         with:
           name: wheelhouse-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.arch }}
           path: ./wheelhouse/*.whl
@@ -60,12 +162,12 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Build sdist
         run: pipx run build --sdist
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sdist
           path: dist/*.tar.gz
@@ -74,31 +176,40 @@ jobs:
     name: Upload to PyPI
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
+    # Pull requests only check that the wheels build.
+    if: github.event_name != 'pull_request'
+    # We publish through PyPI's Trusted Publishing instead of an API token.
+    # The OIDC identity lets the publish action sign a provenance attestation
+    # for every file, which PyPI shows under each release's "Security" tab.
+    # The environment name must match the trusted publisher set up on PyPI.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ipctk
+    permissions:
+      id-token: write
     # upload to PyPI on every tag starting with 'v'
     # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     # alternatively, to publish when a GitHub Release is created, use the following rule:
     # if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: wheelhouse-*
           merge-multiple: true
           path: dist
 
       - name: Download source distribution
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sdist
           merge-multiple: true
           path: dist
 
-      - uses: pypa/gh-action-pypi-publish@v1.13.0
+      # Attestations are on by default, but only under Trusted Publishing;
+      # an API token silently skips them.
+      - uses: pypa/gh-action-pypi-publish@v1.14.0
         with:
-          user: __token__
-          # To test:
-          # password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          # To test (needs its own trusted publisher on TestPyPI):
           # repository-url: https://test.pypi.org/legacy/
-          # To release:
-          password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true

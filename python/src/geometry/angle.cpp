@@ -7,7 +7,7 @@ using namespace ipc;
 void define_angle(py::module_& m)
 {
     m.def(
-        "dihedral_angle", &dihedral_angle,
+        "dihedral_angle", &detail::dihedral_angle<double>,
         R"ipc_Qu8mg5v7(
             Compute the bending angle between two triangles sharing an edge.
                 x0---x2
@@ -33,7 +33,7 @@ void define_angle(py::module_& m)
         "x0"_a, "x1"_a, "x2"_a, "x3"_a);
 
     m.def(
-        "dihedral_angle_gradient", &dihedral_angle_gradient,
+        "dihedral_angle_gradient", &detail::dihedral_angle_gradient<double>,
         R"ipc_Qu8mg5v7(
             Compute the Jacobian of the bending angle between two triangles sharing an edge.
                 x0---x2

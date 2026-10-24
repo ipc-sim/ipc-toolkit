@@ -1,12 +1,16 @@
 #include "normal_potential.hpp"
 
+#include <ipc/utils/gradient_assembler.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include <tbb/blocked_range.h>
-#include <tbb/combinable.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
+
+#include <algorithm>
+#include <cmath>
 
 namespace ipc {
 
@@ -27,25 +31,16 @@ Eigen::VectorXd NormalPotential::gauss_newton_hessian_diagonal(
     const Eigen::MatrixXi& faces = mesh.faces();
     const int dim = vertices.cols();
 
-    tbb::combinable<Eigen::VectorXd> diag_storage(
-        Eigen::VectorXd::Zero(vertices.size()));
-
-    tbb::parallel_for(size_t(0), collisions.size(), [&](size_t i) {
-        const NormalCollision& collision = collisions[i];
-
-        const VectorMax12d local_diag = this->gauss_newton_hessian_diagonal(
-            collision, collision.dof(vertices, edges, faces));
-
-        const auto vids = collision.vertex_ids(edges, faces);
-
-        // Don't be confused by the "gradient" in the name -- this just
-        // scatters a local vector into a global vector.
-        local_gradient_to_global_gradient(
-            local_diag, vids, dim, diag_storage.local());
-    });
-
-    return diag_storage.combine([](const Eigen::VectorXd& a,
-                                   const Eigen::VectorXd& b) { return a + b; });
+    // Don't be confused by the "gradient" in the name -- this just scatters
+    // per-stencil local vectors into a global vector.
+    return assemble_gradient(
+        vertices.size(), dim, collisions.size(),
+        [&](const size_t i) -> VectorMax12d {
+            const NormalCollision& collision = collisions[i];
+            return this->gauss_newton_hessian_diagonal(
+                collision, collision.dof(vertices, edges, faces));
+        },
+        [&](const size_t i) { return collisions[i].vertex_ids(edges, faces); });
 }
 
 double NormalPotential::gauss_newton_hessian_quadratic_form(
@@ -183,9 +178,21 @@ MatrixMax12d NormalPotential::hessian(
     // m(x) before evaluating barrier derivatives.
     const double m = collision.mollifier(positions); // m(x)
     if (collision.is_mollified() && m <= 0) {
+        // The mollified hessian is weight * f * hess_m here (the mollifier
+        // gradient is zero when m = 0). At m == 0 the edges are exactly
+        // parallel -- a global minimum of the mollifier -- so hess_m is PSD,
+        // and f = f(d) > 0. The block is therefore a scalar multiple of a PSD
+        // matrix, so its PSD projection reduces to projecting the scalar
+        // weight * f (no eigendecomposition needed).
         const double f = (*this)(d, collision.dmin);
         const MatrixMax12d hess_m = collision.mollifier_hessian(positions);
-        return (collision.weight * f) * hess_m;
+        double scale = collision.weight * f;
+        if (project_hessian_to_psd == PSDProjectionMethod::CLAMP) {
+            scale = std::max(scale, 0.0); // NSD (w < 0) projects to zero
+        } else if (project_hessian_to_psd == PSDProjectionMethod::ABS) {
+            scale = std::abs(scale);
+        }
+        return scale * hess_m;
     }
 
     // ∇d(x)
@@ -326,8 +333,7 @@ void NormalPotential::shape_derivative(
 
     // First term:
     if (collision.weight_gradient.size() <= 0) {
-        throw std::runtime_error(
-            "Shape derivative is not computed for collisions!");
+        log_and_throw_error("Shape derivative is not computed for collisions!");
     }
 
     if (collision.weight_gradient.nonZeros() > 0) {

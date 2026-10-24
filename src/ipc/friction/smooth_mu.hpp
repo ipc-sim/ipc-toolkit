@@ -1,75 +1,181 @@
 #pragma once
 
+#include <ipc/friction/smooth_friction_mollifier.hpp>
+#include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/simd.hpp>
 
+#include <cassert>
 #include <utility> // for std::pair
 
 namespace ipc {
 
+// The `mu_s == mu_k` test that opens most of these functions is a fast path,
+// not a special case: when the two coefficients are equal the general formulas
+// below reduce to exactly the same value, so the blend a batch performs is
+// correct whichever side a lane lands on. What the test buys a *scalar* caller
+// is skipping the general formula entirely, which is the common setting where
+// a material has one friction coefficient.
+//
+// See the note atop smooth_friction_mollifier.hpp for why these branches are
+// written as `select_lazy` and what that means for a batch scalar.
+
 /// @brief Smooth coefficient from static to kinetic friction.
+/// @tparam T The scalar type.
 /// @param y The tangential relative speed.
 /// @param mu_s Coefficient of static friction.
 /// @param mu_k Coefficient of kinetic friction.
 /// @param eps_v Velocity threshold below which static friction force is applied.
 /// @return The value of the μ at y.
-double smooth_mu(
-    const double y, const double mu_s, const double mu_k, const double eps_v);
+template <typename T>
+inline T smooth_mu(const T y, const T mu_s, const T mu_k, const T eps_v)
+{
+    assert(all_of(eps_v > T(0)));
+    const T abs_y = ipc::numext::abs(y);
+    const T z = abs_y / eps_v;
+    return select_lazy(
+        mu_s == mu_k || abs_y >= eps_v, [&] { return mu_k; },
+        abs_y < T(0.5) * eps_v,
+        [&] { return T(2) * (mu_k - mu_s) * z * z + mu_s; },
+        [&] { return T(-2) * (mu_k - mu_s) * (z * (z - T(2)) + T(1)) + mu_k; });
+}
 
 /// @brief Compute the derivative of the smooth coefficient from static to kinetic friction.
+/// @tparam T The scalar type.
 /// @param y The tangential relative speed.
 /// @param mu_s Coefficient of static friction.
 /// @param mu_k Coefficient of kinetic friction.
 /// @param eps_v Velocity threshold below which static friction force is applied.
 /// @return The value of the derivative at y.
-double smooth_mu_derivative(
-    const double y, const double mu_s, const double mu_k, const double eps_v);
+template <typename T>
+inline T
+smooth_mu_derivative(const T y, const T mu_s, const T mu_k, const T eps_v)
+{
+    assert(all_of(eps_v > T(0)));
+    const T abs_y = ipc::numext::abs(y);
+    const T z = abs_y / eps_v;
+    return select_lazy(
+        mu_s == mu_k || abs_y >= eps_v, [&] { return T(0); },
+        abs_y < T(0.5) * eps_v,
+        [&] { return T(4) * (mu_k - mu_s) * z / eps_v; },
+        [&] { return T(-4) * (mu_k - mu_s) * (z - T(1)) / eps_v; });
+}
 
 /// @brief Compute the value of the ∫ μ(y) f₁(y) dy, where f₁ is the first derivative of the smooth friction mollifier.
+/// @tparam T The scalar type.
 /// @param y The tangential relative speed.
 /// @param mu_s Coefficient of static friction.
 /// @param mu_k Coefficient of kinetic friction.
 /// @param eps_v Velocity threshold below which static friction force is applied.
 /// @return The value of the integral at y.
-double smooth_mu_f0(
-    const double y, const double mu_s, const double mu_k, const double eps_v);
+template <typename T>
+inline T smooth_mu_f0(const T y, const T mu_s, const T mu_k, const T eps_v)
+{
+    assert(all_of(eps_v > T(0)));
+    const T abs_y = ipc::numext::abs(y);
+    const T delta_mu = mu_k - mu_s;
+    const T z = abs_y / eps_v;
+    return select_lazy(
+        mu_s == mu_k || abs_y >= eps_v,
+        [&] { return mu_k * smooth_friction_f0(y, eps_v); },
+        abs_y < T(0.5) * eps_v,
+        [&] {
+            return y * z
+                * (z
+                       * (z * (T(1) - literal<T>(0.4) * z) * delta_mu
+                          - mu_s / T(3))
+                   + mu_s)
+                + literal<T>(9.0 / 16.0) * eps_v * mu_k
+                - literal<T>(11.0 / 48.0) * eps_v * mu_s;
+        },
+        [&] {
+            return y * z
+                * (z
+                       * (z * (literal<T>(0.4) * z - T(2)) * delta_mu
+                          + (T(3) * mu_k - literal<T>(10.0 / 3.0) * mu_s))
+                   + (T(2) * mu_s - mu_k))
+                + literal<T>(0.6) * eps_v * mu_k
+                - literal<T>(4.0 / 15.0) * eps_v * mu_s;
+        });
+}
 
 /// @brief Compute the value of the μ(y) f₁(y), where f₁ is the first derivative of the smooth friction mollifier.
+/// @tparam T The scalar type.
 /// @param y The tangential relative speed.
 /// @param mu_s Coefficient of static friction.
 /// @param mu_k Coefficient of kinetic friction.
 /// @param eps_v Velocity threshold below which static friction force is applied.
 /// @return The value of the product at y.
-double smooth_mu_f1(
-    const double y, const double mu_s, const double mu_k, const double eps_v);
+template <typename T>
+inline T smooth_mu_f1(const T y, const T mu_s, const T mu_k, const T eps_v)
+{
+    // This is a known formulation: μ(y) f₁(y)
+    return smooth_mu(y, mu_s, mu_k, eps_v) * smooth_friction_f1(y, eps_v);
+}
 
 /// @brief Compute the value of d/dy (μ(y) f₁(y)), where f₁ is the first derivative of the smooth friction mollifier.
+/// @tparam T The scalar type.
 /// @param y The tangential relative speed.
 /// @param mu_s Coefficient of static friction.
 /// @param mu_k Coefficient of kinetic friction.
 /// @param eps_v Velocity threshold below which static friction force is applied.
 /// @return The value of the derivative at y.
-double smooth_mu_f2(
-    const double y, const double mu_s, const double mu_k, const double eps_v);
+template <typename T>
+inline T smooth_mu_f2(const T y, const T mu_s, const T mu_k, const T eps_v)
+{
+    // Apply the chain rule:
+    return smooth_mu_derivative(y, mu_s, mu_k, eps_v)
+        * smooth_friction_f1(y, eps_v)
+        + smooth_mu(y, mu_s, mu_k, eps_v) * smooth_friction_f2(y, eps_v);
+}
 
 /// @brief Compute the value of the μ(y) f₁(y) / y, where f₁ is the first derivative of the smooth friction mollifier.
 /// @note The `x` in the function name refers to the parameter `y`.
+/// @tparam T The scalar type.
 /// @param y The tangential relative speed.
 /// @param mu_s Coefficient of static friction.
 /// @param mu_k Coefficient of kinetic friction.
 /// @param eps_v Velocity threshold below which static friction force is applied.
 /// @return The value of the product at y.
-double smooth_mu_f1_over_x(
-    const double y, const double mu_s, const double mu_k, const double eps_v);
+template <typename T>
+inline T
+smooth_mu_f1_over_x(const T y, const T mu_s, const T mu_k, const T eps_v)
+{
+    // This is a known formulation: μ(y) f₁(y) / y
+    // where we use the robust division by y to avoid division by zero.
+    return smooth_mu(y, mu_s, mu_k, eps_v)
+        * smooth_friction_f1_over_x(y, eps_v);
+}
 
 /// @brief Compute the value of the [(d/dy μ(y) f₁(y)) ⋅ y - μ(y) f₁(y)] / y³, where f₁ and f₂ are the first and second derivatives of the smooth friction mollifier.
 /// @note The `x` in the function name refers to the parameter `y`.
+/// @tparam T The scalar type.
 /// @param y The tangential relative speed.
 /// @param mu_s Coefficient of static friction.
 /// @param mu_k Coefficient of kinetic friction.
 /// @param eps_v Velocity threshold below which static friction force is applied.
 /// @return The value of the expression at y.
-double smooth_mu_f2_x_minus_mu_f1_over_x3(
-    const double y, const double mu_s, const double mu_k, const double eps_v);
+template <typename T>
+inline T smooth_mu_f2_x_minus_mu_f1_over_x3(
+    const T y, const T mu_s, const T mu_k, const T eps_v)
+{
+    assert(all_of(eps_v > T(0)));
+    const T abs_y = ipc::numext::abs(y);
+    const T delta_mu = mu_k - mu_s;
+    const T z = T(1) / eps_v;
+    return select_lazy(
+        mu_s == mu_k || abs_y >= eps_v,
+        [&] { return mu_k * smooth_friction_f2_x_minus_f1_over_x3(y, eps_v); },
+        abs_y < T(0.5) * eps_v,
+        [&] {
+            return z * z * (z * (T(8) - T(6) * y * z) * delta_mu - mu_s / y);
+        },
+        [&] {
+            return z * z
+                * (z * (T(6) * y * z - T(16)) * delta_mu
+                   + (T(9) * mu_k - T(10) * mu_s) / y);
+        });
+}
 
 /// Elliptical L2 (matchstick cone) anisotropic friction. Call
 /// anisotropic_x_from_tau_aniso, then anisotropic_mu_eff_f.

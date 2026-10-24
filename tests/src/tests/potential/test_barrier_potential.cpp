@@ -15,6 +15,8 @@
 #include <finitediff.hpp>
 #include <igl/edges.h>
 
+#include <Eigen/Eigenvalues>
+
 using namespace ipc;
 
 TEST_CASE(
@@ -464,6 +466,154 @@ TEST_CASE(
     if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
         tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
     }
+}
+
+TEST_CASE(
+    "Mollified m<=0 hessian block is PSD",
+    "[potential][barrier_potential][hessian]")
+{
+    // The cube's edges are axis-aligned, so IMPROVED_MAX_APPROX's near-parallel
+    // negative-weight collisions have mollifier m == 0 exactly. That exercises
+    // NormalPotential::hessian()'s m <= 0 early-return branch.
+    //
+    // Before the fix, that branch returned (weight * f) * hess_m without
+    // applying the requested PSD projection, so negative-weight collisions
+    // could introduce non-PSD blocks into the assembled "PSD-projected"
+    // hessian.
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    REQUIRE(tests::load_mesh("cube.ply", vertices, edges, faces));
+    const CollisionMesh mesh(vertices, edges, faces);
+
+    const double dhat = std::sqrt(2.0);
+    NormalCollisions collisions;
+    collisions.set_use_area_weighting(true);
+    collisions.set_collision_set_type(
+        NormalCollisions::CollisionSetType::IMPROVED_MAX_APPROX);
+    collisions.build(mesh, vertices, dhat);
+    REQUIRE(!collisions.empty());
+
+    // Ensure the test actually exercises NormalPotential::hessian()'s m <= 0
+    // early-return branch (and the negative-weight case that motivated the
+    // fix).
+    int m_le_0_count = 0;
+    int m_le_0_negative_weight_count = 0;
+    for (size_t i = 0; i < collisions.size(); i++) {
+        const NormalCollision& c = collisions[i];
+        if (!c.is_mollified()) {
+            continue;
+        }
+        const double m =
+            c.mollifier(c.dof(vertices, mesh.edges(), mesh.faces()));
+        if (m <= 0) {
+            m_le_0_count++;
+            if (c.weight < 0) {
+                m_le_0_negative_weight_count++;
+            }
+        }
+    }
+    REQUIRE(m_le_0_count > 0);
+    REQUIRE(m_le_0_negative_weight_count > 0);
+
+    const BarrierPotential barrier_potential(dhat, /*stiffness=*/1.0);
+
+    // Triggers the m <= 0 early-return (and its debug PSD assert) for every
+    // mollified collision that reaches it.
+    const Eigen::SparseMatrix<double> H = barrier_potential.hessian(
+        collisions, mesh, vertices, PSDProjectionMethod::CLAMP);
+    REQUIRE(H.nonZeros() > 0);
+
+    // With per-block CLAMP projection (including the m <= 0 blocks), the
+    // assembled hessian must be PSD. Before the fix, the m <= 0 branch returned
+    // negative-definite blocks unprojected, making this fail.
+    const Eigen::MatrixXd H_dense = H.toDense();
+    const Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(H_dense);
+    const double min_eig = eigensolver.eigenvalues().minCoeff();
+    const double scale = eigensolver.eigenvalues().cwiseAbs().maxCoeff();
+    CHECK(min_eig >= -1e-10 * std::max(scale, 1.0));
+}
+
+TEST_CASE(
+    "Barrier potential with unsquared distance",
+    "[potential][barrier_potential][gradient][hessian]")
+{
+    const double dhat = 0.1;
+    const double dmin = GENERATE(0.0, 0.01);
+    const double d = GENERATE(0.02, 0.05, 0.09);
+    const double stiffness = GENERATE(1.0, 3.5);
+    const bool use_physical_barrier = GENERATE(false, true);
+
+    const auto barrier = std::make_shared<InversePowerBarrier<>>(2.0);
+    const BarrierPotential potential(
+        barrier, dhat, stiffness, use_physical_barrier,
+        /*use_squared_distance=*/false);
+    CHECK(!potential.use_squared_distance());
+
+    VertexVertexNormalCollision collision(0, 1);
+    collision.dmin = dmin;
+
+    Vector6d x;
+    x.head<3>() << 0.1, -0.2, 0.3;
+    x.tail<3>() =
+        x.head<3>() + (d + dmin) * Eigen::Vector3d(1, 2, 3).normalized();
+
+    // The barrier sees the unsquared distance, offset by dmin, and is scaled
+    // by the stiffness (and the physical units) as in the squared mode.
+    const double units = use_physical_barrier ? dhat / barrier->units(dhat) : 1;
+    CHECK(
+        potential(collision, x)
+        == Catch::Approx(stiffness * units * (*barrier)(d, dhat)));
+
+    const VectorMax12d grad = potential.gradient(collision, x);
+    Eigen::VectorXd fgrad;
+    fd::finite_gradient(
+        x, [&](const Eigen::VectorXd& y) { return potential(collision, y); },
+        fgrad);
+    CHECK(fd::compare_gradient(grad, fgrad));
+
+    const MatrixMax12d hess = potential.hessian(collision, x);
+    Eigen::MatrixXd fhess;
+    fd::finite_jacobian(
+        x,
+        [&](const Eigen::VectorXd& y) -> Eigen::VectorXd {
+            return potential.gradient(collision, y);
+        },
+        fhess);
+    CHECK(fd::compare_hessian(hess, fhess, 1e-3));
+
+    CHECK_THROWS(potential.force_magnitude(d * d, dmin));
+    CHECK_THROWS(
+        potential.force_magnitude_gradient(d * d, VectorMax12d::Zero(6), dmin));
+}
+
+// At exact contact the energy is +inf, but the gradient and Hessian must stay
+// finite in both distance modes so assembling them does not spread NaNs.
+TEST_CASE(
+    "Barrier potential derivatives are finite at exact contact",
+    "[potential][barrier_potential][gradient][hessian]")
+{
+    const double dhat = 0.1;
+    const double dmin = GENERATE(0.0, 0.01);
+    const std::shared_ptr<Barrier> barrier = GENERATE(
+        as<std::shared_ptr<Barrier>>(), std::make_shared<ClampedLogBarrier<>>(),
+        std::make_shared<InversePowerBarrier<>>(2.0));
+    const bool use_squared_distance = GENERATE(true, false);
+    CAPTURE(dmin, use_squared_distance);
+
+    const BarrierPotential potential(
+        barrier, dhat, /*stiffness=*/1.0, /*use_physical_barrier=*/false,
+        use_squared_distance);
+
+    VertexVertexNormalCollision collision(0, 1);
+    collision.dmin = dmin;
+
+    Vector6d x;
+    x.head<3>() << 0.1, -0.2, 0.3;
+    x.tail<3>() = x.head<3>();
+
+    CHECK(potential(collision, x) == std::numeric_limits<double>::infinity());
+    CHECK(potential.gradient(collision, x).allFinite());
+    CHECK(potential.hessian(collision, x).allFinite());
 }
 
 // -- Benchmarking ------------------------------------------------------------

@@ -4,7 +4,7 @@ Dependencies
 .. figure:: /_static/graphviz/dependencies.svg
    :align: center
 
-   Default dependencies of the ``ipc::toolkit`` library. Excludes CUDA and Python bindings.
+   Default dependencies of the ``ipc::toolkit`` library. Edge colour is the link scope; a dashed edge marks an optional dependency, enabled by default but controlled by an ``IPC_TOOLKIT_WITH_*`` CMake option. Dependencies that are off by default are omitted. Excludes CUDA and Python bindings.
 
 The IPC Toolkit depends on a handful of third-party libraries, which are used to provide various functionality.
 
@@ -48,6 +48,10 @@ These dependencies are all `permissively licensed <license.html>`_, and we list 
       - Automatic differentiation for testing and in non-performance critical smooth contact functions
       - MIT
       - `github.com/microsoft/TinyAD <https://github.com/patr-schm/TinyAD>`_
+    * - geogram (MultiPrecision PSM)
+      - Exact arithmetic for the exact distance-type classification used by the ESP potential. We only use the lightweight, two-file MultiPrecision PSM, not the full geogram library.
+      - BSD-3-Clause
+      - `github.com/BrunoLevy/geogram <https://github.com/BrunoLevy/geogram/releases>`_
 
 Optional Dependencies
 ---------------------
@@ -87,6 +91,12 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - `github.com/zfergus/filib <https://github.com/zfergus/filib>`_
       - |:white_check_mark:|
       - ``IPC_TOOLKIT_WITH_FILIB``
+    * - MeshFEMSparse
+      - Block-CSC data structures for fast Hessian assembly (see :cpp:class:`ipc::MeshFEMHessianAssembler`)
+      - MIT
+      - `github.com/MeshFEM/MeshFEMSparse <https://github.com/MeshFEM/MeshFEMSparse>`_
+      - |:white_check_mark:|
+      - ``IPC_TOOLKIT_WITH_MESHFEM_SPARSE``
     * - nlohmann/json
       - JSON parsing for profiler and tests
       - MIT
@@ -113,6 +123,20 @@ Additionally, IPC Toolkit may optionally use the following libraries:
       - ``IPC_TOOLKIT_WITH_INEXACT_CCD``
 
 Some of these libraries are enabled by default, and some are not. You can enable or disable them by passing the appropriate CMake option when you configure the IPC Toolkit build.
+
+.. warning::
+    ``xsimd`` is linked **publicly**, and the detected SIMD flags (``SIMD_CXX_FLAGS``, typically ``-march=native``) are applied publicly to anything linking ``ipc::toolkit``. This is a requirement rather than a convenience: ``ipc/utils/simd.hpp`` exposes ``ipc::SimdBatch<T>`` in the public API, and ``xsimd::default_arch`` is resolved from each translation unit's *own* compiler flags. A consumer compiled without these flags therefore names a different batch type than the one instantiated inside the library, and the link fails.
+
+    The practical consequence is that your binaries are compiled for the machine that built them and will not run on hardware lacking those instructions. If you need portable binaries, set ``IPC_TOOLKIT_WITH_SIMD`` to ``OFF``; the library then builds without ``xsimd`` and without the architecture flags.
+
+.. note::
+    ``MeshFEMSparse`` (and its transitive dependency ``MeshFEMCore``) is downloaded source-only and compiled into a minimal static library (matrix data structures and assembly routines; no sparse direct solvers). When enabled (the default), :cpp:func:`ipc::Potential::hessian` assembles through the block-CSC backend — several times faster than the triplet-based assembly, with identical results up to floating-point summation order — and a :cpp:class:`ipc::MeshFEMHessianAssembler` held across :cpp:func:`ipc::Potential::assemble_hessian` calls additionally reuses the sparsity pattern between assemblies. It requires ``IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT=RowMajor`` (the default; the option is automatically disabled otherwise).
+
+.. note::
+    ``geogram`` makes the distance-type classifiers in ``ipc/distance/distance_type_exact.hpp`` (used by the ESP potential) exact. We only download geogram's standalone MultiPrecision Pluggable Software Module (its exact ``expansion_nt`` arithmetic, two source files with no dependencies) from the geogram release and compile it into a small static library, rather than building all of geogram. We compile it with its namespace renamed from ``GEO`` to ``ipc_geogram``, so it can coexist with a full copy of geogram linked by a downstream project (e.g., PolyFEM). The archive's optional CGAL example is deleted after download and never built.
+
+.. note::
+    The Gauss–Lobatto quadrature used by the ESP potential (``ipc/esp/collisions/esp_quadrature.hpp``) is adapted from John Burkardt's `quad_rule <https://people.sc.fsu.edu/~jburkardt/c_src/quad_rule/quad_rule.html>`_ library, which is distributed under the MIT license.
 
 .. warning::
     ``filib`` is licensed under `LGPL-2.1 <https://github.com/zfergus/filib/blob/main/LICENSE>`_ and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynamic linkage requires copying the ``.so``/``.dylib``/``.dll`` file to the binary directory or system path. To enable this, set the CMake option ``FILIB_BUILD_SHARED_LIBS`` to ``ON`` and add this CMake code to copy the shared library object to the binary directory:

@@ -41,5 +41,17 @@ void define_thread_limiter(py::module_& m)
         "set_num_threads", &set_num_threads,
         "set maximum number of threads to use", "nthreads"_a);
 
+    // Allow the thread limit to be set globally via an environment variable
+    // (e.g., in production) rather than requiring every script to call
+    // set_num_threads() itself.
+    const char* env_val = std::getenv("TBB_NUM_THREADS");
+    if (env_val != nullptr) {
+        try {
+            set_num_threads(std::stoi(env_val));
+        } catch (const std::exception& e) {
+            logger().error("Invalid value for TBB_NUM_THREADS: {}", env_val);
+        }
+    }
+
     std::atexit([]() { thread_limiter.reset(); });
 }

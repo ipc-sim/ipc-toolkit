@@ -41,10 +41,4 @@ void set_logger(std::shared_ptr<spdlog::logger> logger)
     get_shared_logger() = std::move(logger);
 }
 
-void log_and_throw_error(const std::string& msg)
-{
-    logger().error(msg);
-    throw std::runtime_error(msg);
-}
-
 } // namespace ipc

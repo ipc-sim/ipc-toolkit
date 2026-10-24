@@ -59,11 +59,6 @@ jobs:
           choco install ccache
           "CACHE_PATH=${env:LOCALAPPDATA}\ccache" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      # Install Ninja (only needed on Windows)
-      - name: Install Ninja
-        if: runner.os == 'Windows'
-        uses: seanmiddleditch/gha-setup-ninja@master
-
       - name: Setup MSVC (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
@@ -73,6 +68,17 @@ jobs:
       - name: Get number of CPU cores
         uses: SimenB/github-actions-cpu-cores@v2
         id: cpu-cores
+
+      # On Linux, explicitly build for x86-64-v3 instead of -march=native. This
+      # avoids issues with ccache restoring from a runner with a different ISA.
+      - name: Check x86-64-v3 support (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          for f in avx2 bmi1 bmi2 f16c fma abm movbe xsave; do
+            grep -qw "$f" /proc/cpuinfo || { echo "::error::Runner CPU lacks $f, which x86-64-v3 requires"; exit 1; }
+          done
+          echo "CPU: $(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)"
+          echo "SIMD_ARGS=-DSIMD_CXX_FLAGS=-march=x86-64-v3" >> "$GITHUB_ENV"
 
       - name: Cache Build
         id: cache-build
@@ -87,6 +93,9 @@ jobs:
           ccache -V && ccache --show-config
           ccache --show-stats && ccache --zero-stats
 
+      # Debug keeps the asserts (NDEBUG stays undefined) and -O0 but drops -g.
+      # Debug info made the Debug ccache about 20x larger than Release, and CI
+      # never reads it: assert and Catch2 messages carry __FILE__ and __LINE__.
       - name: Configure (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
@@ -94,6 +103,9 @@ jobs:
           cd build
           cmake .. \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
+            -DCMAKE_C_FLAGS_DEBUG=-O0 \
+            -DCMAKE_CXX_FLAGS_DEBUG=-O0 \
+            $SIMD_ARGS \
             -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 
       - name: Configure (Windows)

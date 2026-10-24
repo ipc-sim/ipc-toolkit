@@ -47,7 +47,7 @@ We can build a normal adhesion potential object and compute the adhesion potenti
                 const double Y = 1e3;
                 const double eps_c = 0.5;
 
-                const ipc::NormalAdhesionPotential A_n(dhat_p, dhat_a, Y, eps_c)
+                const ipc::NormalAdhesionPotential A_n(dhat_p, dhat_a, Y, eps_c);
                 double adhesion_potential = A_n(normal_collisions, collision_mesh, vertices);
 
     .. md-tab-item:: Python
@@ -132,7 +132,7 @@ We can build a tangential adhesion potential object and compute the adhesion pot
 
             eps_a = 0.01
             A_t = ipctk.TangentialAdhesionPotential(eps_a)
-            adhesion_potential = A_t(tangential_collisions, collision_mesh, displacement);
+            adhesion_potential = A_t(tangential_collisions, collision_mesh, displacement)
 
 Derivatives
 ^^^^^^^^^^^
@@ -177,8 +177,7 @@ Similar to the friction model (see, `friction <advanced_friction.html#separate-c
 
             ipc::TangentialCollisions tangential_collisions;
             tangential_collisions.build(
-                collision_mesh, vertices, collisions, B, barrier_stiffness,
-                mu_s, mu_k);
+                collision_mesh, vertices, collisions, A_n, mu_s, mu_k);
 
     .. md-tab-item:: Python
 
@@ -186,8 +185,7 @@ Similar to the friction model (see, `friction <advanced_friction.html#separate-c
 
             tangential_collisions = ipctk.TangentialCollisions()
             tangential_collisions.build(
-                collision_mesh, vertices, collisions, B, barrier_stiffness,
-                mu_s, mu_k)
+                collision_mesh, vertices, collisions, A_n, mu_s, mu_k)
 
 The tangential adhesion force mollifier is then multiplied by the smooth coefficient of tangential adhesion:
 

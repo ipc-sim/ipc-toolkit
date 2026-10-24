@@ -6,38 +6,42 @@
 
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/geometry/normal.hpp>
-#include <ipc/smooth_contact/primitives/point3.hpp>
+#include <ipc/gcp/primitives/point3.hpp>
 #include <ipc/utils/autodiff_types.hpp>
 #include <ipc/math/math.hpp>
 
 #include <finitediff.hpp>
 #include <igl/edges.h>
 
+#include <cmath>
+#include <limits>
 #include <memory>
+#include <vector>
 
 using namespace ipc;
 
 /// @warning This implementation will not work with dmin > 0
-class PhysicalBarrier : public NormalizedClampedLogBarrier {
+template <typename T = double>
+class PhysicalBarrier : public NormalizedClampedLogBarrier<T> {
 public:
     PhysicalBarrier(const bool _use_dist_sqr) : use_dist_sqr(_use_dist_sqr) { }
 
     double operator()(const double d, const double dhat) const override
     {
         return (use_dist_sqr ? sqrt(dhat) : dhat)
-            * NormalizedClampedLogBarrier::operator()(d, dhat);
+            * NormalizedClampedLogBarrier<T>::operator()(d, dhat);
     }
 
     double first_derivative(const double d, const double dhat) const override
     {
         return (use_dist_sqr ? sqrt(dhat) : dhat)
-            * NormalizedClampedLogBarrier::first_derivative(d, dhat);
+            * NormalizedClampedLogBarrier<T>::first_derivative(d, dhat);
     }
 
     double second_derivative(const double d, const double dhat) const override
     {
         return (use_dist_sqr ? sqrt(dhat) : dhat)
-            * NormalizedClampedLogBarrier::second_derivative(d, dhat);
+            * NormalizedClampedLogBarrier<T>::second_derivative(d, dhat);
     }
 
 private:
@@ -58,8 +62,9 @@ TEST_CASE("Spline derivatives", "[deriv]")
         double deriv_ad = y_ad.grad(0);
         double hess_ad = y_ad.Hess(0);
 
-        CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
-        CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
+        CHECK(
+            std::abs(deriv_ad - deriv) < 1e-14 * std::max(1., std::abs(deriv)));
+        CHECK(std::abs(hess_ad - hess) < 1e-12 * std::max(1., std::abs(hess)));
     }
 }
 
@@ -77,8 +82,9 @@ TEST_CASE("Heaviside derivatives", "[deriv]")
         double deriv_ad = y_ad.grad(0);
         double hess_ad = y_ad.Hess(0);
 
-        CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
-        CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
+        CHECK(
+            std::abs(deriv_ad - deriv) < 1e-14 * std::max(1., std::abs(deriv)));
+        CHECK(std::abs(hess_ad - hess) < 1e-12 * std::max(1., std::abs(hess)));
     }
 }
 
@@ -99,8 +105,9 @@ TEST_CASE("Inv barrier derivatives", "[deriv]")
         double deriv_ad = y_ad.grad(0);
         double hess_ad = y_ad.Hess(0);
 
-        CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
-        CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
+        CHECK(
+            std::abs(deriv_ad - deriv) < 1e-14 * std::max(1., std::abs(deriv)));
+        CHECK(std::abs(hess_ad - hess) < 1e-12 * std::max(1., std::abs(hess)));
     }
 
     ScalarBase::setVariableCount(3);
@@ -235,7 +242,7 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
         // hess_ad.topLeftCorner(6, 6).setZero();
         // y_ad = T(y_ad.val, y_ad.grad, hess_ad);
 
-        CHECK(abs(y - y_ad.val) <= 1e-12);
+        CHECK(std::abs(y - y_ad.val) <= 1e-12);
         CHECK((grad - y_ad.grad).norm() <= 1e-12);
         CHECK((hess - y_ad.Hess).norm() <= 1e-10);
     }
@@ -243,7 +250,7 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
 
 TEST_CASE("point term derivatives", "[deriv]")
 {
-    ipc::SmoothContactParameters params(1, 1, 1, 0.01, 0, 2);
+    ipc::GCPParameters params(1, 1, 1, 0.01, 0, 2);
 
     Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
@@ -334,7 +341,7 @@ TEST_CASE("point term derivatives", "[deriv]")
 
 TEST_CASE("point term normal derivatives", "[deriv]")
 {
-    ipc::SmoothContactParameters params(1, 1, 1, 1, 0, 2);
+    ipc::GCPParameters params(1, 1, 1, 1, 0, 2);
 
     Eigen::MatrixX3d vectors(9, 3);
     vectors << -0.696515, -0.173578, -0.696231, 0.50146, -0.0017947, 0.999718,
@@ -395,6 +402,18 @@ TEST_CASE("point term normal derivatives", "[deriv]")
     }
 }
 
+TEST_CASE("Inverse-power barrier requires a positive power", "[barrier]")
+{
+    CHECK_NOTHROW(InversePowerBarrier<>(0.5));
+
+    // p = 0 would stay bounded at contact, p < 0 would attract, and a
+    // non-finite power would poison every evaluation.
+    const double power = GENERATE(
+        0.0, -1.0, std::nan(""), std::numeric_limits<double>::infinity());
+    CAPTURE(power);
+    CHECK_THROWS_AS(InversePowerBarrier<>(power), std::invalid_argument);
+}
+
 TEST_CASE("Barrier derivatives", "[barrier]")
 {
     bool use_dist_sqr = GENERATE(false, true);
@@ -411,22 +430,37 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     std::unique_ptr<ipc::Barrier> barrier;
     SECTION("Original")
     {
-        barrier = std::make_unique<ipc::ClampedLogBarrier>();
+        barrier = std::make_unique<ipc::ClampedLogBarrier<>>();
     }
     SECTION("Normalized")
     {
-        barrier = std::make_unique<ipc::NormalizedClampedLogBarrier>();
+        barrier = std::make_unique<ipc::NormalizedClampedLogBarrier<>>();
     }
     SECTION("Physical")
     {
-        barrier = std::make_unique<PhysicalBarrier>(use_dist_sqr);
+        barrier = std::make_unique<PhysicalBarrier<>>(use_dist_sqr);
     }
     SECTION("ClampedLogSq")
     {
-        barrier = std::make_unique<ipc::ClampedLogSqBarrier>();
+        barrier = std::make_unique<ipc::ClampedLogSqBarrier<>>();
     }
-    SECTION("Cubic") { barrier = std::make_unique<ipc::CubicBarrier>(); }
-    SECTION("TwoStage") { barrier = std::make_unique<ipc::TwoStageBarrier>(); }
+    SECTION("Cubic") { barrier = std::make_unique<ipc::CubicBarrier<>>(); }
+    SECTION("TwoStage")
+    {
+        barrier = std::make_unique<ipc::TwoStageBarrier<>>();
+    }
+    SECTION("InversePower1")
+    {
+        barrier = std::make_unique<ipc::InversePowerBarrier<>>(1.0);
+    }
+    SECTION("InversePower2")
+    {
+        barrier = std::make_unique<ipc::InversePowerBarrier<>>(2.0);
+    }
+    SECTION("InversePower3")
+    {
+        barrier = std::make_unique<ipc::InversePowerBarrier<>>(3.0);
+    }
 
     if (use_dist_sqr) {
         d_vec *= d;
@@ -465,7 +499,7 @@ TEST_CASE("Physical barrier", "[barrier]")
 {
     const bool use_dist_sqr = GENERATE(false, true);
 
-    ipc::ClampedLogBarrier original_barrier;
+    ipc::ClampedLogBarrier<> original_barrier;
     PhysicalBarrier new_barrier(use_dist_sqr);
 
     const double dhat =
@@ -498,4 +532,75 @@ TEST_CASE("Physical barrier", "[barrier]")
 
     CHECK(
         b_original_second_derivative == Catch::Approx(b_new_second_derivative));
+}
+TEST_CASE("Barrier penetration convention", "[barrier]")
+{
+    // Every log-based barrier must resolve d <= 0 (penetration) to +inf, and
+    // its derivatives to 0, rather than producing NaN or a finite value with
+    // the wrong sign. TwoStageBarrier regressed on this: with no d <= 0 guard
+    // its log term returned NaN for d < 0, and its first derivative flipped
+    // sign, reporting an attractive force at penetration.
+    const double dhat = 1e-2;
+    const double d = GENERATE(-1e-1, -1e-2, -1e-4, 0.0);
+    CAPTURE(d, dhat);
+
+    std::vector<std::shared_ptr<ipc::Barrier>> barriers = {
+        std::make_shared<ipc::ClampedLogBarrier<>>(),
+        std::make_shared<ipc::ClampedLogSqBarrier<>>(),
+        std::make_shared<ipc::TwoStageBarrier<>>(),
+    };
+
+    for (const auto& barrier : barriers) {
+        const double b = (*barrier)(d, dhat);
+        const double db = barrier->first_derivative(d, dhat);
+        const double d2b = barrier->second_derivative(d, dhat);
+        CAPTURE(b, db, d2b);
+
+        CHECK(!std::isnan(b));
+        CHECK(!std::isnan(db));
+        CHECK(!std::isnan(d2b));
+
+        CHECK(std::isinf(b));
+        CHECK(b > 0);
+        CHECK(db == 0.0);
+        CHECK(d2b == 0.0);
+    }
+}
+
+TEST_CASE("Barrier stage boundaries", "[barrier]")
+{
+    // The select_lazy cascades are ordered by increasing d, so each case is
+    // bounded below by the previous one. That makes the choice of < vs <= the
+    // only thing deciding which case an exact boundary lands in -- and
+    // TwoStageBarrier's second derivative is discontinuous at dhat, so a
+    // boundary that slipped one case over would change the value there.
+    const double dhat = 1e-2;
+
+    SECTION("d == dhat is inactive for every barrier")
+    {
+        const ipc::ClampedLogBarrier<> clamped_log;
+        const ipc::ClampedLogSqBarrier<> clamped_log_sq;
+        const ipc::CubicBarrier<> cubic;
+        const ipc::TwoStageBarrier<> two_stage;
+
+        for (const ipc::Barrier* barrier :
+             { static_cast<const ipc::Barrier*>(&clamped_log),
+               static_cast<const ipc::Barrier*>(&clamped_log_sq),
+               static_cast<const ipc::Barrier*>(&cubic),
+               static_cast<const ipc::Barrier*>(&two_stage) }) {
+            CHECK((*barrier)(dhat, dhat) == 0.0);
+            CHECK(barrier->first_derivative(dhat, dhat) == 0.0);
+            CHECK(barrier->second_derivative(dhat, dhat) == 0.0);
+        }
+    }
+
+    SECTION("d == dhat/2 is the quadratic stage of TwoStageBarrier")
+    {
+        const ipc::TwoStageBarrier<> two_stage;
+        const double d = 0.5 * dhat;
+        CHECK(
+            two_stage(d, dhat) == Catch::Approx(0.5 * (dhat - d) * (dhat - d)));
+        CHECK(two_stage.first_derivative(d, dhat) == Catch::Approx(d - dhat));
+        CHECK(two_stage.second_derivative(d, dhat) == 1.0);
+    }
 }

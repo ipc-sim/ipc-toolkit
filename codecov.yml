@@ -10,4 +10,4 @@ coverage:
         threshold: 5%
         only_pulls: true
 ignore:
-  - "tests/*"
+  - "tests/**"

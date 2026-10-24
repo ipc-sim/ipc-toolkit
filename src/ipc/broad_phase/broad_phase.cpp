@@ -1,6 +1,7 @@
 #include "broad_phase.hpp"
 
 #include <ipc/config.hpp>
+#include <ipc/broad_phase/details/connectivity_filters.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/utils/profiler.hpp>
 
@@ -76,7 +77,8 @@ void BroadPhase::clear()
     dim = 0; // reset dimension
 }
 
-void BroadPhase::detect_collision_candidates(Candidates& candidates) const
+void BroadPhase::detect_collision_candidates(
+    Candidates& candidates, bool all_types) const
 {
     candidates.clear();
     assert(dim == 2 || dim == 3);
@@ -87,6 +89,14 @@ void BroadPhase::detect_collision_candidates(Candidates& candidates) const
         // These are not needed for 2D
         detect_edge_edge_candidates(candidates.ee_candidates);
         detect_face_vertex_candidates(candidates.fv_candidates);
+
+        // These are needed for ESP contact
+        if (all_types) {
+            detect_vertex_vertex_candidates(candidates.vv_candidates);
+            detect_edge_face_candidates(candidates.ef_candidates);
+            detect_face_face_candidates(candidates.ff_candidates);
+            detect_edge_vertex_candidates(candidates.ev_candidates);
+        }
     }
 }
 
@@ -131,8 +141,7 @@ bool BroadPhase::can_edge_vertex_collide(size_t ei, size_t vi) const
     assert(ei < edge_boxes.size());
     const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
 
-    return vi != e0i && vi != e1i
-        && (can_vertices_collide(vi, e0i) || can_vertices_collide(vi, e1i));
+    return details::can_edge_vertex_collide(e0i, e1i, vi, can_vertices_collide);
 }
 
 bool BroadPhase::can_edges_collide(size_t eai, size_t ebi) const
@@ -142,13 +151,8 @@ bool BroadPhase::can_edges_collide(size_t eai, size_t ebi) const
     assert(ebi < edge_boxes.size());
     const auto& [eb0i, eb1i, __] = edge_boxes[ebi].vertex_ids;
 
-    const bool share_endpoint =
-        ea0i == eb0i || ea0i == eb1i || ea1i == eb0i || ea1i == eb1i;
-
-    return !share_endpoint
-        && (can_vertices_collide(ea0i, eb0i) || can_vertices_collide(ea0i, eb1i)
-            || can_vertices_collide(ea1i, eb0i)
-            || can_vertices_collide(ea1i, eb1i));
+    return details::can_edges_collide(
+        ea0i, ea1i, eb0i, eb1i, can_vertices_collide);
 }
 
 bool BroadPhase::can_face_vertex_collide(size_t fi, size_t vi) const
@@ -156,9 +160,8 @@ bool BroadPhase::can_face_vertex_collide(size_t fi, size_t vi) const
     assert(fi < face_boxes.size());
     const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
 
-    return vi != f0i && vi != f1i && vi != f2i
-        && (can_vertices_collide(vi, f0i) || can_vertices_collide(vi, f1i)
-            || can_vertices_collide(vi, f2i));
+    return details::can_face_vertex_collide(
+        f0i, f1i, f2i, vi, can_vertices_collide);
 }
 
 bool BroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
@@ -168,14 +171,8 @@ bool BroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
     assert(fi < face_boxes.size());
     const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
 
-    const bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i
-        || e1i == f0i || e1i == f1i || e1i == f2i;
-
-    return !share_endpoint
-        && (can_vertices_collide(e0i, f0i) || can_vertices_collide(e0i, f1i)
-            || can_vertices_collide(e0i, f2i) || can_vertices_collide(e1i, f0i)
-            || can_vertices_collide(e1i, f1i)
-            || can_vertices_collide(e1i, f2i));
+    return details::can_edge_face_collide(
+        e0i, e1i, f0i, f1i, f2i, can_vertices_collide);
 }
 
 bool BroadPhase::can_faces_collide(size_t fai, size_t fbi) const
@@ -185,20 +182,8 @@ bool BroadPhase::can_faces_collide(size_t fai, size_t fbi) const
     assert(fbi < face_boxes.size());
     const auto& [fb0i, fb1i, fb2i] = face_boxes[fbi].vertex_ids;
 
-    const bool share_endpoint = fa0i == fb0i || fa0i == fb1i || fa0i == fb2i
-        || fa1i == fb0i || fa1i == fb1i || fa1i == fb2i || fa2i == fb0i
-        || fa2i == fb1i || fa2i == fb2i;
-
-    return !share_endpoint
-        && (can_vertices_collide(fa0i, fb0i) //
-            || can_vertices_collide(fa0i, fb1i)
-            || can_vertices_collide(fa0i, fb2i)
-            || can_vertices_collide(fa1i, fb0i)
-            || can_vertices_collide(fa1i, fb1i)
-            || can_vertices_collide(fa1i, fb2i)
-            || can_vertices_collide(fa2i, fb0i)
-            || can_vertices_collide(fa2i, fb1i)
-            || can_vertices_collide(fa2i, fb2i));
+    return details::can_faces_collide(
+        fa0i, fa1i, fa2i, fb0i, fb1i, fb2i, can_vertices_collide);
 }
 
 } // namespace ipc

@@ -15,6 +15,34 @@ using namespace py::literals;
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
+/// @brief Check that a parameter is strictly positive.
+/// @throws py::value_error (Python ValueError) if value is not positive.
+/// @note The C++ API only enforces this with an assert(), which is compiled
+///       out under NDEBUG. Validating here means Python users get an
+///       exception rather than undefined behavior in a release build.
+/// @note Written as !(value > 0) so that NaN is rejected too.
+inline void assert_positive(const double value, const std::string& name)
+{
+    if (!(value > 0)) {
+        throw py::value_error(
+            "Parameter " + name + " has invalid value: expected " + name
+            + " > 0 but got " + name + " = " + std::to_string(value));
+    }
+}
+
+/// @brief Check that a shared_ptr parameter is not None.
+/// @throws py::value_error (Python ValueError) if ptr is null.
+template <typename T>
+inline void
+assert_not_none(const std::shared_ptr<T>& ptr, const std::string& name)
+{
+    if (ptr == nullptr) {
+        throw py::value_error(
+            "Parameter " + name + " has invalid value: expected " + name
+            + " to be a valid object but got None");
+    }
+}
+
 template <typename Derived>
 void assert_2D_or_3D_vector(
     const Eigen::MatrixBase<Derived>& v, const std::string& name)

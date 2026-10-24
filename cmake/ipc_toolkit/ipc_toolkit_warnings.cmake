@@ -9,14 +9,10 @@ endif()
 
 # Flags above don't make sense for MSVC
 if(MSVC)
-  set(IPC_TOOLKIT_WARNING_FLAGS
-    /W4 # High warning level (MSVC equivalent of -Wall -Wextra; /Wall is
-        # unusably noisy, enabling off-by-default warnings like C4711/C4710/
-        # C4514/C4820/C5045)
-    /MP # Multi-processor compilation
-    # Silence /W4 warnings that have no counterpart in our GCC/Clang flag set
-    # (-Wall -Wextra -Wpedantic, with -Wconversion intentionally off), so the
-    # MSVC output matches the other compilers:
+  # Silence /W4 warnings that have no counterpart in our GCC/Clang flag set
+  # (-Wall -Wextra -Wpedantic, with -Wconversion intentionally off), so the
+  # MSVC output matches the other compilers. The CUDA host pass reuses these.
+  set(IPC_TOOLKIT_MSVC_DISABLED_WARNINGS
     /wd4250 # 'inherits via dominance' (benign; from virtual inheritance)
     /wd4244 # conversion, possible loss of data (GCC: -Wconversion, off)
     /wd4267 # size_t -> smaller conversion   (GCC: -Wconversion, off)
@@ -27,6 +23,13 @@ if(MSVC)
             # params they use) are compiled out, and the collision-stencil
             # virtual overrides legitimately ignore some params.
   )
+  set(IPC_TOOLKIT_WARNING_FLAGS
+    /W4 # High warning level (MSVC equivalent of -Wall -Wextra; /Wall is
+        # unusably noisy, enabling off-by-default warnings like C4711/C4710/
+        # C4514/C4820/C5045)
+    /MP # Multi-processor compilation
+    ${IPC_TOOLKIT_MSVC_DISABLED_WARNINGS}
+  )
 else()
   set(IPC_TOOLKIT_WARNING_FLAGS
     -Wall
@@ -36,7 +39,7 @@ else()
 
     # -Wconversion
     -Werror=enum-conversion
-    -Wfloat-conversion
+    -Werror=float-conversion
     # Disable these errors for now, because they are too noisy
     # -Wno-sign-conversion
     # -Wno-shorten-64-to-32
@@ -47,6 +50,7 @@ else()
     -Wpointer-arith
     -Wformat=2
     -Wuninitialized
+    -Wno-maybe-uninitialized
     -Wcast-qual
     -Wmissing-noreturn
     -Wmissing-format-attribute
@@ -122,7 +126,10 @@ else()
     # GCC 6.1 #
     ###########
 
-    -Wnull-dereference
+    # -Wnull-dereference is added below, but only for non-GCC compilers: GCC
+    # has a long-standing history of false positives on inlined Eigen
+    # expression-template code (e.g. https://gcc.gnu.org/PR94867, seen from
+    # GCC 8 through at least GCC 14).
     -fdelete-null-pointer-checks
     -Wduplicated-cond
     -Wmisleading-indentation
@@ -172,6 +179,17 @@ else()
 
     -Wno-redundant-decls
   )
+
+  if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND IPC_TOOLKIT_WARNING_FLAGS -Wnull-dereference)
+  endif()
+
+  # GCC 16 mis-analyzes TBB's enumerable_thread_specific. GCC <= 15 and Clang
+  # are clean, so only suppress it where it fires.
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+     AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16)
+    list(APPEND IPC_TOOLKIT_WARNING_FLAGS -Wno-array-bounds)
+  endif()
 endif()
 
 add_library(ipc_toolkit_warnings INTERFACE)
@@ -180,3 +198,77 @@ add_library(ipc::toolkit::warnings ALIAS ipc_toolkit_warnings)
 include(ipc_toolkit_filter_flags)
 ipc_toolkit_filter_flags(IPC_TOOLKIT_WARNING_FLAGS)
 target_compile_options(ipc_toolkit_warnings INTERFACE ${IPC_TOOLKIT_WARNING_FLAGS})
+
+# nvcc forwards none of the flags above to the host compiler it drives, so a
+# .cu is otherwise compiled with no warnings at all. Hand the host pass the
+# flags that catch bugs in OUR code (the device pass has no use for them).
+#
+# The full set is deliberately not forwarded: nvcc's generated host code and the
+# CUDA headers are not clean under -Wpedantic, -Wold-style-cast or -Wsign-promo
+# (thousands of hits in its stubs and in crt/device_functions.hpp), and its
+# rewriting of aggregate initializers trips -Werror=missing-braces.
+#
+# ipc_toolkit_filter_nvcc_flags() checks each flag against nvcc and scopes it
+# to CUDA sources compiled by nvcc (clang as the CUDA compiler has no -Xcompiler
+# and takes the C++ flags above directly).
+if(IPC_TOOLKIT_WITH_CUDA AND NOT MSVC)
+  set(IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS
+    -Wall
+    -Wextra
+    -Wshadow
+    -Woverloaded-virtual
+    -Wuninitialized
+    -Wcast-qual
+    -Wpointer-arith
+    -Werror=return-type
+    -Werror=non-virtual-dtor
+    -Werror=delete-non-virtual-dtor
+    -Wno-unused-parameter
+    -Wno-sign-compare
+    -Wno-unknown-pragmas # nvcc's own pragmas (unroll) reach the host pass
+  )
+  ipc_toolkit_filter_nvcc_flags(IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS)
+  target_compile_options(ipc_toolkit_warnings INTERFACE ${IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS})
+elseif(IPC_TOOLKIT_WITH_CUDA)
+  # With an MSVC host, we only forward the disabled warnings. nvcc's
+  # `-Werror all-warnings` (below) also makes the host compiler treat its
+  # warnings as errors, so without these the host pass fails on things the C++
+  # build already silences, like C4068 for our `#pragma GCC` directives.
+  set(IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS ${IPC_TOOLKIT_MSVC_DISABLED_WARNINGS})
+  ipc_toolkit_filter_nvcc_flags(IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS)
+  target_compile_options(ipc_toolkit_warnings INTERFACE ${IPC_TOOLKIT_NVCC_HOST_WARNING_FLAGS})
+endif()
+
+# The device pass has no -Wall; nvcc's own diagnostics are few, and these are
+# the ones with a bug-finding record here. They go to nvcc directly (not via
+# -Xcompiler): nvcc's -Werror takes nvcc's own diagnostic names.
+#  * all-warnings: the front end's own warnings (e.g. "variable used before its
+#    value is set") become errors.
+#  * cross-execution-space-call: calling a host-only function from device code
+#    is an error, the typical mistake in code shared via IPC_TOOLKIT_HOST_DEVICE.
+# Not used: -Xptxas -warn-spills. Under separable compilation the shared device
+# sources are relocatable __device__ functions that follow the ABI, and ptxas
+# reports their callee-saved register traffic as spills (64 hits in the barrier
+# functions alone), so it is noise here; check kernels with --resource-usage on
+# a non-rdc compile instead. -warn-lmem-usage likewise: the traversal stack is
+# intentional local memory.
+if(IPC_TOOLKIT_WITH_CUDA)
+  target_compile_options(ipc_toolkit_warnings INTERFACE
+    "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:SHELL:-Werror all-warnings>"
+    "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:SHELL:-Werror cross-execution-space-call>")
+
+  # With an MSVC host, the front end flags two warnings inside spdlog's bundled
+  # fmt (#128 "loop is not reachable" and #2417 "constexpr constructor calls
+  # non-constexpr function"), even though it is an -isystem include. Under
+  # all-warnings these fail the build, and we can't fix third-party code, so we
+  # suppress them for MSVC hosts only. This is safe because the Linux build
+  # still turns both into errors, so our own code stays covered.
+  #
+  # CUDA 12.x's libcu++ <cmath> also trips #221 ("floating-point value does not
+  # fit in required floating-point type") because it uses INFINITY, which the
+  # Windows UCRT defines as an overflowing constant, (float)(1e+300 * 1e+300).
+  # CUDA 13 no longer does, but the Python wheels build with 12.8 for its
+  # older driver requirement, so we suppress #221 alongside the others.
+  target_compile_options(ipc_toolkit_warnings INTERFACE
+    "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>,$<CXX_COMPILER_ID:MSVC>>:-diag-suppress=128,221,2417>")
+endif()

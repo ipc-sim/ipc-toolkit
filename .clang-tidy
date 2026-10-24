@@ -45,6 +45,9 @@ CheckOptions:
   readability-identifier-naming.FunctionCase: lower_case
   readability-identifier-naming.FunctionIgnoredRegexp: '^(AbslHashValue|.*[123][Ddf].*)$'
   readability-identifier-naming.GlobalConstantCase: UPPER_CASE
+  # Variable templates follow the standard library's `_v` suffix convention
+  # (e.g. std::is_same_v), not the UPPER_CASE global-constant convention.
+  readability-identifier-naming.GlobalConstantIgnoredRegexp: '^(.*_v)$'
   readability-identifier-naming.MemberCase: lower_case
   readability-identifier-naming.MemberIgnoredRegexp: '^([A-Z])$'
   readability-identifier-naming.MethodCase: lower_case

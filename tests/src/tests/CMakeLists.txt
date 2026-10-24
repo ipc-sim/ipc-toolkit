@@ -13,9 +13,15 @@ set(SOURCES
   benchmark_eigen.cpp
 
   # Utilities
+  simd_utils.hpp
   utils.cpp
   utils.hpp
 )
+
+# Shared scaffolding for the test_gpu_*.cu parity tests; defines device code.
+if(IPC_TOOLKIT_WITH_CUDA)
+  list(APPEND SOURCES gpu_utils.hpp)
+endif()
 
 target_sources(ipc_toolkit_tests PRIVATE ${SOURCES})
 

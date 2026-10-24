@@ -1,6 +1,7 @@
 #include "collision_mesh.hpp"
 
 #include <ipc/geometry/area.hpp>
+#include <ipc/geometry/normal.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/logger.hpp>
@@ -9,6 +10,8 @@
 #include <tbb/parallel_for.h>
 
 #include <algorithm>
+#include <mutex>
+#include <stdexcept>
 
 namespace ipc {
 
@@ -30,6 +33,7 @@ CollisionMesh::CollisionMesh(
 CollisionMesh::CollisionMesh(
     const std::vector<bool>& include_vertex,
     const std::vector<bool>& orient_vertex,
+    const std::vector<bool>& obstacle_vertex,
     Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces,
@@ -69,7 +73,8 @@ CollisionMesh::CollisionMesh(
     // Initializes m_select_vertices and m_select_dof
     init_selection_matrices(dim);
 
-    if (displacement_map.size() == 0) {
+    m_is_selection_dof_map = displacement_map.size() == 0;
+    if (m_is_selection_dof_map) {
         m_displacement_map = m_select_vertices;
         m_displacement_dof_map = m_select_dof;
     } else {
@@ -94,6 +99,18 @@ CollisionMesh::CollisionMesh(
     m_is_orient_vertex.assign(m_rest_positions.rows(), false);
     for (int i = 0; i < m_is_orient_vertex.size(); i++) {
         m_is_orient_vertex[i] = orient_vertex[m_vertex_to_full_vertex[i]];
+    }
+
+    // An assert is not enough here: a mask sized to the collision vertices
+    // instead of the full mesh would be read out of bounds in Release builds.
+    if (obstacle_vertex.size() != full_rest_positions.rows()) {
+        log_and_throw_error<std::invalid_argument>(
+            "obstacle_vertex has {} entries, but the full mesh has {} vertices.",
+            obstacle_vertex.size(), full_rest_positions.rows());
+    }
+    m_is_obstacle_vertex.assign(m_rest_positions.rows(), false);
+    for (int i = 0; i < m_is_obstacle_vertex.size(); i++) {
+        m_is_obstacle_vertex[i] = obstacle_vertex[m_vertex_to_full_vertex[i]];
     }
 
     // Map faces and edges to only included vertices
@@ -339,9 +356,10 @@ void CollisionMesh::init_areas()
     Eigen::VectorXd vertex_face_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
     m_edge_areas.setConstant(m_edges.rows(), -1);
+    m_face_areas.setConstant(m_faces.rows(), -1);
     if (dim() == 3) {
         for (int i = 0; i < m_faces.rows(); i++) {
-            double face_area = triangle_area(
+            m_face_areas(i) = triangle_area(
                 m_rest_positions.row(m_faces(i, 0)),
                 m_rest_positions.row(m_faces(i, 1)),
                 m_rest_positions.row(m_faces(i, 2)));
@@ -349,11 +367,11 @@ void CollisionMesh::init_areas()
             for (int j = 0; j < m_faces.cols(); ++j) {
                 vertex_face_areas[m_faces(i, j)] =
                     std::max(vertex_face_areas[m_faces(i, j)], 0.0);
-                vertex_face_areas[m_faces(i, j)] += face_area / 3.0;
+                vertex_face_areas[m_faces(i, j)] += m_face_areas(i) / 3.0;
 
                 m_edge_areas[m_faces_to_edges(i, j)] =
                     std::max(m_edge_areas[m_faces_to_edges(i, j)], 0.0);
-                m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3.0;
+                m_edge_areas[m_faces_to_edges(i, j)] += m_face_areas(i) / 3.0;
             }
         }
     }
@@ -373,8 +391,54 @@ void CollisionMesh::init_areas()
     }
 }
 
+namespace {
+    void check_areas(
+        Eigen::ConstRef<Eigen::VectorXd> areas,
+        const Eigen::Index expected_size,
+        const char* name)
+    {
+        if (areas.size() != expected_size) {
+            log_and_throw_error<std::invalid_argument>(
+                "{} has size {} but expected {}", name, areas.size(),
+                expected_size);
+        }
+        if (!areas.allFinite() || (areas.array() < 0).any()) {
+            log_and_throw_error<std::invalid_argument>(
+                "{} must be finite and non-negative", name);
+        }
+    }
+} // namespace
+
+void CollisionMesh::set_vertex_areas(
+    Eigen::ConstRef<Eigen::VectorXd> vertex_areas)
+{
+    check_areas(vertex_areas, num_vertices(), "vertex_areas");
+    if (are_area_jacobians_initialized()) {
+        log_and_throw_error(
+            "Cannot set custom vertex areas after init_area_jacobians(): the area Jacobians would no longer match.");
+    }
+    m_vertex_areas = vertex_areas;
+    m_has_custom_areas = true;
+}
+
+void CollisionMesh::set_edge_areas(Eigen::ConstRef<Eigen::VectorXd> edge_areas)
+{
+    check_areas(edge_areas, num_edges(), "edge_areas");
+    if (are_area_jacobians_initialized()) {
+        log_and_throw_error(
+            "Cannot set custom edge areas after init_area_jacobians(): the area Jacobians would no longer match.");
+    }
+    m_edge_areas = edge_areas;
+    m_has_custom_areas = true;
+}
+
 void CollisionMesh::init_area_jacobians()
 {
+    if (m_has_custom_areas) {
+        log_and_throw_error(
+            "Cannot initialize area Jacobians after setting custom areas: shape derivatives are not supported with custom areas.");
+    }
+
     std::vector<bool> was_vertex_visited(num_vertices(), false);
     std::vector<bool> was_edge_visited(num_edges(), false);
 
@@ -464,6 +528,25 @@ Eigen::MatrixXd CollisionMesh::map_displacements(
     return m_displacement_map * full_displacements;
 }
 
+namespace {
+    /// @brief Warn (at most once per process) that to_full_dof is
+    /// unnecessary because the DOF map is a pure selection matrix.
+    ///
+    /// @note The warning cannot know what is being mapped, so it names the
+    /// alternative rather than the caller: to_full_dof is still the only way
+    /// to map quantities that are not a potential's derivative.
+    void warn_to_full_dof_is_selection_dof_map()
+    {
+        static std::once_flag flag;
+        std::call_once(flag, [] {
+            logger().warn(
+                "CollisionMesh::to_full_dof is deprecated when the displacement map is purely a selection matrix. "
+                "If you are mapping a potential's gradient or Hessian, please migrate to the in_full_dof parameter "
+                "of Potential::gradient/Potential::hessian, which assembles directly in full-mesh DOF.");
+        });
+    }
+} // namespace
+
 // ============================================================================/
 
 Eigen::VectorXd
@@ -471,6 +554,9 @@ CollisionMesh::to_full_dof(Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     // ∇_{full} f(S * T * x_full) = Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
     // x = ∇_{collision} f(S * T * x_full); m_displacement_dof_map = S * T
+    if (m_is_selection_dof_map) {
+        warn_to_full_dof_is_selection_dof_map();
+    }
     return m_displacement_dof_map.transpose() * x;
 }
 
@@ -480,6 +566,9 @@ CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
     // ∇_{full} Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
     //      = Tᵀ * Sᵀ * [∇_{collision}² f(S * T * x_full)] * S * T
     // X = ∇_{collision}² f(S * T * x_full); m_displacement_dof_map = S * T
+    if (m_is_selection_dof_map) {
+        warn_to_full_dof_is_selection_dof_map();
+    }
     return m_displacement_dof_map.transpose() * X * m_displacement_dof_map;
 }
 
@@ -534,7 +623,7 @@ Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
             if (search != edge_map.end()) {
                 faces_to_edges(fi, fj) = search->second;
             } else {
-                throw std::runtime_error("Unable to find edge!");
+                log_and_throw_error("Unable to find edge!");
             }
         }
     }
@@ -556,5 +645,18 @@ double CollisionMesh::max_edge_length() const
         val = std::max(edge_length(i), val);
     }
     return val;
+}
+
+std::vector<Eigen::Vector3d>
+CollisionMesh::face_normals(Eigen::ConstRef<Eigen::MatrixXd> vertices) const
+{
+    assert(vertices.cols() == 3); // Only implemented for 3D meshes
+    std::vector<Eigen::Vector3d> normals(num_faces());
+    tbb::parallel_for(size_t(0), num_faces(), [&](size_t f) {
+        normals[f] = triangle_normal(
+            vertices.row(m_faces(f, 0)), vertices.row(m_faces(f, 1)),
+            vertices.row(m_faces(f, 2)));
+    });
+    return normals;
 }
 } // namespace ipc

@@ -3,6 +3,7 @@
 #include <ipc/collision_filter.hpp>
 #include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace ipc {
 
@@ -38,6 +39,35 @@ public:
     CollisionMesh(
         const std::vector<bool>& include_vertex,
         const std::vector<bool>& orient_vertex,
+        Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXi> edges = Eigen::MatrixXi(),
+        Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi(),
+        const Eigen::SparseMatrix<double>& displacement_map =
+            Eigen::SparseMatrix<double>())
+        : CollisionMesh(
+              include_vertex,
+              orient_vertex,
+              std::vector<bool>(full_rest_positions.rows(), false),
+              full_rest_positions,
+              edges,
+              faces,
+              displacement_map)
+    {
+    }
+
+    /// @brief Construct a new Collision Mesh object from a full mesh vertices.
+    /// @param include_vertex Vector of bools indicating whether each vertex should be included in the collision mesh.
+    /// @param orient_vertex Vector of bools indicating whether each vertex is orientable.
+    /// @param obstacle_vertex Vector of bools indicating whether each vertex comes from an obstacle. Like include_vertex, it is indexed by full mesh vertex (|V|).
+    /// @param full_rest_positions The vertices of the full mesh at rest (|V| × dim).
+    /// @param edges The edges of the collision mesh indexed into the full mesh vertices (|E| × 2).
+    /// @param faces The faces of the collision mesh indexed into the full mesh vertices (|F| × 3).
+    /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
+    /// @throws std::invalid_argument if obstacle_vertex does not have one entry per full mesh vertex.
+    CollisionMesh(
+        const std::vector<bool>& include_vertex,
+        const std::vector<bool>& orient_vertex,
+        const std::vector<bool>& obstacle_vertex,
         Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
         Eigen::ConstRef<Eigen::MatrixXi> edges = Eigen::MatrixXi(),
         Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi(),
@@ -110,6 +140,33 @@ public:
         return m_is_orient_vertex[i];
     }
 
+    /// @brief Check if vertex i is from an obstacle.
+    bool is_obstacle_vertex(const index_t i) const
+    {
+        return m_is_obstacle_vertex[i];
+    }
+
+    /// @brief Check if edge i is from an obstacle.
+    /// @note An edge is an obstacle only if both of its vertices are obstacle
+    /// vertices. An edge with one dynamic vertex still moves, so we treat it
+    /// as dynamic (e.g., a rope whose end is anchored to a static obstacle).
+    bool is_obstacle_edge(const index_t i) const
+    {
+        return is_obstacle_vertex(edges()(i, 0))
+            && is_obstacle_vertex(edges()(i, 1));
+    }
+
+    /// @brief Check if face i is from an obstacle.
+    /// @note A face is an obstacle only if all three of its vertices are
+    /// obstacle vertices. As with edges, a face touching a dynamic vertex
+    /// moves, so we treat it as dynamic.
+    bool is_obstacle_face(const index_t i) const
+    {
+        return is_obstacle_vertex(faces()(i, 0))
+            && is_obstacle_vertex(faces()(i, 1))
+            && is_obstacle_vertex(faces()(i, 2));
+    }
+
     /// @brief Get the indices of codimensional edges of the collision mesh (|CE| × 1).
     const Eigen::VectorXi& codim_edges() const { return m_codim_edges; }
 
@@ -130,6 +187,13 @@ public:
 
     /// @brief Compute the maximum rest length of all edges.
     double max_edge_length() const;
+
+    /// @brief Compute the unit normal of each face for the given vertex positions.
+    /// @note 3D only (requires triangular faces).
+    /// @param vertices The vertex positions of the collision mesh (|V| × 3).
+    /// @return The per-face unit normals (size |F|).
+    std::vector<Eigen::Vector3d>
+    face_normals(Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
     /// @brief Get the mapping from vertices to edges of the collision mesh.
     const std::vector<std::vector<index_t>>& vertices_to_edges() const
@@ -202,13 +266,26 @@ public:
     Eigen::SparseMatrix<double>
     to_full_dof(const Eigen::SparseMatrix<double>& X) const;
 
+    /// @brief Whether the full ↔ collision DOF map is a pure selection matrix.
+    /// This is the case unless a (non-empty) displacement map was provided at
+    /// construction. When true, to_full_dof() is equivalent to scattering each
+    /// collision DOF to the full DOF of the same vertex and component, so
+    /// derivatives can be assembled directly in full-mesh DOFs instead of
+    /// applying to_full_dof() after the fact. The scalar index of that scatter
+    /// depends on IPC_TOOLKIT_VERTEX_DERIVATIVE_LAYOUT: collision DOF `i` maps
+    /// to full DOF `dim * to_full_vertex_id(i / dim) + i % dim` when the layout
+    /// is RowMajor (the default), and to `full_num_vertices() * d +
+    /// to_full_vertex_id(v)` for collision DOF `num_vertices() * d + v` when it
+    /// is ColMajor.
+    bool is_selection_dof_map() const { return m_is_selection_dof_map; }
+
     // -----------------------------------------------------------------------
 
     /// @brief Get the vertex-vertex adjacency matrix.
     const std::vector<std::vector<index_t>>& vertex_vertex_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Vertex-vertex adjacencies not initialized. Call init_adjacencies() first.");
         }
         return m_vertex_vertex_adjacencies;
@@ -218,7 +295,7 @@ public:
     const std::vector<std::vector<index_t>>& vertex_edge_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Vertex-edge adjacencies not initialized. Call init_adjacencies() first.");
         }
         return m_vertex_edge_adjacencies;
@@ -228,7 +305,7 @@ public:
     const std::vector<std::vector<index_t>>& vertex_face_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Vertex-face adjacencies not initialized. Call init_adjacencies() first.");
         }
         return m_vertex_face_adjacencies;
@@ -238,7 +315,7 @@ public:
     const std::vector<std::vector<index_t>>& edge_vertex_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Edge-vertex adjacencies not initialized. Call init_adjacencies() first.");
         }
         return m_edge_vertex_adjacencies;
@@ -268,6 +345,15 @@ public:
     /// @brief Get the barycentric area of the vertices.
     const Eigen::VectorXd& vertex_areas() const { return m_vertex_areas; }
 
+    /// @brief Get the area of the faces (3D).
+    const Eigen::VectorXd& face_areas() const { return m_face_areas; }
+
+    /// @brief Override the vertex areas used as collision weights.
+    /// @note Use this when the quadrature weight of a vertex is not its barycentric area (e.g., axisymmetric models where each vertex stands for a ring of contact). Collisions built before this call keep their old weights.
+    /// @note Custom areas do not support shape derivatives: this throws if the area Jacobians were already initialized, and init_area_jacobians() throws afterwards.
+    /// @param vertex_areas New vertex areas (size num_vertices()). Must be finite and non-negative (zero is allowed, e.g., for axisymmetric primitives on the symmetry axis).
+    void set_vertex_areas(Eigen::ConstRef<Eigen::VectorXd> vertex_areas);
+
     /// @brief Get the gradient of the barycentric area of a vertex wrt the rest positions of all points.
     /// @param vi Vertex ID.
     /// @return Gradient of the barycentric area of vertex vi wrt the rest positions of all points.
@@ -275,7 +361,7 @@ public:
     vertex_area_gradient(const size_t vi) const
     {
         if (!are_area_jacobians_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Vertex area Jacobian not initialized. Call init_area_jacobians() first.");
         }
         return m_vertex_area_jacobian[vi];
@@ -289,13 +375,18 @@ public:
     /// @brief Get the barycentric area of the edges.
     const Eigen::VectorXd& edge_areas() const { return m_edge_areas; }
 
+    /// @brief Override the edge areas used as collision weights.
+    /// @note See set_vertex_areas() for the caveats on stale collisions and shape derivatives.
+    /// @param edge_areas New edge areas (size num_edges()). Must be finite and non-negative (zero is allowed, e.g., for axisymmetric primitives on the symmetry axis).
+    void set_edge_areas(Eigen::ConstRef<Eigen::VectorXd> edge_areas);
+
     /// @brief Get the gradient of the barycentric area of an edge wrt the rest positions of all points.
     /// @param ei Edge ID.
     /// @return Gradient of the barycentric area of edge ei wrt the rest positions of all points.
     const Eigen::SparseVector<double>& edge_area_gradient(const size_t ei) const
     {
         if (!are_area_jacobians_initialized()) {
-            throw std::runtime_error(
+            log_and_throw_error(
                 "Edge area Jacobian not initialized. Call init_area_jacobians() first.");
         }
         return m_edge_area_jacobian[ei];
@@ -371,6 +462,8 @@ protected:
     std::vector<bool> m_is_codim_vertex;
     /// @brief The mask of orientable vertices (|V|).
     std::vector<bool> m_is_orient_vertex;
+    /// @brief The mask of obstacle vertices (|V|).
+    std::vector<bool> m_is_obstacle_vertex;
     /// @brief The indices of codimensional vertices (|CV| × 1).
     Eigen::VectorXi m_codim_vertices;
     /// @brief The mask of codimensional edges (|E|).
@@ -403,6 +496,9 @@ protected:
     /// @brief Mapping from full displacements DOF to collision displacements DOF
     /// @note this is premultiplied by m_select_dof
     Eigen::SparseMatrix<double> m_displacement_dof_map;
+    /// @brief Whether the user-provided displacement map is the identity
+    /// (i.e., m_displacement_dof_map is a pure selection matrix).
+    bool m_is_selection_dof_map = true;
 
     /// @brief Vertices adjacent to vertices
     std::vector<std::vector<index_t>> m_vertex_vertex_adjacencies;
@@ -428,6 +524,12 @@ protected:
     /// @brief Edge areas
     /// 3D: 1/3 sum of area of connected triangles
     Eigen::VectorXd m_edge_areas;
+    /// @brief Were the areas overridden by the user (so the Jacobians no longer match)?
+    bool m_has_custom_areas = false;
+
+    /// @brief Face areas
+    /// 3D: per-face area
+    Eigen::VectorXd m_face_areas;
 
     // Stored as a std::vector so it is easier to access the rows directly.
     /// @brief The rows of the Jacobian of the vertex areas vector.

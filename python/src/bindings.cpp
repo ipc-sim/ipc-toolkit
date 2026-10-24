@@ -1,6 +1,9 @@
 #include <common.hpp>
 #include <bindings.hpp>
 
+#include <map>
+#include <string>
+
 #ifdef IPCTK_WITH_DEMO
 // Defined in demo/python/simulator.cpp
 void define_simulator(py::module_& m);
@@ -36,6 +39,14 @@ PYBIND11_MODULE(ipctk, m)
     define_sweep_and_prune(m);
     define_sweep_and_tiniest_queue(m);
     define_voxel_size_heuristic(m);
+
+    // GPU implementations, mirroring the C++ ipc::cuda namespace. The submodule
+    // always exists, as does is_available(); its classes are defined only in
+    // CUDA builds.
+    py::module_ cuda = m.def_submodule(
+        "cuda", "GPU (CUDA) implementations; populated only in CUDA builds.");
+    define_cuda_is_available(cuda);
+    define_cuda_lbvh(cuda);
 
     // candidates
     define_candidates(m);
@@ -97,6 +108,7 @@ PYBIND11_MODULE(ipctk, m)
     define_smooth_mu(m);
 
     define_smooth_potential(m);
+    define_esp_potential(m);
 
     // geometry
     define_angle(m);
@@ -122,6 +134,7 @@ PYBIND11_MODULE(ipctk, m)
     define_tangential_adhesion_potential(m);
 
     // utils
+    define_hessian_assembler(m);
     define_logger(m);
     define_profiler(m);
     define_thread_limiter(m);
@@ -143,4 +156,31 @@ PYBIND11_MODULE(ipctk, m)
         "Demo body-dynamics simulator built from IPC Toolkit components");
     define_simulator(demo);
 #endif
+
+    // Deprecated names from before the smooth_contact -> gcp rename. We resolve
+    // them in a module-level __getattr__ (PEP 562) instead of plain aliases, so
+    // using an old name raises a DeprecationWarning. Python only calls this
+    // for names the module does not define, so every other lookup is
+    // unaffected.
+    m.def("__getattr__", [](const std::string& name) -> py::object {
+        static const std::map<std::string, std::string> renamed = {
+            { "SmoothCollision2", "GCPCollision2" },
+            { "SmoothCollisions", "GCPCollisions" },
+            { "SmoothContactParameters", "GCPParameters" },
+            { "SmoothContactPotential", "GCPPotential" },
+        };
+        const auto it = renamed.find(name);
+        if (it == renamed.end()) {
+            throw py::attribute_error(
+                "module 'ipctk' has no attribute '" + name + "'");
+        }
+        const std::string message = "ipctk." + it->first
+            + " is deprecated. Use ipctk." + it->second + " instead.";
+        // A stack level of 1 points at the caller's line, since this function
+        // has no Python frame of its own.
+        if (PyErr_WarnEx(PyExc_DeprecationWarning, message.c_str(), 1) < 0) {
+            throw py::error_already_set(); // warnings configured as errors
+        }
+        return py::module_::import("ipctk").attr(it->second.c_str());
+    });
 }

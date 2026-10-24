@@ -22,6 +22,9 @@ Simulation Frameworks
    * - `FEDOO <https://3mah.github.io/fedoo-docs>`_
      - A free open-source Python finite element library mainly dedicated to mechanical problems, including support for finite strain, composites, elasto-plastic laws, homogenization, and 2D/3D contact with self-contact. (See: `Announcement <https://www.linkedin.com/posts/yves-chemisky-b9437910a_we-are-currently-implementing-ipc-toolkit-activity-7427631655470903297-KDN1?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEQPAekBzjyqhNXdQ2S7VGnIFAzab7DESTE>`_)
 
+   * - `MeshFEM <https://github.com/MeshFEM/MeshFEM>`_
+     - A C++ nonlinear finite element library supporting linear and quadratic triangle/tetrahedral elements in 2D and 3D. MeshFEM accelerates Hessian assembly by building the sparse system matrix from dense per-node blocks rather than individual scalar entries, pairing this block-structured assembly with a block-Cholesky direct solver. It uses the IPC Toolkit for contact handling.
+
    * - `Rigid IPC <https://github.com/ipc-sim/rigid-ipc>`_
      - Robust, intersection-free simulations of rigid bodies. This is the reference implementation of the SIGGRAPH 2021 paper *Intersection-free Rigid Body Dynamics*, and uses the IPC Toolkit for common IPC functions.
 
@@ -41,6 +44,7 @@ The following is a non-exhaustive list of publications that use or build upon th
 - **Adopting Research in Production at Netflix Animation Studios** :cite:`Andrus2025Adopting`
 - **ANIME-Rod: Adjustable Nonlinear Isotropic Materials for Elastic Rods** :cite:`Chen2025ANIMERod`
 - **Intersection-Free Garment Retargeting** :cite:`Huang2025Garment`
+- **MeshFEM: A Block-accelerated Solver for Nonlinear Finite Elements** :cite:`Mohammadian2026MeshFEM`
 
 Add Your Project
 ----------------
