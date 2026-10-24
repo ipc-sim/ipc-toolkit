@@ -37,11 +37,25 @@ retained interior EE samples and `m_j>=0`, the total donated mass is
 multiple EE samples. Total near-field quadrature mass stays fixed. The far-field
 vertex rule is unchanged.
 
-The weight-derivative force now multiplies the local residual `N(q_j)-R_j`,
-instead of a difference against an element-wide normalized average. This reduces
-the artificial force when the EE sample approaches its source endpoint, where
-that residual vanishes. It does not eliminate transitions caused by the target
-edge's endpoint; doing that requires a symmetric feature handoff.
+For a single EE sample, the weight-gradient contribution is
+`(w/n)*(N(q)-R)/(1+m)^2 * grad(m)`. It multiplies a matching local residual
+instead of a difference against an element-wide normalized average. If the
+point potentials have compatible endpoint limits, that residual vanishes as
+the EE point approaches its source endpoint.
+
+With several samples, define `S=sum_j m_j*(N(q_j)-R_j)` and `D=1+sum_j m_j`.
+The weight-gradient contribution is
+`(w/n)*sum_j ((N(q_j)-R_j)-S/D)/D * grad(m_j)`. The common denominator still
+couples their residuals, so cancellation of one residual does not guarantee
+cancellation of its complete weight-gradient term. Transitions at a target
+edge endpoint can also retain a large residual. A symmetric feature handoff
+would require further quadrature and collision-builder changes.
+
+The transfer preserves the first moment as well as total mass, because each
+sample position is the same barycentric interpolation used for its donation.
+A common affine point-potential field therefore integrates exactly as in the
+vertex-only rule. This is an algebraic property, not an assertion that actual
+nonlinear collision potentials or different contact stencils are affine.
 
 Value, gradient, and Hessian all differentiate this expression, including `u_j`,
 the reference endpoint potentials, and the denominator. Pointwise derivatives
