@@ -24,9 +24,12 @@ TEST_CASE("Write and read glTF round-trip", "[io][gltf]")
     std::vector<Pose> initial_poses(2, Pose::Identity(3));
     initial_poses[0].position = Eigen::Vector3d(0, 1, 0);
     initial_poses[1].position = Eigen::Vector3d(2, 0.5, 0);
+    // A non-identity starting orientation must survive the round trip too.
+    initial_poses[0].rotation = Eigen::Vector3d(0.3, -0.2, 0.5);
 
     auto bodies = RigidBodies::build_from_meshes(
-        { V_box, V }, { E, E }, { F, F }, { 1000.0, 500.0 }, initial_poses);
+        { V_box, V }, { E, E }, { F, F }, { 1000.0, 500.0 }, initial_poses,
+        /*convert_planes=*/false, /*is_dof_fixed=*/ {}, { "Box", "Cube" });
 
     // Synthesize a short pose history (falling and rotating)
     const double dt = 0.1;
@@ -63,6 +66,7 @@ TEST_CASE("Write and read glTF round-trip", "[io][gltf]")
     for (size_t i = 0; i < bodies->num_bodies(); i++) {
         CHECK(bodies_in->body_num_vertices(i) == bodies->body_num_vertices(i));
         CHECK(bodies_in->body_num_faces(i) == bodies->body_num_faces(i));
+        CHECK(bodies_in->body_name(i) == bodies->body_name(i));
 
         // The world-space vertices at the initial pose must round-trip
         // (through the R₀ baking on write and re-diagonalization on read).

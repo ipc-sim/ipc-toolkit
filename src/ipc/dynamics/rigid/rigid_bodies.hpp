@@ -265,6 +265,15 @@ public:
             - 1;
     }
 
+    /// @brief Make a list of body names unique, the same way bodies are named.
+    ///
+    /// Empty names become "Body{i}" and a repeated name gets a ".{i}" suffix,
+    /// where i is the name's position in @p names.
+    /// @param names The requested names.
+    /// @return Unique names, aligned with @p names.
+    static std::vector<std::string>
+    make_unique_names(const std::vector<std::string>& names);
+
 private:
     /// @brief Populate @ref m_body_names / @ref m_name_to_index (num_bodies()
     /// entries). Empty or missing names default to "Body{i}"; duplicates are

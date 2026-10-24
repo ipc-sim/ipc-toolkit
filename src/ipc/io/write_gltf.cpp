@@ -69,15 +69,20 @@ bool write_gltf(
         Node& node = model.nodes[i];
         node.mesh = i;
         std::string body_name = "Body" + std::to_string(i);
-        node.name = body_name;
+        // We name the node after the body so the name round-trips through
+        // read_gltf; the internal accessor/bufferView labels stay indexed.
+        node.name = bodies.body_name(i);
         node.translation = { { poses.front()[i].position.x(),
                                poses.front()[i].position.y(),
                                poses.front()[i].position.z() } };
-        // NOTE: Use identity for the first frame by applying the initial
-        // rotation to the vertices and removing the rotation from further
-        // rotations.
-        // Eigen::Quaternion<double> q = poses[0][i].construct_quaternion();
-        Eigen::Quaternion<double> q = Eigen::Quaternion<double>::Identity();
+        // The vertices are written in the body (R0) frame and the animation
+        // rotates them by pose.quaternion() * R0⁻¹ each frame. We set the
+        // node's static rotation to the first frame's value so the initial
+        // orientation round-trips through read_gltf, which reads the static
+        // node transform rather than the animation.
+        const Eigen::Quaternion<double> q0(Eigen::Matrix3d(bodies[i].R0()));
+        const Eigen::Quaternion<double> q =
+            poses.front()[i].quaternion() * q0.inverse();
         node.rotation = { { q.x(), q.y(), q.z(), q.w() } };
 
         animation.channels[2 * i + 0].sampler = 2 * i;
@@ -318,8 +323,11 @@ bool write_gltf(
                 scene_max = scene_max.cwiseMax(V.row(r).transpose());
             }
         }
-        double diag = (scene_max - scene_min).norm();
-        double half_size = std::max(1.0, diag * 2.0);
+        // Size the ground quad to the scene (≈5× the bounding-box diagonal) so
+        // the plane spans the scene without dwarfing small scenes like the
+        // bolt. half_size is the half-extent, so the full width is 2·half_size.
+        const double diag = (scene_max - scene_min).norm();
+        const double half_size = diag > 0.0 ? 2.5 * diag : 2.5;
 
         for (size_t p = 0; p < num_planes; ++p) {
             const auto& plane = bodies.planes[p];

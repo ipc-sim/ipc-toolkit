@@ -71,6 +71,11 @@ void define_rigid_bodies(py::module_& m)
             "vertices"_a, "edges"_a, "faces"_a, "density"_a, "initial_pose"_a,
             "is_dof_fixed"_a = VectorMax6b())
         .def_property_readonly("mass", &RigidBody::mass)
+        .def_property_readonly("volume", &RigidBody::volume)
+        .def_property(
+            "density", &RigidBody::density, &RigidBody::set_density,
+            "Uniform density. Setting it rescales the mass and inertia; set it "
+            "before constructing the Simulator, which caches the mass matrix.")
         .def_property_readonly(
             "moment_of_inertia", &RigidBody::moment_of_inertia)
         .def_property_readonly("J", &RigidBody::J)
@@ -159,13 +164,19 @@ void define_rigid_bodies(py::module_& m)
         "read_gltf", &rigid::read_gltf, R"ipc_Qu8mg5v7(
          Read a rigid body scene from a glTF file and return a RigidBodies object.
 
+         Only geometry is read: each mesh node becomes a body named after its
+         node, with a default density of 1000. Set physical properties (density,
+         type, external_force, ...) on the returned bodies.
+
          Parameters:
              filename: The input glTF filename.
              convert_planes: Whether to convert plane primitives in the glTF file to infinite planes in the RigidBodies object. If false, plane primitives will be ignored.
+             is_dof_fixed: Per-DOF fixed flags ([position | rotation]) keyed by node name. These are construction-time only, since fixing rotational DOFs changes the frame the inertia is expressed in.
 
          Returns:
              A pair containing the RigidBodies object and a vector of initial poses for each body.
          )ipc_Qu8mg5v7",
-        "filename"_a, "convert_planes"_a = false);
+        "filename"_a, "convert_planes"_a = false,
+        "is_dof_fixed"_a = std::unordered_map<std::string, VectorMax6b>());
 #endif
 }

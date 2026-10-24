@@ -96,3 +96,29 @@ TEST_CASE("Rigid body construction", "[rigid]")
         CHECK(_V.isApprox(expected_V, 1e-8));
     }
 }
+TEST_CASE(
+    "Changing a body's density matches building it at that density", "[rigid]")
+{
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    REQUIRE(tests::load_mesh("cube.ply", V, E, F));
+    V.col(0).array() *= 2.0; // anisotropic so the inertia is nontrivial
+
+    const double density = GENERATE(0.5, 7850.0);
+
+    Eigen::MatrixXd V_default = V, V_expected = V;
+    Pose pose_default = Pose::Identity(3), pose_expected = Pose::Identity(3);
+    RigidBody body(V_default, E, F, /*density=*/1000.0, pose_default);
+    const RigidBody expected(V_expected, E, F, density, pose_expected);
+
+    body.set_density(density);
+
+    CHECK(body.density() == Catch::Approx(density));
+    CHECK(body.volume() == Catch::Approx(expected.volume()));
+    CHECK(body.mass() == Catch::Approx(expected.mass()));
+    CHECK(body.moment_of_inertia().isApprox(expected.moment_of_inertia()));
+    CHECK(body.J().diagonal().isApprox(expected.J().diagonal()));
+    // The geometry and principal frame do not depend on density.
+    CHECK(body.R0().isApprox(expected.R0()));
+    CHECK(pose_default.rotation.isApprox(pose_expected.rotation));
+}

@@ -7,6 +7,8 @@
 #include <igl/edges.h>
 #include <tiny_gltf.h>
 
+#include <cmath>
+
 namespace ipc::rigid {
 
 namespace {
@@ -89,10 +91,20 @@ namespace {
         std::vector<Eigen::MatrixXi>& edges,
         std::vector<Eigen::MatrixXi>& faces,
         std::vector<double>& densities,
-        std::vector<Pose>& initial_poses)
+        std::vector<Pose>& initial_poses,
+        std::vector<std::string>& names)
     {
+        // A node scaled to zero on every axis has no geometry left, so we skip
+        // the body entirely (but still recurse to its children).
+        const bool zero_scale = node.scale.size() == 3
+            && std::abs(node.scale[0]) < 1e-12
+            && std::abs(node.scale[1]) < 1e-12
+            && std::abs(node.scale[2]) < 1e-12;
+
         // 1. Check if this node is a visual 'body' (has a mesh)
-        if (node.mesh > -1) {
+        if (node.mesh > -1 && zero_scale) {
+            logger().info("Skipping zero-scale body: {}", node.name);
+        } else if (node.mesh > -1) {
             const tinygltf::Mesh& mesh = model.meshes[node.mesh];
             logger().info("Found Body: {} (Mesh: {})", node.name, mesh.name);
             rest_positions.emplace_back();
@@ -141,24 +153,30 @@ namespace {
                 initial_poses.back().rotation = aa.angle() * aa.axis();
             }
 
-            // 3. TODO: Add Physics Extension Loading Here
-            // This is where you will check node.extensions for
-            // "OMI_physics_body"
-            densities.emplace_back(1e3); // Default density
+            // We only read geometry here. Physical properties (density, body
+            // type, velocities, ...) are set by the caller after loading, so
+            // every body starts with a default density.
+            densities.emplace_back(1e3);
+
+            // We prefer the node name and fall back to the mesh name. An empty
+            // name lets RigidBodies generate a unique "Body{i}".
+            names.emplace_back(!node.name.empty() ? node.name : mesh.name);
         }
 
-        // 4. Recursively process children (important for nested objects/stacks)
+        // 3. Recursively process children (important for nested objects/stacks)
         for (int childIdx : node.children) {
             process_node(
                 model, model.nodes[childIdx], rest_positions, edges, faces,
-                densities, initial_poses);
+                densities, initial_poses, names);
         }
     }
 
 } // namespace
 
-std::pair<std::shared_ptr<RigidBodies>, std::vector<Pose>>
-read_gltf(const std::string& filename, const bool convert_planes)
+std::pair<std::shared_ptr<RigidBodies>, std::vector<Pose>> read_gltf(
+    const std::string& filename,
+    const bool convert_planes,
+    const std::unordered_map<std::string, VectorMax6b>& is_dof_fixed)
 {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -200,17 +218,43 @@ read_gltf(const std::string& filename, const bool convert_planes)
     std::vector<Eigen::MatrixXi> faces;
     std::vector<double> densities;
     std::vector<Pose> initial_poses;
+    std::vector<std::string> names;
 
     for (int nodeIdx : scene.nodes) {
         process_node(
             model, model.nodes[nodeIdx], rest_positions, edges, faces,
-            densities, initial_poses);
+            densities, initial_poses, names);
     }
 
-    return { RigidBodies::build_from_meshes(
-                 rest_positions, edges, faces, densities, initial_poses,
-                 convert_planes),
-             initial_poses };
+    // We make the names unique here, over every mesh node in file order,
+    // rather than leaving it to build_from_meshes, which only sees the bodies
+    // left after plane pruning. That way a body's name depends only on the
+    // file, so callers can predict it and use it as a key below.
+    names = RigidBodies::make_unique_names(names);
+
+    // Look up each body's DOF mask by name; an empty mask leaves every DOF
+    // free. We warn about unmatched names since they are most likely typos.
+    std::vector<VectorMax6b> body_is_dof_fixed(names.size());
+    for (const auto& [name, mask] : is_dof_fixed) {
+        bool found = false;
+        for (size_t i = 0; i < names.size(); ++i) {
+            if (names[i] == name) {
+                body_is_dof_fixed[i] = mask;
+                found = true;
+            }
+        }
+        if (!found) {
+            logger().warn(
+                "is_dof_fixed: no body named '{}' in {}", name, filename);
+        }
+    }
+
+    // build_from_meshes prunes plane bodies from initial_poses, names, and the
+    // DOF masks in place, so they all stay aligned with the returned bodies.
+    std::shared_ptr<RigidBodies> bodies = RigidBodies::build_from_meshes(
+        rest_positions, edges, faces, densities, initial_poses, convert_planes,
+        body_is_dof_fixed, names);
+    return { bodies, initial_poses };
 }
 
 } // namespace ipc::rigid

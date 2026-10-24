@@ -68,6 +68,24 @@ public:
 
     void set_type(const Type type) { m_type = type; }
 
+    /// @brief Change the body's (uniform) density, rescaling its mass and inertia.
+    ///
+    /// Mass and inertia are both linear in density, and the principal axes do
+    /// not depend on it, so we rescale them instead of recomputing the mass
+    /// properties from the mesh.
+    ///
+    /// @note The simulator builds its mass matrix on construction, so set
+    /// densities before constructing it.
+    /// @param density New density (must be positive).
+    void set_density(const double density)
+    {
+        assert(density > 0);
+        const double scale = density / this->density();
+        m_mass *= scale;
+        m_moment_of_inertia *= scale;
+        m_J.diagonal() *= scale;
+    }
+
     /// @brief Restore the fixed-DOF flags (used by Simulator::reset()).
     /// @warning Must match the construction-time flags: fixing rotational
     /// DOFs changes the inertia handling, which is baked at construction.

@@ -8,6 +8,8 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include <unordered_set>
+
 namespace ipc::rigid {
 
 Eigen::MatrixXd
@@ -258,29 +260,42 @@ RigidBodies::RigidBodies(
     assign_body_names({});
 }
 
-void RigidBodies::assign_body_names(const std::vector<std::string>& names)
+std::vector<std::string>
+RigidBodies::make_unique_names(const std::vector<std::string>& names)
 {
-    m_body_names.clear();
-    m_body_names.reserve(num_bodies());
-    m_name_to_index.clear();
-    m_name_to_index.reserve(num_bodies());
+    std::vector<std::string> unique_names;
+    unique_names.reserve(names.size());
+    std::unordered_set<std::string> taken;
 
-    for (size_t i = 0; i < num_bodies(); ++i) {
-        std::string name = (i < names.size() && !names[i].empty())
-            ? names[i]
-            : ("Body" + std::to_string(i));
+    for (size_t i = 0; i < names.size(); ++i) {
+        std::string name =
+            names[i].empty() ? ("Body" + std::to_string(i)) : names[i];
 
         // Disambiguate duplicates so every name maps to a unique body.
-        if (m_name_to_index.count(name) > 0) {
+        if (taken.count(name) > 0) {
             std::string unique = name + "." + std::to_string(i);
-            while (m_name_to_index.count(unique) > 0) {
+            while (taken.count(unique) > 0) {
                 unique += "_";
             }
             name = std::move(unique);
         }
 
-        m_name_to_index.emplace(name, i);
-        m_body_names.push_back(std::move(name));
+        taken.insert(name);
+        unique_names.push_back(std::move(name));
+    }
+    return unique_names;
+}
+
+void RigidBodies::assign_body_names(const std::vector<std::string>& names)
+{
+    std::vector<std::string> padded = names;
+    padded.resize(num_bodies()); // missing names become "Body{i}"
+    m_body_names = make_unique_names(padded);
+
+    m_name_to_index.clear();
+    m_name_to_index.reserve(num_bodies());
+    for (size_t i = 0; i < num_bodies(); ++i) {
+        m_name_to_index.emplace(m_body_names[i], i);
     }
 }
 
