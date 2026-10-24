@@ -24,6 +24,13 @@ public:
     /// The default conservative rescaling value used to avoid taking steps
     /// exactly to impact. Value choosen to based on [Li et al. 2021].
     static constexpr double DEFAULT_CONSERVATIVE_RESCALING = 0.9;
+    /// The conservative rescaling used in component mode (see
+    /// NarrowPhaseCCD::component_mode). Additive CCD terminates by advancing
+    /// until the remaining gap shrinks to (1 - conservative_rescaling) times
+    /// the initial gap, so a truly raw TOI (rescaling -> 1) never terminates
+    /// and values above 0.99 behave badly; 0.99 is as raw as it can safely
+    /// get. In component mode the member value is ignored in favor of this.
+    static constexpr double COMPONENT_CONSERVATIVE_RESCALING = 0.99;
 
     /// @brief Construct a new AdditiveCCD object.
     /// @param max_iterations The maximum number of iterations to use for the CCD algorithm. If set to UNLIMITTED_ITERATIONS, the algorithm will run until it converges.
@@ -40,6 +47,7 @@ public:
     /// @param[out] toi The time of impact between the two points.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
+    /// @param cm_no_zero_toi Hint that returning exactly toi = 0 is unacceptable to the caller; honored in component mode (ignored standalone).
     /// @return True if a collision was detected, false otherwise.
     bool point_point_ccd(
         Eigen::ConstRef<VectorMax3d> p0_t0,
@@ -48,7 +56,8 @@ public:
         Eigen::ConstRef<VectorMax3d> p1_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const override;
+        const double tmax = 1.0,
+        const bool cm_no_zero_toi = false) const override;
 
     /// @brief Computes the time of impact between a point and an edge using continuous collision detection.
     /// @param p_t0 The initial position of the point.
@@ -60,6 +69,7 @@ public:
     /// @param[out] toi The time of impact between the point and the edge.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
+    /// @param cm_no_zero_toi Hint that returning exactly toi = 0 is unacceptable to the caller; honored in component mode (ignored standalone).
     /// @return True if a collision was detected, false otherwise.
     bool point_edge_ccd(
         Eigen::ConstRef<VectorMax3d> p_t0,
@@ -70,7 +80,8 @@ public:
         Eigen::ConstRef<VectorMax3d> e1_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const override;
+        const double tmax = 1.0,
+        const bool cm_no_zero_toi = false) const override;
 
     /// @brief Computes the time of impact between a point and a triangle using continuous collision detection.
     /// @param p_t0 The initial position of the point.
@@ -84,6 +95,7 @@ public:
     /// @param[out] toi The time of impact between the point and the triangle.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
+    /// @param cm_no_zero_toi Hint that returning exactly toi = 0 is unacceptable to the caller; honored in component mode (ignored standalone).
     /// @return True if a collision was detected, false otherwise.
     bool point_triangle_ccd(
         Eigen::ConstRef<Eigen::Vector3d> p_t0,
@@ -96,7 +108,8 @@ public:
         Eigen::ConstRef<Eigen::Vector3d> t2_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const override;
+        const double tmax = 1.0,
+        const bool cm_no_zero_toi = false) const override;
 
     /// @brief Computes the time of impact between two edges using continuous collision detection.
     /// @param ea0_t0 The initial position of the first endpoint of the first edge.
@@ -110,6 +123,7 @@ public:
     /// @param[out] toi The time of impact between the two edges.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
+    /// @param cm_no_zero_toi Hint that returning exactly toi = 0 is unacceptable to the caller; honored in component mode (ignored standalone).
     /// @return True if a collision was detected, false otherwise.
     bool edge_edge_ccd(
         Eigen::ConstRef<Eigen::Vector3d> ea0_t0,
@@ -122,12 +136,33 @@ public:
         Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const override;
+        const double tmax = 1.0,
+        const bool cm_no_zero_toi = false) const override;
 
     /// @brief Maximum number of iterations.
     long max_iterations;
 
 private:
+    /// @brief Handle a query whose initial distance is within the minimum separation.
+    ///
+    /// Without the cm_no_zero_toi hint this reports toi = 0 (at trace level in
+    /// component mode, where the piecewise driver handles it by subdividing;
+    /// at warn level standalone). With the hint (and a positive initial
+    /// distance), the minimum separation is halved until the initial distance
+    /// clears it — trading separation margin for a positive TOI, mirroring
+    /// Tight Inclusion's small-TOI rerun.
+    ///
+    /// @param initial_distance_sq The squared initial distance between the objects.
+    /// @param[in,out] min_distance The minimum separation (possibly reduced).
+    /// @param cm_no_zero_toi Hint that returning exactly toi = 0 is unacceptable.
+    /// @param[out] toi Set to 0 when returning true.
+    /// @return True if the query should return early (toi = 0), false to continue.
+    bool handle_initial_proximity(
+        const double initial_distance_sq,
+        double& min_distance,
+        const bool cm_no_zero_toi,
+        double& toi) const;
+
     /// @brief Computes the time of impact between two objects using additive continuous collision detection.
     /// @param x Initial positions
     /// @param dx Displacements

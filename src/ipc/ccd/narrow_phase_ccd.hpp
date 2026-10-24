@@ -19,6 +19,7 @@ public:
     /// @param toi The time of impact.
     /// @param min_distance The minimum distance between the two points.
     /// @param tmax The maximum time to check for collision.
+    /// @param cm_no_zero_toi Hint that returning exactly toi = 0 is unacceptable to the caller; honored in component mode (ignored standalone).
     /// @return True if a collision was detected, false otherwise.
     virtual bool point_point_ccd(
         Eigen::ConstRef<VectorMax3d> p0_t0,
@@ -27,7 +28,8 @@ public:
         Eigen::ConstRef<VectorMax3d> p1_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const = 0;
+        const double tmax = 1.0,
+        const bool cm_no_zero_toi = false) const = 0;
 
     /// @brief Perform narrow phase CCD between a point and a linear edge.
     /// @param p_t0 The starting position of the point.
@@ -39,6 +41,7 @@ public:
     /// @param toi The time of impact.
     /// @param min_distance The minimum distance between the point and the edge.
     /// @param tmax The maximum time to check for collision.
+    /// @param cm_no_zero_toi Hint that returning exactly toi = 0 is unacceptable to the caller; honored in component mode (ignored standalone).
     /// @return True if a collision was detected, false otherwise.
     virtual bool point_edge_ccd(
         Eigen::ConstRef<VectorMax3d> p_t0,
@@ -49,7 +52,8 @@ public:
         Eigen::ConstRef<VectorMax3d> e1_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const = 0;
+        const double tmax = 1.0,
+        const bool cm_no_zero_toi = false) const = 0;
 
     /// @brief Perform narrow phase CCD between a point and a linear triangle.
     /// @param p_t0 The starting position of the point.
@@ -63,6 +67,7 @@ public:
     /// @param toi The time of impact.
     /// @param min_distance The minimum distance between the point and the triangle.
     /// @param tmax The maximum time to check for collision.
+    /// @param cm_no_zero_toi Hint that returning exactly toi = 0 is unacceptable to the caller; honored in component mode (ignored standalone).
     /// @return True if a collision was detected, false otherwise.
     virtual bool point_triangle_ccd(
         Eigen::ConstRef<Eigen::Vector3d> p_t0,
@@ -75,7 +80,8 @@ public:
         Eigen::ConstRef<Eigen::Vector3d> t2_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const = 0;
+        const double tmax = 1.0,
+        const bool cm_no_zero_toi = false) const = 0;
 
     /// @brief Perform narrow phase CCD between two linear edges.
     /// @param ea0_t0 The starting position of the first edge's first endpoint.
@@ -89,6 +95,7 @@ public:
     /// @param toi The time of impact.
     /// @param min_distance The minimum distance between the two edges.
     /// @param tmax The maximum time to check for collision.
+    /// @param cm_no_zero_toi Hint that returning exactly toi = 0 is unacceptable to the caller; honored in component mode (ignored standalone).
     /// @return True if a collision was detected, false otherwise.
     virtual bool edge_edge_ccd(
         Eigen::ConstRef<Eigen::Vector3d> ea0_t0,
@@ -101,7 +108,8 @@ public:
         Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const = 0;
+        const double tmax = 1.0,
+        const bool cm_no_zero_toi = false) const = 0;
 
     /// @brief The conservative rescaling value used to avoid taking steps exactly to impact.
     ///
@@ -117,6 +125,16 @@ public:
     /// of impact. In this case, the conservative rescaling will be used to
     /// scale the time of impact to avoid taking steps exactly to impact.
     double conservative_rescaling;
+
+    /// @brief If true, this object is used as the per-piece linear CCD inside
+    /// a piecewise CCD driver (e.g. NonlinearCCD), which supplies its own
+    /// conservative margins (the linearization error as the minimum
+    /// separation, an early-exit on decreased distance, and subdivision on
+    /// zero TOI). Implementations must skip their standalone strategies
+    /// (minimum-distance inflation, small-TOI reruns/rescaling), honor the
+    /// per-call cm_no_zero_toi hint, and return the raw time of impact.
+    /// Set by NonlinearCCD's constructor.
+    bool component_mode = false;
 };
 
 } // namespace ipc

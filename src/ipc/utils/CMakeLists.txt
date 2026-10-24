@@ -17,8 +17,6 @@ set(SOURCES
   profiler.cpp
   profiler.hpp
   simd.hpp
-  save_obj.cpp
-  save_obj.hpp
   unordered_map_and_set.hpp
   vertex_to_min_edge.cpp
   vertex_to_min_edge.hpp

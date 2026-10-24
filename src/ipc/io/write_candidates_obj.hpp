@@ -9,7 +9,7 @@
 namespace ipc {
 
 template <typename Candidate>
-void save_obj(
+void write_candidates_obj(
     std::ostream& out,
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
@@ -18,7 +18,7 @@ void save_obj(
     const int v_offset = 0);
 
 template <typename Candidate>
-bool save_obj(
+bool write_candidates_obj(
     const std::string& filename,
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
@@ -29,7 +29,7 @@ bool save_obj(
     if (!obj.is_open()) {
         return false;
     }
-    save_obj(obj, V, E, F, candidates);
+    write_candidates_obj(obj, V, E, F, candidates);
     return true;
 }
 

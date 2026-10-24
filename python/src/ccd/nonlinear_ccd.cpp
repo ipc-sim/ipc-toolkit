@@ -79,19 +79,33 @@ void define_nonlinear_ccd(py::module_& m)
 
     py::class_<NonlinearCCD>(m, "NonlinearCCD")
         .def(
-            py::init<const double, const long, const double>(),
-            "tolerance"_a = NonlinearCCD::DEFAULT_TOLERANCE,
-            "max_iterations"_a = NonlinearCCD::DEFAULT_MAX_ITERATIONS,
+            py::init<const double, std::shared_ptr<NarrowPhaseCCD>>(),
+            R"ipc_Qu8mg5v7(
+            Construct a new NonlinearCCD object.
+
+            Parameters:
+                conservative_rescaling: Conservative rescaling of the time of impact.
+                narrow_phase_ccd: The narrow-phase CCD used for the per-piece linear CCD (if None, a default-constructed TightInclusionCCD is used). The constructor sets component_mode on the given object, so do not share the instance with standalone users.
+            )ipc_Qu8mg5v7",
             "conservative_rescaling"_a =
-                NonlinearCCD::DEFAULT_CONSERVATIVE_RESCALING)
-        .def_readwrite(
-            "tolerance", &NonlinearCCD::tolerance, "Solver tolerance.")
-        .def_readwrite(
-            "max_iterations", &NonlinearCCD::max_iterations,
-            "Maximum number of iterations.")
+                NonlinearCCD::DEFAULT_CONSERVATIVE_RESCALING,
+            "narrow_phase_ccd"_a = nullptr)
         .def_readwrite(
             "conservative_rescaling", &NonlinearCCD::conservative_rescaling,
             "Conservative rescaling of the time of impact.")
+        .def_property(
+            "narrow_phase_ccd",
+            [](const NonlinearCCD& self) {
+                // pybind11 cannot hold shared_ptr<const T> with a
+                // shared_ptr<T> holder; the setter re-applies component_mode
+                // anyway, so exposing a mutable pointer is safe.
+                return std::const_pointer_cast<NarrowPhaseCCD>(
+                    self.narrow_phase_ccd());
+            },
+            &NonlinearCCD::set_narrow_phase_ccd,
+            "The narrow-phase CCD used for the per-piece linear CCD (never "
+            "None). Assigning sets component_mode on the given object (None "
+            "selects a default-constructed TightInclusionCCD).")
         .def(
             "point_point_ccd",
             [](const NonlinearCCD& self, const NonlinearTrajectory& p0,
