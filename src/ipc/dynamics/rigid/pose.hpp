@@ -149,13 +149,18 @@ struct Pose {
         // 2. Extract unit axis
         VectorMax3d axis = rotation / angle;
 
+        // We use a double π because EIGEN_PI is a long double on GCC, and
+        // narrowing it here trips -Werror=float-conversion. M_PI is not an
+        // option either since MSVC only defines it with _USE_MATH_DEFINES.
+        constexpr double pi = 3.14159265358979323846;
+
         // 3. Wrap angle to [-π, π] using remainder
-        angle = std::remainder(angle, 2.0 * EIGEN_PI);
+        angle = std::remainder(angle, 2.0 * pi);
 
         // 4. Canonicalize PI: Ensure -π < angle <= π
         // This prevents the representation from jumping between PI and -PI
-        if (angle <= -EIGEN_PI) {
-            angle = EIGEN_PI;
+        if (angle <= -pi) {
+            angle = pi;
             axis = -axis; // Flip axis to keep angle positive
         }
 

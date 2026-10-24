@@ -263,7 +263,7 @@ bool write_gltf(
             bodies.body_rest_positions(i) * bodies[i].R0().transpose();
         for (int r = 0; r < V.rows(); r++) {
             for (int c = 0; c < V.cols(); c++) {
-                Float v = V(r, c);
+                const auto v = static_cast<Float>(V(r, c));
                 std::memcpy(&byte_data[byte_i], &v, sizeof(Float));
                 byte_i += sizeof(Float);
             }
@@ -279,7 +279,7 @@ bool write_gltf(
         }
     }
     for (int i = 0; i < num_steps; i++) {
-        Float t = i * timestep;
+        const auto t = static_cast<Float>(i * timestep);
         std::memcpy(&byte_data[byte_i], &t, sizeof(Float));
         byte_i += sizeof(Float);
     }
@@ -287,7 +287,7 @@ bool write_gltf(
         for (const auto& poses_j : poses) {
             Eigen::Vector3d p = poses_j[i].position;
             for (int d = 0; d < p.size(); d++) {
-                Float pd = p[d];
+                const auto pd = static_cast<Float>(p[d]);
                 std::memcpy(&byte_data[byte_i], &pd, sizeof(Float));
                 byte_i += sizeof(Float);
             }
@@ -301,7 +301,7 @@ bool write_gltf(
                 poses_j[i].quaternion() * q0.inverse();
             Eigen::Vector4d q(quat.x(), quat.y(), quat.z(), quat.w());
             for (int d = 0; d < q.size(); d++) {
-                Float qd = q[d];
+                const auto qd = static_cast<Float>(q[d]);
                 std::memcpy(&byte_data[byte_i], &qd, sizeof(Float));
                 byte_i += sizeof(Float);
             }

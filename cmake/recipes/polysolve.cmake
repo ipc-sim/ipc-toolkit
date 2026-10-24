@@ -32,6 +32,29 @@ include(spdlog)
 include(CPM)
 CPMAddPackage("gh:polyfem/polysolve#1b01e6cec13c6813ae48846d1f98654bbbf1402b")
 
+# polysolve always lists its cuSolver backend (CuSolverDN.cu) as a source, even
+# with POLYSOLVE_WITH_CUSOLVER off. That is harmless until we enable the CUDA
+# language for our own kernels: CMake then compiles the file with nvcc, under
+# polysolve's directory-wide MSVC flags (/experimental:external, /FS, ...),
+# which nvcc reads as extra input files and rejects on Windows. We never use
+# that backend, so we keep the file out of the build.
+set_source_files_properties(
+    "${polysolve_SOURCE_DIR}/src/polysolve/linear/CuSolverDN.cu"
+    TARGET_DIRECTORY polysolve_linear
+    PROPERTIES HEADER_FILE_ONLY ON)
+
+# polysolve also hands consumers a bare /utf-8 on MSVC, which would reach nvcc
+# in our CUDA tests the same way. We limit it to C++ sources; CUDA sources
+# already get -Xcompiler=/utf-8 from ipc_toolkit.
+get_target_property(_polysolve_options polysolve_linear INTERFACE_COMPILE_OPTIONS)
+if(_polysolve_options)
+    list(TRANSFORM _polysolve_options
+        REPLACE "^/utf-8$" "$<$<COMPILE_LANGUAGE:CXX>:/utf-8>")
+    set_target_properties(polysolve_linear PROPERTIES
+        INTERFACE_COMPILE_OPTIONS "${_polysolve_options}")
+endif()
+unset(_polysolve_options)
+
 # Folder name for IDE
 set_target_properties(polysolve PROPERTIES FOLDER "ThirdParty")
 set_target_properties(polysolve_linear PROPERTIES FOLDER "ThirdParty")
