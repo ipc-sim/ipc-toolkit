@@ -1,4 +1,5 @@
 #include "esp_potential.hpp"
+#include "esp_local_transfer.hpp"
 
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/distance/edge_edge.hpp>
@@ -133,6 +134,11 @@ double ESPPotential::operator()(
 {
     assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
     collisions.check_quadrature(m_params);
+
+    if (m_params.local_quadrature_transfer && mesh.dim() == 3
+        && m_params.dbar_factor() > 0) {
+        return detail::local_transfer_value(collisions, mesh, X, m_params);
+    }
 
     if (collisions.empty()) {
         return 0;
@@ -415,6 +421,11 @@ Eigen::VectorXd ESPPotential::gradient(
 {
     assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
     collisions.check_quadrature(m_params);
+
+    if (m_params.local_quadrature_transfer && mesh.dim() == 3
+        && m_params.dbar_factor() > 0) {
+        return detail::local_transfer_gradient(collisions, mesh, X, m_params);
+    }
 
     if (collisions.empty()) {
         return Eigen::VectorXd::Zero(X.size());
@@ -807,6 +818,12 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
 {
     assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
     collisions.check_quadrature(m_params);
+
+    if (m_params.local_quadrature_transfer && mesh.dim() == 3
+        && m_params.dbar_factor() > 0) {
+        return detail::local_transfer_hessian(
+            collisions, mesh, X, m_params, project_hessian_to_psd);
+    }
 
     if (collisions.empty()) {
         return Eigen::SparseMatrix<double>(X.size(), X.size());

@@ -276,6 +276,7 @@ void define_esp_potential(py::module& m)
         .def_readonly("dbar", &ESPParameters::dbar)
         .def_readonly("quad_order", &ESPParameters::quad_order)
         .def_readonly("area_weights", &ESPParameters::area_weights)
+        .def_readwrite("local_quadrature_transfer", &ESPParameters::local_quadrature_transfer)
         .def_readonly("integration_type", &ESPParameters::integration_type);
 
     py::class_<ESPPotential>(m, "ESPPotential")

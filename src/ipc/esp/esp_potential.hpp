@@ -16,6 +16,12 @@ public:
         : m_params(_params)
         , m_use_near_far(_use_near_far)
     {
+        if (_params.local_quadrature_transfer
+            && (!_use_near_far || !_params.quad_rule().empty())) {
+            throw std::invalid_argument(
+                "Local quadrature transfer requires normalized near/far "
+                "integration and the default vertex quadrature rule.");
+        }
     }
 
     virtual ~ESPPotential() = default;

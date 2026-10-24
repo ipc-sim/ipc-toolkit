@@ -90,6 +90,12 @@ struct ESPParameters {
     /// by its edge area / 4 and an isolated vertex by its vertex area. If
     /// false, every weight is 1.
     bool area_weights;
+    /// Experimental 3D near-field quadrature: transfer weight locally from
+    /// edge endpoints to EE samples instead of renormalizing all samples.
+    /// Requires use_near_far=true and the default vertex quadrature rule.
+    /// Currently supports frictionless contact only.
+    /// Has no effect in 2D or when dbar_factor=0. Disabled by default.
+    bool local_quadrature_transfer = false;
     const IntegrationType integration_type;
 
     /// @brief Near/far split parameter dbar / dhat, in [0, 2].

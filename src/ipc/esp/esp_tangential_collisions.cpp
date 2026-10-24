@@ -28,6 +28,16 @@ void TangentialCollisions::build(
 {
     assert(mu_s.size() == vertices.rows());
     assert(mu_k.size() == vertices.rows());
+    if (params.local_quadrature_transfer && mesh.dim() == 3
+        && params.dbar_factor() > 0) {
+        // The legacy friction weights do not represent transferred quadrature.
+        if (!mu_s.isZero() || !mu_k.isZero()) {
+            throw std::invalid_argument(
+                "ESP local quadrature transfer currently supports frictionless contact only.");
+        }
+        clear();
+        return;
+    }
     // The quadrature loops below index params' rule by the collision sets'
     // per-point entries, so the two must come from the same rule.
     collisions.check_quadrature(params);
