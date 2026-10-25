@@ -666,7 +666,7 @@ void Simulator::post_step(const polysolve::nonlinear::PostStepData& data)
     if (kappa != m_barrier_potential->stiffness()) {
         logger().debug(
             "updated barrier stiffness: κ={:g} min_distance={:g}", kappa,
-            min_distance);
+            sqrt(min_distance));
         m_barrier_potential->set_stiffness(kappa);
     }
 
