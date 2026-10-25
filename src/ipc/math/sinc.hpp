@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/math/interval.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 

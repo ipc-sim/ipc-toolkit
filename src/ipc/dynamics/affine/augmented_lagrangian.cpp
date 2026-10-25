@@ -9,10 +9,11 @@ namespace {
     /// (DOF layout ndof·i + dim + k + dim·j ⇒ weight J(j)).
     Eigen::VectorXd angular_weights(const rigid::RigidBody& body) // NOLINT
     {
-        const int dim = body.R0().rows();
+        const int dim = body.principal_rotation().rows();
         Eigen::VectorXd w(dim * dim);
         for (int j = 0; j < dim; ++j) {
-            w.segment(dim * j, dim).array() = body.J().diagonal()(j);
+            w.segment(dim * j, dim).array() =
+                body.second_moment().diagonal()(j);
         }
         return w;
     }
@@ -46,6 +47,7 @@ void AugmentedLagrangian::init(
     m_targets = targets;
 
     m_target_rotations.resize(targets.size());
+    m_angular_weights.resize(targets.size());
     m_lambda.resize(targets.size());
     m_lambda_A.resize(targets.size());
     m_num_kinematic = 0;
@@ -56,6 +58,7 @@ void AugmentedLagrangian::init(
         // are left default (never read — see the KINEMATIC guards below).
         if (bodies[i].type() == rigid::RigidBody::Type::KINEMATIC) {
             m_target_rotations[i] = targets[i].rotation_matrix();
+            m_angular_weights[i] = angular_weights(bodies[i]);
             ++m_num_kinematic;
         }
     }
@@ -169,11 +172,7 @@ void AugmentedLagrangian::update(
                 // λ_A ← λ_A − κ_A W^{1/2} (a − â)
                 const int ndof = m_dim + m_dim * m_dim;
                 m_lambda_A[i] -= m_kappa_A
-                    * angular_weights(bodies[i])
-                          .array()
-                          .sqrt()
-                          .matrix()
-                          .asDiagonal()
+                    * m_angular_weights[i].array().sqrt().matrix().asDiagonal()
                     * (x.segment(ndof * i + m_dim, m_dim * m_dim)
                        - Eigen::VectorXd(m_target_rotations[i].reshaped()));
             }
@@ -206,7 +205,7 @@ double AugmentedLagrangian::operator()(
 
         const Eigen::VectorXd da = x.segment(ndof * i + m_dim, m_dim * m_dim)
             - Eigen::VectorXd(m_target_rotations[i].reshaped());
-        const Eigen::VectorXd w = angular_weights(bodies[i]);
+        const Eigen::VectorXd& w = m_angular_weights[i];
         energy += 0.5 * m_kappa_A * da.dot(w.cwiseProduct(da))
             - m_lambda_A[i].dot(w.array().sqrt().matrix().cwiseProduct(da));
     }
@@ -233,7 +232,7 @@ Eigen::VectorXd AugmentedLagrangian::gradient(
 
         const Eigen::VectorXd da = x.segment(ndof * i + m_dim, m_dim * m_dim)
             - Eigen::VectorXd(m_target_rotations[i].reshaped());
-        const Eigen::VectorXd w = angular_weights(bodies[i]);
+        const Eigen::VectorXd& w = m_angular_weights[i];
         grad.segment(ndof * i + m_dim, m_dim * m_dim) =
             m_kappa_A * w.cwiseProduct(da)
             - w.array().sqrt().matrix().cwiseProduct(m_lambda_A[i]);
@@ -259,7 +258,7 @@ Eigen::SparseMatrix<double> AugmentedLagrangian::hessian(
             triplets.emplace_back(
                 ndof * i + k, ndof * i + k, m_kappa_q * bodies[i].mass());
         }
-        const Eigen::VectorXd w = angular_weights(bodies[i]);
+        const Eigen::VectorXd& w = m_angular_weights[i];
         for (int k = 0; k < m_dim * m_dim; ++k) {
             triplets.emplace_back(
                 ndof * i + m_dim + k, ndof * i + m_dim + k, m_kappa_A * w(k));

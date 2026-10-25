@@ -60,7 +60,7 @@ TEST_CASE("Codim broad phase completeness", "[codim][rigid][candidates]")
     segment_net(V_net, E_net, F_net);
 
     // Cloud falls straight down through the net.
-    std::vector<Pose> poses_t0(2, Pose::Identity(3));
+    std::vector<Pose> poses_t0(2, Pose::identity(3));
     poses_t0[0].position = Eigen::Vector3d(0, 1.0, 0); // cloud
     poses_t0[1].position = Eigen::Vector3d::Zero();    // net
 
@@ -124,7 +124,7 @@ TEST_CASE(
     // Two identical clouds, one falling straight onto the other: aligned
     // points must generate vertex-vertex candidates and point-point CCD must
     // stop the sweep.
-    std::vector<Pose> poses_t0(2, Pose::Identity(3));
+    std::vector<Pose> poses_t0(2, Pose::identity(3));
     poses_t0[0].position = Eigen::Vector3d(0, 1.0, 0);
 
     auto bodies = RigidBodies::build_from_meshes(
@@ -173,7 +173,7 @@ TEST_CASE("Codim point cloud drop", "[codim][simulator]")
 
     // A point cloud dropped onto an identical static cloud: point-point
     // contacts must stop it.
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
     initial_poses[0].position = Eigen::Vector3d(0, 0.2, 0);
 
     // We let the falling cloud move only vertically. Points resting on points
@@ -215,7 +215,7 @@ TEST_CASE("2D codim point drop", "[2d][codim][simulator]")
     V << -0.5, 0, 0.5, 0, 0, 0.4; // three points (nonsingular inertia)
     const Eigen::MatrixXi E(0, 2), F(0, 3);
 
-    std::vector<Pose> initial_poses(2, Pose::Identity(2));
+    std::vector<Pose> initial_poses(2, Pose::identity(2));
     initial_poses[0].position = Eigen::Vector2d(0, 0.5);
 
     auto bodies = RigidBodies::build_from_meshes(

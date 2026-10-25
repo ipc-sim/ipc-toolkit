@@ -51,7 +51,7 @@ Eigen::SparseMatrix<double> affine_jacobian(const rigid::RigidBodies& bodies)
 
     for (size_t i = 0; i < bodies.num_bodies(); ++i) {
         const Eigen::SparseMatrix<double> J_i =
-            affine::Pose::J(bodies.body_rest_positions(i));
+            affine::Pose::dof_jacobian(bodies.body_rest_positions(i));
 
         const index_t row_start = dim * bodies.body_vertex_start(i);
         const index_t col_start = ndof * i;

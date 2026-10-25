@@ -24,8 +24,8 @@ TEST_CASE("Rigid body construction", "[rigid]")
 
     const double density = GENERATE(1.0, 2.0, 3.0);
 
-    Pose input_pose = Pose::Identity(3);
-    Pose initial_pose = Pose::Identity(3);
+    Pose input_pose = Pose::identity(3);
+    Pose initial_pose = Pose::identity(3);
 
     SECTION("No modification") { }
     SECTION("Input pose")
@@ -107,7 +107,7 @@ TEST_CASE(
     const double density = GENERATE(0.5, 7850.0);
 
     Eigen::MatrixXd V_default = V, V_expected = V;
-    Pose pose_default = Pose::Identity(3), pose_expected = Pose::Identity(3);
+    Pose pose_default = Pose::identity(3), pose_expected = Pose::identity(3);
     RigidBody body(V_default, E, F, /*density=*/1000.0, pose_default);
     const RigidBody expected(V_expected, E, F, density, pose_expected);
 
@@ -117,8 +117,45 @@ TEST_CASE(
     CHECK(body.volume() == Catch::Approx(expected.volume()));
     CHECK(body.mass() == Catch::Approx(expected.mass()));
     CHECK(body.moment_of_inertia().isApprox(expected.moment_of_inertia()));
-    CHECK(body.J().diagonal().isApprox(expected.J().diagonal()));
+    CHECK(body.second_moment().diagonal().isApprox(
+        expected.second_moment().diagonal()));
     // The geometry and principal frame do not depend on density.
-    CHECK(body.R0().isApprox(expected.R0()));
+    CHECK(body.principal_rotation().isApprox(expected.principal_rotation()));
     CHECK(pose_default.rotation.isApprox(pose_expected.rotation));
+}
+
+TEST_CASE(
+    "A body spinning about one world axis has that axis's inertia", "[rigid]")
+{
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    REQUIRE(tests::load_mesh("cube.ply", V, E, F));
+    const double L = 0.5, W = 1.0, H = 2.0;
+    V.col(0).array() *= L;
+    V.col(1).array() *= W;
+    V.col(2).array() *= H;
+
+    const int free_axis = GENERATE(0, 1, 2);
+    CAPTURE(free_axis);
+
+    VectorMax6b is_dof_fixed = VectorMax6b::Zero(6);
+    is_dof_fixed.tail<3>().setOnes();
+    is_dof_fixed(3 + free_axis) = false;
+
+    const double density = 1000.0;
+    Pose pose = Pose::identity(3);
+    const RigidBody body(V, E, F, density, pose, is_dof_fixed);
+
+    // The second moment ∫ρ x̄x̄ᵀ of the box, whose two entries orthogonal to
+    // the free axis sum to the moment of inertia about that axis.
+    const double m = density * L * W * H;
+    const Eigen::Vector3d second_moment =
+        m / 12.0 * Eigen::Vector3d(L * L, W * W, H * H);
+
+    REQUIRE(body.second_moment().diagonal().size() == 3);
+    CHECK(body.second_moment().diagonal().isApprox(second_moment));
+    const double I_free = second_moment.sum() - second_moment(free_axis);
+    CHECK(
+        body.moment_of_inertia()(free_axis)
+        == Catch::Approx(I_free).epsilon(1e-8));
 }

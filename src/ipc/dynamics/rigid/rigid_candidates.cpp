@@ -16,6 +16,15 @@
 
 namespace ipc::rigid {
 
+const NonlinearCCD& default_nonlinear_ccd()
+{
+    // We share one instance instead of allocating a fresh TightInclusionCCD
+    // for every defaulted argument. Queries never modify it, so concurrent
+    // use is safe.
+    static const NonlinearCCD ccd;
+    return ccd;
+}
+
 void RigidCandidates::build(
     const RigidBodies& bodies,
     const std::vector<Pose>& poses,
@@ -108,22 +117,36 @@ void RigidCandidates::build(
     // the "vertices" are bodies, so that filter must not be applied: feeding
     // body indices to a vertex filter silently drops body pairs (e.g., the
     // same-body vertex exclusion rejects low body indices because the
-    // corresponding vertices belong to the same body). Save the caller's
-    // filter, use an accept-all filter for the body-level pass, and restore
-    // it afterwards.
-    const CollisionFilter caller_filter = broad_phase->can_vertices_collide;
-    // TODO: Implement a mechanism to allow the caller to specify a body-level
-    //       filter (e.g., for jointed bodies).
-    broad_phase->can_vertices_collide = CollisionFilter(); // accept all
-    broad_phase->build(
-        body_boxes, /*edges=*/Eigen::MatrixXi(), /*faces=*/Eigen::MatrixXi(),
-        dim);
+    // corresponding vertices belong to the same body). We use an accept-all
+    // filter for the body-level pass.
+    //
+    // The guard restores the caller's filter and drops the body boxes on
+    // every exit path, including exceptions, so the caller's broad phase
+    // never keeps body-level state that a later vertex query would misread.
+    struct BodyPassGuard {
+        BroadPhase& broad_phase;
+        CollisionFilter caller_filter;
+        ~BodyPassGuard()
+        {
+            broad_phase.clear();
+            broad_phase.can_vertices_collide = std::move(caller_filter);
+        }
+    };
 
-    // c. Detect body-body candidates: bodies are stored as "vertices," so we
-    // can reuse vertex-vertex candidate detection.
     std::vector<VertexVertexCandidate> body_candidates;
-    broad_phase->detect_vertex_vertex_candidates(body_candidates);
-    broad_phase->can_vertices_collide = caller_filter;
+    {
+        BodyPassGuard guard { *broad_phase, broad_phase->can_vertices_collide };
+        // TODO: Implement a mechanism to allow the caller to specify a
+        //       body-level filter (e.g., for jointed bodies).
+        broad_phase->can_vertices_collide = CollisionFilter(); // accept all
+        broad_phase->build(
+            body_boxes, /*edges=*/Eigen::MatrixXi(),
+            /*faces=*/Eigen::MatrixXi(), dim);
+
+        // c. Detect body-body candidates: bodies are stored as "vertices," so
+        // we can reuse vertex-vertex candidate detection.
+        broad_phase->detect_vertex_vertex_candidates(body_candidates);
+    }
 
     // 2. Broad phase between colliding bodies
     // NOTE: The loop over body pairs is serial because each two-tree query is

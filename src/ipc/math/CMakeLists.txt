@@ -1,4 +1,5 @@
 set(SOURCES
+  constants.hpp
   heaviside_type.hpp
   interval.cpp
   interval.hpp

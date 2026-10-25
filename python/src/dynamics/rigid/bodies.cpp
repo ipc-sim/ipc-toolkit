@@ -74,12 +74,16 @@ void define_rigid_bodies(py::module_& m)
         .def_property_readonly("volume", &RigidBody::volume)
         .def_property(
             "density", &RigidBody::density, &RigidBody::set_density,
-            "Uniform density. Setting it rescales the mass and inertia; set it "
-            "before constructing the Simulator, which caches the mass matrix.")
+            "Uniform density. Setting it rescales the mass and inertia; a "
+            "running Simulator picks up the change at its next step.")
         .def_property_readonly(
             "moment_of_inertia", &RigidBody::moment_of_inertia)
-        .def_property_readonly("J", &RigidBody::J)
-        .def_property_readonly("R0", &RigidBody::R0)
+        .def_property_readonly(
+            "second_moment", &RigidBody::second_moment,
+            "Diagonal second-moment matrix ∫ρ x̄x̄ᵀ in the principal frame.")
+        .def_property_readonly(
+            "principal_rotation", &RigidBody::principal_rotation,
+            "Rotation from the principal axes to the input frame.")
         .def_property(
             "external_force", &RigidBody::external_force,
             &RigidBody::set_external_force,

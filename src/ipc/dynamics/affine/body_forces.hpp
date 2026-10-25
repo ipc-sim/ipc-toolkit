@@ -8,8 +8,9 @@ namespace ipc::affine {
 /// @brief Gravitational and external forces/torques on affine bodies.
 ///
 /// The energy is linear in the affine DOFs: E(x) = wᵀx with a per-body wrench
-/// w = [−(m g + f_ext); −vec(τ)] (τ transformed as in the rigid BodyForces,
-/// column-major).
+/// w = [−(m g + f_ext); −vec(½ [τ]× A₀)] (column-major), where τ is the
+/// world-space torque and A₀ the step-start affine matrix. The torque term
+/// applies a generalized torque of exactly τ at A₀.
 ///
 /// This is a pure potential (no time-integrator scaling): the simulator is
 /// responsible for scaling it into the incremental potential (by (βΔt)²).

@@ -100,10 +100,11 @@ double BDF::dvdx(const unsigned prev_ti) const
     if (prev_ti == 0) {
         return 1 / beta_dt();
     }
-    if (int(prev_ti) >= order()) {
+    // prev_ti = i ≥ 1 refers to x_prev(i - 1), whose weight is αᵢ₋₁.
+    if (int(prev_ti) > order()) {
         return 0;
     }
-    return -alphas(order() - 1)[prev_ti] / beta_dt();
+    return -alphas(order() - 1)[prev_ti - 1] / beta_dt();
 }
 
 double BDF::beta_dt() const { return betas(order() - 1) * dt(); }

@@ -28,7 +28,7 @@ auto rigid_bodies()
 
     std::vector<rigid::Pose> initial_poses;
     initial_poses.push_back(
-        rigid::Pose::Identity(3)); // Initial pose at the origin
+        rigid::Pose::identity(3)); // Initial pose at the origin
 
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { density }, initial_poses);

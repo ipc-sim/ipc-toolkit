@@ -5,10 +5,10 @@
 #include <iostream>
 
 #include <finitediff.hpp>
-#include <igl/PI.h>
 
 // #include <autodiff/autodiff_types.hpp>
 #include <ipc/math/sinc.hpp>
+#include <ipc/math/constants.hpp>
 
 using namespace ipc;
 
@@ -16,8 +16,8 @@ TEST_CASE("sinc(double)", "[sinc][double]")
 {
     CHECK(sinc(0) == Catch::Approx(1));
     CHECK(sinc(1e-8) == Catch::Approx(1));
-    CHECK(sinc(igl::PI / 2) == Catch::Approx(2 / igl::PI));
-    CHECK(sinc(igl::PI) == Catch::Approx(0).margin(1e-16));
+    CHECK(sinc(ipc::PI / 2) == Catch::Approx(2 / ipc::PI));
+    CHECK(sinc(ipc::PI) == Catch::Approx(0).margin(1e-16));
 }
 
 TEST_CASE("sinc(Interval)", "[sinc][interval]")
@@ -36,18 +36,18 @@ TEST_CASE("sinc(Interval)", "[sinc][interval]")
     }
     SECTION("y=[0, 1]")
     {
-        SECTION("[0, π]") { x = filib::Interval(0, igl::PI); }
-        SECTION("[-π, 0]") { x = filib::Interval(-igl::PI, 0); }
-        SECTION("[-π, π]") { x = filib::Interval(-igl::PI, igl::PI); }
+        SECTION("[0, π]") { x = filib::Interval(0, ipc::PI); }
+        SECTION("[-π, 0]") { x = filib::Interval(-ipc::PI, 0); }
+        SECTION("[-π, π]") { x = filib::Interval(-ipc::PI, ipc::PI); }
         expected_y = filib::Interval(0, 1);
     }
     SECTION("y=[2/pi, 1]")
     {
-        const double PI_2 = igl::PI / 2;
+        const double PI_2 = ipc::PI / 2;
         SECTION("[0, π/2]") { x = filib::Interval(0, PI_2); }
         SECTION("[-π/2, 0]") { x = filib::Interval(-PI_2, 0); }
         SECTION("[-π/2, π/2]") { x = filib::Interval(-PI_2, PI_2); }
-        expected_y = filib::Interval(2 / igl::PI, 1);
+        expected_y = filib::Interval(2 / ipc::PI, 1);
     }
 
     CAPTURE(x.INF, x.SUP);
@@ -100,17 +100,17 @@ TEST_CASE("Interval sinc_norm_x", "[sinc][interval]")
     }
     SECTION("Positive")
     {
-        x(1) = filib::Interval(igl::PI);
+        x(1) = filib::Interval(ipc::PI);
         expected_y = filib::Interval(0);
     }
     SECTION("Negative")
     {
-        x(1) = filib::Interval(-igl::PI);
+        x(1) = filib::Interval(-ipc::PI);
         expected_y = filib::Interval(0);
     }
     SECTION("Mixed")
     {
-        x(1) = filib::Interval(-igl::PI, igl::PI);
+        x(1) = filib::Interval(-ipc::PI, ipc::PI);
         expected_y = filib::Interval(0, 1);
     }
 
@@ -123,7 +123,7 @@ TEST_CASE("Interval sinc_norm_x", "[sinc][interval]")
 TEST_CASE("Grad sinc(||x||)", "[sinc][vector][diff]")
 {
     double sign = GENERATE(-1, 1);
-    double val = GENERATE(0, 1e-8, igl::PI / 2, igl::PI, 5, 20, 100);
+    double val = GENERATE(0, 1e-8, ipc::PI / 2, ipc::PI, 5, 20, 100);
     int index = GENERATE(0, 1, 2);
     Eigen::Vector3d x = Eigen::Vector3d::Zero();
     x(index) = sign * val;
@@ -138,7 +138,7 @@ TEST_CASE("Grad sinc(||x||)", "[sinc][vector][diff]")
 TEST_CASE("Hess sinc(||x||)", "[sinc][vector][diff]")
 {
     double sign = GENERATE(-1, 1);
-    double val = GENERATE(0, 1e-8, igl::PI / 2, igl::PI, 5, 20, 100);
+    double val = GENERATE(0, 1e-8, ipc::PI / 2, ipc::PI, 5, 20, 100);
     int index = GENERATE(0, 1, 2);
     Eigen::Vector3d x = Eigen::Vector3d::Zero();
     x(index) = sign * val;

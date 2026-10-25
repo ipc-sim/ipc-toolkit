@@ -16,6 +16,7 @@ set(SOURCES
   merge_thread_local.hpp
   profiler.cpp
   profiler.hpp
+  save_obj.hpp
   simd.hpp
   unordered_map_and_set.hpp
   vertex_to_min_edge.cpp

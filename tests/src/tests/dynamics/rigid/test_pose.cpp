@@ -2,10 +2,10 @@
 #include <catch2/catch_all.hpp>
 
 #include <ipc/dynamics/rigid/pose.hpp>
+#include <ipc/math/constants.hpp>
 
 #include <Eigen/Geometry>
 #include <catch2/generators/catch_generators_range.hpp>
-#include <igl/PI.h>
 #include <finitediff.hpp>
 
 #include <iostream>
@@ -30,7 +30,7 @@ TEST_CASE("so(3) -> SO(3)", "[rigid][pose]")
     }
     SECTION("random")
     {
-        angle = GENERATE(take(100, random(0.0, 2 * igl::PI)));
+        angle = GENERATE(take(100, random(0.0, 2 * ipc::PI)));
         axis = Eigen::Vector3d::Random();
     }
     axis.normalize();
@@ -75,7 +75,7 @@ TEST_CASE("Interval so(3) -> SO(3)", "[!benchmark][physics][pose]")
     }
     SECTION("random")
     {
-        angle = GENERATE(take(1, random(0.0, 2 * igl::PI)));
+        angle = GENERATE(take(1, random(0.0, 2 * ipc::PI)));
         axis = Eigen::Vector3d::Random();
     }
     axis.normalize();
@@ -111,7 +111,7 @@ TEST_CASE("so(3) -> SO(3) derivatives", "[rigid][pose]")
     }
     SECTION("random")
     {
-        angle = GENERATE(take(100, random(0.0, 2 * igl::PI)));
+        angle = GENERATE(take(100, random(0.0, 2 * ipc::PI)));
         axis = Eigen::Vector3d::Random();
     }
     axis.normalize();
@@ -158,9 +158,9 @@ TEST_CASE("so(3) -> SO(3) derivatives", "[rigid][pose]")
 TEST_CASE("SO(3) -> so(3)", "[rigid][pose]")
 {
     double angle = GENERATE(
-        0.0, 1e-8, 1e-6, igl::PI / 4, igl::PI / 2, igl::PI * 0.75,
-        igl::PI - 1e-4, igl::PI - 1e-6, igl::PI - 1e-8, igl::PI, igl::PI + 1e-8,
-        igl::PI + 1e-6, igl::PI + 1e-4, igl::PI * 1.5, igl::PI * 2);
+        0.0, 1e-8, 1e-6, ipc::PI / 4, ipc::PI / 2, ipc::PI * 0.75,
+        ipc::PI - 1e-4, ipc::PI - 1e-6, ipc::PI - 1e-8, ipc::PI, ipc::PI + 1e-8,
+        ipc::PI + 1e-6, ipc::PI + 1e-4, ipc::PI * 1.5, ipc::PI * 2);
     Eigen::Vector3d axis = Eigen::Vector3d::Random().normalized();
 
     Eigen::Vector3d theta_expected = angle * axis;
@@ -177,7 +177,7 @@ TEST_CASE("SO(3) -> so(3)", "[rigid][pose]")
          || theta.isApprox(angle * axis, 1e-4)));
 
     // std::cout << "input axis: " << axis.transpose() << "\n"
-    //           << "input angle: " << angle << " (" << angle - igl::PI << ")"
+    //           << "input angle: " << angle << " (" << angle - ipc::PI << ")"
     //           << "\n"
     //           << "expected axis: " << angle_axis.axis().transpose() << "\n"
     //           << "expected angle: " << angle_axis.angle() << "\n"

@@ -541,6 +541,20 @@ cross_product_matrix(const Eigen::MatrixBase<DerivedX>& v)
     return detail::cross_product_matrix<T>(v);
 }
 
+/// @brief Cross product matrix for a 2D (scalar) angular quantity.
+///
+/// In 2D an angular velocity or torque is a scalar ω about the out-of-plane
+/// axis, and ω × v = ω S v with the skew generator S = [[0, −1], [1, 0]].
+///
+/// @param omega The scalar angular quantity.
+/// @return The 2×2 cross product matrix ω S.
+inline Eigen::Matrix2d cross_product_matrix(const double omega)
+{
+    Eigen::Matrix2d m;
+    m << 0, -omega, omega, 0;
+    return m;
+}
+
 /// @brief Computes the unnormalized normal vector of a point-line pair.
 /// @param p The vertex position.
 /// @param e0 The start position of the line.

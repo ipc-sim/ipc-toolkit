@@ -48,8 +48,9 @@ public:
         return alphas(order() - 1);
     }
 
-    /// @brief \f$\partial v/\partial x = 1/(\beta\Delta t)\f$,
-    /// \f$\partial v/\partial x^{t-i} = -\alpha_i/(\beta\Delta t)\f$.
+    /// @brief \f$\partial v/\partial x = 1/(\beta\Delta t)\f$ for prev_ti = 0
+    /// and \f$\partial v/\partial x^{t-i} = -\alpha_i/(\beta\Delta t)\f$ for
+    /// prev_ti = i + 1 (x^{t-i} = x_prev(i)); zero beyond the current order.
     double dvdx(const unsigned prev_ti = 0) const override;
 
     /// @brief The requested (maximum) BDF order.

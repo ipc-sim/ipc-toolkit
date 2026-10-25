@@ -42,7 +42,7 @@ TEST_CASE("Static body support", "[static][simulator]")
     load_cube(V, E, F);
 
     // A static floor cube and a dynamic cube dropped from slightly above.
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
     initial_poses[1].position = Eigen::Vector3d(0.1, 1.1, 0.05);
 
     auto bodies = RigidBodies::build_from_meshes(
@@ -77,7 +77,7 @@ TEST_CASE("All bodies static", "[static][simulator]")
     Eigen::MatrixXi E, F;
     load_cube(V, E, F);
 
-    std::vector<Pose> initial_poses(1, Pose::Identity(3));
+    std::vector<Pose> initial_poses(1, Pose::identity(3));
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
     (*bodies)[0].set_type(RigidBody::Type::STATIC);
@@ -102,12 +102,12 @@ TEST_CASE("Kinematic body velocity driven", "[kinematic][simulator]")
     Eigen::MatrixXi E, F;
     load_cube(V, E, F);
 
-    std::vector<Pose> initial_poses(1, Pose::Identity(3));
+    std::vector<Pose> initial_poses(1, Pose::identity(3));
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
     (*bodies)[0].set_type(RigidBody::Type::KINEMATIC);
 
-    std::vector<Pose> initial_velocities(1, Pose::Identity(3));
+    std::vector<Pose> initial_velocities(1, Pose::identity(3));
     initial_velocities[0].position = Eigen::Vector3d(1.0, 0.5, 0);
     initial_velocities[0].rotation = Eigen::Vector3d(0, 0, 0.3);
 
@@ -152,7 +152,7 @@ TEST_CASE("Kinematic body scripted poses", "[kinematic][simulator]")
     Eigen::MatrixXi E, F;
     load_cube(V, E, F);
 
-    std::vector<Pose> initial_poses(1, Pose::Identity(3));
+    std::vector<Pose> initial_poses(1, Pose::identity(3));
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
     (*bodies)[0].set_type(RigidBody::Type::KINEMATIC);
@@ -195,14 +195,14 @@ TEST_CASE("Kinematic body pushes dynamic body", "[kinematic][simulator]")
     load_cube(V, E, F);
 
     // Kinematic cube slides toward a dynamic cube resting to its right.
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
     initial_poses[1].position = Eigen::Vector3d(1.2, 0, 0);
 
     auto bodies = RigidBodies::build_from_meshes(
         { V, V }, { E, E }, { F, F }, { 1000.0, 1000.0 }, initial_poses);
     (*bodies)[0].set_type(RigidBody::Type::KINEMATIC);
 
-    std::vector<Pose> initial_velocities(2, Pose::Identity(3));
+    std::vector<Pose> initial_velocities(2, Pose::identity(3));
     initial_velocities[0].position = Eigen::Vector3d(1.0, 0, 0);
 
     Simulator::Settings settings;
@@ -237,7 +237,7 @@ TEST_CASE("Partial DOF fixing", "[static][simulator]")
 
     // Fix the rotation of a cube; push it off-center so an unconstrained
     // cube would spin.
-    std::vector<Pose> initial_poses(1, Pose::Identity(3));
+    std::vector<Pose> initial_poses(1, Pose::identity(3));
     VectorMax6b is_dof_fixed = VectorMax6b::Zero(6);
     is_dof_fixed.tail<3>().setOnes(); // fix all rotation
 
@@ -276,14 +276,14 @@ TEST_CASE("Kinematic max time expiry", "[kinematic][simulator]")
     Eigen::MatrixXi E, F;
     load_cube(V, E, F);
 
-    std::vector<Pose> initial_poses(1, Pose::Identity(3));
+    std::vector<Pose> initial_poses(1, Pose::identity(3));
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
     (*bodies)[0].set_type(RigidBody::Type::KINEMATIC);
 
     const double dt = 0.01;
 
-    std::vector<Pose> initial_velocities(1, Pose::Identity(3));
+    std::vector<Pose> initial_velocities(1, Pose::identity(3));
     initial_velocities[0].position = Eigen::Vector3d(1.0, 0, 0);
 
     Simulator::Settings settings;
@@ -323,7 +323,7 @@ TEST_CASE("Joints reject non-dynamic bodies", "[kinematic][joints][simulator]")
     Eigen::MatrixXi E, F;
     load_cube(V, E, F);
 
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
     initial_poses[1].position = Eigen::Vector3d(1.5, 0, 0);
 
     auto bodies = RigidBodies::build_from_meshes(
@@ -351,7 +351,7 @@ TEST_CASE("Minimum separation distance", "[minimum_separation][simulator]")
     // Drop a dynamic cube onto a static floor cube and return its resting
     // height for a given minimum-separation distance.
     const auto settle_y = [&](const double dmin) {
-        std::vector<Pose> poses(2, Pose::Identity(3));
+        std::vector<Pose> poses(2, Pose::identity(3));
         poses[1].position = Eigen::Vector3d(0.0, 1.1, 0.0);
 
         auto bodies = RigidBodies::build_from_meshes(

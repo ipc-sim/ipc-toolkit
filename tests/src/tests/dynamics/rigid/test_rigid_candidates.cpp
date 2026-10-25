@@ -10,8 +10,8 @@
 #include <ipc/dynamics/rigid/rigid_trajectory.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
+#include <ipc/math/constants.hpp>
 
-#include <igl/PI.h>
 #include <igl/edges.h>
 #include <igl/upsample.h>
 
@@ -174,13 +174,13 @@ std::shared_ptr<RigidBodies> make_spinning_rod_scene(
 
     // Stage 1: build the rod alone to learn its post-build pose (R₀ folded
     // in) and locate the tip's mid-sweep position.
-    std::vector<Pose> rod_poses(1, Pose::Identity(3));
+    std::vector<Pose> rod_poses(1, Pose::identity(3));
     auto rod_only = RigidBodies::build_from_meshes(
         { V_rod }, { E_rod }, { F_rod }, { 1000.0 }, rod_poses);
 
     Pose rod_t1 = rod_poses[0];
     rod_t1.rotation = compose_rotation(
-        Eigen::AngleAxisd(igl::PI, Eigen::Vector3d::UnitZ()).toRotationMatrix(),
+        Eigen::AngleAxisd(ipc::PI, Eigen::Vector3d::UnitZ()).toRotationMatrix(),
         rod_poses[0]);
 
     // Tip = rest vertex with the largest radius
@@ -192,7 +192,7 @@ std::shared_ptr<RigidBodies> make_spinning_rod_scene(
 
     // Stage 2: build the combined scene with the cube at the mid-sweep point,
     // offset slightly outward so the endpoints are collision free.
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
     initial_poses[1].position = 1.2 * tip_mid;
 
     auto bodies = RigidBodies::build_from_meshes(
@@ -221,7 +221,7 @@ TEST_CASE("Rigid broad phase completeness", "[rigid][candidates]")
     igl::upsample(V_cube, F_cube, V_fine, F_fine, 1);
     igl::edges(F_fine, E_fine);
 
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
     auto bodies = RigidBodies::build_from_meshes(
         { V_fine, V_cube }, { E_fine, E_cube }, { F_fine, F_cube },
         { 1000.0, 1000.0 }, initial_poses);
@@ -239,11 +239,11 @@ TEST_CASE("Rigid broad phase completeness", "[rigid][candidates]")
         poses_t0[1].position = Eigen::Vector3d(1.5, 1.5, 0);
         poses_t1[1].position = Eigen::Vector3d(1.05, 0.25, 0);
         poses_t1[1].rotation = compose_rotation(
-            Eigen::AngleAxisd(igl::PI / 2, Eigen::Vector3d::UnitZ())
+            Eigen::AngleAxisd(ipc::PI / 2, Eigen::Vector3d::UnitZ())
                 .toRotationMatrix(),
             poses_t0[1]);
         poses_t1[0].rotation = compose_rotation(
-            Eigen::AngleAxisd(igl::PI / 4, Eigen::Vector3d::UnitY())
+            Eigen::AngleAxisd(ipc::PI / 4, Eigen::Vector3d::UnitY())
                 .toRotationMatrix(),
             poses_t0[0]);
     }
@@ -370,7 +370,7 @@ TEST_CASE("Rigid plane-vertex candidates and CCD", "[rigid][candidates][ccd]")
     Eigen::MatrixXi E_rod, F_rod;
     make_rod(V_rod, E_rod, F_rod);
 
-    std::vector<Pose> initial_poses(1, Pose::Identity(3));
+    std::vector<Pose> initial_poses(1, Pose::identity(3));
     initial_poses[0].position = Eigen::Vector3d(0, 1.0, 0);
 
     auto bodies = RigidBodies::build_from_meshes(
@@ -380,7 +380,7 @@ TEST_CASE("Rigid plane-vertex candidates and CCD", "[rigid][candidates][ccd]")
     std::vector<Pose> poses_t0 = initial_poses;
     std::vector<Pose> poses_t1 = initial_poses;
     poses_t1[0].rotation = compose_rotation(
-        Eigen::AngleAxisd(igl::PI, Eigen::Vector3d::UnitZ()).toRotationMatrix(),
+        Eigen::AngleAxisd(ipc::PI, Eigen::Vector3d::UnitZ()).toRotationMatrix(),
         poses_t0[0]);
 
     // Sampled ground truth: first time any vertex dips below the plane
@@ -434,7 +434,7 @@ TEST_CASE(
     Eigen::MatrixXi E_cube, F_cube;
     tests::load_mesh("cube.ply", V_cube, E_cube, F_cube);
 
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
     initial_poses[1].position = Eigen::Vector3d(1.2, 0, 0);
 
     auto bodies = RigidBodies::build_from_meshes(
@@ -481,7 +481,7 @@ TEST_CASE(
     Eigen::MatrixXi E_cube, F_cube;
     tests::load_mesh("cube.ply", V_cube, E_cube, F_cube);
 
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
     initial_poses[1].position = Eigen::Vector3d(0.75, 0, 0); // Overlapping
 
     auto bodies = RigidBodies::build_from_meshes(
@@ -514,7 +514,7 @@ TEST_CASE(
     Eigen::MatrixXi E_cube, F_cube;
     tests::load_mesh("cube.ply", V_cube, E_cube, F_cube);
 
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
     initial_poses[1].position = Eigen::Vector3d(1.2, 0, 0);
 
     auto bodies = RigidBodies::build_from_meshes(

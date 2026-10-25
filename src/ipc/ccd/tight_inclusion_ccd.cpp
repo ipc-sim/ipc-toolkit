@@ -36,8 +36,19 @@ bool TightInclusionCCD::ccd_strategy(
     const double min_distance,
     const double initial_distance,
     const double conservative_rescaling,
-    double& toi)
+    double& toi,
+    const NarrowPhaseCCDMode mode)
 {
+    if (mode != NarrowPhaseCCDMode::STANDALONE) {
+        // As the per-piece linear CCD inside a piecewise driver (e.g.,
+        // NonlinearCCD), the driver supplies its own conservative margins, so
+        // we run Tight Inclusion directly with the caller's minimum separation
+        // and zero-TOI requirement (no inflation, rerun, or rescaling).
+        return ccd(
+            min_distance, mode == NarrowPhaseCCDMode::COMPONENT_NO_ZERO_TOI,
+            toi);
+    }
+
     if (check_initial_distance(initial_distance, min_distance, toi)) {
         return true;
     }
@@ -82,7 +93,7 @@ bool TightInclusionCCD::point_point_ccd_3D(
     double& toi,
     const double min_distance,
     const double tmax,
-    const bool cm_no_zero_toi) const
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -125,16 +136,8 @@ bool TightInclusionCCD::point_point_ccd_3D(
         return is_impacting;
     };
 
-    if (component_mode) {
-        // Per-piece linear CCD inside a piecewise driver (e.g. NonlinearCCD):
-        // the driver supplies its own conservative margins, so run Tight
-        // Inclusion directly with the caller's minimum separation and
-        // zero-TOI hint (no strategy inflation, rerun, or rescaling).
-        return ccd(min_distance, cm_no_zero_toi, toi);
-    }
-
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 bool TightInclusionCCD::point_point_ccd(
@@ -145,14 +148,14 @@ bool TightInclusionCCD::point_point_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const bool cm_no_zero_toi) const
+    const NarrowPhaseCCDMode mode) const
 {
     assert(p0_t0.size() == p1_t0.size());
     assert(p0_t0.size() == p0_t1.size());
     assert(p0_t0.size() == p1_t1.size());
     return point_point_ccd_3D(
         to_3D(p0_t0), to_3D(p1_t0), to_3D(p0_t1), to_3D(p1_t1), toi,
-        min_distance, tmax, cm_no_zero_toi);
+        min_distance, tmax, mode);
 }
 
 bool TightInclusionCCD::point_edge_ccd_3D(
@@ -165,7 +168,7 @@ bool TightInclusionCCD::point_edge_ccd_3D(
     double& toi,
     const double min_distance,
     const double tmax,
-    const bool cm_no_zero_toi) const
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -209,16 +212,8 @@ bool TightInclusionCCD::point_edge_ccd_3D(
         return is_impacting;
     };
 
-    if (component_mode) {
-        // Per-piece linear CCD inside a piecewise driver (e.g. NonlinearCCD):
-        // the driver supplies its own conservative margins, so run Tight
-        // Inclusion directly with the caller's minimum separation and
-        // zero-TOI hint (no strategy inflation, rerun, or rescaling).
-        return ccd(min_distance, cm_no_zero_toi, toi);
-    }
-
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 bool TightInclusionCCD::point_edge_ccd(
@@ -231,14 +226,14 @@ bool TightInclusionCCD::point_edge_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const bool cm_no_zero_toi) const
+    const NarrowPhaseCCDMode mode) const
 {
     assert(p_t1.size() == p_t0.size());
     assert(e0_t0.size() == p_t0.size() && e1_t0.size() == p_t0.size());
     assert(e0_t1.size() == p_t0.size() && e1_t1.size() == p_t0.size());
     return point_edge_ccd_3D(
         to_3D(p_t0), to_3D(e0_t0), to_3D(e1_t0), to_3D(p_t1), to_3D(e0_t1),
-        to_3D(e1_t1), toi, min_distance, tmax, cm_no_zero_toi);
+        to_3D(e1_t1), toi, min_distance, tmax, mode);
 }
 
 bool TightInclusionCCD::edge_edge_ccd(
@@ -253,7 +248,7 @@ bool TightInclusionCCD::edge_edge_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const bool cm_no_zero_toi) const
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -297,16 +292,8 @@ bool TightInclusionCCD::edge_edge_ccd(
         return is_impacting;
     };
 
-    if (component_mode) {
-        // Per-piece linear CCD inside a piecewise driver (e.g. NonlinearCCD):
-        // the driver supplies its own conservative margins, so run Tight
-        // Inclusion directly with the caller's minimum separation and
-        // zero-TOI hint (no strategy inflation, rerun, or rescaling).
-        return ccd(min_distance, cm_no_zero_toi, toi);
-    }
-
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 bool TightInclusionCCD::point_triangle_ccd(
@@ -321,7 +308,7 @@ bool TightInclusionCCD::point_triangle_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const bool cm_no_zero_toi) const
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -365,16 +352,8 @@ bool TightInclusionCCD::point_triangle_ccd(
         return is_impacting;
     };
 
-    if (component_mode) {
-        // Per-piece linear CCD inside a piecewise driver (e.g. NonlinearCCD):
-        // the driver supplies its own conservative margins, so run Tight
-        // Inclusion directly with the caller's minimum separation and
-        // zero-TOI hint (no strategy inflation, rerun, or rescaling).
-        return ccd(min_distance, cm_no_zero_toi, toi);
-    }
-
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 } // namespace ipc

@@ -46,6 +46,12 @@ private:
     /// non-DYNAMIC bodies).
     void build_mass_matrix(const rigid::RigidBodies& bodies);
 
+    /// @brief Each body's mass if it is DYNAMIC, else zero: everything the
+    /// mass matrix depends on that can change after construction (the second
+    /// moment scales with the mass).
+    static std::vector<double>
+    effective_masses(const rigid::RigidBodies& bodies);
+
     const std::shared_ptr<const dynamics::ImplicitTimeIntegrator>
         time_integrator;
 
@@ -55,6 +61,9 @@ private:
 
     /// Cached predicted poses for the rigid body
     Eigen::VectorXd m_x_hat;
+
+    /// The effective_masses() the mass matrix was built from
+    std::vector<double> m_effective_masses;
 };
 
 } // namespace ipc::affine

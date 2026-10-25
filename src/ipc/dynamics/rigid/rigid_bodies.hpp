@@ -253,16 +253,7 @@ public:
     index_t vertex_to_body(index_t vi) const
     {
         assert(vi >= 0 && vi < num_vertices());
-
-        // Find the first element GREATER than vi
-        auto it = std::upper_bound(
-            body_vertex_starts.begin(), body_vertex_starts.end(), vi);
-
-        // The body index is (iterator distance - 1)
-        // std::distance returns the number of elements from the start to 'it'
-        return static_cast<index_t>(
-                   std::distance(body_vertex_starts.begin(), it))
-            - 1;
+        return body_containing_vertex(body_vertex_starts, vi);
     }
 
     /// @brief Make a list of body names unique, the same way bodies are named.
@@ -275,6 +266,21 @@ public:
     make_unique_names(const std::vector<std::string>& names);
 
 private:
+    /// @brief The body containing vertex vi, given each body's first vertex.
+    static index_t body_containing_vertex(
+        const std::vector<index_t>& body_vertex_starts, const index_t vi)
+    {
+        // Find the first element GREATER than vi
+        auto it = std::upper_bound(
+            body_vertex_starts.begin(), body_vertex_starts.end(), vi);
+
+        // The body index is (iterator distance - 1)
+        // std::distance returns the number of elements from the start to 'it'
+        return static_cast<index_t>(
+                   std::distance(body_vertex_starts.begin(), it))
+            - 1;
+    }
+
     /// @brief Populate @ref m_body_names / @ref m_name_to_index (num_bodies()
     /// entries). Empty or missing names default to "Body{i}"; duplicates are
     /// disambiguated with a ".{i}" suffix so every name is unique.

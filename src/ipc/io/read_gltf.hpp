@@ -17,10 +17,13 @@ struct Pose;
 ///
 /// We only read geometry: each mesh node becomes a body named after its node
 /// (or mesh), made unique with RigidBodies::make_unique_names over the mesh
-/// nodes in file order, posed by its translation and rotation, with its scale
-/// baked into the rest positions. Nodes scaled to zero are skipped. Every body
-/// gets a default density of 1000; set physical properties on the returned
-/// bodies.
+/// nodes in file order. A node's world transform composes its ancestors'
+/// transforms (TRS or matrix); its rotation becomes the body's pose and the
+/// remaining stretch (scale, plus any shear) is baked into the rest
+/// positions. All triangle, line, and point primitives of a mesh are merged
+/// into one body (lines become codimensional edges), and nodes scaled to zero
+/// are skipped. Every body gets a default density of
+/// 1000; set physical properties on the returned bodies.
 ///
 /// The one exception is @p is_dof_fixed. Fixing exactly two rotational DOFs
 /// changes the frame a body's inertia is expressed in, which is baked into the

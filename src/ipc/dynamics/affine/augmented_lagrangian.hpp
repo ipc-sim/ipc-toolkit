@@ -101,6 +101,8 @@ private:
     std::vector<rigid::Pose> m_targets;
     /// @brief Target rotation matrices (cached).
     std::vector<MatrixMax3d> m_target_rotations;
+    /// @brief Diagonal of each kinematic body's angular mass block W (cached).
+    std::vector<Eigen::VectorXd> m_angular_weights;
 
     double m_kappa_q = 1e3;
     double m_kappa_A = 1e3; // NOLINT(readability-identifier-naming)

@@ -17,8 +17,8 @@ namespace {
     /// trace). In 3D it is the classical inertia tensor Σ mᵢ (‖r‖² I − r rᵀ)
     /// about the center of mass.
     void compute_mass_properties_lumped(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
         const double density,
         double& total_mass,
         VectorMax3d& center,
@@ -75,8 +75,8 @@ namespace {
     // This requires the mesh to be closed, watertight, with proper triangle
     // orientation.
     bool compute_mass_properties_3D(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         const double density,
         double& total_mass,
         VectorMax3d& center,
@@ -212,8 +212,8 @@ namespace {
 } // namespace
 
 void compute_mass_properties(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& facets,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> facets,
     const double density,
     double& total_mass,
     VectorMax3d& center,
@@ -222,9 +222,14 @@ void compute_mass_properties(
     assert(facets.cols() <= 3);
     if (vertices.cols() == 2 || facets.size() == 0 || facets.cols() != 3) {
         // 2D meshes (facets = edges), 3D edge meshes, and point clouds.
-        compute_mass_properties_lumped(
-            vertices, facets.cols() == 2 ? facets : Eigen::MatrixXi(0, 2),
-            density, total_mass, center, inertia);
+        if (facets.cols() == 2) {
+            compute_mass_properties_lumped(
+                vertices, facets, density, total_mass, center, inertia);
+        } else {
+            compute_mass_properties_lumped(
+                vertices, Eigen::MatrixXi(0, 2), density, total_mass, center,
+                inertia);
+        }
     } else if (
         facets.rows() < 4 // Not enough faces to form a closed mesh
         || !compute_mass_properties_3D(
@@ -238,8 +243,8 @@ void compute_mass_properties(
 
 // Construct the sparse mass matrix for the given mesh (V, F).
 void construct_mass_matrix(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& facets,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> facets,
     Eigen::SparseMatrix<double>& mass_matrix)
 {
     if (facets.rows() == 0) {
@@ -266,9 +271,10 @@ void construct_mass_matrix(
         mass_matrix.setFromTriplets(triplets.begin(), triplets.end());
     } else if (facets.cols() == 3) {
         assert(vertices.cols() == 3); // Only use triangles in 3D
+        // libigl is precompiled for plain matrices, so we pass copies.
         igl::massmatrix(
-            vertices, facets, igl::MassMatrixType::MASSMATRIX_TYPE_VORONOI,
-            mass_matrix);
+            Eigen::MatrixXd(vertices), Eigen::MatrixXi(facets),
+            igl::MassMatrixType::MASSMATRIX_TYPE_VORONOI, mass_matrix);
     } else {
         // Probably a point cloud
         mass_matrix.resize(vertices.rows(), vertices.rows());

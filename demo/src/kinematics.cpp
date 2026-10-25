@@ -140,8 +140,7 @@ namespace {
         /// The per-piece linear CCD is delegated to Additive CCD (as in the
         /// affine path): much faster than Tight-Inclusion CCD per query,
         /// though not provably conservative under floating-point rounding.
-        NonlinearCCD m_ccd { NonlinearCCD::DEFAULT_CONSERVATIVE_RESCALING,
-                             std::make_shared<AdditiveCCD>() };
+        NonlinearCCD m_ccd { std::make_shared<AdditiveCCD>() };
     };
 
     /// @brief Affine parameterization: x_i = [p; vec(A) column-major]

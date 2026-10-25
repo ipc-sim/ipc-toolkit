@@ -21,6 +21,7 @@
 #include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
+#include <algorithm>
 #include <cassert>
 #include <exception>
 #include <limits>
@@ -37,15 +38,7 @@ namespace {
     std::vector<rigid::Pose>
     zero_velocities(const size_t num_bodies, const int dim)
     {
-        return std::vector<rigid::Pose>(num_bodies, rigid::Pose::Identity(dim));
-    }
-
-    /// 2D skew "matrix" generator: ω S with S = [[0, -1], [1, 0]].
-    inline Eigen::Matrix2d skew_2d(const double omega)
-    {
-        Eigen::Matrix2d S; // NOLINT
-        S << 0, -omega, omega, 0;
-        return S;
+        return std::vector<rigid::Pose>(num_bodies, rigid::Pose::identity(dim));
     }
 } // namespace
 
@@ -307,7 +300,7 @@ void Simulator::initialize_time_integrator(
             const Eigen::Matrix2d Q_t0 = poses[i].rotation_matrix();
             x0.segment<4>(state_ndof * i + dim) = Q_t0.reshaped();
             v0.segment<4>(state_ndof * i + dim) =
-                (skew_2d(velocity.rotation(0)) * Q_t0).reshaped();
+                (cross_product_matrix(velocity.rotation(0)) * Q_t0).reshaped();
         } else {
             // Q̇ = [ω]× Q with ω the world-frame angular velocity
             const Eigen::Matrix3d Q_t0 = poses[i].rotation_matrix();
@@ -543,7 +536,7 @@ void Simulator::gradient(const TVector& v, TVector& grad)
     if (has_joints()) {
         // The pinned entries never move: zero their gradient so the search
         // direction leaves them fixed.
-        grad = m_joints->U().transpose() * grad;
+        grad = m_joints->reduction_basis().transpose() * grad;
         grad.head(m_joints->num_constraints()).setZero();
     }
     // Same treatment for the masked DOFs (STATIC bodies, fixed DOFs, and
@@ -557,39 +550,38 @@ void Simulator::hessian(const TVector& v, THessian& hess)
 {
     hess = full_hessian(to_full(v));
     if (has_joints()) {
-        // Reduced Hessian UᵀHU with the pinned rows/columns replaced by
-        // identity so the direction solve never moves them.
-        const Eigen::MatrixXd& U = m_joints->U();
-        Eigen::MatrixXd H = U.transpose() * (hess * U);
-        const int m = int(m_joints->num_constraints());
-        H.topRows(m).setZero();
-        H.leftCols(m).setZero();
-        H.diagonal().head(m).setOnes();
-        for (const int i : m_pinned_dofs) {
-            H.row(i).setZero();
-            H.col(i).setZero();
-            H(i, i) = 1.0;
+        // Reduced Hessian UᵀHU. U is sparse (the identity outside the jointed
+        // DOFs), so this stays sparse.
+        const Eigen::SparseMatrix<double>& U = m_joints->reduction_basis();
+        hess = U.transpose() * hess * U;
+    }
+
+    // The joint-constrained coordinates and the masked DOFs never move, so we
+    // replace their rows/columns with identity: S H S + (I − S) with a
+    // diagonal selector S, staying sparse.
+    std::vector<bool> pinned(hess.rows(), false);
+    if (has_joints()) {
+        std::fill_n(pinned.begin(), m_joints->num_constraints(), true);
+    }
+    for (const int i : m_pinned_dofs) {
+        pinned[i] = true;
+    }
+    if (std::none_of(pinned.begin(), pinned.end(), [](bool p) { return p; })) {
+        return;
+    }
+
+    Eigen::SparseMatrix<double> S(hess.rows(), hess.cols()); // NOLINT
+    std::vector<Eigen::Triplet<double>> triplets;
+    triplets.reserve(hess.rows());
+    for (int i = 0; i < hess.rows(); ++i) {
+        if (!pinned[i]) {
+            triplets.emplace_back(i, i, 1.0);
         }
-        hess = H.sparseView();
-    } else if (!m_pinned_dofs.empty()) {
-        // Zero the pinned rows/columns and put ones on their diagonal so the
-        // direction solve never moves them (S H S + (I − S) with a diagonal
-        // selector S, staying sparse).
-        Eigen::SparseMatrix<double> S(hess.rows(), hess.cols()); // NOLINT
-        std::vector<Eigen::Triplet<double>> triplets;
-        triplets.reserve(hess.rows());
-        std::vector<bool> pinned(hess.rows(), false);
-        for (const int i : m_pinned_dofs) {
-            pinned[i] = true;
-        }
-        for (int i = 0; i < hess.rows(); ++i) {
-            if (!pinned[i]) {
-                triplets.emplace_back(i, i, 1.0);
-            }
-        }
-        S.setFromTriplets(triplets.begin(), triplets.end());
-        hess = S * hess * S;
-        for (const int i : m_pinned_dofs) {
+    }
+    S.setFromTriplets(triplets.begin(), triplets.end());
+    hess = S * hess * S;
+    for (int i = 0; i < hess.rows(); ++i) {
+        if (pinned[i]) {
             hess.coeffRef(i, i) = 1.0;
         }
     }

@@ -12,6 +12,8 @@ Narrow Phase CCD
 
    .. autoclasstoc::
 
+.. autoclass:: ipctk.NarrowPhaseCCDMode
+
 Tight Inclusion CCD
 ^^^^^^^^^^^^^^^^^^^
 

@@ -24,13 +24,14 @@ void InertialTerm::build_mass_matrix(const rigid::RigidBodies& bodies)
     // fully prescribed (pinned DOFs and/or the augmented Lagrangian).
     const int dim = bodies.dim();
     const int ndof = dim + dim * dim;
+    m_effective_masses = effective_masses(bodies);
     std::vector<Eigen::Triplet<double>> triplets;
     for (int i = 0; i < bodies.num_bodies(); i++) {
         if (!bodies[i].is_dynamic()) {
             continue;
         }
         const double mass = bodies[i].mass();
-        const auto& J = bodies[i].J().diagonal();
+        const auto& J = bodies[i].second_moment().diagonal();
         assert(J.size() == dim);
         for (int k = 0; k < dim; k++) {
             triplets.emplace_back(i * ndof + k, i * ndof + k, mass);
@@ -48,9 +49,22 @@ void InertialTerm::update(const rigid::RigidBodies& bodies)
 {
     // Update the predicted positions from the current time integrator state
     m_x_hat = time_integrator->predicted_positions();
-    // Body types can change at runtime (convert_to_static), so refresh the
-    // zero blocks of non-DYNAMIC bodies.
-    build_mass_matrix(bodies);
+    // Body types can change at runtime (convert_to_static), and with them the
+    // zero blocks of non-DYNAMIC bodies. That is rare, so we only rebuild the
+    // mass matrix when a body's type or mass actually changed.
+    if (effective_masses(bodies) != m_effective_masses) {
+        build_mass_matrix(bodies);
+    }
+}
+
+std::vector<double>
+InertialTerm::effective_masses(const rigid::RigidBodies& bodies)
+{
+    std::vector<double> masses(bodies.num_bodies());
+    for (size_t i = 0; i < bodies.num_bodies(); i++) {
+        masses[i] = bodies[i].is_dynamic() ? bodies[i].mass() : 0.0;
+    }
+    return masses;
 }
 
 // ---- Cumulative functions ---------------------------------------------------

@@ -10,11 +10,10 @@
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
+#include <ipc/math/constants.hpp>
 #include <simulator.hpp>
 
 #include <finitediff.hpp>
-
-#include <igl/PI.h>
 
 #include <iostream>
 
@@ -39,7 +38,7 @@ std::shared_ptr<RigidBodies> cube_on_plane(
     Eigen::MatrixXi E, F;
     REQUIRE(tests::load_mesh("cube.ply", V, E, F));
 
-    initial_poses.assign(1, Pose::Identity(3));
+    initial_poses.assign(1, Pose::identity(3));
     initial_poses[0].position.y() = -V.col(1).minCoeff() + gap_factor * dhat;
 
     auto bodies = RigidBodies::build_from_meshes(
@@ -136,7 +135,7 @@ TEST_CASE("Friction incline stick and slip", "[friction][simulator]")
     CAPTURE(affine);
 
     // Tilt gravity instead of the plane: an incline of angle θ.
-    const double theta = 20.0 * igl::PI / 180.0; // tan θ ≈ 0.364
+    const double theta = 20.0 * ipc::PI / 180.0; // tan θ ≈ 0.364
     const double g = 9.81;
 
     Simulator::Settings settings;
@@ -216,7 +215,7 @@ TEST_CASE("Friction sliding deceleration", "[friction][simulator]")
     auto bodies =
         cube_on_plane(initial_poses, settings.dhat, 1000.0, /*gap_factor=*/1.1);
 
-    std::vector<Pose> initial_velocities(1, Pose::Identity(3));
+    std::vector<Pose> initial_velocities(1, Pose::identity(3));
     initial_velocities[0].position = Eigen::Vector3d(v0, 0, 0);
 
     const double dt = 0.01;
@@ -253,7 +252,7 @@ TEST_CASE("Friction lagging semantics", "[friction][simulator]")
 
         auto bodies = cube_on_plane(
             initial_poses, settings.dhat, 1000.0, /*gap_factor=*/1.1);
-        std::vector<Pose> initial_velocities(1, Pose::Identity(3));
+        std::vector<Pose> initial_velocities(1, Pose::identity(3));
         initial_velocities[0].position = Eigen::Vector3d(1.0, 0, 0);
 
         Simulator sim(
@@ -277,7 +276,7 @@ TEST_CASE("Friction lagging semantics", "[friction][simulator]")
             s.friction_iterations = iterations;
             auto bodies =
                 cube_on_plane(poses, s.dhat, 1000.0, /*gap_factor=*/1.1);
-            std::vector<Pose> velocities(1, Pose::Identity(3));
+            std::vector<Pose> velocities(1, Pose::identity(3));
             velocities[0].position = Eigen::Vector3d(1.0, 0, 0);
             Simulator sim(bodies, poses, velocities, /*dt=*/0.01, s);
             REQUIRE(sim.run(/*t_end=*/0.2));

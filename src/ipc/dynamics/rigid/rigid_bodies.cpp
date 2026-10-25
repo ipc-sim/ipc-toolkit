@@ -249,9 +249,11 @@ RigidBodies::RigidBodies(
     }
 
     assert(body_vertex_starts.size() > 0);
-    this->can_collide = [this](size_t vi, size_t vj) {
-        assert(body_vertex_starts.size() > 0);
-        return this->vertex_to_body(vi) != this->vertex_to_body(vj);
+    // The filter copies the body offsets instead of capturing `this`, so it
+    // stays valid when the collision mesh is copied or moved.
+    this->can_collide = [starts = body_vertex_starts](size_t vi, size_t vj) {
+        return body_containing_vertex(starts, index_t(vi))
+            != body_containing_vertex(starts, index_t(vj));
     };
     assert(!this->can_collide(0, 0));
 

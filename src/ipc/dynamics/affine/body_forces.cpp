@@ -22,20 +22,25 @@ void BodyForces::update(
               + bodies[i].external_force().position);
 
         const auto& torque = bodies[i].external_force().rotation;
-        if (!torque.isZero()) {
-            // Transform the world-space torque into body space.
-            const auto& A = poses[i].rotation;
-            if (dim == 3) {
-                const Eigen::Matrix3d tau =
-                    A.transpose() * cross_product_matrix(torque);
-                m_wrench.segment<9>(ndof * i + 3) = -tau.reshaped();
-            } else {
-                // 2D: the skew generator is S = [[0, -1], [1, 0]].
-                Eigen::Matrix2d skew; // NOLINT
-                skew << 0, -torque(0), torque(0), 0;
-                const Eigen::Matrix2d tau = A.transpose() * skew;
-                m_wrench.segment<4>(ndof * i + 2) = -tau.reshaped();
-            }
+        if (torque.isZero()) {
+            continue;
+        }
+
+        // We pull the world-space torque τ back to the affine matrix A with
+        // the linear energy E(A) = −⟨½ [τ]× A₀, A⟩, where A₀ is the step-start
+        // A. Perturbing A₀ by a small world rotation δφ, A = (I + [δφ]×) A₀,
+        // gives δE = −tr(½ A₀ᵀ [τ]×ᵀ [δφ]× A₀) = −τ·δφ, so the generalized
+        // torque is exactly τ regardless of the body's orientation. The ½
+        // comes from tr([a]×ᵀ [b]×) = 2 a·b.
+        const auto& A = poses[i].rotation;
+        if (dim == 3) {
+            const Eigen::Matrix3d W =
+                0.5 * cross_product_matrix(torque) * Eigen::Matrix3d(A);
+            m_wrench.segment<9>(ndof * i + 3) = -W.reshaped();
+        } else {
+            const Eigen::Matrix2d W =
+                0.5 * cross_product_matrix(torque(0)) * Eigen::Matrix2d(A);
+            m_wrench.segment<4>(ndof * i + 2) = -W.reshaped();
         }
     }
 }

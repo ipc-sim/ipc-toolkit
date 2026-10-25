@@ -13,7 +13,11 @@ namespace ipc::affine {
 /// variables x = Uz: build an upper-triangular basis extension V of the
 /// constraint rows (Gaussian elimination with column pivoting), set U = V⁻¹,
 /// and pin the first m entries of z = Vx to s (Dirichlet-style) during the
-/// Newton solve.
+/// Newton solve. U and V are sparse: they act as the identity on every DOF no
+/// constraint touches.
+///
+/// @throws std::out_of_range / std::invalid_argument from the add_* methods
+///     for an invalid body, and std::logic_error once finalize() has run.
 ///
 /// Anchor points are given in world space at the initial configuration and
 /// converted to material coordinates using the initial poses.
@@ -73,8 +77,8 @@ public:
     /// @brief Map reduced coordinates to full DOFs: x = Uz.
     Eigen::VectorXd to_full(Eigen::ConstRef<Eigen::VectorXd> z) const;
 
-    /// @brief The change-of-variable matrix U (x = Uz).
-    const Eigen::MatrixXd& U() const { return m_u; } // NOLINT
+    /// @brief The change-of-variable matrix U (x = Uz), sparse.
+    const Eigen::SparseMatrix<double>& reduction_basis() const { return m_u; }
 
     /// @brief The pinned values s of the first m reduced coordinates.
     const Eigen::VectorXd& rhs() const { return m_s; }
@@ -101,6 +105,9 @@ private:
         const int k,
         const double sign) const;
 
+    /// @brief Throw unless joints can still be added and @p body is valid.
+    void check_can_add(const size_t body) const;
+
     /// @brief Convert a world-space anchor to body material coordinates.
     VectorMax3d world_to_material(
         const size_t body, Eigen::ConstRef<VectorMax3d> world_point) const;
@@ -116,10 +123,10 @@ private:
     std::vector<double> m_rhs;
 
     bool m_finalized = false;
-    Eigen::MatrixXd m_u;         ///< x = Uz (permutation folded in)
-    Eigen::MatrixXd m_v;         ///< z = Vx (permutation folded in)
-    Eigen::VectorXd m_s;         ///< pinned values of z.head(m)
-    std::vector<int> m_perm_inv; ///< full DOF index → permuted (z) index
+    Eigen::SparseMatrix<double> m_u; ///< x = Uz (permutation folded in)
+    Eigen::SparseMatrix<double> m_v; ///< z = Vx (permutation folded in)
+    Eigen::VectorXd m_s;             ///< pinned values of z.head(m)
+    std::vector<int> m_perm_inv;     ///< full DOF index → permuted (z) index
 };
 
 } // namespace ipc::affine

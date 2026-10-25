@@ -6,9 +6,8 @@
 #ifdef IPC_TOOLKIT_WITH_FILIB
 #include <ipc/math/interval.hpp>
 #include <ipc/math/sinc.hpp>
+#include <ipc/math/constants.hpp>
 #endif
-
-#include <igl/PI.h>
 
 using namespace ipc;
 using namespace ipc::rigid;
@@ -52,8 +51,8 @@ TEST_CASE("Rigid trajectory position", "[rigid][trajectory]")
 {
     const int dim = GENERATE(2, 3);
     for (int trial = 0; trial < 10; trial++) {
-        const Pose pose_t0 = random_pose(dim, 2 * igl::PI);
-        const Pose pose_t1 = random_pose(dim, 2 * igl::PI);
+        const Pose pose_t0 = random_pose(dim, 2 * ipc::PI);
+        const Pose pose_t1 = random_pose(dim, 2 * ipc::PI);
         const VectorMax3d rest_position = VectorMax3d::Random(dim);
 
         const RigidTrajectory traj(rest_position, pose_t0, pose_t1);
@@ -91,8 +90,8 @@ TEST_CASE(
     const int dim = GENERATE(2, 3);
     double max_angle;
     SECTION("small rotation") { max_angle = 0.1; }
-    SECTION("moderate rotation") { max_angle = igl::PI / 2; }
-    SECTION("large rotation") { max_angle = 2 * igl::PI; }
+    SECTION("moderate rotation") { max_angle = ipc::PI / 2; }
+    SECTION("large rotation") { max_angle = 2 * ipc::PI; }
 
     for (int trial = 0; trial < 10; trial++) {
         const Pose pose_t0 = random_pose(dim, max_angle);
@@ -141,7 +140,7 @@ TEST_CASE("Rigid trajectory bound tightness", "[rigid][trajectory]")
     // Fixed-axis rotation with the point perpendicular to the axis: the true
     // deviation is the sagitta r(1 − cos(δ/2)); the bound is r δ²/8. Check the
     // bound is not grossly over-conservative in this regime.
-    const double delta = GENERATE(0.1, 0.5, 1.0, igl::PI / 2);
+    const double delta = GENERATE(0.1, 0.5, 1.0, ipc::PI / 2);
 
     const Pose pose_t0(Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
     const Pose pose_t1(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, delta));
@@ -236,7 +235,7 @@ private:
 TEST_CASE("Rigid trajectory interval cross-check", "[rigid][trajectory][filib]")
 {
     const int dim = GENERATE(2, 3);
-    const double max_angle = GENERATE(0.1, 1.0, igl::PI);
+    const double max_angle = GENERATE(0.1, 1.0, ipc::PI);
 
     for (int trial = 0; trial < 5; trial++) {
         const Pose pose_t0 = random_pose(dim, max_angle);
@@ -274,9 +273,9 @@ TEST_CASE("Rigid trajectory interval cross-check", "[rigid][trajectory][filib]")
 TEST_CASE("Rigid trajectory point-edge CCD", "[rigid][trajectory][ccd]")
 {
     // Static point at (0, 0.5); edge from (-1,0) to (1,0) rotating by π.
-    const Pose identity_2d = Pose::Identity(2);
+    const Pose identity_2d = Pose::identity(2);
     const Pose rotated_2d(
-        Eigen::Vector2d::Zero(), VectorMax3d::Constant(1, igl::PI));
+        Eigen::Vector2d::Zero(), VectorMax3d::Constant(1, ipc::PI));
 
     const RigidTrajectory p(Eigen::Vector2d(0, 0.5), identity_2d, identity_2d);
     const RigidTrajectory e0(Eigen::Vector2d(-1, 0), identity_2d, rotated_2d);
@@ -296,9 +295,9 @@ TEST_CASE("Rigid trajectory edge-edge CCD", "[rigid][trajectory][ccd]")
 {
     // Edge from (-1,0,0) to (1,0,0) rotating 2π about z; static edge at
     // y = 0.5. First contact at 30° of rotation.
-    const Pose identity_3d = Pose::Identity(3);
+    const Pose identity_3d = Pose::identity(3);
     const Pose rotated_3d(
-        Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 2 * igl::PI));
+        Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 2 * ipc::PI));
 
     const RigidTrajectory ea0(
         Eigen::Vector3d(-1, 0, 0), identity_3d, rotated_3d);
@@ -322,9 +321,9 @@ TEST_CASE("Rigid trajectory point-triangle CCD", "[rigid][trajectory][ccd]")
 {
     const double x = GENERATE(-0.1, 0.0, 0.1);
 
-    const Pose identity_3d = Pose::Identity(3);
+    const Pose identity_3d = Pose::identity(3);
     const Pose rotated_3d(
-        Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, igl::PI));
+        Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, ipc::PI));
 
     const RigidTrajectory t0(Eigen::Vector3d(1, 0, 0), identity_3d, rotated_3d);
     const RigidTrajectory t1(Eigen::Vector3d(x, 0, 1), identity_3d, rotated_3d);

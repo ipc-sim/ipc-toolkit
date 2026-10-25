@@ -1,8 +1,21 @@
 #pragma once
 
+#include <ipc/math/constants.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
+#include <cmath>
+
 namespace ipc::rigid {
+
+/// @brief Convert a 2D rotation angle to a rotation matrix.
+/// @param theta The rotation angle (counterclockwise, in radians)
+/// @return The rotation matrix [[cos θ, −sin θ], [sin θ, cos θ]]
+inline Eigen::Matrix2d rotation_angle_to_matrix(const double theta)
+{
+    Eigen::Matrix2d R;
+    R << std::cos(theta), -std::sin(theta), std::sin(theta), std::cos(theta);
+    return R;
+}
 
 /// @brief Convert from a 3D rotation vector to a rotation matrix.
 /// @param theta The rotation vector
@@ -94,7 +107,7 @@ struct Pose {
     /// @brief Construct an identity pose with zero position and rotation.
     /// @param dim The dimension of the pose (2 or 3)
     /// @return Identity pose with zero position and rotation
-    static Pose Identity(const int dim) // NOLINT(readability-identifier-naming)
+    static Pose identity(const int dim)
     {
         assert(dim == 2 || dim == 3);
         // Rotation DOF: 2D uses a single angle, 3D uses a rotation vector.
@@ -110,11 +123,7 @@ struct Pose {
     {
         assert(rotation.size() == 1 || rotation.size() == 3);
         if (rotation.size() == 1) {
-            // For 2D, set the rotation matrix directly
-            MatrixMax3d R(2, 2);
-            R << std::cos(rotation(0)), -std::sin(rotation(0)),
-                std::sin(rotation(0)), std::cos(rotation(0));
-            return R;
+            return rotation_angle_to_matrix(rotation(0));
         } else {
             // For 3D, convert the rotation vector to a rotation matrix
             return rotation_vector_to_matrix(rotation);
@@ -149,18 +158,13 @@ struct Pose {
         // 2. Extract unit axis
         VectorMax3d axis = rotation / angle;
 
-        // We use a double π because EIGEN_PI is a long double on GCC, and
-        // narrowing it here trips -Werror=float-conversion. M_PI is not an
-        // option either since MSVC only defines it with _USE_MATH_DEFINES.
-        constexpr double pi = 3.14159265358979323846;
-
         // 3. Wrap angle to [-π, π] using remainder
-        angle = std::remainder(angle, 2.0 * pi);
+        angle = std::remainder(angle, 2.0 * PI);
 
-        // 4. Canonicalize PI: Ensure -π < angle <= π
-        // This prevents the representation from jumping between PI and -PI
-        if (angle <= -pi) {
-            angle = pi;
+        // 4. Canonicalize π: Ensure -π < angle <= π
+        // This prevents the representation from jumping between π and -π
+        if (angle <= -PI) {
+            angle = PI;
             axis = -axis; // Flip axis to keep angle positive
         }
 

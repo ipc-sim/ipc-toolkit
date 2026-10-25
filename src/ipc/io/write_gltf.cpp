@@ -32,6 +32,35 @@ bool write_gltf(
     assert(poses.size() > 0);
     size_t num_steps = poses.size();
 
+    // Each body's primitive: triangles when it has faces, otherwise its edges
+    // as lines, otherwise its vertices as points. glTF forbids empty accessors
+    // and buffer views, so a faceless (codimensional) body must still write a
+    // non-empty index list.
+    std::vector<std::vector<unsigned int>> body_indices(num_bodies);
+    std::vector<int> body_modes(num_bodies);
+    for (size_t i = 0; i < num_bodies; i++) {
+        Eigen::MatrixXi elements;
+        if (bodies.body_num_faces(i) > 0) {
+            elements = bodies.body_faces(i);
+            body_modes[i] = TINYGLTF_MODE_TRIANGLES;
+        } else if (bodies.body_num_edges(i) > 0) {
+            elements = bodies.body_edges(i);
+            body_modes[i] = TINYGLTF_MODE_LINE;
+        } else {
+            elements = Eigen::VectorXi::LinSpaced(
+                bodies.body_num_vertices(i), 0,
+                int(bodies.body_num_vertices(i)) - 1);
+            body_modes[i] = TINYGLTF_MODE_POINTS;
+        }
+        // Row-major so each element's indices are contiguous.
+        for (int r = 0; r < elements.rows(); r++) {
+            for (int c = 0; c < elements.cols(); c++) {
+                body_indices[i].push_back(
+                    static_cast<unsigned int>(elements(r, c)));
+            }
+        }
+    }
+
     Model model;
     model.defaultScene = 0;
 
@@ -80,7 +109,8 @@ bool write_gltf(
         // node's static rotation to the first frame's value so the initial
         // orientation round-trips through read_gltf, which reads the static
         // node transform rather than the animation.
-        const Eigen::Quaternion<double> q0(Eigen::Matrix3d(bodies[i].R0()));
+        const Eigen::Quaternion<double> q0(
+            Eigen::Matrix3d(bodies[i].principal_rotation()));
         const Eigen::Quaternion<double> q =
             poses.front()[i].quaternion() * q0.inverse();
         node.rotation = { { q.x(), q.y(), q.z(), q.w() } };
@@ -104,7 +134,7 @@ bool write_gltf(
         Primitive& primitive = mesh.primitives.emplace_back();
         primitive.attributes["POSITION"] = 2 * i;
         primitive.indices = 2 * i + 1;
-        primitive.mode = TINYGLTF_MODE_TRIANGLES;
+        primitive.mode = body_modes[i];
 
         Accessor* accessor = &model.accessors[2 * i];
         accessor->name = body_name + "Vertices";
@@ -115,7 +145,8 @@ bool write_gltf(
         // them from the float-cast values actually written to the buffer.
         {
             const Eigen::MatrixXf V =
-                (bodies.body_rest_positions(i) * bodies[i].R0().transpose())
+                (bodies.body_rest_positions(i)
+                 * bodies[i].principal_rotation().transpose())
                     .cast<Float>();
             for (int d = 0; d < 3; d++) {
                 accessor->minValues.push_back(V.col(d).minCoeff());
@@ -128,7 +159,7 @@ bool write_gltf(
         accessor->name = body_name + "Faces";
         accessor->bufferView = 2 * i + 1;
         accessor->componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
-        accessor->count = 3 * bodies.body_num_faces(i);
+        accessor->count = body_indices[i].size();
         accessor->type = TINYGLTF_TYPE_SCALAR;
 
         accessor = &model.accessors[2 * num_bodies + 2 * i + 1];
@@ -203,8 +234,7 @@ bool write_gltf(
         buffer_view = &model.bufferViews[2 * i + 1];
         buffer_view->name = body_name + "Faces";
         buffer_view->buffer = 0;
-        buffer_view->byteLength =
-            sizeof(unsigned int) * bodies.body_faces(i).size();
+        buffer_view->byteLength = sizeof(unsigned int) * body_indices[i].size();
         buffer_view->byteOffset = byte_offset;
         byte_offset += buffer_view->byteLength;
     }
@@ -259,8 +289,8 @@ bool write_gltf(
     size_t byte_i = 0;
     for (int i = 0; i < num_bodies; i++) {
         // NOTE: Apply the initial rotation to the vertices
-        Eigen::MatrixXd V =
-            bodies.body_rest_positions(i) * bodies[i].R0().transpose();
+        Eigen::MatrixXd V = bodies.body_rest_positions(i)
+            * bodies[i].principal_rotation().transpose();
         for (int r = 0; r < V.rows(); r++) {
             for (int c = 0; c < V.cols(); c++) {
                 const auto v = static_cast<Float>(V(r, c));
@@ -269,13 +299,9 @@ bool write_gltf(
             }
         }
 
-        Eigen::MatrixXi F = bodies.body_faces(i);
-        for (int r = 0; r < F.rows(); r++) {
-            for (int c = 0; c < F.cols(); c++) {
-                unsigned int fij = F(r, c);
-                std::memcpy(&byte_data[byte_i], &fij, sizeof(unsigned int));
-                byte_i += sizeof(unsigned int);
-            }
+        for (const unsigned int index : body_indices[i]) {
+            std::memcpy(&byte_data[byte_i], &index, sizeof(unsigned int));
+            byte_i += sizeof(unsigned int);
         }
     }
     for (int i = 0; i < num_steps; i++) {
@@ -293,7 +319,8 @@ bool write_gltf(
             }
         }
 
-        const Eigen::Quaternion<double> q0(Eigen::Matrix3d(bodies[i].R0()));
+        const Eigen::Quaternion<double> q0(
+            Eigen::Matrix3d(bodies[i].principal_rotation()));
         for (const auto& poses_j : poses) {
             // NOTE: Apply the inverse of the initial rotation to the
             // quaternion to get the rotation relative to the input orientation.
@@ -316,8 +343,8 @@ bool write_gltf(
         Eigen::Vector3d scene_max =
             Eigen::Vector3d::Constant(-std::numeric_limits<double>::infinity());
         for (int i = 0; i < num_bodies; ++i) {
-            Eigen::MatrixXd V =
-                bodies.body_rest_positions(i) * bodies[i].R0().transpose();
+            Eigen::MatrixXd V = bodies.body_rest_positions(i)
+                * bodies[i].principal_rotation().transpose();
             for (int r = 0; r < V.rows(); ++r) {
                 scene_min = scene_min.cwiseMin(V.row(r).transpose());
                 scene_max = scene_max.cwiseMax(V.row(r).transpose());

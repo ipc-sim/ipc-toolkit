@@ -1,6 +1,7 @@
 #include "pose.hpp"
 
 #include <ipc/geometry/normal.hpp>
+#include <ipc/math/constants.hpp>
 #include <ipc/math/sinc.hpp>
 
 namespace ipc::rigid {
@@ -133,7 +134,7 @@ Eigen::Vector3d rotation_matrix_to_vector(Eigen::ConstRef<Eigen::Matrix3d> R)
         r.y() = (R(0, 2) - R(2, 0)) / 2;
         r.z() = (R(1, 0) - R(0, 1)) / 2;
         // Θ is already part of the off-diagonal elements, so no need to scale
-    } else if (theta >= M_PI - 1e-5) {
+    } else if (theta >= PI - 1e-5) {
         // θ ≈ π ⟹ R ≈ I - (θ - π)K + 2K²
         // Ensure positive for sqrt
         assert(R(0, 0) > -1);
@@ -158,7 +159,7 @@ Eigen::Vector3d rotation_matrix_to_vector(Eigen::ConstRef<Eigen::Matrix3d> R)
     Eigen::AngleAxisd eigen(R);
     assert(
         (eigen.angle() * eigen.axis()).isApprox(r, 1e-4)
-        || (theta >= M_PI - 1e-5 // Eigen can flip the sign of angles close to π
+        || (theta >= PI - 1e-5 // Eigen can flip the sign of angles close to π
             && (-eigen.angle() * eigen.axis()).isApprox(r, 1e-4)));
 #endif
 

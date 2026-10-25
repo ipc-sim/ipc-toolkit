@@ -8,8 +8,6 @@
 #include <simulator.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 
-#include <igl/PI.h>
-
 using namespace ipc;
 using namespace ipc::affine;
 using BodyDynamics = ipc::demo::Simulator::BodyDynamics;
@@ -50,7 +48,7 @@ TEST_CASE("Joints require affine dynamics", "[affine][joints][simulator]")
     Eigen::MatrixXi E, F;
     tests::load_mesh("cube.ply", V, E, F);
 
-    std::vector<rigid::Pose> initial_poses(1, rigid::Pose::Identity(3));
+    std::vector<rigid::Pose> initial_poses(1, rigid::Pose::identity(3));
     auto bodies = rigid::RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
 
@@ -71,10 +69,20 @@ TEST_CASE("Joint change of variables", "[affine][joints]")
     Eigen::MatrixXi E, F;
     tests::load_mesh("cube.ply", V, E, F);
 
-    std::vector<rigid::Pose> initial_poses(2, rigid::Pose::Identity(3));
-    initial_poses[1].position = Eigen::Vector3d(1, 0, 0);
+    // A third, unjointed body must pass through the reduction untouched.
+    const int num_bodies = GENERATE(2, 3);
+    CAPTURE(num_bodies);
+
+    std::vector<rigid::Pose> initial_poses(
+        num_bodies, rigid::Pose::identity(3));
+    for (int i = 1; i < num_bodies; i++) {
+        initial_poses[i].position = Eigen::Vector3d(i, 0, 0);
+    }
     auto bodies = rigid::RigidBodies::build_from_meshes(
-        { V, V }, { E, E }, { F, F }, { 1000.0, 1000.0 }, initial_poses);
+        std::vector<Eigen::MatrixXd>(num_bodies, V),
+        std::vector<Eigen::MatrixXi>(num_bodies, E),
+        std::vector<Eigen::MatrixXi>(num_bodies, F),
+        std::vector<double>(num_bodies, 1000.0), initial_poses);
 
     JointConstraints joints(bodies, initial_poses);
     joints.add_point_connection(0, 1, Eigen::Vector3d(0.5, 0, 0));
@@ -83,7 +91,7 @@ TEST_CASE("Joint change of variables", "[affine][joints]")
     REQUIRE(joints.num_constraints() == 4);
     joints.finalize();
 
-    const int n = 24;
+    const int n = 12 * num_bodies;
     const int m = int(joints.num_constraints());
 
     // U V = I (round trip)
@@ -104,14 +112,43 @@ TEST_CASE("Joint change of variables", "[affine][joints]")
 
     // The initial configuration satisfies the constraints
     const Eigen::VectorXd x0 = poses_to_dof([&] {
-        std::vector<affine::Pose> poses(2);
-        for (int i = 0; i < 2; i++) {
+        std::vector<affine::Pose> poses(num_bodies);
+        for (int i = 0; i < num_bodies; i++) {
             poses[i].position = initial_poses[i].position;
             poses[i].rotation = initial_poses[i].rotation_matrix();
         }
         return poses;
     }());
     CHECK(joints.residual(x0).norm() == Catch::Approx(0).margin(1e-12));
+}
+
+TEST_CASE("Joints reject invalid requests", "[affine][joints]")
+{
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    tests::load_mesh("cube.ply", V, E, F);
+
+    std::vector<rigid::Pose> initial_poses(2, rigid::Pose::identity(3));
+    initial_poses[1].position = Eigen::Vector3d(2, 0, 0);
+    auto bodies = rigid::RigidBodies::build_from_meshes(
+        { V, V }, { E, E }, { F, F }, { 1000.0, 1000.0 }, initial_poses);
+
+    JointConstraints joints(bodies, initial_poses);
+    const Eigen::Vector3d anchor(1, 0, 0);
+
+    CHECK_THROWS_AS(joints.add_fixed_point(2, anchor), std::out_of_range);
+    CHECK_THROWS_AS(
+        joints.add_point_connection(0, 5, anchor), std::out_of_range);
+    CHECK_THROWS_AS(
+        joints.add_point_connection(1, 1, anchor), std::invalid_argument);
+    CHECK(joints.empty());
+
+    // Once finalized (as the Simulator does on construction), a late joint
+    // would be silently ignored, so it is rejected instead.
+    joints.add_point_connection(0, 1, anchor);
+    joints.finalize();
+    CHECK_THROWS_AS(joints.add_fixed_body(0), std::logic_error);
+    CHECK(joints.num_constraints() == 3);
 }
 
 TEST_CASE("Affine pendulum on a fixed point", "[affine][joints][simulator]")
@@ -124,7 +161,7 @@ TEST_CASE("Affine pendulum on a fixed point", "[affine][joints][simulator]")
     Eigen::MatrixXd V_rod = V;
     V_rod.col(0) *= 2.0;
 
-    std::vector<rigid::Pose> initial_poses(1, rigid::Pose::Identity(3));
+    std::vector<rigid::Pose> initial_poses(1, rigid::Pose::identity(3));
     auto bodies = rigid::RigidBodies::build_from_meshes(
         { V_rod }, { E }, { F }, { 1000.0 }, initial_poses);
 
@@ -174,7 +211,7 @@ TEST_CASE("Affine hinge door", "[affine][joints][simulator]")
     // the gap between the bodies (they must not start in contact — the
     // barrier requires initial separation). Sideways gravity swings the door
     // about the axis.
-    std::vector<rigid::Pose> initial_poses(2, rigid::Pose::Identity(3));
+    std::vector<rigid::Pose> initial_poses(2, rigid::Pose::identity(3));
     initial_poses[1].position = Eigen::Vector3d(1.2, 0, 0);
 
     auto bodies = rigid::RigidBodies::build_from_meshes(

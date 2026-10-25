@@ -52,17 +52,34 @@ public:
 
 class NonlinearCCD {
 public:
+    /// The default tolerance of the TightInclusionCCD built by the deprecated
+    /// (tolerance, max_iterations) constructor.
+    static constexpr double DEFAULT_TOLERANCE = 1e-6;
+    /// The default maximum number of iterations of the TightInclusionCCD
+    /// built by the deprecated (tolerance, max_iterations) constructor.
+    static constexpr long DEFAULT_MAX_ITERATIONS = 10'000'000L;
     /// The default conservative rescaling value used to avoid taking steps
     /// exactly to impact.
     static constexpr double DEFAULT_CONSERVATIVE_RESCALING = 0.8;
 
     /// @brief Construct a new NonlinearCCD object.
+    /// @param narrow_phase_ccd The narrow-phase CCD used for the per-piece linear CCD (if null, a default-constructed TightInclusionCCD is used). Each per-piece query is made with a COMPONENT NarrowPhaseCCDMode, so the object is not modified and may be shared with standalone users.
     /// @param conservative_rescaling Conservative rescaling of the time of impact.
-    /// @param narrow_phase_ccd The narrow-phase CCD used for the per-piece linear CCD (if null, a default-constructed TightInclusionCCD is used).
-    /// @note The constructor sets NarrowPhaseCCD::component_mode on the given object — telling it that it is a component of this piecewise driver — so do not share the instance with standalone (non-component) users.
-    NonlinearCCD(
-        const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING,
-        std::shared_ptr<NarrowPhaseCCD> narrow_phase_ccd = nullptr);
+    explicit NonlinearCCD(
+        std::shared_ptr<const NarrowPhaseCCD> narrow_phase_ccd = nullptr,
+        const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
+
+    /// @brief Construct a NonlinearCCD whose per-piece CCD is a TightInclusionCCD.
+    /// @deprecated Use NonlinearCCD(std::make_shared<TightInclusionCCD>(tolerance, max_iterations), conservative_rescaling).
+    /// @param tolerance Tight Inclusion's solver tolerance.
+    /// @param max_iterations Tight Inclusion's maximum number of iterations.
+    /// @param conservative_rescaling Conservative rescaling of the time of impact.
+    [[deprecated(
+        "Pass a std::make_shared<TightInclusionCCD>(tolerance, max_iterations) as the narrow-phase CCD instead.")]]
+    explicit NonlinearCCD(
+        const double tolerance,
+        const long max_iterations = DEFAULT_MAX_ITERATIONS,
+        const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
 
     virtual ~NonlinearCCD() = default;
 
@@ -133,13 +150,11 @@ public:
         const double tmax = 1.0) const;
 
     /// @brief Set the narrow-phase CCD used for the per-piece linear CCD.
-    /// @note Sets NarrowPhaseCCD::component_mode on the given object —
-    /// telling it that it is a component of this piecewise driver — so do not
-    /// share the instance with standalone (non-component) users.
     /// @param narrow_phase_ccd The narrow-phase CCD to use (if null, a default-constructed TightInclusionCCD is used).
-    void set_narrow_phase_ccd(std::shared_ptr<NarrowPhaseCCD> narrow_phase_ccd);
+    void set_narrow_phase_ccd(
+        std::shared_ptr<const NarrowPhaseCCD> narrow_phase_ccd);
 
-    /// @brief The narrow-phase CCD used for the per-piece linear CCD (in component mode; never null).
+    /// @brief The narrow-phase CCD used for the per-piece linear CCD (never null).
     std::shared_ptr<const NarrowPhaseCCD> narrow_phase_ccd() const
     {
         return m_narrow_phase_ccd;
@@ -149,7 +164,7 @@ public:
     double conservative_rescaling;
 
 private:
-    /// @brief The narrow-phase CCD used for the per-piece linear CCD (in component mode; never null).
+    /// @brief The narrow-phase CCD used for the per-piece linear CCD (never null).
     /// @note The piecewise driver passes each piece's linearization error as the minimum separation distance, so the narrow phase must support minimum separation (both TightInclusionCCD and AdditiveCCD do).
     std::shared_ptr<const NarrowPhaseCCD> m_narrow_phase_ccd;
 
@@ -157,7 +172,7 @@ public:
     /// @brief Perform conservative piecewise linear CCD of a nonlinear trajectories.
     /// @param[in] distance Return the distance for a given time in [0, 1].
     /// @param[in] max_distance_from_linear Return the maximum distance from the linearized trajectory for a given time interval.
-    /// @param[in] linear_ccd Perform linear CCD on a given time interval. Receives the piece interval, the deviation-inflated minimum separation, and a cm_no_zero_toi hint (true on the first piece, whose start is known to be more than min_distance apart).
+    /// @param[in] linear_ccd Perform linear CCD on a given time interval. Receives the piece interval, the deviation-inflated minimum separation, and a no_zero_toi flag (true on the first piece, whose start is known to be more than min_distance apart).
     /// @param[out] toi Output time of impact.
     /// @param[in] min_distance Minimum separation distance between the objects.
     /// @param[in] tmax Maximum time to check for collision.
@@ -171,7 +186,7 @@ public:
             const double /*ti0*/,
             const double /*ti1*/,
             const double /*min_distance*/,
-            const bool /*cm_no_zero_toi*/,
+            const bool /*no_zero_toi*/,
             double& /*toi*/)>& linear_ccd,
         double& toi,
         const double min_distance = 0,

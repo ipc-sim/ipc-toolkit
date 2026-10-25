@@ -26,7 +26,7 @@ void define_additive_ccd(py::module_& m)
         .def_readonly_static(
             "COMPONENT_CONSERVATIVE_RESCALING",
             &AdditiveCCD::COMPONENT_CONSERVATIVE_RESCALING,
-            "The conservative rescaling used in component mode (as raw as Additive CCD can safely get; the member value is ignored).")
+            "The conservative rescaling used for component queries (see NarrowPhaseCCDMode.COMPONENT); as raw as Additive CCD can safely get, and the member value is ignored.")
         .def_readwrite(
             "conservative_rescaling", &AdditiveCCD::conservative_rescaling,
             "The conservative rescaling value used to avoid taking steps exactly to impact.");

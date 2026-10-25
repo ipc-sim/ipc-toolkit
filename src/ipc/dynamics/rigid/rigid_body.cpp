@@ -35,7 +35,7 @@ namespace {
     /// second-moment matrix J = ∫ρ x̄x̄ᵀ (3D only; in 2D the second moment is
     /// computed directly).
     inline Eigen::DiagonalMatrix<double, Eigen::Dynamic, 3>
-    compute_J(Eigen::ConstRef<VectorMax3d> I) // NOLINT
+    second_moment_from_inertia(Eigen::ConstRef<VectorMax3d> I) // NOLINT
     {
         assert(I.size() == 3);
         Eigen::DiagonalMatrix<double, Eigen::Dynamic, 3> J(3); // NOLINT
@@ -69,7 +69,7 @@ RigidBody::RigidBody(
     // 1. Center the vertices, so the mass properties are computed correctly
     // TODO: This should not be necessary. Determine why the mass properties
     // are not computed correctly without centering the vertices.
-    Pose centering_pose = Pose::Identity(dim);
+    Pose centering_pose = Pose::identity(dim);
     center_vertices(vertices, edges, faces, centering_pose);
 
     // 2. Compute the mass properties
@@ -88,7 +88,13 @@ RigidBody::RigidBody(
         // moments of inertia and skip the principal-axes rotation R₀ so the
         // free rotation-vector component stays aligned with its world axis.
         m_moment_of_inertia = inertia_tensor.diagonal();
-        m_R0 = Eigen::Matrix3d::Identity();
+        m_principal_rotation = Eigen::Matrix3d::Identity();
+
+        // We keep only the diagonal of the world-frame second moment. This is
+        // exact for rotation about one world axis: the inertial energy only
+        // sees the trace of the second moment's block orthogonal to that
+        // axis, so the dropped off-diagonal terms never contribute.
+        m_second_moment = second_moment_from_inertia(m_moment_of_inertia);
     } else if (dim == 3) {
         if (num_rot_dof_fixed == 1) {
             logger().warn(
@@ -124,24 +130,25 @@ RigidBody::RigidBody(
 
         // The rotation from the principal inertial frame to the input world
         // frame.
-        m_R0 = solver.eigenvectors();
+        m_principal_rotation = solver.eigenvectors();
 
         // Ensure that we have an orientation preserving transform
-        if (m_R0.determinant() < 0.0) {
-            m_R0.col(0) *= -1.0;
+        if (m_principal_rotation.determinant() < 0.0) {
+            m_principal_rotation.col(0) *= -1.0;
         }
-        assert(m_R0.isUnitary(1e-9));
+        assert(m_principal_rotation.isUnitary(1e-9));
 
         // Remove the initial rotation from the rest vertices
-        vertices = vertices * m_R0;
+        vertices = vertices * m_principal_rotation;
 
         // Store the initial rotation in the pose (R = RᵢR₀)
-        Eigen::AngleAxisd r = Eigen::AngleAxisd(Eigen::Matrix3d(m_R0));
+        Eigen::AngleAxisd r =
+            Eigen::AngleAxisd(Eigen::Matrix3d(m_principal_rotation));
         centering_pose.rotation = r.angle() * r.axis();
 
         // Compute the diagonal second moment in the principal frame from the
         // classical inertia tensor.
-        m_J = compute_J(m_moment_of_inertia);
+        m_second_moment = second_moment_from_inertia(m_moment_of_inertia);
     } else {
         // 2D: the inertia is the full 2×2 second moment ∫ρ x̄x̄ᵀ (about the
         // COM). Mirror the 3D principal-frame handling: diagonalize, fold the
@@ -155,28 +162,28 @@ RigidBody::RigidBody(
             R0.col(0) *= -1.0;
         }
         assert(R0.isUnitary(1e-9));
-        m_R0 = R0;
+        m_principal_rotation = R0;
 
         // Remove the initial rotation from the rest vertices
-        vertices = vertices * m_R0;
+        vertices = vertices * m_principal_rotation;
 
         // Store the initial rotation angle in the pose
         centering_pose.rotation.resize(1);
         centering_pose.rotation(0) = std::atan2(R0(1, 0), R0(0, 0));
 
         // Diagonal second moment in the principal frame
-        m_J = Eigen::DiagonalMatrix<double, Eigen::Dynamic, 3>(
+        m_second_moment = Eigen::DiagonalMatrix<double, Eigen::Dynamic, 3>(
             solver.eigenvalues().cwiseAbs());
 
         // Scalar moment about z: I_z = ∫ρ(x² + y²) = tr(∫ρ x̄x̄ᵀ)
         m_moment_of_inertia.resize(1);
-        m_moment_of_inertia(0) = m_J.diagonal().sum();
+        m_moment_of_inertia(0) = m_second_moment.diagonal().sum();
     }
 
     // 4. Apply the centering pose to the initial pose
     initial_pose = initial_pose * centering_pose;
 
-    m_external_force = Pose::Identity(dim);
+    m_external_force = Pose::identity(dim);
 
     m_bounding_radius = vertices.rowwise().norm().maxCoeff();
 

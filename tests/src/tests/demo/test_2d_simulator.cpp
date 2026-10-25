@@ -10,11 +10,10 @@
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/dynamics/affine/joints.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
+#include <ipc/math/constants.hpp>
 #include <simulator.hpp>
 
 #include <finitediff.hpp>
-
-#include <igl/PI.h>
 
 #include <iostream>
 
@@ -48,13 +47,13 @@ TEST_CASE("2D ballistic motion", "[2d][rigid][simulator]")
     Eigen::MatrixXi E, F;
     unit_square(V, E, F);
 
-    std::vector<Pose> initial_poses(1, Pose::Identity(2));
+    std::vector<Pose> initial_poses(1, Pose::identity(2));
     initial_poses[0].position = Eigen::Vector2d(0, 100.0); // free flight
 
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
 
-    std::vector<Pose> initial_velocities(1, Pose::Identity(2));
+    std::vector<Pose> initial_velocities(1, Pose::identity(2));
     initial_velocities[0].position = Eigen::Vector2d(1.0, 2.0);
     initial_velocities[0].rotation = VectorMax3d::Constant(1, 0.7); // ω
 
@@ -87,7 +86,7 @@ TEST_CASE("2D ballistic motion", "[2d][rigid][simulator]")
     // so the recovered angle differs from the linear-in-angle value by an
     // O((dt ω)³) per-step amount; check with a correspondingly looser margin.
     const double theta_expected =
-        std::remainder(theta0 + n * dt * omega, 2 * igl::PI);
+        std::remainder(theta0 + n * dt * omega, 2 * ipc::PI);
     CHECK(pose_n.rotation(0) == Catch::Approx(theta_expected).margin(1e-4));
 }
 
@@ -111,7 +110,7 @@ TEST_CASE("2D simulator gradient and hessian", "[2d][simulator]")
     // Two dynamic squares in contact (0.5·dhat gap). NOTE: both dynamic —
     // a STATIC body's pinned DOFs are zeroed in gradient() by design, which
     // would (correctly) disagree with the FD of value().
-    std::vector<Pose> initial_poses(2, Pose::Identity(2));
+    std::vector<Pose> initial_poses(2, Pose::identity(2));
     initial_poses[1].position = Eigen::Vector2d(0.1, 1.0 + 0.5 * settings.dhat);
 
     auto bodies = RigidBodies::build_from_meshes(
@@ -169,7 +168,7 @@ TEST_CASE("2D box drop", "[2d][simulator]")
     unit_square(V, E, F);
 
     // A static floor square and a dynamic square dropped from above.
-    std::vector<Pose> initial_poses(2, Pose::Identity(2));
+    std::vector<Pose> initial_poses(2, Pose::identity(2));
     initial_poses[1].position = Eigen::Vector2d(0.1, 1.3);
 
     auto bodies = RigidBodies::build_from_meshes(
@@ -217,14 +216,14 @@ TEST_CASE("2D friction slide", "[2d][friction][simulator]")
     Eigen::MatrixXd V_floor = V;
     V_floor.col(0) *= 10.0;
 
-    std::vector<Pose> initial_poses(2, Pose::Identity(2));
+    std::vector<Pose> initial_poses(2, Pose::identity(2));
     initial_poses[1].position = Eigen::Vector2d(-2, 1.0 + 1.1 * settings.dhat);
 
     auto bodies = RigidBodies::build_from_meshes(
         { V_floor, V }, { E, E }, { F, F }, { 1000.0, 1000.0 }, initial_poses);
     (*bodies)[0].set_type(RigidBody::Type::STATIC);
 
-    std::vector<Pose> initial_velocities(2, Pose::Identity(2));
+    std::vector<Pose> initial_velocities(2, Pose::identity(2));
     initial_velocities[1].position = Eigen::Vector2d(v0, 0);
 
     const double dt = 0.01;
@@ -248,12 +247,12 @@ TEST_CASE("2D kinematic body", "[2d][kinematic][simulator]")
     Eigen::MatrixXi E, F;
     unit_square(V, E, F);
 
-    std::vector<Pose> initial_poses(1, Pose::Identity(2));
+    std::vector<Pose> initial_poses(1, Pose::identity(2));
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
     (*bodies)[0].set_type(RigidBody::Type::KINEMATIC);
 
-    std::vector<Pose> initial_velocities(1, Pose::Identity(2));
+    std::vector<Pose> initial_velocities(1, Pose::identity(2));
     initial_velocities[0].position = Eigen::Vector2d(1.0, 0.5);
     initial_velocities[0].rotation = VectorMax3d::Constant(1, 0.3);
 
@@ -286,7 +285,7 @@ TEST_CASE("2D joints", "[2d][affine][joints][simulator]")
     Eigen::MatrixXi E, F;
     unit_square(V, E, F);
 
-    std::vector<Pose> initial_poses(1, Pose::Identity(2));
+    std::vector<Pose> initial_poses(1, Pose::identity(2));
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
 

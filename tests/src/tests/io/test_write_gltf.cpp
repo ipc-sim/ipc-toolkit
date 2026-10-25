@@ -7,8 +7,6 @@
 #include <ipc/io/read_gltf.hpp>
 #include <ipc/io/write_gltf.hpp>
 
-#include <igl/PI.h>
-
 using namespace ipc;
 using namespace ipc::rigid;
 
@@ -21,15 +19,24 @@ TEST_CASE("Write and read glTF round-trip", "[io][gltf]")
     Eigen::MatrixXd V_box = V;
     V_box.col(0) *= 2.0; // Anisotropic body (nontrivial R₀)
 
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    // A codimensional rod (edges, no faces) has no triangles to write.
+    Eigen::MatrixXd V_rod(3, 3);
+    V_rod << 0, 0, 0, 1, 0.2, 0, 2, 0, 0.1;
+    Eigen::MatrixXi E_rod(2, 2);
+    E_rod << 0, 1, 1, 2;
+
+    std::vector<Pose> initial_poses(3, Pose::identity(3));
     initial_poses[0].position = Eigen::Vector3d(0, 1, 0);
     initial_poses[1].position = Eigen::Vector3d(2, 0.5, 0);
+    initial_poses[2].position = Eigen::Vector3d(-2, 0.5, 0);
     // A non-identity starting orientation must survive the round trip too.
     initial_poses[0].rotation = Eigen::Vector3d(0.3, -0.2, 0.5);
 
     auto bodies = RigidBodies::build_from_meshes(
-        { V_box, V }, { E, E }, { F, F }, { 1000.0, 500.0 }, initial_poses,
-        /*convert_planes=*/false, /*is_dof_fixed=*/ {}, { "Box", "Cube" });
+        { V_box, V, V_rod }, { E, E, E_rod }, { F, F, Eigen::MatrixXi(0, 3) },
+        { 1000.0, 500.0, 100.0 }, initial_poses,
+        /*convert_planes=*/false, /*is_dof_fixed=*/ {},
+        { "Box", "Cube", "Rod" });
 
     // Synthesize a short pose history (falling and rotating)
     const double dt = 0.1;
@@ -65,6 +72,7 @@ TEST_CASE("Write and read glTF round-trip", "[io][gltf]")
 
     for (size_t i = 0; i < bodies->num_bodies(); i++) {
         CHECK(bodies_in->body_num_vertices(i) == bodies->body_num_vertices(i));
+        CHECK(bodies_in->body_num_edges(i) == bodies->body_num_edges(i));
         CHECK(bodies_in->body_num_faces(i) == bodies->body_num_faces(i));
         CHECK(bodies_in->body_name(i) == bodies->body_name(i));
 

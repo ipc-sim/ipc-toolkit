@@ -26,10 +26,7 @@ void Pose::set_rotation_vector(Eigen::ConstRef<VectorMax3d> theta)
 {
     assert(theta.size() == 1 || theta.size() == 3);
     if (theta.size() == 1) {
-        // For 2D, set the rotation matrix directly
-        rotation.resize(2, 2);
-        rotation << std::cos(theta(0)), -std::sin(theta(0)), //
-            std::sin(theta(0)), std::cos(theta(0));
+        rotation = rigid::rotation_angle_to_matrix(theta(0));
     } else {
         // For 3D, convert the rotation vector to a rotation matrix
         rotation = rigid::rotation_vector_to_matrix(theta);
@@ -37,7 +34,7 @@ void Pose::set_rotation_vector(Eigen::ConstRef<VectorMax3d> theta)
 }
 
 Eigen::SparseMatrix<double>
-Pose::J(Eigen::ConstRef<Eigen::MatrixXd> rest_positions)
+Pose::dof_jacobian(Eigen::ConstRef<Eigen::MatrixXd> rest_positions)
 {
     const int dim = rest_positions.cols();
 

@@ -249,6 +249,18 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const;
 
+    /// @brief Write the collision candidates to an OBJ file.
+    /// @deprecated Use write_obj instead.
+    [[deprecated("Use Candidates::write_obj instead.")]]
+    bool save_obj(
+        const std::string& filename,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
+    {
+        return write_obj(filename, vertices, edges, faces);
+    }
+
     /// @brief Build per-primitive adjacency lists from the candidates.
     /// @note Required before calling any of the *_set() queries below, which
     ///       return empty lists until then.

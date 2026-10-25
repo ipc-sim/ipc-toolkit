@@ -19,8 +19,8 @@ namespace ipc::rigid {
 /// @param center_of_mass Center of mass of the mesh
 /// @param moment_of_inertia Moment of inertia of the mesh
 void compute_mass_properties(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& facets,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> facets,
     const double density,
     double& total_mass,
     VectorMax3d& center_of_mass,
@@ -31,8 +31,8 @@ void compute_mass_properties(
 /// @param facets Facets (2D: edges; 3D: triangles) of the mesh
 /// @param mass_matrix Sparse mass matrix of the mesh
 void construct_mass_matrix(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& facets,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> facets,
     Eigen::SparseMatrix<double>& mass_matrix);
 
 } // namespace ipc::rigid

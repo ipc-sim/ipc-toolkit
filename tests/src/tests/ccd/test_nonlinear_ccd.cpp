@@ -4,8 +4,7 @@
 
 #include <ipc/ccd/nonlinear_ccd.hpp>
 #include <ipc/distance/point_line.hpp>
-
-#include <igl/PI.h>
+#include <ipc/math/constants.hpp>
 
 using namespace ipc;
 
@@ -30,7 +29,7 @@ public:
     double
     max_distance_from_linear(const double t0, const double t1) const override
     {
-        if (z_angular_velocity * (t1 - t0) >= 2 * igl::PI) {
+        if (z_angular_velocity * (t1 - t0) >= 2 * ipc::PI) {
             // This is the most conservative estimate
             return 2 * (point - center).norm(); // 2 * radius
         }
@@ -141,7 +140,7 @@ public:
     double
     max_distance_from_linear(const double t0, const double t1) const override
     {
-        if (delta_rotation * (t1 - t0) >= 2 * igl::PI) {
+        if (delta_rotation * (t1 - t0) >= 2 * ipc::PI) {
             // This is the most conservative estimate
             return 2 * position.norm(); // 2 * radius
         }
@@ -169,13 +168,13 @@ TEST_CASE("Nonlinear Point-Point CCD", "[ccd][nonlinear][point-point]")
     SECTION("Analytic max")
     {
         p1 = std::make_unique<RotationalTrajectory>(
-            Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), igl::PI);
+            Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), ipc::PI);
     }
 #ifdef IPC_TOOLKIT_WITH_FILIB
     SECTION("Interval max")
     {
         p1 = std::make_unique<IntervalRotationalTrajectory>(
-            Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), igl::PI);
+            Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), ipc::PI);
     }
 #endif
 
@@ -194,9 +193,9 @@ TEST_CASE("Nonlinear Point-Edge CCD", "[ccd][nonlinear][point-edge]")
 {
     const StaticTrajectory p(Eigen::Vector2d(0, 0.5));
     const RotationalTrajectory e0(
-        Eigen::Vector2d(-1, 0), Eigen::Vector2d::Zero(), 2 * igl::PI);
+        Eigen::Vector2d(-1, 0), Eigen::Vector2d::Zero(), 2 * ipc::PI);
     const RotationalTrajectory e1(
-        Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), 2 * igl::PI);
+        Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), 2 * ipc::PI);
 
     NonlinearCCD ccd;
     ccd.conservative_rescaling = 0.9;
@@ -219,10 +218,10 @@ TEST_CASE("Rigid 2D Trajectory", "[ccd][nonlinear][point-edge]")
     // Rotating edge
     const Rigid2DTrajectory e0(
         Eigen::Vector2d(-1, 0), Eigen::Vector2d::Zero(),
-        Eigen::Vector2d::Zero(), 0, igl::PI);
+        Eigen::Vector2d::Zero(), 0, ipc::PI);
     const Rigid2DTrajectory e1(
         Eigen::Vector2d(+1, 0), Eigen::Vector2d::Zero(),
-        Eigen::Vector2d::Zero(), 0, igl::PI);
+        Eigen::Vector2d::Zero(), 0, ipc::PI);
 
     NonlinearCCD ccd;
     ccd.conservative_rescaling = 0.9;
@@ -238,9 +237,9 @@ TEST_CASE("Rigid 2D Trajectory", "[ccd][nonlinear][point-edge]")
 TEST_CASE("Nonlinear Edge-Edge CCD", "[ccd][nonlinear][edge-edge]")
 {
     const RotationalTrajectory ea0(
-        Eigen::Vector3d(-1, 0, 0), Eigen::Vector3d::Zero(), 2 * igl::PI);
+        Eigen::Vector3d(-1, 0, 0), Eigen::Vector3d::Zero(), 2 * ipc::PI);
     const RotationalTrajectory ea1(
-        Eigen::Vector3d(1, 0, 0), Eigen::Vector3d::Zero(), 2 * igl::PI);
+        Eigen::Vector3d(1, 0, 0), Eigen::Vector3d::Zero(), 2 * ipc::PI);
     const StaticTrajectory eb0(Eigen::Vector3d(-1, 0.5, 0));
     const StaticTrajectory eb1(Eigen::Vector3d(1, 0.5, 0));
 
@@ -257,11 +256,11 @@ TEST_CASE("Nonlinear Point-Triangle CCD", "[ccd][nonlinear][point-triangle]")
     const double x = GENERATE(-0.1, 0, 0.1);
 
     const RotationalTrajectory t0(
-        Eigen::Vector3d(1, 0, 0), Eigen::Vector3d::Zero(), igl::PI);
+        Eigen::Vector3d(1, 0, 0), Eigen::Vector3d::Zero(), ipc::PI);
     const RotationalTrajectory t1(
-        Eigen::Vector3d(x, 0, 1), Eigen::Vector3d::Zero(), igl::PI);
+        Eigen::Vector3d(x, 0, 1), Eigen::Vector3d::Zero(), ipc::PI);
     const RotationalTrajectory t2(
-        Eigen::Vector3d(x, 0, -1), Eigen::Vector3d::Zero(), igl::PI);
+        Eigen::Vector3d(x, 0, -1), Eigen::Vector3d::Zero(), ipc::PI);
     const StaticTrajectory p(Eigen::Vector3d(0, 0.5, 0));
 
     NonlinearCCD ccd;

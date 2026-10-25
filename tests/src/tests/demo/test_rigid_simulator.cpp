@@ -15,9 +15,9 @@
 #include <ipc/io/write_gltf.hpp>
 #endif
 #include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/math/constants.hpp>
 
 #include <finitediff.hpp>
-#include <igl/PI.h>
 
 #include <iostream>
 
@@ -119,7 +119,7 @@ TEST_CASE("Rigid body simulator", "[.][rigid]")
     initial_poses[0].position = Eigen::Vector3d(1.0, 1.5, 0);
     initial_poses[0].rotation = Eigen::Vector3d::Zero();
     initial_poses[1].position = Eigen::Vector3d(-1.0, 2.0, 0.0);
-    initial_poses[1].rotation = Eigen::Vector3d(0.0, igl::PI / 4, 0.0);
+    initial_poses[1].rotation = Eigen::Vector3d(0.0, ipc::PI / 4, 0.0);
     initial_poses[2].position = Eigen::Vector3d(0.0, 1.1, 0.0);
     initial_poses[2].rotation = Eigen::Vector3d(0.0, 0.0, 0.0);
 
@@ -175,13 +175,13 @@ TEST_CASE("Rigid simulator ballistic motion", "[rigid][simulator]")
     Eigen::MatrixXi E, F;
     tests::load_mesh("cube.ply", V, E, F);
 
-    std::vector<Pose> initial_poses(1, Pose::Identity(3));
+    std::vector<Pose> initial_poses(1, Pose::identity(3));
     initial_poses[0].position = Eigen::Vector3d(0, 100.0, 0); // free flight
 
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
 
-    std::vector<Pose> initial_velocities(1, Pose::Identity(3));
+    std::vector<Pose> initial_velocities(1, Pose::identity(3));
     initial_velocities[0].position = Eigen::Vector3d(1.0, 2.0, -0.5); // v₀
     initial_velocities[0].rotation = Eigen::Vector3d(0, 0, 0.7);      // ω
 
@@ -258,7 +258,7 @@ TEST_CASE("Rigid simulator settings", "[rigid][simulator]")
     Eigen::MatrixXi E, F;
     tests::load_mesh("cube.ply", V, E, F);
 
-    std::vector<Pose> initial_poses(1, Pose::Identity(3));
+    std::vector<Pose> initial_poses(1, Pose::identity(3));
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
 
@@ -289,7 +289,7 @@ TEST_CASE("Rigid simulator no tunneling into bowl", "[rigid][simulator]")
     REQUIRE(tests::load_mesh("bowl.ply", V_bowl, E_bowl, F_bowl));
 
     // Bunny off to the side so it falls onto the sloped rim/wall of the bowl.
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
     initial_poses[0].position = Eigen::Vector3d(1.0, 1.5, 0.0); // bunny
     initial_poses[1].position = Eigen::Vector3d(0.0, 1.1, 0.0); // bowl
 
@@ -315,13 +315,13 @@ TEST_CASE("Rigid simulator BDF order", "[rigid][simulator]")
     Eigen::MatrixXi E, F;
     tests::load_mesh("cube.ply", V, E, F);
 
-    std::vector<Pose> initial_poses(1, Pose::Identity(3));
+    std::vector<Pose> initial_poses(1, Pose::identity(3));
     initial_poses[0].position = Eigen::Vector3d(0, 100.0, 0);
 
     auto bodies = RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
 
-    std::vector<Pose> initial_velocities(1, Pose::Identity(3));
+    std::vector<Pose> initial_velocities(1, Pose::identity(3));
     initial_velocities[0].position = Eigen::Vector3d(1.0, -2.0, 0.5); // v₀
 
     // Constant-velocity free flight (no gravity, no torque) is a linear

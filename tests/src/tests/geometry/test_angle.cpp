@@ -5,15 +5,15 @@
 #include <catch2/catch_approx.hpp>
 
 #include <ipc/geometry/angle.hpp>
+#include <ipc/math/constants.hpp>
 
-#include <igl/PI.h>
 #include <finitediff.hpp>
 
 #include <iostream>
 
 using namespace ipc;
 
-constexpr double deg2rad(double degrees) { return degrees * igl::PI / 180.0; }
+constexpr double deg2rad(double degrees) { return degrees * ipc::PI / 180.0; }
 
 TEST_CASE("Dihedral angle and gradient", "[angle][dihedral]")
 {
@@ -30,11 +30,11 @@ TEST_CASE("Dihedral angle and gradient", "[angle][dihedral]")
         CAPTURE(rot);
 
         Eigen::AngleAxisd rotation(
-            (igl::PI - rot) / 2.0, Eigen::Vector3d::UnitY());
+            (ipc::PI - rot) / 2.0, Eigen::Vector3d::UnitY());
         x2 = rotation * x2;
         x3 = rotation.inverse() * x3;
 
-        expected_angle = rot - igl::PI;
+        expected_angle = rot - ipc::PI;
     }
 
     SECTION("Case 1")

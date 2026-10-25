@@ -10,7 +10,6 @@
 #include <ipc/potentials/barrier_potential.hpp>
 
 #include <finitediff.hpp>
-#include <igl/PI.h>
 
 #include <cmath>
 #include <iostream>
@@ -30,7 +29,7 @@ TEST_CASE("Affine DOF jacobian", "[affine][dof]")
     Eigen::MatrixXi E, F;
     tests::load_mesh("cube.ply", V, E, F);
 
-    std::vector<rigid::Pose> initial_poses(2, rigid::Pose::Identity(3));
+    std::vector<rigid::Pose> initial_poses(2, rigid::Pose::identity(3));
     initial_poses[1].position = Eigen::Vector3d(2, 0, 0);
     auto bodies = rigid::RigidBodies::build_from_meshes(
         { V, V }, { E, E }, { F, F }, { 1000.0, 1000.0 }, initial_poses);
@@ -58,7 +57,7 @@ TEST_CASE("Affine simulator gradient and hessian", "[affine][simulator]")
     tests::load_mesh("cube.ply", V, E, F);
 
     // Two cubes close enough that the barrier is active
-    std::vector<rigid::Pose> initial_poses(2, rigid::Pose::Identity(3));
+    std::vector<rigid::Pose> initial_poses(2, rigid::Pose::identity(3));
     initial_poses[1].position = Eigen::Vector3d(1.0005, 0, 0);
 
     auto bodies = rigid::RigidBodies::build_from_meshes(
@@ -142,7 +141,7 @@ TEST_CASE("Affine simulator cube drop", "[affine][simulator]")
     Eigen::MatrixXi E, F;
     tests::load_mesh("cube.ply", V, E, F);
 
-    std::vector<rigid::Pose> initial_poses(1, rigid::Pose::Identity(3));
+    std::vector<rigid::Pose> initial_poses(1, rigid::Pose::identity(3));
     initial_poses[0].position = Eigen::Vector3d(0, 0.6, 0);
 
     auto bodies = rigid::RigidBodies::build_from_meshes(

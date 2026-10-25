@@ -18,7 +18,7 @@ TEST_CASE("RigidBodies::to_rigid_dof", "[rigid]")
 {
     const int num_vertices_per_body = 10;
 
-    std::vector<Pose> initial_poses(2, Pose::Identity(3));
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
     auto bodies = RigidBodies::build_from_meshes(
         std::vector<Eigen::MatrixXd> {
             Eigen::MatrixXd::Random(num_vertices_per_body, 3),
@@ -96,7 +96,7 @@ TEST_CASE(
     VectorMax6b slider(6);
     slider << false, true, true, true, true, true;
 
-    std::vector<Pose> initial_poses(3, Pose::Identity(3));
+    std::vector<Pose> initial_poses(3, Pose::identity(3));
     initial_poses[1].position = Eigen::Vector3d(0, 1, 0);
     initial_poses[2].position = Eigen::Vector3d(3, 1, 0);
 
@@ -119,4 +119,25 @@ TEST_CASE(
     CHECK((*bodies)[1].is_dof_fixed() == slider);
     CHECK(initial_poses[0].position.isApprox(Eigen::Vector3d(0, 1, 0)));
     CHECK(initial_poses[1].position.isApprox(Eigen::Vector3d(3, 1, 0)));
+}
+
+TEST_CASE("A copied RigidBodies still excludes same-body collisions", "[rigid]")
+{
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    REQUIRE(tests::load_mesh("cube.ply", V, E, F));
+
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
+    initial_poses[1].position = Eigen::Vector3d(2, 0, 0);
+    auto bodies = RigidBodies::build_from_meshes(
+        { V, V }, { E, E }, { F, F }, { 1000.0, 1000.0 }, initial_poses);
+
+    // The copy must not depend on the original, which we then destroy.
+    const auto copy = std::make_unique<RigidBodies>(*bodies);
+    bodies.reset();
+
+    const auto nv = copy->body_num_vertices(0);
+    CHECK(!copy->can_collide(0, 1));       // same body
+    CHECK(copy->can_collide(0, nv));       // different bodies
+    CHECK(!copy->can_collide(nv, nv + 1)); // same body
 }

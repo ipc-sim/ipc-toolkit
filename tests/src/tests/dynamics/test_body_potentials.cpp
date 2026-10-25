@@ -4,6 +4,7 @@
 
 #include <finitediff.hpp>
 
+#include <ipc/dynamics/affine/body_forces.hpp>
 #include <ipc/dynamics/body_potentials.hpp>
 #include <ipc/dynamics/to_affine.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
@@ -45,7 +46,7 @@ TEST_CASE(
     V.col(0) *= 2.0;
     V.col(1) *= 0.5;
 
-    std::vector<rigid::Pose> initial_poses(2, rigid::Pose::Identity(3));
+    std::vector<rigid::Pose> initial_poses(2, rigid::Pose::identity(3));
     initial_poses[1].position = Eigen::Vector3d(3, 0, 0);
     auto bodies = rigid::RigidBodies::build_from_meshes(
         { V, V }, { E, E }, { F, F }, { 1000.0, 500.0 }, initial_poses);
@@ -106,5 +107,67 @@ TEST_CASE(
     if (!fd::compare_hessian(Eigen::MatrixXd(H), fd_H, 1e-3)) {
         std::cout << "analytic:\n" << Eigen::MatrixXd(H) << "\n\n";
         std::cout << "numerical:\n" << fd_H << "\n";
+    }
+}
+
+TEST_CASE(
+    "External torque applies the same world torque in any orientation",
+    "[affine][body_forces]")
+{
+    const int dim = GENERATE(2, 3);
+    CAPTURE(dim);
+
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    if (dim == 3) {
+        REQUIRE(tests::load_mesh("cube.ply", V, E, F));
+    } else {
+        V.resize(4, 2);
+        V << -1, -1, 1, -1, 1, 1, -1, 1;
+        E.resize(4, 2);
+        E << 0, 1, 1, 2, 2, 3, 3, 0;
+    }
+
+    std::vector<rigid::Pose> initial_poses(1, rigid::Pose::identity(dim));
+    auto bodies = rigid::RigidBodies::build_from_meshes(
+        { V }, { E }, { F }, { 1000.0 }, initial_poses);
+
+    const VectorMax3d torque = dim == 3 ? VectorMax3d(Eigen::Vector3d(2, -3, 5))
+                                        : VectorMax3d::Constant(1, 4.0);
+    (*bodies)[0].set_external_force(
+        rigid::Pose(VectorMax3d::Zero(dim), torque));
+
+    // The frame dependence shows up only away from the identity, so we start
+    // from an arbitrary orientation.
+    const VectorMax3d theta0 = dim == 3
+        ? VectorMax3d(Eigen::Vector3d(0.7, -2.1, 1.3))
+        : VectorMax3d::Constant(1, 2.4);
+    const rigid::Pose pose0(VectorMax3d::Zero(dim), theta0);
+    const MatrixMax3d A0 = pose0.rotation_matrix();
+
+    affine::BodyForces forces;
+    forces.set_gravity(VectorMax3d::Zero(dim));
+    forces.update(*bodies, { affine::Pose { VectorMax3d::Zero(dim), A0 } });
+
+    const auto energy = [&](const MatrixMax3d& A) {
+        Eigen::VectorXd y(dim + dim * dim);
+        y.head(dim).setZero();
+        y.tail(dim * dim) = A.reshaped();
+        return forces(*bodies, y);
+    };
+
+    // The generalized torque is −∂E/∂φ for a world rotation δφ applied on
+    // top of A₀, which must equal the applied world torque.
+    constexpr double EPS = 1e-6;
+    const int rot_ndof = dim == 3 ? 3 : 1;
+    for (int k = 0; k < rot_ndof; ++k) {
+        const VectorMax3d dphi = EPS * VectorMax3d::Unit(rot_ndof, k);
+        const MatrixMax3d A_plus =
+            rigid::Pose(VectorMax3d::Zero(dim), dphi).rotation_matrix() * A0;
+        const MatrixMax3d A_minus =
+            rigid::Pose(VectorMax3d::Zero(dim), -dphi).rotation_matrix() * A0;
+        const double generalized_torque =
+            -(energy(A_plus) - energy(A_minus)) / (2 * EPS);
+        CHECK(generalized_torque == Catch::Approx(torque(k)).epsilon(1e-6));
     }
 }

@@ -6,6 +6,10 @@
 
 namespace ipc::rigid {
 
+/// @brief The NonlinearCCD used when a RigidCandidates query is not given one.
+/// @note A single shared instance, so defaulted arguments do not allocate.
+const NonlinearCCD& default_nonlinear_ccd();
+
 /// @brief A class for storing and managing collision candidates.
 class RigidCandidates : public Candidates {
 public:
@@ -51,7 +55,7 @@ public:
         const std::vector<Pose>& poses_t0,
         const std::vector<Pose>& poses_t1,
         const double min_distance = 0.0,
-        const NonlinearCCD& nonlinear_ccd = NonlinearCCD()) const;
+        const NonlinearCCD& nonlinear_ccd = default_nonlinear_ccd()) const;
 
     /// @brief Computes a maximal step size that is collision free using the set of collision candidates.
     /// @note Uses the nonlinear rigid trajectories of the bodies.
@@ -66,7 +70,7 @@ public:
         const std::vector<Pose>& poses_t0,
         const std::vector<Pose>& poses_t1,
         const double min_distance = 0.0,
-        const NonlinearCCD& nonlinear_ccd = NonlinearCCD()) const;
+        const NonlinearCCD& nonlinear_ccd = default_nonlinear_ccd()) const;
 
     /// @brief Computes a conservative bound on the largest-feasible step size for surface primitives not in collision.
     ///
@@ -98,7 +102,7 @@ public:
         const double dhat,
         const double min_distance = 0.0,
         BroadPhase* broad_phase = nullptr,
-        const NonlinearCCD& nonlinear_ccd = NonlinearCCD()) const;
+        const NonlinearCCD& nonlinear_ccd = default_nonlinear_ccd()) const;
 
 private:
     /// @brief Perform narrow-phase nonlinear CCD on the i-th candidate.

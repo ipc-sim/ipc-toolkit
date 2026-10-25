@@ -45,7 +45,7 @@ struct Pose {
     Eigen::SparseMatrix<double>
     transform_vertices_jacobian(Eigen::ConstRef<Eigen::MatrixXd> V) const
     {
-        return J(V);
+        return dof_jacobian(V);
     }
 
     /// @brief Compute the Jacobian of the transformed vertices w.r.t. the DOFs.
@@ -58,7 +58,7 @@ struct Pose {
     /// @param rest_positions The rest vertices (each row is a vertex).
     /// @return The Jacobian matrix of size (num_vertices * dim) x (ndof).
     static Eigen::SparseMatrix<double>
-    J(Eigen::ConstRef<Eigen::MatrixXd> rest_positions); // NOLINT
+    dof_jacobian(Eigen::ConstRef<Eigen::MatrixXd> rest_positions);
 };
 
 } // namespace ipc::affine

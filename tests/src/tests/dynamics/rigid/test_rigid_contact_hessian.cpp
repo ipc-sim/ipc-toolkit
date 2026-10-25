@@ -40,7 +40,7 @@ TEST_CASE(
 
     // Two identical point grids, one hovering just above the other and
     // slightly rotated, so many point-point pairs sit inside dhat.
-    std::vector<Pose> poses(2, Pose::Identity(3));
+    std::vector<Pose> poses(2, Pose::identity(3));
     const Eigen::MatrixXd V_grid = point_grid();
     const Eigen::MatrixXi no_elements(0, 2), no_faces(0, 3);
     auto bodies = RigidBodies::build_from_meshes(

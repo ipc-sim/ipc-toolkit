@@ -38,18 +38,74 @@ public:
         const VectorMax6b& is_dof_fixed = VectorMax6b());
 
     // ---- Getters ------------------------------------------------------------
+
+    /// @brief The measure of the body that its mass is computed from.
+    ///
+    /// This is the enclosed volume for a closed 3D triangle mesh. Otherwise
+    /// the mass is lumped, and this is the total lumped measure: the edge
+    /// length for 2D and edge meshes, or one unit per vertex for point clouds
+    /// and open surfaces.
     double volume() const { return m_volume; }
+
+    /// @brief The total mass (density × volume()).
     double mass() const { return m_mass; }
+
+    /// @brief The uniform density (mass() / volume()).
     double density() const { return m_mass / m_volume; }
+
+    /// @brief The principal moments of inertia about the center of mass.
+    ///
+    /// In 3D these are the inertia tensor's eigenvalues, ordered to match the
+    /// axes of principal_rotation(). In 2D this is a single value, the moment
+    /// about the out-of-plane axis. When exactly two rotational DOFs are
+    /// fixed in 3D, these are instead the diagonal of the world-frame inertia
+    /// tensor.
     const VectorMax3d& moment_of_inertia() const { return m_moment_of_inertia; }
+
     /// @brief The diagonal second-moment matrix ∫ρ x̄x̄ᵀ in the principal frame (2×2 in 2D, 3×3 in 3D).
-    const auto& J() const { return m_J; }          // NOLINT
-    const MatrixMax3d& R0() const { return m_R0; } // NOLINT
+    ///
+    /// This is the J in the affine mass matrix blkdiag(m I, J ⊗ I). When
+    /// exactly two rotational DOFs are fixed in 3D, it is the diagonal of the
+    /// world-frame second moment instead.
+    const auto& second_moment() const { return m_second_moment; }
+
+    /// @brief The rotation from the principal axes to the input frame.
+    ///
+    /// At construction we express the rest vertices in the principal frame
+    /// and fold this rotation into the initial pose, so world positions are
+    /// unchanged. We keep it to convert back to the input frame (e.g., when
+    /// writing glTF). It is the identity when exactly two rotational DOFs are
+    /// fixed in 3D, so the free rotation component stays on its world axis.
+    const MatrixMax3d& principal_rotation() const
+    {
+        return m_principal_rotation;
+    }
+
+    /// @brief The constant external load applied to the body.
+    ///
+    /// The position holds the world-space force and the rotation holds the
+    /// world-space torque (a scalar in 2D). The simulator folds it into the
+    /// incremental potential each step, for DYNAMIC bodies only.
     const Pose& external_force() const { return m_external_force; }
+
+    /// @brief The static bounding volume hierarchy of the body's elements.
+    ///
+    /// We build it once at construction from the rest vertices, in the body
+    /// frame, so the rigid broad phase can query a moving body without
+    /// rebuilding it.
     std::shared_ptr<const LBVH> bvh() const { return m_bvh; }
+
+    /// @brief The largest distance from the center of mass to a rest vertex.
+    ///
+    /// The body stays inside a sphere of this radius about its position in
+    /// every orientation, which is what the body-level broad phase uses.
     double bounding_radius() const { return m_bounding_radius; }
 
+    /// @brief How the body is simulated (STATIC, KINEMATIC, or DYNAMIC).
     Type type() const { return m_type; }
+
+    /// @brief Whether the body is DYNAMIC, i.e., responds to forces and
+    /// contact.
     bool is_dynamic() const { return m_type == Type::DYNAMIC; }
 
     /// @brief Per-DOF fixed flags ([position | rotation] of size ndof).
@@ -74,8 +130,7 @@ public:
     /// not depend on it, so we rescale them instead of recomputing the mass
     /// properties from the mesh.
     ///
-    /// @note The simulator builds its mass matrix on construction, so set
-    /// densities before constructing it.
+    /// @note A running simulator picks up the new mass matrix at its next time step.
     /// @param density New density (must be positive).
     void set_density(const double density)
     {
@@ -83,7 +138,7 @@ public:
         const double scale = density / this->density();
         m_mass *= scale;
         m_moment_of_inertia *= scale;
-        m_J.diagonal() *= scale;
+        m_second_moment.diagonal() *= scale;
     }
 
     /// @brief Restore the fixed-DOF flags (used by Simulator::reset()).
@@ -114,15 +169,15 @@ private:
     /// @brief Moment of inertia measured with respect to the principal axes
     VectorMax3d m_moment_of_inertia;
 
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    Eigen::DiagonalMatrix<double, Eigen::Dynamic, 3> m_J;
+    /// @brief Diagonal second-moment matrix ∫ρ x̄x̄ᵀ in the principal frame
+    Eigen::DiagonalMatrix<double, Eigen::Dynamic, 3> m_second_moment;
 
     /// @brief Rotation matrix from the principal axes to the world frame
     /// This also stored in initial_pose.rotation upon construction.
     /// This is useful for converting to and from input world coordinates.
     /// @note Maybe this should be a rotation vector instead?
     /// @note Maybe we should store position as well?
-    MatrixMax3d m_R0; // NOLINT(readability-identifier-naming)
+    MatrixMax3d m_principal_rotation;
 
     /// @brief External force and torque applied to the rigid body
     Pose m_external_force;

@@ -83,8 +83,9 @@ public:
     /// @return One weight per used history step (most recent first).
     virtual std::vector<double> velocity_history_weights() const = 0;
 
-    /// @brief Derivative of the velocity with respect to the i-th previous
-    /// positions (0 → current).
+    /// @brief Derivative of the velocity with respect to a position in its
+    /// formula: prev_ti = 0 is the current position, and prev_ti = i ≥ 1 is
+    /// x_prev(i - 1).
     virtual double dvdx(const unsigned prev_ti = 0) const = 0;
 
     // -----------------------------------------------------------------------

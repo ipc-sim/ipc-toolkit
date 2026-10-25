@@ -80,6 +80,59 @@ TEST_CASE("BDF is exact for constant velocity", "[dynamics][bdf]")
     CHECK(bdf.velocity_scaling() == Catch::Approx(beta_dt));
 }
 
+TEST_CASE(
+    "BDF velocity derivatives match the velocity formula", "[dynamics][bdf]")
+{
+    const int order = GENERATE(1, 2, 3, 4);
+    CAPTURE(order);
+    const int n = 2;
+    const double dt = 0.01, delta = 1e-3;
+
+    // Two integrators that share a history except for one past state, which
+    // we perturb by δ. The velocity formula is linear, so the change in the
+    // computed velocity is exactly dvdx(prev_ti)·δ.
+    std::vector<Eigen::VectorXd> history(order);
+    for (auto& x : history) {
+        x = Eigen::VectorXd::Random(n);
+    }
+    const auto make_bdf = [&](const int perturbed_step) {
+        BDF bdf(order);
+        bdf.set_dt(dt);
+        bdf.init(
+            Eigen::VectorXd::Zero(n), Eigen::VectorXd::Zero(n),
+            Eigen::VectorXd::Zero(n), /*num_bodies=*/1);
+        for (int step = 0; step < order; ++step) {
+            bdf.update(
+                step == perturbed_step
+                    ? Eigen::VectorXd(history[step].array() + delta)
+                    : history[step]);
+        }
+        return bdf;
+    };
+
+    const BDF reference = make_bdf(/*perturbed_step=*/-1);
+    REQUIRE(reference.order() == order);
+    const Eigen::VectorXd x = Eigen::VectorXd::Random(n);
+
+    // prev_ti = 0 is the current state x.
+    const Eigen::VectorXd dv_current =
+        reference.compute_velocity(x.array() + delta)
+        - reference.compute_velocity(x);
+    CHECK(dv_current.isApproxToConstant(reference.dvdx(0) * delta, 1e-8));
+
+    // prev_ti = i ≥ 1 is the i-th most recent past state x_prev(i - 1).
+    for (int i = 1; i <= order; ++i) {
+        const BDF perturbed = make_bdf(/*perturbed_step=*/order - i);
+        const Eigen::VectorXd dv =
+            perturbed.compute_velocity(x) - reference.compute_velocity(x);
+        CAPTURE(i, dv.transpose(), reference.dvdx(i) * delta);
+        CHECK(dv.isApproxToConstant(reference.dvdx(i) * delta, 1e-8));
+    }
+
+    // States older than the formula's history have no influence.
+    CHECK(reference.dvdx(order + 1) == 0);
+}
+
 TEST_CASE("BDF invalid order throws", "[dynamics][bdf]")
 {
     CHECK_THROWS(BDF(0));

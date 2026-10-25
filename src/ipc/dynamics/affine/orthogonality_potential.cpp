@@ -96,7 +96,7 @@ Eigen::SparseMatrix<double> OrthogonalityPotential::hessian(
 double OrthogonalityPotential::operator()(
     const rigid::RigidBody& body, Eigen::ConstRef<VectorMax12d> x) const
 {
-    const int dim = body.R0().rows();
+    const int dim = body.principal_rotation().rows();
     const auto& A = x.tail(dim * dim).reshaped(dim, dim);
     const auto I = MatrixMax3d::Identity(dim, dim);
     return stiffness * body.volume() * (A * A.transpose() - I).squaredNorm();
@@ -107,7 +107,7 @@ VectorMax12d OrthogonalityPotential::gradient(
 {
     VectorMax12d grad = VectorMax12d::Zero(x.size());
 
-    const int dim = body.R0().rows();
+    const int dim = body.principal_rotation().rows();
     const auto& A = x.tail(dim * dim).reshaped(dim, dim);
     const auto I = MatrixMax3d::Identity(dim, dim);
 
@@ -123,7 +123,7 @@ MatrixMax12d OrthogonalityPotential::hessian(
     Eigen::ConstRef<VectorMax12d> x,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
-    const int dim = body.R0().rows();
+    const int dim = body.principal_rotation().rows();
     const auto& A = x.tail(dim * dim).reshaped(dim, dim);
     const auto I = MatrixMax3d::Identity(dim, dim);
 

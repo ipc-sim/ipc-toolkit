@@ -9,11 +9,11 @@
 #include <ipc/potentials/friction_potential.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/collision_mesh.hpp>
+#include <ipc/math/constants.hpp>
 
 #include <finitediff.hpp>
 #include <tests/utils.hpp>
 #include <igl/edges.h>
-#include <igl/PI.h>
 
 #include <algorithm>
 #include <cmath>
@@ -35,7 +35,7 @@ TEST_CASE("Anisotropic mu effective computation", "[friction][anisotropic][mu]")
     Eigen::Vector2d mu_k_aniso(mu_k0, mu_k1);
 
     // Test various directions
-    const double angle = GENERATE(range(0.0, 2.0 * igl::PI, igl::PI / 4.0));
+    const double angle = GENERATE(range(0.0, 2.0 * ipc::PI, ipc::PI / 4.0));
     Eigen::Vector2d tau_dir(std::cos(angle), std::sin(angle));
 
     CAPTURE(mu_s_aniso, mu_k_aniso, tau_dir);
@@ -124,7 +124,7 @@ TEST_CASE(
     Eigen::Vector2d mu_k_aniso_zero = Eigen::Vector2d::Zero();
 
     // Test with various directions
-    const double angle = GENERATE(range(0.0, 2.0 * igl::PI, igl::PI / 4.0));
+    const double angle = GENERATE(range(0.0, 2.0 * ipc::PI, ipc::PI / 4.0));
     Eigen::Vector2d tau_dir(std::cos(angle), std::sin(angle));
 
     // When anisotropic coefficients are zero, the function should handle it
@@ -497,7 +497,7 @@ TEST_CASE("Anisotropic friction force", "[friction][anisotropic][force]")
     FrictionPotential friction_potential(1e-4);
 
     // Test with different velocity directions
-    const double angle = GENERATE(range(0.0, 2.0 * igl::PI, igl::PI / 4.0));
+    const double angle = GENERATE(range(0.0, 2.0 * ipc::PI, ipc::PI / 4.0));
     const double velocity_magnitude = GENERATE(0.01, 0.1);
 
     Eigen::MatrixXd velocities(2, 3);
@@ -689,7 +689,7 @@ TEST_CASE(
     FrictionPotential friction_potential(1e-4);
 
     // Test various velocity directions
-    const double angle = GENERATE(range(0.0, 2.0 * igl::PI, igl::PI / 6.0));
+    const double angle = GENERATE(range(0.0, 2.0 * ipc::PI, ipc::PI / 6.0));
     const double velocity_magnitude = GENERATE(0.01, 0.1, 0.5);
 
     Eigen::MatrixXd velocities(2, 3);

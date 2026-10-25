@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <numeric>
 #include <stdexcept>
+#include <string>
 
 namespace ipc::affine {
 
@@ -24,6 +25,23 @@ VectorMax3d JointConstraints::world_to_material(
     const rigid::Pose& pose = m_initial_poses[body];
     // x̄ = A⁻¹ (p_world − p); A ∈ SO(dim) initially, so A⁻¹ = Aᵀ
     return pose.rotation_matrix().transpose() * (world_point - pose.position);
+}
+
+void JointConstraints::check_can_add(const size_t body) const
+{
+    // These are runtime checks rather than asserts because the Python
+    // bindings reach them from release builds, where a bad index would write
+    // out of bounds and a late joint would be silently ignored.
+    if (m_finalized) {
+        throw std::logic_error(
+            "joint constraints cannot be added after finalize() (the "
+            "Simulator finalizes them on construction)");
+    }
+    if (body >= m_bodies->num_bodies()) {
+        throw std::out_of_range(
+            "joint body index " + std::to_string(body) + " is out of range ("
+            + std::to_string(m_bodies->num_bodies()) + " bodies)");
+    }
 }
 
 int JointConstraints::body_ndof() const
@@ -53,8 +71,12 @@ void JointConstraints::add_point_connection(
     const size_t body_b,
     Eigen::ConstRef<VectorMax3d> world_anchor)
 {
-    assert(!m_finalized);
-    assert(body_a != body_b);
+    check_can_add(body_a);
+    check_can_add(body_b);
+    if (body_a == body_b) {
+        throw std::invalid_argument(
+            "a point connection needs two distinct bodies");
+    }
     const VectorMax3d xa = world_to_material(body_a, world_anchor);
     const VectorMax3d xb = world_to_material(body_b, world_anchor);
     const int n = body_ndof() * m_bodies->num_bodies();
@@ -70,7 +92,7 @@ void JointConstraints::add_point_connection(
 void JointConstraints::add_fixed_point(
     const size_t body, Eigen::ConstRef<VectorMax3d> world_anchor)
 {
-    assert(!m_finalized);
+    check_can_add(body);
     const VectorMax3d xb = world_to_material(body, world_anchor);
     const int n = body_ndof() * m_bodies->num_bodies();
     for (int k = 0; k < m_bodies->dim(); k++) {
@@ -102,7 +124,7 @@ void JointConstraints::add_sliding_plane(
     Eigen::ConstRef<VectorMax3d> world_anchor,
     Eigen::ConstRef<VectorMax3d> normal)
 {
-    assert(!m_finalized);
+    check_can_add(body);
     const VectorMax3d xb = world_to_material(body, world_anchor);
     const VectorMax3d n_hat = normal.normalized();
     const int n = body_ndof() * m_bodies->num_bodies();
@@ -116,7 +138,7 @@ void JointConstraints::add_sliding_plane(
 
 void JointConstraints::add_fixed_body(const size_t body)
 {
-    assert(!m_finalized);
+    check_can_add(body);
     const int dim = m_bodies->dim();
     const int ndof = body_ndof();
     const int n = ndof * m_bodies->num_bodies();
@@ -139,20 +161,40 @@ void JointConstraints::finalize()
 
     const int n = body_ndof() * int(m_bodies->num_bodies());
     const int m = int(m_rows.size());
-    assert(m < n);
 
-    // Assemble C (m×n) and s
-    Eigen::MatrixXd C(m, n);
+    // Only the DOFs some constraint touches take part in the elimination;
+    // every other DOF maps to itself. Restricting to these "active" columns
+    // keeps the change of variables sparse: identity outside the jointed
+    // bodies, so its cost scales with the joints, not the scene.
+    std::vector<int> active;
+    for (int j = 0; j < n; j++) {
+        if (std::any_of(m_rows.begin(), m_rows.end(), [&](const auto& row) {
+                return row(j) != 0;
+            })) {
+            active.push_back(j);
+        }
+    }
+    const int na = int(active.size());
+    if (m > na) {
+        throw std::runtime_error(
+            "more joint constraints than constrained DOFs; joints are "
+            "redundant");
+    }
+
+    // Assemble the active columns of C (m×na) and s
+    Eigen::MatrixXd C(m, na);
     Eigen::VectorXd s(m);
     for (int i = 0; i < m; i++) {
-        C.row(i) = m_rows[i];
+        for (int j = 0; j < na; j++) {
+            C(i, j) = m_rows[i](active[j]);
+        }
         s(i) = m_rhs[i];
     }
 
     // Gaussian elimination with column pivoting: make C upper triangular in a
-    // permuted DOF order so that V = [C; 0 I] is a full-rank upper-triangular
+    // permuted DOF order so that V = [C̃; 0 I] is a full-rank upper-triangular
     // basis extension [Chen et al. 2022, §4.1].
-    std::vector<int> perm(n);
+    std::vector<int> perm(na);
     std::iota(perm.begin(), perm.end(), 0);
 
     for (int i = 0; i < m; i++) {
@@ -166,7 +208,7 @@ void JointConstraints::finalize()
         }
         // Swap the largest remaining coefficient onto the diagonal
         int j_star;
-        const double pivot = C.row(i).tail(n - i).cwiseAbs().maxCoeff(&j_star);
+        const double pivot = C.row(i).tail(na - i).cwiseAbs().maxCoeff(&j_star);
         j_star += i;
         if (pivot < 1e-12) {
             logger().error(
@@ -181,26 +223,64 @@ void JointConstraints::finalize()
         }
     }
 
-    // V_perm = [C̃; 0 I] (upper triangular) and U_perm = V_perm⁻¹
-    Eigen::MatrixXd V_perm = Eigen::MatrixXd::Identity(n, n);
-    V_perm.topRows(m) = C;
+    // In the permuted active order V = [[C₁, C₂], [0, I]] with C₁ (m×m) upper
+    // triangular, so U = V⁻¹ = [[C₁⁻¹, −C₁⁻¹C₂], [0, I]].
+    const Eigen::MatrixXd C1_inv =
+        C.leftCols(m).triangularView<Eigen::Upper>().solve(
+            Eigen::MatrixXd::Identity(m, m));
+    const Eigen::MatrixXd W = -C1_inv * C.rightCols(na - m);
 
-    const Eigen::MatrixXd U_perm = V_perm.triangularView<Eigen::Upper>().solve(
-        Eigen::MatrixXd::Identity(n, n));
-
-    // Fold the DOF permutation in: x_perm[i] = x[perm[i]]
-    m_u.setZero(n, n);
-    m_v.setZero(n, n);
-    for (int i = 0; i < n; i++) {
-        m_u.row(perm[i]) = U_perm.row(i);
-        m_v.col(perm[i]) = V_perm.col(i);
+    // The reduced coordinates are ordered [pivots (m); remaining active DOFs;
+    // inactive DOFs], i.e., z_k = (V x)_k with x_full[perm_full[k]] the k-th
+    // permuted DOF.
+    std::vector<int> perm_full;
+    perm_full.reserve(n);
+    for (int k = 0; k < na; k++) {
+        perm_full.push_back(active[perm[k]]);
     }
+    {
+        std::vector<bool> is_active(n, false);
+        for (const int j : active) {
+            is_active[j] = true;
+        }
+        for (int j = 0; j < n; j++) {
+            if (!is_active[j]) {
+                perm_full.push_back(j);
+            }
+        }
+    }
+
+    std::vector<Eigen::Triplet<double>> u_triplets, v_triplets;
+    u_triplets.reserve(size_t(m) * na + n);
+    v_triplets.reserve(size_t(m) * na + n);
+    for (int i = 0; i < m; i++) {
+        for (int k = 0; k < na; k++) {
+            // z_i = Σₖ C̃(i, k) x[perm_full[k]]
+            if (C(i, k) != 0) {
+                v_triplets.emplace_back(i, perm_full[k], C(i, k));
+            }
+            // x[perm_full[i]] = Σₖ U(i, k) z_k
+            const double u = k < m ? C1_inv(i, k) : W(i, k - m);
+            if (u != 0) {
+                u_triplets.emplace_back(perm_full[i], k, u);
+            }
+        }
+    }
+    for (int k = m; k < n; k++) {
+        v_triplets.emplace_back(k, perm_full[k], 1.0);
+        u_triplets.emplace_back(perm_full[k], k, 1.0);
+    }
+
+    m_u.resize(n, n);
+    m_u.setFromTriplets(u_triplets.begin(), u_triplets.end());
+    m_v.resize(n, n);
+    m_v.setFromTriplets(v_triplets.begin(), v_triplets.end());
 
     m_s = s;
 
     m_perm_inv.resize(n);
-    for (int i = 0; i < n; i++) {
-        m_perm_inv[perm[i]] = i;
+    for (int k = 0; k < n; k++) {
+        m_perm_inv[perm_full[k]] = k;
     }
 
     m_finalized = true;
@@ -208,6 +288,7 @@ void JointConstraints::finalize()
 
 bool JointConstraints::is_body_constrained(const size_t body) const
 {
+    assert(body < m_bodies->num_bodies());
     const int ndof = body_ndof();
     return std::any_of(m_rows.begin(), m_rows.end(), [&](const auto& row) {
         return !row.segment(ndof * body, ndof).isZero();

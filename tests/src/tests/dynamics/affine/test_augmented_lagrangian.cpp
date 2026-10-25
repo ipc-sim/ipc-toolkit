@@ -26,7 +26,7 @@ kinematic_cube(std::vector<rigid::Pose>& initial_poses)
     V.col(0).array() *= 0.5;
     V.col(2).array() *= 2.0;
 
-    initial_poses.assign(1, rigid::Pose::Identity(3));
+    initial_poses.assign(1, rigid::Pose::identity(3));
     auto bodies = rigid::RigidBodies::build_from_meshes(
         { V }, { E }, { F }, { 1000.0 }, initial_poses);
     (*bodies)[0].set_type(rigid::RigidBody::Type::KINEMATIC);
