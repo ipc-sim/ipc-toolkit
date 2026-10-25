@@ -33,6 +33,15 @@ target_link_libraries(ipc_toolkit_demo PUBLIC polysolve::polysolve)
 
 target_compile_features(ipc_toolkit_demo PUBLIC cxx_std_17)
 
+if(IPC_TOOLKIT_WITH_CUDA)
+  # The demo has no CUDA sources, but CMake still device-links it because it
+  # links the separably compiled core library. That bakes a resolved copy of
+  # the core's device code into libipc_toolkit_demo.a, and nvlink then fails to
+  # resolve the core's device functions when an executable (e.g. the tests)
+  # links both. We leave device linking to the final executable instead.
+  set_target_properties(ipc_toolkit_demo PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS OFF)
+endif()
+
 # Folder name for IDE
 set_target_properties(ipc_toolkit_demo PROPERTIES FOLDER "DEMO")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
