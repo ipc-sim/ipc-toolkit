@@ -86,10 +86,10 @@ struct ESPParameters {
     /// must be at least 1 in 2D (ESPCollisions::build() checks this). Unused
     /// in 3D, where any non-negative value is accepted.
     const int quad_order;
-    /// Weight each face by its area / 9 (3D), or each edge by its area
+    /// Weight each face by its area (3D), or each edge by its area
     /// (CollisionMesh::edge_area(), 2D). In 3D, an edge in no face is weighted
-    /// by its edge area / 4 and an isolated vertex by its vertex area. If
-    /// false, every weight is 1.
+    /// by its edge area and an isolated vertex by its vertex area. If false,
+    /// every weight is 1.
     bool area_weights;
     /// Experimental 3D near-field quadrature: transfer weight locally from
     /// edge endpoints to EE samples instead of renormalizing all samples.

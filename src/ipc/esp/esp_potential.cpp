@@ -82,12 +82,11 @@ namespace {
     IntegrationElement integration_element(
         const CollisionMesh& mesh, const ESPParameters& params, size_t k)
     {
-        // With area weights, a face weighs its area over the square of its
-        // vertex count, area / 9. We give an edge in no face the same rule,
-        // length / 4, and an isolated vertex its vertex area (one by
-        // default). These have different units, so on a mesh that mixes
-        // faces with rods or particles the barrier stiffness has to be chosen
-        // with that in mind.
+        // With area weights, an element weighs its rest measure: a face its
+        // area, an edge in no face its edge area, and an isolated vertex its
+        // vertex area (one by default). These have different units, so on a
+        // mesh that mixes faces with rods or particles the barrier stiffness
+        // has to be chosen with that in mind.
         IntegrationElement elem;
         if (k < mesh.num_faces()) {
             const auto f = static_cast<index_t>(k);
@@ -104,7 +103,7 @@ namespace {
                     elem.vertices[j] = mesh.faces()(f, j);
                 }
             }
-            elem.weight = params.area_weights ? mesh.face_areas()(f) / 9. : 1.;
+            elem.weight = params.area_weights ? mesh.face_areas()(f) : 1.;
             return elem;
         }
         k -= mesh.num_faces();
@@ -116,7 +115,7 @@ namespace {
             elem.num_vertices = 2;
             elem.vertices[0] = mesh.edges()(e, 0);
             elem.vertices[1] = mesh.edges()(e, 1);
-            elem.weight = params.area_weights ? mesh.edge_area(e) / 4. : 1.;
+            elem.weight = params.area_weights ? mesh.edge_area(e) : 1.;
             return elem;
         }
         k -= mesh.num_codim_edges();

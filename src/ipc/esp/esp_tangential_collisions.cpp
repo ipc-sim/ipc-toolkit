@@ -266,7 +266,7 @@ void TangentialCollisions::build(
         };
 
         // --- Precompute per-face normalized outer scale ---
-        // ESP outer contribution per face f is: (area_f / 9) [* / total_w_f]
+        // ESP outer contribution per face f is: area_f [* / total_w_f]
         // depending on normalize_weights. total_w_f sums active EE mollifiers
         // and either face quadrature weights (when active) or 3 (for the 3
         // face vertices, when face quadrature is not active).
@@ -319,10 +319,10 @@ void TangentialCollisions::build(
             }
         }
 
-        // Per-face normalized scale: (area_f / 9) * [1/total_w_f if normalize]
+        // Per-face normalized scale: area_f * [1/total_w_f if normalize]
         Eigen::VectorXd face_scale(faces.rows());
         for (index_t f = 0; f < faces.rows(); f++) {
-            const double w_f = mesh.face_areas()(f) / 9.0;
+            const double w_f = mesh.face_areas()(f);
             face_scale(f) =
                 normalize_weights ? (w_f / total_w_per_face(f)) : w_f;
         }
@@ -449,9 +449,9 @@ void TangentialCollisions::build(
             VertexMatrixView<3> V_ext(vertices, virtual_pos);
 
             // ESP potential outer factor for an edge-edge dict (for each face
-            // f containing edge e0): area_f/9 * mollifier. Since the mollifier
+            // f containing edge e0): area_f * mollifier. Since the mollifier
             // depends only on the four edge endpoints (not f), it factors out
-            // and the per-dict outer weight is mollifier * sum_{f∋e0} area_f/9.
+            // and the per-dict outer weight is mollifier * sum_{f∋e0} area_f.
             const double dist_sqr_ee = edge_edge_distance_parallel_safe(
                 vertices.row(e00), vertices.row(e01), vertices.row(e10),
                 vertices.row(e11), dtype);
@@ -651,7 +651,7 @@ void TangentialCollisions::build(
                     + qp.lambda[2] * vertices.row(f2);
                 VertexMatrixView<3> V_ext(vertices, virtual_pos);
 
-                // ESP potential per-quadrature factor: area/9 * qp.weight.
+                // ESP potential per-quadrature factor: area * qp.weight.
                 const double fq_outer_w = face_w * qp.weight;
 
                 for (int j = 0; j < dict_ptr->size(); j++) {

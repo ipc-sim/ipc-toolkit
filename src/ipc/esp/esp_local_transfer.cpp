@@ -97,14 +97,14 @@ namespace {
                 out.vertices.push_back(mesh.faces()(k, i));
                 out.edges.push_back(mesh.faces_to_edges()(k, i));
             }
-            out.weight = p.area_weights ? mesh.face_areas()(k) / 9.0 : 1.0;
+            out.weight = p.area_weights ? mesh.face_areas()(k) : 1.0;
             out.ee_scale = ee_area_scale_factor(
                 mesh.face_areas()(k) / 3.0, area_ref(p), /*face=*/true);
         } else if ((k -= mesh.num_faces()) < mesh.num_codim_edges()) {
             const auto e = mesh.codim_edges()[k];
             out.vertices = { mesh.edges()(e, 0), mesh.edges()(e, 1) };
             out.edges = { e };
-            out.weight = p.area_weights ? mesh.edge_area(e) / 4.0 : 1.0;
+            out.weight = p.area_weights ? mesh.edge_area(e) : 1.0;
             out.ee_scale = ee_area_scale_factor(
                 mesh.edge_area(e) / 2.0, area_ref(p), /*face=*/false);
         } else {

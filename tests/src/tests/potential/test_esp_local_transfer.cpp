@@ -102,16 +102,16 @@ TEST_CASE(
     const int ax = tests::vertex_dofs<3>(0, s.X.rows())[0];
     CHECK(
         old_p(c, s.mesh, s.X)
-        == Catch::Approx(.02393317154014315).epsilon(1e-9));
+        == Catch::Approx(.09676209393058051).epsilon(1e-9));
     CHECK(
         new_p(c, s.mesh, s.X)
-        == Catch::Approx(.02209731097360996).epsilon(1e-9));
+        == Catch::Approx(.0893123239682775).epsilon(1e-9));
     CHECK(
         -old_p.gradient(c, s.mesh, s.X)[ax]
-        == Catch::Approx(103.12727645).epsilon(1e-8));
+        == Catch::Approx(464.76612581).epsilon(1e-8));
     CHECK(
         -new_p.gradient(c, s.mesh, s.X)[ax]
-        == Catch::Approx(8.82801825).epsilon(1e-7));
+        == Catch::Approx(77.01422187).epsilon(1e-7));
 }
 
 TEST_CASE(
