@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/barrier/barrier.hpp>
+#include <ipc/gcp/distance/mollifier_config.hpp>
 #include <ipc/utils/logger.hpp>
 
 #include <algorithm>
@@ -95,7 +96,8 @@ struct ESPParameters {
     /// Requires use_near_far=true and the default vertex quadrature rule.
     /// Currently supports frictionless contact only.
     /// Has no effect in 2D or when dbar_factor=0. Disabled by default.
-    bool local_quadrature_transfer = false;
+    bool local_quadrature_transfer =
+        ee_mollifier_config().local_transfer_default; // PROTOTYPE env default
     const IntegrationType integration_type;
 
     /// @brief Near/far split parameter dbar / dhat, in [0, 2].

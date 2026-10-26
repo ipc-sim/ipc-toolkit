@@ -107,6 +107,13 @@ void define_barrier(py::module_& m)
         )ipc_Qu8mg5v7")
         .def(py::init());
 
+    // PROTOTYPE: needed to test the per-barrier mollifier power from Python.
+    py::class_<
+        InversePowerBarrier<>, Barrier, std::shared_ptr<InversePowerBarrier<>>>(
+        m, "InversePowerBarrier", "Inverse power barrier h(d) / d^p.")
+        .def(py::init<double>(), py::arg("power"))
+        .def_property_readonly("power", &InversePowerBarrier<>::power);
+
     py::class_<CubicBarrier<>, Barrier, std::shared_ptr<CubicBarrier<>>>(
         m, "CubicBarrier", R"ipc_Qu8mg5v7(
         Cubic barrier function from [Ando 2024].
