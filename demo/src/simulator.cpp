@@ -236,10 +236,18 @@ Simulator::Simulator(
     // displacements, so polysolve's Δx criterion compares against
     // tol × bbox × dt.
     nlohmann::json solver_params = m_settings.solver_params;
-    if (m_settings.velocity_conv_tol > 0
-        && !solver_params.contains("x_delta_tol")) {
+    const bool use_velocity_criterion = m_settings.velocity_conv_tol > 0;
+    if (use_velocity_criterion && !solver_params.contains("x_delta_tol")) {
         solver_params["x_delta_tol"] =
             m_settings.velocity_conv_tol * m_bbox_diagonal * dt;
+    }
+    // We disable polysolve's absolute gradient criterion whenever the
+    // velocity criterion is on. Its threshold doesn't scale with the scene,
+    // so for light or small bodies it fires after the first Newton iteration
+    // and accepts unconverged steps. Without the velocity criterion it is
+    // the only absolute stop left, so we keep a fixed fallback there.
+    if (!solver_params.contains("grad_norm_tol")) {
+        solver_params["grad_norm_tol"] = use_velocity_criterion ? 0.0 : 1e-6;
     }
 
     // polysolve logs through a dedicated logger so its chatter (a per-solve

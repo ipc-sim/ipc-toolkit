@@ -148,7 +148,10 @@ public:
         /// diagonal (per unit time) [Ferguson et al. 2021]. Measured in world
         /// space through the step_norm() override and enforced through
         /// polysolve's Δx criterion (solver_params["x_delta_tol"], set
-        /// automatically unless already present). Set ≤ 0 to disable.
+        /// automatically unless already present). While enabled, polysolve's
+        /// absolute gradient criterion (solver_params["grad_norm_tol"]) also
+        /// defaults to 0, so this is the only convergence test. Set ≤ 0 to
+        /// disable, which restores a grad_norm_tol of 1e-6.
         double velocity_conv_tol = 1e-2;
         /// @brief polysolve nonlinear solver parameters.
         /// Validated by polysolve; entries not set here get the defaults of
@@ -169,6 +172,15 @@ public:
         //       (κ ~ 1e11 puts ‖g‖ at ~1e13); it is effectively disabled,
         //       leaving the descent-direction check and the line search as the
         //       safety net (exactly the original Rigid IPC solver's guards).
+        // NOTE: We leave grad_norm_tol unset on purpose so the constructor
+        //       can pick it. polysolve's gradient criterion is absolute, so
+        //       any fixed value depends on the scene's mass and length
+        //       scale: at 1e-6, a 7 g coin (gradients ~1e-11) stops after
+        //       one Newton iteration every step. With the velocity
+        //       criterion on, the constructor sets it to 0 so the velocity
+        //       criterion alone decides convergence (as in the original
+        //       Rigid IPC solver); otherwise it falls back to 1e-6. Set it
+        //       here to override either choice.
         nlohmann::json solver_params = {
             { "solver",
               { { { "type", "ProjectedNewton" },
@@ -177,7 +189,6 @@ public:
                   { "residual_tolerance", 1e100 } } } },
             { "allow_non_grad_convergence", true },
             { "max_iterations", 100 },
-            { "grad_norm_tol", 1e-6 },
             { "line_search",
               { { "method", "Backtracking" }, { "min_step_size", 1e-12 } } },
         };
