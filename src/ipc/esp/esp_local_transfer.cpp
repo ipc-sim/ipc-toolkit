@@ -78,7 +78,15 @@ namespace {
     struct Element {
         std::vector<index_t> vertices, edges;
         double weight;
+        double ee_scale = 1.0; // PROTOTYPE: area-consistent EE weight factor
     };
+    // PROTOTYPE: reference length for area-consistent EE weights (0 = off).
+    double area_ref(const ESPParameters& p)
+    {
+        const auto& cfg = ee_mollifier_config();
+        return cfg.area_ref_dbar ? p.dbar : cfg.area_ref;
+    }
+
     Element element(const CollisionMesh& mesh, const ESPParameters& p, size_t k)
     {
         Element out;
@@ -88,11 +96,15 @@ namespace {
                 out.edges.push_back(mesh.faces_to_edges()(k, i));
             }
             out.weight = p.area_weights ? mesh.face_areas()(k) / 9.0 : 1.0;
+            out.ee_scale = ee_area_scale_factor(
+                mesh.face_areas()(k) / 3.0, area_ref(p), /*face=*/true);
         } else if ((k -= mesh.num_faces()) < mesh.num_codim_edges()) {
             const auto e = mesh.codim_edges()[k];
             out.vertices = { mesh.edges()(e, 0), mesh.edges()(e, 1) };
             out.edges = { e };
             out.weight = p.area_weights ? mesh.edge_area(e) / 4.0 : 1.0;
+            out.ee_scale = ee_area_scale_factor(
+                mesh.edge_area(e) / 2.0, area_ref(p), /*face=*/false);
         } else {
             const auto v = mesh.codim_vertices()[k - mesh.num_codim_edges()];
             out.vertices = { v };
@@ -231,12 +243,16 @@ namespace {
         if (const auto* b = dynamic_cast<const InversePowerBarrier<>*>(
                 params.barrier.get()))
             power = std::max(1, int(std::lround(b->power())) + 1);
+        if (ee_mollifier_config().order_override > 0) // PROTOTYPE
+            power = ee_mollifier_config().order_override;
 
         for (const auto& pair : pairs) {
-            const std::array<index_t, 4> prim = { mesh.edges()(pair.ea, 0),
-                                                  mesh.edges()(pair.ea, 1),
-                                                  mesh.edges()(pair.eb, 0),
-                                                  mesh.edges()(pair.eb, 1) };
+            const std::array<index_t, 4> prim = { {
+                mesh.edges()(pair.ea, 0),
+                mesh.edges()(pair.ea, 1),
+                mesh.edges()(pair.eb, 0),
+                mesh.edges()(pair.eb, 1),
+            } };
             Eigen::Matrix<T, 4, 3> positions;
             if constexpr (Order == 0) {
                 for (int i = 0; i < 4; ++i)
@@ -257,7 +273,7 @@ namespace {
                 X.row(prim[0]), X.row(prim[1]), X.row(prim[2]), X.row(prim[3]),
                 value(d2));
             T m =
-                Math<T>::cubic_spline(sqrt(d2) / params.ee_support()) * 1.5
+                Math<T>::cubic_spline(sqrt(d2) / params.ee_support()) * ee_mollifier_config().ee_weight /* PROTOTYPE */
                 * edge_edge_mollifier<T>(
                     positions.row(0).transpose(), positions.row(1).transpose(),
                     positions.row(2).transpose(), positions.row(3).transpose(),
@@ -265,6 +281,7 @@ namespace {
             const T initial = m;
             for (int k = 1; k < power; ++k)
                 m = m * initial;
+            m = m * elem.ee_scale; // PROTOTYPE
             const Eigen::Vector3<T> q =
                 (positions.row(0) + u * (positions.row(1) - positions.row(0)))
                     .transpose();
