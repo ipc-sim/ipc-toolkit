@@ -768,6 +768,17 @@ bool Simulator::step()
         m_kinematics->from_integrator_state(m_time_integrator->x_prev(0));
 
     update_collisions(x, /*update_candidates=*/true);
+
+    // We lag the friction normal forces before re-seeding κ. The bodies at
+    // x were in equilibrium under the previous step's κ, so that κ gives the
+    // contact forces they actually carry. The re-seeded κ can differ from it
+    // by orders of magnitude (it tracks the bbox and the current gradients),
+    // and using it here would scale every friction force by the same factor.
+    // This matches Rigid IPC, which builds its friction set before the solver
+    // re-initializes κ.
+    initialize_friction_step();
+    update_friction_collisions(x);
+
     initialize_barrier_stiffness(x);
 
     // Reset the augmented Lagrangian toward this step's kinematic targets and
@@ -779,8 +790,6 @@ bool Simulator::step()
     // for the whole step (initialize_barrier_stiffness refreshes the bbox).
     const double eps_d = 1e-2 * m_bbox_diagonal;
     m_last_momentum_balance = -1;
-    initialize_friction_step();
-    update_friction_collisions(x);
 
     // Solve in the reduced coordinates z = Vx with the constrained entries
     // pinned when joints are present (this also projects x exactly onto the

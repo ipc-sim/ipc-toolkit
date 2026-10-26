@@ -11,6 +11,7 @@
 #include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/dynamics/rigid/rigid_bodies.hpp>
 #include <ipc/math/constants.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
 #include <simulator.hpp>
 
 #include <finitediff.hpp>
@@ -238,6 +239,81 @@ TEST_CASE("Friction sliding deceleration", "[friction][simulator]")
     CHECK(
         (sim.poses()[0].position - p_stop).norm()
         < settings.static_friction_speed_bound * 0.2);
+}
+
+// A step's friction forces are lagged from the state it starts at, so they
+// must be the contact forces that state actually carries: the ones the
+// previous step was solved with. A cube sliding faster than εᵥ then loses
+// exactly μλΔt/m of speed per step. The barrier stiffness is re-seeded every
+// step, so we add a second cube flying away from the scene. It grows the
+// bounding box, and with it the stiffness, on every step, which is exactly
+// when lagging with the re-seeded stiffness would scale the friction.
+TEST_CASE(
+    "Sliding friction uses the contact forces the start state carries",
+    "[friction][simulator]")
+{
+    const double mu = 0.3, dt = 0.01;
+
+    Simulator::Settings settings;
+    settings.friction_coefficient = mu;
+    settings.friction_iterations = 1; // one lagged solve per step
+    settings.velocity_conv_tol = 1e-4;
+
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    REQUIRE(tests::load_mesh("cube.ply", V, E, F));
+
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
+    initial_poses[0].position.y() = -V.col(1).minCoeff() + 0.9 * settings.dhat;
+    initial_poses[1].position = Eigen::Vector3d(5, 5, 0);
+
+    auto bodies = RigidBodies::build_from_meshes(
+        { V, V }, { E, E }, { F, F }, { 1000.0, 1000.0 }, initial_poses);
+    bodies->planes.emplace_back(Eigen::Vector3d(0, 1, 0), 0); // ground y = 0
+
+    std::vector<Pose> initial_velocities(2, Pose::identity(3));
+    initial_velocities[0].position = Eigen::Vector3d(1, 0, 0);  // sliding
+    initial_velocities[1].position = Eigen::Vector3d(0, 50, 0); // escaping
+
+    Simulator sim(bodies, initial_poses, initial_velocities, dt, settings);
+    const double mass = sim.bodies()[0].mass();
+
+    double x_prev = sim.rigid_poses()[0].position.x();
+    for (int i = 0; i < 3; ++i) {
+        x_prev = sim.rigid_poses()[0].position.x();
+        REQUIRE(sim.step());
+    }
+
+    for (int i = 0; i < 5; ++i) {
+        CAPTURE(i);
+
+        // The contact forces at the end of the previous step, with the
+        // stiffness it was solved with.
+        const BarrierPotential solved_with = sim.barrier_potential();
+        TangentialCollisions start;
+        start.build(
+            sim.bodies(), sim.bodies().vertices(sim.rigid_poses()),
+            sim.normal_collisions(), solved_with, mu);
+        double normal_force = 0;
+        for (size_t j = 0; j < start.size(); ++j) {
+            normal_force += start[j].normal_force_magnitude;
+        }
+        REQUIRE(normal_force > 0);
+
+        const double x = sim.rigid_poses()[0].position.x();
+        const double v = (x - x_prev) / dt;
+        REQUIRE(sim.step());
+        const double x_next = sim.rigid_poses()[0].position.x();
+        const double v_next = (x_next - x) / dt;
+        x_prev = x;
+
+        // The stiffness really did change, or this would test nothing.
+        CHECK(sim.barrier_potential().stiffness() != solved_with.stiffness());
+
+        CHECK(
+            v - v_next
+            == Catch::Approx(mu * normal_force * dt / mass).epsilon(1e-4));
+    }
 }
 
 TEST_CASE("Friction lagging semantics", "[friction][simulator]")
