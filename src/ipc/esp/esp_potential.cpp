@@ -130,7 +130,11 @@ namespace {
     }
 
     // PROTOTYPE: make an EE sample stand for about one r x r patch (length r
-    // on rods) instead of a fixed fraction of its element. Rest geometry only.
+    // on rods) instead of a fixed fraction of its element. An EE sample of
+    // weight m takes the share m / (W + m) of the element's average, where W
+    // is the total weight of its fixed samples (3 vertex samples of weight 1,
+    // or a face rule's weights). a_e = measure / W is the measure one unit of
+    // weight stands for. Rest geometry only, so a per-element constant.
     double ee_area_scale(
         const CollisionMesh& mesh,
         const IntegrationElement& elem,
@@ -138,13 +142,19 @@ namespace {
     {
         const auto& cfg = ee_mollifier_config();
         const double r = cfg.area_ref_dbar ? params.dbar : cfg.area_ref;
+        double fixed_weight = elem.num_vertices; // vertex samples weigh 1
         if (elem.face >= 0) {
+            for (const auto& qp : params.quad_rule()) {
+                fixed_weight += FACE_QUADRATURE_WEIGHT_SCALE * qp.weight;
+            }
             return ee_area_scale_factor(
-                mesh.face_areas()(elem.face) / 3.0, r, /*face=*/true);
+                mesh.face_areas()(elem.face) / fixed_weight, r,
+                /*face=*/true);
         }
         if (elem.num_edges == 1) {
             return ee_area_scale_factor(
-                mesh.edge_area(elem.edges[0]) / 2.0, r, /*face=*/false);
+                mesh.edge_area(elem.edges[0]) / fixed_weight, r,
+                /*face=*/false);
         }
         return 1.0;
     }

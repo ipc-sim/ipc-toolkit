@@ -81,6 +81,8 @@ namespace {
         double ee_scale = 1.0; // PROTOTYPE: area-consistent EE weight factor
     };
     // PROTOTYPE: reference length for area-consistent EE weights (0 = off).
+    // Transfer requires the vertex rule (unit weight per vertex), so the
+    // measure per unit of weight is area / 3 on faces and length / 2 on rods.
     double area_ref(const ESPParameters& p)
     {
         const auto& cfg = ee_mollifier_config();
