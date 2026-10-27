@@ -34,7 +34,7 @@ scalar edge_edge_mollifier(
         // c = sqrt(d_PE^2 - d^2) is the endpoint clearance and l is fixed.
         using std::sqrt;
         const scalar ell2 = ee_mollifier_config().rel_width
-            ? scalar(dist_sqr * MOLLIFIER_THRESHOLD_EPS)
+            ? scalar(dist_sqr * ee_mollifier_config().rel_eps)
             : ee_mollifier_config().sqrt_width
             ? scalar(sqrt(dist_sqr)
                      * (MOLLIFIER_THRESHOLD_EPS * ee_mollifier_config().L))

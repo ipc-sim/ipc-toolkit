@@ -298,11 +298,10 @@ std::array<HeavisideType, 4> edge_edge_mollifier_type(
     std::array<HeavisideType, 4> mtypes {};
     if (ee_mollifier_config().smoothstep) {
         const double ell2 = ee_mollifier_config().rel_width
-            ? dist_sqr * MOLLIFIER_THRESHOLD_EPS
-            : ee_mollifier_config().sqrt_width
-            ? std::sqrt(dist_sqr) * MOLLIFIER_THRESHOLD_EPS
-                * ee_mollifier_config().L
-            : sqr(ee_mollifier_config().ell);
+            ? dist_sqr * ee_mollifier_config().rel_eps
+            : ee_mollifier_config().sqrt_width ? std::sqrt(dist_sqr)
+                * MOLLIFIER_THRESHOLD_EPS * ee_mollifier_config().L
+                                               : sqr(ee_mollifier_config().ell);
         const auto t = [&](const double pe) {
             return pe - dist_sqr >= ell2 ? HeavisideType::ONE
                                          : HeavisideType::VARIANT;
