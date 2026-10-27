@@ -76,6 +76,14 @@ table.autosummary {
     font-size: 0.75rem !important;
 }
 
+/* Compress the padding inside table cells for the custom class */
+.tight-table th,
+.tight-table td {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    line-height: 1.2 !important;
+}
+
 /* ── Gallery Grid ── */
 .gallery-grid {
     display: grid;
@@ -126,8 +134,16 @@ table.autosummary {
     pointer-events: none;
 }
 
-.gallery-card .gallery-media[data-lightbox]:hover::after {
+.gallery-card .gallery-media[data-lightbox]:hover::after,
+.gallery-card .gallery-media[data-lightbox]:focus-visible::after {
     opacity: 1;
+}
+
+/* The gallery script makes each tile a keyboard button, so it needs a
+   visible focus ring. */
+.gallery-card .gallery-media[data-lightbox]:focus-visible {
+    outline: 2px solid var(--md-accent-fg-color);
+    outline-offset: 2px;
 }
 
 .gallery-card .gallery-media img,
@@ -200,9 +216,15 @@ table.autosummary {
         visibility 0.25s ease;
 }
 
+/* We switch visibility on instantly when opening (and only fade it on close)
+   because the script moves focus to the close button right away, and a
+   button that is still visibility-hidden can't take focus. */
 .gallery-lightbox.active {
     opacity: 1;
     visibility: visible;
+    transition:
+        opacity 0.25s ease,
+        visibility 0s;
 }
 
 .gallery-lightbox img,
@@ -256,4 +278,62 @@ table.autosummary {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Wide display equations scroll inside their own box instead of making the
+   whole page scroll sideways on narrow screens. We hide vertical overflow
+   because otherwise MathJax's bottom margin counts as overflow and tall
+   equations get a pointless vertical scrollbar. That margin is empty space,
+   so nothing visible gets clipped. */
+.md-typeset div.math {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* ── Home page ── */
+
+/* The logo already shows the project name, so we hide the H1 visually but
+   keep it for screen readers, search, and the page title. sphinx-immaterial
+   unwraps the top-level section, so we target the heading by its id. */
+.md-typeset h1#ipc-toolkit {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.md-typeset h1#ipc-toolkit ~ img {
+    width: 100%;
+    max-width: 40rem;
+}
+
+/* Sphinx can't read image paths with a #only-light fragment, so we mark the
+   two logos with classes instead and show only the one for the active scheme.
+   We center the visible logo with display: block. */
+.md-typeset img.only-light,
+.md-typeset img.only-dark {
+    display: none;
+}
+
+[data-md-color-scheme="default"] .md-typeset img.only-light,
+[data-md-color-scheme="slate"] .md-typeset img.only-dark {
+    display: block;
+    margin-inline: auto;
+}
+
+.ipc-home__badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.3rem;
+}
+
+/* Each destination is a link followed by a one-line description in the same
+   paragraph, so we put the link on its own line to separate the two. */
+.md-typeset ul.ipc-destinations > li > p > a.internal:first-child {
+    display: block;
+    font-weight: 700;
 }

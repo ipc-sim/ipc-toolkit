@@ -21,7 +21,7 @@
     
     
       
-        <title>Building Library - IPC Toolkit</title>
+        <title>Building the C++ Library - IPC Toolkit</title>
       
     
     
@@ -45,7 +45,7 @@
         <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.6efbe22605a23fcd6.min.css?v=b2ceb110" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=2bd09638" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=db5bf33a" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -107,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Building Library
+              Building the C++ Library
             
           </span>
         </div>
@@ -414,7 +414,7 @@
   
   
   <span class="md-ellipsis">
-    <span>Home</span>
+    <span title="/index.rst (reference label)"><span>Home</span></span>
     
   </span>
   
@@ -593,7 +593,7 @@
   
   
   <span class="md-ellipsis">
-    <span title="/build/c++.rst (reference label)"><span>Library</span></span>
+    <span title="/build/c++.rst (reference label)"><span>C++ Library</span></span>
     
   </span>
   
@@ -606,7 +606,7 @@
   
   
   <span class="md-ellipsis">
-    <span title="/build/c++.rst (reference label)"><span>Library</span></span>
+    <span title="/build/c++.rst (reference label)"><span>C++ Library</span></span>
     
   </span>
   
@@ -2131,7 +2131,7 @@
                   
 
 
-<h1 id="building-library">Building Library<a class="headerlink" href="#building-library" title="Link to this heading">¶</a></h1>
+<h1 id="building-the-c-library">Building the C++ Library<a class="headerlink" href="#building-the-c-library" title="Link to this heading">¶</a></h1>
 <p>IPC Toolkit uses CMake to configure its build system. It is designed to be used as a submodule in your project, and as such does not have a proper install target. Instead, you can include it in your project using CMake’s <code class="docutils literal notranslate"><span class="pre">FetchContent</span></code> module.</p>
 <h2 id="adding-ipc-toolkit-to-your-cmake">Adding IPC Toolkit to your CMake<a class="headerlink" href="#adding-ipc-toolkit-to-your-cmake" title="Link to this heading">¶</a></h2>
 <p>The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
@@ -2155,7 +2155,7 @@ We use a very similar process to download all external dependencies (using <a cl
 <p>where <code class="docutils literal notranslate"><span class="pre">PROJECT_NAME</span></code> is the name of your library/binary.</p>
 <div class="tip admonition">
 <p class="admonition-title">Tip</p>
-<p>If your <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_GIT_TAG</span></code> is a tag (e.g. <code class="docutils literal notranslate"><span class="pre">v1.3.1</span></code>), then you can use the <code class="docutils literal notranslate"><span class="pre">FetchContent_Declare</span></code> argument <code class="docutils literal notranslate"><span class="pre">GIT_SHALLOW</span> <span class="pre">TRUE</span></code> to download only a single commit. Otherwise, you should use the default <code class="docutils literal notranslate"><span class="pre">GIT_SHALLOW</span> <span class="pre">FALSE</span></code>.</p>
+<p>If your <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_GIT_TAG</span></code> is a tag (e.g. <code class="docutils literal notranslate"><span class="pre">v1.6.1</span></code>), then you can use the <code class="docutils literal notranslate"><span class="pre">FetchContent_Declare</span></code> argument <code class="docutils literal notranslate"><span class="pre">GIT_SHALLOW</span> <span class="pre">TRUE</span></code> to download only a single commit. Otherwise, you should use the default <code class="docutils literal notranslate"><span class="pre">GIT_SHALLOW</span> <span class="pre">FALSE</span></code>.</p>
 </div>
 <h2 id="building-the-library">Building the Library<a class="headerlink" href="#building-the-library" title="Link to this heading">¶</a></h2>
 <p>You can build the IPC Toolkit using CMake as you would any other CMake project. The following is a minimal example of how to build the toolkit:</p>
@@ -2195,7 +2195,7 @@ make<span class="w"> </span>-j<span class="k">$(</span>nproc<span class="k">)</s
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Oct 22, 2026
+    Oct 27, 2026
   </span>
 
     

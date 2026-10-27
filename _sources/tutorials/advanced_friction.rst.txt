@@ -88,6 +88,7 @@ where :math:`\lambda` is the contact force magnitude, :math:`T(x) \in \mathbb{R}
 where :math:`\epsilon_v` is a small constant (e.g., ``0.001``). The following plot shows the behavior of the function :math:`f_1`:
 
 .. figure:: ../_static/img/f1.png
+   :alt: Smooth mollifier
    :align: center
 
    Smooth mollifier :math:`f_1(\|\mathbf{u}\|)` where :math:`\epsilon_v = 0.001`.
@@ -104,6 +105,7 @@ To create a dissipative potential we integrate :math:`f_1` to obtain a smooth mo
 The following plot shows the behavior of the function :math:`f_0`:
 
 .. figure:: /_static/img/f0.png
+   :alt: Integrated mollifier
    :align: center
 
    Integrated mollifier :math:`f_0(\|\mathbf{u}\|)` where :math:`\epsilon_v = 0.001`.
@@ -123,6 +125,7 @@ When adding separate coefficients for static and kinetic friction, we need to ma
 We plot the smooth coefficient of friction :math:`\mu(y)` below:
 
 .. figure:: /_static/img/mu.png
+   :alt: Smooth coefficient of friction
    :align: center
 
    Smooth coefficient of friction :math:`\mu(\|\mathbf{u}\|)` where :math:`\mu_s = 1`, :math:`\mu_k = 0.1`, and :math:`\epsilon_v = 0.001`.
@@ -133,6 +136,7 @@ Smooth :math:`\mu` Mollifier
 Using a smooth function :math:`\mu(\|\mathbf{u}\|)` instead of a constant :math:`\mu` gives a smooth transition between static and kinetic friction. The function :math:`\mu(\|\mathbf{u}\|) f_1(\|\mathbf{u}\|)` is plotted below:
 
 .. figure:: /_static/img/mu_f1.png
+   :alt: Smooth coefficient of friction multiplied by the friction mollifier
    :align: center
 
    Smooth coefficient of friction multiplied by the friction mollifier :math:`\mu(\|\mathbf{u}\|) f_1(\|\mathbf{u}\|)` where :math:`\mu_s = 1`, :math:`\mu_k = 0.1`, and :math:`\epsilon_v = 0.001`.
@@ -147,6 +151,7 @@ However, :math:`\frac{\mathrm{d}}{\mathrm{d}y} \mu(y) f_0(y) \neq \mu(y) f_1(y)`
 The following plot shows the behavior of the integrated mollifier multiplied by the smooth coefficient of friction:
 
 .. figure:: /_static/img/int_mu_f1_dx.png
+   :alt: Integrated mollifier
    :align: center
 
    Integrated mollifier :math:`\int \mu(y) f_1(y) \mathrm{d} y` where :math:`\mu_s = 1`, :math:`\mu_k = 0.1`, and :math:`\epsilon_v = 0.001`.

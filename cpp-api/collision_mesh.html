@@ -45,7 +45,7 @@
         <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.6efbe22605a23fcd6.min.css?v=b2ceb110" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=2bd09638" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=db5bf33a" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -414,7 +414,7 @@
   
   
   <span class="md-ellipsis">
-    <span>Home</span>
+    <span title="/index.rst (reference label)"><span>Home</span></span>
     
   </span>
   
@@ -581,7 +581,7 @@
   
   
   <span class="md-ellipsis">
-    <span title="/build/c++.rst (reference label)"><span>Library</span></span>
+    <span title="/build/c++.rst (reference label)"><span>C++ Library</span></span>
     
   </span>
   
@@ -6427,20 +6427,7 @@
 <dl class="cpp class objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMeshE">
 <span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">CollisionMesh;</span></span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMeshE" title="Link to this definition">¶</a></dt>
-<dd><p>Collaboration diagram for ipc::CollisionMesh:</p>
-<figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-576ea33567a044be67033e6901f9113b2d74c5f8.svg" type="image/svg+xml" class="graphviz">
-<p class="warning">digraph {
-    graph [bgcolor=&quot;#00000000&quot;]
-    node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
-    edge [color=&quot;#1414CE&quot;]
-    &quot;2&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
-    &quot;1&quot; [label=&quot;ipc::CollisionMesh&quot; tooltip=&quot;ipc::CollisionMesh&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;usage&quot;]
-}</p></object></div>
-</div>
-</figure>
-<p>A class for encapsulating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh. </p>
+<dd><p>A class for encapsulating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions<a class="headerlink" href="#breathe-section-title-public-functions" title="Permalink to this headline">¶</a></p>
 <dl class="cpp function objdesc">
@@ -7054,7 +7041,7 @@
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions<a class="headerlink" href="#breathe-section-title-public-static-functions" title="Permalink to this headline">¶</a></p>
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh20build_from_full_meshEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE">
-<span class="k">static</span><span class="w">&nbsp;</span><span class="k">inline</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc13CollisionMeshE" title="ipc::CollisionMesh (C++ class) — Collaboration diagram for ipc::CollisionMesh:"><span class="n">CollisionMesh</span></a><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">build_from_full_mesh</span></span><span class="p">(<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="n">Eigen</span><span class="p">::</span><span class="n">ConstRef</span><span class="p">&lt;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXd</span><span class="p">&gt;</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE-p-full_rest_positions" title="ipc::CollisionMesh::build_from_full_mesh::full_rest_positions (C++ function parameter) — The full vertices at rest (|FV| × dim)."><span class="n sig-param">full_rest_positions</span></a></span><span class="p">,<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="n">Eigen</span><span class="p">::</span><span class="n">ConstRef</span><span class="p">&lt;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">&gt;</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE-p-edges" title="ipc::CollisionMesh::build_from_full_mesh::edges (C++ function parameter) — The edge matrix of mesh (|E| × 2)."><span class="n sig-param">edges</span></a></span><span class="p">,<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="n">Eigen</span><span class="p">::</span><span class="n">ConstRef</span><span class="p">&lt;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">&gt;</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE-p-faces" title="ipc::CollisionMesh::build_from_full_mesh::faces (C++ function parameter) — The face matrix of mesh (|F| × 3)."><span class="n sig-param">faces</span></a><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">(</span><span class="p">)</span></span><span class="p">);</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE" title="Link to this definition">¶</a></dt>
+<span class="k">static</span><span class="w">&nbsp;</span><span class="k">inline</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc13CollisionMeshE" title="ipc::CollisionMesh (C++ class) — A class for encapsulating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh."><span class="n">CollisionMesh</span></a><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">build_from_full_mesh</span></span><span class="p">(<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="n">Eigen</span><span class="p">::</span><span class="n">ConstRef</span><span class="p">&lt;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXd</span><span class="p">&gt;</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE-p-full_rest_positions" title="ipc::CollisionMesh::build_from_full_mesh::full_rest_positions (C++ function parameter) — The full vertices at rest (|FV| × dim)."><span class="n sig-param">full_rest_positions</span></a></span><span class="p">,<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="n">Eigen</span><span class="p">::</span><span class="n">ConstRef</span><span class="p">&lt;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">&gt;</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE-p-edges" title="ipc::CollisionMesh::build_from_full_mesh::edges (C++ function parameter) — The edge matrix of mesh (|E| × 2)."><span class="n sig-param">edges</span></a></span><span class="p">,<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="n">Eigen</span><span class="p">::</span><span class="n">ConstRef</span><span class="p">&lt;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">&gt;</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE-p-faces" title="ipc::CollisionMesh::build_from_full_mesh::faces (C++ function parameter) — The face matrix of mesh (|F| × 3)."><span class="n sig-param">faces</span></a><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">(</span><span class="p">)</span></span><span class="p">);</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE" title="Link to this definition">¶</a></dt>
 <dd><p>Helper function that automatically builds include_vertex using construct_is_on_surface. </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4N3ipc13CollisionMesh20build_from_full_meshEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE-parameters" title="Permalink to this headline">¶</a></dt>
@@ -7381,7 +7368,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Oct 22, 2026
+    Oct 27, 2026
   </span>
 
     

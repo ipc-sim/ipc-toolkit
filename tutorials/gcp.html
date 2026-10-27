@@ -45,7 +45,7 @@
         <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.6efbe22605a23fcd6.min.css?v=b2ceb110" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=2bd09638" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=db5bf33a" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -414,7 +414,7 @@
   
   
   <span class="md-ellipsis">
-    <span>Home</span>
+    <span title="/index.rst (reference label)"><span>Home</span></span>
     
   </span>
   
@@ -581,7 +581,7 @@
   
   
   <span class="md-ellipsis">
-    <span title="/build/c++.rst (reference label)"><span>Library</span></span>
+    <span title="/build/c++.rst (reference label)"><span>C++ Library</span></span>
     
   </span>
   
@@ -2395,7 +2395,7 @@
 <p>where <span class="math notranslate nohighlight">\(b(u)\)</span> is a barrier potential that increases to infinity as the configuration approaches contact.</p>
 <p>All existing contact barrier potentials are defined by aggregating repulsion terms between pairs of points or elements. The key question is how to choose the strength of repulsion so that it is high when two points are close to contact, vanishes when they are far, and satisfies a number of desirable properties. In particular, one important difficulty is distinguishing <em>true contact</em> — arising from different objects or parts of the same surface moving toward each other — from points that remain close simply because they are neighbors on the undeformed rest shape.</p>
 <figure class="align-center" id="id6">
-<a class="figure-on-light reference internal image-reference" href="../_images/nearby-points.svg"><img alt="../_images/nearby-points.svg" class="figure-on-light" src="../_images/nearby-points.svg" style="width: 200px;" />
+<a class="figure-on-light reference internal image-reference" href="../_images/nearby-points.svg"><img alt="Points nearing contact versus nearby non-contacting points" class="figure-on-light" src="../_images/nearby-points.svg" style="width: 200px;" />
 </a>
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
@@ -2438,7 +2438,7 @@ Contact potentials must distinguish points nearing contact (A and B) from nearby
 \end{cases}\end{split}\]</div>
 <p>Because <span class="math notranslate nohighlight">\(h_\epsilon\)</span> vanishes for <span class="math notranslate nohighlight">\(z \geq \epsilon\)</span> and <span class="math notranslate nohighlight">\(z^{-r}\)</span> diverges as <span class="math notranslate nohighlight">\(z \to 0\)</span>, the barrier satisfies both the localization and barrier requirements.</p>
 <figure class="align-center" id="id7">
-<a class="figure-on-light reference internal image-reference" href="../_images/barriers.svg"><img alt="../_images/barriers.svg" class="figure-on-light" src="../_images/barriers.svg" style="width: 300px;" />
+<a class="figure-on-light reference internal image-reference" href="../_images/barriers.svg"><img alt="The cubic spline" class="figure-on-light" src="../_images/barriers.svg" style="width: 300px;" />
 </a>
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
@@ -2465,7 +2465,7 @@ The cubic spline <span class="math notranslate nohighlight">\(h_\epsilon(z)\)</s
 \right\}.\end{split}\]</div>
 <p>Note that both constraints are applied symmetrically: <span class="math notranslate nohighlight">\(y\)</span> must be near a local minimum as seen from <span class="math notranslate nohighlight">\(x\)</span>, <em>and</em> <span class="math notranslate nohighlight">\(x\)</span> must be near a local minimum as seen from <span class="math notranslate nohighlight">\(y\)</span>.</p>
 <figure class="align-center" id="id8">
-<a class="figure-on-light reference internal image-reference" href="../_images/demo-force.png"><img alt="../_images/demo-force.png" class="figure-on-light" src="../_images/demo-force.png" style="width: 600px;" />
+<a class="figure-on-light reference internal image-reference" href="../_images/demo-force.png"><img alt="Contact forces and potential distribution on a 2D object for three potential variants" class="figure-on-light" src="../_images/demo-force.png" style="width: 600px;" />
 </a>
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
@@ -2478,7 +2478,7 @@ Contact forces (arrows) and potential distribution on a 2D object surface with r
 \[\Phi^m_{ik}(x, y) := {t^k_i(y)}^\top (f(y) - f(x))_+ \geq -\alpha_t, \quad \forall\, i \in I,\; k = 1, 2, 3,\]</div>
 <p>where <span class="math notranslate nohighlight">\(\alpha_t\)</span> is the tangent-direction smoothing parameter.</p>
 <figure class="align-center" id="id9">
-<a class="figure-on-light reference internal image-reference" href="../_images/tangent-notation.svg"><img alt="../_images/tangent-notation.svg" class="figure-on-light" src="../_images/tangent-notation.svg" style="width: 600px;" />
+<a class="figure-on-light reference internal image-reference" href="../_images/tangent-notation.svg"><img alt="Tangent directions at a point" class="figure-on-light" src="../_images/tangent-notation.svg" style="width: 600px;" />
 </a>
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
@@ -2489,14 +2489,14 @@ Tangent directions at a point <span class="math notranslate nohighlight">\(f(y)\
 \[\Phi^e_i(x, y) := -n_i(y)^\top (f(y) - f(x))_+,\]</div>
 <p>and the mollified constraint ensures that <span class="math notranslate nohighlight">\(\Phi^e_i(x, y) \geq 0\)</span> for <em>at least one</em> incident face <span class="math notranslate nohighlight">\(i\)</span>.</p>
 <figure class="align-center" id="id10">
-<a class="figure-on-light reference internal image-reference" href="../_images/normal-demo.png"><img alt="../_images/normal-demo.png" class="figure-on-light" src="../_images/normal-demo.png" style="width: 600px;" />
+<a class="figure-on-light reference internal image-reference" href="../_images/normal-demo.png"><img alt="2D and 3D normal directions for contact points" class="figure-on-light" src="../_images/normal-demo.png" style="width: 600px;" />
 </a>
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
 2D (top) and 3D (bottom) normal directions for contact points. The displacement <span class="math notranslate nohighlight">\(f(y) - f(x)\)</span> is shown in yellow; face normals <span class="math notranslate nohighlight">\(n_i(y)\)</span> are shown in red when the exterior constraint is satisfied, and green otherwise. In simple cases such as (A) and (D), all normals satisfy the constraint, but in general only some do.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></figcaption>
 </figure>
 <figure class="align-center" id="id11">
-<a class="figure-on-light reference internal image-reference" href="../_images/cone-filter-edge.svg"><img alt="../_images/cone-filter-edge.svg" class="figure-on-light" src="../_images/cone-filter-edge.svg" style="width: 600px;" />
+<a class="figure-on-light reference internal image-reference" href="../_images/cone-filter-edge.svg"><img alt="3D and 2D views of the exterior direction test for an edge point" class="figure-on-light" src="../_images/cone-filter-edge.svg" style="width: 600px;" />
 </a>
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
@@ -2522,7 +2522,7 @@ Tangent directions at a point <span class="math notranslate nohighlight">\(f(y)\
 <p>The symmetry ensures that both points in a pair must satisfy the geometric criteria.</p>
 <h3 id="smooth-heaviside-function">Smooth Heaviside Function<a class="headerlink" href="#smooth-heaviside-function" title="Link to this heading">¶</a></h3>
 <figure class="align-center" id="id12">
-<a class="figure-on-light reference internal image-reference" href="../_images/heaviside.svg"><img alt="../_images/heaviside.svg" class="figure-on-light" src="../_images/heaviside.svg" style="width: 300px;" />
+<a class="figure-on-light reference internal image-reference" href="../_images/heaviside.svg"><img alt="The smooth Heaviside function" class="figure-on-light" src="../_images/heaviside.svg" style="width: 300px;" />
 </a>
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
@@ -2549,7 +2549,7 @@ H'(z; \alpha, \beta) \geq 0, \quad \forall\, z.\end{split}\]</div>
 <h3 id="distance-mollification">Distance Mollification<a class="headerlink" href="#distance-mollification" title="Link to this heading">¶</a></h3>
 <p>Since closest points may not depend smoothly on vertex positions (e.g., when a closest point moves from the interior of a face to its boundary), GCP introduces mollification factors <span class="math notranslate nohighlight">\(M(x, y)\)</span> that smoothly vanish near these non-smooth transitions.</p>
 <figure class="align-center" id="id13">
-<a class="figure-on-light reference internal image-reference" href="../_images/smoothness-demo.svg"><img alt="../_images/smoothness-demo.svg" class="figure-on-light" src="../_images/smoothness-demo.svg" style="width: 600px;" />
+<a class="figure-on-light reference internal image-reference" href="../_images/smoothness-demo.svg"><img alt="Non-smoothness of the closest point position" class="figure-on-light" src="../_images/smoothness-demo.svg" style="width: 600px;" />
 </a>
 <figcaption>
 <p><span class="caption-text"><span class="caption-text">
@@ -2758,7 +2758,7 @@ Python</label></div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Oct 22, 2026
+    Oct 27, 2026
   </span>
 
     

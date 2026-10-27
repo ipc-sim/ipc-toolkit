@@ -45,7 +45,7 @@
         <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.6efbe22605a23fcd6.min.css?v=b2ceb110" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=2bd09638" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=db5bf33a" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -414,7 +414,7 @@
   
   
   <span class="md-ellipsis">
-    <span>Home</span>
+    <span title="/index.rst (reference label)"><span>Home</span></span>
     
   </span>
   
@@ -581,7 +581,7 @@
   
   
   <span class="md-ellipsis">
-    <span title="/build/c++.rst (reference label)"><span>Library</span></span>
+    <span title="/build/c++.rst (reference label)"><span>C++ Library</span></span>
     
   </span>
   
@@ -20453,19 +20453,6 @@
 }</p></object></div>
 </div>
 </figure>
-<p>Collaboration diagram for ipc::BroadPhase:</p>
-<figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-b0837dbd2f02cfc5285e06246b27ff485450ceea.svg" type="image/svg+xml" class="graphviz">
-<p class="warning">digraph {
-    graph [bgcolor=&quot;#00000000&quot;]
-    node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
-    edge [color=&quot;#1414CE&quot;]
-    &quot;1&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;2&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
-    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;usage&quot;]
-}</p></object></div>
-</div>
-</figure>
 <p>Base class for broad phase collision detection methods. </p>
 <p>Subclassed by <a class="reference internal" href="#classipc_1_1_brute_force"><span class="std std-ref">ipc::BruteForce</span></a>, <a class="reference internal" href="#classipc_1_1_hash_grid"><span class="std std-ref">ipc::HashGrid</span></a>, <a class="reference internal" href="#classipc_1_1_l_b_v_h"><span class="std std-ref">ipc::LBVH</span></a>, <a class="reference internal" href="#classipc_1_1_spatial_hash"><span class="std std-ref">ipc::SpatialHash</span></a>, <a class="reference internal" href="#classipc_1_1_sweep_and_prune"><span class="std std-ref">ipc::SweepAndPrune</span></a>, <a class="reference internal" href="#classipc_1_1_sweep_and_tiniest_queue"><span class="std std-ref">ipc::SweepAndTiniestQueue</span></a>, <a class="reference internal" href="#classipc_1_1cuda_1_1_l_b_v_h"><span class="std std-ref">ipc::cuda::LBVH</span></a></p>
 <div class="breathe-sectiondef docutils container">
@@ -20774,21 +20761,6 @@
 }</p></object></div>
 </div>
 </figure>
-<p>Collaboration diagram for ipc::BruteForce:</p>
-<figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-71f669909ab8e29c63d830f98274bdf7670a879d.svg" type="image/svg+xml" class="graphviz">
-<p class="warning">digraph {
-    graph [bgcolor=&quot;#00000000&quot;]
-    node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
-    edge [color=&quot;#1414CE&quot;]
-    &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
-    &quot;1&quot; [label=&quot;ipc::BruteForce&quot; tooltip=&quot;ipc::BruteForce&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
-    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
-    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-}</p></object></div>
-</div>
-</figure>
 <p>Brute force broad phase collision detection. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions<a class="headerlink" href="#breathe-section-title-public-functions" title="Permalink to this headline">¶</a></p>
@@ -20939,21 +20911,6 @@
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
     &quot;1&quot; [label=&quot;ipc::HashGrid&quot; tooltip=&quot;ipc::HashGrid&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-}</p></object></div>
-</div>
-</figure>
-<p>Collaboration diagram for ipc::HashGrid:</p>
-<figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-c77b46e21e610bb3402dfa5f93ce58a37c0f00fd.svg" type="image/svg+xml" class="graphviz">
-<p class="warning">digraph {
-    graph [bgcolor=&quot;#00000000&quot;]
-    node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
-    edge [color=&quot;#1414CE&quot;]
-    &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
-    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
-    &quot;1&quot; [label=&quot;ipc::HashGrid&quot; tooltip=&quot;ipc::HashGrid&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
@@ -21324,21 +21281,6 @@
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
     &quot;1&quot; [label=&quot;ipc::SpatialHash&quot; tooltip=&quot;ipc::SpatialHash&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-}</p></object></div>
-</div>
-</figure>
-<p>Collaboration diagram for ipc::SpatialHash:</p>
-<figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-35678b9def8961e6896512fcd30651a66db7949c.svg" type="image/svg+xml" class="graphviz">
-<p class="warning">digraph {
-    graph [bgcolor=&quot;#00000000&quot;]
-    node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
-    edge [color=&quot;#1414CE&quot;]
-    &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
-    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
-    &quot;1&quot; [label=&quot;ipc::SpatialHash&quot; tooltip=&quot;ipc::SpatialHash&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
@@ -21875,21 +21817,6 @@
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
     &quot;1&quot; [label=&quot;ipc::LBVH&quot; tooltip=&quot;ipc::LBVH&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-}</p></object></div>
-</div>
-</figure>
-<p>Collaboration diagram for ipc::LBVH:</p>
-<figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-1405b6bb9bc2a0e7ed411fad032658b3468cd1e6.svg" type="image/svg+xml" class="graphviz">
-<p class="warning">digraph {
-    graph [bgcolor=&quot;#00000000&quot;]
-    node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
-    edge [color=&quot;#1414CE&quot;]
-    &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
-    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
-    &quot;1&quot; [label=&quot;ipc::LBVH&quot; tooltip=&quot;ipc::LBVH&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
@@ -22532,21 +22459,6 @@
 }</p></object></div>
 </div>
 </figure>
-<p>Collaboration diagram for ipc::SweepAndPrune:</p>
-<figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-29f8b65d59eee2db12a7a25bd334f992cf35a862.svg" type="image/svg+xml" class="graphviz">
-<p class="warning">digraph {
-    graph [bgcolor=&quot;#00000000&quot;]
-    node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
-    edge [color=&quot;#1414CE&quot;]
-    &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
-    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
-    &quot;1&quot; [label=&quot;ipc::SweepAndPrune&quot; tooltip=&quot;ipc::SweepAndPrune&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
-    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-}</p></object></div>
-</div>
-</figure>
 <p>Sweep and Prune broad phase collision detection. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions<a class="headerlink" href="#breathe-section-title-public-functions" title="Permalink to this headline">¶</a></p>
@@ -22923,21 +22835,6 @@
 }</p></object></div>
 </div>
 </figure>
-<p>Collaboration diagram for ipc::SweepAndTiniestQueue:</p>
-<figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-28d3963f5db89641f4861e87a0a3e07c97d521c6.svg" type="image/svg+xml" class="graphviz">
-<p class="warning">digraph {
-    graph [bgcolor=&quot;#00000000&quot;]
-    node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
-    edge [color=&quot;#1414CE&quot;]
-    &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
-    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
-    &quot;1&quot; [label=&quot;ipc::SweepAndTiniestQueue&quot; tooltip=&quot;ipc::SweepAndTiniestQueue&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
-    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-}</p></object></div>
-</div>
-</figure>
 <p>Sweep and Tiniest Queue broad phase collision detection. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions<a class="headerlink" href="#breathe-section-title-public-functions" title="Permalink to this headline">¶</a></p>
@@ -23249,21 +23146,6 @@
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
     &quot;1&quot; [label=&quot;ipc::cuda::LBVH&quot; tooltip=&quot;ipc::cuda::LBVH&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-}</p></object></div>
-</div>
-</figure>
-<p>Collaboration diagram for ipc::cuda::LBVH:</p>
-<figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-3b107f02fd0e9b44cb391ca58751c9b4453002d6.svg" type="image/svg+xml" class="graphviz">
-<p class="warning">digraph {
-    graph [bgcolor=&quot;#00000000&quot;]
-    node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
-    edge [color=&quot;#1414CE&quot;]
-    &quot;2&quot; [label=&quot;ipc::BroadPhase&quot; tooltip=&quot;ipc::BroadPhase&quot;]
-    &quot;3&quot; [label=&quot;ipc::CollisionFilter&quot; tooltip=&quot;ipc::CollisionFilter&quot;]
-    &quot;1&quot; [label=&quot;ipc::cuda::LBVH&quot; tooltip=&quot;ipc::cuda::LBVH&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;usage&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
@@ -23791,7 +23673,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Oct 22, 2026
+    Oct 27, 2026
   </span>
 
     
