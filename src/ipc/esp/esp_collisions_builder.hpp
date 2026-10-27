@@ -31,6 +31,9 @@ public:
     /// candidates.ee_set(mesh, ei). Results are stored in edge_collisions_2d.
     /// @param point_potential Holds the mesh, candidates, parameters, and the
     ///        mesh's inclusion-exclusion weights, shared by every thread.
+    /// @param vertices Vertex positions (2D).
+    /// @param start First edge index to process.
+    /// @param end One past the last edge index to process.
     void build_edge_collisions(
         const PointPotential& point_potential,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
@@ -96,37 +99,7 @@ public:
         const size_t start_i,
         const size_t end_i);
 
-    /*/
-    -------------------------------------------------------------------------
-
-    void add_negative_edge_edge_edge_collisions(
-        const CollisionMesh& mesh,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<std::array<index_t, 3>>& candidates,
-        const ESPParameters& params,
-        const double dhat,
-        const size_t start_i,
-        const size_t end_i);
-
-    void add_edge_edge_face_collisions(
-        const CollisionMesh& mesh,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<std::array<index_t, 3>>& candidates,
-        const ESPParameters& params,
-        const double dhat,
-        const size_t start_i,
-        const size_t end_i);
-
-    void add_edge_edge_vertex_collisions(
-        const CollisionMesh& mesh,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<std::array<index_t, 3>>& candidates,
-        const ESPParameters& params,
-        const double dhat,
-        const size_t start_i,
-        const size_t end_i);
-
-    /*/// -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     static void merge(
         const tbb::enumerable_thread_specific<ESPCollisionsBuilder<3>>&
