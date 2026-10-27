@@ -102,13 +102,13 @@ TEST_CASE(
     const int ax = tests::vertex_dofs<3>(0, s.X.rows())[0];
     CHECK(
         old_p(c, s.mesh, s.X)
-        == Catch::Approx(.09676209393058051).epsilon(1e-9));
+        == Catch::Approx(.10589380670845851).epsilon(1e-9));
     CHECK(
         new_p(c, s.mesh, s.X)
         == Catch::Approx(.0893123239682775).epsilon(1e-9));
     CHECK(
         -old_p.gradient(c, s.mesh, s.X)[ax]
-        == Catch::Approx(464.76612581).epsilon(1e-8));
+        == Catch::Approx(852.69739536).epsilon(1e-8));
     CHECK(
         -new_p.gradient(c, s.mesh, s.X)[ax]
         == Catch::Approx(77.01422187).epsilon(1e-7));
@@ -125,7 +125,21 @@ TEST_CASE(
     const int barrier = GENERATE(0, 1, 2);
     if (barrier)
         params.barrier = std::make_shared<InversePowerBarrier<>>(barrier);
-    CAPTURE(barrier, params.area_weights);
+    // The vertex rule, or corners plus a centroid and edge midpoints: the
+    // corners donate, the other points are ordinary samples.
+    const bool with_non_corner_points = GENERATE(false, true);
+    if (with_non_corner_points) {
+        params.set_quad_rule({
+            { { { 1., 0., 0. } }, 0.1 },
+            { { { 0., 1., 0. } }, 0.1 },
+            { { { 0., 0., 1. } }, 0.1 },
+            { { { .5, .5, 0. } }, 0.15 },
+            { { { 0., .5, .5 } }, 0.15 },
+            { { { .5, 0., .5 } }, 0.15 },
+            { { { 1. / 3, 1. / 3, 1. / 3 } }, 0.25 },
+        });
+    }
+    CAPTURE(barrier, params.area_weights, with_non_corner_points);
     check_derivatives(s.mesh, s.X, params);
 }
 

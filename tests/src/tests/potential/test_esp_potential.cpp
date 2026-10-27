@@ -292,9 +292,10 @@ TEST_CASE(
     REQUIRE(stats.max_abs_P < 2);
     REQUIRE(stats.max_abs_g < 200);
     // 10x current measured shift from the smallest-eps sample
-    // (current: max|ΔP|≈2.4e-5, max|Δ|g||≈1.64).
-    CHECK(stats.max_shift_P < 2.4e-4);
-    CHECK(stats.max_shift_g < 16.5);
+    // (current: max|ΔP|≈6.4e-4, max|Δ|g||≈94; faces weighted by their area,
+    // rule weights summing to 1).
+    CHECK(stats.max_shift_P < 6.4e-3);
+    CHECK(stats.max_shift_g < 940);
 }
 
 // Same configuration as above, but uses an inverse-quadratic barrier to probe
@@ -308,9 +309,10 @@ TEST_CASE(
     CHECK(stats.max_abs_P < 1e8);
     CHECK(stats.max_abs_g < 1e10);
     // 10x current measured shift from the smallest-eps sample
-    // (current: max|ΔP|≈1.4e-3, max|Δ|g||≈1.55).
-    CHECK(stats.max_shift_P < 1.4e-2);
-    CHECK(stats.max_shift_g < 15.5);
+    // (current: max|ΔP|≈2.3e-2, max|Δ|g||≈57; faces weighted by their area,
+    // rule weights summing to 1).
+    CHECK(stats.max_shift_P < 0.23);
+    CHECK(stats.max_shift_g < 575);
 }
 
 // Same configuration but with a linear-inverse barrier (1/d divergence).
@@ -323,9 +325,10 @@ TEST_CASE(
     CHECK(stats.max_abs_P < 1e8);
     CHECK(stats.max_abs_g < 1e10);
     // 10x current measured shift from the smallest-eps sample
-    // (current: max|ΔP|≈1.85e-5, max|Δ|g||≈0.044).
-    CHECK(stats.max_shift_P < 1.85e-4);
-    CHECK(stats.max_shift_g < 0.44);
+    // (current: max|ΔP|≈4.2e-4, max|Δ|g||≈1.9; faces weighted by their area,
+    // rule weights summing to 1).
+    CHECK(stats.max_shift_P < 4.2e-3);
+    CHECK(stats.max_shift_g < 19);
 }
 
 TEST_CASE(
@@ -652,8 +655,8 @@ TEST_CASE(
     const CollisionMesh mesh(V, E, F);
 
     // dbar_factor = 0 drops the edge-edge terms, so every face's total weight
-    // is that of its three vertices, 3, and the normalized potential is the
-    // unnormalized one divided by 3.
+    // is that of its rule, which sums to 1, and the normalized potential
+    // equals the unnormalized one.
     const ESPParameters params(0.15, 0.0);
     ESPCollisions collisions;
     collisions.build(mesh, V, params);
@@ -665,17 +668,17 @@ TEST_CASE(
     REQUIRE(energy > 0);
     CHECK(
         normalized(collisions, mesh, V)
-        == Catch::Approx(energy / 3).epsilon(1e-12));
+        == Catch::Approx(energy).epsilon(1e-12));
 
     const Eigen::VectorXd grad = unnormalized.gradient(collisions, mesh, V);
     CHECK(
-        (normalized.gradient(collisions, mesh, V) - grad / 3).norm()
+        (normalized.gradient(collisions, mesh, V) - grad).norm()
         <= 1e-12 * grad.norm());
 
     const Eigen::SparseMatrix<double> hess =
         unnormalized.hessian(collisions, mesh, V);
     CHECK(
-        (normalized.hessian(collisions, mesh, V) - hess / 3).norm()
+        (normalized.hessian(collisions, mesh, V) - hess).norm()
         <= 1e-12 * hess.norm());
 }
 
@@ -1423,11 +1426,11 @@ TEST_CASE(
     REQUIRE(!collisions.empty());
     CHECK(ESPPotential(params)(collisions, mesh, V) > 0);
 
-    // An empty rule is what an ESPPotential constructed before
+    // The default vertex rule is what an ESPPotential constructed before
     // set_quad_rule() holds, since it copies the parameters. The other rules
     // have fewer points, more points, or the same points with other weights.
     const std::string other_rule =
-        GENERATE("empty", "centroid", "vertices+centroid", "reweighted");
+        GENERATE("default", "centroid", "vertices+centroid", "reweighted");
     CAPTURE(other_rule);
     ESPParameters other_params(0.1, 1.0);
     if (other_rule == "centroid") {
@@ -1453,7 +1456,27 @@ TEST_CASE(
 TEST_CASE("ESP face quadrature rule validation", "[esp_potential]")
 {
     ESPParameters params(0.1);
-    CHECK(params.quad_rule().empty());
+    // The default is the vertex rule: the corners, weight 1/3 each, all
+    // integrated with the shared vertex samples.
+    CHECK(params.quad_rule().size() == 3);
+    for (const double w : params.corner_weights()) {
+        CHECK(w == Catch::Approx(1. / 3));
+    }
+    CHECK(params.non_corner_rule().empty());
+
+    // Weights are normalized to sum to 1; corner points are split from the
+    // others.
+    params.set_quad_rule({
+        { { { 1., 0., 0. } }, 2. },
+        { { { 0., 1., 0. } }, 2. },
+        { { { 0., 0., 1. } }, 2. },
+        { { { 1. / 3, 1. / 3, 1. / 3 } }, 2. },
+    });
+    for (const double w : params.corner_weights()) {
+        CHECK(w == Catch::Approx(0.25));
+    }
+    REQUIRE(params.non_corner_rule().size() == 1);
+    CHECK(params.non_corner_rule()[0].weight == Catch::Approx(0.25));
 
     const FaceQuadRule centroid = { { { { 1. / 3, 1. / 3, 1. / 3 } }, 1.0 } };
     CHECK_NOTHROW(params.set_quad_rule(centroid));
@@ -1509,8 +1532,11 @@ TEST_CASE("ESP face quadrature rule validation", "[esp_potential]")
     }
     CHECK(params.quad_rule().size() == 3); // unchanged on failure
 
-    CHECK_NOTHROW(params.set_quad_rule({})); // back to vertex integration
-    CHECK(params.quad_rule().empty());
+    // An empty rule is rejected; there is no implicit vertex integration.
+    CHECK_THROWS_AS(params.set_quad_rule({}), std::invalid_argument);
+    CHECK(params.quad_rule().size() == 3); // unchanged on failure
+    CHECK_NOTHROW(params.set_quad_rule(ESPParameters::vertex_rule()));
+    CHECK(params.non_corner_rule().empty());
 }
 
 TEST_CASE("ESP 2D Gauss-Lobatto weights are positive", "[esp_potential]")
@@ -2394,7 +2420,9 @@ TEST_CASE(
         quad_order = 2;
     }
     ESPParameters params(dhat, 1., quad_order);
-    params.set_quad_rule(face_quad_rule);
+    if (!face_quad_rule.empty()) { // else the default vertex rule
+        params.set_quad_rule(face_quad_rule);
+    }
 
     // The rows below V hold values far from the mesh, so reading them instead
     // of V changes the result.

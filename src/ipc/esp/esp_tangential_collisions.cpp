@@ -268,20 +268,13 @@ void TangentialCollisions::build(
         // --- Precompute per-face normalized outer scale ---
         // ESP outer contribution per face f is: area_f [* / total_w_f]
         // depending on normalize_weights. total_w_f sums active EE mollifiers
-        // and either face quadrature weights (when active) or 3 (for the 3
-        // face vertices, when face quadrature is not active).
-        const auto& face_quad_rule = params.quad_rule();
-        const bool has_face_quad = !face_quad_rule.empty();
-        double sum_face_qp_w = 0.0;
-        for (const auto& qp : face_quad_rule) {
-            sum_face_qp_w += qp.weight;
-        }
-
-        // When face quadrature is active, vertices are already included
-        // in the quadrature rule, so don't count the 3 vertex contributions.
-        const double base_w = has_face_quad ? sum_face_qp_w : 3.0;
+        // and the face rule's weights, which sum to 1. The rule's corner
+        // points are the vertex samples (weighted by corner_weights()); its
+        // other points are the per-face samples.
+        const auto& corner_w = params.corner_weights();
+        const auto& face_quad_rule = params.non_corner_rule();
         Eigen::VectorXd total_w_per_face =
-            Eigen::VectorXd::Constant(faces.rows(), base_w);
+            Eigen::VectorXd::Constant(faces.rows(), 1.0);
         if (normalize_weights) {
             // Add per-face sum of active EE mollifiers (EA_EB only).
             for (const auto& [ei_pair, dict_ptr] :
@@ -326,18 +319,17 @@ void TangentialCollisions::build(
             face_scale(f) =
                 normalize_weights ? (w_f / total_w_per_face(f)) : w_f;
         }
-        // Precompute per-vertex ESP outer weight = sum_{f ∋ v} face_scale(f).
+        // Per-vertex ESP outer weight:
+        // sum_{f ∋ v} face_scale(f) * corner weight of v in f.
         Eigen::VectorXd v_outer_w = Eigen::VectorXd::Zero(n_verts);
         for (index_t f = 0; f < faces.rows(); f++) {
             for (int lv = 0; lv < 3; lv++) {
-                v_outer_w(faces(f, lv)) += face_scale(f);
+                v_outer_w(faces(f, lv)) += face_scale(f) * corner_w[lv];
             }
         }
 
         // ---- VERTEX dicts: all vertex IDs are real ----
-        // Skip when face quadrature is active (non-empty rule), which
-        // already includes vertices, matching the normal potential's behavior.
-        if (!has_face_quad) {
+        {
             for (const auto& [vi, dict_ptr] :
                  collisions.maps().vertex_collisions) {
                 VertexMatrixView<3> V_view(vertices);

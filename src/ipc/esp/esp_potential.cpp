@@ -54,9 +54,10 @@ namespace {
     // An element we integrate the 3D potential over: a face, an edge in no
     // face (e.g., a rod), or a vertex in no edge (e.g., a particle). Each
     // element's potential is the weighted average of the pointwise potential
-    // at its samples: its vertices (a face's only without a face quadrature
-    // rule, since the rule includes them), its face quadrature points (faces
-    // only), and the closest points of its edges' edge-edge pairs.
+    // at its samples: its vertices, its face rule's other points (faces only),
+    // and the closest points of its edges' edge-edge pairs. A face's vertices
+    // carry the rule's corner weights; a rod's two vertices 1/2 each; a
+    // particle's vertex 1. So every element's fixed samples weigh 1 in total.
     //
     // A rod or particle has no face, so without elements of its own it would
     // get exactly zero potential, however close it comes to anything.
@@ -65,6 +66,7 @@ namespace {
         std::array<index_t, 3> edges {}; ///< Edges whose edge-edge pairs count
         int num_edges = 0;
         std::array<index_t, 3> vertices {}; ///< Vertex samples
+        std::array<double, 3> vertex_weights {}; ///< Their weights
         int num_vertices = 0;
         double weight = 1; ///< Outer weight of the element's average
     };
@@ -95,13 +97,11 @@ namespace {
             for (int j = 0; j < 3; j++) {
                 elem.edges[j] = mesh.faces_to_edges()(f, j);
             }
-            // The face quadrature rule includes the face vertices, so we
-            // only sample them separately when there is no rule.
-            if (params.quad_rule().empty()) {
-                elem.num_vertices = 3;
-                for (int j = 0; j < 3; j++) {
-                    elem.vertices[j] = mesh.faces()(f, j);
-                }
+            // The rule's corner points are the face's vertex samples.
+            elem.num_vertices = 3;
+            for (int j = 0; j < 3; j++) {
+                elem.vertices[j] = mesh.faces()(f, j);
+                elem.vertex_weights[j] = params.corner_weights()[j];
             }
             elem.weight = params.area_weights ? mesh.face_areas()(f) : 1.;
             return elem;
@@ -115,6 +115,7 @@ namespace {
             elem.num_vertices = 2;
             elem.vertices[0] = mesh.edges()(e, 0);
             elem.vertices[1] = mesh.edges()(e, 1);
+            elem.vertex_weights = { { 0.5, 0.5, 0 } };
             elem.weight = params.area_weights ? mesh.edge_area(e) : 1.;
             return elem;
         }
@@ -124,16 +125,17 @@ namespace {
         const index_t v = mesh.codim_vertices()[k];
         elem.num_vertices = 1;
         elem.vertices[0] = v;
+        elem.vertex_weights = { { 1, 0, 0 } };
         elem.weight = params.area_weights ? mesh.vertex_area(v) : 1.;
         return elem;
     }
 
     // PROTOTYPE: make an EE sample stand for about one r x r patch (length r
     // on rods) instead of a fixed fraction of its element. An EE sample of
-    // weight m takes the share m / (W + m) of the element's average, where W
-    // is the total weight of its fixed samples (3 vertex samples of weight 1,
-    // or a face rule's weights). a_e = measure / W is the measure one unit of
-    // weight stands for. Rest geometry only, so a per-element constant.
+    // weight m takes the share m / (1 + m) of the element's average, since
+    // the element's fixed samples weigh 1 in total, so the scale compares the
+    // element's rest measure with the patch. Rest geometry only, so a
+    // per-element constant.
     double ee_area_scale(
         const CollisionMesh& mesh,
         const IntegrationElement& elem,
@@ -141,19 +143,13 @@ namespace {
     {
         const auto& cfg = ee_mollifier_config();
         const double r = cfg.area_ref_dbar ? params.dbar : cfg.area_ref;
-        double fixed_weight = elem.num_vertices; // vertex samples weigh 1
         if (elem.face >= 0) {
-            for (const auto& qp : params.quad_rule()) {
-                fixed_weight += FACE_QUADRATURE_WEIGHT_SCALE * qp.weight;
-            }
             return ee_area_scale_factor(
-                mesh.face_areas()(elem.face) / fixed_weight, r,
-                /*face=*/true);
+                mesh.face_areas()(elem.face), r, /*face=*/true);
         }
         if (elem.num_edges == 1) {
             return ee_area_scale_factor(
-                mesh.edge_area(elem.edges[0]) / fixed_weight, r,
-                /*face=*/false);
+                mesh.edge_area(elem.edges[0]), r, /*face=*/false);
         }
         return 1.0;
     }
@@ -345,7 +341,7 @@ double ESPPotential::operator()(
                     // Face-interior quadrature points from
                     // params.quad_rule() (faces only).
                     const FaceQuadRule& face_quad_rule = elem.face >= 0
-                        ? m_params.quad_rule()
+                        ? m_params.non_corner_rule()
                         : NO_FACE_QUADRATURE;
                     {
                         auto iter =
@@ -394,11 +390,15 @@ double ESPPotential::operator()(
                     // Vertex samples (see integration_element())
                     for (int lv = 0; lv < elem.num_vertices; lv++) {
                         const index_t v = elem.vertices[lv];
+                        const double vw = elem.vertex_weights[lv];
+                        if (vw == 0) {
+                            continue;
+                        }
                         if (use_nf) {
-                            total_w_near += 1.;
-                            total_w_far += 1.;
+                            total_w_near += vw;
+                            total_w_far += vw;
                         } else {
-                            total_w += 1.;
+                            total_w += vw;
                         }
                         if (auto iter =
                                 collisions.maps().vertex_collisions.find(v);
@@ -408,13 +408,13 @@ double ESPPotential::operator()(
                                     evaluate_potential_at_vertex_with_cached_collisions_nearfar(
                                         X, *(iter->second), m_params,
                                         *nf_barrier);
-                                total_p_near += vt_near;
-                                total_p_far += vt_far;
+                                total_p_near += vw * vt_near;
+                                total_p_far += vw * vt_far;
                             } else {
                                 const double vt_val = PointPotentialHelper::
                                     evaluate_potential_at_vertex_with_cached_collisions(
                                         X, *(iter->second), m_params);
-                                total_p += vt_val;
+                                total_p += vw * vt_val;
                             }
                         }
                     }
@@ -691,7 +691,7 @@ Eigen::VectorXd ESPPotential::gradient(
 
                     // Face-interior quadrature points (faces only)
                     const FaceQuadRule& face_quad_rule = elem.face >= 0
-                        ? m_params.quad_rule()
+                        ? m_params.non_corner_rule()
                         : NO_FACE_QUADRATURE;
                     {
                         auto iter =
@@ -755,10 +755,14 @@ Eigen::VectorXd ESPPotential::gradient(
                     // Vertex samples (see integration_element())
                     for (int lv = 0; lv < elem.num_vertices; lv++) {
                         const index_t v = elem.vertices[lv];
-                        total_w += 1.;
+                        const double vw = elem.vertex_weights[lv];
+                        if (vw == 0) {
+                            continue;
+                        }
+                        total_w += vw;
                         if (use_nf_grad) {
-                            total_w_near += 1.0;
-                            total_w_far += 1.0;
+                            total_w_near += vw;
+                            total_w_far += vw;
                         }
                         if (auto iter =
                                 collisions.maps().vertex_collisions.find(v);
@@ -772,11 +776,10 @@ Eigen::VectorXd ESPPotential::gradient(
                                     evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
                                         X, (*iter->second), m_params,
                                         *nf_barrier);
-                                const_cache.push_back(
-                                    ConstGradEntry { &(*iter->second).dofs(),
-                                                     grad_n, grad_f, P_n,
-                                                     P_f });
-                                total_p_near += P_n;
+                                const_cache.push_back(ConstGradEntry {
+                                    &(*iter->second).dofs(), vw * grad_n,
+                                    vw * grad_f, vw * P_n, vw * P_f });
+                                total_p_near += vw * P_n;
                             } else {
                                 const double P = PointPotentialHelper::
                                     evaluate_potential_at_vertex_with_cached_collisions(
@@ -784,10 +787,9 @@ Eigen::VectorXd ESPPotential::gradient(
                                 const Eigen::VectorXd grad_p = PointPotentialHelper::
                                     evaluate_potential_gradient_at_vertex_with_cached_collisions(
                                         X, (*iter->second), m_params);
-                                const_cache.push_back(
-                                    ConstGradEntry {
-                                        &(*iter->second).dofs(), grad_p,
-                                        Eigen::VectorXd::Zero(0), P, 0 });
+                                const_cache.push_back(ConstGradEntry {
+                                    &(*iter->second).dofs(), vw * grad_p,
+                                    Eigen::VectorXd::Zero(0), vw * P, 0 });
                             }
                         }
                     }
@@ -1165,7 +1167,7 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
 
                     // Face-interior quadrature points (faces only)
                     const FaceQuadRule& face_quad_rule = elem.face >= 0
-                        ? m_params.quad_rule()
+                        ? m_params.non_corner_rule()
                         : NO_FACE_QUADRATURE;
                     {
                         auto iter =
@@ -1254,10 +1256,14 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                     // Vertex samples (see integration_element())
                     for (int lv = 0; lv < elem.num_vertices; lv++) {
                         const index_t v = elem.vertices[lv];
-                        total_w += 1.;
+                        const double vw = elem.vertex_weights[lv];
+                        if (vw == 0) {
+                            continue;
+                        }
+                        total_w += vw;
                         if (use_nf_hess) {
-                            total_w_near += 1.0;
-                            total_w_far += 1.0;
+                            total_w_near += vw;
+                            total_w_far += vw;
                         }
                         if (auto iter =
                                 collisions.maps().vertex_collisions.find(v);
@@ -1278,24 +1284,28 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                     evaluate_potential_hessian_at_vertex_with_cached_collisions_nearfar(
                                         X, dict, m_params, inner_psd_method,
                                         *nf_barrier);
-                                entry.p_near = P_n;
-                                entry.p_far = P_f;
-                                entry.grad_p_near = grad_n;
-                                entry.grad_p_far = grad_f;
-                                entry.local_hess_near = hess_n;
-                                entry.local_hess_far = hess_f;
+                                entry.p_near = vw * P_n;
+                                entry.p_far = vw * P_f;
+                                entry.grad_p_near = vw * grad_n;
+                                entry.grad_p_far = vw * grad_f;
+                                entry.local_hess_near = vw * hess_n;
+                                entry.local_hess_far = vw * hess_f;
                                 total_p_near += entry.p_near;
                                 total_p_far += entry.p_far;
                             } else {
-                                entry.p_near = PointPotentialHelper::
-                                    evaluate_potential_at_vertex_with_cached_collisions(
-                                        X, dict, m_params);
-                                entry.grad_p_near = PointPotentialHelper::
-                                    evaluate_potential_gradient_at_vertex_with_cached_collisions(
-                                        X, dict, m_params);
-                                entry.local_hess_near = PointPotentialHelper::
-                                    evaluate_potential_hessian_at_vertex_with_cached_collisions(
-                                        X, dict, m_params, inner_psd_method);
+                                entry.p_near = vw
+                                    * PointPotentialHelper::
+                                        evaluate_potential_at_vertex_with_cached_collisions(
+                                                   X, dict, m_params);
+                                entry.grad_p_near = vw
+                                    * PointPotentialHelper::
+                                        evaluate_potential_gradient_at_vertex_with_cached_collisions(
+                                                        X, dict, m_params);
+                                entry.local_hess_near = vw
+                                    * PointPotentialHelper::
+                                        evaluate_potential_hessian_at_vertex_with_cached_collisions(
+                                                            X, dict, m_params,
+                                                            inner_psd_method);
                                 entry.p_far = 0;
                                 entry.grad_p_far = Eigen::VectorXd::Zero(0);
                                 entry.local_hess_far =

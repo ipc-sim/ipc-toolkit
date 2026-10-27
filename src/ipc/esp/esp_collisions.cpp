@@ -92,27 +92,16 @@ void ESPCollisions::build(
             vertex_mask[candidate.vertex1_id] = true;
         }
 
-        // Face quadrature includes the face vertices, so a face's vertices
-        // are only integrated separately when there is no face quadrature
-        // rule. Edges in no face and isolated vertices have no face
-        // quadrature, so ESPPotential always integrates over their vertices.
-        const bool use_face_quadrature = !params.quad_rule().empty();
-        std::vector<bool> is_vertex_sample(
-            mesh.num_vertices(), !use_face_quadrature);
-        if (use_face_quadrature) {
-            for (const index_t ei : mesh.codim_edges()) {
-                is_vertex_sample[mesh.edges()(ei, 0)] = true;
-                is_vertex_sample[mesh.edges()(ei, 1)] = true;
-            }
-            for (const index_t vi : mesh.codim_vertices()) {
-                is_vertex_sample[vi] = true;
-            }
-        }
+        // Every vertex is a sample: a face rule's corner points use the
+        // shared vertex samples (ESPParameters::corner_weights()), and edges
+        // in no face and isolated vertices integrate over their vertices.
+        // Only the rule's other points need per-face samples.
+        const bool use_face_quadrature = !params.non_corner_rule().empty();
 
         std::vector<index_t> vertices_to_process;
         vertices_to_process.reserve(mesh.num_vertices());
         for (int i = 0; i < mesh.num_vertices(); ++i) {
-            if (vertex_mask[i] && is_vertex_sample[i]) {
+            if (vertex_mask[i]) {
                 vertices_to_process.push_back(i);
             }
         }

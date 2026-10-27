@@ -75,14 +75,21 @@ namespace {
         return product(a, inv);
     }
 
+    // An integration element: its vertex samples with their weights (a face
+    // rule's corner weights, 1/2 per rod endpoint, 1 for a particle), the
+    // face (for the rule's other points), and its edges.
     struct Element {
         std::vector<index_t> vertices, edges;
+        std::vector<double> vertex_weights;
+        index_t face = -1;
         double weight;
         double ee_scale = 1.0; // PROTOTYPE: area-consistent EE weight factor
     };
     // PROTOTYPE: reference length for area-consistent EE weights (0 = off).
-    // Transfer requires the vertex rule (unit weight per vertex), so the
-    // measure per unit of weight is area / 3 on faces and length / 2 on rods.
+    // An EE sample takes at most the smaller endpoint weight c of the
+    // element's mass, so the measure it can stand for is c times the
+    // element's measure (area / 3 on faces with the vertex rule, length / 2
+    // on rods).
     double area_ref(const ESPParameters& p)
     {
         const auto& cfg = ee_mollifier_config();
@@ -93,23 +100,29 @@ namespace {
     {
         Element out;
         if (k < mesh.num_faces()) {
+            const auto& cw = p.corner_weights();
             for (int i = 0; i < 3; ++i) {
                 out.vertices.push_back(mesh.faces()(k, i));
+                out.vertex_weights.push_back(cw[i]);
                 out.edges.push_back(mesh.faces_to_edges()(k, i));
             }
+            out.face = static_cast<index_t>(k);
             out.weight = p.area_weights ? mesh.face_areas()(k) : 1.0;
+            const double c = std::min({ cw[0], cw[1], cw[2] });
             out.ee_scale = ee_area_scale_factor(
-                mesh.face_areas()(k) / 3.0, area_ref(p), /*face=*/true);
+                c * mesh.face_areas()(k), area_ref(p), /*face=*/true);
         } else if ((k -= mesh.num_faces()) < mesh.num_codim_edges()) {
             const auto e = mesh.codim_edges()[k];
             out.vertices = { mesh.edges()(e, 0), mesh.edges()(e, 1) };
+            out.vertex_weights = { 0.5, 0.5 };
             out.edges = { e };
             out.weight = p.area_weights ? mesh.edge_area(e) : 1.0;
             out.ee_scale = ee_area_scale_factor(
-                mesh.edge_area(e) / 2.0, area_ref(p), /*face=*/false);
+                0.5 * mesh.edge_area(e), area_ref(p), /*face=*/false);
         } else {
             const auto v = mesh.codim_vertices()[k - mesh.num_codim_edges()];
             out.vertices = { v };
+            out.vertex_weights = { 1.0 };
             out.weight = p.area_weights ? mesh.vertex_area(v) : 1.0;
         }
         return out;
@@ -156,6 +169,17 @@ namespace {
             const auto it = maps.vertex_collisions.find(v);
             if (it != maps.vertex_collisions.end()) {
                 const auto& more = it->second->vertex_ids();
+                ids.insert(ids.end(), more.begin(), more.end());
+            }
+        }
+        // The face rule's non-corner points (corner points are the vertex
+        // samples above).
+        const auto face_it = elem.face >= 0
+            ? maps.face_collisions.find(elem.face)
+            : maps.face_collisions.end();
+        if (face_it != maps.face_collisions.end()) {
+            for (const auto& dict : face_it->second) {
+                const auto& more = dict->vertex_ids();
                 ids.insert(ids.end(), more.begin(), more.end());
             }
         }
@@ -216,7 +240,10 @@ namespace {
         NearFarBarrier<> nf(params.barrier, params.dbar_factor());
         Jet<Order> base(ndof), numerator(ndof), denominator(ndof, 1.0);
         std::map<index_t, Jet<Order>> near_vertices;
-        for (const auto v : elem.vertices) {
+        std::map<index_t, double> vertex_weight;
+        for (size_t lv = 0; lv < elem.vertices.size(); ++lv) {
+            const auto v = elem.vertices[lv];
+            vertex_weight[v] = elem.vertex_weights[lv];
             Jet<Order> near(ndof), far(ndof);
             const auto it = maps.vertex_collisions.find(v);
             if (it != maps.vertex_collisions.end()) {
@@ -237,9 +264,41 @@ namespace {
                     scatter(far, dict.vertex_ids(), gf, hf);
                 }
             }
-            base += near;
-            base += far;
+            base += scale(near, elem.vertex_weights[lv]);
+            base += scale(far, elem.vertex_weights[lv]);
             near_vertices.emplace(v, std::move(near));
+        }
+        if (face_it != maps.face_collisions.end()) {
+            const auto& rule = params.non_corner_rule();
+            for (size_t qi = 0; qi < rule.size(); ++qi) {
+                const auto& qp = rule[qi];
+                const auto& dict = *face_it->second[qi];
+                if (dict.size() == 0)
+                    continue;
+                Eigen::RowVector3d q_pos = Eigen::RowVector3d::Zero();
+                for (int i = 0; i < 3; ++i)
+                    q_pos += qp.lambda[i] * X.row(elem.vertices[i]);
+                const VertexMatrixView<3> X_qp(X, q_pos);
+                Jet<Order> near(ndof), far(ndof);
+                std::tie(near.value, far.value) = PointPotentialHelper::
+                    evaluate_potential_at_face_interior_point_with_cached_collisions_nearfar(
+                        X_qp, dict, params, nf);
+                if constexpr (Order >= 1) {
+                    auto [gn, gf] = PointPotentialHelper::
+                        evaluate_potential_gradient_at_face_interior_point_with_cached_collisions_nearfar(
+                            X_qp, dict, params, qp.lambda, nf);
+                    Eigen::MatrixXd hn, hf;
+                    if constexpr (Order == 2)
+                        std::tie(hn, hf) = PointPotentialHelper::
+                            evaluate_potential_hessian_at_face_interior_point_with_cached_collisions_nearfar(
+                                X_qp, dict, params, qp.lambda,
+                                PSDProjectionMethod::NONE, nf);
+                    scatter(near, dict.vertex_ids(), gn, hn);
+                    scatter(far, dict.vertex_ids(), gf, hf);
+                }
+                base += scale(near, qp.weight);
+                base += scale(far, qp.weight);
+            }
         }
         int power = 1;
         if (const auto* b = dynamic_cast<const InversePowerBarrier<>*>(
@@ -315,15 +374,22 @@ namespace {
             reference += product(uj, near_vertices.at(prim[1]));
             potential += scale(reference, -1);
             const auto mj = geometry_jet(m, prim);
-            numerator += product(mj, potential);
+            // The edge's endpoints donate; c caps the mass at the smaller
+            // endpoint weight.
+            const double c =
+                std::min(vertex_weight.at(prim[0]), vertex_weight.at(prim[1]));
+            numerator += scale(product(mj, potential), c);
             denominator += mj;
         }
-        // E = w/n [sum(P_near(vertex)+P_far(vertex))
-        //           + sum(m_j*(P(q_j)-P_ref,j))/(1+sum(m_j))].
-        // Total donated mass M/[n(1+M)] < 1/n, so all vertex
-        // coefficients remain nonnegative, including with multiple EE samples.
+        // E = w [sum_i w_i (P_near + P_far)(vertex i)
+        //        + sum_q w_q (P_near + P_far)(non-corner point q)
+        //        + sum_j c_j m_j (P(q_j) - P_ref,j) / (1 + sum_j m_j)].
+        // Each vertex donates at most c M / (1 + M) < c <= w_i, so all
+        // coefficients stay nonnegative, including with multiple EE samples.
+        // With the vertex rule (w_i = c = 1/3) this is the original
+        // w/3 [...] formula; rods use w_i = c = 1/2.
         base += quotient(numerator, denominator);
-        result.energy = scale(base, elem.weight / double(elem.vertices.size()));
+        result.energy = scale(base, elem.weight);
         return result;
     }
 
