@@ -23,8 +23,8 @@ enum class PointType : std::uint8_t { VERTEX, EDGE, FACE };
 ///     3. A face quadrature point (ESPParameters::set_quad_rule()) or, in 2D,
 ///        an edge quadrature point
 /// In 2 and 3, the point is a virtual vertex that does not exist in the
-/// CollisionMesh, the ID of a virtual vertex is always #n_verts, i.e.
-/// immediately after all real vertices.
+/// CollisionMesh, the ID of a virtual vertex is always the number of real
+/// vertices, i.e. immediately after all real vertices.
 /// @tparam DIM Spatial dimension (2 or 3). Default is 3.
 template <PointType pType, int DIM = 3> class ESPCollisionDict {
 public:

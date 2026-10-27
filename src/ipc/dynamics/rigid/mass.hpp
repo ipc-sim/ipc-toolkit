@@ -15,6 +15,7 @@ namespace ipc::rigid {
 /// @param vertices Vertices of the mesh
 /// @param facets Facets (2D: edges; 3D: triangles; edge networks and point
 /// clouds get lumped masses) of the mesh
+/// @param density Uniform mass density of the body
 /// @param total_mass Total mass of the mesh
 /// @param center_of_mass Center of mass of the mesh
 /// @param moment_of_inertia Moment of inertia of the mesh

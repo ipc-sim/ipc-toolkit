@@ -186,6 +186,7 @@ public:
 
     /// @brief Get the vertices of the i-th rigid body mesh.
     /// @param i Index of the rigid body mesh.
+    /// @param pose Pose of the i-th rigid body.
     /// @return Vertices of the i-th rigid body mesh.
     Eigen::MatrixXd body_vertices(size_t i, const Pose& pose) const
     {
@@ -219,7 +220,8 @@ public:
     /// @brief Map a vector quantity on the collision mesh to the rigid degrees of freedom.
     /// This is useful for mapping gradients from the collision mesh to the
     /// rigid degrees of freedom (i.e., applies the chain-rule).
-    /// @param x Vector quantity on the collision mesh with size equal to ndof().
+    /// @param poses Poses of the rigid bodies.
+    /// @param g Vector quantity on the collision mesh with size equal to ndof().
     /// @return Vector quantity on the full mesh with size equal to full_ndof().
     Eigen::VectorXd to_rigid_dof(
         const std::vector<Pose>& poses,

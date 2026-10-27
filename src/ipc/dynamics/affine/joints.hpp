@@ -31,6 +31,8 @@ public:
         const std::vector<rigid::Pose>& initial_poses);
 
     /// @brief Glue a point of body_a to a point of body_b (dim rows).
+    /// @param body_a Index of the first body.
+    /// @param body_b Index of the second body.
     /// @param world_anchor The common point in world space (initially).
     void add_point_connection(
         const size_t body_a,

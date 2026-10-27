@@ -477,6 +477,7 @@ PointPotentialHelper::
     return grad;
 }
 
+/// @cond DOXYGEN_SKIP
 template Eigen::VectorXd PointPotentialHelper::
     evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions<
         ADGrad<12>>(
@@ -492,6 +493,7 @@ template Eigen::VectorXd PointPotentialHelper::
         const ESPCollisionDict<PointType::EDGE>& collisions,
         const ESPParameters& params,
         Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> q);
+/// @endcond
 
 Eigen::MatrixXd PointPotentialHelper::
     evaluate_potential_hessian_at_edge_edge_closest_point_with_cached_collisions(
@@ -1217,6 +1219,7 @@ PointPotentialHelper::
     return grad;
 }
 
+/// @cond DOXYGEN_SKIP
 template Eigen::VectorXd PointPotentialHelper::
     evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions_near<
         ADGrad<12>>(
@@ -1234,6 +1237,7 @@ template Eigen::VectorXd PointPotentialHelper::
         const ESPParameters& params,
         Eigen::ConstRef<Eigen::Vector3<ADHessian<12>>> q,
         const NearFarBarrier<>& nf_barrier);
+/// @endcond
 
 Eigen::MatrixXd PointPotentialHelper::
     evaluate_potential_hessian_at_edge_edge_closest_point_with_cached_collisions_near(

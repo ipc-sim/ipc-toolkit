@@ -183,7 +183,7 @@ void RigidCandidates::build(
         // The relative trajectory is nonlinear, so the endpoint boxes are
         // inflated by a conservative bound on the deviation of the relative
         // curve from its chord (see relative_rigid_chord_deviation). Body i's
-        // rest-frame BVH boxes are uninflated, so the inflation radius is
+        // rest-frame BVH boxes are not inflated, so the inflation radius is
         // applied twice on this side (one-sided Minkowski growth).
         const double dtheta_i =
             (poses_t1[body_i].rotation - poses_t0[body_i].rotation).norm();
@@ -199,7 +199,7 @@ void RigidCandidates::build(
         const auto j_rest_positions = bodies.body_rest_positions(body_j);
 
         AABBs body_j_vertex_boxes(bodies.body_num_vertices(body_j));
-        for (size_t v = 0; v < body_j_vertex_boxes.size(); ++v) {
+        tbb::parallel_for(size_t(0), body_j_vertex_boxes.size(), [&](size_t v) {
             const double deviation = relative_rigid_chord_deviation(
                 j_rest_positions.row(v).norm(), dtheta_i, dtheta_j,
                 max_translation, translation_change);
@@ -207,19 +207,18 @@ void RigidCandidates::build(
                 j_vertices_t0.row(v).transpose(),
                 j_vertices_t1.row(v).transpose(),
                 deviation + 2 * inflation_radius);
-        }
+        });
 
-        // b. Build a temporary BVH for body bj's swept boxes. Edge/face boxes
-        //    are unions of the vertex boxes, which is conservative because
-        //    every point of a moving edge/face is a convex combination of its
-        //    vertices' trajectories.
-        // TODO: We should skip this BVH build and directly pass over the boxes
-        // to the two-tree traversal, but the current LBVH interface does not
-        // support that.
-        LBVH body_j_bvh;
-        body_j_bvh.build(
+        // b. Build leaves for body bj's swept boxes. Edge/face boxes are unions
+        //    of the vertex boxes, which is conservative because every point of
+        //    a moving edge/face is a convex combination of its vertices'
+        //    trajectories. The two-tree traversal only iterates bj's side, so
+        //    we skip building a hierarchy for it: on scenes with hundreds of
+        //    small bodies, that build's fixed cost dominated this loop.
+        LBVH::Leaves body_j_leaves;
+        body_j_leaves.build(
             body_j_vertex_boxes, bodies.body_edges(body_j),
-            bodies.body_faces(body_j), dim);
+            bodies.body_faces(body_j));
 
         // c. Detect candidates between body bi and bj using the static
         //    rest-frame BVH of body bi. Local per-body element ids are mapped
@@ -258,7 +257,7 @@ void RigidCandidates::build(
             // (eᵢ, vⱼ): receives (this_edge_id, other_vertex_id)
             std::vector<EdgeVertexCandidate> ev;
             body_i_bvh.detect_edge_vertex_candidates(
-                body_j_bvh,
+                body_j_leaves,
                 [&](size_t ei, size_t vj) {
                     return can_ev(ei_start + ei, vj_start + vj);
                 },
@@ -271,7 +270,7 @@ void RigidCandidates::build(
             // (eⱼ, vᵢ): receives (other_edge_id, this_vertex_id)
             ev.clear();
             body_i_bvh.detect_vertex_edge_candidates(
-                body_j_bvh,
+                body_j_leaves,
                 [&](size_t ej, size_t vi) {
                     return can_ev(ej_start + ej, vi_start + vi);
                 },
@@ -284,7 +283,7 @@ void RigidCandidates::build(
             // (eᵢ, eⱼ): receives (this_edge_id, other_edge_id)
             std::vector<EdgeEdgeCandidate> ee;
             body_i_bvh.detect_edge_edge_candidates(
-                body_j_bvh,
+                body_j_leaves,
                 [&](size_t ei, size_t ej) {
                     return can_ee(ei_start + ei, ej_start + ej);
                 },
@@ -297,7 +296,7 @@ void RigidCandidates::build(
             // (fᵢ, vⱼ): receives (this_face_id, other_vertex_id)
             std::vector<FaceVertexCandidate> fv;
             body_i_bvh.detect_face_vertex_candidates(
-                body_j_bvh,
+                body_j_leaves,
                 [&](size_t fi, size_t vj) {
                     return can_fv(fi_start + fi, vj_start + vj);
                 },
@@ -310,7 +309,7 @@ void RigidCandidates::build(
             // (fⱼ, vᵢ): receives (other_face_id, this_vertex_id)
             fv.clear();
             body_i_bvh.detect_vertex_face_candidates(
-                body_j_bvh,
+                body_j_leaves,
                 [&](size_t fj, size_t vi) {
                     return can_fv(fj_start + fj, vi_start + vi);
                 },
@@ -334,7 +333,7 @@ void RigidCandidates::build(
             // (vᵢ, vⱼ): receives (this_vertex_id, other_vertex_id)
             std::vector<VertexVertexCandidate> vv;
             body_i_bvh.detect_vertex_vertex_candidates(
-                body_j_bvh,
+                body_j_leaves,
                 [&](size_t vi, size_t vj) {
                     return bodies.is_codim_vertex(vi_start + vi)
                         && bodies.is_codim_vertex(vj_start + vj)
@@ -352,7 +351,7 @@ void RigidCandidates::build(
                 // (eᵢ, vⱼ): receives (this_edge_id, other_vertex_id)
                 std::vector<EdgeVertexCandidate> ev;
                 body_i_bvh.detect_edge_vertex_candidates(
-                    body_j_bvh,
+                    body_j_leaves,
                     [&](size_t ei, size_t vj) {
                         return bodies.is_codim_edge(ei_start + ei)
                             && bodies.is_codim_vertex(vj_start + vj)
@@ -369,7 +368,7 @@ void RigidCandidates::build(
                 // (eⱼ, vᵢ): receives (other_edge_id, this_vertex_id)
                 std::vector<EdgeVertexCandidate> ev;
                 body_i_bvh.detect_vertex_edge_candidates(
-                    body_j_bvh,
+                    body_j_leaves,
                     [&](size_t ej, size_t vi) {
                         return bodies.is_codim_edge(ej_start + ej)
                             && bodies.is_codim_vertex(vi_start + vi)
