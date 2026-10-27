@@ -1,7 +1,45 @@
 {% extends '!layout.html' %}
 
+{#-
+  GitHub Pages serves this one file for every missing URL, at whatever depth
+  the reader asked for (e.g. /tutorials/old/page.html). Sphinx writes the
+  page's links relative to the site root, so we pin them there with <base>,
+  and we pin the theme's own base URL too. Without that second step, search
+  would look for its index next to the missing URL instead of at the root.
+
+  <base> only applies to URLs that come after it, so it has to go in the first
+  block of <head>, ahead of the theme's stylesheets and scripts.
+-#}
+{% block site_meta %}
+  <base href="/">
+  {{ super() }}
+{% endblock %}
+
 {% block content %}
-<center>
-    <h2>404: File not found!</h2>
-</center>
+<div class="ipc-notfound">
+  <h1>Page not found</h1>
+  <p>
+    Nothing in the IPC Toolkit docs lives at this address. The page may have
+    moved between releases, or the link may have a typo.
+  </p>
+  <label class="md-button md-button--primary" for="__search">Search the docs</label>
+  <ul class="ipc-notfound__links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="tutorials/getting_started.html">Getting started</a></li>
+    <li><a href="cpp-api/index.html">C++ API</a></li>
+    <li><a href="python-api/index.html">Python API</a></li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    (function () {
+      var el = document.getElementById("__config");
+      var config = JSON.parse(el.textContent);
+      config.base = "/";
+      el.textContent = JSON.stringify(config);
+    })();
+  </script>
+  {{ super() }}
 {% endblock %}
