@@ -1,5 +1,5 @@
-Building Library
-================
+Building the C++ Library
+========================
 
 .. role:: cpp(code)
    :language: c++
@@ -37,7 +37,7 @@ where ``IPC_TOOLKIT_GIT_TAG`` is set to the version of the toolkit you want to u
 where ``PROJECT_NAME`` is the name of your library/binary.
 
 .. tip::
-   If your ``IPC_TOOLKIT_GIT_TAG`` is a tag (e.g. ``v1.3.1``), then you can use the ``FetchContent_Declare`` argument ``GIT_SHALLOW TRUE`` to download only a single commit. Otherwise, you should use the default ``GIT_SHALLOW FALSE``.
+   If your ``IPC_TOOLKIT_GIT_TAG`` is a tag (e.g. ``v1.6.1``), then you can use the ``FetchContent_Declare`` argument ``GIT_SHALLOW TRUE`` to download only a single commit. Otherwise, you should use the default ``GIT_SHALLOW FALSE``.
 
 Building the Library
 --------------------

@@ -20,7 +20,7 @@ Simulation Frameworks
      - Simple Finite Elements in Python — a software for solving systems of coupled partial differential equations by the finite element method in 1D, 2D, and 3D. It can be used both as a black-box PDE solver and as a Python package for building custom applications.
 
    * - `FEDOO <https://3mah.github.io/fedoo-docs>`_
-     - A free open-source Python finite element library mainly dedicated to mechanical problems, including support for finite strain, composites, elasto-plastic laws, homogenization, and 2D/3D contact with self-contact. (See: `Announcement <https://www.linkedin.com/posts/yves-chemisky-b9437910a_we-are-currently-implementing-ipc-toolkit-activity-7427631655470903297-KDN1?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEQPAekBzjyqhNXdQ2S7VGnIFAzab7DESTE>`_)
+     - A free open-source Python finite element library mainly dedicated to mechanical problems, including support for finite strain, composites, elasto-plastic laws, homogenization, and 2D/3D contact with self-contact. (See: `Announcement <https://www.linkedin.com/posts/yves-chemisky-b9437910a_we-are-currently-implementing-ipc-toolkit-activity-7427631655470903297-KDN1>`_)
 
    * - `MeshFEM <https://github.com/MeshFEM/MeshFEM>`_
      - A C++ nonlinear finite element library supporting linear and quadratic triangle/tetrahedral elements in 2D and 3D. MeshFEM accelerates Hessian assembly by building the sparse system matrix from dense per-node blocks rather than individual scalar entries, pairing this block-structured assembly with a block-Cholesky direct solver. It uses the IPC Toolkit for contact handling.

@@ -477,7 +477,7 @@ PointPotentialHelper::
     return grad;
 }
 
-/// @cond DOXYGEN_SKIP
+/// @cond DOXYGEN_SKIP (Doxygen can't match enable_if return types)
 template Eigen::VectorXd PointPotentialHelper::
     evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions<
         ADGrad<12>>(
@@ -1219,7 +1219,7 @@ PointPotentialHelper::
     return grad;
 }
 
-/// @cond DOXYGEN_SKIP
+/// @cond DOXYGEN_SKIP (Doxygen can't match enable_if return types)
 template Eigen::VectorXd PointPotentialHelper::
     evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions_near<
         ADGrad<12>>(

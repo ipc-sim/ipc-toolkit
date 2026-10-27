@@ -122,11 +122,11 @@ namespace PointPotentialHelper {
 
     /// @brief Gradient of the face-interior potential for an arbitrary
     ///   interior quadrature point q = λ0·v0 + λ1·v1 + λ2·v2.
+    /// @param lambda Barycentric coordinates of the interior point.
+    ///   The chain-rule factors λk replace the 1/3 used for the centroid.
     /// @param V_extended Vertices extended with the interior point as last row.
     /// @param collisions Primitives that are close in distance to the point.
     /// @param params Contact parameters.
-    /// @param lambda Barycentric coordinates of the interior point.
-    ///   The chain-rule factors λk replace the 1/3 used for the centroid.
     Eigen::VectorXd
     evaluate_potential_gradient_at_face_interior_point_with_cached_collisions(
         VertexMatrixView<3> V_extended,
@@ -188,8 +188,8 @@ namespace PointPotentialHelper {
     /// @param V_extended Vertices extended with the virtual QP as last row.
     /// @param collisions Per-QP collision dict for edge quadrature.
     /// @param params Contact parameters.
-    /// @param project_to_psd Method used to project the Hessian to PSD.
     /// @param lambda Barycentric coords of QP on the edge: q = lambda[0]*e0 + lambda[1]*e1.
+    /// @param project_to_psd Method used to project the Hessian to PSD.
     Eigen::MatrixXd evaluate_potential_hessian_at_edge_qp(
         VertexMatrixView<2> V_extended,
         const ESPCollisionDict<PointType::EDGE, 2>& collisions,
@@ -239,7 +239,7 @@ public:
     /// @param ei Source edge index.
     /// @param lambda Barycentric coords of QP: q = lambda[0]*e0 + lambda[1]*e1.
     /// @param dhat Distance threshold for this edge.
-    /// @param num_collision_pairs Incremented by the number of pairs added.
+    /// @param num_collision_pairs Running count of pairs, incremented here.
     std::unique_ptr<ESPCollisionDict<PointType::EDGE, 2>>
     build_collisions_at_edge_qp(
         Eigen::ConstRef<Eigen::MatrixXd> V,

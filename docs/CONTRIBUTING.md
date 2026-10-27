@@ -61,3 +61,7 @@ limits:
 
 If your change touches CUDA code, please also run the full GPU test suite on
 real hardware.
+
+## Contributors
+
+[![Top contributors to the IPC Toolkit.](https://contrib.rocks/image?repo=ipc-sim/ipc-toolkit)](https://github.com/ipc-sim/ipc-toolkit/graphs/contributors?all=1)

@@ -32,8 +32,8 @@ public:
     /// @param point_potential Holds the mesh, candidates, parameters, and the
     ///        mesh's inclusion-exclusion weights, shared by every thread.
     /// @param vertices Vertex positions (2D).
-    /// @param start First edge index (inclusive).
-    /// @param end Last edge index (exclusive).
+    /// @param start First edge index to process.
+    /// @param end One past the last edge index to process.
     void build_edge_collisions(
         const PointPotential& point_potential,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,

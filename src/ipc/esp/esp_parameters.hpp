@@ -39,9 +39,8 @@ struct ESPParameters {
     ///        0 disables edge-edge contact.
     /// @param _quad_order Gauss-Lobatto edge quadrature order (2D); see
     ///        quad_order.
-    /// @param _area_weights Whether to weight contributions by primitive
-    ///        area; see area_weights.
-    /// @param _integration_type How obstacle pairs are filtered; see
+    /// @param _area_weights Whether to weight contributions by primitive area.
+    /// @param _integration_type How obstacle sources are filtered; see
     ///        IntegrationType.
     /// @throws std::invalid_argument if _dhat is not positive and finite, if
     ///         _dbar_factor is not in [0, 2], or if _quad_order is negative.

@@ -1,5 +1,3 @@
-:hide-toc:
-
 .. toctree::
     :caption: About
     :hidden:
@@ -14,7 +12,7 @@
     :caption: Build
     :hidden:
 
-    Library <build/c++.rst>
+    C++ Library <build/c++.rst>
     build/python.rst
 
 .. toctree::
@@ -86,11 +84,16 @@
     Code of Conduct <developers/code_of_conduct.md>
     developers/tools.rst
 
-.. image:: _static/logo-light.svg#only-light
-   :alt: IPC Toolkit
+IPC Toolkit
+===========
 
-.. image:: _static/logo-dark.svg#only-dark
+.. image:: _static/logo-light.svg
    :alt: IPC Toolkit
+   :class: only-light
+
+.. image:: _static/logo-dark.svg
+   :alt: IPC Toolkit
+   :class: only-dark
 
 .. raw:: html
 
@@ -118,7 +121,8 @@
 
 IPC Toolkit is a set of reusable functions to integrate Incremental Potential Contact (IPC) into a simulation.
 
-**Features**
+Features
+--------
 
 - IPC barrier function and its derivatives and adaptive barrier stiffness algorithm
 - Broad- and narrow-phase continuous collision detection (CCD) of linear and nonlinear trajectories
@@ -126,41 +130,23 @@ IPC Toolkit is a set of reusable functions to integrate Incremental Potential Co
 - Distance barrier potential and its derivatives
 - Smooth and lagged dissipative friction potential and its derivatives
 
-**Limitations**
+Limitations
+-----------
 
 This is not a full simulation library. As such it does not include any physics or solvers. For a full simulation implementation, we recommend `PolyFEM <https://polyfem.github.io/>`_ (a finite element library) or `Rigid IPC <https://github.com/ipc-sim/rigid-ipc>`_ (rigid-body dynamics) both of which utilize the IPC Toolkit.
 
-**Usage**
+Usage
+-----
 
 See the `tutorials <https://ipctk.xyz/tutorials/getting_started.html>`_ for a quick introduction to the toolkit, or the `documentation <https://ipctk.xyz/cpp-api/index.html>`_ for a full reference.
 
-**Python Bindings**
+Python Bindings
+---------------
 
 We provide Python bindings for functions in the toolkit using `pybind11 <https://github.com/pybind/pybind11>`_. For more information see the `Python documentation <https://ipctk.xyz/build/python.html>`_.
 
-**Contributing**
-
-.. figure:: https://contrib.rocks/image?repo=ipc-sim/ipc-toolkit
-   :align: center
-   :alt: Top contributors to the IPC Toolkit.
-   :target: https://github.com/ipc-sim/ipc-toolkit/graphs/contributors?all=1
-
-This project is open to contributors! Contributions can come in the form of feature requests, bug fixes, documentation, tutorials, and the like. We highly recommend filing an Issue first before submitting a Pull Request.
-
-Simply fork this repository and make a Pull Request! We would appreciate:
-
-* Implementation of new features
-* Bug Reports
-* Documentation
-* Testing
-
-..
-   .. image:: https://api.star-history.com/chart?repos=ipc-sim/ipc-toolkit&type=date&legend=top-left
-      :align: center
-      :alt: Star History Chart
-      :target: https://www.star-history.com/?repos=ipc-sim%2Fipc-toolkit&type=date&releases=&legend=bottom-right
-
-**Citation**
+Citation
+--------
 
 IPC Toolkit is created and maintained by academics: citations let us know our work is having impact! Please cite the IPC Toolkit or otherwise give a shout-out if and when it contributes to published works.
 
@@ -173,10 +159,16 @@ IPC Toolkit is created and maintained by academics: citations let us know our wo
         year = {2020},
     }
 
-**License**
+Contributing
+------------
+
+This project is open to contributors! Contributions can come in the form of feature requests, bug fixes, documentation, tutorials, and the like. We highly recommend filing an Issue first before submitting a Pull Request. See :doc:`developers/contributing` for how to get started.
+
+License
+-------
 
 This project is licensed under the MIT License.
 
-You are free to use, modify, and distribute this code in your projects, even commercial ones, as long as you include the original copyright and license notice. A copy of the full license text can be found in the `License <about/license.html>`_ file.
+You are free to use, modify, and distribute this code in your projects, even commercial ones, as long as you include the original copyright and license notice. A copy of the full license text can be found in the :doc:`License <about/license>` file.
 
 If you use this code in a product you distribute to others, you are required to **include a copy of the original copyright and license notice**. This is typically done in the product's documentation, an "About" or "Third-Party Licenses" section, or in a clear open-source software statement.

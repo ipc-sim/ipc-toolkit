@@ -249,6 +249,10 @@ highlight_language = "cpp"
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
+# Render _templates/404.html as the site's 404 page. GitHub Pages serves a
+# root-level 404.html for every missing URL.
+html_additional_pages = {"404": "404.html"}
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
@@ -415,6 +419,15 @@ def connect_progress(app):
 
 # -- Custom skip logic for autodoc --------------------------------------------
 
+AUTODOC_NOISE_MEMBERS = {
+    "__annotations__",
+    "__dict__",
+    "__doc__",
+    "__module__",
+    "__weakref__",
+    "_pybind11_conduit_v1_",
+}
+
 
 def setup(app):
     if SHOW_PROGRESS:
@@ -430,7 +443,41 @@ def setup(app):
         # Optional: Skip the module's "self" capsule if it appears
         if name == "PyCapsule":
             return True
+        # We document special members on purpose, because `__init__`,
+        # `__call__`, and the operators are real API. These are Python and
+        # pybind11 plumbing that every class has, and listing them on every
+        # page buries the members readers came for.
+        if name in AUTODOC_NOISE_MEMBERS:
+            return True
         return skip
 
     # Connect the function to the event
     app.connect("autodoc-skip-member", skip)
+
+    def remove_collaboration_graphs(app, doctree):
+        """Drop Doxygen's collaboration diagrams from the C++ API pages.
+
+        We keep `:allow-dot-graphs:` for the inheritance diagrams, which help
+        readers find the right base class. The collaboration diagram that
+        comes with them sits at the top of every class and mostly shows member
+        types the signatures already list. Doxygen 1.14 writes it to the XML
+        even with COLLABORATION_GRAPH = NO, so we remove it here instead.
+        """
+        from docutils import nodes
+
+        for paragraph in list(doctree.findall(nodes.paragraph)):
+            if not paragraph.astext().startswith("Collaboration diagram for"):
+                continue
+            figure = paragraph.next_node(nodes.figure, siblings=True, descend=False)
+            if figure is not None:
+                figure.parent.remove(figure)
+            paragraph.parent.remove(paragraph)
+
+    # The theme builds each object's link tooltip from the first paragraph of
+    # its description, right after this event. Removing the diagram here keeps
+    # "Collaboration diagram for ..." out of those tooltips too.
+    app.connect(
+        "object-description-transform",
+        lambda app, domain, objtype, content: remove_collaboration_graphs(app, content),
+    )
+    app.connect("doctree-read", remove_collaboration_graphs)
