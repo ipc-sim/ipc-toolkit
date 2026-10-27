@@ -276,9 +276,34 @@ void define_esp_potential(py::module& m)
         .def_readonly("dbar", &ESPParameters::dbar)
         .def_readonly("quad_order", &ESPParameters::quad_order)
         .def_readonly("area_weights", &ESPParameters::area_weights)
-        .def_readwrite("local_quadrature_transfer", &ESPParameters::local_quadrature_transfer)
+        .def_readwrite(
+            "local_quadrature_transfer",
+            &ESPParameters::local_quadrature_transfer)
         .def_readwrite("barrier", &ESPParameters::barrier) // PROTOTYPE
-        .def_readonly("integration_type", &ESPParameters::integration_type);
+        .def_readonly("integration_type", &ESPParameters::integration_type)
+        .def(
+            "set_lattice_rule",
+            [](ESPParameters& self, const int m) {
+                self.set_quad_rule(ESPParameters::lattice_rule(m));
+            },
+            R"ipc_Qu8mg5v7(
+            Use the composite vertex rule on m x m sub-triangles for every face (3D). m = 1 is the vertex rule.
+            )ipc_Qu8mg5v7",
+            py::arg("m"))
+        .def(
+            "set_auto_lattice", &ESPParameters::set_auto_lattice,
+            R"ipc_Qu8mg5v7(
+            Choose each face's lattice rule from its rest area so the points are about `spacing` apart (3D).
+
+            Parameters:
+                spacing: Target point spacing.
+                max_subdivisions: Cap on the subdivisions per face.
+            )ipc_Qu8mg5v7",
+            py::arg("spacing"), py::arg("max_subdivisions") = 16)
+        .def_property_readonly(
+            "lattice_spacing", &ESPParameters::lattice_spacing,
+            "Target spacing of the automatic lattice rules, or 0 for a fixed "
+            "rule.");
 
     py::class_<ESPPotential>(m, "ESPPotential")
         .def(

@@ -125,9 +125,14 @@ TEST_CASE(
     const int barrier = GENERATE(0, 1, 2);
     if (barrier)
         params.barrier = std::make_shared<InversePowerBarrier<>>(barrier);
-    // The vertex rule, or corners plus a centroid and edge midpoints: the
-    // corners donate, the other points are ordinary samples.
-    const bool with_non_corner_points = GENERATE(false, true);
+    // The vertex rule, corners plus a centroid and edge midpoints, or
+    // per-face lattice rules: the corners donate, the other points are
+    // ordinary samples.
+    const int rule_kind = GENERATE(0, 1, 2);
+    const bool with_non_corner_points = rule_kind == 1;
+    if (rule_kind == 2) {
+        params.set_auto_lattice(.01, 3);
+    }
     if (with_non_corner_points) {
         params.set_quad_rule({
             { { { 1., 0., 0. } }, 0.1 },
@@ -139,7 +144,7 @@ TEST_CASE(
             { { { 1. / 3, 1. / 3, 1. / 3 } }, 0.25 },
         });
     }
-    CAPTURE(barrier, params.area_weights, with_non_corner_points);
+    CAPTURE(barrier, params.area_weights, rule_kind);
     check_derivatives(s.mesh, s.X, params);
 }
 

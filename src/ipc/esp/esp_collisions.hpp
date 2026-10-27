@@ -110,5 +110,8 @@ private:
     int m_quad_order = 0;
     /// @brief Face quadrature rule of the last 3D build().
     FaceQuadRule m_face_quad_rule;
+    /// @brief Auto lattice spacing and cap of the last 3D build().
+    double m_lattice_spacing = 0;
+    int m_max_lattice_subdivisions = 0;
 };
 } // namespace ipc

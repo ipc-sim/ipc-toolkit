@@ -269,10 +269,9 @@ void TangentialCollisions::build(
         // ESP outer contribution per face f is: area_f [* / total_w_f]
         // depending on normalize_weights. total_w_f sums active EE mollifiers
         // and the face rule's weights, which sum to 1. The rule's corner
-        // points are the vertex samples (weighted by corner_weights()); its
-        // other points are the per-face samples.
-        const auto& corner_w = params.corner_weights();
-        const auto& face_quad_rule = params.non_corner_rule();
+        // points are the vertex samples (weighted by the face's corner
+        // weights); its other points are the per-face samples. Under
+        // ESPParameters::set_auto_lattice() each face has its own rule.
         Eigen::VectorXd total_w_per_face =
             Eigen::VectorXd::Constant(faces.rows(), 1.0);
         if (normalize_weights) {
@@ -324,7 +323,8 @@ void TangentialCollisions::build(
         Eigen::VectorXd v_outer_w = Eigen::VectorXd::Zero(n_verts);
         for (index_t f = 0; f < faces.rows(); f++) {
             for (int lv = 0; lv < 3; lv++) {
-                v_outer_w(faces(f, lv)) += face_scale(f) * corner_w[lv];
+                v_outer_w(faces(f, lv)) += face_scale(f)
+                    * params.face_rule(mesh.face_areas()(f)).corner_weights[lv];
             }
         }
 
@@ -631,6 +631,8 @@ void TangentialCollisions::build(
             const index_t f2 = faces(fi, 2);
             // ESP potential outer face weight (optionally normalized).
             const double face_w = face_scale(fi);
+            const FaceQuadRule& face_quad_rule =
+                *params.face_rule(mesh.face_areas()(fi)).non_corner;
 
             for (size_t qi = 0; qi < dicts.size(); qi++) {
                 const auto& dict_ptr = dicts[qi];

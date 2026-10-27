@@ -68,6 +68,8 @@ namespace {
         std::array<index_t, 3> vertices {}; ///< Vertex samples
         std::array<double, 3> vertex_weights {}; ///< Their weights
         int num_vertices = 0;
+        /// The face rule's other points (faces only)
+        const FaceQuadRule* non_corner = nullptr;
         double weight = 1; ///< Outer weight of the element's average
     };
 
@@ -98,11 +100,13 @@ namespace {
                 elem.edges[j] = mesh.faces_to_edges()(f, j);
             }
             // The rule's corner points are the face's vertex samples.
+            const auto rule = params.face_rule(mesh.face_areas()(f));
             elem.num_vertices = 3;
             for (int j = 0; j < 3; j++) {
                 elem.vertices[j] = mesh.faces()(f, j);
-                elem.vertex_weights[j] = params.corner_weights()[j];
+                elem.vertex_weights[j] = rule.corner_weights[j];
             }
+            elem.non_corner = rule.non_corner;
             elem.weight = params.area_weights ? mesh.face_areas()(f) : 1.;
             return elem;
         }
@@ -340,9 +344,8 @@ double ESPPotential::operator()(
 
                     // Face-interior quadrature points from
                     // params.quad_rule() (faces only).
-                    const FaceQuadRule& face_quad_rule = elem.face >= 0
-                        ? m_params.non_corner_rule()
-                        : NO_FACE_QUADRATURE;
+                    const FaceQuadRule& face_quad_rule =
+                        elem.face >= 0 ? *elem.non_corner : NO_FACE_QUADRATURE;
                     {
                         auto iter =
                             collisions.maps().face_collisions.find(elem.face);
@@ -690,9 +693,8 @@ Eigen::VectorXd ESPPotential::gradient(
                     }
 
                     // Face-interior quadrature points (faces only)
-                    const FaceQuadRule& face_quad_rule = elem.face >= 0
-                        ? m_params.non_corner_rule()
-                        : NO_FACE_QUADRATURE;
+                    const FaceQuadRule& face_quad_rule =
+                        elem.face >= 0 ? *elem.non_corner : NO_FACE_QUADRATURE;
                     {
                         auto iter =
                             collisions.maps().face_collisions.find(elem.face);
@@ -1166,9 +1168,8 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                     }
 
                     // Face-interior quadrature points (faces only)
-                    const FaceQuadRule& face_quad_rule = elem.face >= 0
-                        ? m_params.non_corner_rule()
-                        : NO_FACE_QUADRATURE;
+                    const FaceQuadRule& face_quad_rule =
+                        elem.face >= 0 ? *elem.non_corner : NO_FACE_QUADRATURE;
                     {
                         auto iter =
                             collisions.maps().face_collisions.find(elem.face);

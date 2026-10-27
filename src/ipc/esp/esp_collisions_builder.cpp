@@ -283,15 +283,16 @@ void QuadratureCollisionsBuilder::build_face_collisions(
     const size_t end_i)
 {
     const CollisionMesh& mesh = point_potential->mesh;
-    // Corner points use the shared vertex samples (see ESPCollisions::build).
-    const auto& face_quad_rule = point_potential->params.non_corner_rule();
-    if (face_quad_rule.empty()) {
-        return;
-    }
-
     const ESPParameters& params = point_potential->params;
     for (size_t i = start_i; i < end_i; i++) {
         const index_t fi = face_indices[i];
+        // Corner points use the shared vertex samples (see
+        // ESPCollisions::build); only the face's other points need samples.
+        const FaceQuadRule& face_quad_rule =
+            *params.face_rule(mesh.face_areas()(fi)).non_corner;
+        if (face_quad_rule.empty()) {
+            continue;
+        }
         if (params.integration_type == IntegrationType::NO_OBST
             && mesh.is_obstacle_face(fi)) {
             continue;

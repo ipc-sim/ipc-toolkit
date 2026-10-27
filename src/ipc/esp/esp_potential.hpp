@@ -16,9 +16,11 @@ public:
         : m_params(_params)
         , m_use_near_far(_use_near_far)
     {
+        // Automatic lattice rules always weigh their corners.
         const auto& cw = _params.corner_weights();
-        if (_params.local_quadrature_transfer
-            && (!_use_near_far || cw[0] <= 0 || cw[1] <= 0 || cw[2] <= 0)) {
+        const bool corners = _params.lattice_spacing() > 0
+            || (cw[0] > 0 && cw[1] > 0 && cw[2] > 0);
+        if (_params.local_quadrature_transfer && (!_use_near_far || !corners)) {
             throw std::invalid_argument(
                 "Local quadrature transfer requires normalized near/far "
                 "integration and a face rule with positive weight at every "

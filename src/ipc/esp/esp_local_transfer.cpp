@@ -82,6 +82,7 @@ namespace {
         std::vector<index_t> vertices, edges;
         std::vector<double> vertex_weights;
         index_t face = -1;
+        const FaceQuadRule* non_corner = nullptr; ///< The face rule's others
         double weight;
         double ee_scale = 1.0; // PROTOTYPE: area-consistent EE weight factor
     };
@@ -100,7 +101,9 @@ namespace {
     {
         Element out;
         if (k < mesh.num_faces()) {
-            const auto& cw = p.corner_weights();
+            const auto rule = p.face_rule(mesh.face_areas()(k));
+            const auto& cw = rule.corner_weights;
+            out.non_corner = rule.non_corner;
             for (int i = 0; i < 3; ++i) {
                 out.vertices.push_back(mesh.faces()(k, i));
                 out.vertex_weights.push_back(cw[i]);
@@ -269,7 +272,7 @@ namespace {
             near_vertices.emplace(v, std::move(near));
         }
         if (face_it != maps.face_collisions.end()) {
-            const auto& rule = params.non_corner_rule();
+            const auto& rule = *elem.non_corner;
             for (size_t qi = 0; qi < rule.size(); ++qi) {
                 const auto& qp = rule[qi];
                 const auto& dict = *face_it->second[qi];

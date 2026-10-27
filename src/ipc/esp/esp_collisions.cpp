@@ -59,6 +59,8 @@ void ESPCollisions::build(
     m_dim = mesh.dim();
     m_quad_order = params.quad_order;
     m_face_quad_rule = params.quad_rule();
+    m_lattice_spacing = params.lattice_spacing();
+    m_max_lattice_subdivisions = params.max_lattice_subdivisions();
 
     if (mesh.dim() == 2) {
         tbb::enumerable_thread_specific<ESPCollisionsBuilder<2>> storage {
@@ -96,7 +98,7 @@ void ESPCollisions::build(
         // shared vertex samples (ESPParameters::corner_weights()), and edges
         // in no face and isolated vertices integrate over their vertices.
         // Only the rule's other points need per-face samples.
-        const bool use_face_quadrature = !params.non_corner_rule().empty();
+        const bool use_face_quadrature = params.has_non_corner_points();
 
         std::vector<index_t> vertices_to_process;
         vertices_to_process.reserve(mesh.num_vertices());
@@ -202,6 +204,8 @@ void ESPCollisions::clear()
     m_dim = 0;
     m_quad_order = 0;
     m_face_quad_rule.clear();
+    m_lattice_spacing = 0;
+    m_max_lattice_subdivisions = 0;
 }
 
 void ESPCollisions::check_quadrature(const ESPParameters& params) const
@@ -230,6 +234,17 @@ void ESPCollisions::check_quadrature(const ESPParameters& params) const
                 "to evaluate them, and call set_quad_rule() before "
                 "constructing ESPPotential, which copies the parameters.",
                 m_face_quad_rule.size(), rule.size());
+        }
+        if (params.lattice_spacing() != m_lattice_spacing
+            || params.max_lattice_subdivisions()
+                != m_max_lattice_subdivisions) {
+            log_and_throw_error<std::invalid_argument>(
+                "ESPCollisions were built with lattice spacing {} (at most "
+                "{} subdivisions), but the parameters use {} (at most {}). "
+                "Use the same ESPParameters to build the collisions and to "
+                "evaluate them.",
+                m_lattice_spacing, m_max_lattice_subdivisions,
+                params.lattice_spacing(), params.max_lattice_subdivisions());
         }
     }
 }
