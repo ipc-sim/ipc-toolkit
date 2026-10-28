@@ -98,6 +98,10 @@ void define_simulator(py::module_& m)
             "iterates until the momentum balance converges (up to "
             "max_outer_iterations).")
         .def_readwrite(
+            "momentum_balance_tol", &Simulator::Settings::momentum_balance_tol,
+            "Friction lagging stops once the momentum balance falls below "
+            "this times the bounding box diagonal.")
+        .def_readwrite(
             "max_outer_iterations", &Simulator::Settings::max_outer_iterations,
             "Hard cap on the outer (friction-lagging / augmented Lagrangian) "
             "solves per step.")

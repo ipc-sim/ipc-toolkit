@@ -117,9 +117,17 @@ public:
         /// bases and normal forces) are frozen during each solve and rebuilt
         /// between solves. 0 disables friction; > 0 caps the number of solves
         /// per step (1 = a single lagged solve); < 0 iterates until the
-        /// momentum balance ‖∇E + κ∇B + ∇D‖ ≤ 1e-2·bbox_diagonal (up to
-        /// max_outer_iterations).
+        /// momentum balance ‖∇E + κ∇B + ∇D‖ ≤
+        /// momentum_balance_tol·bbox_diagonal (up to max_outer_iterations).
         int friction_iterations = 1;
+        /// @brief Friction lagging stops once the momentum balance
+        /// ‖∇E + κ∇B + ∇D‖ falls below this times the bounding box diagonal
+        /// [Ferguson et al. 2021].
+        /// @note The momentum balance carries the bodies' masses and Δt², so
+        /// the default can be loose for heavy bodies under a small net force:
+        /// a block sliding slowly down a ramp, where friction nearly cancels
+        /// gravity, needs a much smaller value to match the analytic slide.
+        double momentum_balance_tol = 1e-2;
         /// @brief Hard cap on the outer (friction-lagging / augmented
         /// Lagrangian) solves per step.
         int max_outer_iterations = 50;

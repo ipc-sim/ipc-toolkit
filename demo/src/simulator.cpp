@@ -788,7 +788,7 @@ bool Simulator::step()
 
     // Friction lagging convergence tolerance [Ferguson et al. 2021]; fixed
     // for the whole step (initialize_barrier_stiffness refreshes the bbox).
-    const double eps_d = 1e-2 * m_bbox_diagonal;
+    const double eps_d = m_settings.momentum_balance_tol * m_bbox_diagonal;
     m_last_momentum_balance = -1;
 
     // Solve in the reduced coordinates z = Vx with the constrained entries

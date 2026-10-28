@@ -123,7 +123,8 @@ and normal-force magnitudes are frozen (lagged) during each inner solve and
 rebuilt between solves; `Settings::friction_iterations` controls the lagging:
 `0` disables friction, `> 0` caps the number of solves per step (the default
 `1` is a single lagged solve), and `< 0` iterates until the momentum balance
-‖∇E + κ∇B + ∇D‖ falls below `1e-2 × bbox_diagonal` (or the loop stalls).
+‖∇E + κ∇B + ∇D‖ falls below `Settings::momentum_balance_tol × bbox_diagonal`
+(`1e-2` by default; or the loop stalls).
 
 > **Accuracy note.** The friction forces are proportional to the *lagged*
 > barrier normal forces, so their accuracy follows the accuracy of the contact
