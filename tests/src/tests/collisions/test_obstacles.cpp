@@ -9,9 +9,9 @@
 #include <ipc/esp/esp_collisions.hpp>
 #include <ipc/esp/esp_potential.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/math/constants.hpp>
 
 #include <igl/edges.h>
-#include <igl/PI.h>
 
 #include <algorithm>
 
@@ -28,9 +28,9 @@ CollisionMesh star_mesh(const std::vector<bool>& obstacle_vertex)
     constexpr double gap = 0.05;
     Eigen::MatrixXd V(8, 3);
     for (int i = 0; i < 3; i++) {
-        const double a = 2 * igl::PI * i / 3;
+        const double a = 2 * ipc::PI * i / 3;
         V.row(i) << std::cos(a), std::sin(a), gap;
-        V.row(4 + i) << std::cos(a + igl::PI / 3), std::sin(a + igl::PI / 3), 0;
+        V.row(4 + i) << std::cos(a + ipc::PI / 3), std::sin(a + ipc::PI / 3), 0;
     }
     V.row(3) << 0, 0, gap + 1;
     V.row(7) << 0, 0, -1;

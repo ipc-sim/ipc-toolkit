@@ -12,9 +12,9 @@
 #include <ipc/gcp/distance/primitive_distance.hpp>
 #include <ipc/gcp/distance/point_edge.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/math/constants.hpp>
 
 #include <finitediff.hpp>
-#include <igl/PI.h>
 #include <igl/edges.h>
 
 using namespace ipc;
@@ -218,7 +218,7 @@ TEST_CASE("Edge-edge distance degenerate case", "[distance][edge-edge]")
 
     double theta =
         GENERATE(-2, -1.5, -1, -0.123124, 0, 0.2342352, 0.5, 1, 1.5, 2, 50, 51)
-        * igl::PI;
+        * ipc::PI;
     Eigen::Matrix3d R =
         Eigen::AngleAxisd(theta, Eigen::Vector3d::UnitY()).toRotationMatrix();
 
@@ -331,13 +331,13 @@ TEST_CASE(
     SECTION("Almost parallel")
     {
         double exponent = GENERATE(range(-6, 3));
-        angle = pow(10, exponent) * igl::PI / 180.0;
+        angle = pow(10, exponent) * ipc::PI / 180.0;
     }
     // SECTION("Parallel") { angle = 0; }
 
     Eigen::Vector3d e00(-1.0, 0, 0), e01(1.0, 0, 0),
         e10(cos(angle), 1, sin(angle)),
-        e11(cos(angle + igl::PI), 1, sin(angle + igl::PI));
+        e11(cos(angle + ipc::PI), 1, sin(angle + ipc::PI));
 
     double distance = edge_edge_distance(e00, e01, e10, e11);
     const Vector12d grad = edge_edge_distance_gradient(e00, e01, e10, e11);

@@ -7,8 +7,7 @@
 
 #include <ipc/math/interval.hpp>
 #include <ipc/utils/logger.hpp>
-
-#include <igl/PI.h>
+#include <ipc/math/constants.hpp>
 
 using namespace ipc;
 
@@ -41,10 +40,10 @@ TEST_CASE("Cosine interval arithmetic", "[interval]")
 
     double shift;
     SECTION("No shift") { shift = 0; }
-    SECTION("2π shift") { shift = 2 * igl::PI; }
-    SECTION("-2π shift") { shift = -2 * igl::PI; }
-    SECTION("100π shift") { shift = 100 * igl::PI; }
-    SECTION("-100π shift") { shift = -100 * igl::PI; }
+    SECTION("2π shift") { shift = 2 * ipc::PI; }
+    SECTION("-2π shift") { shift = -2 * ipc::PI; }
+    SECTION("100π shift") { shift = 100 * ipc::PI; }
+    SECTION("-100π shift") { shift = -100 * ipc::PI; }
 
     CAPTURE(shift);
 
@@ -67,12 +66,12 @@ TEST_CASE("Sine interval arithmetic", "[interval]")
 {
     filib::Interval r;
 
-    double shift = igl::PI / 2;
+    double shift = ipc::PI / 2;
     SECTION("No shift") { shift += 0; }
-    SECTION("2π shift") { shift += 2 * igl::PI; }
-    SECTION("-2π shift") { shift += -2 * igl::PI; }
-    SECTION("100π shift") { shift += 100 * igl::PI; }
-    SECTION("-100π shift") { shift += -100 * igl::PI; }
+    SECTION("2π shift") { shift += 2 * ipc::PI; }
+    SECTION("-2π shift") { shift += -2 * ipc::PI; }
+    SECTION("100π shift") { shift += 100 * ipc::PI; }
+    SECTION("-100π shift") { shift += -100 * ipc::PI; }
 
     CAPTURE(shift);
 

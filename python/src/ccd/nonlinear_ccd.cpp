@@ -79,19 +79,77 @@ void define_nonlinear_ccd(py::module_& m)
 
     py::class_<NonlinearCCD>(m, "NonlinearCCD")
         .def(
-            py::init<const double, const long, const double>(),
-            "tolerance"_a = NonlinearCCD::DEFAULT_TOLERANCE,
+            py::init([](std::shared_ptr<NarrowPhaseCCD> narrow_phase_ccd,
+                        const double conservative_rescaling) {
+                return NonlinearCCD(
+                    std::move(narrow_phase_ccd), conservative_rescaling);
+            }),
+            R"ipc_Qu8mg5v7(
+            Construct a new NonlinearCCD object.
+
+            Parameters:
+                narrow_phase_ccd: The narrow-phase CCD used for the per-piece linear CCD (if None, a default-constructed TightInclusionCCD is used). It is queried with a COMPONENT NarrowPhaseCCDMode and never modified, so it may be shared with standalone users.
+                conservative_rescaling: Conservative rescaling of the time of impact.
+            )ipc_Qu8mg5v7",
+            "narrow_phase_ccd"_a = nullptr,
+            "conservative_rescaling"_a =
+                NonlinearCCD::DEFAULT_CONSERVATIVE_RESCALING,
+            // A Python subclass of NarrowPhaseCCD loses its overrides once
+            // its Python object is collected, so we keep it alive for as long
+            // as this NonlinearCCD.
+            py::keep_alive<1, 2>())
+        .def(
+            py::init([](const double tolerance, const long max_iterations,
+                        const double conservative_rescaling) {
+                if (PyErr_WarnEx(
+                        PyExc_DeprecationWarning,
+                        "NonlinearCCD(tolerance, max_iterations, "
+                        "conservative_rescaling) is deprecated; pass "
+                        "narrow_phase_ccd=TightInclusionCCD(tolerance, "
+                        "max_iterations) instead.",
+                        1)
+                    == -1) {
+                    throw py::error_already_set();
+                }
+                return NonlinearCCD(
+                    std::make_shared<TightInclusionCCD>(
+                        tolerance, max_iterations),
+                    conservative_rescaling);
+            }),
+            R"ipc_Qu8mg5v7(
+            Construct a NonlinearCCD whose per-piece CCD is a TightInclusionCCD.
+
+            Deprecated: pass narrow_phase_ccd=TightInclusionCCD(tolerance, max_iterations) instead.
+
+            Parameters:
+                tolerance: Tight Inclusion's solver tolerance.
+                max_iterations: Tight Inclusion's maximum number of iterations.
+                conservative_rescaling: Conservative rescaling of the time of impact.
+            )ipc_Qu8mg5v7",
+            "tolerance"_a,
             "max_iterations"_a = NonlinearCCD::DEFAULT_MAX_ITERATIONS,
             "conservative_rescaling"_a =
                 NonlinearCCD::DEFAULT_CONSERVATIVE_RESCALING)
         .def_readwrite(
-            "tolerance", &NonlinearCCD::tolerance, "Solver tolerance.")
-        .def_readwrite(
-            "max_iterations", &NonlinearCCD::max_iterations,
-            "Maximum number of iterations.")
-        .def_readwrite(
             "conservative_rescaling", &NonlinearCCD::conservative_rescaling,
             "Conservative rescaling of the time of impact.")
+        .def_property(
+            "narrow_phase_ccd",
+            [](const NonlinearCCD& self) {
+                // pybind11 cannot hold a shared_ptr<const T> with a
+                // shared_ptr<T> holder, so we expose a mutable pointer.
+                return std::const_pointer_cast<NarrowPhaseCCD>(
+                    self.narrow_phase_ccd());
+            },
+            py::cpp_function(
+                [](NonlinearCCD& self,
+                   std::shared_ptr<NarrowPhaseCCD> narrow_phase_ccd) {
+                    self.set_narrow_phase_ccd(std::move(narrow_phase_ccd));
+                },
+                py::keep_alive<1, 2>()),
+            "The narrow-phase CCD used for the per-piece linear CCD (never "
+            "None). Assigning None selects a default-constructed "
+            "TightInclusionCCD.")
         .def(
             "point_point_ccd",
             [](const NonlinearCCD& self, const NonlinearTrajectory& p0,

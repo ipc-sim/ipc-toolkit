@@ -263,7 +263,25 @@ void define_candidates(py::module_& m)
             )ipc_Qu8mg5v7",
             "mesh"_a, "vertices"_a, "is_active"_a = py::none())
         .def(
-            "save_obj", &Candidates::save_obj, "filename"_a, "vertices"_a,
+            "write_obj", &Candidates::write_obj, "filename"_a, "vertices"_a,
+            "edges"_a, "faces"_a)
+        .def(
+            "save_obj",
+            [](const Candidates& self, const std::string& filename,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices,
+               Eigen::ConstRef<Eigen::MatrixXi> edges,
+               Eigen::ConstRef<Eigen::MatrixXi> faces) {
+                if (PyErr_WarnEx(
+                        PyExc_DeprecationWarning,
+                        "Candidates.save_obj is deprecated. Use "
+                        "Candidates.write_obj instead.",
+                        1)
+                    == -1) {
+                    throw py::error_already_set();
+                }
+                return self.write_obj(filename, vertices, edges, faces);
+            },
+            "Deprecated: use write_obj instead.", "filename"_a, "vertices"_a,
             "edges"_a, "faces"_a)
         .def_readwrite("vv_candidates", &Candidates::vv_candidates)
         .def_readwrite("ev_candidates", &Candidates::ev_candidates)

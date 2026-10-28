@@ -1,4 +1,5 @@
 set(SOURCES
+  constants.hpp
   heaviside_type.hpp
   interval.cpp
   interval.hpp
@@ -7,6 +8,8 @@ set(SOURCES
   math.tpp
   morton.hpp
   scalar_math.hpp
+  sinc.cpp
+  sinc.hpp
 )
 
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

@@ -5,8 +5,8 @@
 #include <ipc/candidates/edge_face.hpp>
 #include <ipc/candidates/face_face.hpp>
 #include <ipc/candidates/plane_vertex.hpp>
+#include <ipc/math/constants.hpp>
 
-#include <igl/PI.h>
 #include <igl/edges.h>
 
 #include <algorithm>
@@ -233,8 +233,8 @@ TEST_CASE(
     "Candidate adjacency lists join candidate partners with mesh neighbors",
     "[candidates]")
 {
-    const double c = std::cos(2 * igl::PI / 3), s = std::sin(2 * igl::PI / 3);
-    const double r = std::cos(igl::PI / 3), q = std::sin(igl::PI / 3);
+    const double c = std::cos(2 * ipc::PI / 3), s = std::sin(2 * ipc::PI / 3);
+    const double r = std::cos(ipc::PI / 3), q = std::sin(ipc::PI / 3);
     Eigen::MatrixXd V(8, 3);
     V << 0, 0, 0.05, 1, 0, 1, c, s, 1, c, -s, 1, //
         0, 0, -0.05, r, q, -1, -1, 0, -1, r, -q, -1;

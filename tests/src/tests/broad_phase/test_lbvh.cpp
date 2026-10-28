@@ -231,6 +231,141 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
 #endif
 }
 
+TEST_CASE(
+    "Querying an LBVH with bare leaves finds every overlapping box pair",
+    "[broad_phase][lbvh]")
+{
+    const std::string mesh =
+        GENERATE("two-cubes-close.ply", "bunny (lowpoly).ply");
+
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    REQUIRE(tests::load_mesh(mesh, vertices, edges, faces));
+
+    // The other set is the same mesh swept straight through itself along a
+    // diagonal, so every swept vertex box contains its original vertex and
+    // every query type has candidates.
+    const double diagonal =
+        (vertices.colwise().maxCoeff() - vertices.colwise().minCoeff()).norm();
+    const Eigen::RowVector3d offset =
+        0.01 * diagonal * Eigen::RowVector3d(1, -1, 0.5).normalized();
+    constexpr double inflation_radius = 1e-3;
+
+    LBVH lbvh;
+    lbvh.build(vertices, edges, faces, inflation_radius);
+
+    AABBs this_vertex_boxes, this_edge_boxes, this_face_boxes;
+    build_vertex_boxes(vertices, this_vertex_boxes, inflation_radius);
+    build_edge_boxes(this_vertex_boxes, edges, this_edge_boxes);
+    build_face_boxes(this_vertex_boxes, faces, this_face_boxes);
+
+    AABBs other_vertex_boxes, other_edge_boxes, other_face_boxes;
+    build_vertex_boxes(
+        vertices.rowwise() - offset, vertices.rowwise() + offset,
+        other_vertex_boxes, inflation_radius);
+    build_edge_boxes(other_vertex_boxes, edges, other_edge_boxes);
+    build_face_boxes(other_vertex_boxes, faces, other_face_boxes);
+
+    LBVH::Leaves other_leaves;
+    other_leaves.build(other_vertex_boxes, edges, faces);
+
+    // The LBVH rounds its boxes outward to floats, so the pairs it finds sit
+    // between the exact (double-precision) overlaps and the overlaps of boxes
+    // padded by far more than that rounding. We compare (this id, other id)
+    // pairs rather than candidates because the vertex-vertex and edge-edge
+    // candidates compare as unordered pairs, which would merge (i, j) with
+    // (j, i) even though i and j index different sets here.
+    using Pairs = std::vector<std::pair<size_t, size_t>>;
+    const double pad = 1e-6 * diagonal;
+    const auto check = [&](const AABBs& a, const AABBs& b, Pairs found) {
+        Pairs exact, padded;
+        for (size_t i = 0; i < a.size(); ++i) {
+            for (size_t j = 0; j < b.size(); ++j) {
+                const double gap =
+                    (a[i].min - b[j].max).max(b[j].min - a[i].max).maxCoeff();
+                if (gap <= 0) {
+                    exact.emplace_back(i, j);
+                }
+                if (gap <= pad) {
+                    padded.emplace_back(i, j);
+                }
+            }
+        }
+        std::sort(found.begin(), found.end());
+        REQUIRE(!exact.empty());
+        CHECK(std::adjacent_find(found.begin(), found.end()) == found.end());
+        CHECK(
+            std::includes(
+                found.begin(), found.end(), exact.begin(), exact.end()));
+        CHECK(
+            std::includes(
+                padded.begin(), padded.end(), found.begin(), found.end()));
+    };
+
+    const auto accept_all = [](size_t, size_t) { return true; };
+    // Each query's candidates, as (this id, other id) pairs.
+    const auto pairs = [](const auto& candidates, auto to_pair) {
+        Pairs out;
+        for (const auto& c : candidates) {
+            out.push_back(to_pair(c));
+        }
+        return out;
+    };
+    {
+        std::vector<VertexVertexCandidate> found;
+        lbvh.detect_vertex_vertex_candidates(other_leaves, accept_all, found);
+        check(
+            this_vertex_boxes, other_vertex_boxes,
+            pairs(found, [](const auto& c) {
+                return std::make_pair(c.vertex0_id, c.vertex1_id);
+            }));
+    }
+    {
+        std::vector<EdgeVertexCandidate> found;
+        lbvh.detect_edge_vertex_candidates(other_leaves, accept_all, found);
+        check(
+            this_edge_boxes, other_vertex_boxes,
+            pairs(found, [](const auto& c) {
+                return std::make_pair(c.edge_id, c.vertex_id);
+            }));
+    }
+    {
+        std::vector<EdgeVertexCandidate> found;
+        lbvh.detect_vertex_edge_candidates(other_leaves, accept_all, found);
+        check(
+            this_vertex_boxes, other_edge_boxes,
+            pairs(found, [](const auto& c) {
+                return std::make_pair(c.vertex_id, c.edge_id);
+            }));
+    }
+    {
+        std::vector<EdgeEdgeCandidate> found;
+        lbvh.detect_edge_edge_candidates(other_leaves, accept_all, found);
+        check(
+            this_edge_boxes, other_edge_boxes, pairs(found, [](const auto& c) {
+                return std::make_pair(c.edge0_id, c.edge1_id);
+            }));
+    }
+    {
+        std::vector<FaceVertexCandidate> found;
+        lbvh.detect_face_vertex_candidates(other_leaves, accept_all, found);
+        check(
+            this_face_boxes, other_vertex_boxes,
+            pairs(found, [](const auto& c) {
+                return std::make_pair(c.face_id, c.vertex_id);
+            }));
+    }
+    {
+        std::vector<FaceVertexCandidate> found;
+        lbvh.detect_vertex_face_candidates(other_leaves, accept_all, found);
+        check(
+            this_vertex_boxes, other_face_boxes,
+            pairs(found, [](const auto& c) {
+                return std::make_pair(c.vertex_id, c.face_id);
+            }));
+    }
+}
+
 TEST_CASE("LBVH single-primitive trees", "[broad_phase][lbvh]")
 {
     // A BVH over a single primitive is one node, which is both the root and a

@@ -130,5 +130,8 @@ jobs:
         run: |
           cmake --build build -j ${{ steps.cpu-cores.outputs.count }} && ccache --show-stats
 
+      # We raise CTest's default 1500 s per-test timeout: "ESP potential 2D
+      # finite differences" alone takes ~1000 s in Windows Debug, and running
+      # alongside the demo simulator tests pushes it past the default.
       - name: Tests
-        run: cd build; ctest --verbose -j ${{ steps.cpu-cores.outputs.count }}
+        run: cd build; ctest --verbose --timeout 3600 -j ${{ steps.cpu-cores.outputs.count }}

@@ -333,7 +333,8 @@ namespace {
         bool triangular,
         bool use_simd = true>
     void independent_traversal(
-        const LBVH::Nodes& source,
+        const LBVH::Node* source_leaves,
+        const size_t n_source_leaves,
         const LBVH::Nodes& target,
         const LBVH::RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
@@ -349,10 +350,6 @@ namespace {
         constexpr size_t SIMD_SIZE = 1;
         constexpr size_t GRAIN_SIZE = 1;
 #endif
-
-        // Calculate the offset to the first leaf node in the source BVH.
-        const size_t source_leaf_offset = source.size() / 2;
-        const size_t n_source_leaves = source_leaf_offset + 1;
 
         const size_t n_tasks =
             n_source_leaves / SIMD_SIZE + (n_source_leaves % SIMD_SIZE != 0);
@@ -371,14 +368,14 @@ namespace {
                     if constexpr (use_simd) {
                         assert(actual_end - idx >= 1);
                         traverse_lbvh_simd<Candidate, swap_order, triangular>(
-                            &source[source_leaf_offset + idx], idx,
+                            source_leaves + idx, idx,
                             std::min(SIMD_SIZE, actual_end - idx), target,
                             rightmost_leaves, can_collide, local_candidates);
                     } else {
 #endif
                         traverse_lbvh<Candidate, swap_order, triangular>(
-                            source[source_leaf_offset + idx], idx, target,
-                            rightmost_leaves, can_collide, local_candidates);
+                            source_leaves[idx], idx, target, rightmost_leaves,
+                            can_collide, local_candidates);
 #ifdef IPC_TOOLKIT_WITH_SIMD
                     }
 #endif
@@ -389,13 +386,14 @@ namespace {
 
 template <typename Candidate, bool swap_order, bool triangular>
 void LBVH::detect_candidates(
-    const Nodes& source,
+    const Node* source_leaves,
+    const size_t n_source_leaves,
     const Nodes& target,
     const RightmostLeaves& rightmost_leaves,
     const std::function<bool(size_t, size_t)>& can_collide,
     std::vector<Candidate>& candidates)
 {
-    if (source.empty() || target.empty()) {
+    if (n_source_leaves == 0 || target.empty()) {
         return;
     }
 
@@ -404,7 +402,8 @@ void LBVH::detect_candidates(
     {
         IPC_TOOLKIT_PROFILE_BLOCK("traverse");
         independent_traversal<Candidate, swap_order, triangular>(
-            source, target, rightmost_leaves, can_collide, storage);
+            source_leaves, n_source_leaves, target, rightmost_leaves,
+            can_collide, storage);
     }
 
     {
@@ -503,6 +502,152 @@ void LBVH::detect_face_face_candidates(
     detect_candidates(
         face_bvh, face_rightmost_leaves,
         std::bind(&LBVH::can_faces_collide, this, _1, _2), candidates);
+}
+
+// ============================================================================
+// Two-tree queries against leaves.
+//
+// The other set's leaves are the source (they are iterated) and this BVH is
+// the target (its tree is traversed), so this BVH should be the one with
+// more primitives to take advantage of the log(n) traversal. The
+// rightmost_leaves argument is only used for triangular (self-collision)
+// traversal, so an empty vector is passed here.
+
+namespace {
+    LBVH::Node make_leaf(
+        const Eigen::Array3d& box_min,
+        const Eigen::Array3d& box_max,
+        const size_t primitive_id)
+    {
+        LBVH::Node leaf;
+        details::set_inflated_aabb(box_min, box_max, leaf);
+        leaf.primitive_id = static_cast<int32_t>(primitive_id);
+        leaf.is_inner_marker = 0;
+        return leaf;
+    }
+} // namespace
+
+void LBVH::Leaves::build(
+    const AABBs& vertex_boxes,
+    Eigen::ConstRef<Eigen::MatrixXi> _edges,
+    Eigen::ConstRef<Eigen::MatrixXi> _faces)
+{
+    vertices.resize(vertex_boxes.size());
+    tbb::parallel_for(size_t(0), size_t(vertex_boxes.size()), [&](size_t i) {
+        vertices[i] = make_leaf(vertex_boxes[i].min, vertex_boxes[i].max, i);
+    });
+
+    edges.resize(_edges.rows());
+    tbb::parallel_for(size_t(0), size_t(_edges.rows()), [&](size_t i) {
+        const AABB& a = vertex_boxes[_edges(i, 0)];
+        const AABB& b = vertex_boxes[_edges(i, 1)];
+        edges[i] = make_leaf(a.min.min(b.min), a.max.max(b.max), i);
+    });
+
+    faces.resize(_faces.rows());
+    tbb::parallel_for(size_t(0), size_t(_faces.rows()), [&](size_t i) {
+        const AABB& a = vertex_boxes[_faces(i, 0)];
+        const AABB& b = vertex_boxes[_faces(i, 1)];
+        const AABB& c = vertex_boxes[_faces(i, 2)];
+        faces[i] = make_leaf(
+            a.min.min(b.min).min(c.min), a.max.max(b.max).max(c.max), i);
+    });
+}
+
+void LBVH::detect_vertex_vertex_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<VertexVertexCandidate>& candidates) const
+{
+    if (!has_vertices()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_vertex_vertex_candidates(leaves)");
+
+    detect_candidates<VertexVertexCandidate, /*swap_order=*/true>(
+        other.vertices.data(), other.vertices.size(), vertex_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
+}
+
+void LBVH::detect_edge_vertex_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<EdgeVertexCandidate>& candidates) const
+{
+    if (!has_edges()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_edge_vertex_candidates(leaves)");
+
+    detect_candidates<EdgeVertexCandidate, /*swap_order=*/true>(
+        other.vertices.data(), other.vertices.size(), edge_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
+}
+
+void LBVH::detect_vertex_edge_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<EdgeVertexCandidate>& candidates) const
+{
+    if (!has_vertices()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_vertex_edge_candidates(leaves)");
+
+    detect_candidates<EdgeVertexCandidate, /*swap_order=*/false>(
+        other.edges.data(), other.edges.size(), vertex_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
+}
+
+void LBVH::detect_edge_edge_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<EdgeEdgeCandidate>& candidates) const
+{
+    if (!has_edges()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_edge_edge_candidates(leaves)");
+
+    detect_candidates<EdgeEdgeCandidate, /*swap_order=*/true>(
+        other.edges.data(), other.edges.size(), edge_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
+}
+
+void LBVH::detect_face_vertex_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<FaceVertexCandidate>& candidates) const
+{
+    if (!has_faces()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_face_vertex_candidates(leaves)");
+
+    detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
+        other.vertices.data(), other.vertices.size(), face_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
+}
+
+void LBVH::detect_vertex_face_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<FaceVertexCandidate>& candidates) const
+{
+    if (!has_vertices()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_vertex_face_candidates(leaves)");
+
+    detect_candidates<FaceVertexCandidate, /*swap_order=*/false>(
+        other.faces.data(), other.faces.size(), vertex_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
 }
 
 // ============================================================================

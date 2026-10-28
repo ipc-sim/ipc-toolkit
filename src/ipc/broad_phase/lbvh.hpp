@@ -179,6 +179,97 @@ public:
     const Nodes& edge_nodes() const { return edge_bvh; }
     const Nodes& face_nodes() const { return face_bvh; }
 
+    /// @brief The leaf nodes of an LBVH, without its hierarchy.
+    ///
+    /// A two-tree query descends only this LBVH's hierarchy and iterates the
+    /// other side's leaves, so the other side never needs a hierarchy of its
+    /// own. We use this to query a small, short-lived set of boxes (e.g., one
+    /// body's swept boxes) against a prebuilt LBVH. Building a full LBVH for
+    /// such a set costs Morton codes, a sort, and a bottom-up pass per tree,
+    /// and for a handful of boxes that fixed cost dwarfs the query itself.
+    struct Leaves {
+        /// @brief One leaf per vertex box.
+        Nodes vertices;
+        /// @brief One leaf per edge, bounding its two vertex boxes.
+        Nodes edges;
+        /// @brief One leaf per face, bounding its three vertex boxes.
+        Nodes faces;
+
+        /// @brief Build the leaves from vertex boxes.
+        ///
+        /// Edge and face boxes are the unions of their vertices' boxes, as in
+        /// LBVH::build. We build serially because a Leaves set is meant for a
+        /// few boxes, where a parallel launch costs more than the work.
+        ///
+        /// @param vertex_boxes The vertex boxes.
+        /// @param edges The edges, as rows of vertex ids into vertex_boxes.
+        /// @param faces The faces, as rows of vertex ids into vertex_boxes.
+        void build(
+            const AABBs& vertex_boxes,
+            Eigen::ConstRef<Eigen::MatrixXi> edges,
+            Eigen::ConstRef<Eigen::MatrixXi> faces);
+    };
+
+    // -------------------------------------------------------------------------
+    // Two-tree queries between this LBVH and another set's leaves.
+    // Candidate ids are each side's local primitive ids. The can_collide
+    // callback receives ids in the same order as the emitted candidate.
+
+    /// @brief Find candidate collisions between this BVH's vertices and another set's vertices.
+    /// @param[in] other The other set's leaves, containing the second set of vertices.
+    /// @param[in] can_collide Filter callback receiving (this_vertex_id, other_vertex_id).
+    /// @param[out] candidates The candidates (vertex0_id ∈ this, vertex1_id ∈ other).
+    void detect_vertex_vertex_candidates(
+        const Leaves& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<VertexVertexCandidate>& candidates) const;
+
+    /// @brief Find candidate collisions between this BVH's edges and another set's vertices.
+    /// @param[in] other The other set's leaves, containing the vertices.
+    /// @param[in] can_collide Filter callback receiving (this_edge_id, other_vertex_id).
+    /// @param[out] candidates The candidates (edge_id ∈ this, vertex_id ∈ other).
+    void detect_edge_vertex_candidates(
+        const Leaves& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<EdgeVertexCandidate>& candidates) const;
+
+    /// @brief Find candidate collisions between this BVH's vertices and another set's edges.
+    /// @param[in] other The other set's leaves, containing the edges.
+    /// @param[in] can_collide Filter callback receiving (other_edge_id, this_vertex_id).
+    /// @param[out] candidates The candidates (edge_id ∈ other, vertex_id ∈ this).
+    void detect_vertex_edge_candidates(
+        const Leaves& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<EdgeVertexCandidate>& candidates) const;
+
+    /// @brief Find candidate collisions between this BVH's edges and another set's edges.
+    /// @param[in] other The other set's leaves, containing the second set of edges.
+    /// @param[in] can_collide Filter callback receiving (this_edge_id, other_edge_id).
+    /// @param[out] candidates The candidates (edge0_id ∈ this, edge1_id ∈ other).
+    void detect_edge_edge_candidates(
+        const Leaves& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<EdgeEdgeCandidate>& candidates) const;
+
+    /// @brief Find candidate collisions between this BVH's faces and another set's vertices.
+    /// @param[in] other The other set's leaves, containing the vertices.
+    /// @param[in] can_collide Filter callback receiving (this_face_id, other_vertex_id).
+    /// @param[out] candidates The candidates (face_id ∈ this, vertex_id ∈ other).
+    void detect_face_vertex_candidates(
+        const Leaves& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<FaceVertexCandidate>& candidates) const;
+
+    /// @brief Find candidate collisions between this BVH's vertices and another set's faces.
+    /// @param[in] other The other set's leaves, containing the faces.
+    /// @param[in] can_collide Filter callback receiving (other_face_id, this_vertex_id).
+    /// @param[out] candidates The candidates (face_id ∈ other, vertex_id ∈ this).
+    void detect_vertex_face_candidates(
+        const Leaves& other,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<FaceVertexCandidate>& candidates) const;
+    // -------------------------------------------------------------------------
+
 protected:
     /// @brief Build the broad phase for collision detection.
     /// @note Assumes the vertex_boxes have been built.
@@ -212,6 +303,39 @@ protected:
         bool triangular = false>
     static void detect_candidates(
         const Nodes& source,
+        const Nodes& target,
+        const RightmostLeaves& rightmost_leaves,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<Candidate>& candidates)
+    {
+        if (source.empty()) {
+            return;
+        }
+        // An LBVH over n primitives stores its n - 1 internal nodes first and
+        // its n leaves after them, so the leaves start at size / 2.
+        const size_t leaf_offset = source.size() / 2;
+        detect_candidates<Candidate, swap_order, triangular>(
+            source.data() + leaf_offset, leaf_offset + 1, target,
+            rightmost_leaves, can_collide, candidates);
+    }
+
+    /// @brief Detect candidate collisions between a set of leaves and a LBVH.
+    /// @tparam Candidate Type of candidate collision.
+    /// @tparam swap_order Whether to swap the order of box id with the LBVH id when adding to the candidates.
+    /// @tparam triangular Whether to consider (i, j) and (j, i) as the same.
+    /// @param[in] source_leaves The leaves to query with, contiguous in memory.
+    /// @param[in] n_source_leaves The number of leaves.
+    /// @param[in] target The LBVH to traverse.
+    /// @param[in] rightmost_leaves The rightmost leaf indices for the target LBVH (used for self-collision skip).
+    /// @param[in] can_collide Function to determine if two primitives can collide given their ids.
+    /// @param[out] candidates The candidate collisions.
+    template <
+        typename Candidate,
+        bool swap_order = false,
+        bool triangular = false>
+    static void detect_candidates(
+        const Node* source_leaves,
+        const size_t n_source_leaves,
         const Nodes& target,
         const RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,

@@ -237,17 +237,29 @@ public:
 
     // == Save candidates to file =============================================
 
-    /// @brief Save the collision candidates to an OBJ file.
-    /// @param filename The name of the file to save the candidates to.
+    /// @brief Write the collision candidates to an OBJ file.
+    /// @param filename The name of the file to write the candidates to.
     /// @param vertices Collision mesh vertex positions (rowwise).
     /// @param edges Collision mesh edge indices (rowwise).
     /// @param faces Collision mesh face indices (rowwise).
-    /// @return True if the file was saved successfully.
-    bool save_obj(
+    /// @return True if the file was written successfully.
+    bool write_obj(
         const std::string& filename,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const;
+
+    /// @brief Write the collision candidates to an OBJ file.
+    /// @deprecated Use write_obj instead.
+    [[deprecated("Use Candidates::write_obj instead.")]]
+    bool save_obj(
+        const std::string& filename,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
+    {
+        return write_obj(filename, vertices, edges, faces);
+    }
 
     /// @brief Build per-primitive adjacency lists from the candidates.
     /// @note Required before calling any of the *_set() queries below, which

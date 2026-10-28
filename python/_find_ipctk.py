@@ -14,6 +14,7 @@ else:
         pathlib.Path(".").resolve(),
         pathlib.Path("python").resolve(),
         repo_root / "build" / "python",
+        repo_root / "build" / "python" / "python",
         repo_root / "build" / "release" / "python",
         repo_root / "build" / "debug" / "python",
     ]
