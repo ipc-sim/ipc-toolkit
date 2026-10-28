@@ -45,8 +45,10 @@ Eigen::VectorXd BodyPotentials::affine_gradient(
     if (m_orthogonality) {
         g += scaling * m_orthogonality->gradient(bodies, y);
     }
+    // The AL weighs its penalty against inertia and scales its multipliers
+    // itself, so it enters unscaled (see AugmentedLagrangian).
     if (include_al && m_al.active()) {
-        g += scaling * m_al.gradient(bodies, y);
+        g += m_al.gradient(bodies, y);
     }
     return g;
 }
@@ -64,7 +66,7 @@ double BodyPotentials::energy(
         E += scaling * (*m_orthogonality)(bodies, y);
     }
     if (include_al && m_al.active()) {
-        E += scaling * m_al(bodies, y);
+        E += m_al(bodies, y);
     }
     return E;
 }
@@ -97,7 +99,7 @@ Eigen::SparseMatrix<double> BodyPotentials::hessian(
             * m_orthogonality->hessian(bodies, y, PSDProjectionMethod::NONE);
     }
     if (include_al && m_al.active()) {
-        H += scaling * m_al.hessian(bodies, y);
+        H += m_al.hessian(bodies, y);
     }
 
     const Eigen::VectorXd g = affine_gradient(bodies, y, scaling, include_al);
@@ -107,9 +109,10 @@ Eigen::SparseMatrix<double> BodyPotentials::hessian(
 void BodyPotentials::init_augmented_lagrangian(
     const rigid::RigidBodies& bodies,
     Eigen::ConstRef<Eigen::VectorXd> x0,
-    const std::vector<rigid::Pose>& targets)
+    const std::vector<rigid::Pose>& targets,
+    const double multiplier_scaling)
 {
-    m_al.init(bodies, m_to_affine->to_affine(x0), targets);
+    m_al.init(bodies, m_to_affine->to_affine(x0), targets, multiplier_scaling);
 }
 
 void BodyPotentials::update_augmented_lagrangian(

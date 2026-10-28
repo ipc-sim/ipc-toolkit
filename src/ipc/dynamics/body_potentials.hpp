@@ -20,9 +20,12 @@ class ImplicitTimeIntegrator;
 /// SO(dim) orthogonality penalty (affine bodies only), and the augmented
 /// Lagrangian — evaluates each at y = to_affine(x), sums their
 /// gradients/Hessians (with the incremental-potential scaling: inertia
-/// unscaled, the rest × s), and applies the to-affine chain rule once:
-///     ∇ₓE  = (dy/dx)ᵀ (g_inertia + s (g_bf + g_orth [+ g_al]))
+/// unscaled, the physical potentials × s), and applies the to-affine chain
+/// rule once:
+///     ∇ₓE  = (dy/dx)ᵀ (g_inertia + s (g_bf + g_orth) [+ g_al])
 ///     ∇²ₓE = (dy/dx)ᵀ H (dy/dx) + Σₖ gₖ d²yₖ/dx².
+/// The augmented Lagrangian applies s to its own multiplier terms and weighs
+/// its penalty against inertia, so it is added unscaled.
 ///
 /// These are the block-diagonal-per-body terms; pairwise contact/friction use
 /// the vertex-space chain rule and are added separately.
@@ -71,10 +74,13 @@ public:
 
     // ---- Augmented Lagrangian lifecycle (operates in affine coordinates) ----
 
+    /// @param multiplier_scaling The acceleration scaling (βΔt)² applied to
+    ///     the multiplier terms (the penalty is weighed against inertia).
     void init_augmented_lagrangian(
         const rigid::RigidBodies& bodies,
         Eigen::ConstRef<Eigen::VectorXd> x0,
-        const std::vector<rigid::Pose>& targets);
+        const std::vector<rigid::Pose>& targets,
+        const double multiplier_scaling);
 
     void update_augmented_lagrangian(
         const rigid::RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x);

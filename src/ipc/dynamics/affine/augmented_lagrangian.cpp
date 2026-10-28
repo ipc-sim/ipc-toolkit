@@ -35,9 +35,11 @@ namespace {
 void AugmentedLagrangian::init(
     const rigid::RigidBodies& bodies,
     Eigen::ConstRef<Eigen::VectorXd> x0,
-    const std::vector<rigid::Pose>& targets)
+    const std::vector<rigid::Pose>& targets,
+    const double multiplier_scaling)
 {
     assert(targets.size() == bodies.num_bodies());
+    assert(multiplier_scaling > 0);
     m_dim = bodies.dim();
     assert(
         x0.size()
@@ -45,21 +47,40 @@ void AugmentedLagrangian::init(
 
     m_x0 = x0;
     m_targets = targets;
+    m_multiplier_scaling = multiplier_scaling;
+
+    // The multipliers carry over from the previous step as the warm start,
+    // unless the scene changed shape (first step or a different body count).
+    if (m_lambda.size() != targets.size()) {
+        m_lambda.assign(targets.size(), VectorMax3d::Zero(m_dim));
+        m_lambda_A.assign(targets.size(), Eigen::VectorXd::Zero(m_dim * m_dim));
+    }
 
     m_target_rotations.resize(targets.size());
     m_angular_weights.resize(targets.size());
-    m_lambda.resize(targets.size());
-    m_lambda_A.resize(targets.size());
     m_num_kinematic = 0;
     for (size_t i = 0; i < targets.size(); ++i) {
-        m_lambda[i] = VectorMax3d::Zero(m_dim);
-        m_lambda_A[i] = Eigen::VectorXd::Zero(m_dim * m_dim);
         // Only kinematic bodies have a meaningful target rotation; the rest
         // are left default (never read — see the KINEMATIC guards below).
         if (bodies[i].type() == rigid::RigidBody::Type::KINEMATIC) {
             m_target_rotations[i] = targets[i].rotation_matrix();
             m_angular_weights[i] = angular_weights(bodies[i]);
             ++m_num_kinematic;
+
+            // A rotation constraint reacts with a torque, which lies in the
+            // tangent space {S R̂ : S skew} of SO(dim) at the target. The rest
+            // of λ_A is pushback against leaving SO(dim) that the
+            // orthogonality potential provides, so we keep only the torque.
+            // Carrying the rest over would push A off SO(dim) a little more
+            // every step.
+            const MatrixMax3d& R = m_target_rotations[i];
+            const MatrixMax3d G = m_lambda_A[i].reshaped(m_dim, m_dim);
+            const MatrixMax3d S = 0.5 * (G * R.transpose() - R * G.transpose());
+            m_lambda_A[i] = (S * R).reshaped();
+        } else {
+            // A body that stopped being kinematic (e.g., converted to STATIC)
+            // has no constraint, so it carries no reaction into later steps.
+            reset_multipliers(i);
         }
     }
 
@@ -68,6 +89,18 @@ void AugmentedLagrangian::init(
 
     m_linear_satisfied = m_num_kinematic == 0;
     m_angular_satisfied = m_num_kinematic == 0;
+
+    m_prev_eta_q = -std::numeric_limits<double>::infinity();
+    m_prev_eta_A = -std::numeric_limits<double>::infinity();
+}
+
+void AugmentedLagrangian::reset_multipliers(const size_t body_id)
+{
+    if (body_id >= m_lambda.size()) {
+        return; // Not initialized yet, so there is nothing to carry over.
+    }
+    m_lambda[body_id] = VectorMax3d::Zero(m_dim);
+    m_lambda_A[body_id] = Eigen::VectorXd::Zero(m_dim * m_dim);
 }
 
 VectorMax12d AugmentedLagrangian::target_dof(const size_t body_id) const
@@ -133,24 +166,39 @@ double AugmentedLagrangian::angular_progress(
 void AugmentedLagrangian::update(
     const rigid::RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
 {
+    // At an energy-converged x the penalty and multiplier together supply the
+    // constraint force, so folding the penalty's share into the multiplier
+    // leaves λ equal to the full reaction. We do this both on the usual
+    // multiplier branch and once more when a channel is satisfied, so the
+    // next step starts from this step's reaction.
+    //
+    // Near the target, the multiplier update alone normally closes the gap
+    // in one solve. It cannot when the load on the body moves between solves
+    // (e.g., friction re-lagged in between), because λ then chases a moving
+    // reaction and η can hover just short of satisfied indefinitely. So when
+    // the gap stops shrinking, we also double the penalty, which makes the
+    // body proportionally less sensitive to the change in load.
+    const auto stagnated = [&](const double eta, const double prev_eta) {
+        return 1 - eta > m_params.min_gap_reduction * (1 - prev_eta);
+    };
+
     if (!m_linear_satisfied) {
         const double eta_q = linear_progress(bodies, x);
         if (eta_q >= m_params.satisfied_progress) {
             m_linear_satisfied = true;
+            update_linear_multipliers(bodies, x);
         } else if (
             eta_q < m_params.stall_progress
             && m_kappa_q < m_params.max_penalty) {
             m_kappa_q *= 2;
         } else {
-            for (size_t i = 0; i < bodies.num_bodies(); ++i) {
-                if (bodies[i].type() != rigid::RigidBody::Type::KINEMATIC) {
-                    continue;
-                }
-                const int ndof = m_dim + m_dim * m_dim;
-                m_lambda[i] -= m_kappa_q * std::sqrt(bodies[i].mass())
-                    * (x.segment(ndof * i, m_dim) - m_targets[i].position);
+            update_linear_multipliers(bodies, x);
+            if (stagnated(eta_q, m_prev_eta_q)
+                && m_kappa_q < m_params.max_penalty) {
+                m_kappa_q *= 2;
             }
         }
+        m_prev_eta_q = eta_q;
         logger().debug(
             "augmented lagrangian (linear): η_q={:g} κ_q={:g} satisfied={}",
             eta_q, m_kappa_q, m_linear_satisfied);
@@ -160,26 +208,51 @@ void AugmentedLagrangian::update(
         const double eta_A = angular_progress(bodies, x); // NOLINT
         if (eta_A >= m_params.satisfied_progress) {
             m_angular_satisfied = true;
+            update_angular_multipliers(bodies, x);
         } else if (
             eta_A < m_params.stall_progress
             && m_kappa_A < m_params.max_penalty) {
             m_kappa_A *= 2;
         } else {
-            for (size_t i = 0; i < bodies.num_bodies(); ++i) {
-                if (bodies[i].type() != rigid::RigidBody::Type::KINEMATIC) {
-                    continue;
-                }
-                // λ_A ← λ_A − κ_A W^{1/2} (a − â)
-                const int ndof = m_dim + m_dim * m_dim;
-                m_lambda_A[i] -= m_kappa_A
-                    * m_angular_weights[i].array().sqrt().matrix().asDiagonal()
-                    * (x.segment(ndof * i + m_dim, m_dim * m_dim)
-                       - Eigen::VectorXd(m_target_rotations[i].reshaped()));
+            update_angular_multipliers(bodies, x);
+            if (stagnated(eta_A, m_prev_eta_A)
+                && m_kappa_A < m_params.max_penalty) {
+                m_kappa_A *= 2;
             }
         }
+        m_prev_eta_A = eta_A;
         logger().debug(
             "augmented lagrangian (angular): η_A={:g} κ_A={:g} satisfied={}",
             eta_A, m_kappa_A, m_angular_satisfied);
+    }
+}
+
+void AugmentedLagrangian::update_linear_multipliers(
+    const rigid::RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
+{
+    const int ndof = m_dim + m_dim * m_dim;
+    for (size_t i = 0; i < bodies.num_bodies(); ++i) {
+        if (bodies[i].type() != rigid::RigidBody::Type::KINEMATIC) {
+            continue;
+        }
+        m_lambda[i] -= m_kappa_q * bodies[i].mass()
+            * (x.segment(ndof * i, m_dim) - m_targets[i].position)
+            / m_multiplier_scaling;
+    }
+}
+
+void AugmentedLagrangian::update_angular_multipliers(
+    const rigid::RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
+{
+    const int ndof = m_dim + m_dim * m_dim;
+    for (size_t i = 0; i < bodies.num_bodies(); ++i) {
+        if (bodies[i].type() != rigid::RigidBody::Type::KINEMATIC) {
+            continue;
+        }
+        const Eigen::VectorXd da = x.segment(ndof * i + m_dim, m_dim * m_dim)
+            - Eigen::VectorXd(m_target_rotations[i].reshaped());
+        m_lambda_A[i] -= m_kappa_A * m_angular_weights[i].cwiseProduct(da)
+            / m_multiplier_scaling;
     }
 }
 
@@ -201,13 +274,13 @@ double AugmentedLagrangian::operator()(
         const VectorMax3d dq =
             x.segment(ndof * i, m_dim) - m_targets[i].position;
         energy += 0.5 * m_kappa_q * bodies[i].mass() * dq.squaredNorm()
-            - std::sqrt(bodies[i].mass()) * m_lambda[i].dot(dq);
+            - m_multiplier_scaling * m_lambda[i].dot(dq);
 
         const Eigen::VectorXd da = x.segment(ndof * i + m_dim, m_dim * m_dim)
             - Eigen::VectorXd(m_target_rotations[i].reshaped());
         const Eigen::VectorXd& w = m_angular_weights[i];
         energy += 0.5 * m_kappa_A * da.dot(w.cwiseProduct(da))
-            - m_lambda_A[i].dot(w.array().sqrt().matrix().cwiseProduct(da));
+            - m_multiplier_scaling * m_lambda_A[i].dot(da);
     }
     return energy;
 }
@@ -228,14 +301,14 @@ Eigen::VectorXd AugmentedLagrangian::gradient(
         const VectorMax3d dq =
             x.segment(ndof * i, m_dim) - m_targets[i].position;
         grad.segment(ndof * i, m_dim) = m_kappa_q * bodies[i].mass() * dq
-            - std::sqrt(bodies[i].mass()) * m_lambda[i];
+            - m_multiplier_scaling * m_lambda[i];
 
         const Eigen::VectorXd da = x.segment(ndof * i + m_dim, m_dim * m_dim)
             - Eigen::VectorXd(m_target_rotations[i].reshaped());
         const Eigen::VectorXd& w = m_angular_weights[i];
         grad.segment(ndof * i + m_dim, m_dim * m_dim) =
             m_kappa_A * w.cwiseProduct(da)
-            - w.array().sqrt().matrix().cwiseProduct(m_lambda_A[i]);
+            - m_multiplier_scaling * m_lambda_A[i];
     }
     return grad;
 }

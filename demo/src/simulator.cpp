@@ -1101,7 +1101,8 @@ std::vector<rigid::Pose> Simulator::kinematic_targets() const
 void Simulator::al_init(Eigen::ConstRef<Eigen::VectorXd> x)
 {
     const std::vector<rigid::Pose> targets = kinematic_targets();
-    m_body_potentials->init_augmented_lagrangian(*m_bodies, x, targets);
+    m_body_potentials->init_augmented_lagrangian(
+        *m_bodies, x, targets, m_time_integrator->acceleration_scaling());
 }
 
 bool Simulator::al_active() const
@@ -1190,6 +1191,9 @@ void Simulator::set_kinematic_driver(
     // Also update the reset() snapshot so reset() restores this driver.
     m_kinematic_drivers[body] = driver;
     m_initial_kinematic_drivers[body] = driver;
+    // The new motion needs a different reaction force, so we drop the warm
+    // start rather than push the body with the old one for a step.
+    m_body_potentials->augmented_lagrangian().reset_multipliers(body);
 }
 
 // ----------------------------------------------------------------------------
@@ -1202,8 +1206,14 @@ namespace {
     {
         std::vector<rigid::Pose> rigid_poses(affine_poses.size());
         for (size_t i = 0; i < affine_poses.size(); ++i) {
-            rigid_poses[i].position = affine_poses[i].position;
-            rigid_poses[i].rotation = affine_poses[i].rotation_vector();
+            // In affine mode A is a rotation only to the solver's tolerance
+            // (a pinned kinematic body keeps whatever the last solve left), so
+            // we read the angle off the nearest rotation, as
+            // kinematic_targets() does.
+            affine::Pose pose = affine_poses[i];
+            pose.rotation = nearest_rotation(pose.rotation);
+            rigid_poses[i].position = pose.position;
+            rigid_poses[i].rotation = pose.rotation_vector();
         }
         return rigid_poses;
     }

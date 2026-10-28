@@ -152,8 +152,9 @@ public:
         /// @brief Hard cap on the outer (friction-lagging / augmented
         /// Lagrangian) solves per step.
         int max_outer_iterations = 50;
-        /// @brief Initial penalty of the kinematic-body augmented Lagrangian
-        /// (reset each step) [Ferguson et al. 2021].
+        /// @brief Initial penalty of the kinematic-body augmented Lagrangian,
+        /// relative to the body's inertia (reset each step; the multipliers
+        /// instead carry over as the reaction force) [Ferguson et al. 2021].
         double al_initial_penalty = 1e3;
         /// @brief Maximum AL penalty (stop doubling).
         double al_max_penalty = 1e8;
