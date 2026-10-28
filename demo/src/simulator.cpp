@@ -40,6 +40,25 @@ namespace {
     {
         return std::vector<rigid::Pose>(num_bodies, rigid::Pose::identity(dim));
     }
+
+    /// Zero the velocity components of a body's fixed DOFs.
+    rigid::Pose
+    free_velocity(rigid::Pose velocity, const rigid::RigidBody& body)
+    {
+        const auto& fixed = body.is_dof_fixed();
+        const int dim = int(velocity.position.size());
+        for (int k = 0; k < dim; ++k) {
+            if (fixed(k)) {
+                velocity.position(k) = 0;
+            }
+        }
+        for (int k = 0; k < velocity.rotation.size(); ++k) {
+            if (fixed(dim + k)) {
+                velocity.rotation(k) = 0;
+            }
+        }
+        return velocity;
+    }
 } // namespace
 
 Simulator::Simulator(
@@ -287,19 +306,8 @@ void Simulator::initialize_time_integrator(
     for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
         x0.segment(state_ndof * i, dim) = poses[i].position;
 
-        // Zero the velocity components of fixed DOFs.
-        rigid::Pose velocity = velocities[i];
-        const auto& fixed = (*m_bodies)[i].is_dof_fixed();
-        for (int k = 0; k < dim; ++k) {
-            if (fixed(k)) {
-                velocity.position(k) = 0;
-            }
-        }
-        for (int k = 0; k < velocity.rotation.size(); ++k) {
-            if (fixed(dim + k)) {
-                velocity.rotation(k) = 0;
-            }
-        }
+        const rigid::Pose velocity =
+            free_velocity(velocities[i], (*m_bodies)[i]);
 
         v0.segment(state_ndof * i, dim) = velocity.position;
 
@@ -982,11 +990,7 @@ std::vector<rigid::Pose> Simulator::kinematic_targets() const
 {
     std::vector<rigid::Pose> targets(m_bodies->num_bodies());
 
-    const int dim = m_bodies->dim();
     const double h = m_time_integrator->dt();
-    const Eigen::VectorXd& v_prev = m_time_integrator->v_prev(0);
-    const int state_ndof =
-        int(m_time_integrator->pos_ndof() + m_time_integrator->rot_ndof());
 
     for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
         // Skip non-kinematic bodies
@@ -1005,28 +1009,16 @@ std::vector<rigid::Pose> Simulator::kinematic_targets() const
         current.position = pose.position;
         current.rotation = pose.rotation_vector();
 
-        // The prescribed velocity: linear in .position, angular ω in
-        // .rotation. The driver applies the script-or-integrate policy; the
-        // ω extraction from the integrator state layout lives here.
-        rigid::Pose velocity;
-        velocity.position = v_prev.segment(state_ndof * i, dim);
-        if (dim == 2) {
-            // 2D (both models): ω from Q̇ = ω S Q ⇒ ω = (Q̇ Qᵀ)(1, 0).
-            const Eigen::Matrix2d Q = pose.rotation;
-            const Eigen::Matrix2d Qdot =
-                v_prev.segment<4>(state_ndof * i + 2).reshaped(2, 2);
-            velocity.rotation =
-                VectorMax3d::Constant(1, (Qdot * Q.transpose())(1, 0));
-        } else {
-            // 3D: [ω]× = Q̇ Qᵀ (projected to antisymmetric for robustness).
-            const Eigen::Matrix3d Q = pose.rotation;
-            const Eigen::Matrix3d Qdot =
-                v_prev.segment<9>(state_ndof * i + 3).reshaped(3, 3);
-            const Eigen::Matrix3d omega_hat = 0.5
-                * (Qdot * Q.transpose() - (Qdot * Q.transpose()).transpose());
-            velocity.rotation = Eigen::Vector3d(
-                omega_hat(2, 1), omega_hat(0, 2), omega_hat(1, 0));
-        }
+        // We drive the body at its prescribed (initial) velocity rather than
+        // the velocity it actually reached last step. The augmented
+        // Lagrangian accepts a step once it covers 99.9% of the way to the
+        // target, so under load the body falls slightly short each step. If we
+        // fed that achieved velocity back in, every shortfall would carry into
+        // all later steps and the body would steadily slow down (and keep any
+        // sideways drift it picked up). Using the prescribed velocity keeps
+        // each step's error to that step alone, as in Rigid IPC.
+        const rigid::Pose velocity =
+            free_velocity(m_initial_velocities[i], (*m_bodies)[i]);
 
         targets[i] = m_kinematic_drivers[i]->target(current, velocity, h);
     }

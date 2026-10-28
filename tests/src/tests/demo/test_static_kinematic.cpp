@@ -143,6 +143,55 @@ TEST_CASE("Kinematic body velocity driven", "[kinematic][simulator]")
     CHECK((sim.poses()[0].rotation - Q_expected).norm() < 5e-3);
 }
 
+TEST_CASE(
+    "Kinematic body keeps its prescribed velocity under load",
+    "[kinematic][simulator]")
+{
+    const auto mode = generate_mode();
+    CAPTURE(int(mode));
+
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    load_cube(V, E, F);
+
+    // A kinematic cube lifts a much heavier cube resting on top of it. The
+    // load resists every step, so any shortfall in reaching a step's target
+    // shows up as lost speed if it carries over to the next step.
+    std::vector<Pose> initial_poses(2, Pose::identity(3));
+    initial_poses[1].position = Eigen::Vector3d(0, 1.001, 0);
+
+    auto bodies = RigidBodies::build_from_meshes(
+        { V, V }, { E, E }, { F, F }, { 1000.0, 50000.0 }, initial_poses);
+    (*bodies)[0].set_type(RigidBody::Type::KINEMATIC);
+
+    std::vector<Pose> initial_velocities(2, Pose::identity(3));
+    initial_velocities[0].position = Eigen::Vector3d(0, 0.5, 0);
+
+    Simulator::Settings settings;
+    settings.body_dynamics = mode;
+
+    const double dt = 0.01;
+    Simulator sim(bodies, initial_poses, initial_velocities, dt, settings);
+
+    const Eigen::Vector3d p0 = initial_poses[0].position;
+    const Eigen::Vector3d v = initial_velocities[0].position;
+
+    const int n = 100;
+    Eigen::Vector3d p_prev = p0;
+    for (int i = 0; i < n; ++i) {
+        p_prev = sim.poses()[0].position;
+        REQUIRE(sim.step());
+    }
+
+    // Each step may stop short of its target by the AL satisfaction tolerance
+    // (0.1% of the step), but the next step must still aim for the full
+    // prescribed displacement, so the error stays at the per-step tolerance
+    // instead of compounding.
+    const Eigen::Vector3d p = sim.poses()[0].position;
+    CHECK((p - p_prev - dt * v).norm() < 2e-3 * dt * v.norm());
+    CHECK((p - (p0 + n * dt * v)).norm() < 2e-3 * n * dt * v.norm());
+}
+
 TEST_CASE("Kinematic body scripted poses", "[kinematic][simulator]")
 {
     const auto mode = generate_mode();
