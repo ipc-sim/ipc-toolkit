@@ -241,6 +241,82 @@ TEST_CASE("Friction sliding deceleration", "[friction][simulator]")
         < settings.static_friction_speed_bound * 0.2);
 }
 
+// Two cubes slide side by side across a static slab with the same initial
+// speed. A friction pair makes the first cube's contact with the slab
+// frictionless, so it keeps its speed while the second cube, which uses the
+// global coefficient, stops after v₀²/(2μg).
+TEST_CASE(
+    "Friction pairs override the global coefficient between two bodies",
+    "[friction][simulator]")
+{
+    const double mu = 0.3, g = 9.81, v0 = 1.0;
+
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    REQUIRE(tests::load_mesh("cube.ply", V, E, F));
+    const double half = -V.col(1).minCoeff();
+
+    // A wide, unit-thick slab with its top face at y = 0.
+    Eigen::MatrixXd V_slab = V;
+    V_slab.col(0) *= 10;
+    V_slab.col(2) *= 10;
+
+    Simulator::Settings settings;
+    settings.friction_coefficient = mu;
+    settings.friction_iterations = -1;
+    settings.velocity_conv_tol = 1e-3;
+
+    std::vector<Pose> initial_poses(3, Pose::identity(3));
+    initial_poses[0].position.y() = -half;
+    for (int i : { 1, 2 }) {
+        initial_poses[i].position = Eigen::Vector3d(
+            -2.0, half + 1.1 * settings.dhat, i == 1 ? -2.0 : 2.0);
+    }
+
+    auto bodies = RigidBodies::build_from_meshes(
+        { V_slab, V, V }, { E, E, E }, { F, F, F }, { 1000.0, 1000.0, 1000.0 },
+        initial_poses);
+    (*bodies)[0].set_type(RigidBody::Type::STATIC);
+
+    settings.friction_pairs = { { /*body0=*/1, /*body1=*/0, /*mu=*/0.0 } };
+
+    std::vector<Pose> initial_velocities(3, Pose::identity(3));
+    initial_velocities[1].position = Eigen::Vector3d(v0, 0, 0);
+    initial_velocities[2].position = Eigen::Vector3d(v0, 0, 0);
+
+    const double dt = 0.01;
+    Simulator sim(bodies, initial_poses, initial_velocities, dt, settings);
+
+    // Run well past the time the gripped cube needs to stop, then measure both
+    // cubes' speeds over one more step.
+    const double stopping_time = v0 / (mu * g);
+    REQUIRE(sim.run(/*t_end=*/2 * stopping_time));
+    const Eigen::Vector3d free_start = sim.poses()[1].position;
+    const Eigen::Vector3d gripped_start = sim.poses()[2].position;
+    REQUIRE(sim.step());
+    const Eigen::Vector3d free_velocity =
+        (sim.poses()[1].position - free_start) / dt;
+    const Eigen::Vector3d gripped_velocity =
+        (sim.poses()[2].position - gripped_start) / dt;
+
+    CHECK(free_velocity.x() == Catch::Approx(v0).epsilon(1e-2));
+    CHECK(gripped_velocity.norm() < 1e-2 * v0);
+}
+
+TEST_CASE("Friction pairs reject unknown bodies", "[friction][simulator]")
+{
+    std::vector<Pose> initial_poses;
+    auto bodies = cube_on_plane(initial_poses, 1e-3, 1000.0, 1.1);
+
+    Simulator::Settings settings;
+    settings.friction_coefficient = 0.3;
+    settings.friction_pairs = { { /*body0=*/0, /*body1=*/1, /*mu=*/0.1 } };
+
+    CHECK_THROWS_AS(
+        Simulator(bodies, initial_poses, 0.01, settings),
+        std::invalid_argument);
+}
+
 // A step's friction forces are lagged from the state it starts at, so they
 // must be the contact forces that state actually carries: the ones the
 // previous step was solved with. A cube sliding faster than εᵥ then loses

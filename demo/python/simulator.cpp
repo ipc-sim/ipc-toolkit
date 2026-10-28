@@ -63,6 +63,19 @@ void define_simulator(py::module_& m)
             "stiff orthogonality potential and linear CCD.")
         .export_values();
 
+    py::class_<Simulator::FrictionPair>(
+        simulator, "FrictionPair",
+        "A coefficient of friction for the contacts between two specific "
+        "bodies, overriding Settings.friction_coefficient.")
+        .def(
+            py::init([](size_t body0, size_t body1, double coefficient) {
+                return Simulator::FrictionPair { body0, body1, coefficient };
+            }),
+            "body0"_a, "body1"_a, "coefficient"_a)
+        .def_readwrite("body0", &Simulator::FrictionPair::body0)
+        .def_readwrite("body1", &Simulator::FrictionPair::body1)
+        .def_readwrite("coefficient", &Simulator::FrictionPair::coefficient);
+
     py::class_<Simulator::Settings>(simulator, "Settings")
         .def(py::init<>())
         .def_readwrite(
@@ -86,6 +99,13 @@ void define_simulator(py::module_& m)
         .def_readwrite(
             "friction_coefficient", &Simulator::Settings::friction_coefficient,
             "Coefficient of friction (0 disables friction).")
+        .def_readwrite(
+            "friction_pairs", &Simulator::Settings::friction_pairs,
+            "Per-pair coefficients of friction (a list of FrictionPair). "
+            "Contacts between the two bodies of a pair use its coefficient "
+            "instead of friction_coefficient; contacts with an analytic plane "
+            "always use friction_coefficient. This returns a copy, so assign "
+            "the whole list rather than appending to it.")
         .def_readwrite(
             "static_friction_speed_bound",
             &Simulator::Settings::static_friction_speed_bound,

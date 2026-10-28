@@ -10,11 +10,15 @@
 #include <polysolve/nonlinear/Problem.hpp>
 #include <spdlog/common.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <list>
+#include <map>
 #include <memory>
 #include <optional>
+#include <utility>
+#include <vector>
 
 namespace spdlog {
 class logger;
@@ -81,6 +85,17 @@ public:
         AFFINE,
     };
 
+    /// @brief A coefficient of friction for the contacts between two specific
+    /// bodies, overriding Settings::friction_coefficient.
+    struct FrictionPair {
+        /// @brief Index of one of the bodies.
+        size_t body0 = 0;
+        /// @brief Index of the other body (the order does not matter).
+        size_t body1 = 0;
+        /// @brief Coefficient of friction between the two bodies.
+        double coefficient = 0;
+    };
+
     /// @brief User-configurable simulation parameters.
     struct Settings {
         /// @brief The dynamics model used for all bodies.
@@ -110,6 +125,12 @@ public:
         /// velocity_conv_tol (e.g., 1e-3) so the solver cannot stop while
         /// the contact forces are unbalanced.
         double friction_coefficient = 0;
+        /// @brief Per-pair coefficients of friction. Contacts between the two
+        /// bodies of a pair use its coefficient instead of
+        /// friction_coefficient, so, for example, a greased pin can slide in
+        /// its sleeve while the sleeve still grips the wall around it.
+        /// Contacts with an analytic plane always use friction_coefficient.
+        std::vector<FrictionPair> friction_pairs;
         /// @brief Smooth friction mollifier speed bound εᵥ (m/s): sliding
         /// speeds below this are treated as static [Ferguson et al. 2021].
         double static_friction_speed_bound = 1e-3;
@@ -523,9 +544,22 @@ protected:
     /// @brief Whether the friction term is active.
     bool friction_enabled() const
     {
-        return m_settings.friction_coefficient > 0
-            && m_settings.friction_iterations != 0;
+        const bool any_friction = m_settings.friction_coefficient > 0
+            || std::any_of(m_settings.friction_pairs.begin(),
+                           m_settings.friction_pairs.end(),
+                           [](const FrictionPair& pair) {
+                               return pair.coefficient > 0;
+                           });
+        return any_friction && m_settings.friction_iterations != 0;
     }
+
+    /// @brief Validate Settings::friction_pairs and build the lookups that
+    /// apply_friction_pairs() uses.
+    void init_friction_pairs();
+
+    /// @brief Overwrite the coefficient of friction of every tangential
+    /// collision between the two bodies of a Settings::friction_pairs entry.
+    void apply_friction_pairs();
 
     /// @brief Per-vertex velocities at x from the time integrator's velocity
     /// formula: (V(x) − Σᵢ wᵢ V(xᵗ⁻ⁱ)) / (βΔt).
@@ -602,6 +636,14 @@ protected:
     /// @brief Tangential (friction) collision set (lagged: rebuilt between
     /// solves, frozen during each solve).
     std::shared_ptr<TangentialCollisions> m_tangential_collisions;
+
+    /// @brief Coefficient of friction per body pair (smaller index first),
+    /// from Settings::friction_pairs.
+    std::map<std::pair<size_t, size_t>, double> m_pair_friction;
+
+    /// @brief The body each collision-mesh vertex belongs to (only filled
+    /// when there are friction pairs).
+    std::vector<size_t> m_vertex_bodies;
 
     /// @brief Vertex-space velocity history Σᵢ wᵢ V(xᵗ⁻ⁱ) — the reference for
     /// the friction velocities (captured at step start, fixed for the step).

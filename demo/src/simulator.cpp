@@ -237,6 +237,8 @@ Simulator::Simulator(
                 "bodies (use add_fixed_point/add_fixed_body instead)");
         }
     }
+
+    init_friction_pairs();
     m_initial_kinematic_drivers = m_kinematic_drivers;
 
     rebuild_dof_mask();
@@ -975,6 +977,77 @@ void Simulator::update_friction_collisions(Eigen::ConstRef<Eigen::VectorXd> x)
     m_tangential_collisions->build(
         *m_bodies, m_kinematics->world_vertices(x), *m_normal_collisions,
         *m_barrier_potential, m_settings.friction_coefficient);
+    apply_friction_pairs();
+}
+
+void Simulator::init_friction_pairs()
+{
+    m_pair_friction.clear();
+    m_vertex_bodies.clear();
+    if (m_settings.friction_pairs.empty()) {
+        return;
+    }
+
+    for (const FrictionPair& pair : m_settings.friction_pairs) {
+        if (pair.body0 >= m_bodies->num_bodies()
+            || pair.body1 >= m_bodies->num_bodies()) {
+            throw std::invalid_argument(
+                fmt::format(
+                    "friction pair ({}, {}) references a body that does not exist "
+                    "(there are {} bodies)",
+                    pair.body0, pair.body1, m_bodies->num_bodies()));
+        }
+        if (pair.coefficient < 0) {
+            throw std::invalid_argument(
+                fmt::format(
+                    "friction pair ({}, {}) has a negative coefficient ({:g})",
+                    pair.body0, pair.body1, pair.coefficient));
+        }
+        m_pair_friction[std::minmax(pair.body0, pair.body1)] = pair.coefficient;
+    }
+
+    // Rigid bodies collide with all of their vertices, so collision-mesh and
+    // full vertex indices coincide and body_vertex_start applies to both.
+    assert(m_bodies->num_vertices() == m_bodies->full_num_vertices());
+    m_vertex_bodies.resize(m_bodies->num_vertices());
+    for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
+        std::fill_n(
+            m_vertex_bodies.begin() + m_bodies->body_vertex_start(i),
+            m_bodies->body_num_vertices(i), i);
+    }
+}
+
+void Simulator::apply_friction_pairs()
+{
+    if (m_pair_friction.empty()) {
+        return;
+    }
+
+    for (size_t ci = 0; ci < m_tangential_collisions->size(); ++ci) {
+        TangentialCollision& collision = (*m_tangential_collisions)[ci];
+
+        // Every collision stencil lists one body's vertices before the
+        // other's, so the first and last vertices name the two bodies. A
+        // plane-vertex collision has a single vertex and keeps the global
+        // coefficient, since an analytic plane is not a body.
+        const auto ids =
+            collision.vertex_ids(m_bodies->edges(), m_bodies->faces());
+        const auto* const last = std::find(ids.begin(), ids.end(), -1) - 1;
+        if (last == ids.begin()) {
+            continue;
+        }
+        const size_t b0 = m_vertex_bodies[ids.front()];
+        const size_t b1 = m_vertex_bodies[*last];
+
+        const auto it = m_pair_friction.find(std::minmax(b0, b1));
+        if (it != m_pair_friction.end()) {
+            collision.mu_s = collision.mu_k = it->second;
+        }
+    }
+
+    // The friction potential reads the lagged effective coefficients, which
+    // build() copied from the coefficients we just replaced.
+    m_tangential_collisions->reset_lagged_anisotropic_friction_coefficients();
 }
 
 // ----------------------------------------------------------------------------
