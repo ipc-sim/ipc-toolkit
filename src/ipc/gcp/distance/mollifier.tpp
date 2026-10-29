@@ -27,18 +27,18 @@ scalar edge_edge_mollifier(
     Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
     Eigen::ConstRef<Eigen::Vector3<scalar>> eb1,
     const std::array<HeavisideType, 4>& mtypes,
-    const scalar& dist_sqr)
+    const scalar& dist_sqr,
+    const EEMollifierConfig& config)
 {
-    if (ee_mollifier_config().smoothstep) {
-        // PROTOTYPE: H(c / l) with H(t) = 10t^3 - 15t^4 + 6t^5 (C2), where
-        // c = sqrt(d_PE^2 - d^2) is the endpoint clearance and l is fixed.
+    if (config.smoothstep()) {
+        // H(c / w) with H(t) = 10t^3 - 15t^4 + 6t^5 (C2), where
+        // c = sqrt(d_PE^2 - d^2) is the endpoint clearance.
         using std::sqrt;
-        const scalar ell2 = ee_mollifier_config().rel_width
-            ? scalar(dist_sqr * ee_mollifier_config().rel_eps)
-            : ee_mollifier_config().sqrt_width
-            ? scalar(sqrt(dist_sqr)
-                     * (MOLLIFIER_THRESHOLD_EPS * ee_mollifier_config().L))
-            : scalar(ee_mollifier_config().ell * ee_mollifier_config().ell);
+        const scalar ell2 = config.rel_width()
+            ? scalar(dist_sqr * config.rel_eps)
+            : config.sqrt_width()
+            ? scalar(sqrt(dist_sqr) * (MOLLIFIER_THRESHOLD_EPS * config.length))
+            : scalar(config.width * config.width);
         const auto H = [&](const scalar& c2) -> scalar {
             if (c2 <= 0) {
                 return scalar(0.);
@@ -62,12 +62,11 @@ scalar edge_edge_mollifier(
         return w;
     }
     scalar denom = dist_sqr * MOLLIFIER_THRESHOLD_EPS;
-    if (ee_mollifier_config().fixed) { // PROTOTYPE
-        denom = scalar(ee_mollifier_config().ell * ee_mollifier_config().ell);
-    } else if (ee_mollifier_config().sqrt_width) { // PROTOTYPE
+    if (config.fixed_width()) {
+        denom = scalar(config.width * config.width);
+    } else if (config.sqrt_width()) {
         using std::sqrt;
-        denom = sqrt(dist_sqr)
-            * (MOLLIFIER_THRESHOLD_EPS * ee_mollifier_config().L);
+        denom = sqrt(dist_sqr) * (MOLLIFIER_THRESHOLD_EPS * config.length);
     }
     const scalar da = denom;
     const scalar db = denom;

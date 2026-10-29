@@ -29,3 +29,23 @@ class TestESPLocalTransfer(unittest.TestCase):
         self.assertAlmostEqual((values[1]-values[0])/(2*h), gradient[0], delta=1e-5)
         with self.assertRaises(ValueError):
             ipctk.ESPPotential(params, use_near_far=False)
+
+    def test_edge_edge_options(self):
+        params = ipctk.ESPParameters(.03, .05)
+        self.assertEqual(params.ee_mollifier.type,
+                         ipctk.EEMollifierType.SMOOTHSTEP_REL)
+        self.assertEqual(params.ee_mollifier.rel_eps, 1.0)
+        self.assertTrue(params.ee_area_scaling)
+        self.assertEqual(params.ee_area_ref, 0)
+        self.assertEqual(params.ee_weight, 1.5)
+        self.assertEqual(params.ee_mollifier_power, 0)
+        self.assertFalse(params.legacy_element_weights)
+        self.assertEqual(params.ee_mollifier_exponent, 1)  # log barrier
+        params.barrier = ipctk.InversePowerBarrier(2)
+        self.assertEqual(params.ee_mollifier_exponent, 3)
+        params.ee_mollifier_power = 1
+        self.assertEqual(params.ee_mollifier_exponent, 1)
+        mollifier = ipctk.EEMollifierConfig()
+        mollifier.type = ipctk.EEMollifierType.GCP
+        params.ee_mollifier = mollifier
+        self.assertEqual(params.ee_mollifier.type, ipctk.EEMollifierType.GCP)

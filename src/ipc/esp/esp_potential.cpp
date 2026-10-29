@@ -26,22 +26,6 @@ namespace ipc {
 constexpr double FACE_QUADRATURE_WEIGHT_SCALE = 1.0;
 
 namespace {
-    // Adapt mollifier order to the barrier singularity.
-    // - Log / default barriers: order 1 (no extra power).
-    // - InversePowerBarrier(p): order = round(p) + 1, so p=1 -> 2, p=2 -> 3.
-    int mollifier_order_for_barrier(const std::shared_ptr<Barrier>& barrier)
-    {
-        if (ee_mollifier_config().order_override > 0) { // PROTOTYPE
-            return ee_mollifier_config().order_override;
-        }
-        if (const auto* ip =
-                dynamic_cast<const InversePowerBarrier<>*>(barrier.get())) {
-            const int p = static_cast<int>(std::lround(ip->power()));
-            return std::max(1, p + 1);
-        }
-        return 1;
-    }
-
     template <class T> inline T pow_int(T x, int n)
     {
         T r = T(1);
@@ -88,7 +72,8 @@ namespace {
     {
         // With area weights, an element weighs its rest measure: a face its
         // area, an edge in no face its edge area, and an isolated vertex its
-        // vertex area (one by default). These have different units, so on a
+        // vertex area (one by default), each times
+        // params.element_weight_scale(). These have different units, so on a
         // mesh that mixes faces with rods or particles the barrier stiffness
         // has to be chosen with that in mind.
         IntegrationElement elem;
@@ -107,7 +92,9 @@ namespace {
                 elem.vertex_weights[j] = rule.corner_weights[j];
             }
             elem.non_corner = rule.non_corner;
-            elem.weight = params.area_weights ? mesh.face_areas()(f) : 1.;
+            elem.weight = params.area_weights
+                ? mesh.face_areas()(f) * params.element_weight_scale(3)
+                : 1.;
             return elem;
         }
         k -= mesh.num_faces();
@@ -120,7 +107,9 @@ namespace {
             elem.vertices[0] = mesh.edges()(e, 0);
             elem.vertices[1] = mesh.edges()(e, 1);
             elem.vertex_weights = { { 0.5, 0.5, 0 } };
-            elem.weight = params.area_weights ? mesh.edge_area(e) : 1.;
+            elem.weight = params.area_weights
+                ? mesh.edge_area(e) * params.element_weight_scale(2)
+                : 1.;
             return elem;
         }
         k -= mesh.num_codim_edges();
@@ -134,19 +123,21 @@ namespace {
         return elem;
     }
 
-    // PROTOTYPE: make an EE sample stand for about one r x r patch (length r
-    // on rods) instead of a fixed fraction of its element. An EE sample of
-    // weight m takes the share m / (1 + m) of the element's average, since
-    // the element's fixed samples weigh 1 in total, so the scale compares the
-    // element's rest measure with the patch. Rest geometry only, so a
-    // per-element constant.
+    // Make an EE sample stand for about one r x r patch (length r on rods)
+    // instead of a fixed fraction of its element (params.ee_area_scaling).
+    // An EE sample of weight m takes the share m / (1 + m) of the element's
+    // average, since the element's fixed samples weigh 1 in total, so the
+    // scale compares the element's rest measure with the patch. Rest
+    // geometry only, so a per-element constant.
     double ee_area_scale(
         const CollisionMesh& mesh,
         const IntegrationElement& elem,
         const ESPParameters& params)
     {
-        const auto& cfg = ee_mollifier_config();
-        const double r = cfg.area_ref_dbar ? params.dbar : cfg.area_ref;
+        if (!params.ee_area_scaling) {
+            return 1.0;
+        }
+        const double r = params.ee_area_reference();
         if (elem.face >= 0) {
             return ee_area_scale_factor(
                 mesh.face_areas()(elem.face), r, /*face=*/true);
@@ -302,23 +293,24 @@ double ESPPotential::operator()(
                                     X.row(ea).transpose(),
                                     X.row(eb).transpose(),
                                     X.row(ec).transpose(),
-                                    X.row(ed).transpose(), dist_sqr);
+                                    X.row(ed).transpose(), dist_sqr,
+                                    m_params.ee_mollifier);
 
                                 double mollifier =
                                     Math<double>::cubic_spline(
                                         dist / m_params.ee_support())
-                                    * ee_mollifier_config().ee_weight /* PROTOTYPE */;
+                                    * m_params.ee_weight;
                                 mollifier *= edge_edge_mollifier<double>(
                                     X.row(ea).transpose(),
                                     X.row(eb).transpose(),
                                     X.row(ec).transpose(),
-                                    X.row(ed).transpose(), mtypes, dist_sqr);
+                                    X.row(ed).transpose(), mtypes, dist_sqr,
+                                    m_params.ee_mollifier);
                                 mollifier = pow_int(
                                     mollifier,
-                                    mollifier_order_for_barrier(
-                                        m_params.barrier));
+                                    m_params.ee_mollifier_exponent());
                                 mollifier = mollifier
-                                    * ee_area_scale(mesh, elem, m_params); // PROTOTYPE
+                                    * ee_area_scale(mesh, elem, m_params);
 
                                 if (use_nf) {
                                     const double p_near = PointPotentialHelper::
@@ -626,23 +618,23 @@ Eigen::VectorXd ESPPotential::gradient(
                                     X.row(ea).transpose(),
                                     X.row(eb).transpose(),
                                     X.row(ec).transpose(),
-                                    X.row(ed).transpose(), dist_sqr.val);
+                                    X.row(ed).transpose(), dist_sqr.val,
+                                    m_params.ee_mollifier);
 
                                 T mollifier = Math<T>::cubic_spline(
                                                   dist / m_params.ee_support())
-                                    * ee_mollifier_config().ee_weight /* PROTOTYPE */;
+                                    * m_params.ee_weight;
                                 mollifier *= edge_edge_mollifier<T>(
                                     positionsT.row(0).transpose(),
                                     positionsT.row(1).transpose(),
                                     positionsT.row(2).transpose(),
                                     positionsT.row(3).transpose(), mtypes,
-                                    dist_sqr);
+                                    dist_sqr, m_params.ee_mollifier);
                                 mollifier = pow_int(
                                     mollifier,
-                                    mollifier_order_for_barrier(
-                                        m_params.barrier));
+                                    m_params.ee_mollifier_exponent());
                                 mollifier = mollifier
-                                    * ee_area_scale(mesh, elem, m_params); // PROTOTYPE
+                                    * ee_area_scale(mesh, elem, m_params);
 
                                 const ESPCollisionDict<PointType::EDGE>& dict =
                                     *(iter->second);
@@ -1058,23 +1050,23 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
                                     X.row(ea).transpose(),
                                     X.row(eb).transpose(),
                                     X.row(ec).transpose(),
-                                    X.row(ed).transpose(), dist_sqr.val);
+                                    X.row(ed).transpose(), dist_sqr.val,
+                                    m_params.ee_mollifier);
 
                                 T mollifier = Math<T>::cubic_spline(
                                                   dist / m_params.ee_support())
-                                    * ee_mollifier_config().ee_weight /* PROTOTYPE */;
+                                    * m_params.ee_weight;
                                 mollifier *= edge_edge_mollifier<T>(
                                     positionsT.row(0).transpose(),
                                     positionsT.row(1).transpose(),
                                     positionsT.row(2).transpose(),
                                     positionsT.row(3).transpose(), mtypes,
-                                    dist_sqr);
+                                    dist_sqr, m_params.ee_mollifier);
                                 mollifier = pow_int(
                                     mollifier,
-                                    mollifier_order_for_barrier(
-                                        m_params.barrier));
+                                    m_params.ee_mollifier_exponent());
                                 mollifier = mollifier
-                                    * ee_area_scale(mesh, elem, m_params); // PROTOTYPE
+                                    * ee_area_scale(mesh, elem, m_params);
 
                                 const ESPCollisionDict<PointType::EDGE>& dict =
                                     *(iter->second);

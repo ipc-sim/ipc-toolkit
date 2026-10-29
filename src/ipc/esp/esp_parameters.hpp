@@ -91,15 +91,77 @@ struct ESPParameters {
     /// by its edge area and an isolated vertex by its vertex area. If false,
     /// every weight is 1.
     bool area_weights;
+    /// With area weights in 3D, weigh each face by area / 9 and each edge in
+    /// no face by its edge area / 4, as earlier versions did. On a face-only
+    /// mesh this is the same as dividing the barrier stiffness by 9. Off by
+    /// default.
+    bool legacy_element_weights = false;
     /// Experimental 3D near-field quadrature: transfer weight locally from
     /// edge endpoints to EE samples instead of renormalizing all samples.
     /// Requires use_near_far=true and a face rule with positive weight at
     /// every corner (the corners donate the weight).
     /// Currently supports frictionless contact only.
     /// Has no effect in 2D or when dbar_factor=0. Disabled by default.
-    bool local_quadrature_transfer =
-        ee_mollifier_config().local_transfer_default; // PROTOTYPE env default
+    bool local_quadrature_transfer = false;
     const IntegrationType integration_type;
+
+    // -- Edge-edge samples (3D) ----------------------------------------------
+
+    /// Shape of the edge-edge mollifier, which fades an edge-edge sample in
+    /// as its closest points move off the edge endpoints. The default,
+    /// SMOOTHSTEP_REL with rel_eps = 1, fades it in over the gap d.
+    EEMollifierConfig ee_mollifier;
+    /// Power of the edge-edge mollifier weight. 0 chooses it from the
+    /// barrier: max(1, round(p) + 1) for an InversePowerBarrier of power p,
+    /// otherwise 1.
+    int ee_mollifier_power = 0;
+    /// Weight of an edge-edge sample relative to a vertex sample, before the
+    /// mollifier and ee_area_scaling. The default 1.5 makes it weigh one
+    /// vertex sample at zero gap (1.5 times cubic_spline(0)).
+    double ee_weight = 1.5;
+    /// Scale each element's edge-edge samples by (1 + (a / ρ)²)^(-1/2), a
+    /// smooth min(1, ρ / a), with ρ = r² on faces and r on rods for
+    /// r = ee_area_reference(). a is the element's rest measure (face area,
+    /// rod length); under local_quadrature_transfer, that measure times the
+    /// smallest corner weight, the share an edge-edge sample can take. An
+    /// edge-edge sample then stands for about one r x r patch instead of a
+    /// fixed share of its element, which keeps coarse elements from moving
+    /// a large share of their energy onto it. On by default.
+    bool ee_area_scaling = true;
+    /// Reference length r of ee_area_scaling, in distance units; 0 (the
+    /// default) uses dbar.
+    double ee_area_ref = 0;
+
+    /// @brief Power applied to the edge-edge mollifier weight:
+    /// ee_mollifier_power if positive, else chosen from the barrier.
+    int ee_mollifier_exponent() const
+    {
+        if (ee_mollifier_power > 0) {
+            return ee_mollifier_power;
+        }
+        if (const auto* ip =
+                dynamic_cast<const InversePowerBarrier<>*>(barrier.get())) {
+            return std::max(1, static_cast<int>(std::lround(ip->power())) + 1);
+        }
+        return 1;
+    }
+
+    /// @brief Reference length r of ee_area_scaling: ee_area_ref, or dbar
+    /// if that is 0.
+    double ee_area_reference() const
+    {
+        return ee_area_ref > 0 ? ee_area_ref : dbar;
+    }
+
+    /// @brief Factor on the rest measure of an element with
+    /// @p num_vertices vertices: 1, or 1 / num_vertices² under
+    /// legacy_element_weights (faces and edges in no face).
+    double element_weight_scale(const int num_vertices) const
+    {
+        return legacy_element_weights && num_vertices > 1
+            ? 1.0 / (num_vertices * num_vertices)
+            : 1.0;
+    }
 
     /// @brief Near/far split parameter dbar / dhat, in [0, 2].
     double dbar_factor() const { return m_dbar_factor; }

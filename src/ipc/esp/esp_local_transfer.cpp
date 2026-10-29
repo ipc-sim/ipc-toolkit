@@ -82,18 +82,17 @@ namespace {
         std::array<double, 3> vertex_weights {};
         index_t face = -1;
         const FaceQuadRule* non_corner = nullptr;
-        double ee_scale = 1.0; // Element-local prototype area factor.
+        double ee_scale = 1.0; // ESPParameters::ee_area_scaling factor
         double weight;
     };
-    // PROTOTYPE: reference length for area-consistent EE weights (0 = off).
+    // Reference length of ESPParameters::ee_area_scaling (0 = no scaling).
     // An EE sample takes at most the smaller endpoint weight c of the
     // element's mass, so the measure it can stand for is c times the
     // element's measure (area / 3 on faces with the vertex rule, length / 2
     // on rods).
     double area_ref(const ESPParameters& p)
     {
-        const auto& cfg = ee_mollifier_config();
-        return cfg.area_ref_dbar ? p.dbar : cfg.area_ref;
+        return p.ee_area_scaling ? p.ee_area_reference() : 0.0; // 0: no scale
     }
 
     Element element(const CollisionMesh& mesh, const ESPParameters& p, size_t k)
@@ -110,7 +109,9 @@ namespace {
                 out.vertices[i] = mesh.faces()(k, i);
                 out.edges[i] = mesh.faces_to_edges()(k, i);
             }
-            out.weight = p.area_weights ? mesh.face_areas()(k) : 1.0;
+            out.weight = p.area_weights
+                ? mesh.face_areas()(k) * p.element_weight_scale(3)
+                : 1.0;
             const double c = std::min({ cw[0], cw[1], cw[2] });
             out.ee_scale = ee_area_scale_factor(
                 c * mesh.face_areas()(k), area_ref(p), /*face=*/true);
@@ -121,7 +122,9 @@ namespace {
             out.num_edges = 1;
             out.vertices = { mesh.edges()(e, 0), mesh.edges()(e, 1) };
             out.edges = { e };
-            out.weight = p.area_weights ? mesh.edge_area(e) : 1.0;
+            out.weight = p.area_weights
+                ? mesh.edge_area(e) * p.element_weight_scale(2)
+                : 1.0;
             out.ee_scale = ee_area_scale_factor(
                 0.5 * mesh.edge_area(e), area_ref(p), /*face=*/false);
         } else {
@@ -260,12 +263,7 @@ namespace {
                                 X, dict, params, PSDProjectionMethod::NONE, nf);
                 }
             });
-        int power = 1;
-        if (const auto* b = dynamic_cast<const InversePowerBarrier<>*>(
-                params.barrier.get()))
-            power = std::max(1, int(std::lround(b->power())) + 1);
-        if (ee_mollifier_config().order_override > 0)
-            power = ee_mollifier_config().order_override;
+        const int power = params.ee_mollifier_exponent();
         tbb::parallel_for(
             tbb::blocked_range<size_t>(0, cache.edges.size()),
             [&](const auto& range) {
@@ -293,15 +291,16 @@ namespace {
                         positions.row(3));
                     const auto types = edge_edge_mollifier_type(
                         X.row(prim[0]), X.row(prim[1]), X.row(prim[2]),
-                        X.row(prim[3]), value(d2));
+                        X.row(prim[3]), value(d2), params.ee_mollifier);
                     sample.m =
                         Math<T>::cubic_spline(sqrt(d2) / params.ee_support())
-                        * ee_mollifier_config().ee_weight
+                        * params.ee_weight
                         * edge_edge_mollifier<T>(
                             positions.row(0).transpose(),
                             positions.row(1).transpose(),
                             positions.row(2).transpose(),
-                            positions.row(3).transpose(), types, d2);
+                            positions.row(3).transpose(), types, d2,
+                            params.ee_mollifier);
                     const T initial = sample.m;
                     for (int j = 1; j < power; ++j)
                         sample.m = sample.m * initial;

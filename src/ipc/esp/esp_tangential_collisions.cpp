@@ -272,6 +272,38 @@ void TangentialCollisions::build(
         // points are the vertex samples (weighted by the face's corner
         // weights); its other points are the per-face samples. Under
         // ESPParameters::set_auto_lattice() each face has its own rule.
+        // Edge-edge weight of an edge pair, as in the potential: cubic
+        // spline times ee_weight times the mollifier, raised to the
+        // mollifier power. Each face also scales its edge-edge samples by
+        // its ee_area_scaling factor (ee_face_scale).
+        const int ee_power = params.ee_mollifier_exponent();
+        const auto ee_mollifier = [&](const index_t e00, const index_t e01,
+                                      const index_t e10, const index_t e11,
+                                      const double dist_sqr) {
+            const auto mtypes = edge_edge_mollifier_type(
+                vertices.row(e00).transpose(), vertices.row(e01).transpose(),
+                vertices.row(e10).transpose(), vertices.row(e11).transpose(),
+                dist_sqr, params.ee_mollifier);
+            const double m = Math<double>::cubic_spline(
+                                 std::sqrt(dist_sqr) / params.ee_support())
+                * params.ee_weight
+                * edge_edge_mollifier<double>(
+                                 vertices.row(e00).transpose(),
+                                 vertices.row(e01).transpose(),
+                                 vertices.row(e10).transpose(),
+                                 vertices.row(e11).transpose(), mtypes,
+                                 dist_sqr, params.ee_mollifier);
+            return std::pow(m, ee_power);
+        };
+        Eigen::VectorXd ee_face_scale = Eigen::VectorXd::Ones(faces.rows());
+        if (params.ee_area_scaling) {
+            for (index_t f = 0; f < faces.rows(); f++) {
+                ee_face_scale(f) = ee_area_scale_factor(
+                    mesh.face_areas()(f), params.ee_area_reference(),
+                    /*face=*/true);
+            }
+        }
+
         Eigen::VectorXd total_w_per_face =
             Eigen::VectorXd::Constant(faces.rows(), 1.0);
         if (normalize_weights) {
@@ -289,24 +321,11 @@ void TangentialCollisions::build(
                 const double dist_sqr = edge_edge_distance_parallel_safe(
                     vertices.row(e00), vertices.row(e01), vertices.row(e10),
                     vertices.row(e11), EdgeEdgeDistanceType::EA_EB);
-                const double dist = std::sqrt(dist_sqr);
-                const auto mtypes = edge_edge_mollifier_type(
-                    vertices.row(e00).transpose(),
-                    vertices.row(e01).transpose(),
-                    vertices.row(e10).transpose(),
-                    vertices.row(e11).transpose(), dist_sqr);
-                double mol =
-                    Math<double>::cubic_spline(dist / params.ee_support())
-                    * ee_mollifier_config().ee_weight /* PROTOTYPE */;
-                mol *= edge_edge_mollifier<double>(
-                    vertices.row(e00).transpose(),
-                    vertices.row(e01).transpose(),
-                    vertices.row(e10).transpose(),
-                    vertices.row(e11).transpose(), mtypes, dist_sqr);
+                const double mol = ee_mollifier(e00, e01, e10, e11, dist_sqr);
                 // Attribute to every face containing e0 (ESP loop iterates
                 // over faces and each face's 3 edges).
                 for (const index_t f : mesh.edges_to_faces()[e0]) {
-                    total_w_per_face(f) += mol;
+                    total_w_per_face(f) += mol * ee_face_scale(f);
                 }
             }
         }
@@ -314,7 +333,8 @@ void TangentialCollisions::build(
         // Per-face normalized scale: area_f * [1/total_w_f if normalize]
         Eigen::VectorXd face_scale(faces.rows());
         for (index_t f = 0; f < faces.rows(); f++) {
-            const double w_f = mesh.face_areas()(f);
+            const double w_f =
+                mesh.face_areas()(f) * params.element_weight_scale(3);
             face_scale(f) =
                 normalize_weights ? (w_f / total_w_per_face(f)) : w_f;
         }
@@ -406,11 +426,13 @@ void TangentialCollisions::build(
             }
         }
 
-        // Precompute per-edge ESP outer weight = sum_{f ∋ e} face_scale(f).
+        // Precompute per-edge ESP outer weight of edge-edge samples:
+        // sum_{f ∋ e} face_scale(f) * ee_face_scale(f).
         Eigen::VectorXd e_outer_w = Eigen::VectorXd::Zero(edges.rows());
         for (index_t f = 0; f < faces.rows(); f++) {
             for (int le = 0; le < 3; le++) {
-                e_outer_w(mesh.faces_to_edges()(f, le)) += face_scale(f);
+                e_outer_w(mesh.faces_to_edges()(f, le)) +=
+                    face_scale(f) * ee_face_scale(f);
             }
         }
 
@@ -441,23 +463,14 @@ void TangentialCollisions::build(
             VertexMatrixView<3> V_ext(vertices, virtual_pos);
 
             // ESP potential outer factor for an edge-edge dict (for each face
-            // f containing edge e0): area_f * mollifier. Since the mollifier
-            // depends only on the four edge endpoints (not f), it factors out
-            // and the per-dict outer weight is mollifier * sum_{f∋e0} area_f.
+            // f containing edge e0): face weight * ee_face_scale(f) *
+            // mollifier. Since the mollifier depends only on the four edge
+            // endpoints (not f), it factors out of e_outer_w(e0).
             const double dist_sqr_ee = edge_edge_distance_parallel_safe(
                 vertices.row(e00), vertices.row(e01), vertices.row(e10),
                 vertices.row(e11), dtype);
-            const double dist_ee = std::sqrt(dist_sqr_ee);
-            const auto mtypes = edge_edge_mollifier_type(
-                vertices.row(e00).transpose(), vertices.row(e01).transpose(),
-                vertices.row(e10).transpose(), vertices.row(e11).transpose(),
-                dist_sqr_ee);
-            double mollifier =
-                Math<double>::cubic_spline(dist_ee / params.ee_support()) * ee_mollifier_config().ee_weight /* PROTOTYPE */;
-            mollifier *= edge_edge_mollifier<double>(
-                vertices.row(e00).transpose(), vertices.row(e01).transpose(),
-                vertices.row(e10).transpose(), vertices.row(e11).transpose(),
-                mtypes, dist_sqr_ee);
+            const double mollifier =
+                ee_mollifier(e00, e01, e10, e11, dist_sqr_ee);
             const double edge_outer_w = mollifier * e_outer_w(e0);
             if (edge_outer_w == 0) {
                 continue;

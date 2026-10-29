@@ -236,6 +236,39 @@ void define_smooth_potential(py::module_& m)
 
 void define_esp_potential(py::module& m)
 {
+    py::enum_<EEMollifierType>(
+        m, "EEMollifierType", "Shape of the 3D edge-edge mollifier.")
+        .value(
+            "SMOOTHSTEP_REL", EEMollifierType::SMOOTHSTEP_REL,
+            "Smoothstep over a width relative to the gap, w^2 = rel_eps d^2")
+        .value(
+            "SMOOTHSTEP", EEMollifierType::SMOOTHSTEP,
+            "Smoothstep over a fixed width")
+        .value(
+            "SMOOTHSTEP_SQRT", EEMollifierType::SMOOTHSTEP_SQRT,
+            "Smoothstep over w^2 = eps d length")
+        .value("GCP", EEMollifierType::GCP, "Original GCP mollifier")
+        .value(
+            "GCP_FIXED", EEMollifierType::GCP_FIXED,
+            "GCP shape with a fixed width")
+        .value(
+            "GCP_SQRT", EEMollifierType::GCP_SQRT,
+            "GCP shape with width^2 = eps d length");
+
+    py::class_<EEMollifierConfig>(
+        m, "EEMollifierConfig", "Options of the 3D edge-edge mollifier.")
+        .def(py::init())
+        .def_readwrite("type", &EEMollifierConfig::type)
+        .def_readwrite(
+            "rel_eps", &EEMollifierConfig::rel_eps,
+            "SMOOTHSTEP_REL: squared width over squared gap.")
+        .def_readwrite(
+            "width", &EEMollifierConfig::width,
+            "SMOOTHSTEP, GCP_FIXED: fixed width (distance units).")
+        .def_readwrite(
+            "length", &EEMollifierConfig::length,
+            "SMOOTHSTEP_SQRT, GCP_SQRT: length scale (distance units).");
+
     py::class_<ESPParameters> esp_parameters(m, "ESPParameters");
 
     py::enum_<ESPParameters::IntegrationType>(esp_parameters, "IntegrationType")
@@ -279,7 +312,31 @@ void define_esp_potential(py::module& m)
         .def_readwrite(
             "local_quadrature_transfer",
             &ESPParameters::local_quadrature_transfer)
-        .def_readwrite("barrier", &ESPParameters::barrier) // PROTOTYPE
+        .def_readwrite(
+            "legacy_element_weights", &ESPParameters::legacy_element_weights,
+            "Weigh faces by area / 9 and edges in no face by length / 4, as "
+            "earlier versions did.")
+        .def_readwrite(
+            "ee_mollifier", &ESPParameters::ee_mollifier,
+            "Shape of the edge-edge mollifier.")
+        .def_readwrite(
+            "ee_mollifier_power", &ESPParameters::ee_mollifier_power,
+            "Power of the edge-edge mollifier weight; 0 chooses it from the "
+            "barrier.")
+        .def_readwrite(
+            "ee_weight", &ESPParameters::ee_weight,
+            "Weight of an edge-edge sample relative to a vertex sample.")
+        .def_readwrite(
+            "ee_area_scaling", &ESPParameters::ee_area_scaling,
+            "Scale edge-edge samples so each stands for about one r x r "
+            "patch.")
+        .def_readwrite(
+            "ee_area_ref", &ESPParameters::ee_area_ref,
+            "Reference length r of ee_area_scaling; 0 uses dbar.")
+        .def_property_readonly(
+            "ee_mollifier_exponent", &ESPParameters::ee_mollifier_exponent,
+            "Power applied to the edge-edge mollifier weight.")
+        .def_readwrite("barrier", &ESPParameters::barrier)
         .def_readonly("integration_type", &ESPParameters::integration_type)
         .def(
             "set_lattice_rule",

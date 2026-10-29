@@ -1,61 +1,79 @@
-// PROTOTYPE ONLY: runtime switches for comparing edge-edge mollifiers.
 #pragma once
 
 #include <cmath>
-#include <cstdlib>
-#include <cstring>
+#include <cstdint>
 
 namespace ipc {
 
-/// Read once per process from the environment:
-///   ESP_EE_MOLLIFIER=gcp|smoothstep|gcp-fixed|gcp-sqrt (default gcp)
-///     gcp        x = c^2 / (eps d^2)       current (width sqrt(eps) d)
-///     gcp-fixed  x = c^2 / l^2             same shape, fixed width l
-///     gcp-sqrt   x = c^2 / (eps d L)       same shape, width sqrt(eps d L)
-///     smoothstep H(c / l), H = 10t^3 - 15t^4 + 6t^5
-///     smoothstep-sqrt  H(c / w), w^2 = eps d L
-///     smoothstep-rel   H(c / w), w^2 = eps_rel d^2 (C2 shape, width
-///                      relative to the gap; eps_rel = 1 by default, w = d)
-///   with c^2 = d_PE^2 - d^2 the endpoint clearance.
-///   ESP_EE_MOLLIFIER_EPS=<float>      (eps_rel for smoothstep-rel, default 1:
-///                                      the EE sample fades in over the gap d,
-///                                      the scale on which its endpoint vertex
-///                                      loses potential; w <= d keeps the
-///                                      barrier near endpoints)
-///   ESP_EE_MOLLIFIER_ELL=<meters>     (fixed width l, default 150e-6)
-///   ESP_EE_MOLLIFIER_L=<meters>       (gcp-sqrt length L, default 1.5e-3)
-///   ESP_MOLLIFIER_ORDER=<int>         (override the per-barrier power; 0 =
-///   keep) ESP_EE_AREA_REF=<meters>|dbar     (0 = off: scale each EE weight by
-///   the
-///                                      smooth min (1 + (a/rho)^2)^(-1/2), with
-///                                      a = rest face area / 3, rho = r^2
-///                                      (faces) a = rest rod length / 2, rho =
-///                                      r (rods); "dbar" uses each
-///                                      ESPParameters' dbar)
-///   ESP_LOCAL_TRANSFER=1              (default for
-///                                      ESPParameters::local_quadrature_transfer)
-///   ESP_EE_WEIGHT=<float>             (EE sample weight factor, default 1.5:
-///                                      1.5 * cubic_spline(0) = 1 vertex
-///                                      sample)
-struct EEMollifierConfig {
-    bool smoothstep = false;
-    bool fixed = false; // gcp-fixed
-    bool sqrt_width = false; // gcp-sqrt, smoothstep-sqrt
-    bool rel_width = false; // smoothstep-rel
-    // smoothstep-rel width^2 = rel_eps * d^2 (ESP_EE_MOLLIFIER_EPS)
-    double rel_eps = 1.0;
-    double ell = 150e-6;
-    double L = 1.5e-3;
-    int order_override = 0;
-    double ee_weight = 1.5;
-    double area_ref = 0;
-    bool area_ref_dbar = false; // ESP_EE_AREA_REF=dbar
-    bool local_transfer_default = false;
+/// @brief Shape of the 3D edge-edge mollifier.
+///
+/// An edge-edge sample fades in as the closest points move off the edge
+/// endpoints. Each endpoint contributes a factor of its clearance
+/// c² = d_PE² − d², where d_PE is the endpoint's distance to the other edge
+/// and d the edge-edge distance.
+enum class EEMollifierType : std::uint8_t {
+    /// Smoothstep H(c / w), H(t) = 10t³ − 15t⁴ + 6t⁵ (C²), with a width
+    /// relative to the gap, w² = rel_eps d². With rel_eps = 1 (w = d) the
+    /// sample fades in over the same scale on which its endpoint vertex
+    /// loses potential, the widest width that leaves no hole near the
+    /// endpoints.
+    SMOOTHSTEP_REL,
+    /// Smoothstep H(c / w) with a fixed width w = width.
+    SMOOTHSTEP,
+    /// Smoothstep H(c / w) with w² = MOLLIFIER_THRESHOLD_EPS d length.
+    SMOOTHSTEP_SQRT,
+    /// Original GCP mollifier: x = c² / (MOLLIFIER_THRESHOLD_EPS d²).
+    GCP,
+    /// GCP shape with a fixed width: x = c² / width².
+    GCP_FIXED,
+    /// GCP shape with x = c² / (MOLLIFIER_THRESHOLD_EPS d length).
+    GCP_SQRT,
 };
 
-/// Area-consistent EE weight factor for an element: smooth min(1, rho / a).
-/// `a` is the rest area (faces: A/3) or length (rods: L/2) per vertex sample,
-/// `rho` is r^2 (faces) or r (rods). Returns 1 when the feature is off.
+/// @brief Options of the 3D edge-edge mollifier (see EEMollifierType).
+struct EEMollifierConfig {
+    EEMollifierType type = EEMollifierType::SMOOTHSTEP_REL;
+    /// SMOOTHSTEP_REL: squared width over squared gap, w² = rel_eps d².
+    double rel_eps = 1.0;
+    /// SMOOTHSTEP, GCP_FIXED: fixed width, in distance units.
+    double width = 150e-6;
+    /// SMOOTHSTEP_SQRT, GCP_SQRT: length scale, in distance units.
+    double length = 1.5e-3;
+
+    /// The original GCP mollifier, used by the GCP formulation.
+    static EEMollifierConfig gcp()
+    {
+        EEMollifierConfig c;
+        c.type = EEMollifierType::GCP;
+        return c;
+    }
+
+    bool smoothstep() const
+    {
+        return type == EEMollifierType::SMOOTHSTEP_REL
+            || type == EEMollifierType::SMOOTHSTEP
+            || type == EEMollifierType::SMOOTHSTEP_SQRT;
+    }
+    bool fixed_width() const
+    {
+        return type == EEMollifierType::SMOOTHSTEP
+            || type == EEMollifierType::GCP_FIXED;
+    }
+    bool sqrt_width() const
+    {
+        return type == EEMollifierType::SMOOTHSTEP_SQRT
+            || type == EEMollifierType::GCP_SQRT;
+    }
+    bool rel_width() const { return type == EEMollifierType::SMOOTHSTEP_REL; }
+};
+
+/// @brief Area-consistent edge-edge weight factor of an element:
+/// (1 + (a / ρ)²)^(-1/2), a smooth min(1, ρ / a).
+/// @param a Rest measure compared with the patch (see
+///        ESPParameters::ee_area_scaling).
+/// @param r Reference length; ρ = r² for faces and r for rods.
+/// @param face Whether the element is a face.
+/// @return The factor, or 1 when r <= 0.
 inline double ee_area_scale_factor(double a, double r, bool face)
 {
     if (r <= 0) {
@@ -63,46 +81,6 @@ inline double ee_area_scale_factor(double a, double r, bool face)
     }
     const double t = a / (face ? r * r : r);
     return 1.0 / std::sqrt(1.0 + t * t);
-}
-
-inline const EEMollifierConfig& ee_mollifier_config()
-{
-    static const EEMollifierConfig config = [] {
-        EEMollifierConfig c;
-        if (const char* s = std::getenv("ESP_EE_MOLLIFIER")) {
-            c.smoothstep = std::strcmp(s, "smoothstep") == 0
-                || std::strcmp(s, "smoothstep-sqrt") == 0
-                || std::strcmp(s, "smoothstep-rel") == 0;
-            c.rel_width = std::strcmp(s, "smoothstep-rel") == 0;
-            c.fixed = std::strcmp(s, "gcp-fixed") == 0;
-            c.sqrt_width = std::strcmp(s, "gcp-sqrt") == 0
-                || std::strcmp(s, "smoothstep-sqrt") == 0;
-        }
-        if (const char* s = std::getenv("ESP_EE_MOLLIFIER_EPS")) {
-            c.rel_eps = std::atof(s);
-        }
-        if (const char* s = std::getenv("ESP_EE_MOLLIFIER_L")) {
-            c.L = std::atof(s);
-        }
-        if (const char* s = std::getenv("ESP_EE_MOLLIFIER_ELL")) {
-            c.ell = std::atof(s);
-        }
-        if (const char* s = std::getenv("ESP_EE_AREA_REF")) {
-            c.area_ref_dbar = std::strcmp(s, "dbar") == 0;
-            c.area_ref = c.area_ref_dbar ? 0.0 : std::atof(s);
-        }
-        if (const char* s = std::getenv("ESP_LOCAL_TRANSFER")) {
-            c.local_transfer_default = std::strcmp(s, "1") == 0;
-        }
-        if (const char* s = std::getenv("ESP_EE_WEIGHT")) {
-            c.ee_weight = std::atof(s);
-        }
-        if (const char* s = std::getenv("ESP_MOLLIFIER_ORDER")) {
-            c.order_override = std::atoi(s);
-        }
-        return c;
-    }();
-    return config;
 }
 
 } // namespace ipc

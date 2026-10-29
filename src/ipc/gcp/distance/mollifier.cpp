@@ -293,15 +293,15 @@ std::array<HeavisideType, 4> edge_edge_mollifier_type(
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
     Eigen::ConstRef<Eigen::Vector3d> eb1,
-    const double dist_sqr)
+    const double dist_sqr,
+    const EEMollifierConfig& config)
 {
     std::array<HeavisideType, 4> mtypes {};
-    if (ee_mollifier_config().smoothstep) {
-        const double ell2 = ee_mollifier_config().rel_width
-            ? dist_sqr * ee_mollifier_config().rel_eps
-            : ee_mollifier_config().sqrt_width ? std::sqrt(dist_sqr)
-                * MOLLIFIER_THRESHOLD_EPS * ee_mollifier_config().L
-                                               : sqr(ee_mollifier_config().ell);
+    if (config.smoothstep()) {
+        const double ell2 = config.rel_width() ? dist_sqr * config.rel_eps
+            : config.sqrt_width()
+            ? std::sqrt(dist_sqr) * MOLLIFIER_THRESHOLD_EPS * config.length
+            : sqr(config.width);
         const auto t = [&](const double pe) {
             return pe - dist_sqr >= ell2 ? HeavisideType::ONE
                                          : HeavisideType::VARIANT;
@@ -312,11 +312,10 @@ std::array<HeavisideType, 4> edge_edge_mollifier_type(
         mtypes[3] = t(point_edge_distance(eb1, ea0, ea1));
         return mtypes;
     }
-    if (ee_mollifier_config().fixed || ee_mollifier_config().sqrt_width) {
-        const double denom = ee_mollifier_config().fixed
-            ? sqr(ee_mollifier_config().ell)
-            : std::sqrt(dist_sqr) * MOLLIFIER_THRESHOLD_EPS
-                * ee_mollifier_config().L;
+    if (config.fixed_width() || config.sqrt_width()) {
+        const double denom = config.fixed_width()
+            ? sqr(config.width)
+            : std::sqrt(dist_sqr) * MOLLIFIER_THRESHOLD_EPS * config.length;
         const auto t = [&](const double pe) {
             return pe - dist_sqr >= denom ? HeavisideType::ONE
                                           : HeavisideType::VARIANT;

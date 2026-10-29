@@ -229,7 +229,8 @@ PrimitiveDistance<Edge3, Edge3>::compute_mollifier_gradient(
     const Eigen::Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
 {
     const auto otypes = edge_edge_mollifier_type(
-        x.head(3), x.segment(3, 3), x.segment(6, 3), x.tail(3), dist_sqr);
+        x.head(3), x.segment(3, 3), x.segment(6, 3), x.tail(3), dist_sqr,
+        EEMollifierConfig::gcp());
 
     return edge_edge_mollifier_gradient(
         x.head(3), x.segment(3, 3), x.segment(6, 3), x.tail(3), otypes,
@@ -242,7 +243,8 @@ PrimitiveDistance<Edge3, Edge3>::compute_mollifier_hessian(
     const Eigen::Vector<double, N_CORE_DOFS>& x, const double dist_sqr)
 {
     const auto otypes = edge_edge_mollifier_type(
-        x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), dist_sqr);
+        x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), dist_sqr,
+        EEMollifierConfig::gcp());
 
     return edge_edge_mollifier_hessian(
         x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), otypes,

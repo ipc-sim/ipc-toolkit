@@ -3,6 +3,8 @@
 #include "point_edge.hpp"
 #include "point_face.hpp"
 
+#include <ipc/gcp/distance/mollifier_config.hpp>
+
 namespace ipc {
 template <typename scalar, int dim>
 scalar point_edge_mollifier(
@@ -11,13 +13,18 @@ scalar point_edge_mollifier(
     Eigen::ConstRef<Eigen::Vector<scalar, dim>> e1,
     const scalar& dist_sqr);
 
+/// @brief Which endpoint factors of the edge-edge mollifier vary (the others
+/// are 1) under the mollifier shape @p config.
 std::array<HeavisideType, 4> edge_edge_mollifier_type(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
     Eigen::ConstRef<Eigen::Vector3d> eb1,
-    const double dist_sqr);
+    const double dist_sqr,
+    const EEMollifierConfig& config);
 
+/// @brief Edge-edge mollifier of shape @p config; @p mtypes from
+/// edge_edge_mollifier_type() with the same config.
 template <typename scalar>
 scalar edge_edge_mollifier(
     Eigen::ConstRef<Eigen::Vector3<scalar>> ea0,
@@ -25,7 +32,8 @@ scalar edge_edge_mollifier(
     Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
     Eigen::ConstRef<Eigen::Vector3<scalar>> eb1,
     const std::array<HeavisideType, 4>& mtypes,
-    const scalar& dist_sqr);
+    const scalar& dist_sqr,
+    const EEMollifierConfig& config);
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
 GradientType<13> edge_edge_mollifier_gradient(

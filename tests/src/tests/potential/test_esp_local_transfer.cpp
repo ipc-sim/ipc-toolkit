@@ -93,7 +93,10 @@ TEST_CASE(
     "[esp_potential][esp_local_transfer]")
 {
     auto s = edge_over_box();
+    // The prototype's edge-edge samples: GCP mollifier, no area scaling.
     ESPParameters old_params(.03, .05);
+    old_params.ee_mollifier = EEMollifierConfig::gcp();
+    old_params.ee_area_scaling = false;
     ESPParameters params = old_params;
     params.local_quadrature_transfer = true;
     const ESPPotential old_p(old_params), new_p(params);
@@ -112,6 +115,82 @@ TEST_CASE(
     CHECK(
         -new_p.gradient(c, s.mesh, s.X)[ax]
         == Catch::Approx(77.01422187).epsilon(1e-7));
+}
+
+TEST_CASE(
+    "ESP default edge-edge samples remove the edge-over-box spike",
+    "[esp_potential][esp_local_transfer]")
+{
+    // Defaults: smoothstep mollifier with w = d and area scaling, without
+    // and with local transfer. The prototype's force on the rod endpoint is
+    // 852.7 (77.0 with transfer); see the test above.
+    auto s = edge_over_box();
+    ESPParameters params(.03, .05);
+    ESPParameters transfer = params;
+    transfer.local_quadrature_transfer = true;
+    const ESPPotential p(params), t(transfer);
+    ESPCollisions c;
+    c.build(s.mesh, s.X, transfer);
+    const int ax = tests::vertex_dofs<3>(0, s.X.rows())[0];
+    CHECK(p(c, s.mesh, s.X) == Catch::Approx(.08768649225174047).epsilon(1e-9));
+    CHECK(t(c, s.mesh, s.X) == Catch::Approx(.087685049603867).epsilon(1e-9));
+    CHECK(
+        -p.gradient(c, s.mesh, s.X)[ax]
+        == Catch::Approx(.13926232364268853).epsilon(1e-7));
+    CHECK(
+        -t.gradient(c, s.mesh, s.X)[ax]
+        == Catch::Approx(.0014658930997628).epsilon(1e-6));
+}
+
+TEST_CASE(
+    "ESP edge-edge options keep exact derivatives",
+    "[esp_potential][esp_local_transfer]")
+{
+    auto s = edge_over_box();
+    ESPParameters params(.03, .05);
+    params.barrier = std::make_shared<InversePowerBarrier<>>(2);
+    params.ee_mollifier.type = GENERATE(
+        EEMollifierType::SMOOTHSTEP_REL, EEMollifierType::SMOOTHSTEP,
+        EEMollifierType::SMOOTHSTEP_SQRT, EEMollifierType::GCP,
+        EEMollifierType::GCP_FIXED, EEMollifierType::GCP_SQRT);
+    params.ee_area_scaling = GENERATE(true, false);
+    params.local_quadrature_transfer = GENERATE(false, true);
+    CAPTURE(
+        static_cast<int>(params.ee_mollifier.type), params.ee_area_scaling,
+        params.local_quadrature_transfer);
+    check_derivatives(s.mesh, s.X, params);
+}
+
+TEST_CASE(
+    "ESP legacy element weights divide face-only energies by 9",
+    "[esp_potential][esp_local_transfer]")
+{
+    // Two triangles facing each other: every element is a face.
+    Eigen::MatrixXd V(6, 3);
+    V << 0, 0, 0, .1, 0, 0, 0, .1, 0, .02, .01, .004, .09, .02, .006, .01, .08,
+        .005;
+    Eigen::MatrixXi F(2, 3);
+    F << 0, 1, 2, 3, 5, 4;
+    Eigen::MatrixXi E;
+    igl::edges(F, E);
+    CollisionMesh mesh(V, E, F);
+    mesh.init_adjacencies();
+    ESPParameters params(.01, 1.0);
+    params.local_quadrature_transfer = GENERATE(false, true);
+    const bool use_near_far =
+        params.local_quadrature_transfer || GENERATE(true, false);
+    ESPParameters legacy = params;
+    legacy.legacy_element_weights = true;
+    CAPTURE(params.local_quadrature_transfer, use_near_far);
+    const ESPPotential p(params, use_near_far), l(legacy, use_near_far);
+    ESPCollisions c;
+    c.build(mesh, V, params);
+    const double e = p(c, mesh, V);
+    REQUIRE(e > 0);
+    CHECK(l(c, mesh, V) == Catch::Approx(e / 9).epsilon(1e-12));
+    CHECK(
+        (9 * l.gradient(c, mesh, V) - p.gradient(c, mesh, V)).norm()
+        < 1e-10 * p.gradient(c, mesh, V).norm());
 }
 
 TEST_CASE(
