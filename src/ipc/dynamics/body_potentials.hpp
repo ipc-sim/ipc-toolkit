@@ -74,6 +74,10 @@ public:
 
     // ---- Augmented Lagrangian lifecycle (operates in affine coordinates) ----
 
+    /// @brief Start a step's augmented Lagrangian for the kinematic bodies.
+    /// @param bodies The collection of bodies.
+    /// @param x0 Step-start affine DOFs.
+    /// @param targets Per-body target rigid poses (only KINEMATIC used).
     /// @param multiplier_scaling The acceleration scaling (βΔt)² applied to
     ///     the multiplier terms (the penalty is weighed against inertia).
     void init_augmented_lagrangian(
