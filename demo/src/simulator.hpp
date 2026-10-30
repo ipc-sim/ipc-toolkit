@@ -366,7 +366,9 @@ public:
     /// Settings::velocity_conv_tol this reproduces the velocity convergence
     /// criterion of Rigid IPC [Ferguson et al. 2021] in a space where a
     /// single scalar tolerance is meaningful (raw DOF-space Δx mixes
-    /// translations with rotation-vector radians).
+    /// translations with rotation-vector radians). While a kinematic target
+    /// is unmet, the norm is scaled up so the criterion is tighter, giving
+    /// the augmented Lagrangian update a converged iterate.
     double step_norm(
         const TVector& delta_v,
         const polysolve::nonlinear::NormType norm_type) const override;

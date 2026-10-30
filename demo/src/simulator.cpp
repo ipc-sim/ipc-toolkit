@@ -35,6 +35,10 @@ namespace {
     // TODO: Why does this not work with 0.5?
     inline constexpr double INFLATION_RADIUS_MULTIPLIER = 1.0;
 
+    /// While a kinematic target is unmet, the velocity criterion is this much
+    /// tighter (see Simulator::step_norm).
+    inline constexpr double AL_VELOCITY_CONV_TOL_SCALE = 0.1;
+
     std::vector<rigid::Pose>
     zero_velocities(const size_t num_bodies, const int dim)
     {
@@ -652,13 +656,27 @@ double Simulator::step_norm(
     if (!m_solver_stepped) {
         return std::numeric_limits<double>::infinity();
     }
-    if (m_solver_v.size() != delta_v.size()) {
-        return delta_v.norm(); // fallback: no base point available
-    }
     // Maximum world-space vertex displacement of the proposed step.
-    return (m_kinematics->world_vertices(to_full(m_solver_v + delta_v))
-            - m_kinematics->world_vertices(to_full(m_solver_v)))
-        .lpNorm<Eigen::Infinity>();
+    const double displacement = m_solver_v.size() != delta_v.size()
+        ? delta_v.norm() // fallback: no base point available
+        : (m_kinematics->world_vertices(to_full(m_solver_v + delta_v))
+           - m_kinematics->world_vertices(to_full(m_solver_v)))
+              .lpNorm<Eigen::Infinity>();
+
+    // While a kinematic target is unmet, we tighten the velocity criterion.
+    // Each solve then ends in an augmented Lagrangian update, and the update
+    // folds whatever force is still unbalanced into the multipliers, so it
+    // needs an iterate near equilibrium. On stiff contact the default
+    // tolerance stops well short of that: the remaining Newton step is tiny
+    // while large forces are still out of balance. The kinematic body then
+    // overshoots, the penalty escalates, and a tight mechanism (e.g., a
+    // crank pin in a connecting-rod eye) can wedge itself shut. Once every
+    // target is met, any further solves (e.g., friction re-lagging) use the
+    // usual tolerance.
+    if (al_active()) {
+        return displacement / AL_VELOCITY_CONV_TOL_SCALE;
+    }
+    return displacement;
 }
 
 void Simulator::post_step(const polysolve::nonlinear::PostStepData& data)
