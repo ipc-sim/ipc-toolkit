@@ -4,6 +4,7 @@
 
 #include <ipc/broad_phase/brute_force.hpp>
 #include <ipc/broad_phase/create_broad_phase.hpp>
+#include <ipc/broad_phase/hash_grid.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -14,6 +15,123 @@
 #include <optional>
 
 using namespace ipc;
+
+namespace {
+class SingleCellHashGrid : public HashGrid {
+public:
+    using HashGrid::build;
+
+protected:
+    void build(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) override
+    {
+        BroadPhase::build(edges, faces);
+        Eigen::Array3d lo, hi;
+        compute_mesh_aabb(lo, hi);
+        resize(lo, hi, (hi - lo).maxCoeff() + 1.);
+        insert_boxes();
+    }
+};
+
+void check_all_hash_grid_relations(HashGrid& grid, BruteForce& reference)
+{
+#define COMPARE_RELATION(TYPE, METHOD)                                         \
+    {                                                                          \
+        std::vector<TYPE> actual, expected;                                    \
+        grid.METHOD(actual);                                                   \
+        reference.METHOD(expected);                                            \
+        std::sort(actual.begin(), actual.end());                               \
+        std::sort(expected.begin(), expected.end());                           \
+        CHECK(                                                                 \
+            std::adjacent_find(actual.begin(), actual.end()) == actual.end()); \
+        CHECK(actual == expected);                                             \
+    }
+    COMPARE_RELATION(VertexVertexCandidate, detect_vertex_vertex_candidates)
+    COMPARE_RELATION(EdgeVertexCandidate, detect_edge_vertex_candidates)
+    COMPARE_RELATION(EdgeEdgeCandidate, detect_edge_edge_candidates)
+    COMPARE_RELATION(FaceVertexCandidate, detect_face_vertex_candidates)
+    COMPARE_RELATION(EdgeFaceCandidate, detect_edge_face_candidates)
+    COMPARE_RELATION(FaceFaceCandidate, detect_face_face_candidates)
+#undef COMPARE_RELATION
+}
+} // namespace
+
+TEST_CASE(
+    "HashGrid cell groups preserve all candidate relations",
+    "[broad_phase][hash_grid][regression]")
+{
+    const int dim = GENERATE(2, 3);
+    const bool swept = GENERATE(false, true);
+    const int filter = GENERATE(0, 1, 2);
+    const bool single_cell = GENERATE(false, true);
+    CAPTURE(dim, swept, filter, single_cell);
+    Eigen::MatrixXd V(132, dim);
+    for (int i = 0; i < V.rows(); ++i) {
+        V(i, 0) = (i % 11) * .02 - .1;
+        V(i, 1) = ((i / 11) % 7) * .03 - .08;
+        if (dim == 3)
+            V(i, 2) = (i % 5) * .01;
+    }
+    Eigen::MatrixXd V1 = V;
+    for (int i = 0; i < V.rows(); ++i)
+        V1(i, 0) += (i % 3 - 1) * .04;
+    Eigen::MatrixXi E(100, 2), F(80, 3);
+    for (int i = 0; i < E.rows(); ++i)
+        E.row(i) << i % V.rows(), (i + 3) % V.rows();
+    for (int i = 0; i < F.rows(); ++i)
+        F.row(i) << (i * 3) % V.rows(), (i * 3 + 1) % V.rows(),
+            (i * 3 + 2) % V.rows();
+    HashGrid ordinary;
+    SingleCellHashGrid dense;
+    HashGrid& grid = single_cell ? static_cast<HashGrid&>(dense) : ordinary;
+    BruteForce reference;
+    if (filter == 1) {
+        grid.can_vertices_collide = [](size_t a, size_t b) {
+            return (a + b) % 3 != 0 && a % 5 != b % 5;
+        };
+    } else if (filter == 2) {
+        grid.can_vertices_collide = [](size_t, size_t) { return false; };
+    }
+    reference.can_vertices_collide = grid.can_vertices_collide;
+    for (double inflation : { 0., .02, .3 }) {
+        CAPTURE(inflation);
+        if (swept) {
+            grid.build(V, V1, E, F, inflation);
+            reference.build(V, V1, E, F, inflation);
+        } else {
+            grid.build(V, E, F, inflation);
+            reference.build(V, E, F, inflation);
+        }
+        check_all_hash_grid_relations(grid, reference);
+    }
+    grid.clear();
+    reference.clear();
+    check_all_hash_grid_relations(grid, reference);
+}
+
+TEST_CASE(
+    "HashGrid cell groups handle empty primitive relations",
+    "[broad_phase][hash_grid][regression]")
+{
+    Eigen::MatrixXd V(5, 3);
+    V << 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1;
+    Eigen::MatrixXi E(0, 2), F(0, 3);
+    const int primitives = GENERATE(0, 1, 2);
+    if (primitives == 1) {
+        E.resize(1, 2);
+        E << 0, 1;
+    }
+    if (primitives == 2) {
+        F.resize(1, 3);
+        F << 0, 1, 2;
+    }
+    HashGrid grid;
+    BruteForce reference;
+    grid.build(V, E, F, .02);
+    reference.build(V, E, F, .02);
+    check_all_hash_grid_relations(grid, reference);
+}
 
 void test_face_face_broad_phase(
     const CollisionMesh& mesh,
