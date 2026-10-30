@@ -128,9 +128,8 @@ void define_simulator(py::module_& m)
         .def_readwrite(
             "al_initial_penalty", &Simulator::Settings::al_initial_penalty,
             "Initial penalty of the kinematic-body augmented Lagrangian, "
-            "relative to the body's inertia "
-            "(reset each step; the multipliers carry over as the reaction "
-            "force).")
+            "relative to the body's inertia (reset each step, as are the "
+            "multipliers).")
         .def_readwrite(
             "al_max_penalty", &Simulator::Settings::al_max_penalty,
             "Maximum AL penalty (stop doubling).")

@@ -28,9 +28,14 @@ namespace ipc::affine {
 /// reach a target then shrinks with the time step instead of growing like
 /// 1/Δt. The multipliers carry s like contact and friction do, so λ is the
 /// constraint's reaction force (and λ_A its generalized force on vec(A)) in
-/// physical units. Reaction forces change little from one step to the next,
-/// so we keep the multipliers across steps: each step starts from the
-/// previous step's reaction, and the penalty only has to absorb the change.
+/// physical units.
+///
+/// Like Rigid IPC, we start every step with zero multipliers rather than the
+/// previous step's reaction. A reaction can change abruptly between steps
+/// (e.g., a crank at dead center as its piston reverses), and a stale one
+/// then pushes the body the wrong way. With a loosely converged step, that
+/// push compounds the leftover force imbalance and can wedge a tight
+/// mechanism shut.
 class AugmentedLagrangian {
 public:
     struct Params {
@@ -48,9 +53,8 @@ public:
 
     explicit AugmentedLagrangian(const Params& params) : m_params(params) { }
 
-    /// @brief Start a new step: capture the start state and targets, reset
-    /// the penalties and satisfied flags, and keep each KINEMATIC body's
-    /// multipliers from the previous step (others are zeroed).
+    /// @brief Start a new step: capture the start state and targets, and
+    /// reset the penalties, multipliers, and satisfied flags.
     /// @param bodies The collection of bodies.
     /// @param x0 Step-start affine DOFs (dim + dim² per body).
     /// @param targets Per-body target rigid poses (only KINEMATIC used).
@@ -62,12 +66,8 @@ public:
         const std::vector<rigid::Pose>& targets,
         const double multiplier_scaling = 1);
 
-    /// @brief Zero one body's multipliers (e.g., when its motion is replaced,
-    /// so the previous reaction force no longer applies).
-    void reset_multipliers(const size_t body_id);
-
     /// @brief The constraint's reaction force on a body's position, as of the
-    /// last update (zero before then). Only valid after init().
+    /// last update this step (zero before then). Only valid after init().
     const VectorMax3d& linear_multiplier(const size_t body_id) const
     {
         return m_lambda[body_id];
@@ -90,9 +90,7 @@ public:
         const rigid::RigidBodies& bodies,
         Eigen::ConstRef<Eigen::VectorXd> x) const;
 
-    /// @brief Apply the update policy at the (energy-converged) state x. When
-    /// a channel becomes satisfied, we also fold the penalty's force into the
-    /// multipliers, so they hold the full reaction force for the next step.
+    /// @brief Apply the update policy at the (energy-converged) state x.
     void update(
         const rigid::RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x);
 
@@ -153,7 +151,7 @@ private:
     double m_multiplier_scaling = 1;
 
     /// @brief Per-body multipliers (λ linear ∈ R^dim, λ_A angular ∈ R^dim²),
-    /// kept across steps as the warm start.
+    /// zeroed at the start of every step.
     std::vector<VectorMax3d> m_lambda;
     std::vector<Eigen::VectorXd> m_lambda_A; // NOLINT
 

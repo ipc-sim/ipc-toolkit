@@ -1209,9 +1209,6 @@ void Simulator::set_kinematic_driver(
     // Also update the reset() snapshot so reset() restores this driver.
     m_kinematic_drivers[body] = driver;
     m_initial_kinematic_drivers[body] = driver;
-    // The new motion needs a different reaction force, so we drop the warm
-    // start rather than push the body with the old one for a step.
-    m_body_potentials->augmented_lagrangian().reset_multipliers(body);
 }
 
 // ----------------------------------------------------------------------------

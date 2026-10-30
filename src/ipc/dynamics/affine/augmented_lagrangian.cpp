@@ -49,12 +49,9 @@ void AugmentedLagrangian::init(
     m_targets = targets;
     m_multiplier_scaling = multiplier_scaling;
 
-    // The multipliers carry over from the previous step as the warm start,
-    // unless the scene changed shape (first step or a different body count).
-    if (m_lambda.size() != targets.size()) {
-        m_lambda.assign(targets.size(), VectorMax3d::Zero(m_dim));
-        m_lambda_A.assign(targets.size(), Eigen::VectorXd::Zero(m_dim * m_dim));
-    }
+    // Every step starts from zero multipliers (see the class description).
+    m_lambda.assign(targets.size(), VectorMax3d::Zero(m_dim));
+    m_lambda_A.assign(targets.size(), Eigen::VectorXd::Zero(m_dim * m_dim));
 
     m_target_rotations.resize(targets.size());
     m_angular_weights.resize(targets.size());
@@ -66,21 +63,6 @@ void AugmentedLagrangian::init(
             m_target_rotations[i] = targets[i].rotation_matrix();
             m_angular_weights[i] = angular_weights(bodies[i]);
             ++m_num_kinematic;
-
-            // A rotation constraint reacts with a torque, which lies in the
-            // tangent space {S R̂ : S skew} of SO(dim) at the target. The rest
-            // of λ_A is pushback against leaving SO(dim) that the
-            // orthogonality potential provides, so we keep only the torque.
-            // Carrying the rest over would push A off SO(dim) a little more
-            // every step.
-            const MatrixMax3d& R = m_target_rotations[i];
-            const MatrixMax3d G = m_lambda_A[i].reshaped(m_dim, m_dim);
-            const MatrixMax3d S = 0.5 * (G * R.transpose() - R * G.transpose());
-            m_lambda_A[i] = (S * R).reshaped();
-        } else {
-            // A body that stopped being kinematic (e.g., converted to STATIC)
-            // has no constraint, so it carries no reaction into later steps.
-            reset_multipliers(i);
         }
     }
 
@@ -92,15 +74,6 @@ void AugmentedLagrangian::init(
 
     m_prev_eta_q = -std::numeric_limits<double>::infinity();
     m_prev_eta_A = -std::numeric_limits<double>::infinity();
-}
-
-void AugmentedLagrangian::reset_multipliers(const size_t body_id)
-{
-    if (body_id >= m_lambda.size()) {
-        return; // Not initialized yet, so there is nothing to carry over.
-    }
-    m_lambda[body_id] = VectorMax3d::Zero(m_dim);
-    m_lambda_A[body_id] = Eigen::VectorXd::Zero(m_dim * m_dim);
 }
 
 VectorMax12d AugmentedLagrangian::target_dof(const size_t body_id) const
@@ -168,9 +141,7 @@ void AugmentedLagrangian::update(
 {
     // At an energy-converged x the penalty and multiplier together supply the
     // constraint force, so folding the penalty's share into the multiplier
-    // leaves λ equal to the full reaction. We do this both on the usual
-    // multiplier branch and once more when a channel is satisfied, so the
-    // next step starts from this step's reaction.
+    // leaves λ equal to the full reaction.
     //
     // Near the target, the multiplier update alone normally closes the gap
     // in one solve. It cannot when the load on the body moves between solves
@@ -186,7 +157,6 @@ void AugmentedLagrangian::update(
         const double eta_q = linear_progress(bodies, x);
         if (eta_q >= m_params.satisfied_progress) {
             m_linear_satisfied = true;
-            update_linear_multipliers(bodies, x);
         } else if (
             eta_q < m_params.stall_progress
             && m_kappa_q < m_params.max_penalty) {
@@ -208,7 +178,6 @@ void AugmentedLagrangian::update(
         const double eta_A = angular_progress(bodies, x); // NOLINT
         if (eta_A >= m_params.satisfied_progress) {
             m_angular_satisfied = true;
-            update_angular_multipliers(bodies, x);
         } else if (
             eta_A < m_params.stall_progress
             && m_kappa_A < m_params.max_penalty) {

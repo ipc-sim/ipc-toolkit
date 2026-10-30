@@ -96,11 +96,11 @@ TEST_CASE(
 }
 
 // A kinematic body pushed by a constant load F (the energy −s F·q, like
-// gravity) reaches its target. Once the step is satisfied, the multiplier is
-// the reaction force −F, and starting the next step from it lands the first
-// solve exactly on the new target, whatever the time step.
+// gravity) reaches its target, whatever the time step. The next step starts
+// over, so the constraint exerts no leftover force at its new target.
 TEST_CASE(
-    "Affine augmented Lagrangian carries the reaction force between steps",
+    "Affine augmented Lagrangian reaches its target under load and starts "
+    "each step without a leftover force",
     "[affine][augmented_lagrangian]")
 {
     std::vector<rigid::Pose> initial_poses;
@@ -128,22 +128,14 @@ TEST_CASE(
     for (int i = 0; i < 50 && al.active(); ++i) {
         al.update(*bodies, solve(target));
     }
-    REQUIRE(al.linear_satisfied());
-    CHECK((al.linear_multiplier(0) + F).norm() < 1e-8 * F.norm());
+    CHECK(al.linear_satisfied());
 
-    // Next step: the warm-started multiplier balances the load on its own.
+    // Next step: no reaction carries over, so the constraint is at rest at
+    // its new target.
     const rigid::Pose start = target;
     target.position += Eigen::Vector3d(0, 0.5 * dt, 0);
     al.init(*bodies, affine_dof(start), { target }, s);
-    const Eigen::VectorXd x = solve(target);
-    CHECK(al.linear_progress(*bodies, x) == Catch::Approx(1.0));
-    al.update(*bodies, x);
-    CHECK(al.linear_satisfied());
-
-    // A body that stops being kinematic drops its reaction force.
-    (*bodies)[0].set_type(rigid::RigidBody::Type::STATIC);
-    al.init(*bodies, x, { target }, s);
-    CHECK(al.linear_multiplier(0).isZero());
+    CHECK(al.gradient(*bodies, affine_dof(target)).isZero());
 }
 
 TEST_CASE(
