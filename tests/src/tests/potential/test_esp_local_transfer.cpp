@@ -134,15 +134,16 @@ TEST_CASE(
         params.set_auto_lattice(.01, 3);
     }
     if (with_non_corner_points) {
-        params.set_quad_rule({
-            { { { 1., 0., 0. } }, 0.1 },
-            { { { 0., 1., 0. } }, 0.1 },
-            { { { 0., 0., 1. } }, 0.1 },
-            { { { .5, .5, 0. } }, 0.15 },
-            { { { 0., .5, .5 } }, 0.15 },
-            { { { .5, 0., .5 } }, 0.15 },
-            { { { 1. / 3, 1. / 3, 1. / 3 } }, 0.25 },
-        });
+        params.set_quad_rule(
+            {
+                { { { 1., 0., 0. } }, 0.1 },
+                { { { 0., 1., 0. } }, 0.1 },
+                { { { 0., 0., 1. } }, 0.1 },
+                { { { .5, .5, 0. } }, 0.15 },
+                { { { 0., .5, .5 } }, 0.15 },
+                { { { .5, 0., .5 } }, 0.15 },
+                { { { 1. / 3, 1. / 3, 1. / 3 } }, 0.25 },
+            });
     }
     CAPTURE(barrier, params.area_weights, rule_kind);
     check_derivatives(s.mesh, s.X, params);
@@ -205,6 +206,131 @@ TEST_CASE(
 }
 
 TEST_CASE(
+    "ESP local transfer ignores disconnected inactive source elements",
+    "[esp_potential][esp_local_transfer]")
+{
+    auto s = edge_over_box();
+    ESPParameters params(.03, .05);
+    params.local_quadrature_transfer = true;
+    params.area_weights = GENERATE(true, false);
+    const ESPPotential p(params);
+    ESPCollisions reference;
+    reference.build(s.mesh, s.X, params);
+
+    // Add an inactive face, codimensional edge, and isolated vertex. None
+    // should introduce a source block (including explicit zero triplets).
+    Eigen::MatrixXd rest(16, 3), X(16, 3);
+    rest.topRows(10) = s.rest;
+    rest.bottomRows(6) << 10, 0, 0, 11, 0, 0, 10, 1, 0, 12, 0, 0, 13, 0, 0, 14,
+        0, 0;
+    X = rest;
+    X.topRows(10) = s.X;
+    Eigen::MatrixXi F(s.F.rows() + 1, 3), E(s.E.rows() + 4, 2);
+    F.topRows(s.F.rows()) = s.F;
+    F.bottomRows(1) << 10, 11, 12;
+    E.topRows(s.E.rows()) = s.E;
+    E.bottomRows(4) << 10, 11, 11, 12, 10, 12, 13, 14;
+    CollisionMesh mesh(rest, E, F);
+    Eigen::VectorXi patches(16);
+    patches << 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2;
+    mesh.can_collide = make_vertex_patches_filter(patches);
+    mesh.init_adjacencies();
+    ESPCollisions c;
+    c.build(mesh, X, params);
+    CHECK(
+        p(c, mesh, X)
+        == Catch::Approx(p(reference, s.mesh, s.X)).epsilon(1e-12));
+    const Eigen::MatrixXd g = tests::unflatten(p.gradient(c, mesh, X), 3);
+    const Eigen::MatrixXd ref_g =
+        tests::unflatten(p.gradient(reference, s.mesh, s.X), 3);
+    CHECK((g.topRows(10) - ref_g).norm() < 1e-12 * std::max(1., ref_g.norm()));
+    CHECK(g.bottomRows(6).norm() == 0);
+    for (const auto projection :
+         { PSDProjectionMethod::NONE, PSDProjectionMethod::CLAMP }) {
+        const auto H = p.hessian(c, mesh, X, projection);
+        const auto ref_H = p.hessian(reference, s.mesh, s.X, projection);
+        CHECK(H.nonZeros() == ref_H.nonZeros());
+        Eigen::MatrixXd expected = Eigen::MatrixXd::Zero(X.size(), X.size());
+        for (int i = 0; i < 30; ++i)
+            for (int j = 0; j < 30; ++j)
+                expected(
+                    tests::vertex_dofs<3>(i / 3, 16)[i % 3],
+                    tests::vertex_dofs<3>(j / 3, 16)[j % 3]) =
+                    ref_H.coeff(
+                        tests::vertex_dofs<3>(i / 3, 10)[i % 3],
+                        tests::vertex_dofs<3>(j / 3, 10)[j % 3]);
+        CHECK(
+            (Eigen::MatrixXd(H) - expected).norm()
+            < 1e-11 * std::max(1., expected.norm()));
+    }
+}
+
+TEST_CASE(
+    "ESP local transfer retains sources with only interior EE contact",
+    "[esp_potential][esp_local_transfer]")
+{
+    Eigen::MatrixXd V(4, 3);
+    V << -.1, 0, .0006, .1, 0, .0006, 0, -.1, 0, 0, .1, 0;
+    Eigen::MatrixXi E(2, 2);
+    E << 0, 1, 2, 3;
+    CollisionMesh mesh(V, E);
+    mesh.init_adjacencies();
+    ESPParameters params(.003, 1);
+    params.local_quadrature_transfer = true;
+    const ESPPotential p(params);
+    ESPCollisions c;
+    c.build(mesh, V, params);
+    // All endpoints are outside dhat; the two source edges are still active.
+    CHECK(p(c, mesh, V) > 0);
+    CHECK(p.gradient(c, mesh, V).norm() > 0);
+    CHECK(p.hessian(c, mesh, V).norm() > 0);
+}
+
+TEST_CASE(
+    "ESP local transfer refreshes shared jets after contact rebuilds",
+    "[esp_potential][esp_local_transfer]")
+{
+    auto s = edge_over_box();
+    ESPParameters params(.03, .05);
+    params.local_quadrature_transfer = true;
+    const ESPPotential potential(params);
+    const auto projection =
+        GENERATE(PSDProjectionMethod::NONE, PSDProjectionMethod::CLAMP);
+    ESPCollisions c;
+    c.build(s.mesh, s.X, params);
+    const double energy = potential(c, s.mesh, s.X);
+    const auto gradient = potential.gradient(c, s.mesh, s.X);
+    const Eigen::MatrixXd H = potential.hessian(c, s.mesh, s.X, projection);
+
+    // The same collision set can be evaluated with a different barrier.
+    // Such an evaluation must not leak cached point/geometry data back into
+    // the original potential's subsequent calls.
+    ESPParameters inverse = params;
+    inverse.barrier = std::make_shared<InversePowerBarrier<>>(2);
+    const double other = ESPPotential(inverse)(c, s.mesh, s.X);
+    CHECK(std::isfinite(other));
+    CHECK(other != Catch::Approx(energy));
+
+    Eigen::MatrixXd separated = s.X;
+    separated.topRows(2).col(2).array() += 1;
+    c.build(s.mesh, separated, params);
+    CHECK(c.empty());
+    CHECK(potential(c, s.mesh, separated) == 0);
+    CHECK(potential.gradient(c, s.mesh, separated).norm() == 0);
+    CHECK(potential.hessian(c, s.mesh, separated, projection).nonZeros() == 0);
+
+    c.build(s.mesh, s.X, params);
+    CHECK(potential(c, s.mesh, s.X) == Catch::Approx(energy).epsilon(1e-12));
+    CHECK(
+        (potential.gradient(c, s.mesh, s.X) - gradient).norm()
+        < 1e-11 * std::max(1., gradient.norm()));
+    CHECK(
+        (Eigen::MatrixXd(potential.hessian(c, s.mesh, s.X, projection)) - H)
+            .norm()
+        < 1e-11 * std::max(1., H.norm()));
+}
+
+TEST_CASE(
     "ESP local transfer rejects incompatible quadrature modes",
     "[esp_potential][esp_local_transfer]")
 {
@@ -232,4 +358,47 @@ TEST_CASE(
     CHECK_THROWS_AS(
         friction.build(s.mesh, s.X, c, params, 1.0, mu, mu),
         std::invalid_argument);
+}
+
+TEST_CASE(
+    "ESP local transfer retains face-interior contacts without active corners",
+    "[esp_potential][esp_local_transfer]")
+{
+    Eigen::MatrixXd V(4, 3);
+    V << -1, -1, 0, 1, -1, 0, 0, 1, 0, 0, -1. / 3, .001;
+    Eigen::MatrixXi F(1, 3), E;
+    F << 0, 1, 2;
+    igl::edges(F, E);
+    CollisionMesh mesh(V, E, F);
+    mesh.init_adjacencies();
+    ESPParameters params(.01, 1);
+    params.area_weights = GENERATE(false, true);
+    // Retain positive corner weights and an independently active interior
+    // point.
+    params.set_quad_rule(
+        { { { { 1, 0, 0 } }, .1 },
+          { { { 0, 1, 0 } }, .2 },
+          { { { 0, 0, 1 } }, .3 },
+          { { { 1. / 3, 1. / 3, 1. / 3 } }, .4 } });
+    params.local_quadrature_transfer = true;
+    ESPCollisions contacts;
+    contacts.build(mesh, V, params);
+    // The face corners are outside support. Comparing against fixed samples
+    // detects a skipped face even though the reverse particle contact is
+    // active.
+    REQUIRE_FALSE(contacts.empty());
+    const ESPPotential local(params);
+    params.local_quadrature_transfer = false;
+    const ESPPotential fixed(params);
+    const double reference = fixed(contacts, mesh, V);
+    REQUIRE(reference > 0);
+    CHECK(local(contacts, mesh, V) == Catch::Approx(reference).epsilon(1e-12));
+    const auto g = fixed.gradient(contacts, mesh, V);
+    const Eigen::MatrixXd H = fixed.hessian(contacts, mesh, V);
+    CHECK(
+        (local.gradient(contacts, mesh, V) - g).norm()
+        < 1e-11 * std::max(1., g.norm()));
+    CHECK(
+        (Eigen::MatrixXd(local.hessian(contacts, mesh, V)) - H).norm()
+        < 1e-11 * std::max(1., H.norm()));
 }
