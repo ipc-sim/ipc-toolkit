@@ -29,8 +29,8 @@ void define_candidates(py::module_& m)
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
-                Eigen::ConstRef<Eigen::MatrixXd>, const double, BroadPhase*>(
-                &Candidates::build),
+                Eigen::ConstRef<Eigen::MatrixXd>, const double, BroadPhase*,
+                const bool>(&Candidates::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of continuous collision detection candidates.
 
@@ -43,9 +43,15 @@ void define_candidates(py::module_& m)
                 vertices_t1: Surface vertex ending positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
                 broad_phase: Broad phase to use.
+                all_types: Also detect the candidate types only ESP needs.
             )ipc_Qu8mg5v7",
             "mesh"_a, "vertices_t0"_a, "vertices_t1"_a,
-            "inflation_radius"_a = 0, "broad_phase"_a = nullptr)
+            "inflation_radius"_a = 0, "broad_phase"_a = nullptr,
+            "all_types"_a = false)
+        .def(
+            "convert_candidates_to_sets",
+            &Candidates::convert_candidates_to_sets)
+        .def_property_readonly("has_sets", &Candidates::has_sets)
         .def("__len__", &Candidates::size)
         .def("empty", &Candidates::empty)
         .def("clear", &Candidates::clear)

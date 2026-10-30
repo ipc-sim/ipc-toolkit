@@ -48,9 +48,13 @@ void ESPCollisions::build(
     clear();
 
     if (&_candidates != &m_candidates) {
-        m_candidates = _candidates;
+        m_candidates = _candidates; // shares _candidates' sets, if any
     }
-    m_candidates.convert_candidates_to_sets();
+    // Candidates reused across builds (e.g., a line search's) keep their
+    // sets; build() and clear() reset them.
+    if (!m_candidates.has_sets()) {
+        m_candidates.convert_candidates_to_sets();
+    }
     const Candidates& candidates = m_candidates;
 
     // Record the quadrature so that evaluating the set with different
