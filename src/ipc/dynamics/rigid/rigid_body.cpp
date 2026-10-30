@@ -51,7 +51,8 @@ RigidBody::RigidBody(
     Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double density,
     Pose& initial_pose,
-    const VectorMax6b& is_dof_fixed)
+    const VectorMax6b& is_dof_fixed,
+    const std::optional<VectorMax3d>& center_of_mass)
 {
     assert(vertices.size() > 0);
     assert(edges.size() == 0 || edges.cols() == 2);
@@ -73,12 +74,32 @@ RigidBody::RigidBody(
     center_vertices(vertices, edges, faces, centering_pose);
 
     // 2. Compute the mass properties
-    VectorMax3d center_of_mass;
+    VectorMax3d computed_center_of_mass;
     MatrixMax3d inertia_tensor;
     compute_mass_properties(
         vertices, (dim == 2 || faces.size() == 0) ? edges : faces, density,
-        m_mass, center_of_mass, inertia_tensor);
+        m_mass, computed_center_of_mass, inertia_tensor);
     m_volume = m_mass / density;
+
+    // A prescribed center of mass moves the body's origin, the point its pose
+    // and rotation refer to, from the computed center of mass to the given
+    // one. We move the inertia with it by the parallel axis theorem, since
+    // compute_mass_properties returns it about the computed center of mass.
+    if (center_of_mass) {
+        assert(center_of_mass->size() == dim);
+        const VectorMax3d d = *center_of_mass - centering_pose.position;
+        vertices.rowwise() -= d.transpose();
+        centering_pose.position += d;
+        if (dim == 3) {
+            // Classical inertia tensor: I + m(‖d‖²·Id − d dᵀ)
+            inertia_tensor += m_mass
+                * (d.squaredNorm() * Eigen::Matrix3d::Identity()
+                   - d * d.transpose());
+        } else {
+            // Second moment ∫ρ x̄x̄ᵀ: S + m d dᵀ
+            inertia_tensor += m_mass * d * d.transpose();
+        }
+    }
 
     // 3. Convert the inertia tensor to the principal axes moments of inertia
     const int num_rot_dof_fixed =

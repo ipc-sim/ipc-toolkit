@@ -4,6 +4,8 @@
 #include <ipc/dynamics/rigid/pose.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
+#include <optional>
+
 namespace ipc {
 class LBVH;
 }
@@ -29,13 +31,15 @@ public:
     /// @param density Density of the rigid body
     /// @param initial_pose Initial pose of the rigid body (will be modified to account for the center of mass)
     /// @param is_dof_fixed Per-DOF fixed flags ([position | rotation]; empty means all free). Positional flags refer to world axes; rotational flags to the components of the rotation vector.
+    /// @param center_of_mass Optional center of mass to use instead of the one computed from the mesh, in the frame of the input vertices. The body's pose and rotation then refer to this point, and its inertia is moved to it by the parallel axis theorem. The inertial term assumes the body's origin is its true center of mass, so this is exact only for bodies whose inertia does not enter the dynamics (STATIC and KINEMATIC ones).
     RigidBody(
         Eigen::Ref<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces,
         const double density,
         Pose& initial_pose,
-        const VectorMax6b& is_dof_fixed = VectorMax6b());
+        const VectorMax6b& is_dof_fixed = VectorMax6b(),
+        const std::optional<VectorMax3d>& center_of_mass = std::nullopt);
 
     // ---- Getters ------------------------------------------------------------
 

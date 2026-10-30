@@ -34,7 +34,8 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
     std::vector<Pose>& initial_poses,
     const bool convert_planes,
     const std::vector<VectorMax6b>& is_dof_fixed,
-    const std::vector<std::string>& names)
+    const std::vector<std::string>& names,
+    const std::vector<std::optional<VectorMax3d>>& center_of_mass)
 {
     assert(rest_positions.size() == edges.size());
     assert(rest_positions.size() == faces.size());
@@ -42,6 +43,9 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
     assert(
         is_dof_fixed.empty() || is_dof_fixed.size() == rest_positions.size());
     assert(names.empty() || names.size() == rest_positions.size());
+    assert(
+        center_of_mass.empty()
+        || center_of_mass.size() == rest_positions.size());
 
     if (rest_positions.empty()) {
         return nullptr;
@@ -161,10 +165,19 @@ std::shared_ptr<RigidBodies> RigidBodies::build_from_meshes(
         }
     }
 
+    std::vector<std::optional<VectorMax3d>> nonplane_center_of_mass;
+    if (!center_of_mass.empty()) {
+        for (size_t i = 0; i < center_of_mass.size(); ++i) {
+            if (plane_bodies.count(i) == 0) {
+                nonplane_center_of_mass.push_back(center_of_mass[i]);
+            }
+        }
+    }
+
     std::shared_ptr<RigidBodies> bodies = std::make_shared<RigidBodies>(
         concat_rest_positions, concat_edges, concat_faces, body_vertex_starts,
         body_edge_starts, body_face_starts, nonplane_densities, initial_poses,
-        nonplane_is_dof_fixed);
+        nonplane_is_dof_fixed, nonplane_center_of_mass);
 
     bodies->planes = std::move(planes);
 
@@ -193,7 +206,8 @@ RigidBodies::RigidBodies(
     const std::vector<index_t>& _body_face_starts,
     const std::vector<double>& densities,
     std::vector<Pose>& initial_poses,
-    const std::vector<VectorMax6b>& is_dof_fixed)
+    const std::vector<VectorMax6b>& is_dof_fixed,
+    const std::vector<std::optional<VectorMax3d>>& center_of_mass)
     : CollisionMesh(_rest_positions, _edges, _faces)
     , body_vertex_starts(_body_vertex_starts)
     , body_edge_starts(_body_edge_starts)
@@ -208,6 +222,9 @@ RigidBodies::RigidBodies(
     assert(
         is_dof_fixed.empty()
         || is_dof_fixed.size() == body_vertex_starts.size() - 1);
+    assert(
+        center_of_mass.empty()
+        || center_of_mass.size() == body_vertex_starts.size() - 1);
 
     bodies.reserve(body_vertex_starts.size() - 1);
     for (size_t i = 0; i < body_vertex_starts.size() - 1; ++i) {
@@ -226,7 +243,8 @@ RigidBodies::RigidBodies(
                     .array()
                 - body_vertex_starts[i],
             densities[i], initial_poses[i],
-            is_dof_fixed.empty() ? VectorMax6b() : is_dof_fixed[i]);
+            is_dof_fixed.empty() ? VectorMax6b() : is_dof_fixed[i],
+            center_of_mass.empty() ? std::nullopt : center_of_mass[i]);
         logger().info(
             "Initial pose: position={}, rotation={}",
             initial_poses[i].position.transpose(),

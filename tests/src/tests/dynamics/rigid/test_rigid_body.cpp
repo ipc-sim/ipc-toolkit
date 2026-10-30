@@ -159,3 +159,47 @@ TEST_CASE(
         body.moment_of_inertia()(free_axis)
         == Catch::Approx(I_free).epsilon(1e-8));
 }
+
+TEST_CASE(
+    "A prescribed center of mass becomes the body's rotation center", "[rigid]")
+{
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    REQUIRE(tests::load_mesh("cube.ply", V, E, F));
+    constexpr double L = 0.5, W = 1.0, H = 2.0;
+    V.col(0).array() *= L;
+    V.col(1).array() *= W;
+    V.col(2).array() *= H;
+
+    // The box's own center of mass, one of its corners, and a point inside.
+    const Eigen::Vector3d center = GENERATE(
+        Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(L / 2, W / 2, H / 2),
+        Eigen::Vector3d(-0.1, 0.3, -0.7));
+    CAPTURE(center.transpose());
+
+    // We fix two rotations so the moments stay about the world axes.
+    VectorMax6b is_dof_fixed = VectorMax6b::Zero(6);
+    is_dof_fixed.segment<2>(3).setOnes();
+
+    const double density = 1000.0;
+    Eigen::MatrixXd rest_V = V;
+    Pose pose = Pose::identity(3);
+    const RigidBody body(
+        rest_V, E, F, density, pose, is_dof_fixed, VectorMax3d(center));
+
+    // The body sits where it was given, posed about the prescribed point.
+    CHECK((pose.position - center).norm() < 1e-12);
+    CHECK(pose.transform_vertices(rest_V).isApprox(V, 1e-12));
+
+    // The mass is unchanged, and the inertia is about the new center.
+    const double m = density * L * W * H;
+    CHECK(body.mass() == Catch::Approx(m));
+    const Eigen::Vector3d I_center =
+        m / 12.0 * Eigen::Vector3d(W * W + H * H, L * L + H * H, L * L + W * W)
+        + m
+            * Eigen::Vector3d(
+                center.y() * center.y() + center.z() * center.z(),
+                center.x() * center.x() + center.z() * center.z(),
+                center.x() * center.x() + center.y() * center.y());
+    CHECK(body.moment_of_inertia().isApprox(I_center));
+}

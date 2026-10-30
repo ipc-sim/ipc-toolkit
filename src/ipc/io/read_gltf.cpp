@@ -320,7 +320,8 @@ namespace {
 std::pair<std::shared_ptr<RigidBodies>, std::vector<Pose>> read_gltf(
     const std::string& filename,
     const bool convert_planes,
-    const std::unordered_map<std::string, VectorMax6b>& is_dof_fixed)
+    const std::unordered_map<std::string, VectorMax6b>& is_dof_fixed,
+    const std::unordered_map<std::string, VectorMax3d>& center_of_mass)
 {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -385,11 +386,33 @@ std::pair<std::shared_ptr<RigidBodies>, std::vector<Pose>> read_gltf(
         }
     }
 
-    // build_from_meshes prunes plane bodies from initial_poses, names, and the
-    // DOF masks in place, so they all stay aligned with the returned bodies.
+    // Likewise for the prescribed centers of mass. We take them in world
+    // coordinates, so they do not depend on where the file puts each node's
+    // origin, and move them into the body's rest frame: a rest position v
+    // sits at R v + t in the world.
+    std::vector<std::optional<VectorMax3d>> body_center_of_mass(names.size());
+    for (const auto& [name, com] : center_of_mass) {
+        bool found = false;
+        for (size_t i = 0; i < names.size(); ++i) {
+            if (names[i] == name) {
+                body_center_of_mass[i] =
+                    initial_poses[i].rotation_matrix().transpose()
+                    * (com - initial_poses[i].position);
+                found = true;
+            }
+        }
+        if (!found) {
+            logger().warn(
+                "center_of_mass: no body named '{}' in {}", name, filename);
+        }
+    }
+
+    // build_from_meshes prunes plane bodies from initial_poses, names, the DOF
+    // masks, and the centers of mass in place, so they all stay aligned with
+    // the returned bodies.
     std::shared_ptr<RigidBodies> bodies = RigidBodies::build_from_meshes(
         rest_positions, edges, faces, densities, initial_poses, convert_planes,
-        body_is_dof_fixed, names);
+        body_is_dof_fixed, names, body_center_of_mass);
     return { bodies, initial_poses };
 }
 

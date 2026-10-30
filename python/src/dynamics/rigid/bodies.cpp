@@ -67,9 +67,9 @@ void define_rigid_bodies(py::module_& m)
             py::init<
                 Eigen::Ref<Eigen::MatrixXd>, Eigen::ConstRef<Eigen::MatrixXi>,
                 Eigen::ConstRef<Eigen::MatrixXi>, const double, Pose&,
-                const VectorMax6b&>(),
+                const VectorMax6b&, const std::optional<VectorMax3d>&>(),
             "vertices"_a, "edges"_a, "faces"_a, "density"_a, "initial_pose"_a,
-            "is_dof_fixed"_a = VectorMax6b())
+            "is_dof_fixed"_a = VectorMax6b(), "center_of_mass"_a = std::nullopt)
         .def_property_readonly("mass", &RigidBody::mass)
         .def_property_readonly("volume", &RigidBody::volume)
         .def_property(
@@ -109,7 +109,8 @@ void define_rigid_bodies(py::module_& m)
             "edges"_a, "faces"_a, "densities"_a, "initial_poses"_a,
             "convert_planes"_a = false,
             "is_dof_fixed"_a = std::vector<VectorMax6b>(),
-            "names"_a = std::vector<std::string>())
+            "names"_a = std::vector<std::string>(),
+            "center_of_mass"_a = std::vector<std::optional<VectorMax3d>>())
         .def(
             "vertices",
             py::overload_cast<const std::vector<Pose>&>(
@@ -176,11 +177,13 @@ void define_rigid_bodies(py::module_& m)
              filename: The input glTF filename.
              convert_planes: Whether to convert plane primitives in the glTF file to infinite planes in the RigidBodies object. If false, plane primitives will be ignored.
              is_dof_fixed: Per-DOF fixed flags ([position | rotation]) keyed by node name. These are construction-time only, since fixing rotational DOFs changes the frame the inertia is expressed in.
+             center_of_mass: Prescribed centers of mass keyed by node name, in the file's world coordinates. A body's pose and rotation then refer to this point instead of its computed center of mass (exact only for STATIC and KINEMATIC bodies, whose inertia does not enter the dynamics). Construction-time only, like is_dof_fixed.
 
          Returns:
              A pair containing the RigidBodies object and a vector of initial poses for each body.
          )ipc_Qu8mg5v7",
         "filename"_a, "convert_planes"_a = false,
-        "is_dof_fixed"_a = std::unordered_map<std::string, VectorMax6b>());
+        "is_dof_fixed"_a = std::unordered_map<std::string, VectorMax6b>(),
+        "center_of_mass"_a = std::unordered_map<std::string, VectorMax3d>());
 #endif
 }

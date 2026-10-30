@@ -28,6 +28,7 @@ public:
     /// @param densities A vector of densities for each rigid body.
     /// @param initial_poses A vector of initial poses for each rigid body.
     /// @param is_dof_fixed Optional per-body fixed-DOF flags (empty means all free).
+    /// @param center_of_mass Optional per-body prescribed centers of mass, in each body's rest frame (empty, or an empty entry, means computed from the mesh; see RigidBody).
     RigidBodies(
         Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
@@ -37,7 +38,8 @@ public:
         const std::vector<index_t>& body_face_starts,
         const std::vector<double>& densities,
         std::vector<Pose>& initial_poses,
-        const std::vector<VectorMax6b>& is_dof_fixed = {});
+        const std::vector<VectorMax6b>& is_dof_fixed = {},
+        const std::vector<std::optional<VectorMax3d>>& center_of_mass = {});
 
     /// @brief Build a RigidBodies object from a set of meshes, where each mesh corresponds to a rigid body.
     /// @param rest_positions A vector of vertex positions for each rigid body mesh.
@@ -50,6 +52,7 @@ public:
     /// @param names Optional per-body names (empty means auto-generated). Plane
     ///        bodies are pruned from the names alongside the geometry, and any
     ///        empty or duplicate name is replaced with a unique default.
+    /// @param center_of_mass Optional per-body prescribed centers of mass, in each mesh's rest frame (empty, or an empty entry, means computed from the mesh; see RigidBody).
     /// @return A shared pointer to the constructed RigidBodies object
     static std::shared_ptr<RigidBodies> build_from_meshes(
         const std::vector<Eigen::MatrixXd>& rest_positions,
@@ -59,7 +62,8 @@ public:
         std::vector<Pose>& initial_poses,
         const bool convert_planes = false,
         const std::vector<VectorMax6b>& is_dof_fixed = {},
-        const std::vector<std::string>& names = {});
+        const std::vector<std::string>& names = {},
+        const std::vector<std::optional<VectorMax3d>>& center_of_mass = {});
 
     /// @brief Get the vertices of the collision mesh given the poses of each rigid body.
     /// @param poses A vector of poses for each rigid body.

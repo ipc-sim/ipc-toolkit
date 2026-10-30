@@ -13,6 +13,9 @@ optional settings file, a plain Python module that may define:
     is_dof_fixed    {body name: [x, y, z, rx, ry, rz] booleans}. These are read
                     while loading because fixing rotational DOFs changes how a
                     body's inertia is stored, so they cannot change afterwards.
+    center_of_mass  {body name: [x, y, z]} in world coordinates. A body's pose
+                    and rotation then refer to this point instead of its
+                    computed center of mass. Also read while loading.
     configure(scene)
                     Called after loading and before building the simulator. It
                     edits the real ipctk objects through the Scene below, so
@@ -124,6 +127,7 @@ if len(sys.argv) > 1:
         sys.argv[1],
         convert_planes=config.get("convert_planes", True),
         is_dof_fixed=config.get("is_dof_fixed", {}),
+        center_of_mass=config.get("center_of_mass", {}),
     )
 else:
     mesh_names = [
