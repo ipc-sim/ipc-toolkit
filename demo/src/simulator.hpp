@@ -585,6 +585,10 @@ protected:
     /// @brief Whether the augmented Lagrangian still has unsatisfied channels.
     bool al_active() const;
 
+    /// @brief Whether the state x already meets every unsatisfied channel's
+    /// kinematic targets, by the AL's own progress test.
+    bool al_targets_met(Eigen::ConstRef<Eigen::VectorXd> x) const;
+
     /// @brief Apply the AL update policy at the (energy-converged) state x.
     void al_update(Eigen::ConstRef<Eigen::VectorXd> x);
 

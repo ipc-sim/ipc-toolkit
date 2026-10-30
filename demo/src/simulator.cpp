@@ -663,17 +663,24 @@ double Simulator::step_norm(
            - m_kinematics->world_vertices(to_full(m_solver_v)))
               .lpNorm<Eigen::Infinity>();
 
-    // While a kinematic target is unmet, we tighten the velocity criterion.
-    // Each solve then ends in an augmented Lagrangian update, and the update
-    // folds whatever force is still unbalanced into the multipliers, so it
-    // needs an iterate near equilibrium. On stiff contact the default
-    // tolerance stops well short of that: the remaining Newton step is tiny
-    // while large forces are still out of balance. The kinematic body then
-    // overshoots, the penalty escalates, and a tight mechanism (e.g., a
-    // crank pin in a connecting-rod eye) can wedge itself shut. Once every
-    // target is met, any further solves (e.g., friction re-lagging) use the
-    // usual tolerance.
-    if (al_active()) {
+    // While the current iterate falls short of a kinematic target, we tighten
+    // the velocity criterion. The solve would then end in an augmented
+    // Lagrangian update, which folds whatever force is still unbalanced into
+    // the multipliers, so it needs an iterate near equilibrium. On stiff
+    // contact the default tolerance stops well short of that: the remaining
+    // Newton step is tiny while large forces are still out of balance. The
+    // kinematic body then overshoots, the penalty escalates, and a tight
+    // mechanism (e.g., a crank pin in a connecting-rod eye) can wedge itself
+    // shut.
+    //
+    // Once the iterate meets the targets, the usual tolerance applies, as in
+    // Rigid IPC, whose convergence test only adds the equality constraints to
+    // the velocity criterion. Tightening the whole solve instead costs about
+    // as many iterations again as the solve itself on scenes with soft modes
+    // (e.g., pins spinning freely in their holes), where Newton's last digits
+    // come slowly.
+    if (al_active() && m_solver_v.size() == delta_v.size()
+        && !al_targets_met(to_full(m_solver_v))) {
         return displacement / AL_VELOCITY_CONV_TOL_SCALE;
     }
     return displacement;
@@ -1126,6 +1133,19 @@ void Simulator::al_init(Eigen::ConstRef<Eigen::VectorXd> x)
 bool Simulator::al_active() const
 {
     return m_body_potentials->augmented_lagrangian_active();
+}
+
+bool Simulator::al_targets_met(Eigen::ConstRef<Eigen::VectorXd> x) const
+{
+    const double satisfied = m_settings.al_satisfied_progress;
+    return (m_body_potentials->augmented_lagrangian_linear_satisfied()
+            || m_body_potentials->augmented_lagrangian_linear_progress(
+                   *m_bodies, x)
+                >= satisfied)
+        && (m_body_potentials->augmented_lagrangian_angular_satisfied()
+            || m_body_potentials->augmented_lagrangian_angular_progress(
+                   *m_bodies, x)
+                >= satisfied);
 }
 
 void Simulator::al_update(Eigen::ConstRef<Eigen::VectorXd> x)
