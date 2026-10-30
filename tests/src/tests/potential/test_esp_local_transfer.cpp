@@ -47,9 +47,13 @@ Scene edge_over_box()
 void check_derivatives(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
-    const ESPParameters& params)
+    const ESPParameters& params,
+    const std::vector<double>& lagged_weights = {})
 {
-    const ESPPotential potential(params);
+    ESPPotential potential(params);
+    if (!lagged_weights.empty()) {
+        potential.set_lagged_weights(lagged_weights);
+    }
     ESPCollisions c;
     c.build(mesh, X, params);
     const auto g = potential.gradient(c, mesh, X);
@@ -214,16 +218,15 @@ TEST_CASE(
         params.set_auto_lattice(.01, 3);
     }
     if (with_non_corner_points) {
-        params.set_quad_rule(
-            {
-                { { { 1., 0., 0. } }, 0.1 },
-                { { { 0., 1., 0. } }, 0.1 },
-                { { { 0., 0., 1. } }, 0.1 },
-                { { { .5, .5, 0. } }, 0.15 },
-                { { { 0., .5, .5 } }, 0.15 },
-                { { { .5, 0., .5 } }, 0.15 },
-                { { { 1. / 3, 1. / 3, 1. / 3 } }, 0.25 },
-            });
+        params.set_quad_rule({
+            { { { 1., 0., 0. } }, 0.1 },
+            { { { 0., 1., 0. } }, 0.1 },
+            { { { 0., 0., 1. } }, 0.1 },
+            { { { .5, .5, 0. } }, 0.15 },
+            { { { 0., .5, .5 } }, 0.15 },
+            { { { .5, 0., .5 } }, 0.15 },
+            { { { 1. / 3, 1. / 3, 1. / 3 } }, 0.25 },
+        });
     }
     CAPTURE(barrier, params.area_weights, rule_kind);
     check_derivatives(s.mesh, s.X, params);
@@ -493,11 +496,10 @@ TEST_CASE(
     params.area_weights = GENERATE(false, true);
     // Retain positive corner weights and an independently active interior
     // point.
-    params.set_quad_rule(
-        { { { { 1, 0, 0 } }, .1 },
-          { { { 0, 1, 0 } }, .2 },
-          { { { 0, 0, 1 } }, .3 },
-          { { { 1. / 3, 1. / 3, 1. / 3 } }, .4 } });
+    params.set_quad_rule({ { { { 1, 0, 0 } }, .1 },
+                           { { { 0, 1, 0 } }, .2 },
+                           { { { 0, 0, 1 } }, .3 },
+                           { { { 1. / 3, 1. / 3, 1. / 3 } }, .4 } });
     params.local_quadrature_transfer = true;
     ESPCollisions contacts;
     contacts.build(mesh, V, params);
@@ -519,4 +521,62 @@ TEST_CASE(
     CHECK(
         (Eigen::MatrixXd(local.hessian(contacts, mesh, V)) - H).norm()
         < 1e-11 * std::max(1., H.norm()));
+}
+
+TEST_CASE(
+    "ESP lagged normalization", "[esp_potential][esp_lagged_normalization]")
+{
+    auto s = edge_over_box();
+    ESPParameters params(.03, .05);
+    const int barrier = GENERATE(0, 2);
+    if (barrier) {
+        params.barrier = std::make_shared<InversePowerBarrier<>>(barrier);
+    }
+    const bool lattice = GENERATE(false, true);
+    if (lattice) {
+        params.set_auto_lattice(.01, 3);
+    }
+    CAPTURE(barrier, lattice);
+    ESPCollisions c;
+    c.build(s.mesh, s.X, params);
+    const ESPPotential normalized(params);
+    ESPPotential lagged(params);
+    const std::vector<double> weights =
+        lagged.element_near_weights(c, s.mesh, s.X);
+    lagged.set_lagged_weights(weights);
+
+    // At the reference state the value is the normalized energy.
+    CHECK(
+        lagged(c, s.mesh, s.X)
+        == Catch::Approx(normalized(c, s.mesh, s.X)).epsilon(1e-12));
+    // With the weights held, gradient and Hessian are exact derivatives of
+    // the lagged energy, and the projected Hessian is PSD.
+    check_derivatives(s.mesh, s.X, params, weights);
+    // The lagged gradient omits only the normalization's derivative, so it
+    // differs from the normalized gradient where edge-edge samples are
+    // active.
+    CHECK(
+        (lagged.gradient(c, s.mesh, s.X) - normalized.gradient(c, s.mesh, s.X))
+            .norm()
+        > 0);
+}
+
+TEST_CASE(
+    "ESP lagged normalization rejects invalid use",
+    "[esp_potential][esp_lagged_normalization]")
+{
+    auto s = edge_over_box();
+    ESPParameters params(.03, .05);
+    ESPPotential p(params);
+    CHECK_THROWS_AS(p.set_lagged_weights({ 1.0, 0.0 }), std::invalid_argument);
+    p.set_lagged_weights({ 1.0, 1.0 }); // wrong size for this mesh
+    ESPCollisions c;
+    c.build(s.mesh, s.X, params);
+    CHECK_THROWS_AS(p(c, s.mesh, s.X), std::invalid_argument);
+    params.local_quadrature_transfer = true;
+    ESPPotential t(params);
+    t.set_lagged_weights(t.element_near_weights(c, s.mesh, s.X));
+    CHECK_THROWS_AS(t(c, s.mesh, s.X), std::invalid_argument);
+    t.clear_lagged_weights();
+    CHECK_NOTHROW(t(c, s.mesh, s.X));
 }

@@ -1,4 +1,5 @@
 #include "esp_potential.hpp"
+
 #include "esp_local_transfer.hpp"
 
 #include <ipc/barrier/barrier.hpp>
@@ -19,6 +20,10 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
+#include <functional>
+#include <stdexcept>
+#include <type_traits>
 #include <unordered_map>
 
 namespace ipc {
@@ -148,7 +153,456 @@ namespace {
         }
         return 1.0;
     }
+
+    // ---- Lagged normalization (see ESPPotential::set_lagged_weights) ----
+
+    // Edge-edge mollifier weight of the sample on edge e0 closest to e1,
+    // without the element's area scale: (cubic spline * ee_weight *
+    // mollifier)^power, as a scalar T (double or an AD type over the four
+    // edge endpoints).
+    template <typename T>
+    T ee_sample_weight(
+        const Eigen::Matrix<T, 4, 3>& positionsT,
+        const Eigen::Ref<const Eigen::Matrix<double, 4, 3>>& positions,
+        const ESPParameters& params)
+    {
+        using std::sqrt;
+        const T dist_sqr = line_line_sqr_distance<T>(
+            positionsT.row(0), positionsT.row(1), positionsT.row(2),
+            positionsT.row(3));
+        const T dist = sqrt(dist_sqr);
+        double dist_sqr_val;
+        if constexpr (std::is_same_v<T, double>) {
+            dist_sqr_val = dist_sqr;
+        } else {
+            dist_sqr_val = dist_sqr.val;
+        }
+        const auto mtypes = edge_edge_mollifier_type(
+            positions.row(0).transpose(), positions.row(1).transpose(),
+            positions.row(2).transpose(), positions.row(3).transpose(),
+            dist_sqr_val, params.ee_mollifier);
+        T m = Math<T>::cubic_spline(dist / params.ee_support())
+            * params.ee_weight;
+        m *= edge_edge_mollifier<T>(
+            positionsT.row(0).transpose(), positionsT.row(1).transpose(),
+            positionsT.row(2).transpose(), positionsT.row(3).transpose(),
+            mtypes, dist_sqr, params.ee_mollifier);
+        return pow_int(m, params.ee_mollifier_exponent());
+    }
+
+    // Per-sample coefficients of the lagged energy
+    //   E = sum_e w_e [ (sum_j m_j P_near(q_j) + sum_s w_s P_near(s)) / D_e
+    //                 + (sum_s w_s P_far(s)) / W_e ],
+    // where s runs over the element's vertex and face samples (weights w_s,
+    // summing to W_e), j over its edge-edge samples, and D_e = W_e + sum_j
+    // m_j is held fixed. Each sample then contributes coefficient * its own
+    // potential, so it is evaluated once instead of once per element.
+    struct LaggedCoefficients {
+        Eigen::VectorXd vertex_near, vertex_far; // per vertex
+        Eigen::VectorXd face_near, face_far;     // per face, times qp weight
+        Eigen::VectorXd edge; // per edge: sum_e w_e * area scale / D_e
+    };
+
+    LaggedCoefficients lagged_coefficients(
+        const CollisionMesh& mesh,
+        const ESPParameters& params,
+        const std::vector<double>& lagged_weights)
+    {
+        LaggedCoefficients c;
+        c.vertex_near.setZero(mesh.num_vertices());
+        c.vertex_far.setZero(mesh.num_vertices());
+        c.face_near.setZero(mesh.num_faces());
+        c.face_far.setZero(mesh.num_faces());
+        c.edge.setZero(mesh.num_edges());
+        for (size_t k = 0; k < num_integration_elements(mesh); k++) {
+            const IntegrationElement elem =
+                integration_element(mesh, params, k);
+            double fixed_weight = 0; // W_e
+            for (int lv = 0; lv < elem.num_vertices; lv++) {
+                fixed_weight += elem.vertex_weights[lv];
+            }
+            if (elem.face >= 0) {
+                for (const auto& qp : *elem.non_corner) {
+                    fixed_weight += FACE_QUADRATURE_WEIGHT_SCALE * qp.weight;
+                }
+            }
+            const double near_scale = elem.weight / lagged_weights[k];
+            const double far_scale = elem.weight / fixed_weight;
+            for (int lv = 0; lv < elem.num_vertices; lv++) {
+                const double vw = elem.vertex_weights[lv];
+                c.vertex_near[elem.vertices[lv]] += vw * near_scale;
+                c.vertex_far[elem.vertices[lv]] += vw * far_scale;
+            }
+            if (elem.face >= 0) {
+                c.face_near[elem.face] += near_scale;
+                c.face_far[elem.face] += far_scale;
+            }
+            const double ee_scale = ee_area_scale(mesh, elem, params);
+            for (int le = 0; le < elem.num_edges; le++) {
+                c.edge[elem.edges[le]] += near_scale * ee_scale;
+            }
+        }
+        return c;
+    }
+
+    template <typename Map>
+    std::vector<typename Map::const_pointer> map_entries(const Map& map)
+    {
+        std::vector<typename Map::const_pointer> entries;
+        entries.reserve(map.size());
+        for (const auto& entry : map) {
+            entries.push_back(&entry);
+        }
+        return entries;
+    }
+
+    Eigen::Matrix<double, 4, 3> ee_positions(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> X,
+        const std::pair<index_t, index_t>& pair)
+    {
+        Eigen::Matrix<double, 4, 3> p;
+        p.row(0) = X.row(mesh.edges()(pair.first, 0));
+        p.row(1) = X.row(mesh.edges()(pair.first, 1));
+        p.row(2) = X.row(mesh.edges()(pair.second, 0));
+        p.row(3) = X.row(mesh.edges()(pair.second, 1));
+        return p;
+    }
 } // namespace
+
+std::vector<double> ESPPotential::element_near_weights(
+    const ESPCollisions& collisions,
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> X) const
+{
+    // D_e = W_e + sum_j m_j at X: the element's fixed sample weights plus
+    // its edge-edge samples' mollifier weights (with the area scale).
+    const size_t n = num_integration_elements(mesh);
+    std::vector<double> weights(n, 0.0);
+    std::vector<std::vector<index_t>> edge_elements(mesh.num_edges());
+    std::vector<double> elem_ee_scale(n, 1.0);
+    for (size_t k = 0; k < n; k++) {
+        const IntegrationElement elem = integration_element(mesh, m_params, k);
+        for (int lv = 0; lv < elem.num_vertices; lv++) {
+            weights[k] += elem.vertex_weights[lv];
+        }
+        if (elem.face >= 0) {
+            for (const auto& qp : *elem.non_corner) {
+                weights[k] += FACE_QUADRATURE_WEIGHT_SCALE * qp.weight;
+            }
+        }
+        for (int le = 0; le < elem.num_edges; le++) {
+            edge_elements[elem.edges[le]].push_back(static_cast<index_t>(k));
+        }
+        elem_ee_scale[k] = ee_area_scale(mesh, elem, m_params);
+    }
+    if (mesh.dim() == 3 && m_params.dbar_factor() > 0) {
+        for (const auto& [pair, dict] :
+             collisions.maps().edge_edge_collisions) {
+            const Eigen::Matrix<double, 4, 3> p = ee_positions(mesh, X, pair);
+            const double m = ee_sample_weight<double>(p, p, m_params);
+            for (const index_t k : edge_elements[pair.first]) {
+                weights[k] += m * elem_ee_scale[k];
+            }
+        }
+    }
+    return weights;
+}
+
+void ESPPotential::set_lagged_weights(std::vector<double> weights)
+{
+    for (const double w : weights) {
+        if (!(w > 0) || !std::isfinite(w)) {
+            throw std::invalid_argument(
+                "Lagged ESP element weights must be positive and finite.");
+        }
+    }
+    m_lagged_weights = std::move(weights);
+}
+
+bool ESPPotential::uses_lagged_weights(const CollisionMesh& mesh) const
+{
+    if (m_lagged_weights.empty() || mesh.dim() != 3 || !m_use_near_far
+        || m_params.dbar_factor() <= 0) {
+        return false;
+    }
+    if (m_lagged_weights.size() != num_integration_elements(mesh)) {
+        throw std::invalid_argument(
+            "Lagged ESP element weights do not match the mesh's elements.");
+    }
+    if (m_params.local_quadrature_transfer) {
+        throw std::invalid_argument(
+            "Lagged ESP normalization does not support local quadrature "
+            "transfer.");
+    }
+    return true;
+}
+
+double ESPPotential::lagged_value(
+    const ESPCollisions& collisions,
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> X) const
+{
+    const LaggedCoefficients c =
+        lagged_coefficients(mesh, m_params, m_lagged_weights);
+    const NearFarBarrier<> nf(m_params.barrier, m_params.dbar_factor());
+    const auto& maps = collisions.maps();
+    tbb::combinable<double> total([] { return 0.0; });
+
+    const auto vertices = map_entries(maps.vertex_collisions);
+    tbb::parallel_for(size_t(0), vertices.size(), [&](size_t i) {
+        const index_t v = vertices[i]->first;
+        const auto [pn, pf] = PointPotentialHelper::
+            evaluate_potential_at_vertex_with_cached_collisions_nearfar(
+                X, *vertices[i]->second, m_params, nf);
+        total.local() += c.vertex_near[v] * pn + c.vertex_far[v] * pf;
+    });
+
+    const auto faces = map_entries(maps.face_collisions);
+    tbb::parallel_for(size_t(0), faces.size(), [&](size_t i) {
+        const index_t f = faces[i]->first;
+        const auto& rule = *m_params.face_rule(mesh.face_areas()(f)).non_corner;
+        const auto& dicts = faces[i]->second;
+        for (size_t qi = 0; qi < std::min(rule.size(), dicts.size()); qi++) {
+            const auto& qp = rule[qi];
+            const Eigen::RowVector3d q =
+                qp.lambda[0] * X.row(mesh.faces()(f, 0))
+                + qp.lambda[1] * X.row(mesh.faces()(f, 1))
+                + qp.lambda[2] * X.row(mesh.faces()(f, 2));
+            const auto [pn, pf] = PointPotentialHelper::
+                evaluate_potential_at_face_interior_point_with_cached_collisions_nearfar(
+                    VertexMatrixView<3>(X, q), *dicts[qi], m_params, nf);
+            const double s = FACE_QUADRATURE_WEIGHT_SCALE * qp.weight;
+            total.local() += s * (c.face_near[f] * pn + c.face_far[f] * pf);
+        }
+    });
+
+    const auto pairs = map_entries(maps.edge_edge_collisions);
+    tbb::parallel_for(size_t(0), pairs.size(), [&](size_t i) {
+        const auto& [pair, dict] = *pairs[i];
+        const double coef = c.edge[pair.first];
+        if (coef == 0) {
+            return;
+        }
+        const Eigen::Matrix<double, 4, 3> p = ee_positions(mesh, X, pair);
+        const double m = ee_sample_weight<double>(p, p, m_params);
+        if (m == 0) {
+            return;
+        }
+        const double u =
+            closest_point_uv<double>(p.row(0), p.row(1), p.row(2), p.row(3));
+        const Eigen::RowVector3d q = u * (p.row(1) - p.row(0)) + p.row(0);
+        const double pn = PointPotentialHelper::
+            evaluate_potential_at_edge_edge_closest_point_with_cached_collisions_near(
+                VertexMatrixView<3>(X, q), *dict, m_params, dict->ee_dtype(),
+                nf);
+        total.local() += coef * m * pn;
+    });
+    return total.combine(std::plus<double>());
+}
+
+Eigen::VectorXd ESPPotential::lagged_gradient(
+    const ESPCollisions& collisions,
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> X) const
+{
+    const LaggedCoefficients c =
+        lagged_coefficients(mesh, m_params, m_lagged_weights);
+    const NearFarBarrier<> nf(m_params.barrier, m_params.dbar_factor());
+    const auto& maps = collisions.maps();
+    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
+        Eigen::VectorXd::Zero(X.size()));
+
+    const auto vertices = map_entries(maps.vertex_collisions);
+    tbb::parallel_for(size_t(0), vertices.size(), [&](size_t i) {
+        const index_t v = vertices[i]->first;
+        const auto& dict = *vertices[i]->second;
+        const auto [gn, gf] = PointPotentialHelper::
+            evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
+                X, dict, m_params, nf);
+        storage.local()(dict.dofs()) +=
+            c.vertex_near[v] * gn + c.vertex_far[v] * gf;
+    });
+
+    const auto faces = map_entries(maps.face_collisions);
+    tbb::parallel_for(size_t(0), faces.size(), [&](size_t i) {
+        const index_t f = faces[i]->first;
+        const auto& rule = *m_params.face_rule(mesh.face_areas()(f)).non_corner;
+        const auto& dicts = faces[i]->second;
+        for (size_t qi = 0; qi < std::min(rule.size(), dicts.size()); qi++) {
+            const auto& qp = rule[qi];
+            const Eigen::RowVector3d q =
+                qp.lambda[0] * X.row(mesh.faces()(f, 0))
+                + qp.lambda[1] * X.row(mesh.faces()(f, 1))
+                + qp.lambda[2] * X.row(mesh.faces()(f, 2));
+            const auto [gn, gf] = PointPotentialHelper::
+                evaluate_potential_gradient_at_face_interior_point_with_cached_collisions_nearfar(
+                    VertexMatrixView<3>(X, q), *dicts[qi], m_params, qp.lambda,
+                    nf);
+            const double s = FACE_QUADRATURE_WEIGHT_SCALE * qp.weight;
+            storage.local()(dicts[qi]->dofs()) +=
+                s * (c.face_near[f] * gn + c.face_far[f] * gf);
+        }
+    });
+
+    const auto pairs = map_entries(maps.edge_edge_collisions);
+    tbb::parallel_for(size_t(0), pairs.size(), [&](size_t i) {
+        using T = ADGrad<12>;
+        const auto& [pair, dict] = *pairs[i];
+        const double coef = c.edge[pair.first];
+        if (coef == 0) {
+            return;
+        }
+        const Eigen::Matrix<double, 4, 3> p = ee_positions(mesh, X, pair);
+        Eigen::Vector<double, 12> flat;
+        for (int r = 0; r < 4; r++) {
+            flat.segment<3>(3 * r) = p.row(r).transpose();
+        }
+        const Eigen::Matrix<T, 4, 3> pT = slice_positions<T, 4, 3>(flat);
+        const T m = ee_sample_weight<T>(pT, p, m_params);
+        if (m.val == 0) {
+            return;
+        }
+        const T u =
+            closest_point_uv<T>(pT.row(0), pT.row(1), pT.row(2), pT.row(3));
+        const Eigen::RowVector3<T> qT = u * (pT.row(1) - pT.row(0)) + pT.row(0);
+        const Eigen::RowVector3d q(qT(0).val, qT(1).val, qT(2).val);
+        const VertexMatrixView<3> Xq(X, q);
+        const double pn = PointPotentialHelper::
+            evaluate_potential_at_edge_edge_closest_point_with_cached_collisions_near(
+                Xq, *dict, m_params, dict->ee_dtype(), nf);
+        const Eigen::VectorXd gp = PointPotentialHelper::
+            evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions_near<
+                T>(Xq, *dict, m_params, qT, nf);
+        auto& grad = storage.local();
+        grad(dict->dofs()) += (coef * m.val) * gp;
+        grad(dict->primary_dofs()) += (coef * pn) * m.grad;
+    });
+
+    Eigen::VectorXd grad = Eigen::VectorXd::Zero(X.size());
+    for (const auto& g : storage) {
+        grad += g;
+    }
+    return grad;
+}
+
+Eigen::SparseMatrix<double> ESPPotential::lagged_hessian(
+    const ESPCollisions& collisions,
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> X,
+    const PSDProjectionMethod psd) const
+{
+    // Every sample's coefficient is nonnegative, so projecting each sample's
+    // Hessian keeps the sum PSD; no per-element dense block is needed.
+    const LaggedCoefficients c =
+        lagged_coefficients(mesh, m_params, m_lagged_weights);
+    const NearFarBarrier<> nf(m_params.barrier, m_params.dbar_factor());
+    const auto& maps = collisions.maps();
+    const int n_verts = X.rows();
+    tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
+        storage;
+    const auto project = [&](Eigen::MatrixXd& h) {
+        if (psd != PSDProjectionMethod::NONE) {
+            h = project_to_psd(h, psd);
+        }
+    };
+
+    const auto vertices = map_entries(maps.vertex_collisions);
+    tbb::parallel_for(size_t(0), vertices.size(), [&](size_t i) {
+        const index_t v = vertices[i]->first;
+        const auto& dict = *vertices[i]->second;
+        auto [hn, hf] = PointPotentialHelper::
+            evaluate_potential_hessian_at_vertex_with_cached_collisions_nearfar(
+                X, dict, m_params, PSDProjectionMethod::NONE, nf);
+        Eigen::MatrixXd h = c.vertex_near[v] * hn + c.vertex_far[v] * hf;
+        project(h);
+        local_hessian_to_global_triplets(
+            h, dict.vertex_ids(), 3, storage.local(), n_verts);
+    });
+
+    const auto faces = map_entries(maps.face_collisions);
+    tbb::parallel_for(size_t(0), faces.size(), [&](size_t i) {
+        const index_t f = faces[i]->first;
+        const auto& rule = *m_params.face_rule(mesh.face_areas()(f)).non_corner;
+        const auto& dicts = faces[i]->second;
+        for (size_t qi = 0; qi < std::min(rule.size(), dicts.size()); qi++) {
+            const auto& qp = rule[qi];
+            const Eigen::RowVector3d q =
+                qp.lambda[0] * X.row(mesh.faces()(f, 0))
+                + qp.lambda[1] * X.row(mesh.faces()(f, 1))
+                + qp.lambda[2] * X.row(mesh.faces()(f, 2));
+            auto [hn, hf] = PointPotentialHelper::
+                evaluate_potential_hessian_at_face_interior_point_with_cached_collisions_nearfar(
+                    VertexMatrixView<3>(X, q), *dicts[qi], m_params, qp.lambda,
+                    PSDProjectionMethod::NONE, nf);
+            const double s = FACE_QUADRATURE_WEIGHT_SCALE * qp.weight;
+            Eigen::MatrixXd h = s * (c.face_near[f] * hn + c.face_far[f] * hf);
+            project(h);
+            local_hessian_to_global_triplets(
+                h, dicts[qi]->vertex_ids(), 3, storage.local(), n_verts);
+        }
+    });
+
+    const auto pairs = map_entries(maps.edge_edge_collisions);
+    tbb::parallel_for(size_t(0), pairs.size(), [&](size_t i) {
+        using T = ADHessian<12>;
+        const auto& [pair, dict] = *pairs[i];
+        const double coef = c.edge[pair.first];
+        if (coef == 0) {
+            return;
+        }
+        const Eigen::Matrix<double, 4, 3> p = ee_positions(mesh, X, pair);
+        Eigen::Vector<double, 12> flat;
+        for (int r = 0; r < 4; r++) {
+            flat.segment<3>(3 * r) = p.row(r).transpose();
+        }
+        const Eigen::Matrix<T, 4, 3> pT = slice_positions<T, 4, 3>(flat);
+        const T m = ee_sample_weight<T>(pT, p, m_params);
+        if (m.val == 0) {
+            return;
+        }
+        const T u =
+            closest_point_uv<T>(pT.row(0), pT.row(1), pT.row(2), pT.row(3));
+        const Eigen::RowVector3<T> qT = u * (pT.row(1) - pT.row(0)) + pT.row(0);
+        const Eigen::RowVector3d q(qT(0).val, qT(1).val, qT(2).val);
+        const VertexMatrixView<3> Xq(X, q);
+        const double pn = PointPotentialHelper::
+            evaluate_potential_at_edge_edge_closest_point_with_cached_collisions_near(
+                Xq, *dict, m_params, dict->ee_dtype(), nf);
+        const Eigen::VectorXd gp = PointPotentialHelper::
+            evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions_near<
+                T>(Xq, *dict, m_params, qT, nf);
+        // H(m P) = m H(P) + P H(m) + sym(grad m (x) grad P), with m on the
+        // four primary vertices.
+        Eigen::MatrixXd h = m.val
+            * PointPotentialHelper::
+                evaluate_potential_hessian_at_edge_edge_closest_point_with_cached_collisions_near(
+                                Xq, *dict, m_params, qT, nf);
+        const auto& ids = dict->primary_local_ids();
+        for (int a = 0; a < 4; a++) {
+            for (int b = 0; b < 4; b++) {
+                h.block<3, 3>(ids[a] * 3, ids[b] * 3) +=
+                    pn * m.Hess.block<3, 3>(a * 3, b * 3);
+            }
+            const Eigen::MatrixXd cross =
+                m.grad.segment<3>(a * 3) * gp.transpose();
+            h.middleRows(ids[a] * 3, 3) += cross;
+            h.middleCols(ids[a] * 3, 3) += cross.transpose();
+        }
+        h *= coef;
+        project(h);
+        local_hessian_to_global_triplets(
+            h, dict->vertex_ids(), 3, storage.local(), n_verts);
+    });
+
+    std::vector<Eigen::Triplet<double>> triplets;
+    for (const auto& t : storage) {
+        triplets.insert(triplets.end(), t.begin(), t.end());
+    }
+    Eigen::SparseMatrix<double> hess(X.size(), X.size());
+    hess.setFromTriplets(triplets.begin(), triplets.end());
+    return hess;
+}
 
 double ESPPotential::operator()(
     const ESPCollisions& collisions,
@@ -158,6 +612,9 @@ double ESPPotential::operator()(
     assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
     collisions.check_quadrature(m_params);
 
+    if (uses_lagged_weights(mesh)) {
+        return lagged_value(collisions, mesh, X);
+    }
     if (m_params.local_quadrature_transfer && mesh.dim() == 3
         && m_params.dbar_factor() > 0) {
         return detail::local_transfer_value(collisions, mesh, X, m_params);
@@ -451,6 +908,9 @@ Eigen::VectorXd ESPPotential::gradient(
     assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
     collisions.check_quadrature(m_params);
 
+    if (uses_lagged_weights(mesh)) {
+        return lagged_gradient(collisions, mesh, X);
+    }
     if (m_params.local_quadrature_transfer && mesh.dim() == 3
         && m_params.dbar_factor() > 0) {
         return detail::local_transfer_gradient(collisions, mesh, X, m_params);
@@ -851,6 +1311,9 @@ Eigen::SparseMatrix<double> ESPPotential::hessian(
     assert(static_cast<size_t>(X.rows()) == mesh.num_vertices());
     collisions.check_quadrature(m_params);
 
+    if (uses_lagged_weights(mesh)) {
+        return lagged_hessian(collisions, mesh, X, project_hessian_to_psd);
+    }
     if (m_params.local_quadrature_transfer && mesh.dim() == 3
         && m_params.dbar_factor() > 0) {
         return detail::local_transfer_hessian(

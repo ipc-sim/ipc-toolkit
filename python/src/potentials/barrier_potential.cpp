@@ -374,6 +374,17 @@ void define_esp_potential(py::module& m)
             )ipc_Qu8mg5v7",
             py::arg("param"), py::arg("use_near_far") = true)
         .def(
+            "element_near_weights", &ESPPotential::element_near_weights,
+            "Each integration element's near-weight total at the given "
+            "vertices (see set_lagged_weights).",
+            py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
+        .def(
+            "set_lagged_weights", &ESPPotential::set_lagged_weights,
+            "Hold each element's normalization fixed at these weights.",
+            py::arg("weights"))
+        .def("clear_lagged_weights", &ESPPotential::clear_lagged_weights)
+        .def_property_readonly("lagged_weights", &ESPPotential::lagged_weights)
+        .def(
             "__call__",
             py::overload_cast<
                 const ESPCollisions&, const CollisionMesh&,

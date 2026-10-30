@@ -114,11 +114,62 @@ public:
     ///        normalized.
     bool use_near_far() const { return m_use_near_far; }
 
+    // -- Lagged normalization (3D, normalized weights) ------------------------
+
+    /// @brief Each element's near-weight total D_e at X: its vertex and face
+    /// sample weights plus its edge-edge samples' mollifier weights. Ordered
+    /// as the integration elements (faces, then edges in no face, then
+    /// vertices in no edge).
+    std::vector<double> element_near_weights(
+        const ESPCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> X) const;
+
+    /// @brief Hold each element's normalization fixed at @p weights (from
+    /// element_near_weights() at a reference state) instead of recomputing
+    /// it at every evaluation.
+    ///
+    /// The energy is then sum_e w_e [N_e(x) / D_e + F_e(x) / W_e]: each
+    /// sample enters with a fixed nonnegative coefficient, so it is evaluated
+    /// once rather than once per element, and its Hessian is projected on
+    /// its own stencil, with no dense per-element block. At the reference
+    /// state the value equals the normalized energy; its derivatives omit the
+    /// derivative of D_e. Applies in 3D with normalized weights and a
+    /// positive dbar_factor; not supported with local_quadrature_transfer.
+    /// @throws std::invalid_argument if a weight is not positive and finite.
+    void set_lagged_weights(std::vector<double> weights);
+
+    /// @brief Return to recomputing the normalization at every evaluation.
+    void clear_lagged_weights() { m_lagged_weights.clear(); }
+
+    /// @brief The lagged element weights (empty if not lagged).
+    const std::vector<double>& lagged_weights() const
+    {
+        return m_lagged_weights;
+    }
+
 protected:
     /// @brief ESP parameters for collision potential
     ESPParameters m_params;
     /// @brief See use_near_far().
     const bool m_use_near_far;
+    /// @brief See set_lagged_weights().
+    std::vector<double> m_lagged_weights;
+
+    bool uses_lagged_weights(const CollisionMesh& mesh) const;
+    double lagged_value(
+        const ESPCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> X) const;
+    Eigen::VectorXd lagged_gradient(
+        const ESPCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> X) const;
+    Eigen::SparseMatrix<double> lagged_hessian(
+        const ESPCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> X,
+        PSDProjectionMethod psd) const;
 };
 
 } // namespace ipc
