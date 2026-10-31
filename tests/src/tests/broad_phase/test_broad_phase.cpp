@@ -56,27 +56,27 @@ protected:
 using CandidateIDs = std::array<index_t, 2>;
 CandidateIDs candidate_ids(const VertexVertexCandidate& c)
 {
-    return { c.vertex0_id, c.vertex1_id };
+    return { { c.vertex0_id, c.vertex1_id } };
 }
 CandidateIDs candidate_ids(const EdgeVertexCandidate& c)
 {
-    return { c.edge_id, c.vertex_id };
+    return { { c.edge_id, c.vertex_id } };
 }
 CandidateIDs candidate_ids(const EdgeEdgeCandidate& c)
 {
-    return { c.edge0_id, c.edge1_id };
+    return { { c.edge0_id, c.edge1_id } };
 }
 CandidateIDs candidate_ids(const FaceVertexCandidate& c)
 {
-    return { c.face_id, c.vertex_id };
+    return { { c.face_id, c.vertex_id } };
 }
 CandidateIDs candidate_ids(const EdgeFaceCandidate& c)
 {
-    return { c.edge_id, c.face_id };
+    return { { c.edge_id, c.face_id } };
 }
 CandidateIDs candidate_ids(const FaceFaceCandidate& c)
 {
-    return { c.face0_id, c.face1_id };
+    return { { c.face0_id, c.face1_id } };
 }
 
 template <typename Candidate>
@@ -214,10 +214,10 @@ TEST_CASE(
         V.row(4 * c + 2) << c + .75, .25, .25;
         V.row(4 * c + 3) = V.row(4 * c + 2);
         E.row(c) << 4 * c, 4 * c + 2;
-        expected_vv.push_back({ 4 * c, 4 * c + 1 });
-        expected_vv.push_back({ 4 * c + 2, 4 * c + 3 });
-        expected_ev.push_back({ c, 4 * c + 1 });
-        expected_ev.push_back({ c, 4 * c + 3 });
+        expected_vv.push_back({ { 4 * c, 4 * c + 1 } });
+        expected_vv.push_back({ { 4 * c + 2, 4 * c + 3 } });
+        expected_ev.push_back({ { c, 4 * c + 1 } });
+        expected_ev.push_back({ { c, 4 * c + 3 } });
     }
     UnitCellHashGrid grid;
     grid.build(V, E, F);

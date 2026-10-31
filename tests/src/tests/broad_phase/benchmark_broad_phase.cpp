@@ -31,7 +31,7 @@ public:
             auto& box = vertex_boxes[i];
             box.min = Eigen::Array3d(x, 0., 0.);
             box.max = box.min;
-            box.vertex_ids = { static_cast<index_t>(i), -1, -1 };
+            box.vertex_ids = { { static_cast<index_t>(i), -1, -1 } };
             vertex_items.emplace_back(cell, static_cast<long>(i));
         }
         if (!sparse) {
