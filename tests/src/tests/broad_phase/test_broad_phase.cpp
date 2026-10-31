@@ -12,6 +12,8 @@
 #include <igl/readCSV.h>
 #include <igl/readDMAT.h>
 
+#include <array>
+#include <atomic>
 #include <optional>
 
 using namespace ipc;
@@ -34,6 +36,61 @@ protected:
     }
 };
 
+class UnitCellHashGrid : public HashGrid {
+public:
+    using HashGrid::build;
+
+protected:
+    void build(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) override
+    {
+        BroadPhase::build(edges, faces);
+        Eigen::Array3d lo, hi;
+        compute_mesh_aabb(lo, hi);
+        resize(lo.floor(), hi.ceil(), 1.);
+        insert_boxes();
+    }
+};
+
+using CandidateIDs = std::array<index_t, 2>;
+CandidateIDs candidate_ids(const VertexVertexCandidate& c)
+{
+    return { c.vertex0_id, c.vertex1_id };
+}
+CandidateIDs candidate_ids(const EdgeVertexCandidate& c)
+{
+    return { c.edge_id, c.vertex_id };
+}
+CandidateIDs candidate_ids(const EdgeEdgeCandidate& c)
+{
+    return { c.edge0_id, c.edge1_id };
+}
+CandidateIDs candidate_ids(const FaceVertexCandidate& c)
+{
+    return { c.face_id, c.vertex_id };
+}
+CandidateIDs candidate_ids(const EdgeFaceCandidate& c)
+{
+    return { c.edge_id, c.face_id };
+}
+CandidateIDs candidate_ids(const FaceFaceCandidate& c)
+{
+    return { c.face0_id, c.face1_id };
+}
+
+template <typename Candidate>
+std::vector<CandidateIDs>
+candidate_ids(const std::vector<Candidate>& candidates)
+{
+    std::vector<CandidateIDs> result;
+    result.reserve(candidates.size());
+    for (const auto& candidate : candidates) {
+        result.push_back(candidate_ids(candidate));
+    }
+    return result;
+}
+
 void check_all_hash_grid_relations(HashGrid& grid, BruteForce& reference)
 {
 #define COMPARE_RELATION(TYPE, METHOD)                                         \
@@ -41,11 +98,11 @@ void check_all_hash_grid_relations(HashGrid& grid, BruteForce& reference)
         std::vector<TYPE> actual, expected;                                    \
         grid.METHOD(actual);                                                   \
         reference.METHOD(expected);                                            \
-        std::sort(actual.begin(), actual.end());                               \
+        CHECK(std::is_sorted(actual.begin(), actual.end()));                   \
         std::sort(expected.begin(), expected.end());                           \
         CHECK(                                                                 \
             std::adjacent_find(actual.begin(), actual.end()) == actual.end()); \
-        CHECK(actual == expected);                                             \
+        CHECK(candidate_ids(actual) == candidate_ids(expected));               \
     }
     COMPARE_RELATION(VertexVertexCandidate, detect_vertex_vertex_candidates)
     COMPARE_RELATION(EdgeVertexCandidate, detect_edge_vertex_candidates)
@@ -70,18 +127,22 @@ TEST_CASE(
     for (int i = 0; i < V.rows(); ++i) {
         V(i, 0) = (i % 11) * .02 - .1;
         V(i, 1) = ((i / 11) % 7) * .03 - .08;
-        if (dim == 3)
+        if (dim == 3) {
             V(i, 2) = (i % 5) * .01;
+        }
     }
     Eigen::MatrixXd V1 = V;
-    for (int i = 0; i < V.rows(); ++i)
+    for (int i = 0; i < V.rows(); ++i) {
         V1(i, 0) += (i % 3 - 1) * .04;
+    }
     Eigen::MatrixXi E(100, 2), F(80, 3);
-    for (int i = 0; i < E.rows(); ++i)
+    for (int i = 0; i < E.rows(); ++i) {
         E.row(i) << i % V.rows(), (i + 3) % V.rows();
-    for (int i = 0; i < F.rows(); ++i)
+    }
+    for (int i = 0; i < F.rows(); ++i) {
         F.row(i) << (i * 3) % V.rows(), (i * 3 + 1) % V.rows(),
             (i * 3 + 2) % V.rows();
+    }
     HashGrid ordinary;
     SingleCellHashGrid dense;
     HashGrid& grid = single_cell ? static_cast<HashGrid&>(dense) : ordinary;
@@ -108,6 +169,9 @@ TEST_CASE(
     grid.clear();
     reference.clear();
     check_all_hash_grid_relations(grid, reference);
+    grid.build(V, E, F, .02);
+    reference.build(V, E, F, .02);
+    check_all_hash_grid_relations(grid, reference);
 }
 
 TEST_CASE(
@@ -131,6 +195,58 @@ TEST_CASE(
     grid.build(V, E, F, .02);
     reference.build(V, E, F, .02);
     check_all_hash_grid_relations(grid, reference);
+}
+
+TEST_CASE(
+    "HashGrid cell batches preserve exact candidate IDs and order",
+    "[broad_phase][hash_grid][regression]")
+{
+    // Exercise full and partial batches for same-type and cross-type queries.
+    const int num_cells = GENERATE(65535, 65536, 65537);
+    Eigen::MatrixXd V(4 * num_cells, 3);
+    Eigen::MatrixXi E(num_cells, 2), F(0, 3);
+    std::vector<CandidateIDs> expected_vv, expected_ev;
+    expected_vv.reserve(2 * num_cells);
+    expected_ev.reserve(2 * num_cells);
+    for (int c = 0; c < num_cells; ++c) {
+        V.row(4 * c) << c + .25, .25, .25;
+        V.row(4 * c + 1) = V.row(4 * c);
+        V.row(4 * c + 2) << c + .75, .25, .25;
+        V.row(4 * c + 3) = V.row(4 * c + 2);
+        E.row(c) << 4 * c, 4 * c + 2;
+        expected_vv.push_back({ 4 * c, 4 * c + 1 });
+        expected_vv.push_back({ 4 * c + 2, 4 * c + 3 });
+        expected_ev.push_back({ c, 4 * c + 1 });
+        expected_ev.push_back({ c, 4 * c + 3 });
+    }
+    UnitCellHashGrid grid;
+    grid.build(V, E, F);
+    std::vector<VertexVertexCandidate> vv;
+    std::vector<EdgeVertexCandidate> ev;
+    grid.detect_vertex_vertex_candidates(vv);
+    grid.detect_edge_vertex_candidates(ev);
+    CHECK(candidate_ids(vv) == expected_vv);
+    CHECK(candidate_ids(ev) == expected_ev);
+}
+
+TEST_CASE(
+    "HashGrid filters cell pairs before testing AABB overlap",
+    "[broad_phase][hash_grid][regression]")
+{
+    Eigen::MatrixXd V(2, 3);
+    V << 0, 0, 0, 1, 0, 0;
+    Eigen::MatrixXi E(0, 2), F(0, 3);
+    std::atomic<int> calls { 0 };
+    SingleCellHashGrid grid;
+    grid.can_vertices_collide = [&](size_t, size_t) {
+        ++calls;
+        return false;
+    };
+    grid.build(V, E, F);
+    std::vector<VertexVertexCandidate> candidates;
+    grid.detect_vertex_vertex_candidates(candidates);
+    CHECK(candidates.empty());
+    CHECK(calls.load() == 1);
 }
 
 void test_face_face_broad_phase(

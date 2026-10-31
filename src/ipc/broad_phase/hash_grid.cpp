@@ -10,6 +10,7 @@
 #include <tbb/parallel_sort.h>
 
 #include <algorithm> // std::min/max
+#include <type_traits>
 
 #define IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE // else use unordered_set
 
@@ -104,8 +105,8 @@ void HashGrid::insert_box(
 }
 
 namespace {
-    // Join sorted cell runs, then enumerate only pairs inside a common cell.
-    // Large cells retain a 2D parallel split; small cells share an outer task.
+    // Join sorted cell runs in bounded batches, then enumerate pairs inside
+    // each common cell. Large cells retain a 2D parallel split.
     template <typename Candidate, bool SameItems>
     void detect_cell_pairs(
         const std::vector<HashItem>& items0,
@@ -115,22 +116,98 @@ namespace {
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates)
     {
-        struct Cell {
-            long begin0, end0, begin1, end1;
+        struct CellRange {
+            long begin, end;
         };
+        struct CellPair {
+            CellRange first, second;
+        };
+        using Cell = std::conditional_t<SameItems, CellRange, CellPair>;
+
+        // Bound temporary storage independently of the number of occupied
+        // cells. Same-type relations need only one range per cell.
+        constexpr size_t max_cells_per_batch = 65536;
+        const size_t max_cells = SameItems
+            ? items0.size() / 2
+            : std::min(items0.size(), items1.size());
         std::vector<Cell> cells;
+        cells.reserve(std::min(max_cells_per_batch, max_cells));
+
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
+        tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
+#else
+        tbb::enumerable_thread_specific<unordered_set<Candidate>> storage;
+#endif
+        const auto emit = [&](long begin0, long end0, long begin1, long end1) {
+            auto& local_candidates = storage.local();
+            if constexpr (SameItems) {
+                end0 = std::min(end0, end1);
+            }
+            for (long a = begin0; a < end0; ++a) {
+                const auto id0 = items0[a].id;
+                const AABB& box0 = boxes0[id0];
+                const long first = SameItems ? std::max(a + 1, begin1) : begin1;
+                for (long b = first; b < end1; ++b) {
+                    const auto id1 = items1[b].id;
+                    if (!can_collide(id0, id1)
+                        || !box0.intersects(boxes1[id1])) {
+                        continue;
+                    }
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
+                    local_candidates.emplace_back(id0, id1);
+#else
+                    local_candidates.emplace(id0, id1);
+#endif
+                }
+            }
+        };
+        const auto process_cell = [&](long begin0, long end0, long begin1,
+                                      long end1) {
+            if (end0 - begin0 <= 64 && end1 - begin1 <= 64) {
+                emit(begin0, end0, begin1, end1);
+            } else {
+                tbb::parallel_for(
+                    tbb::blocked_range2d<long>(
+                        begin0, end0, 64, begin1, end1, 64),
+                    [&](const auto& r) {
+                        emit(
+                            r.rows().begin(), r.rows().end(), r.cols().begin(),
+                            r.cols().end());
+                    });
+            }
+        };
+        const auto process_batch = [&]() {
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(0, cells.size()),
+                [&](const auto& range) {
+                    for (size_t k = range.begin(); k < range.end(); ++k) {
+                        const auto& c = cells[k];
+                        if constexpr (SameItems) {
+                            process_cell(c.begin, c.end, c.begin, c.end);
+                        } else {
+                            process_cell(
+                                c.first.begin, c.first.end, c.second.begin,
+                                c.second.end);
+                        }
+                    }
+                });
+            cells.clear();
+        };
+
         const auto run_end = [](const auto& items, long begin) {
             long end = begin + 1;
-            while (end < items.size() && items[end].key == items[begin].key)
+            while (end < items.size() && items[end].key == items[begin].key) {
                 ++end;
+            }
             return end;
         };
         long i = 0, j = 0;
         while (i < items0.size() && j < items1.size()) {
             if constexpr (SameItems) {
                 const long ie = run_end(items0, i);
-                if (ie - i > 1)
-                    cells.push_back({ i, ie, i, ie });
+                if (ie - i > 1) {
+                    cells.push_back({ i, ie });
+                }
                 i = j = ie;
             } else {
                 if (items0[i].key < items1[j].key) {
@@ -143,56 +220,17 @@ namespace {
                 }
                 const long ie = run_end(items0, i);
                 const long je = run_end(items1, j);
-                cells.push_back({ i, ie, j, je });
+                cells.push_back({ { i, ie }, { j, je } });
                 i = ie;
                 j = je;
             }
-        }
-
-#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
-        tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
-#else
-        tbb::enumerable_thread_specific<unordered_set<Candidate>> storage;
-#endif
-        const auto emit = [&](long begin0, long end0, long begin1, long end1) {
-            auto& local_candidates = storage.local();
-            if constexpr (SameItems)
-                end0 = std::min(end0, end1);
-            for (long a = begin0; a < end0; ++a) {
-                const auto id0 = items0[a].id;
-                const AABB& box0 = boxes0[id0];
-                const long first = SameItems ? std::max(a + 1, begin1) : begin1;
-                for (long b = first; b < end1; ++b) {
-                    const auto id1 = items1[b].id;
-                    if (!box0.intersects(boxes1[id1]) || !can_collide(id0, id1))
-                        continue;
-#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
-                    local_candidates.emplace_back(id0, id1);
-#else
-                    local_candidates.emplace(id0, id1);
-#endif
-                }
+            if (cells.size() == max_cells_per_batch) {
+                process_batch();
             }
-        };
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, cells.size()),
-            [&](const auto& range) {
-                for (size_t k = range.begin(); k < range.end(); ++k) {
-                    const auto& c = cells[k];
-                    if (c.end0 - c.begin0 <= 64 && c.end1 - c.begin1 <= 64) {
-                        emit(c.begin0, c.end0, c.begin1, c.end1);
-                    } else {
-                        tbb::parallel_for(
-                            tbb::blocked_range2d<long>(
-                                c.begin0, c.end0, 64, c.begin1, c.end1, 64),
-                            [&](const auto& r) {
-                                emit(
-                                    r.rows().begin(), r.rows().end(),
-                                    r.cols().begin(), r.cols().end());
-                            });
-                    }
-                }
-            });
+        }
+        if (!cells.empty()) {
+            process_batch();
+        }
 #ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
         merge_thread_local_vectors(storage, candidates);
         tbb::parallel_sort(candidates.begin(), candidates.end());
