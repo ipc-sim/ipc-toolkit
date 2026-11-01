@@ -2918,14 +2918,16 @@
 <span class="k">template&nbsp;</span><span class="p">&lt;</span><span><span class="k">typename</span><span class="w">&nbsp;</span><span class="sig-name descname sig-name-nonprimary"><a class="desctype n reference internal" href="#_CPPv4I0EN3ipc17NormalizedBarrierE" title="ipc::NormalizedBarrier::BarrierT (C++ type template parameter)"><span class="n">BarrierT</span></a></span></span><span class="p">&gt;<br></span><span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">NormalizedBarrier</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4I0EN3ipc17NormalizedBarrierE" title="ipc::NormalizedBarrier::BarrierT (C++ type template parameter)"><span class="n">BarrierT;</span></a><a class="headerlink" href="#_CPPv4I0EN3ipc17NormalizedBarrierE" title="Link to this definition">¶</a></dt>
 <dd><p>Inheritance diagram for ipc::NormalizedBarrier:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../../_images/graphviz-4e0a63ca48287d2fd0a03fbc3d55e9f39fa00eee.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../../_images/graphviz-a96bb1469e2293ef7317e267d36c81e0ba1b62ce.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;BarrierT&quot; tooltip=&quot;BarrierT&quot;]
     &quot;1&quot; [label=&quot;ipc::NormalizedBarrier&lt; BarrierT &gt;&quot; tooltip=&quot;ipc::NormalizedBarrier&lt; BarrierT &gt;&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;3&quot; [label=&quot;ipc::NormalizedBarrier&lt; ClampedLogBarrier&lt; T &gt; &gt;&quot; tooltip=&quot;ipc::NormalizedBarrier&lt; ClampedLogBarrier&lt; T &gt; &gt;&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;3&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;template-instance&quot;]
 }</p></object></div>
 </div>
 </figure>
@@ -2942,8 +2944,7 @@
 <span class="k">inline</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc17NormalizedBarrier6ScalarE" title="ipc::NormalizedBarrier::Scalar (C++ type)"><span class="n">Scalar</span></a><span class="w">&nbsp;</span><span class="sig-name descname"><span class="k">operator</span><span class="o">()</span></span><span class="p">(<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc17NormalizedBarrier6ScalarE" title="ipc::NormalizedBarrier::Scalar (C++ type)"><span class="n">Scalar</span></a><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17NormalizedBarrierclEK6ScalarK6Scalar-p-d" title="ipc::NormalizedBarrier::operator()::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc17NormalizedBarrier6ScalarE" title="ipc::NormalizedBarrier::Scalar (C++ type)"><span class="n">Scalar</span></a><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17NormalizedBarrierclEK6ScalarK6Scalar-p-dhat" title="ipc::NormalizedBarrier::operator()::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="k">override;</span><a class="headerlink" href="#_CPPv4NK3ipc17NormalizedBarrierclEK6ScalarK6Scalar" title="Link to this definition">¶</a></dt>
 <dd><p>Function that grows to infinity as d approaches 0 from the right. </p>
 <p><div class="math notranslate nohighlight">
-\[
-    b(d) =
+\[    b(d) =
     -\left(\frac{d}{\hat{d}}-1\right)^2\ln\left(\frac{d}{\hat{d}}\right)
 \]</div>
 </p>
@@ -2967,8 +2968,7 @@
 <span class="k">inline</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc17NormalizedBarrier6ScalarE" title="ipc::NormalizedBarrier::Scalar (C++ type)"><span class="n">Scalar</span></a><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">first_derivative</span></span><span class="p">(<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc17NormalizedBarrier6ScalarE" title="ipc::NormalizedBarrier::Scalar (C++ type)"><span class="n">Scalar</span></a><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17NormalizedBarrier16first_derivativeEK6ScalarK6Scalar-p-d" title="ipc::NormalizedBarrier::first_derivative::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc17NormalizedBarrier6ScalarE" title="ipc::NormalizedBarrier::Scalar (C++ type)"><span class="n">Scalar</span></a><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17NormalizedBarrier16first_derivativeEK6ScalarK6Scalar-p-dhat" title="ipc::NormalizedBarrier::first_derivative::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="k">override;</span><a class="headerlink" href="#_CPPv4NK3ipc17NormalizedBarrier16first_derivativeEK6ScalarK6Scalar" title="Link to this definition">¶</a></dt>
 <dd><p>Derivative of the barrier function. </p>
 <p><div class="math notranslate nohighlight">
-\[
-    b'(d) =
+\[    b'(d) =
     2\frac{1}{\hat{d}}\left(1-\frac{d}{\hat{d}}\right)\ln\left(\frac{d}{\hat{d}}\right)
             + \left(1-\frac{d}{\hat{d}}\right)^2 \frac{1}{d}
 \]</div>
@@ -2993,10 +2993,9 @@
 <span class="k">inline</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc17NormalizedBarrier6ScalarE" title="ipc::NormalizedBarrier::Scalar (C++ type)"><span class="n">Scalar</span></a><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">second_derivative</span></span><span class="p">(<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc17NormalizedBarrier6ScalarE" title="ipc::NormalizedBarrier::Scalar (C++ type)"><span class="n">Scalar</span></a><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17NormalizedBarrier17second_derivativeEK6ScalarK6Scalar-p-d" title="ipc::NormalizedBarrier::second_derivative::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc17NormalizedBarrier6ScalarE" title="ipc::NormalizedBarrier::Scalar (C++ type)"><span class="n">Scalar</span></a><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17NormalizedBarrier17second_derivativeEK6ScalarK6Scalar-p-dhat" title="ipc::NormalizedBarrier::second_derivative::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="k">override;</span><a class="headerlink" href="#_CPPv4NK3ipc17NormalizedBarrier17second_derivativeEK6ScalarK6Scalar" title="Link to this definition">¶</a></dt>
 <dd><p>Second derivative of the barrier function. </p>
 <p><div class="math notranslate nohighlight">
-\[
-       b''(d) = \frac{\hat{d}^2-2 d^2 \ln \left(\frac{d}{\hat{d}}\right)+2
+\[       b''(d) = \frac{\hat{d}^2-2 d^2 \ln \left(\frac{d}{\hat{d}}\right)+2
 \hat{d} d-3 d^2}{\hat{d}^2 d^2}
-   \]</div>
+\]</div>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4NK3ipc17NormalizedBarrier17second_derivativeEK6ScalarK6Scalar-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4NK3ipc17NormalizedBarrier17second_derivativeEK6ScalarK6Scalar-parameters" title="Permalink to this headline">¶</a></dt>
@@ -3060,7 +3059,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Oct 27, 2026
+    Nov 01, 2026
   </span>
 
     
