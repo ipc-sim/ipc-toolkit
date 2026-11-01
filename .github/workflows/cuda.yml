@@ -40,7 +40,7 @@ jobs:
           - os: windows-latest
             config: Release
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             name: Linux
           - os: windows-latest
             name: Windows
