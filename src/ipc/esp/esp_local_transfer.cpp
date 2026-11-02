@@ -103,7 +103,7 @@ namespace {
             const auto& cw = rule.corner_weights;
             out.non_corner = rule.non_corner;
             out.face = static_cast<index_t>(k);
-            out.vertex_weights = { cw[0], cw[1], cw[2] };
+            out.vertex_weights = { { cw[0], cw[1], cw[2] } };
             out.num_vertices = out.num_edges = 3;
             for (int i = 0; i < 3; ++i) {
                 out.vertices[i] = mesh.faces()(k, i);
@@ -117,11 +117,11 @@ namespace {
                 c * mesh.face_areas()(k), area_ref(p), /*face=*/true);
         } else if ((k -= mesh.num_faces()) < mesh.num_codim_edges()) {
             const auto e = mesh.codim_edges()[k];
-            out.vertex_weights = { 0.5, 0.5, 0.0 };
+            out.vertex_weights = { { 0.5, 0.5, 0.0 } };
             out.num_vertices = 2;
             out.num_edges = 1;
-            out.vertices = { mesh.edges()(e, 0), mesh.edges()(e, 1) };
-            out.edges = { e };
+            out.vertices = { { mesh.edges()(e, 0), mesh.edges()(e, 1) } };
+            out.edges = { { e } };
             out.weight = p.area_weights
                 ? mesh.edge_area(e) * p.element_weight_scale(2)
                 : 1.0;
@@ -129,9 +129,9 @@ namespace {
                 0.5 * mesh.edge_area(e), area_ref(p), /*face=*/false);
         } else {
             const auto v = mesh.codim_vertices()[k - mesh.num_codim_edges()];
-            out.vertex_weights = { 1.0, 0.0, 0.0 };
+            out.vertex_weights = { { 1.0, 0.0, 0.0 } };
             out.num_vertices = 1;
-            out.vertices = { v };
+            out.vertices = { { v } };
             out.weight = p.area_weights ? mesh.vertex_area(v) : 1.0;
         }
         return out;
@@ -269,10 +269,12 @@ namespace {
             [&](const auto& range) {
                 for (size_t i = range.begin(); i < range.end(); ++i) {
                     auto& sample = cache.edges[i];
-                    const std::array<index_t, 4> prim = {
-                        mesh.edges()(sample.ea, 0), mesh.edges()(sample.ea, 1),
-                        mesh.edges()(sample.eb, 0), mesh.edges()(sample.eb, 1)
-                    };
+                    const std::array<index_t, 4> prim = { {
+                        mesh.edges()(sample.ea, 0),
+                        mesh.edges()(sample.ea, 1),
+                        mesh.edges()(sample.eb, 0),
+                        mesh.edges()(sample.eb, 1),
+                    } };
                     Eigen::Matrix<T, 4, 3> positions;
                     if constexpr (Order == 0) {
                         for (int j = 0; j < 4; ++j)
@@ -513,10 +515,12 @@ namespace {
             return scratch.near_vertices[it - elem.vertices.begin()];
         };
         for (const auto* pair : pairs) {
-            const std::array<index_t, 4> prim = { mesh.edges()(pair->ea, 0),
-                                                  mesh.edges()(pair->ea, 1),
-                                                  mesh.edges()(pair->eb, 0),
-                                                  mesh.edges()(pair->eb, 1) };
+            const std::array<index_t, 4> prim = { {
+                mesh.edges()(pair->ea, 0),
+                mesh.edges()(pair->ea, 1),
+                mesh.edges()(pair->eb, 0),
+                mesh.edges()(pair->eb, 1),
+            } };
             auto& potential = scratch.potential;
             potential.set_zero(ndof, pair->potential.value);
             scatter(
