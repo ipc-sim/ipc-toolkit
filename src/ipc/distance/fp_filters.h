@@ -1,4 +1,7 @@
 #pragma once
+
+#include <algorithm>
+
 /* Automatically generated code, do not edit the functions! */
 
 /*
@@ -65,26 +68,14 @@ inline int cross_dot_cross_1_3d_filter(
     int int_tmp_result;
     double eps;
     double max1 = fabs(d1_0);
-    if ((max1 < fabs(d1_1))) {
-        max1 = fabs(d1_1);
-    }
-    if ((max1 < fabs(d1_2))) {
-        max1 = fabs(d1_2);
-    }
+    max1 = std::max(max1, fabs(d1_1));
+    max1 = std::max(max1, fabs(d1_2));
     double max2 = fabs(d2_0);
-    if ((max2 < fabs(d2_1))) {
-        max2 = fabs(d2_1);
-    }
-    if ((max2 < fabs(d2_2))) {
-        max2 = fabs(d2_2);
-    }
+    max2 = std::max(max2, fabs(d2_1));
+    max2 = std::max(max2, fabs(d2_2));
     double max3 = fabs(d3_0);
-    if ((max3 < fabs(d3_1))) {
-        max3 = fabs(d3_1);
-    }
-    if ((max3 < fabs(d3_2))) {
-        max3 = fabs(d3_2);
-    }
+    max3 = std::max(max3, fabs(d3_1));
+    max3 = std::max(max3, fabs(d3_2));
     double lower_bound_1;
     double upper_bound_1;
     lower_bound_1 = max1;
@@ -92,16 +83,12 @@ inline int cross_dot_cross_1_3d_filter(
     if ((max2 < lower_bound_1)) {
         lower_bound_1 = max2;
     } else {
-        if ((max2 > upper_bound_1)) {
-            upper_bound_1 = max2;
-        }
+        upper_bound_1 = std::max(upper_bound_1, max2);
     }
     if ((max3 < lower_bound_1)) {
         lower_bound_1 = max3;
     } else {
-        if ((max3 > upper_bound_1)) {
-            upper_bound_1 = max3;
-        }
+        upper_bound_1 = std::max(upper_bound_1, max3);
     }
     if ((lower_bound_1 < 3.14773426688569445494e-74)) {
         return FPG_UNCERTAIN_VALUE;
@@ -187,33 +174,17 @@ inline int cross_dot_cross_2_3d_filter(
     int int_tmp_result;
     double eps;
     double max1 = fabs(d1_0);
-    if ((max1 < fabs(d1_1))) {
-        max1 = fabs(d1_1);
-    }
-    if ((max1 < fabs(d1_2))) {
-        max1 = fabs(d1_2);
-    }
+    max1 = std::max(max1, fabs(d1_1));
+    max1 = std::max(max1, fabs(d1_2));
     double max2 = fabs(d2_0);
-    if ((max2 < fabs(d2_1))) {
-        max2 = fabs(d2_1);
-    }
-    if ((max2 < fabs(d2_2))) {
-        max2 = fabs(d2_2);
-    }
+    max2 = std::max(max2, fabs(d2_1));
+    max2 = std::max(max2, fabs(d2_2));
     double max3 = fabs(d3_0);
-    if ((max3 < fabs(d3_1))) {
-        max3 = fabs(d3_1);
-    }
-    if ((max3 < fabs(d3_2))) {
-        max3 = fabs(d3_2);
-    }
+    max3 = std::max(max3, fabs(d3_1));
+    max3 = std::max(max3, fabs(d3_2));
     double max4 = fabs(dX_0);
-    if ((max4 < fabs(dX_1))) {
-        max4 = fabs(dX_1);
-    }
-    if ((max4 < fabs(dX_2))) {
-        max4 = fabs(dX_2);
-    }
+    max4 = std::max(max4, fabs(dX_1));
+    max4 = std::max(max4, fabs(dX_2));
     double lower_bound_1;
     double upper_bound_1;
     lower_bound_1 = max1;
@@ -221,23 +192,17 @@ inline int cross_dot_cross_2_3d_filter(
     if ((max2 < lower_bound_1)) {
         lower_bound_1 = max2;
     } else {
-        if ((max2 > upper_bound_1)) {
-            upper_bound_1 = max2;
-        }
+        upper_bound_1 = std::max(upper_bound_1, max2);
     }
     if ((max3 < lower_bound_1)) {
         lower_bound_1 = max3;
     } else {
-        if ((max3 > upper_bound_1)) {
-            upper_bound_1 = max3;
-        }
+        upper_bound_1 = std::max(upper_bound_1, max3);
     }
     if ((max4 < lower_bound_1)) {
         lower_bound_1 = max4;
     } else {
-        if ((max4 > upper_bound_1)) {
-            upper_bound_1 = max4;
-        }
+        upper_bound_1 = std::max(upper_bound_1, max4);
     }
     if ((lower_bound_1 < 3.14773426688569445494e-74)) {
         return FPG_UNCERTAIN_VALUE;
@@ -274,13 +239,9 @@ inline int dot3_2d_filter(const double* p0, const double* p1, const double* p2)
     int int_tmp_result;
     double eps;
     double max1 = fabs(a11);
-    if ((max1 < fabs(a12))) {
-        max1 = fabs(a12);
-    }
+    max1 = std::max(max1, fabs(a12));
     double max2 = fabs(a21);
-    if ((max2 < fabs(a22))) {
-        max2 = fabs(a22);
-    }
+    max2 = std::max(max2, fabs(a22));
     double lower_bound_1;
     double upper_bound_1;
     lower_bound_1 = max1;
@@ -288,9 +249,7 @@ inline int dot3_2d_filter(const double* p0, const double* p1, const double* p2)
     if ((max2 < lower_bound_1)) {
         lower_bound_1 = max2;
     } else {
-        if ((max2 > upper_bound_1)) {
-            upper_bound_1 = max2;
-        }
+        upper_bound_1 = std::max(upper_bound_1, max2);
     }
     if ((lower_bound_1 < 5.00368081960964802120e-147)) {
         return FPG_UNCERTAIN_VALUE;
@@ -331,19 +290,11 @@ inline int dot3_3d_filter(const double* p0, const double* p1, const double* p2)
     int int_tmp_result;
     double eps;
     double max1 = fabs(a11);
-    if ((max1 < fabs(a12))) {
-        max1 = fabs(a12);
-    }
-    if ((max1 < fabs(a13))) {
-        max1 = fabs(a13);
-    }
+    max1 = std::max(max1, fabs(a12));
+    max1 = std::max(max1, fabs(a13));
     double max2 = fabs(a21);
-    if ((max2 < fabs(a22))) {
-        max2 = fabs(a22);
-    }
-    if ((max2 < fabs(a23))) {
-        max2 = fabs(a23);
-    }
+    max2 = std::max(max2, fabs(a22));
+    max2 = std::max(max2, fabs(a23));
     double lower_bound_1;
     double upper_bound_1;
     lower_bound_1 = max1;
@@ -351,9 +302,7 @@ inline int dot3_3d_filter(const double* p0, const double* p1, const double* p2)
     if ((max2 < lower_bound_1)) {
         lower_bound_1 = max2;
     } else {
-        if ((max2 > upper_bound_1)) {
-            upper_bound_1 = max2;
-        }
+        upper_bound_1 = std::max(upper_bound_1, max2);
     }
     if ((lower_bound_1 < 3.78232824369468580207e-147)) {
         return FPG_UNCERTAIN_VALUE;
@@ -401,19 +350,11 @@ inline int cross_null_3d_filter(
     int int_tmp_result;
     double eps;
     double max1 = fabs(v_0);
-    if ((max1 < fabs(v_1))) {
-        max1 = fabs(v_1);
-    }
-    if ((max1 < fabs(v_2))) {
-        max1 = fabs(v_2);
-    }
+    max1 = std::max(max1, fabs(v_1));
+    max1 = std::max(max1, fabs(v_2));
     double max2 = fabs(w_0);
-    if ((max2 < fabs(w_1))) {
-        max2 = fabs(w_1);
-    }
-    if ((max2 < fabs(w_2))) {
-        max2 = fabs(w_2);
-    }
+    max2 = std::max(max2, fabs(w_1));
+    max2 = std::max(max2, fabs(w_2));
     double lower_bound_1;
     double upper_bound_1;
     lower_bound_1 = max1;
@@ -421,9 +362,7 @@ inline int cross_null_3d_filter(
     if ((max2 < lower_bound_1)) {
         lower_bound_1 = max2;
     } else {
-        if ((max2 > upper_bound_1)) {
-            upper_bound_1 = max2;
-        }
+        upper_bound_1 = std::max(upper_bound_1, max2);
     }
     if ((lower_bound_1 < 3.53675409555095779245e-74)) {
         return FPG_UNCERTAIN_VALUE;

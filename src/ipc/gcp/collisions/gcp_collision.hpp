@@ -171,7 +171,10 @@ public:
     CollisionType type() const override;
 
     Eigen::Vector<int, N_CORE_DOFS> get_core_indices() const;
-    std::array<index_t, N_CORE_DOFS> core_vertex_ids() const;
+    /// @brief Get the mesh vertex ids of the core points.
+    /// @return One vertex id per core point: the core points of primitive A
+    /// followed by those of primitive B.
+    std::array<index_t, N_CORE_POINTS> core_vertex_ids() const;
 
     int num_vertices() const override
     {

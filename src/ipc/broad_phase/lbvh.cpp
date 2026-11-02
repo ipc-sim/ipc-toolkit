@@ -267,7 +267,7 @@ namespace {
                 std::array<float, batch_t::size>
                     buffer {};
 
-#if defined(__clang__)
+#ifdef __clang__
 #pragma unroll
 #elif defined(__GNUC__)
 #pragma GCC unroll 16

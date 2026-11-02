@@ -58,7 +58,7 @@
 // ipc_toolkit_target_shared_device_sources() defines one of the two macros
 // below per pass so the instantiations are split between them rather than
 // duplicated. See ipc_toolkit_shared_device_sources.cmake.
-#if defined(IPC_TOOLKIT_HOST_SCALARS_ONLY)
+#ifdef IPC_TOOLKIT_HOST_SCALARS_ONLY
 #define IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS 0
 #define IPC_TOOLKIT_INSTANTIATE_HOST_SCALARS 1
 #elif defined(IPC_TOOLKIT_DEVICE_SCALARS_ONLY)

@@ -82,7 +82,7 @@ jobs:
           cd build
           ctest --verbose -j ${{ steps.cpu-cores.outputs.count }}
           lcov --directory . --capture --output-file coverage.info --ignore-errors inconsistent,format,gcov,mismatch
-          lcov --remove coverage.info --ignore-errors unused '/usr/*' "$HOME/.cache/*" "*tests/*" --output-file coverage.info
+          lcov --remove coverage.info --ignore-errors unused,inconsistent '/usr/*' "$HOME/.cache/*" "*tests/*" --output-file coverage.info
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v7
