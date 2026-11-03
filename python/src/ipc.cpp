@@ -32,7 +32,9 @@ void define_ipc(py::module_& m)
         )ipc_Qu8mg5v7",
         "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
         "broad_phase"_a = nullptr,
-        "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD);
+        py::arg_v(
+            "narrow_phase_ccd", DEFAULT_NARROW_PHASE_CCD,
+            "TightInclusionCCD()"));
 
     m.def(
         "compute_collision_free_stepsize", &compute_collision_free_stepsize,
@@ -58,7 +60,9 @@ void define_ipc(py::module_& m)
         )ipc_Qu8mg5v7",
         "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
         "broad_phase"_a = nullptr,
-        "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD);
+        py::arg_v(
+            "narrow_phase_ccd", DEFAULT_NARROW_PHASE_CCD,
+            "TightInclusionCCD()"));
 
     m.def(
         "has_intersections", &has_intersections,
