@@ -468,6 +468,7 @@ public:
     /// primitives h / 2.
     ///
     /// @note Collisions and candidates built before this call keep their old distances.
+    /// @note CCD stops each edge-edge and face-vertex pair at its own thickness, while the collision it reduces to (e.g., vertex-vertex at a face's corner) keeps that sub-primitive's thickness. Keep each vertex and edge no thicker than the thickest face or edge containing it, as set_vertex_thickness() and set_face_thickness() do, or a collision-free step can end inside such a collision's minimum distance.
     /// @param vertex_thickness Thickness of each vertex (size num_vertices()). Must be finite and non-negative, as must the others.
     /// @param edge_thickness Thickness of each edge (size num_edges()).
     /// @param face_thickness Thickness of each face (size num_faces()).

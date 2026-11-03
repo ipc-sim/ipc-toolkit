@@ -21,15 +21,12 @@ namespace {
         const EdgeVertexCandidate& candidate,
         const PointEdgeDistanceType dtype)
     {
-        if (!mesh.has_thickness()) {
-            return 0;
-        }
         const auto& [ei, vi] = candidate;
         switch (dtype) {
         case PointEdgeDistanceType::P_E0:
         case PointEdgeDistanceType::P_E1:
-            return mesh.vertex_thickness(vi)
-                + mesh.vertex_thickness(mesh.edges()(ei, int(dtype)));
+            return mesh.pair_thickness(
+                VertexVertexCandidate(vi, mesh.edges()(ei, int(dtype))));
         default:
             return mesh.pair_thickness(candidate);
         }
@@ -40,29 +37,26 @@ namespace {
         const EdgeEdgeCandidate& candidate,
         const EdgeEdgeDistanceType dtype)
     {
-        if (!mesh.has_thickness()) {
-            return 0;
-        }
         const auto& [eai, ebi] = candidate;
         const auto [ea0i, ea1i, eb0i, eb1i] =
             candidate.vertex_ids(mesh.edges(), mesh.faces());
         switch (dtype) {
         case EdgeEdgeDistanceType::EA0_EB0:
-            return mesh.vertex_thickness(ea0i) + mesh.vertex_thickness(eb0i);
+            return mesh.pair_thickness(VertexVertexCandidate(ea0i, eb0i));
         case EdgeEdgeDistanceType::EA0_EB1:
-            return mesh.vertex_thickness(ea0i) + mesh.vertex_thickness(eb1i);
+            return mesh.pair_thickness(VertexVertexCandidate(ea0i, eb1i));
         case EdgeEdgeDistanceType::EA1_EB0:
-            return mesh.vertex_thickness(ea1i) + mesh.vertex_thickness(eb0i);
+            return mesh.pair_thickness(VertexVertexCandidate(ea1i, eb0i));
         case EdgeEdgeDistanceType::EA1_EB1:
-            return mesh.vertex_thickness(ea1i) + mesh.vertex_thickness(eb1i);
+            return mesh.pair_thickness(VertexVertexCandidate(ea1i, eb1i));
         case EdgeEdgeDistanceType::EA_EB0:
-            return mesh.edge_thickness(eai) + mesh.vertex_thickness(eb0i);
+            return mesh.pair_thickness(EdgeVertexCandidate(eai, eb0i));
         case EdgeEdgeDistanceType::EA_EB1:
-            return mesh.edge_thickness(eai) + mesh.vertex_thickness(eb1i);
+            return mesh.pair_thickness(EdgeVertexCandidate(eai, eb1i));
         case EdgeEdgeDistanceType::EA0_EB:
-            return mesh.vertex_thickness(ea0i) + mesh.edge_thickness(ebi);
+            return mesh.pair_thickness(EdgeVertexCandidate(ebi, ea0i));
         case EdgeEdgeDistanceType::EA1_EB:
-            return mesh.vertex_thickness(ea1i) + mesh.edge_thickness(ebi);
+            return mesh.pair_thickness(EdgeVertexCandidate(ebi, ea1i));
         default:
             return mesh.pair_thickness(candidate);
         }
@@ -73,22 +67,18 @@ namespace {
         const FaceVertexCandidate& candidate,
         const PointTriangleDistanceType dtype)
     {
-        if (!mesh.has_thickness()) {
-            return 0;
-        }
         const auto& [fi, vi] = candidate;
         switch (dtype) {
         case PointTriangleDistanceType::P_T0:
         case PointTriangleDistanceType::P_T1:
         case PointTriangleDistanceType::P_T2:
-            return mesh.vertex_thickness(vi)
-                + mesh.vertex_thickness(mesh.faces()(fi, int(dtype)));
+            return mesh.pair_thickness(
+                VertexVertexCandidate(vi, mesh.faces()(fi, int(dtype))));
         case PointTriangleDistanceType::P_E0:
         case PointTriangleDistanceType::P_E1:
         case PointTriangleDistanceType::P_E2:
-            return mesh.vertex_thickness(vi)
-                + mesh.edge_thickness(
-                    mesh.faces_to_edges()(fi, int(dtype) - 3));
+            return mesh.pair_thickness(EdgeVertexCandidate(
+                mesh.faces_to_edges()(fi, int(dtype) - 3), vi));
         default:
             return mesh.pair_thickness(candidate);
         }

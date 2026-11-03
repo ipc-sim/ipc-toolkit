@@ -306,3 +306,14 @@ def test_thickness():
 
     mesh.clear_thickness()
     assert not mesh.has_thickness()
+    # Without a thickness the arrays are empty, which raises instead of
+    # reading out of bounds.
+    try:
+        EdgeEdgeCandidate(0, 1).thickness(
+            mesh.vertex_thicknesses,
+            mesh.edge_thicknesses,
+            mesh.face_thicknesses,
+        )
+        assert False
+    except IndexError:
+        pass

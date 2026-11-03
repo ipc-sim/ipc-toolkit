@@ -8,6 +8,8 @@
 
 #include <Eigen/Core>
 
+#include <optional>
+
 namespace ipc {
 
 /// @brief Compute an inital barrier stiffness using the barrier potential gradient.
@@ -104,7 +106,7 @@ double semi_implicit_stiffness(
 /// @param collisions Normal collisions or collision candidates.
 /// @param vertex_masses Lumped vertex masses.
 /// @param hess Hessian of the elasticity energy function.
-/// @param dmin Minimum distance between elements.
+/// @param dmin Deprecated minimum distance between elements. If given, it overrides each stencil's own: a collision's dmin, or a candidate's two primitives' thicknesses (CollisionMesh::set_thickness()).
 /// @return The semi-implicit stiffness's.
 template <typename StencilsT>
 Eigen::VectorXd semi_implicit_stiffness(
@@ -113,6 +115,6 @@ Eigen::VectorXd semi_implicit_stiffness(
     const StencilsT& collisions,
     Eigen::ConstRef<Eigen::VectorXd> vertex_masses,
     const Eigen::SparseMatrix<double>& hess,
-    const double dmin);
+    const std::optional<double> dmin = std::nullopt);
 
 } // namespace ipc

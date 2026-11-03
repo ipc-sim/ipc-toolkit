@@ -95,7 +95,7 @@ void define_adaptive_stiffness(py::module_& m)
         static_cast<Eigen::VectorXd (*)(
             const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
             const NormalCollisions&, Eigen::ConstRef<Eigen::VectorXd>,
-            const Eigen::SparseMatrix<double>&, const double)>(
+            const Eigen::SparseMatrix<double>&, const std::optional<double>)>(
             &semi_implicit_stiffness),
         R"ipc_Qu8mg5v7(
         Compute the semi-implicit stiffness's for all collisions.
@@ -108,20 +108,20 @@ void define_adaptive_stiffness(py::module_& m)
             collisions: Normal collisions.
             vertex_masses: Lumped vertex masses.
             hess: Hessian of the elasticity energy function.
-            dmin: Minimum distance between elements.
+            dmin: Deprecated minimum distance between elements. If given, it overrides each stencil's own (a collision's dmin, or a candidate's thickness).
 
         Returns:
             The semi-implicit stiffness's.
         )ipc_Qu8mg5v7",
         "mesh"_a, "vertices"_a, "collisions"_a, "vertex_masses"_a, "hess"_a,
-        "dmin"_a);
+        "dmin"_a = py::none());
 
     m.def(
         "semi_implicit_stiffness",
         static_cast<Eigen::VectorXd (*)(
             const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
             const Candidates&, Eigen::ConstRef<Eigen::VectorXd>,
-            const Eigen::SparseMatrix<double>&, const double)>(
+            const Eigen::SparseMatrix<double>&, const std::optional<double>)>(
             &semi_implicit_stiffness),
         R"ipc_Qu8mg5v7(
         Compute the semi-implicit stiffness's for all collisions.
@@ -134,11 +134,11 @@ void define_adaptive_stiffness(py::module_& m)
             collisions: Collisions candidates.
             vertex_masses: Lumped vertex masses.
             hess: Hessian of the elasticity energy function.
-            dmin: Minimum distance between elements.
+            dmin: Deprecated minimum distance between elements. If given, it overrides each stencil's own (a collision's dmin, or a candidate's thickness).
 
         Returns:
             The semi-implicit stiffness's.
         )ipc_Qu8mg5v7",
         "mesh"_a, "vertices"_a, "collisions"_a, "vertex_masses"_a, "hess"_a,
-        "dmin"_a);
+        "dmin"_a = py::none());
 }

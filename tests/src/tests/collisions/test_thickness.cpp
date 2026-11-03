@@ -1,6 +1,7 @@
 #include <tests/utils.hpp>
 
 #include <ipc/ipc.hpp>
+#include <ipc/barrier/adaptive_stiffness.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/collision_mesh.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
@@ -346,4 +347,38 @@ TEST_CASE("Friction keeps each collision's thickness", "[friction][thickness]")
     CHECK(!force.isApprox(friction.force(
         tangential_collisions, mesh, V, U, velocities, barrier,
         /*dmin=*/0.0)));
+}
+
+TEST_CASE(
+    "Semi-implicit stiffness keeps each stencil's thickness",
+    "[barrier][thickness]")
+{
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    two_triangles(/*gap=*/0.5, V, E, F);
+
+    CollisionMesh mesh(V, E, F);
+    mesh.set_face_thickness(Eigen::Vector2d(0.2, 0.1));
+
+    NormalCollisions collisions;
+    collisions.build(mesh, V, /*dhat=*/0.25);
+    REQUIRE(!collisions.empty());
+    Candidates candidates;
+    candidates.build(mesh, V, /*inflation_radius=*/0.125);
+    REQUIRE(!candidates.empty());
+
+    const Eigen::VectorXd masses = Eigen::VectorXd::Ones(V.rows());
+    Eigen::SparseMatrix<double> hess(V.size(), V.size());
+    hess.setIdentity();
+
+    // Every pair here is 0.2 + 0.1 thick, so the default matches passing it.
+    CHECK(semi_implicit_stiffness(mesh, V, collisions, masses, hess)
+              .isApprox(semi_implicit_stiffness(
+                  mesh, V, collisions, masses, hess, /*dmin=*/0.3)));
+    CHECK(semi_implicit_stiffness(mesh, V, candidates, masses, hess)
+              .isApprox(semi_implicit_stiffness(
+                  mesh, V, candidates, masses, hess, /*dmin=*/0.3)));
+    CHECK(!semi_implicit_stiffness(mesh, V, candidates, masses, hess)
+               .isApprox(semi_implicit_stiffness(
+                   mesh, V, candidates, masses, hess, /*dmin=*/0.0)));
 }
