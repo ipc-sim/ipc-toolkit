@@ -282,7 +282,7 @@ TEST_CASE("Rigid trajectory point-edge CCD", "[rigid][trajectory][ccd]")
     const RigidTrajectory e1(Eigen::Vector2d(1, 0), identity_2d, rotated_2d);
 
     NonlinearCCD ccd;
-    ccd.conservative_rescaling = 0.9;
+    ccd.conservative_rescaling = 0.99;
 
     double toi;
     const bool collision = ccd.point_edge_ccd(p, e0, e1, toi);
@@ -308,9 +308,11 @@ TEST_CASE("Rigid trajectory edge-edge CCD", "[rigid][trajectory][ccd]")
     const RigidTrajectory eb1(
         Eigen::Vector3d(1, 0.5, 0), identity_3d, identity_3d);
 
+    NonlinearCCD ccd;
+    ccd.conservative_rescaling = 0.99;
+
     double toi;
-    const bool collision =
-        NonlinearCCD().edge_edge_ccd(ea0, ea1, eb0, eb1, toi);
+    const bool collision = ccd.edge_edge_ccd(ea0, ea1, eb0, eb1, toi);
 
     CHECK(collision);
     CHECK(toi <= 30 / 360.0);
@@ -333,7 +335,7 @@ TEST_CASE("Rigid trajectory point-triangle CCD", "[rigid][trajectory][ccd]")
         Eigen::Vector3d(0, 0.5, 0), identity_3d, identity_3d);
 
     NonlinearCCD ccd;
-    ccd.conservative_rescaling = 0.9;
+    ccd.conservative_rescaling = 0.99;
 
     double toi;
     const bool collision = ccd.point_triangle_ccd(p, t0, t1, t2, toi);

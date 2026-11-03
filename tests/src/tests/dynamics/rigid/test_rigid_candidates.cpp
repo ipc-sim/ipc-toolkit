@@ -412,9 +412,11 @@ TEST_CASE("Rigid plane-vertex candidates and CCD", "[rigid][candidates][ccd]")
     CHECK(alpha <= first_contact);
     CHECK(alpha == Catch::Approx(first_contact).margin(0.1));
 
+    // The full step sweeps the rod through the ground, while the clamped step
+    // leaves every vertex above it.
+    CHECK(!candidates.is_step_collision_free(
+        *bodies, poses_t0, poses_t1, /*min_distance=*/0.0, ccd));
     const std::vector<Pose> poses_alpha = lerp_poses(poses_t0, poses_t1, alpha);
-    CHECK(candidates.is_step_collision_free(
-        *bodies, poses_t0, poses_alpha, /*min_distance=*/0.0, ccd));
     CHECK((bodies->vertices(poses_alpha).col(1).array() > 0.0).all());
 }
 

@@ -89,7 +89,7 @@ void define_nonlinear_ccd(py::module_& m)
 
             Parameters:
                 narrow_phase_ccd: The narrow-phase CCD used for the per-piece linear CCD (if None, a default-constructed TightInclusionCCD is used). It is queried with a COMPONENT NarrowPhaseCCDMode and never modified, so it may be shared with standalone users.
-                conservative_rescaling: Conservative rescaling of the time of impact.
+                conservative_rescaling: Fraction of the initial gap (above min_distance) a step may close: the CCD reports an impact once the distance shrinks to min_distance + (1 - conservative_rescaling) * (d0 - min_distance).
             )ipc_Qu8mg5v7",
             "narrow_phase_ccd"_a = nullptr,
             "conservative_rescaling"_a =
@@ -124,7 +124,7 @@ void define_nonlinear_ccd(py::module_& m)
             Parameters:
                 tolerance: Tight Inclusion's solver tolerance.
                 max_iterations: Tight Inclusion's maximum number of iterations.
-                conservative_rescaling: Conservative rescaling of the time of impact.
+                conservative_rescaling: Fraction of the initial gap (above min_distance) a step may close: the CCD reports an impact once the distance shrinks to min_distance + (1 - conservative_rescaling) * (d0 - min_distance).
             )ipc_Qu8mg5v7",
             "tolerance"_a,
             "max_iterations"_a = NonlinearCCD::DEFAULT_MAX_ITERATIONS,
@@ -132,7 +132,7 @@ void define_nonlinear_ccd(py::module_& m)
                 NonlinearCCD::DEFAULT_CONSERVATIVE_RESCALING)
         .def_readwrite(
             "conservative_rescaling", &NonlinearCCD::conservative_rescaling,
-            "Conservative rescaling of the time of impact.")
+            "Fraction of the initial gap (above min_distance) a step may close.")
         .def_property(
             "narrow_phase_ccd",
             [](const NonlinearCCD& self) {
@@ -282,7 +282,7 @@ void define_nonlinear_ccd(py::module_& m)
                 linear_ccd: Perform linear CCD on a given time interval.
                 tmax: Maximum time to check for collision.
                 min_distance: Minimum separation distance between the objects.
-                conservative_rescaling: Conservative rescaling of the time of impact.
+                conservative_rescaling: Fraction of the initial gap (above min_distance) a step may close: the CCD reports an impact once the distance shrinks to min_distance + (1 - conservative_rescaling) * (d0 - min_distance).
 
             Returns:
                 Tuple of:

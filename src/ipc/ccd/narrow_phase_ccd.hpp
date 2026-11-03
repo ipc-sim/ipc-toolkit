@@ -12,9 +12,9 @@ enum class NarrowPhaseCCDMode : uint8_t {
     /// (minimum-distance inflation, small-TOI reruns, and rescaling).
     STANDALONE,
     /// The per-piece linear CCD inside a piecewise driver (e.g.,
-    /// NonlinearCCD), which supplies its own conservative margins (the
-    /// linearization error as the minimum separation, an early exit on
-    /// decreased distance, and subdivision on zero TOI). The method skips its
+    /// NonlinearCCD), which supplies its own conservative margins (a target
+    /// separation inflated by the linearization error as the minimum
+    /// separation, and subdivision on zero TOI). The method skips its
     /// standalone strategy and returns the raw time of impact.
     COMPONENT,
     /// Like COMPONENT, but the caller cannot accept a time of impact of

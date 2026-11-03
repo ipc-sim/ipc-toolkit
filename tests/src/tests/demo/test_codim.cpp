@@ -14,6 +14,8 @@
 #include <ipc/dynamics/rigid/rigid_candidates.hpp>
 #include <simulator.hpp>
 
+#include <cmath>
+#include <limits>
 #include <set>
 
 using namespace ipc;
@@ -151,15 +153,20 @@ TEST_CASE(
             poses_t0[b].rotation);
     }
     const Eigen::MatrixXd V = bodies->vertices(poses_alpha);
+    double min_gap = std::numeric_limits<double>::infinity();
     for (int v = 0; v < 10; ++v) {
-        // Strictly separated (squared distance > 0); the conservative CCD
-        // rescaling leaves only a small gap.
-        CHECK(point_point_distance(V.row(v), V.row(10 + v)) > 0);
+        // Strictly separated (squared distance > 0). The CCD stops once the
+        // gap shrinks to its conservative target, so the gap left over is a
+        // fraction of the initial one.
+        const double d = point_point_distance(V.row(v), V.row(10 + v));
+        CHECK(d > 0);
+        min_gap = std::min(min_gap, std::sqrt(d));
     }
 
-    // The discrete (distance) overload also produces the vv candidates.
+    // The discrete (distance) overload also produces the vv candidates once
+    // its inflation radius reaches across the gap the CCD left.
     RigidCandidates discrete;
-    discrete.build(*bodies, poses_alpha, /*inflation_radius=*/1e-2);
+    discrete.build(*bodies, poses_alpha, /*inflation_radius=*/2 * min_gap);
     CHECK(!discrete.vv_candidates.empty());
 }
 

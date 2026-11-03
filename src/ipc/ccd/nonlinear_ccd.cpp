@@ -106,6 +106,15 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
     }
     assert(distance_t0 > min_distance);
 
+    // We report an impact once the distance shrinks to the target separation,
+    // which keeps (1 - conservative_rescaling) of the initial gap above
+    // min_distance. Each piece's linear CCD stops at this target (inflated by
+    // the piece's linearization error), so the returned toi is as large as
+    // possible while every point along the trajectory up to it stays at
+    // least this far apart.
+    const double target_distance = min_distance
+        + (1 - conservative_rescaling) * (distance_t0 - min_distance);
+
     double ti0 = 0;
     std::stack<double> ts;
 
@@ -125,24 +134,17 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
 
         const double distance_ti0 = distance(ti0);
 
-        // If distance has decreased by a factor and the toi is not near zero,
-        // then we can call this a collision.
-        if (distance_ti0 < (1 - conservative_rescaling) * distance_t0
-            && ti0 >= TightInclusionCCD::SMALL_TOI) {
-            toi = ti0;
-            logger().trace(
-                "Distance small enough distance_ti0={:g}; toi={:g}",
-                distance_ti0, toi);
-            return true;
-        }
-
         double min_distance_linear = max_distance_from_linear(ti0, ti1);
 
 #ifndef USE_FIXED_PIECES
-        // Check if the minimum distance is too large and we need to subdivide
-        // (Large distances cause the slow CCD)
-        if ((min_distance_linear
-             >= std::min((1 - conservative_rescaling) * distance_ti0, 0.01))
+        // We subdivide while the linearization error is large compared to the
+        // slack the piece has above the target separation. A large error
+        // inflates the minimum separation, which slows the linear CCD and can
+        // swallow the slack entirely (reporting toi = 0 at the piece start).
+        if ((min_distance_linear >= std::min(
+                 (1 - conservative_rescaling)
+                     * (distance_ti0 - target_distance),
+                 0.01))
             && (num_subdivisions < MAX_NUM_SUBDIVISIONS || ti0 == 0)) {
             logger().trace(
                 "Subdividing at ti=[{:g}, {:g}] min_distance={:g} distance_ti0={:g}",
@@ -153,7 +155,7 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
         }
 #endif
 
-        min_distance_linear += min_distance;
+        min_distance_linear += target_distance;
 
         const bool is_impacting = linear_ccd(
             ti0, ti1, min_distance_linear, /*no_zero_toi=*/ti0 == 0, toi);
@@ -167,7 +169,8 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
         if (is_impacting) {
             toi = (ti1 - ti0) * toi + ti0;
             if (toi == 0) {
-                // This is impossible because distance_t0 > min_distance
+                // The linearization error swallowed the slack above the
+                // target separation, so we split the piece to shrink it.
                 ts.push((ti1 + ti0) / 2);
                 num_subdivisions++;
                 continue;

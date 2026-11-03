@@ -58,13 +58,13 @@ public:
     /// The default maximum number of iterations of the TightInclusionCCD
     /// built by the deprecated (tolerance, max_iterations) constructor.
     static constexpr long DEFAULT_MAX_ITERATIONS = 10'000'000L;
-    /// The default conservative rescaling value used to avoid taking steps
-    /// exactly to impact.
+    /// The default conservative rescaling, which keeps 20% of the initial gap
+    /// so steps never go exactly to impact.
     static constexpr double DEFAULT_CONSERVATIVE_RESCALING = 0.8;
 
     /// @brief Construct a new NonlinearCCD object.
     /// @param narrow_phase_ccd The narrow-phase CCD used for the per-piece linear CCD (if null, a default-constructed TightInclusionCCD is used). Each per-piece query is made with a COMPONENT NarrowPhaseCCDMode, so the object is not modified and may be shared with standalone users.
-    /// @param conservative_rescaling Conservative rescaling of the time of impact.
+    /// @param conservative_rescaling Fraction of the initial gap (above min_distance) a step may close: the CCD reports an impact once the distance shrinks to min_distance + (1 - conservative_rescaling) * (d₀ - min_distance).
     explicit NonlinearCCD(
         std::shared_ptr<const NarrowPhaseCCD> narrow_phase_ccd = nullptr,
         const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
@@ -73,7 +73,7 @@ public:
     /// @deprecated Use NonlinearCCD(std::make_shared<TightInclusionCCD>(tolerance, max_iterations), conservative_rescaling).
     /// @param tolerance Tight Inclusion's solver tolerance.
     /// @param max_iterations Tight Inclusion's maximum number of iterations.
-    /// @param conservative_rescaling Conservative rescaling of the time of impact.
+    /// @param conservative_rescaling Fraction of the initial gap (above min_distance) a step may close: the CCD reports an impact once the distance shrinks to min_distance + (1 - conservative_rescaling) * (d₀ - min_distance).
     [[deprecated(
         "Pass a std::make_shared<TightInclusionCCD>(tolerance, max_iterations) as the narrow-phase CCD instead.")]]
     explicit NonlinearCCD(
@@ -160,7 +160,7 @@ public:
         return m_narrow_phase_ccd;
     }
 
-    /// @brief Conservative rescaling of the time of impact.
+    /// @brief Fraction of the initial gap (above min_distance) a step may close: the CCD reports an impact once the distance shrinks to min_distance + (1 - conservative_rescaling) * (d₀ - min_distance).
     double conservative_rescaling;
 
 private:
@@ -172,11 +172,11 @@ public:
     /// @brief Perform conservative piecewise linear CCD of a nonlinear trajectories.
     /// @param[in] distance Return the distance for a given time in [0, 1].
     /// @param[in] max_distance_from_linear Return the maximum distance from the linearized trajectory for a given time interval.
-    /// @param[in] linear_ccd Perform linear CCD on a given time interval. Receives the piece interval, the deviation-inflated minimum separation, and a no_zero_toi flag (true on the first piece, whose start is known to be more than min_distance apart).
+    /// @param[in] linear_ccd Perform linear CCD on a given time interval. Receives the piece interval, the target separation inflated by the piece's linearization error, and a no_zero_toi flag (true on the first piece, whose start is known to be more than min_distance apart).
     /// @param[out] toi Output time of impact.
     /// @param[in] min_distance Minimum separation distance between the objects.
     /// @param[in] tmax Maximum time to check for collision.
-    /// @param[in] conservative_rescaling Conservative rescaling of the time of impact.
+    /// @param[in] conservative_rescaling Fraction of the initial gap (above min_distance) a step may close: the CCD reports an impact once the distance shrinks to min_distance + (1 - conservative_rescaling) * (d₀ - min_distance).
     /// @return True if a collision was detected, false otherwise.
     static bool conservative_piecewise_linear_ccd(
         const std::function<double(const double)>& distance,

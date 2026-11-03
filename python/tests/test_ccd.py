@@ -266,9 +266,13 @@ def test_nonlinear_ccd():
 
     is_colliding, toi = ccd.point_point_ccd(p0, p1)
 
+    # The points meet at t = 0.5, but the CCD stops early once the gap
+    # shrinks to (1 - conservative_rescaling) of its initial value.
     assert is_colliding
-    assert 0 < toi < 1
-    assert np.abs(toi - 0.5) < 1e-6
+    assert 0 < toi <= 0.5
+    d0 = np.linalg.norm(p0(0) - p1(0))
+    target = (1 - ccd.conservative_rescaling) * d0
+    assert np.linalg.norm(p0(toi) - p1(toi)) >= target
 
     # class IntervalLinearTrajectory(ipctk.IntervalNonlinearTrajectory):
     #     def __init__(self, p0, p1):
@@ -331,8 +335,8 @@ def test_nonlinear_ccd():
     e0 = Rigid2DTrajectory(np.array([-1, 0]), np.zeros(2), np.zeros(2), 0, np.pi)
     e1 = Rigid2DTrajectory(np.array([1, 0]), np.zeros(2), np.zeros(2), 0, np.pi)
 
-    # increase the conservative_rescaling from 0.8 to 0.9 to get a more accurate estimate
-    ccd.conservative_rescaling = 0.9
+    # increase the conservative_rescaling from 0.8 to 0.99 to get a more accurate estimate
+    ccd.conservative_rescaling = 0.99
     collision, toi = ccd.point_edge_ccd(p, e0, e1)
 
     assert collision
