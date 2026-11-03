@@ -429,7 +429,31 @@ AUTODOC_NOISE_MEMBERS = {
 }
 
 
+def drop_pybind11_bases():
+    """Stop autoclasstoc from listing pybind11's internal base classes.
+
+    Every pybind11 class inherits from `pybind11_builtins.pybind11_object`.
+    autoclasstoc walks the MRO and hands each base to autosummary, which can't
+    import it by name and warns once per class. Instead of suppressing the
+    warnings, we skip those bases since they contain nothing worth documenting.
+    """
+    from autoclasstoc import utils
+
+    find_inherited_attrs = utils.find_inherited_attrs
+
+    def find_without_pybind11_bases(cls):
+        return {
+            base: attrs
+            for base, attrs in find_inherited_attrs(cls).items()
+            if base.__module__ != "pybind11_builtins"
+        }
+
+    utils.find_inherited_attrs = find_without_pybind11_bases
+
+
 def setup(app):
+    drop_pybind11_bases()
+
     if SHOW_PROGRESS:
         connect_progress(app)
 
