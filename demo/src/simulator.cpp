@@ -738,11 +738,42 @@ void Simulator::initialize_barrier_stiffness(Eigen::ConstRef<Eigen::VectorXd> x)
     m_bbox_diagonal = (V.colwise().maxCoeff() - V.colwise().minCoeff()).norm();
     assert(m_bbox_diagonal > 0);
 
+    // We average the rigid mass matrix's diagonal over the free DOFs, as Rigid
+    // IPC does: the mass for each free translation and the principal moment of
+    // inertia for each free rotation. Averaging whole-body masses instead lets
+    // a heavy STATIC/KINEMATIC or DOF-locked body (e.g., the bike chain's
+    // driven sprocket) inflate κ_min, which is proportional to this value; on
+    // the bike chain that made κ 6× stiffer than Rigid IPC's and doubled the
+    // Newton iterations. Both parameterizations use this rigid definition, so
+    // the affine mode gets the same κ as the rigid one.
     double average_mass = 0;
+    int num_free_dofs = 0;
     for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
-        average_mass += (*m_bodies)[i].mass();
+        const rigid::RigidBody& body = (*m_bodies)[i];
+        if (body.type() == rigid::RigidBody::Type::STATIC) {
+            continue;
+        }
+        const auto& fixed = body.is_dof_fixed();
+        const int dim = m_bodies->dim();
+        for (int k = 0; k < fixed.size(); ++k) {
+            if (!fixed(k)) {
+                average_mass +=
+                    k < dim ? body.mass() : body.moment_of_inertia()(k - dim);
+                ++num_free_dofs;
+            }
+        }
     }
-    average_mass /= m_bodies->num_bodies();
+    if (num_free_dofs > 0) {
+        average_mass /= num_free_dofs;
+    } else {
+        // Nothing can move, so κ is irrelevant. We still need a positive
+        // mass for initial_barrier_stiffness, so we fall back to the mean
+        // body mass.
+        for (size_t i = 0; i < m_bodies->num_bodies(); ++i) {
+            average_mass += (*m_bodies)[i].mass();
+        }
+        average_mass /= m_bodies->num_bodies();
+    }
 
     // Sum the gradients of every term except the barrier (as they enter the
     // objective, i.e., scaled by (βΔt)² where applicable).
@@ -861,6 +892,7 @@ bool Simulator::step()
         }
 
         bool needs_more = false;
+        bool friction_needs_more = false;
 
         // Augmented Lagrangian channel: update the penalties/multipliers at
         // the energy-converged state; satisfied channels freeze their DOFs.
@@ -895,8 +927,7 @@ bool Simulator::step()
                 m_last_momentum_balance < 0.9 * prev_momentum_balance;
             prev_momentum_balance = m_last_momentum_balance;
 
-            const bool friction_needs_more = m_last_momentum_balance > eps_d
-                && improving
+            friction_needs_more = m_last_momentum_balance > eps_d && improving
                 && (m_settings.friction_iterations < 0
                     || outer_iter + 1 < m_settings.friction_iterations);
             if (!friction_needs_more && m_last_momentum_balance > eps_d) {
@@ -927,9 +958,16 @@ bool Simulator::step()
             break;
         }
 
-        // Re-seed the barrier stiffness for the next solve (the original
-        // Rigid IPC solver re-initializes κ at the start of every solve).
-        initialize_barrier_stiffness(x);
+        // We re-seed the barrier stiffness only for a friction re-lag, which
+        // the original Rigid IPC solver runs as a fresh solve that starts by
+        // re-initializing κ. Rigid IPC updates the augmented Lagrangian inside
+        // a single solve instead, so κ keeps whatever it grew to while the
+        // kinematic bodies were driven toward their targets. We keep it too,
+        // since re-seeding would throw that growth away while the multipliers
+        // keep pushing the kinematic bodies into their contacts.
+        if (friction_needs_more) {
+            initialize_barrier_stiffness(x);
+        }
     }
 
     if (!converged) {

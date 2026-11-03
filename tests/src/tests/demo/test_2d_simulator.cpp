@@ -206,7 +206,13 @@ TEST_CASE("2D friction slide", "[2d][friction][simulator]")
     Simulator::Settings settings;
     settings.friction_coefficient = mu;
     settings.friction_iterations = -1;
-    settings.velocity_conv_tol = 1e-3;
+    // We converge each Newton solve tightly so the friction lagging samples
+    // force-balanced normal forces. At 1e-3, the first solve of a step stops
+    // on the velocity criterion with the contact still far out of balance, so
+    // the box dips into the floor and the lagging iterations oscillate. Every
+    // few steps the lagging then stalls on an iterate with an inflated normal
+    // force, and the extra friction stops the box about 20% short.
+    settings.velocity_conv_tol = 1e-4;
     // Area-weighted (smooth) collision set for a tight friction-force check;
     // the default is now the conventional IPC set (rigid-ipc parity).
     settings.use_area_weighting = true;
