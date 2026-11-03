@@ -2,7 +2,7 @@ numpy
 scipy
 sphinx<9.0.0
 sphinx-sitemap
-sphinx-immaterial
+sphinx-immaterial @ git+https://github.com/zfergus/sphinx-immaterial.git@merge-mkdocs-material-9.8.0
 autoclasstoc
 # sphinx-autodoc-toolbox
 breathe
