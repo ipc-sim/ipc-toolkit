@@ -4056,11 +4056,7 @@
 </tr>
 </tbody>
 </table>
-<details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-</tbody>
-</table>
-</details></div>
+</div>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Private Methods:</p>
 <table class="autosummary longtable docutils data align-default">
@@ -4105,10 +4101,10 @@
 <span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.TangentialCollisions.build" title="ipctk.TangentialCollisions.build.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.TangentialCollisions.build" title="ipctk.TangentialCollisions.build.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.TangentialCollisions.build" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic simple">
-<li><p>build(self: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], collisions: ipctk.NormalCollisions, normal_potential: ipc::NormalPotential, mu: typing.SupportsFloat) -&gt; None</p></li>
-<li><p>build(self: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], collisions: ipctk.NormalCollisions, normal_potential: ipc::NormalPotential, mu_s: typing.SupportsFloat, mu_k: typing.SupportsFloat) -&gt; None</p></li>
-<li><p>build(self: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], collisions: ipctk.NormalCollisions, normal_potential: ipc::NormalPotential, mu_s: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], mu_k: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]) -&gt; None</p></li>
-<li><p>build(self: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], collisions: ipctk.NormalCollisions, normal_potential: ipc::NormalPotential, mu_s: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], mu_k: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], blend_mu: collections.abc.Callable[[typing.SupportsFloat, typing.SupportsFloat], float]) -&gt; None</p></li>
+<li><p>build(self: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], collisions: ipctk.NormalCollisions, normal_potential: ipc::NormalPotential, mu: typing.SupportsFloat) -&gt; None</p></li>
+<li><p>build(self: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], collisions: ipctk.NormalCollisions, normal_potential: ipc::NormalPotential, mu_s: typing.SupportsFloat, mu_k: typing.SupportsFloat) -&gt; None</p></li>
+<li><p>build(self: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], collisions: ipctk.NormalCollisions, normal_potential: ipc::NormalPotential, mu_s: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], mu_k: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]) -&gt; None</p></li>
+<li><p>build(self: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], collisions: ipctk.NormalCollisions, normal_potential: ipc::NormalPotential, mu_s: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], mu_k: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], blend_mu: collections.abc.Callable[[typing.SupportsFloat, typing.SupportsFloat], float]) -&gt; None</p></li>
 </ol>
 </dd></dl>
 
@@ -4152,7 +4148,7 @@
 
 <dl class="py method objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients">
-<span class="sig-name descname"><span class="pre">update_lagged_anisotropic_friction_coefficients</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.TangentialCollisions,</span> <span class="pre">mesh:</span> <span class="pre">ipc::CollisionMesh,</span> <span class="pre">rest_positions:</span> <span class="pre">typing.Annotated[numpy.typing.NDArray[numpy.float64],</span> <span class="pre">&quot;[m,</span> <span class="pre">n]&quot;,</span> <span class="pre">&quot;flags.f_contiguous&quot;],</span> <span class="pre">lagged_displacements:</span> <span class="pre">typing.Annotated[numpy.typing.NDArray[numpy.float64],</span> <span class="pre">&quot;[m,</span> <span class="pre">n]&quot;,</span> <span class="pre">&quot;flags.f_contiguous&quot;],</span> <span class="pre">velocities:</span> <span class="pre">typing.Annotated[numpy.typing.NDArray[numpy.float64],</span> <span class="pre">&quot;[m,</span> <span class="pre">n]&quot;,</span> <span class="pre">&quot;flags.f_contiguous&quot;]</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">update_lagged_anisotropic_friction_coefficients</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients" title="ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients.self (Python parameter)"><span class="n"><span class="pre">self</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients" title="ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients.mesh (Python parameter)"><span class="n"><span class="pre">mesh</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference internal" href="collision_mesh.html#ipctk.CollisionMesh" title="ipctk.CollisionMesh (Python class) — Bases: pybind11_object"><span class="pre">ipctk.CollisionMesh</span></a></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients" title="ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients.rest_positions (Python parameter)"><span class="n"><span class="pre">rest_positions</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'[m,</span> <span class="pre">n]'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'flags.f_contiguous'</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients" title="ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients.lagged_displacements (Python parameter)"><span class="n"><span class="pre">lagged_displacements</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'[m,</span> <span class="pre">n]'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'flags.f_contiguous'</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients" title="ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients.velocities (Python parameter)"><span class="n"><span class="pre">velocities</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">Annotated</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.typing.NDArray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'[m,</span> <span class="pre">n]'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'flags.f_contiguous'</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.TangentialCollisions.update_lagged_anisotropic_friction_coefficients" title="Link to this definition">¶</a></dt>
 <dd><p>Refresh matchstick effective μ from lagged geometry and slip. Call when mu_s_aniso is nonzero (e.g. each Newton iteration).</p>
 </dd></dl>
 
@@ -4303,10 +4299,6 @@
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code>(coeffs, p, dim)</p></td>
 <td><p>Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs.</p></td>
 </tr>
-</tbody>
-</table>
-</details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
 </tbody>
 </table>
 </details></div>
@@ -4732,10 +4724,6 @@
 </tr>
 </tbody>
 </table>
-</details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-</tbody>
-</table>
 </details></div>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Private Methods:</p>
@@ -4963,10 +4951,6 @@
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code>(coeffs, p, dim)</p></td>
 <td><p>Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs.</p></td>
 </tr>
-</tbody>
-</table>
-</details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
 </tbody>
 </table>
 </details></div>
@@ -5198,10 +5182,6 @@
 </tr>
 </tbody>
 </table>
-</details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-</tbody>
-</table>
 </details></div>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Private Methods:</p>
@@ -5431,10 +5411,6 @@
 </tr>
 </tbody>
 </table>
-</details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-</tbody>
-</table>
 </details></div>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Private Methods:</p>
@@ -5499,7 +5475,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Nov 02, 2026
+    Nov 03, 2026
   </span>
 
     

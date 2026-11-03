@@ -284,7 +284,7 @@ to each tangential collision after building the collisions:
                 collision_mesh, rest_positions, lagged_displacements, velocities)
 
 Lagged effective μ (direction-dependent coefficients)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When ``mu_s_aniso`` / ``mu_k_aniso`` are nonzero, the toolkit **lags** the
 matchstick effective coefficients for the current nonlinear step (stored in

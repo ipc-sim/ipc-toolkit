@@ -4205,11 +4205,7 @@
 </tr>
 </tbody>
 </table>
-<details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-</tbody>
-</table>
-</details></div>
+</div>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Private Methods:</p>
 <table class="autosummary longtable docutils data align-default">
@@ -4226,7 +4222,7 @@
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.NormalPotential.__call__" title="ipctk.NormalPotential.__call__.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.NormalPotential.__call__" title="ipctk.NormalPotential.__call__.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.NormalPotential.__call__" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>__call__(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipc::CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”]) -&gt; float</p>
+<li><p>__call__(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipctk.CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”]) -&gt; float</p>
 <blockquote>
 <div><p>Compute the potential for a set of collisions.</p>
 <dl class="simple">
@@ -4261,7 +4257,7 @@ x: The collision stencil’s degrees of freedom.</p>
 
 <dl class="py method objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.NormalPotential.assemble_hessian">
-<span class="sig-name descname"><span class="pre">assemble_hessian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.NormalPotential,</span> <span class="pre">collisions:</span> <span class="pre">ipctk.NormalCollisions,</span> <span class="pre">mesh:</span> <span class="pre">ipc::CollisionMesh,</span> <span class="pre">X:</span> <span class="pre">typing.Annotated[numpy.typing.NDArray[numpy.float64],</span> <span class="pre">&quot;[m,</span> <span class="pre">n]&quot;,</span> <span class="pre">&quot;flags.f_contiguous&quot;],</span> <span class="pre">assembler:</span> <span class="pre">ipc::HessianAssembler,</span> <span class="pre">project_hessian_to_psd:</span> <span class="pre">ipctk.PSDProjectionMethod</span> <span class="pre">=</span> <span class="pre">&lt;PSDProjectionMethod.NONE:</span> <span class="pre">0&gt;,</span> <span class="pre">in_full_dof:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.NormalPotential.assemble_hessian" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">assemble_hessian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.NormalPotential,</span> <span class="pre">collisions:</span> <span class="pre">ipctk.NormalCollisions,</span> <span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">X:</span> <span class="pre">typing.Annotated[numpy.typing.NDArray[numpy.float64],</span> <span class="pre">&quot;[m,</span> <span class="pre">n]&quot;,</span> <span class="pre">&quot;flags.f_contiguous&quot;],</span> <span class="pre">assembler:</span> <span class="pre">ipc::HessianAssembler,</span> <span class="pre">project_hessian_to_psd:</span> <span class="pre">ipctk.PSDProjectionMethod</span> <span class="pre">=</span> <span class="pre">&lt;PSDProjectionMethod.NONE:</span> <span class="pre">0&gt;,</span> <span class="pre">in_full_dof:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.NormalPotential.assemble_hessian" title="Link to this definition">¶</a></dt>
 <dd><p>Assemble the Hessian of the potential using a custom assembler.</p>
 <p>Evaluates the local Hessian of every collision (in parallel) and feeds each to <cite>assembler</cite>, then leaves the
 result in the assembler (use its get_matrix()). Reuse one assembler across calls to also reuse its sparsity pattern.</p>
@@ -4332,7 +4328,7 @@ result in the assembler (use its get_matrix()). Reuse one assembler across calls
 <span class="sig-name descname"><span class="pre">gauss_newton_hessian_diagonal</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.NormalPotential.gauss_newton_hessian_diagonal" title="ipctk.NormalPotential.gauss_newton_hessian_diagonal.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.NormalPotential.gauss_newton_hessian_diagonal" title="ipctk.NormalPotential.gauss_newton_hessian_diagonal.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.NormalPotential.gauss_newton_hessian_diagonal" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>gauss_newton_hessian_diagonal(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipc::CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”]) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
+<li><p>gauss_newton_hessian_diagonal(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipctk.CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”]) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
 <blockquote>
 <div><p>Compute the diagonal of the cumulative Gauss-Newton Hessian of the potential.</p>
 <p>Uses the distance-vector formulation to efficiently compute the
@@ -4376,7 +4372,7 @@ positions: The collision stencil’s positions.</p>
 <span class="sig-name descname"><span class="pre">gauss_newton_hessian_quadratic_form</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.NormalPotential.gauss_newton_hessian_quadratic_form" title="ipctk.NormalPotential.gauss_newton_hessian_quadratic_form.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.NormalPotential.gauss_newton_hessian_quadratic_form" title="ipctk.NormalPotential.gauss_newton_hessian_quadratic_form.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.NormalPotential.gauss_newton_hessian_quadratic_form" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>gauss_newton_hessian_quadratic_form(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipc::CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], p: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]) -&gt; float</p>
+<li><p>gauss_newton_hessian_quadratic_form(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipctk.CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], p: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]) -&gt; float</p>
 <blockquote>
 <div><p>Compute the product p^T H p for the cumulative Gauss-Newton Hessian.</p>
 <p>Uses the distance-vector formulation to efficiently compute the
@@ -4423,7 +4419,7 @@ p: The local direction vector (size ndof).</p>
 <span class="sig-name descname"><span class="pre">gradient</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.NormalPotential.gradient" title="ipctk.NormalPotential.gradient.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.NormalPotential.gradient" title="ipctk.NormalPotential.gradient.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.NormalPotential.gradient" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>gradient(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipc::CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], in_full_dof: bool = False) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
+<li><p>gradient(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipctk.CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], in_full_dof: bool = False) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
 <blockquote>
 <div><p>Compute the gradient of the potential.</p>
 <dl class="simple">
@@ -4457,7 +4453,7 @@ x: The collision stencil’s degrees of freedom.</p>
 <span class="sig-name descname"><span class="pre">hessian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.NormalPotential.hessian" title="ipctk.NormalPotential.hessian.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.NormalPotential.hessian" title="ipctk.NormalPotential.hessian.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.NormalPotential.hessian" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>hessian(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipc::CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], project_hessian_to_psd: ipctk.PSDProjectionMethod = &lt;PSDProjectionMethod.NONE: 0&gt;, in_full_dof: bool = False) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
+<li><p>hessian(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipctk.CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], project_hessian_to_psd: ipctk.PSDProjectionMethod = &lt;PSDProjectionMethod.NONE: 0&gt;, in_full_dof: bool = False) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
 <blockquote>
 <div><p>Compute the hessian of the potential.</p>
 <dl class="simple">
@@ -4492,7 +4488,7 @@ x: The collision stencil’s degrees of freedom.</p>
 <span class="sig-name descname"><span class="pre">shape_derivative</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.NormalPotential.shape_derivative" title="ipctk.NormalPotential.shape_derivative.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.NormalPotential.shape_derivative" title="ipctk.NormalPotential.shape_derivative.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.NormalPotential.shape_derivative" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>shape_derivative(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipc::CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”]) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
+<li><p>shape_derivative(self: ipctk.NormalPotential, collisions: ipctk.NormalCollisions, mesh: ipctk.CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”]) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
 <blockquote>
 <div><p>Compute the shape derivative of the potential.</p>
 <p>std::runtime_error If the collision collisions were not built with shape derivatives enabled.</p>
@@ -4589,10 +4585,6 @@ positions: The collision stencil’s positions.
 <tr class="row-even"><td><p><a class="reference internal" href="#ipctk.NormalPotential.gauss_newton_hessian_quadratic_form" title="ipctk.NormalPotential.gauss_newton_hessian_quadratic_form (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">gauss_newton_hessian_quadratic_form</span></code></a>(*args, ...)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-</tbody>
-</table>
-</details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
 </tbody>
 </table>
 </details></div>
@@ -4742,10 +4734,6 @@ use_physical_barrier: Whether to use the physical barrier.</p>
 </tr>
 </tbody>
 </table>
-</details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-</tbody>
-</table>
 </details></div>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Private Methods:</p>
@@ -4844,11 +4832,7 @@ use_physical_barrier: Whether to use the physical barrier.</p>
 </tr>
 </tbody>
 </table>
-<details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-</tbody>
-</table>
-</details></div>
+</div>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Private Methods:</p>
 <table class="autosummary longtable docutils data align-default">
@@ -4970,7 +4954,7 @@ use_physical_barrier: Whether to use the physical barrier.</p>
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.__call__" title="ipctk.TangentialPotential.__call__.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.__call__" title="ipctk.TangentialPotential.__call__.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.TangentialPotential.__call__" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>__call__(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”]) -&gt; float</p>
+<li><p>__call__(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”]) -&gt; float</p>
 <blockquote>
 <div><p>Compute the potential for a set of collisions.</p>
 <dl class="simple">
@@ -5005,7 +4989,7 @@ x: The collision stencil’s degrees of freedom.</p>
 
 <dl class="py method objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.TangentialPotential.assemble_hessian">
-<span class="sig-name descname"><span class="pre">assemble_hessian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.TangentialPotential,</span> <span class="pre">collisions:</span> <span class="pre">ipctk.TangentialCollisions,</span> <span class="pre">mesh:</span> <span class="pre">ipc::CollisionMesh,</span> <span class="pre">X:</span> <span class="pre">typing.Annotated[numpy.typing.NDArray[numpy.float64],</span> <span class="pre">&quot;[m,</span> <span class="pre">n]&quot;,</span> <span class="pre">&quot;flags.f_contiguous&quot;],</span> <span class="pre">assembler:</span> <span class="pre">ipc::HessianAssembler,</span> <span class="pre">project_hessian_to_psd:</span> <span class="pre">ipctk.PSDProjectionMethod</span> <span class="pre">=</span> <span class="pre">&lt;PSDProjectionMethod.NONE:</span> <span class="pre">0&gt;,</span> <span class="pre">in_full_dof:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.TangentialPotential.assemble_hessian" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">assemble_hessian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">self:</span> <span class="pre">ipctk.TangentialPotential,</span> <span class="pre">collisions:</span> <span class="pre">ipctk.TangentialCollisions,</span> <span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">X:</span> <span class="pre">typing.Annotated[numpy.typing.NDArray[numpy.float64],</span> <span class="pre">&quot;[m,</span> <span class="pre">n]&quot;,</span> <span class="pre">&quot;flags.f_contiguous&quot;],</span> <span class="pre">assembler:</span> <span class="pre">ipc::HessianAssembler,</span> <span class="pre">project_hessian_to_psd:</span> <span class="pre">ipctk.PSDProjectionMethod</span> <span class="pre">=</span> <span class="pre">&lt;PSDProjectionMethod.NONE:</span> <span class="pre">0&gt;,</span> <span class="pre">in_full_dof:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.TangentialPotential.assemble_hessian" title="Link to this definition">¶</a></dt>
 <dd><p>Assemble the Hessian of the potential using a custom assembler.</p>
 <p>Evaluates the local Hessian of every collision (in parallel) and feeds each to <cite>assembler</cite>, then leaves the
 result in the assembler (use its get_matrix()). Reuse one assembler across calls to also reuse its sparsity pattern.</p>
@@ -5034,7 +5018,7 @@ result in the assembler (use its get_matrix()). Reuse one assembler across calls
 <span class="sig-name descname"><span class="pre">force</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.force" title="ipctk.TangentialPotential.force.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.force" title="ipctk.TangentialPotential.force.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.TangentialPotential.force" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>force(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], normal_potential: ipctk.NormalPotential, dmin: typing.SupportsFloat = 0, no_mu: bool = False) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
+<li><p>force(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], normal_potential: ipctk.NormalPotential, dmin: typing.SupportsFloat = 0, no_mu: bool = False) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
 <blockquote>
 <div><p>Compute the friction force from the given velocities.</p>
 <dl class="simple">
@@ -5077,7 +5061,7 @@ no_mu: Whether to not multiply by mu</p>
 <span class="sig-name descname"><span class="pre">force_jacobian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.force_jacobian" title="ipctk.TangentialPotential.force_jacobian.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.force_jacobian" title="ipctk.TangentialPotential.force_jacobian.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.TangentialPotential.force_jacobian" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>force_jacobian(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], normal_potential: ipctk.NormalPotential, wrt: ipctk.TangentialPotential.DiffWRT, dmin: typing.SupportsFloat = 0) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
+<li><p>force_jacobian(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], normal_potential: ipctk.NormalPotential, wrt: ipctk.TangentialPotential.DiffWRT, dmin: typing.SupportsFloat = 0) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
 <blockquote>
 <div><p>Compute the Jacobian of the friction force wrt the velocities.</p>
 <dl class="simple">
@@ -5120,7 +5104,7 @@ dmin: Minimum distance (used for normal force magnitude).</p>
 <span class="sig-name descname"><span class="pre">gradient</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.gradient" title="ipctk.TangentialPotential.gradient.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.gradient" title="ipctk.TangentialPotential.gradient.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.TangentialPotential.gradient" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>gradient(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], in_full_dof: bool = False) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
+<li><p>gradient(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], in_full_dof: bool = False) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
 <blockquote>
 <div><p>Compute the gradient of the potential.</p>
 <dl class="simple">
@@ -5154,7 +5138,7 @@ x: The collision stencil’s degrees of freedom.</p>
 <span class="sig-name descname"><span class="pre">hessian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.hessian" title="ipctk.TangentialPotential.hessian.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.hessian" title="ipctk.TangentialPotential.hessian.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.TangentialPotential.hessian" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>hessian(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], project_hessian_to_psd: ipctk.PSDProjectionMethod = &lt;PSDProjectionMethod.NONE: 0&gt;, in_full_dof: bool = False) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
+<li><p>hessian(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, X: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], project_hessian_to_psd: ipctk.PSDProjectionMethod = &lt;PSDProjectionMethod.NONE: 0&gt;, in_full_dof: bool = False) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
 <blockquote>
 <div><p>Compute the hessian of the potential.</p>
 <dl class="simple">
@@ -5246,10 +5230,6 @@ x: The collision stencil’s degrees of freedom.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.TangentialPotential.force_jacobian" title="ipctk.TangentialPotential.force_jacobian (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">force_jacobian</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-</tbody>
-</table>
-</details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
 </tbody>
 </table>
 </details></div>
@@ -5355,10 +5335,6 @@ x: The collision stencil’s degrees of freedom.</p>
 </tr>
 </tbody>
 </table>
-</details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-</tbody>
-</table>
 </details></div>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Private Methods:</p>
@@ -5419,7 +5395,7 @@ x: The collision stencil’s degrees of freedom.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Nov 02, 2026
+    Nov 03, 2026
   </span>
 
     
