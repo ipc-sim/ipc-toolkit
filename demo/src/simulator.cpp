@@ -669,9 +669,10 @@ double Simulator::step_norm(
     // the multipliers, so it needs an iterate near equilibrium. On stiff
     // contact the default tolerance stops well short of that: the remaining
     // Newton step is tiny while large forces are still out of balance. The
-    // kinematic body then overshoots, the penalty escalates, and a tight
-    // mechanism (e.g., a crank pin in a connecting-rod eye) can wedge itself
-    // shut.
+    // kinematic body then overshoots its target, and the next solves spend
+    // their iterations pulling it back. On the piston, tightening saves about
+    // 9% of the Newton iterations; without it the scene still runs cleanly,
+    // just more slowly.
     //
     // Once the iterate meets the targets, the usual tolerance applies, as in
     // Rigid IPC, whose convergence test only adds the equality constraints to
@@ -963,8 +964,7 @@ bool Simulator::step()
         // re-initializing κ. Rigid IPC updates the augmented Lagrangian inside
         // a single solve instead, so κ keeps whatever it grew to while the
         // kinematic bodies were driven toward their targets. We keep it too,
-        // since re-seeding would throw that growth away while the multipliers
-        // keep pushing the kinematic bodies into their contacts.
+        // so our solves follow the same κ schedule as Rigid IPC's.
         if (friction_needs_more) {
             initialize_barrier_stiffness(x);
         }
