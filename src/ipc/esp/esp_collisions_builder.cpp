@@ -340,7 +340,7 @@ void QuadratureCollisionsBuilder::build_face_collisions(
 
 void QuadratureCollisionsBuilder::build_edge_edge_collisions(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const std::vector<EdgeEdgeCandidate>& ee_candidates,
+    const CandidateVector<EdgeEdgeCandidate>& ee_candidates,
     const size_t start_i,
     const size_t end_i)
 {

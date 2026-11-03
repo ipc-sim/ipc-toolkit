@@ -16,6 +16,7 @@
 //   IPC_TOOLKIT_BENCH_SAMPLES  timed calls per scene and phase (default 10)
 //   IPC_TOOLKIT_BENCH_OUTPUT   write the results as JSON to this path
 
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/config.hpp>
 
 #if defined(IPC_TOOLKIT_WITH_CUDA) && defined(IPC_TOOLKIT_WITH_PROFILER)
@@ -115,12 +116,12 @@ TEST_CASE("Benchmark LBVH stages", "[!benchmark][broad_phase][lbvh_stages]")
         // calls -- on Cloth-Ball that is 42 MB per call.
         size_t n_cpu = 0, n_gpu = 0;
         scene["cpu_detect"] = profile_calls(samples, [&]() {
-            std::vector<EdgeEdgeCandidate> candidates;
+            ipc::CandidateVector<EdgeEdgeCandidate> candidates;
             cpu.detect_edge_edge_candidates(candidates);
             n_cpu = candidates.size();
         });
         scene["gpu_detect"] = profile_calls(samples, [&]() {
-            std::vector<EdgeEdgeCandidate> candidates;
+            ipc::CandidateVector<EdgeEdgeCandidate> candidates;
             gpu.detect_edge_edge_candidates(candidates);
             n_gpu = candidates.size();
         });

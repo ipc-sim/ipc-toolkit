@@ -1,3 +1,4 @@
+#include <ipc/candidates/candidate_vector.hpp>
 #include <tests/config.hpp>
 #include <tests/broad_phase/brute_force_comparison.hpp>
 #include <tests/utils.hpp>
@@ -81,7 +82,7 @@ CandidateIDs candidate_ids(const FaceFaceCandidate& c)
 
 template <typename Candidate>
 std::vector<CandidateIDs>
-candidate_ids(const std::vector<Candidate>& candidates)
+candidate_ids(const CandidateVector<Candidate>& candidates)
 {
     std::vector<CandidateIDs> result;
     result.reserve(candidates.size());
@@ -95,7 +96,7 @@ void check_all_hash_grid_relations(HashGrid& grid, BruteForce& reference)
 {
 #define COMPARE_RELATION(TYPE, METHOD)                                         \
     {                                                                          \
-        std::vector<TYPE> actual, expected;                                    \
+        CandidateVector<TYPE> actual, expected;                                \
         grid.METHOD(actual);                                                   \
         reference.METHOD(expected);                                            \
         CHECK(std::is_sorted(actual.begin(), actual.end()));                   \
@@ -221,8 +222,8 @@ TEST_CASE(
     }
     UnitCellHashGrid grid;
     grid.build(V, E, F);
-    std::vector<VertexVertexCandidate> vv;
-    std::vector<EdgeVertexCandidate> ev;
+    CandidateVector<VertexVertexCandidate> vv;
+    CandidateVector<EdgeVertexCandidate> ev;
     grid.detect_vertex_vertex_candidates(vv);
     grid.detect_edge_vertex_candidates(ev);
     CHECK(candidate_ids(vv) == expected_vv);
@@ -243,7 +244,7 @@ TEST_CASE(
         return false;
     };
     grid.build(V, E, F);
-    std::vector<VertexVertexCandidate> candidates;
+    CandidateVector<VertexVertexCandidate> candidates;
     grid.detect_vertex_vertex_candidates(candidates);
     CHECK(candidates.empty());
     CHECK(calls.load() == 1);
@@ -271,7 +272,7 @@ void test_face_face_broad_phase(
     } else {
         broad_phase->build(V0, mesh.edges(), mesh.faces(), inflation_radius);
     }
-    std::vector<FaceFaceCandidate> ff_candidates;
+    ipc::CandidateVector<FaceFaceCandidate> ff_candidates;
     broad_phase->detect_face_face_candidates(ff_candidates);
 
     BruteForce bf;
@@ -281,7 +282,7 @@ void test_face_face_broad_phase(
     } else {
         bf.build(V0, mesh.edges(), mesh.faces(), inflation_radius);
     }
-    std::vector<FaceFaceCandidate> bf_ff_candidates;
+    ipc::CandidateVector<FaceFaceCandidate> bf_ff_candidates;
     bf.detect_face_face_candidates(bf_ff_candidates);
 
     CHECK(!ff_candidates.empty());
@@ -520,7 +521,7 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
     const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
     broad_phase->build(boxes, Eigen::MatrixXi(), Eigen::MatrixXi(), /*dim=*/3);
 
-    std::vector<VertexVertexCandidate> candidates;
+    ipc::CandidateVector<VertexVertexCandidate> candidates;
     broad_phase->detect_vertex_vertex_candidates(candidates);
 
     CAPTURE(broad_phase->name());

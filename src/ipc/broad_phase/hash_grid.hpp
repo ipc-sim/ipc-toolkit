@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/broad_phase/broad_phase.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 
 namespace ipc {
 
@@ -46,32 +47,32 @@ public:
 
     /// @brief Find the candidate vertex-vertex collisions.
     void detect_vertex_vertex_candidates(
-        std::vector<VertexVertexCandidate>& candidates) const override;
+        CandidateVector<VertexVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-vertex collisions.
     /// @param[out] candidates The candidate edge-vertex collisions.
     void detect_edge_vertex_candidates(
-        std::vector<EdgeVertexCandidate>& candidates) const override;
+        CandidateVector<EdgeVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-edge collisions.
     /// @param[out] candidates The candidate edge-edge collisions.
     void detect_edge_edge_candidates(
-        std::vector<EdgeEdgeCandidate>& candidates) const override;
+        CandidateVector<EdgeEdgeCandidate>& candidates) const override;
 
     /// @brief Find the candidate face-vertex collisions.
     /// @param[out] candidates The candidate face-vertex collisions.
     void detect_face_vertex_candidates(
-        std::vector<FaceVertexCandidate>& candidates) const override;
+        CandidateVector<FaceVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-face intersections.
     /// @param[out] candidates The candidate edge-face intersections.
     void detect_edge_face_candidates(
-        std::vector<EdgeFaceCandidate>& candidates) const override;
+        CandidateVector<EdgeFaceCandidate>& candidates) const override;
 
     /// @brief Find the candidate face-face collisions.
     /// @param[out] candidates The candidate face-face collisions.
     void detect_face_face_candidates(
-        std::vector<FaceFaceCandidate>& candidates) const override;
+        CandidateVector<FaceFaceCandidate>& candidates) const override;
 
     double cell_size() const { return m_cell_size; }
     // TODO: Update this
@@ -127,7 +128,7 @@ private:
         const AABBs& boxes0,
         const AABBs& boxes1,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates) const;
+        CandidateVector<Candidate>& candidates) const;
 
     /// @brief Find the candidate collisions among a set of items.
     /// @tparam Candidate The type of collision candidate.
@@ -140,7 +141,7 @@ private:
         const std::vector<HashItem>& items,
         const AABBs& boxes,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates) const;
+        CandidateVector<Candidate>& candidates) const;
 
 protected:
     double m_cell_size = -1;

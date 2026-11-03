@@ -486,12 +486,19 @@ double GCPCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
 
 template <typename PrimitiveA, typename PrimitiveB>
 auto GCPCollisionTemplate<PrimitiveA, PrimitiveB>::core_vertex_ids() const
-    -> std::array<index_t, N_CORE_DOFS>
+    -> std::array<index_t, N_CORE_POINTS>
 {
-    std::array<index_t, N_CORE_DOFS> vids {};
-    auto ids = get_core_indices();
-    for (int i = 0; i < N_CORE_DOFS; i++) {
-        vids[i] = m_vertex_ids[ids[i]];
+    // m_vertex_ids has one entry per vertex, so we cannot index it with the
+    // DOF indices from get_core_indices(). Those run up to ELEMENT_SIZE and
+    // read past the end of the vector. Instead, we map each core point to its
+    // vertex slot: the core points are the first vertices of each primitive.
+    std::array<index_t, N_CORE_POINTS> vids {};
+    for (int i = 0; i < PrimitiveA::N_CORE_POINTS; i++) {
+        vids[i] = m_vertex_ids[i];
+    }
+    for (int i = 0; i < PrimitiveB::N_CORE_POINTS; i++) {
+        vids[PrimitiveA::N_CORE_POINTS + i] =
+            m_vertex_ids[primitive_a->n_vertices() + i];
     }
     return vids;
 }

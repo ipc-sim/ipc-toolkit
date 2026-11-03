@@ -51,5 +51,7 @@ void define_eigen_ext(py::module_& m)
         Returns:
             Projected matrix
         )ipc_Qu8mg5v7",
-        "A"_a, "method"_a = PSDProjectionMethod::CLAMP);
+        "A"_a,
+        py::arg_v(
+            "method", PSDProjectionMethod::CLAMP, "PSDProjectionMethod.CLAMP"));
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/broad_phase/default_broad_phase.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/face_vertex.hpp>
@@ -12,6 +13,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -67,15 +69,66 @@ public:
     /// @brief Clear all collision candidates.
     void clear();
 
-    /// @brief Get a collision stencil by index.
-    /// @param i The index of the collision stencil.
-    /// @return A reference to the collision stencil.
-    CollisionStencil& operator[](size_t i);
+private:
+    /// @brief Throw the std::out_of_range for a bad visit() index.
+    [[noreturn]] static void throw_out_of_range(size_t i, size_t size);
 
-    /// @brief Get a collision stencil by index.
-    /// @param i The index of the collision stencil.
-    /// @return A const reference to the collision stencil.
-    const CollisionStencil& operator[](size_t i) const;
+    /// @brief The body of both visit() overloads.
+    ///
+    /// Self is Candidates or const Candidates, so the visitor is handed a
+    /// mutable or const candidate to match the object it was called on.
+    template <typename Self, typename Visitor>
+    static decltype(auto) visit_impl(Self& self, size_t i, Visitor&& f)
+    {
+        // We keep the requested index for the error message, since i is
+        // reduced below as we walk past each list of candidates.
+        const size_t requested = i;
+        if (i < self.vv_candidates.size()) {
+            return f(self.vv_candidates[i]);
+        }
+        i -= self.vv_candidates.size();
+        if (i < self.ev_candidates.size()) {
+            return f(self.ev_candidates[i]);
+        }
+        i -= self.ev_candidates.size();
+        if (i < self.ee_candidates.size()) {
+            return f(self.ee_candidates[i]);
+        }
+        i -= self.ee_candidates.size();
+        if (i < self.fv_candidates.size()) {
+            return f(self.fv_candidates[i]);
+        }
+        i -= self.fv_candidates.size();
+        if (i < self.pv_candidates.size()) {
+            return f(self.pv_candidates[i]);
+        }
+        throw_out_of_range(requested, self.size());
+    }
+
+public:
+    /// @brief Apply a visitor to the candidate at index i.
+    ///
+    /// The candidate types are not polymorphic, so they cannot be handed out
+    /// through a common base reference. The visitor is called with the concrete
+    /// candidate type instead, which also means the stencil operations it calls
+    /// are resolved statically.
+    ///
+    /// @param i The index of the candidate.
+    /// @param f The visitor, callable with each of the five candidate types.
+    /// @return Whatever the visitor returns.
+    /// @throws std::out_of_range if i is not a valid index.
+    template <typename Visitor> decltype(auto) visit(size_t i, Visitor&& f)
+    {
+        return visit_impl(*this, i, std::forward<Visitor>(f));
+    }
+
+    /// @brief Apply a visitor to the candidate at index i.
+    /// @see visit(size_t, Visitor&&)
+    template <typename Visitor>
+    decltype(auto) visit(size_t i, Visitor&& f) const
+    {
+        return visit_impl(*this, i, std::forward<Visitor>(f));
+    }
 
     /// @brief Get if the collision at i is a vertex-vertex collision.
     /// @param i The index of the collision.
@@ -200,7 +253,7 @@ public:
     /// @param vertices Collision mesh vertex positions (rowwise).
     /// @param is_active (Optional) Function to determine if a candidate is active.
     /// @return Vertex-vertex candidates derived from edge-vertex candidates.
-    std::vector<VertexVertexCandidate> edge_vertex_to_vertex_vertex(
+    CandidateVector<VertexVertexCandidate> edge_vertex_to_vertex_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::function<bool(double)>& is_active = default_is_active) const;
@@ -210,7 +263,7 @@ public:
     /// @param vertices Collision mesh vertex positions (rowwise).
     /// @param is_active (Optional) Function to determine if a candidate is active.
     /// @return Vertex-vertex candidates derived from face-vertex candidates.
-    std::vector<VertexVertexCandidate> face_vertex_to_vertex_vertex(
+    CandidateVector<VertexVertexCandidate> face_vertex_to_vertex_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::function<bool(double)>& is_active = default_is_active) const;
@@ -220,7 +273,7 @@ public:
     /// @param vertices Collision mesh vertex positions (rowwise).
     /// @param is_active (Optional) Function to determine if a candidate is active.
     /// @return Edge-vertex candidates derived from face-vertex candidates.
-    std::vector<EdgeVertexCandidate> face_vertex_to_edge_vertex(
+    CandidateVector<EdgeVertexCandidate> face_vertex_to_edge_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::function<bool(double)>& is_active = default_is_active) const;
@@ -230,7 +283,7 @@ public:
     /// @param vertices Collision mesh vertex positions (rowwise).
     /// @param is_active (Optional) Function to determine if a candidate is active.
     /// @return Edge-vertex candidates derived from edge-edge candidates.
-    std::vector<EdgeVertexCandidate> edge_edge_to_edge_vertex(
+    CandidateVector<EdgeVertexCandidate> edge_edge_to_edge_vertex(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::function<bool(double)>& is_active = default_is_active) const;
@@ -278,14 +331,14 @@ public:
     AdjacencyList ff_set(const CollisionMesh& mesh, index_t id) const;
 
 public:
-    std::vector<VertexVertexCandidate> vv_candidates;
-    std::vector<EdgeVertexCandidate> ev_candidates;
-    std::vector<EdgeEdgeCandidate> ee_candidates;
-    std::vector<FaceVertexCandidate> fv_candidates;
-    std::vector<PlaneVertexCandidate> pv_candidates;
+    CandidateVector<VertexVertexCandidate> vv_candidates;
+    CandidateVector<EdgeVertexCandidate> ev_candidates;
+    CandidateVector<EdgeEdgeCandidate> ee_candidates;
+    CandidateVector<FaceVertexCandidate> fv_candidates;
+    CandidateVector<PlaneVertexCandidate> pv_candidates;
 
-    std::vector<EdgeFaceCandidate> ef_candidates;
-    std::vector<FaceFaceCandidate> ff_candidates;
+    CandidateVector<EdgeFaceCandidate> ef_candidates;
+    CandidateVector<FaceFaceCandidate> ff_candidates;
 
     /// @brief Whether these candidates include the types only ESP needs.
     ///

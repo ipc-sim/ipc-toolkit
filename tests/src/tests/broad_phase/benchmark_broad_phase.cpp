@@ -51,7 +51,7 @@ TEST_CASE(
         tbb::global_control::max_allowed_parallelism, threads);
     HashGridTraversalBenchmark grid;
     grid.prepare(sparse ? 1048578 : 4096, sparse);
-    std::vector<VertexVertexCandidate> candidates;
+    CandidateVector<VertexVertexCandidate> candidates;
     BENCHMARK(
         fmt::format(
             "HashGrid {} ({} threads)", sparse ? "sparse" : "reject-all",

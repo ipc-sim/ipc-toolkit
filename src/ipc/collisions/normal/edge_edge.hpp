@@ -6,8 +6,7 @@
 
 namespace ipc {
 
-class EdgeEdgeNormalCollision : public EdgeEdgeCandidate,
-                                public NormalCollision {
+class EdgeEdgeNormalCollision : public EdgeEdgeStencil, public NormalCollision {
 public:
     EdgeEdgeNormalCollision(
         const index_t edge0_id,
