@@ -11,6 +11,90 @@
 
 namespace ipc {
 
+namespace {
+    // Summed thickness of the primitives a collision keeps once its distance
+    // type reduces it to a sub-stencil (e.g., a face-vertex pair closest to an
+    // edge becomes an edge-vertex collision).
+
+    double point_edge_thickness(
+        const CollisionMesh& mesh,
+        const EdgeVertexCandidate& candidate,
+        const PointEdgeDistanceType dtype)
+    {
+        if (!mesh.has_thickness()) {
+            return 0;
+        }
+        const auto& [ei, vi] = candidate;
+        switch (dtype) {
+        case PointEdgeDistanceType::P_E0:
+        case PointEdgeDistanceType::P_E1:
+            return mesh.vertex_thickness(vi)
+                + mesh.vertex_thickness(mesh.edges()(ei, int(dtype)));
+        default:
+            return mesh.pair_thickness(candidate);
+        }
+    }
+
+    double edge_edge_thickness(
+        const CollisionMesh& mesh,
+        const EdgeEdgeCandidate& candidate,
+        const EdgeEdgeDistanceType dtype)
+    {
+        if (!mesh.has_thickness()) {
+            return 0;
+        }
+        const auto& [eai, ebi] = candidate;
+        const auto [ea0i, ea1i, eb0i, eb1i] =
+            candidate.vertex_ids(mesh.edges(), mesh.faces());
+        switch (dtype) {
+        case EdgeEdgeDistanceType::EA0_EB0:
+            return mesh.vertex_thickness(ea0i) + mesh.vertex_thickness(eb0i);
+        case EdgeEdgeDistanceType::EA0_EB1:
+            return mesh.vertex_thickness(ea0i) + mesh.vertex_thickness(eb1i);
+        case EdgeEdgeDistanceType::EA1_EB0:
+            return mesh.vertex_thickness(ea1i) + mesh.vertex_thickness(eb0i);
+        case EdgeEdgeDistanceType::EA1_EB1:
+            return mesh.vertex_thickness(ea1i) + mesh.vertex_thickness(eb1i);
+        case EdgeEdgeDistanceType::EA_EB0:
+            return mesh.edge_thickness(eai) + mesh.vertex_thickness(eb0i);
+        case EdgeEdgeDistanceType::EA_EB1:
+            return mesh.edge_thickness(eai) + mesh.vertex_thickness(eb1i);
+        case EdgeEdgeDistanceType::EA0_EB:
+            return mesh.vertex_thickness(ea0i) + mesh.edge_thickness(ebi);
+        case EdgeEdgeDistanceType::EA1_EB:
+            return mesh.vertex_thickness(ea1i) + mesh.edge_thickness(ebi);
+        default:
+            return mesh.pair_thickness(candidate);
+        }
+    }
+
+    double point_triangle_thickness(
+        const CollisionMesh& mesh,
+        const FaceVertexCandidate& candidate,
+        const PointTriangleDistanceType dtype)
+    {
+        if (!mesh.has_thickness()) {
+            return 0;
+        }
+        const auto& [fi, vi] = candidate;
+        switch (dtype) {
+        case PointTriangleDistanceType::P_T0:
+        case PointTriangleDistanceType::P_T1:
+        case PointTriangleDistanceType::P_T2:
+            return mesh.vertex_thickness(vi)
+                + mesh.vertex_thickness(mesh.faces()(fi, int(dtype)));
+        case PointTriangleDistanceType::P_E0:
+        case PointTriangleDistanceType::P_E1:
+        case PointTriangleDistanceType::P_E2:
+            return mesh.vertex_thickness(vi)
+                + mesh.edge_thickness(
+                    mesh.faces_to_edges()(fi, int(dtype) - 3));
+        default:
+            return mesh.pair_thickness(candidate);
+        }
+    }
+} // namespace
+
 NormalCollisionsBuilder::NormalCollisionsBuilder(
     const bool _use_area_weighting,
     const bool _enable_shape_derivatives,
@@ -29,7 +113,7 @@ void NormalCollisionsBuilder::add_vertex_vertex_collision(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const VertexVertexCandidate& candidate,
-    const std::function<bool(double)>& is_active)
+    const std::function<bool(double, double)>& is_active)
 {
     const auto& [vi, vj] = candidate;
 
@@ -41,7 +125,7 @@ void NormalCollisionsBuilder::add_vertex_vertex_collision(
 
     const double distance =
         point_point_distance(vertices.row(vi), vertices.row(vj));
-    if (!is_active(distance)) {
+    if (!is_active(distance, mesh.pair_thickness(candidate))) {
         return;
     }
 
@@ -76,7 +160,7 @@ void NormalCollisionsBuilder::add_edge_vertex_collision(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const EdgeVertexCandidate& candidate,
-    const std::function<bool(double)>& is_active)
+    const std::function<bool(double, double)>& is_active)
 {
     const auto& [ei, vi] = candidate;
 
@@ -90,7 +174,7 @@ void NormalCollisionsBuilder::add_edge_vertex_collision(
     const PointEdgeDistanceType dtype = point_edge_distance_type(v, e0, e1);
     const double distance_sqr = point_edge_distance(v, e0, e1, dtype);
 
-    if (!is_active(distance_sqr)
+    if (!is_active(distance_sqr, point_edge_thickness(mesh, candidate, dtype))
         || (use_ogc
             && !ogc::is_edge_vertex_feasible(
                 mesh, vertices, candidate, dtype))) {
@@ -161,7 +245,7 @@ void NormalCollisionsBuilder::add_edge_edge_collision(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const EdgeEdgeCandidate& candidate,
-    const std::function<bool(double)>& is_active)
+    const std::function<bool(double, double)>& is_active)
 {
     const auto& [eai, ebi] = candidate;
 
@@ -183,7 +267,13 @@ void NormalCollisionsBuilder::add_edge_edge_collision(
     const double distance_sqr =
         edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype);
 
-    if (!is_active(distance_sqr)
+    // A nearly parallel pair is mollified into an edge-edge collision whatever
+    // its distance type, so it is active within either thickness.
+    const double thickness = std::max(
+        edge_edge_thickness(mesh, candidate, actual_dtype),
+        mesh.pair_thickness(candidate));
+
+    if (!is_active(distance_sqr, thickness)
         || (use_ogc
             && !ogc::is_edge_edge_feasible(
                 mesh, vertices, candidate, actual_dtype))) {
@@ -276,7 +366,7 @@ void NormalCollisionsBuilder::add_face_vertex_collision(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const FaceVertexCandidate& candidate,
-    const std::function<bool(double)>& is_active)
+    const std::function<bool(double, double)>& is_active)
 {
     const auto& [fi, vi] = candidate;
     if (skip_obstacles && mesh.is_obstacle_vertex(vi)) {
@@ -294,7 +384,8 @@ void NormalCollisionsBuilder::add_face_vertex_collision(
         point_triangle_distance_type(v, f0, f1, f2);
     const double distance_sqr = point_triangle_distance(v, f0, f1, f2, dtype);
 
-    if (!is_active(distance_sqr)
+    if (!is_active(
+            distance_sqr, point_triangle_thickness(mesh, candidate, dtype))
         || (use_ogc
             && !ogc::is_face_vertex_feasible(
                 mesh, vertices, candidate, dtype))) {

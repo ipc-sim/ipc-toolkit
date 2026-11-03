@@ -400,6 +400,111 @@ public:
     }
 
     // -----------------------------------------------------------------------
+    // Thickness
+
+    /// @brief Determine if the primitives have a thickness (see set_thickness()).
+    bool has_thickness() const { return m_vertex_thickness.size() > 0; }
+
+    /// @brief Get the thickness of a vertex (zero without a thickness).
+    /// @param vi Vertex ID.
+    /// @return Thickness of vertex vi.
+    double vertex_thickness(const index_t vi) const
+    {
+        return has_thickness() ? m_vertex_thickness[vi] : 0.0;
+    }
+
+    /// @brief Get the thickness of an edge (zero without a thickness).
+    /// @param ei Edge ID.
+    /// @return Thickness of edge ei.
+    double edge_thickness(const index_t ei) const
+    {
+        return has_thickness() ? m_edge_thickness[ei] : 0.0;
+    }
+
+    /// @brief Get the thickness of a face (zero without a thickness).
+    /// @param fi Face ID.
+    /// @return Thickness of face fi.
+    double face_thickness(const index_t fi) const
+    {
+        return has_thickness() ? m_face_thickness[fi] : 0.0;
+    }
+
+    /// @brief Get the thickness of the vertices (empty without a thickness).
+    const Eigen::VectorXd& vertex_thicknesses() const
+    {
+        return m_vertex_thickness;
+    }
+
+    /// @brief Get the thickness of the edges (empty without a thickness).
+    const Eigen::VectorXd& edge_thicknesses() const { return m_edge_thickness; }
+
+    /// @brief Get the thickness of the faces (empty without a thickness).
+    const Eigen::VectorXd& face_thicknesses() const { return m_face_thickness; }
+
+    /// @brief Get the largest thickness of any primitive (zero without a thickness).
+    double max_thickness() const { return m_max_thickness; }
+
+    /// @brief Get the sum of a pair's two primitives' thicknesses (zero without a thickness).
+    /// @tparam Candidate A candidate or collision type with a thickness(vertex_thickness, edge_thickness, face_thickness) method.
+    /// @param candidate The pair of primitives, whose IDs index this mesh.
+    /// @return How much farther apart than the minimum distance the pair rests.
+    template <typename Candidate>
+    double pair_thickness(const Candidate& candidate) const
+    {
+        return has_thickness()
+            ? candidate.thickness(
+                  m_vertex_thickness, m_edge_thickness, m_face_thickness)
+            : 0.0;
+    }
+
+    /// @brief Give every vertex, edge, and face a thickness.
+    ///
+    /// Each primitive is offset outward by its thickness, so two primitives
+    /// touch when they are the sum of their thicknesses apart. Collisions
+    /// built from this mesh add that sum to their minimum distance
+    /// (NormalCollision::dmin), the broad phase inflates each primitive's box
+    /// by its thickness, and CCD stops each pair at that sum plus the minimum
+    /// distance. A sheet of total thickness h, for example, gives each of its
+    /// primitives h / 2.
+    ///
+    /// @note Collisions and candidates built before this call keep their old distances.
+    /// @param vertex_thickness Thickness of each vertex (size num_vertices()). Must be finite and non-negative, as must the others.
+    /// @param edge_thickness Thickness of each edge (size num_edges()).
+    /// @param face_thickness Thickness of each face (size num_faces()).
+    void set_thickness(
+        Eigen::ConstRef<Eigen::VectorXd> vertex_thickness,
+        Eigen::ConstRef<Eigen::VectorXd> edge_thickness,
+        Eigen::ConstRef<Eigen::VectorXd> face_thickness);
+
+    /// @brief Give each vertex a thickness, which its edges and faces inherit.
+    ///
+    /// An edge or face takes the largest thickness of its vertices. This suits
+    /// thickness given per vertex, such as rods of varying radius.
+    ///
+    /// @see set_thickness()
+    /// @param vertex_thickness Thickness of each vertex (size num_vertices()).
+    void
+    set_vertex_thickness(Eigen::ConstRef<Eigen::VectorXd> vertex_thickness);
+
+    /// @brief Give each face a thickness, which its edges and vertices inherit.
+    ///
+    /// An edge or vertex takes the largest thickness of the faces it bounds, so
+    /// a seam between a thick and a thin panel is as thick as the thick one. An
+    /// edge on no face takes the larger thickness of its two vertices. This
+    /// suits thickness that is piecewise constant over the surface, such as
+    /// garment panels of different fabrics.
+    ///
+    /// @see set_thickness()
+    /// @param face_thickness Thickness of each face (size num_faces()).
+    /// @param vertex_thickness Least thickness of each vertex (size num_vertices()), or empty for zero. It is the whole thickness of a vertex on no face.
+    void set_face_thickness(
+        Eigen::ConstRef<Eigen::VectorXd> face_thickness,
+        Eigen::ConstRef<Eigen::VectorXd> vertex_thickness = Eigen::VectorXd());
+
+    /// @brief Remove the primitives' thickness.
+    void clear_thickness();
+
+    // -----------------------------------------------------------------------
 
     /// @brief Construct a vector of bools indicating whether each vertex is on the surface.
     /// @param num_vertices The number of vertices in the mesh.
@@ -536,6 +641,15 @@ protected:
     std::vector<Eigen::SparseVector<double>> m_vertex_area_jacobian;
     /// @brief The rows of the Jacobian of the edge areas vector.
     std::vector<Eigen::SparseVector<double>> m_edge_area_jacobian;
+
+    /// @brief Thickness of each vertex (empty without a thickness).
+    Eigen::VectorXd m_vertex_thickness;
+    /// @brief Thickness of each edge (empty without a thickness).
+    Eigen::VectorXd m_edge_thickness;
+    /// @brief Thickness of each face (empty without a thickness).
+    Eigen::VectorXd m_face_thickness;
+    /// @brief Largest thickness of any primitive.
+    double m_max_thickness = 0;
 };
 
 } // namespace ipc

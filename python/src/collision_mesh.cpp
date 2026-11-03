@@ -519,6 +519,69 @@ void define_collision_mesh(py::module_& m)
             "are_area_jacobians_initialized",
             &CollisionMesh::are_area_jacobians_initialized,
             "Determine if the area Jacobians have been initialized by calling init_area_jacobians().")
+        .def(
+            "has_thickness", &CollisionMesh::has_thickness,
+            "Determine if the primitives have a thickness (see set_thickness).")
+        .def(
+            "vertex_thickness", &CollisionMesh::vertex_thickness,
+            "Get the thickness of a vertex (zero without a thickness).", "vi"_a)
+        .def(
+            "edge_thickness", &CollisionMesh::edge_thickness,
+            "Get the thickness of an edge (zero without a thickness).", "ei"_a)
+        .def(
+            "face_thickness", &CollisionMesh::face_thickness,
+            "Get the thickness of a face (zero without a thickness).", "fi"_a)
+        .def_property_readonly(
+            "vertex_thicknesses", &CollisionMesh::vertex_thicknesses,
+            "The thickness of the vertices (empty without a thickness).")
+        .def_property_readonly(
+            "edge_thicknesses", &CollisionMesh::edge_thicknesses,
+            "The thickness of the edges (empty without a thickness).")
+        .def_property_readonly(
+            "face_thicknesses", &CollisionMesh::face_thicknesses,
+            "The thickness of the faces (empty without a thickness).")
+        .def_property_readonly(
+            "max_thickness", &CollisionMesh::max_thickness,
+            "The largest thickness of any primitive (zero without a thickness).")
+        .def(
+            "set_thickness", &CollisionMesh::set_thickness,
+            R"ipc_Qu8mg5v7(
+            Give every vertex, edge, and face a thickness.
+
+            Each primitive is offset outward by its thickness, so two primitives touch when they are the sum of their thicknesses apart. Collisions built from this mesh add that sum to their minimum distance (NormalCollision.dmin), the broad phase inflates each primitive's box by its thickness, and CCD stops each pair at that sum plus the minimum distance. A sheet of total thickness h, for example, gives each of its primitives h / 2.
+
+            Parameters:
+                vertex_thickness: Thickness of each vertex (size num_vertices).
+                edge_thickness: Thickness of each edge (size num_edges).
+                face_thickness: Thickness of each face (size num_faces).
+            )ipc_Qu8mg5v7",
+            "vertex_thickness"_a, "edge_thickness"_a, "face_thickness"_a)
+        .def(
+            "set_vertex_thickness", &CollisionMesh::set_vertex_thickness,
+            R"ipc_Qu8mg5v7(
+            Give each vertex a thickness, which its edges and faces inherit.
+
+            An edge or face takes the largest thickness of its vertices.
+
+            Parameters:
+                vertex_thickness: Thickness of each vertex (size num_vertices).
+            )ipc_Qu8mg5v7",
+            "vertex_thickness"_a)
+        .def(
+            "set_face_thickness", &CollisionMesh::set_face_thickness,
+            R"ipc_Qu8mg5v7(
+            Give each face a thickness, which its edges and vertices inherit.
+
+            An edge or vertex takes the largest thickness of the faces it bounds. An edge on no face takes the larger thickness of its two vertices.
+
+            Parameters:
+                face_thickness: Thickness of each face (size num_faces).
+                vertex_thickness: Least thickness of each vertex (size num_vertices), or empty for zero. It is the whole thickness of a vertex on no face.
+            )ipc_Qu8mg5v7",
+            "face_thickness"_a, "vertex_thickness"_a = Eigen::VectorXd())
+        .def(
+            "clear_thickness", &CollisionMesh::clear_thickness,
+            "Remove the primitives' thickness.")
         .def_static(
             "construct_is_on_surface", &CollisionMesh::construct_is_on_surface,
             R"ipc_Qu8mg5v7(

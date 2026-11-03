@@ -55,6 +55,16 @@ template <class C, class PyClass> void define_stencil_methods(PyClass& cls)
             },
             "Select this stencil's DOF from the full matrix of DOF.", "X"_a,
             "edges"_a, "faces"_a)
+        .def(
+            "thickness",
+            [](const C& self, Eigen::ConstRef<Eigen::VectorXd> vertex_thickness,
+               Eigen::ConstRef<Eigen::VectorXd> edge_thickness,
+               Eigen::ConstRef<Eigen::VectorXd> face_thickness) {
+                return self.thickness(
+                    vertex_thickness, edge_thickness, face_thickness);
+            },
+            "Get the sum of the two primitives' thicknesses (see CollisionMesh.set_thickness).",
+            "vertex_thickness"_a, "edge_thickness"_a, "face_thickness"_a)
         // -- distance ------------------------------------------------------
         .def(
             "compute_distance",

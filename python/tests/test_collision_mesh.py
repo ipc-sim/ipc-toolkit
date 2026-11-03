@@ -5,7 +5,9 @@ import numpy as np
 import scipy
 from ipctk import (
     CollisionMesh,
+    EdgeEdgeCandidate,
     NormalCollisions,
+    compute_collision_free_stepsize,
     make_sparse_filter,
     make_vertex_patches_filter,
 )
@@ -263,3 +265,44 @@ def test_zero_custom_areas_drop_their_collisions():
 
     # Zero-weight collisions are dropped, so no contact force is produced.
     assert len(collisions) == 0
+
+
+def test_thickness():
+    V, E = _two_segments()  # 0.1 apart
+    mesh = CollisionMesh(V, E)
+    assert not mesh.has_thickness()
+
+    collisions = NormalCollisions()
+    collisions.build(mesh, V, dhat=0.06)
+    assert len(collisions) == 0
+
+    # Each segment is 0.025 thick, so the pair rests 0.05 apart and is
+    # within dhat of contact.
+    mesh.set_vertex_thickness(np.full(4, 0.025))
+    assert mesh.has_thickness()
+    assert mesh.max_thickness == 0.025
+    assert np.allclose(mesh.edge_thicknesses, 0.025)
+    assert (
+        EdgeEdgeCandidate(0, 1).thickness(
+            mesh.vertex_thicknesses,
+            mesh.edge_thicknesses,
+            mesh.face_thicknesses,
+        )
+        == 0.05
+    )
+
+    collisions.build(mesh, V, dhat=0.06)
+    assert len(collisions) > 0
+    for i in range(len(collisions)):
+        assert np.isclose(collisions[i].dmin, 0.05)
+
+    # Moving the top segment down stops 0.05 above the bottom one.
+    V1 = V.copy()
+    V1[2:, 1] = -0.1
+    step = compute_collision_free_stepsize(mesh, V, V1)
+    assert 0 < step <= 0.25
+    # A min_distance (deprecated) overrides the thickness.
+    assert compute_collision_free_stepsize(mesh, V, V1, min_distance=0) > step
+
+    mesh.clear_thickness()
+    assert not mesh.has_thickness()

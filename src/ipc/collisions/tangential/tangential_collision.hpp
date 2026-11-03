@@ -93,6 +93,9 @@ public:
     /// @brief Normal force magnitude
     double normal_force_magnitude = 0;
 
+    /// @brief Minimum distance of the normal collision this was built from (NormalCollision::dmin).
+    double dmin = 0;
+
     /// @brief GCPCollision instance to compute normal force magnitude and its derivatives
     std::shared_ptr<GCPCollision> gcp_collision;
 

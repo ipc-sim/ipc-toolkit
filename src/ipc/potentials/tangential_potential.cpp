@@ -1,5 +1,6 @@
 #include "friction_potential.hpp"
 
+#include <ipc/candidates/min_distance.hpp>
 #include <ipc/utils/gradient_assembler.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/logger.hpp>
@@ -45,7 +46,7 @@ Eigen::VectorXd TangentialPotential::force(
     Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
     Eigen::ConstRef<Eigen::MatrixXd> velocities,
     const NormalPotential& normal_potential,
-    const double dmin,
+    const std::optional<double> dmin,
     const bool no_mu) const
 {
     if (collisions.empty()) {
@@ -77,7 +78,7 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
     Eigen::ConstRef<Eigen::MatrixXd> velocities,
     const NormalPotential& normal_potential,
     const DiffWRT wrt,
-    const double dmin) const
+    const std::optional<double> dmin) const
 {
     if (collisions.empty()) {
         return Eigen::SparseMatrix<double>(
@@ -329,9 +330,12 @@ VectorMax12d TangentialPotential::force(
     Eigen::ConstRef<VectorMax12d> lagged_displacements, // = u
     Eigen::ConstRef<VectorMax12d> velocities,           // = v
     const NormalPotential& normal_potential,
-    const double dmin,
+    const std::optional<double> dmin,
     const bool no_mu) const
 {
+    if (dmin.has_value()) {
+        warn_dmin_deprecated();
+    }
     // x is the rest position
     // u is the displacement at the beginning of the lagged solve
     // v is the current velocity
@@ -359,7 +363,8 @@ VectorMax12d TangentialPotential::force(
 
     // Compute N(x + u)
     const double N = normal_potential.force_magnitude(
-        collision.compute_distance(lagged_positions), dmin);
+        collision.compute_distance(lagged_positions),
+        dmin.value_or(collision.dmin));
 
     // Compute P
     const MatrixMax<double, 3, 2> P =
@@ -408,8 +413,11 @@ MatrixMax12d TangentialPotential::force_jacobian(
     Eigen::ConstRef<VectorMax12d> velocities,           // = v
     const NormalPotential& normal_potential,
     const DiffWRT wrt,
-    const double dmin) const
+    const std::optional<double> dmin) const
 {
+    if (dmin.has_value()) {
+        warn_dmin_deprecated();
+    }
     // x is the rest position
     // u is the displacement at the beginning of the lagged solve
     // v is the current velocity
@@ -438,7 +446,8 @@ MatrixMax12d TangentialPotential::force_jacobian(
 
     // Compute N
     const double N = normal_potential.force_magnitude(
-        collision.compute_distance(lagged_positions), dmin);
+        collision.compute_distance(lagged_positions),
+        dmin.value_or(collision.dmin));
 
     // Compute ∇N
     VectorMax12d grad_N;
@@ -446,7 +455,8 @@ MatrixMax12d TangentialPotential::force_jacobian(
         // ∇ₓN = ∇ᵤN
         grad_N = normal_potential.force_magnitude_gradient(
             collision.compute_distance(lagged_positions),
-            collision.compute_distance_gradient(lagged_positions), dmin);
+            collision.compute_distance_gradient(lagged_positions),
+            dmin.value_or(collision.dmin));
         assert(grad_N.array().isFinite().all());
     }
 
@@ -590,9 +600,12 @@ Eigen::VectorXd TangentialPotential::gcp_force(
     Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
     Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
     Eigen::ConstRef<Eigen::MatrixXd> velocities,
-    const double dmin,
+    const std::optional<double> dmin,
     const bool no_mu) const
 {
+    if (dmin.has_value()) {
+        warn_dmin_deprecated();
+    }
     if (collisions.empty()) {
         return Eigen::VectorXd::Zero(velocities.size());
     }
@@ -621,9 +634,12 @@ Eigen::SparseMatrix<double> TangentialPotential::gcp_force_jacobian(
     Eigen::ConstRef<Eigen::MatrixXd> velocities,
     const GCPParameters& params,
     const DiffWRT wrt,
-    const double dmin,
+    const std::optional<double> dmin,
     const bool no_mu) const
 {
+    if (dmin.has_value()) {
+        warn_dmin_deprecated();
+    }
     if (collisions.empty()) {
         return Eigen::SparseMatrix<double>(
             velocities.size(), velocities.size());

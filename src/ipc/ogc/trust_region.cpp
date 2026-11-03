@@ -17,7 +17,7 @@ void TrustRegion::warm_start_time_step(
     Eigen::ConstRef<Eigen::MatrixXd> pred_x,
     NormalCollisions& collisions,
     const double dhat,
-    const double min_distance,
+    const std::optional<double> min_distance,
     BroadPhase* broad_phase)
 {
     // Assign a default broad phase if none is provided.
@@ -67,7 +67,7 @@ void TrustRegion::update(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> x,
     NormalCollisions& collisions,
-    const double min_distance,
+    const std::optional<double> min_distance,
     BroadPhase* broad_phase)
 {
     assert(0 < relaxed_radius_scaling && relaxed_radius_scaling < 1);
@@ -83,7 +83,8 @@ void TrustRegion::update(
     }
 
     candidates.build(
-        mesh, vertices, trust_region_inflation_radius + min_distance,
+        mesh, vertices,
+        trust_region_inflation_radius + min_distance.value_or(0.0),
         broad_phase);
 
     // Compute the trust region distances for the reduced set of collision
