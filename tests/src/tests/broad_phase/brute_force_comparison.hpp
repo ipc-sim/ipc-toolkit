@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/collision_mesh.hpp>
 #include <ipc/candidates/candidates.hpp>
 
@@ -16,5 +17,5 @@ void brute_force_comparison(
     const ipc::CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    std::vector<Candidate>& candidates,
-    std::vector<Candidate>& bf_candidates);
+    ipc::CandidateVector<Candidate>& candidates,
+    ipc::CandidateVector<Candidate>& bf_candidates);

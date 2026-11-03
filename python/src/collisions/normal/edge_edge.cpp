@@ -6,7 +6,7 @@ using namespace ipc;
 
 void define_edge_edge_normal_collision(py::module_& m)
 {
-    py::class_<EdgeEdgeNormalCollision, EdgeEdgeCandidate, NormalCollision>(
+    py::class_<EdgeEdgeNormalCollision, EdgeEdgeStencil, NormalCollision>(
         m, "EdgeEdgeNormalCollision")
         .def(
             py::init<

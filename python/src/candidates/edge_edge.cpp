@@ -1,13 +1,15 @@
 #include <common.hpp>
 
+#include "stencil_methods.hpp"
+
 #include <ipc/candidates/edge_edge.hpp>
 
 using namespace ipc;
 
 void define_edge_edge_candidate(py::module_& m)
 {
-    py::class_<EdgeEdgeCandidate, CollisionStencil>(m, "EdgeEdgeCandidate")
-        .def(py::init<index_t, index_t>(), "edge0_id"_a, "edge1_id"_a)
+    auto cls = py::class_<EdgeEdgeCandidate>(m, "EdgeEdgeCandidate");
+    cls.def(py::init<index_t, index_t>(), "edge0_id"_a, "edge1_id"_a)
         .def(
             py::init([](std::tuple<index_t, index_t> edge_ids) {
                 return std::make_unique<EdgeEdgeCandidate>(
@@ -38,4 +40,12 @@ void define_edge_edge_candidate(py::module_& m)
 
     py::implicitly_convertible<
         std::tuple<index_t, index_t>, EdgeEdgeCandidate>();
+
+    define_stencil_methods<EdgeEdgeCandidate>(cls);
+
+    // The adapter the collision types derive from; it carries the
+    // polymorphic stencil interface the POD candidate deliberately
+    // lacks.
+    py::class_<EdgeEdgeStencil, EdgeEdgeCandidate, CollisionStencil>(
+        m, "EdgeEdgeStencil");
 }

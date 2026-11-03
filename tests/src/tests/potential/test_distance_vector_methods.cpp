@@ -111,7 +111,7 @@ TEST_CASE(
         Eigen::MatrixXd V(2, 3);
         V << -1, 0, 0, /**/ 1, 0, 0;
         Eigen::MatrixXi E, F;
-        collision = std::make_unique<VertexVertexCandidate>(0, 1);
+        collision = std::make_unique<VertexVertexStencil>(0, 1);
         positions = collision->dof(V, E, F);
     }
     SECTION("Edge-vertex")
@@ -120,7 +120,7 @@ TEST_CASE(
         V << -1, 0, 0, /**/ 1, 0, 0, /**/ 0, 1, 0;
         Eigen::MatrixXi E(1, 2), F;
         E << 0, 1;
-        collision = std::make_unique<EdgeVertexCandidate>(0, 2);
+        collision = std::make_unique<EdgeVertexStencil>(0, 2);
         positions = collision->dof(V, E, F);
     }
     SECTION("Edge-edge")
@@ -129,7 +129,7 @@ TEST_CASE(
         V << -1, 0, 0, /**/ 1, 0, 0, /**/ 0, -1, 1, /**/ 0, 1, 1;
         Eigen::MatrixXi E(2, 2), F;
         E << 0, 1, /**/ 2, 3;
-        collision = std::make_unique<EdgeEdgeCandidate>(0, 1);
+        collision = std::make_unique<EdgeEdgeStencil>(0, 1);
         positions = collision->dof(V, E, F);
     }
     SECTION("Face-vertex")
@@ -140,7 +140,7 @@ TEST_CASE(
         F << 0, 1, 2;
         Eigen::MatrixXi E;
         igl::edges(F, E);
-        collision = std::make_unique<FaceVertexCandidate>(0, 3);
+        collision = std::make_unique<FaceVertexStencil>(0, 3);
         positions = collision->dof(V, E, F);
     }
 
