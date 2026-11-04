@@ -1,4 +1,4 @@
-"""Python access to the experimental, frictionless local-transfer formulation."""
+"""Python access to the experimental local-transfer formulation."""
 import unittest
 import numpy as np
 from find_ipctk import ipctk

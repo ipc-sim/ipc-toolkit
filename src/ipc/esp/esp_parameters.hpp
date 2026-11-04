@@ -100,7 +100,8 @@ struct ESPParameters {
     /// edge endpoints to EE samples instead of renormalizing all samples.
     /// Requires use_near_far=true and a face rule with positive weight at
     /// every corner (the corners donate the weight).
-    /// Currently supports frictionless contact only.
+    /// Friction uses each sample's coefficient in the transferred energy
+    /// (faces only, as the rest of ESP friction).
     /// Has no effect in 2D or when dbar_factor=0. Disabled by default.
     bool local_quadrature_transfer = false;
     const IntegrationType integration_type;

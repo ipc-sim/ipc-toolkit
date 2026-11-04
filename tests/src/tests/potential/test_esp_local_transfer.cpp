@@ -1,4 +1,5 @@
 #include <tests/dof_layout.hpp>
+#include <tests/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -421,22 +422,60 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "ESP local transfer rejects inconsistent friction weights",
-    "[esp_potential][esp_local_transfer]")
+    "ESP friction under local transfer", "[esp_local_transfer][friction-esp]")
 {
-    auto s = edge_over_box();
-    ESPParameters params(.03, .05);
+    Eigen::MatrixXd X;
+    Eigen::MatrixXi E, F;
+    REQUIRE(tests::load_mesh("two-cubes-close.ply", X, E, F));
+    const CollisionMesh mesh(X, E, F);
+    ESPParameters params(0.1, 1.0, 0);
     params.local_quadrature_transfer = true;
-    ESPCollisions c;
-    c.build(s.mesh, s.X, params);
-    TangentialCollisions friction;
-    const Eigen::VectorXd zero = Eigen::VectorXd::Zero(s.X.rows());
-    const Eigen::VectorXd mu = Eigen::VectorXd::Constant(s.X.rows(), .3);
-    CHECK_NOTHROW(friction.build(s.mesh, s.X, c, params, 1.0, zero, zero));
-    CHECK(friction.empty());
-    CHECK_THROWS_AS(
-        friction.build(s.mesh, s.X, c, params, 1.0, mu, mu),
-        std::invalid_argument);
+    const Eigen::VectorXd mu = Eigen::VectorXd::Constant(X.rows(), .3);
+
+    SECTION("Without EE weight nothing is transferred")
+    {
+        // Every EE mollifier weight is 0, so the transferred energy equals
+        // the normalized one and so must the friction weights.
+        params.ee_weight = 0;
+        ESPParameters plain = params;
+        plain.local_quadrature_transfer = false;
+        ESPCollisions c;
+        c.build(mesh, X, params);
+        TangentialCollisions with, without;
+        with.build(mesh, X, c, params, 1.0, mu, mu);
+        without.build(mesh, X, c, plain, 1.0, mu, mu);
+        REQUIRE(with.size() > 0);
+        REQUIRE(with.size() == without.size());
+        for (size_t i = 0; i < with.size(); i++) {
+            CHECK(
+                with[i].normal_force_magnitude
+                == Catch::Approx(without[i].normal_force_magnitude)
+                       .epsilon(1e-12));
+        }
+    }
+
+    SECTION("EE samples carry friction")
+    {
+        ESPCollisions c;
+        c.build(mesh, X, params);
+        TangentialCollisions with, without;
+        REQUIRE_NOTHROW(with.build(mesh, X, c, params, 1.0, mu, mu));
+        ESPParameters plain = params;
+        plain.local_quadrature_transfer = false;
+        without.build(mesh, X, c, plain, 1.0, mu, mu);
+        CHECK(!with.ee_collisions.empty());
+        CHECK(with.size() == without.size());
+        double total_with = 0, total_without = 0;
+        for (size_t i = 0; i < with.size(); i++) {
+            CHECK(std::isfinite(with[i].normal_force_magnitude));
+            CHECK(with[i].normal_force_magnitude >= 0);
+            total_with += with[i].normal_force_magnitude;
+            total_without += without[i].normal_force_magnitude;
+        }
+        // Same contacts, redistributed weights: totals are close but differ.
+        CHECK(total_with > 0);
+        CHECK(total_with != total_without);
+    }
 }
 
 TEST_CASE(
