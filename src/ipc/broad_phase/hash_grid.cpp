@@ -139,6 +139,13 @@ namespace {
 #else
         tbb::enumerable_thread_specific<unordered_set<Candidate>> storage;
 #endif
+
+        // Test every pair between items0[begin0, end0) and items1[begin1, end1)
+        // and store the ones that pass the collision filter and whose AABBs
+        // overlap. We run the filter first, so it is called on every pair in
+        // the cell, even ones whose boxes don't overlap. Callers rely on this
+        // filter-first order, and a regression test pins it. This writes to a
+        // thread-local buffer, so it is safe to call from many threads at once.
         const auto emit = [&](long begin0, long end0, long begin1, long end1) {
             auto& local_candidates = storage.local();
             if constexpr (SameItems) {
@@ -162,6 +169,12 @@ namespace {
                 }
             }
         };
+
+        // Enumerate the pairs inside one cell. Most cells hold only a few
+        // items, so we handle those serially: spawning tasks for them would
+        // cost more than the work they do. A cell with many items on either
+        // side gets split into 64x64 tiles that run in parallel, so a single
+        // crowded cell can't leave the other threads idle.
         const auto process_cell = [&](long begin0, long end0, long begin1,
                                       long end1) {
             if (end0 - begin0 <= 64 && end1 - begin1 <= 64) {
@@ -177,6 +190,12 @@ namespace {
                     });
             }
         };
+
+        // Process all the cells queued so far in parallel, then clear the
+        // queue. Cells are independent, so TBB spreads them across threads and
+        // each one goes to process_cell. Running in batches instead of
+        // queueing every cell up front is what keeps our temporary storage
+        // bounded.
         const auto process_batch = [&]() {
             tbb::parallel_for(
                 tbb::blocked_range<size_t>(0, cells.size()),
@@ -195,6 +214,10 @@ namespace {
             cells.clear();
         };
 
+        // Find the end of the run of items that share a key with
+        // items[begin]. The items are sorted by key, so a run is exactly the
+        // set of items that landed in one cell, and we can find its end with a
+        // linear scan instead of a search.
         const auto run_end = [](const auto& items, long begin) {
             long end = begin + 1;
             while (end < items.size() && items[end].key == items[begin].key) {
@@ -202,15 +225,19 @@ namespace {
             }
             return end;
         };
+
+        // Walk both sorted item lists, queueing each cell the two share.
         long i = 0, j = 0;
         while (i < items0.size() && j < items1.size()) {
             if constexpr (SameItems) {
+                // A cell needs at least two items to form a pair.
                 const long ie = run_end(items0, i);
                 if (ie - i > 1) {
                     cells.push_back({ i, ie });
                 }
                 i = j = ie;
             } else {
+                // Skip cells that only one side occupies.
                 if (items0[i].key < items1[j].key) {
                     i = run_end(items0, i);
                     continue;
@@ -219,19 +246,24 @@ namespace {
                     j = run_end(items1, j);
                     continue;
                 }
+                // Both sides share this key, so queue the cell.
                 const long ie = run_end(items0, i);
                 const long je = run_end(items1, j);
                 cells.push_back({ { i, ie }, { j, je } });
                 i = ie;
                 j = je;
             }
+            // Flush a full batch to keep the queue bounded.
             if (cells.size() == max_cells_per_batch) {
                 process_batch();
             }
         }
+
+        // Flush the final partial batch.
         if (!cells.empty()) {
             process_batch();
         }
+
 #ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
         merge_thread_local_vectors(storage, candidates);
         tbb::parallel_sort(candidates.begin(), candidates.end());
