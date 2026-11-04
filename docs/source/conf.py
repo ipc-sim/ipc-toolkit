@@ -481,3 +481,26 @@ def setup(app):
         lambda app, domain, objtype, content: remove_collaboration_graphs(app, content),
     )
     app.connect("doctree-read", remove_collaboration_graphs)
+
+    def wrap_tables(app, doctree):
+        """Put each hand-written table in a ``div.ipc-table``.
+
+        custom.css draws that div as the table's card. A table that fills the
+        column can't also scroll sideways, so we let the div do the scrolling
+        and keep the table at 100% of it: a table wider than the column (the
+        six-column dependency lists, say) then scrolls inside its card instead
+        of spilling past it. We leave autosummary member lists and the Rigid
+        IPC page's side-by-side comparisons alone, since they style
+        themselves.
+        """
+        from docutils import nodes
+
+        skip = {"autosummary", "rigid-ipc-versus"}
+        for table in list(doctree.findall(nodes.table)):
+            if skip & set(table["classes"]):
+                continue
+            wrapper = nodes.container(classes=["ipc-table"])
+            table.replace_self(wrapper)
+            wrapper += table
+
+    app.connect("doctree-read", wrap_tables)
