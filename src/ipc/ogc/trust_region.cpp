@@ -17,7 +17,7 @@ void TrustRegion::warm_start_time_step(
     Eigen::ConstRef<Eigen::MatrixXd> pred_x,
     NormalCollisions& collisions,
     const double dhat,
-    const double min_distance,
+    const std::optional<double> min_distance,
     BroadPhase* broad_phase)
 {
     // Assign a default broad phase if none is provided.
@@ -67,7 +67,7 @@ void TrustRegion::update(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> x,
     NormalCollisions& collisions,
-    const double min_distance,
+    const std::optional<double> min_distance,
     BroadPhase* broad_phase)
 {
     assert(0 < relaxed_radius_scaling && relaxed_radius_scaling < 1);
@@ -83,7 +83,8 @@ void TrustRegion::update(
     }
 
     candidates.build(
-        mesh, vertices, trust_region_inflation_radius + min_distance,
+        mesh, vertices,
+        trust_region_inflation_radius + min_distance.value_or(0.0),
         broad_phase);
 
     // Compute the trust region distances for the reduced set of collision
@@ -243,14 +244,21 @@ void TrustRegion::planar_filter_step(
     }
 
     tbb::parallel_for(size_t(0), candidates.size(), [&](size_t i) {
-        const CollisionStencil& c = candidates[i];
-        const auto ids = c.vertex_ids(mesh.edges(), mesh.faces());
-        const int nv = c.num_vertices();
-        const VectorMax12d pos = c.dof(vertices, mesh.edges(), mesh.faces());
-
+        // The candidate types are not polymorphic, so take what is needed
+        // from the visitor and work with values from here on.
         // dv = c_first − c_second; positive coeffs → first primitive
+        std::array<index_t, CollisionStencil::STENCIL_SIZE> ids {};
+        int nv = 0;
+        VectorMax12d pos;
         VectorMax4d coeffs;
-        const VectorMax3d dv = c.compute_distance_vector(pos, coeffs);
+        VectorMax3d dv;
+        candidates.visit(i, [&](const auto& c) {
+            ids = c.vertex_ids(mesh.edges(), mesh.faces());
+            nv = c.num_vertices();
+            pos = c.dof(vertices, mesh.edges(), mesh.faces());
+            dv = c.compute_distance_vector(pos, coeffs);
+        });
+
         const double dist = dv.norm();
         if (dist < 1e-10) {
             return;

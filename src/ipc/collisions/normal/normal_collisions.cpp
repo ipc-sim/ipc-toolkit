@@ -1,5 +1,6 @@
 #include "normal_collisions.hpp"
 
+#include <ipc/candidates/min_distance.hpp>
 #include <ipc/collisions/normal/normal_collisions_builder.hpp>
 #include <ipc/math/scalar_math.hpp>
 #include <ipc/utils/local_to_global.hpp>
@@ -19,13 +20,14 @@ void NormalCollisions::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double dhat,
-    const double dmin,
+    const std::optional<double> dmin,
     BroadPhase* broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
     IPC_TOOLKIT_PROFILE_BLOCK("NormalCollisions::build");
 
-    const double inflation_radius = 0.5 * (dhat + dmin);
+    // Candidates::build() adds each primitive's thickness on top of this.
+    const double inflation_radius = 0.5 * (dhat + dmin.value_or(0.0));
 
     Candidates candidates;
     candidates.build(mesh, vertices, inflation_radius, broad_phase);
@@ -38,7 +40,7 @@ void NormalCollisions::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double dhat,
-    const double dmin)
+    const std::optional<double> dmin)
 {
     assert(vertices.rows() == mesh.num_vertices());
     IPC_TOOLKIT_PROFILE_BLOCK("NormalCollisions::build(candidates)");
@@ -53,13 +55,30 @@ void NormalCollisions::build(
             "NormalCollisions::build: 3D candidates must be built with all_types = false");
     }
 
+    if (dmin.has_value()) {
+        warn_dmin_deprecated();
+    }
+
     clear();
 
-    // Cull the candidates by measuring the distance and dropping those that are
-    // greater than dhat.
-    auto is_active = [offset_sqr = sqr(dmin + dhat)](double distance_sqr) {
-        return distance_sqr < offset_sqr;
+    // The minimum distance of a pair: the deprecated dmin if given, else the
+    // sum of the two primitives' thicknesses.
+    const auto pair_dmin = [&dmin](const double thickness) {
+        return dmin.has_value() ? *dmin : thickness;
     };
+
+    // Cull the candidates by measuring the distance and dropping those that are
+    // greater than dhat past the pair's minimum distance.
+    auto is_active = [&](double distance_sqr, double thickness) {
+        return distance_sqr < sqr(pair_dmin(thickness) + dhat);
+    };
+    // The improved max approximation's corrections are culled with the
+    // thickest pair's band. That keeps every correction a thinner pair's
+    // collision needs, and a correction outside its own band adds nothing
+    // because its potential is zero there.
+    auto is_active_correction =
+        [offset_sqr = sqr(pair_dmin(2 * mesh.max_thickness()) + dhat)](
+            double distance_sqr) { return distance_sqr < offset_sqr; };
 
     tbb::enumerable_thread_specific<NormalCollisionsBuilder> storage(
         use_area_weighting(), enable_shape_derivatives(),
@@ -93,7 +112,7 @@ void NormalCollisions::build(
         if (!candidates.ev_candidates.empty()) {
             // Convert edge-vertex to vertex-vertex
             const auto vv_candidates = candidates.edge_vertex_to_vertex_vertex(
-                mesh, vertices, is_active);
+                mesh, vertices, is_active_correction);
 
             tbb::parallel_for(size_t(0), vv_candidates.size(), [&](size_t i) {
                 storage.local()
@@ -104,8 +123,8 @@ void NormalCollisions::build(
 
         if (!candidates.ee_candidates.empty()) {
             // Convert edge-edge to edge-vertex
-            const auto ev_candidates =
-                candidates.edge_edge_to_edge_vertex(mesh, vertices, is_active);
+            const auto ev_candidates = candidates.edge_edge_to_edge_vertex(
+                mesh, vertices, is_active_correction);
 
             tbb::parallel_for(size_t(0), ev_candidates.size(), [&](size_t i) {
                 storage.local().add_edge_edge_negative_edge_vertex_collision(
@@ -116,7 +135,7 @@ void NormalCollisions::build(
         if (!candidates.fv_candidates.empty()) {
             // Convert face-vertex to edge-vertex
             const auto ev_candidates = candidates.face_vertex_to_edge_vertex(
-                mesh, vertices, is_active);
+                mesh, vertices, is_active_correction);
 
             tbb::parallel_for(size_t(0), ev_candidates.size(), [&](size_t i) {
                 storage.local().add_face_vertex_negative_edge_vertex_collision(
@@ -125,7 +144,7 @@ void NormalCollisions::build(
 
             // Convert face-vertex to vertex-vertex
             const auto vv_candidates = candidates.face_vertex_to_vertex_vertex(
-                mesh, vertices, is_active);
+                mesh, vertices, is_active_correction);
 
             tbb::parallel_for(size_t(0), vv_candidates.size(), [&](size_t i) {
                 storage.local()
@@ -144,7 +163,7 @@ void NormalCollisions::build(
             continue;
         }
         const double d = plane.signedDistance(vertices.row(vertex_id));
-        if (d < dhat + dmin) {
+        if (d < dhat + pair_dmin(mesh.vertex_thickness(vertex_id))) {
             const double weight =
                 use_area_weighting() ? mesh.vertex_area(vertex_id) : 1;
 
@@ -162,10 +181,16 @@ void NormalCollisions::build(
 
     // logger().debug(to_string(mesh, vertices));
 
-    for (size_t ci = 0; ci < size(); ci++) {
-        NormalCollision& collision = (*this)[ci];
-        collision.dmin = dmin;
-    }
+    const auto set_dmin = [&](auto& collisions) {
+        for (auto& collision : collisions) {
+            collision.dmin = pair_dmin(mesh.pair_thickness(collision));
+        }
+    };
+    set_dmin(vv_collisions);
+    set_dmin(ev_collisions);
+    set_dmin(ee_collisions);
+    set_dmin(fv_collisions);
+    set_dmin(pv_collisions);
 }
 
 void NormalCollisions::set_use_area_weighting(const bool use_area_weighting)

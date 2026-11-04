@@ -13,49 +13,53 @@ EdgeVertexCandidate::EdgeVertexCandidate(index_t _edge_id, index_t _vertex_id)
 }
 
 double EdgeVertexCandidate::compute_distance(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const PointEdgeDistanceType dtype) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
     const int dim = this->dim(positions.size());
     return point_edge_distance(
         positions.head(dim), positions.segment(dim, dim), positions.tail(dim),
-        known_dtype());
+        dtype);
 }
 
 VectorMax12d EdgeVertexCandidate::compute_distance_gradient(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const PointEdgeDistanceType dtype) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
     // Branching here is faster (3.1x) than passing dynamic slices.
     if (positions.size() == 6) {
         return point_edge_distance_gradient(
             positions.head<2>(), positions.segment<2>(2), positions.tail<2>(),
-            known_dtype());
+            dtype);
     } else {
         return point_edge_distance_gradient(
             positions.head<3>(), positions.segment<3>(3), positions.tail<3>(),
-            known_dtype());
+            dtype);
     }
 }
 
 MatrixMax12d EdgeVertexCandidate::compute_distance_hessian(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const PointEdgeDistanceType dtype) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
     // Branching here is faster than passing dynamic slices.
     if (positions.size() == 6) {
         return point_edge_distance_hessian(
             positions.head<2>(), positions.segment<2>(2), positions.tail<2>(),
-            known_dtype());
+            dtype);
     } else {
         return point_edge_distance_hessian(
             positions.head<3>(), positions.segment<3>(3), positions.tail<3>(),
-            known_dtype());
+            dtype);
     }
 }
 
 VectorMax4d EdgeVertexCandidate::compute_coefficients(
-    Eigen::ConstRef<VectorMax12d> positions) const
+    Eigen::ConstRef<VectorMax12d> positions,
+    const PointEdgeDistanceType dtype) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
     const int dim = this->dim(positions.size());
@@ -63,13 +67,13 @@ VectorMax4d EdgeVertexCandidate::compute_coefficients(
     Eigen::ConstRef<VectorMax3d> t0 = positions.segment(dim, dim);
     Eigen::ConstRef<VectorMax3d> t1 = positions.tail(dim);
 
-    auto dtype = known_dtype();
-    if (dtype == PointEdgeDistanceType::AUTO) {
-        dtype = point_edge_distance_type(p, t0, t1);
+    PointEdgeDistanceType resolved_dtype = dtype;
+    if (resolved_dtype == PointEdgeDistanceType::AUTO) {
+        resolved_dtype = point_edge_distance_type(p, t0, t1);
     }
 
     VectorMax4d coeffs(3);
-    switch (dtype) {
+    switch (resolved_dtype) {
     case PointEdgeDistanceType::P_E0:
         coeffs << 1.0, -1.0, 0.0;
         break;

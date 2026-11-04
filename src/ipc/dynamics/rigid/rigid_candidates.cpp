@@ -133,7 +133,7 @@ void RigidCandidates::build(
         }
     };
 
-    std::vector<VertexVertexCandidate> body_candidates;
+    CandidateVector<VertexVertexCandidate> body_candidates;
     {
         BodyPassGuard guard { *broad_phase, broad_phase->can_vertices_collide };
         // TODO: Implement a mechanism to allow the caller to specify a
@@ -255,7 +255,7 @@ void RigidCandidates::build(
 
         if (dim == 2) {
             // (eᵢ, vⱼ): receives (this_edge_id, other_vertex_id)
-            std::vector<EdgeVertexCandidate> ev;
+            CandidateVector<EdgeVertexCandidate> ev;
             body_i_bvh.detect_edge_vertex_candidates(
                 body_j_leaves,
                 [&](size_t ei, size_t vj) {
@@ -281,7 +281,7 @@ void RigidCandidates::build(
             }
         } else {
             // (eᵢ, eⱼ): receives (this_edge_id, other_edge_id)
-            std::vector<EdgeEdgeCandidate> ee;
+            CandidateVector<EdgeEdgeCandidate> ee;
             body_i_bvh.detect_edge_edge_candidates(
                 body_j_leaves,
                 [&](size_t ei, size_t ej) {
@@ -294,7 +294,7 @@ void RigidCandidates::build(
             }
 
             // (fᵢ, vⱼ): receives (this_face_id, other_vertex_id)
-            std::vector<FaceVertexCandidate> fv;
+            CandidateVector<FaceVertexCandidate> fv;
             body_i_bvh.detect_face_vertex_candidates(
                 body_j_leaves,
                 [&](size_t fi, size_t vj) {
@@ -331,7 +331,7 @@ void RigidCandidates::build(
 
         if (i_has_cv && j_has_cv) {
             // (vᵢ, vⱼ): receives (this_vertex_id, other_vertex_id)
-            std::vector<VertexVertexCandidate> vv;
+            CandidateVector<VertexVertexCandidate> vv;
             body_i_bvh.detect_vertex_vertex_candidates(
                 body_j_leaves,
                 [&](size_t vi, size_t vj) {
@@ -349,7 +349,7 @@ void RigidCandidates::build(
         if (dim == 3) {
             if (bodies.body_num_codim_edges(body_i) > 0 && j_has_cv) {
                 // (eᵢ, vⱼ): receives (this_edge_id, other_vertex_id)
-                std::vector<EdgeVertexCandidate> ev;
+                CandidateVector<EdgeVertexCandidate> ev;
                 body_i_bvh.detect_edge_vertex_candidates(
                     body_j_leaves,
                     [&](size_t ei, size_t vj) {
@@ -366,7 +366,7 @@ void RigidCandidates::build(
 
             if (i_has_cv && bodies.body_num_codim_edges(body_j) > 0) {
                 // (eⱼ, vᵢ): receives (other_edge_id, this_vertex_id)
-                std::vector<EdgeVertexCandidate> ev;
+                CandidateVector<EdgeVertexCandidate> ev;
                 body_i_bvh.detect_vertex_edge_candidates(
                     body_j_leaves,
                     [&](size_t ej, size_t vi) {

@@ -3,6 +3,7 @@ set(SOURCES
   test_normal_collisions.cpp
   test_obstacles.cpp
   test_plane_vertex_collisions.cpp
+  test_thickness.cpp
 
   # Benchmarks
 

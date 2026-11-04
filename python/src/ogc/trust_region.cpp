@@ -34,11 +34,11 @@ void define_trust_region(py::module_& m)
                 pred_x: Predicted vertex positions.
                 collisions: Collisions to be initialized.
                 dhat: The offset distance for contact.
-                min_distance: Minimum distance between elements.
+                min_distance: Deprecated minimum distance between elements, which overrides the mesh's thickness when given.
                 broad_phase: Broad phase collision detection.
             )ipc_Qu8mg5v7",
             "mesh"_a, "x"_a, "pred_x"_a, "collisions"_a, "dhat"_a,
-            "min_distance"_a = 0.0, "broad_phase"_a = nullptr)
+            "min_distance"_a = py::none(), "broad_phase"_a = nullptr)
         .def(
             "update", &ogc::TrustRegion::update,
             R"ipc_Qu8mg5v7(
@@ -48,10 +48,10 @@ void define_trust_region(py::module_& m)
                 mesh: The collision mesh.
                 x: Current vertex positions.
                 collisions: Collisions to be updated.
-                min_distance: Minimum distance between elements.
+                min_distance: Deprecated minimum distance between elements, which overrides the mesh's thickness when given.
                 broad_phase: Broad phase collision detection.
             )ipc_Qu8mg5v7",
-            "mesh"_a, "x"_a, "collisions"_a, "min_distance"_a = 0.0,
+            "mesh"_a, "x"_a, "collisions"_a, "min_distance"_a = py::none(),
             "broad_phase"_a = nullptr)
         .def(
             "update_if_needed", &ogc::TrustRegion::update_if_needed,
@@ -62,10 +62,10 @@ void define_trust_region(py::module_& m)
                 mesh: The collision mesh.
                 x: Current vertex positions.
                 collisions: Collisions to be updated.
-                min_distance: Minimum distance between elements.
+                min_distance: Deprecated minimum distance between elements, which overrides the mesh's thickness when given.
                 broad_phase: Broad phase collision detection.
             )ipc_Qu8mg5v7",
-            "mesh"_a, "x"_a, "collisions"_a, "min_distance"_a = 0.0,
+            "mesh"_a, "x"_a, "collisions"_a, "min_distance"_a = py::none(),
             "broad_phase"_a = nullptr)
         .def(
             "filter_step", &ogc::TrustRegion::filter_step,

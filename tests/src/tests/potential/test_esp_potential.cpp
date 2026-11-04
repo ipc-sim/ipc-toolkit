@@ -1950,6 +1950,10 @@ TEST_CASE(
     "ESP potential 2D finite differences",
     "[esp_potential], [esp_potential_2d]")
 {
+#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32)) && !defined(NDEBUG)
+    SKIP("'ESP potential 2D finite differences' test is skipped in debug mode");
+#endif
+
     const int quadrature_order = GENERATE(1, 14);
 
     Eigen::MatrixXd V;

@@ -69,11 +69,12 @@ void define_collision_stencil(py::module_& m)
             "X"_a, "edges"_a, "faces"_a)
         .def(
             "compute_distance",
-            py::overload_cast<
-                Eigen::ConstRef<Eigen::MatrixXd>,
-                Eigen::ConstRef<Eigen::MatrixXi>,
-                Eigen::ConstRef<Eigen::MatrixXi>>(
-                &CollisionStencil::compute_distance, py::const_),
+            [](const CollisionStencil& self,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices,
+               Eigen::ConstRef<Eigen::MatrixXi> edges,
+               Eigen::ConstRef<Eigen::MatrixXi> faces) {
+                return self.compute_distance(vertices, edges, faces);
+            },
             R"ipc_Qu8mg5v7(
             Compute the distance of the stencil.
 
@@ -88,11 +89,12 @@ void define_collision_stencil(py::module_& m)
             "vertices"_a, "edges"_a, "faces"_a)
         .def(
             "compute_distance_gradient",
-            py::overload_cast<
-                Eigen::ConstRef<Eigen::MatrixXd>,
-                Eigen::ConstRef<Eigen::MatrixXi>,
-                Eigen::ConstRef<Eigen::MatrixXi>>(
-                &CollisionStencil::compute_distance_gradient, py::const_),
+            [](const CollisionStencil& self,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices,
+               Eigen::ConstRef<Eigen::MatrixXi> edges,
+               Eigen::ConstRef<Eigen::MatrixXi> faces) {
+                return self.compute_distance_gradient(vertices, edges, faces);
+            },
             R"ipc_Qu8mg5v7(
             Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
 
@@ -107,11 +109,12 @@ void define_collision_stencil(py::module_& m)
             "vertices"_a, "edges"_a, "faces"_a)
         .def(
             "compute_distance_hessian",
-            py::overload_cast<
-                Eigen::ConstRef<Eigen::MatrixXd>,
-                Eigen::ConstRef<Eigen::MatrixXi>,
-                Eigen::ConstRef<Eigen::MatrixXi>>(
-                &CollisionStencil::compute_distance_hessian, py::const_),
+            [](const CollisionStencil& self,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices,
+               Eigen::ConstRef<Eigen::MatrixXi> edges,
+               Eigen::ConstRef<Eigen::MatrixXi> faces) {
+                return self.compute_distance_hessian(vertices, edges, faces);
+            },
             R"ipc_Qu8mg5v7(
             Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
 
@@ -126,11 +129,12 @@ void define_collision_stencil(py::module_& m)
             "vertices"_a, "edges"_a, "faces"_a)
         .def(
             "compute_coefficients",
-            py::overload_cast<
-                Eigen::ConstRef<Eigen::MatrixXd>,
-                Eigen::ConstRef<Eigen::MatrixXi>,
-                Eigen::ConstRef<Eigen::MatrixXi>>(
-                &CollisionStencil::compute_coefficients, py::const_),
+            [](const CollisionStencil& self,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices,
+               Eigen::ConstRef<Eigen::MatrixXi> edges,
+               Eigen::ConstRef<Eigen::MatrixXi> faces) {
+                return self.compute_coefficients(vertices, edges, faces);
+            },
             R"ipc_Qu8mg5v7(
             Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
 

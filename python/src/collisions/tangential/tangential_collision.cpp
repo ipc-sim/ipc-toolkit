@@ -122,6 +122,9 @@ void define_tangential_collision(py::module_& m)
             &TangentialCollision::normal_force_magnitude,
             "Normal force magnitude")
         .def_readwrite(
+            "dmin", &TangentialCollision::dmin,
+            "Minimum distance of the normal collision this was built from")
+        .def_readwrite(
             "mu_s", &TangentialCollision::mu_s,
             "Ratio between normal and static tangential forces (e.g., friction coefficient)")
         .def_readwrite(

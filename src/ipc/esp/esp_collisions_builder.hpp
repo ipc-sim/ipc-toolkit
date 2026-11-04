@@ -78,7 +78,7 @@ public:
     void add_face_vertex_collisions(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<FaceVertexCandidate>& candidates,
+        const CandidateVector<FaceVertexCandidate>& candidates,
         const ESPParameters& params,
         const size_t start_i,
         const size_t end_i);
@@ -86,7 +86,7 @@ public:
     void add_face_vertex_negative_edge_vertex_collisions(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<EdgeVertexCandidate>& candidates,
+        const CandidateVector<EdgeVertexCandidate>& candidates,
         const ESPParameters& params,
         const size_t start_i,
         const size_t end_i);
@@ -94,7 +94,7 @@ public:
     void add_face_vertex_positive_vertex_vertex_collisions(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<VertexVertexCandidate>& candidates,
+        const CandidateVector<VertexVertexCandidate>& candidates,
         const ESPParameters& params,
         const size_t start_i,
         const size_t end_i);
@@ -149,7 +149,7 @@ public:
 
     void build_edge_edge_collisions(
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<EdgeEdgeCandidate>& ee_candidates,
+        const CandidateVector<EdgeEdgeCandidate>& ee_candidates,
         const size_t start_i,
         const size_t end_i);
 

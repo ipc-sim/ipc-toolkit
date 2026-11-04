@@ -3,6 +3,7 @@
 #include <ipc/broad_phase/details/connectivity_filters.hpp>
 #include <ipc/broad_phase/details/lbvh_build.hpp>
 #include <ipc/broad_phase/details/lbvh_traverse.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/math/morton.hpp>
 #include <ipc/utils/merge_thread_local.hpp>
 #include <ipc/utils/profiler.hpp>
@@ -202,7 +203,7 @@ namespace {
         const LBVH::Node& query,
         const LBVH::Node& node,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates)
+        CandidateVector<Candidate>& candidates)
     {
         int i = query.primitive_id, j = node.primitive_id;
         if constexpr (swap_order) {
@@ -227,7 +228,7 @@ namespace {
         const LBVH::Nodes& lbvh,
         const LBVH::RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates)
+        CandidateVector<Candidate>& candidates)
     {
         details::traverse_lbvh<triangular>(
             int(query_leaf_idx), lbvh.data(), int(lbvh.size()),
@@ -254,7 +255,7 @@ namespace {
         const LBVH::Nodes& lbvh,
         const LBVH::RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates)
+        CandidateVector<Candidate>& candidates)
     {
         using batch_t = xs::batch<float>;
         using mask_t = xs::batch_bool<float>;
@@ -265,7 +266,7 @@ namespace {
             // 1. Create a buffer of the correct architecture-dependent size
             alignas(xs::default_arch::alignment())
                 std::array<float, batch_t::size>
-                    buffer {};
+                    buffer { };
 
 #ifdef __clang__
 #pragma unroll
@@ -338,7 +339,7 @@ namespace {
         const LBVH::Nodes& target,
         const LBVH::RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
-        tbb::enumerable_thread_specific<std::vector<Candidate>>& storage)
+        tbb::enumerable_thread_specific<CandidateVector<Candidate>>& storage)
     {
 #ifdef IPC_TOOLKIT_WITH_SIMD // Enable SIMD acceleration when available
         constexpr size_t SIMD_SIZE = use_simd ? xs::batch<float>::size : 1;
@@ -391,13 +392,13 @@ void LBVH::detect_candidates(
     const Nodes& target,
     const RightmostLeaves& rightmost_leaves,
     const std::function<bool(size_t, size_t)>& can_collide,
-    std::vector<Candidate>& candidates)
+    CandidateVector<Candidate>& candidates)
 {
     if (n_source_leaves == 0 || target.empty()) {
         return;
     }
 
-    tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
+    tbb::enumerable_thread_specific<CandidateVector<Candidate>> storage;
 
     {
         IPC_TOOLKIT_PROFILE_BLOCK("traverse");
@@ -413,7 +414,7 @@ void LBVH::detect_candidates(
 }
 
 void LBVH::detect_vertex_vertex_candidates(
-    std::vector<VertexVertexCandidate>& candidates) const
+    CandidateVector<VertexVertexCandidate>& candidates) const
 {
     candidates.clear();
     if (vertex_bvh.size() <= 1) { // Need at least 2 vertices for a collision
@@ -427,7 +428,7 @@ void LBVH::detect_vertex_vertex_candidates(
 }
 
 void LBVH::detect_edge_vertex_candidates(
-    std::vector<EdgeVertexCandidate>& candidates) const
+    CandidateVector<EdgeVertexCandidate>& candidates) const
 {
     candidates.clear();
     if (!has_edges() || !has_vertices()) {
@@ -444,7 +445,7 @@ void LBVH::detect_edge_vertex_candidates(
 }
 
 void LBVH::detect_edge_edge_candidates(
-    std::vector<EdgeEdgeCandidate>& candidates) const
+    CandidateVector<EdgeEdgeCandidate>& candidates) const
 {
     candidates.clear();
     if (edge_bvh.size() <= 1) { // Need at least 2 edges for a collision
@@ -459,7 +460,7 @@ void LBVH::detect_edge_edge_candidates(
 }
 
 void LBVH::detect_face_vertex_candidates(
-    std::vector<FaceVertexCandidate>& candidates) const
+    CandidateVector<FaceVertexCandidate>& candidates) const
 {
     candidates.clear();
     if (!has_faces() || !has_vertices()) {
@@ -475,7 +476,7 @@ void LBVH::detect_face_vertex_candidates(
 }
 
 void LBVH::detect_edge_face_candidates(
-    std::vector<EdgeFaceCandidate>& candidates) const
+    CandidateVector<EdgeFaceCandidate>& candidates) const
 {
     candidates.clear();
     if (!has_edges() || !has_faces()) {
@@ -491,7 +492,7 @@ void LBVH::detect_edge_face_candidates(
 }
 
 void LBVH::detect_face_face_candidates(
-    std::vector<FaceFaceCandidate>& candidates) const
+    CandidateVector<FaceFaceCandidate>& candidates) const
 {
     candidates.clear();
     if (face_bvh.size() <= 1) { // Need at least 2 faces for a collision
@@ -557,7 +558,7 @@ void LBVH::Leaves::build(
 void LBVH::detect_vertex_vertex_candidates(
     const Leaves& other,
     const std::function<bool(size_t, size_t)>& can_collide,
-    std::vector<VertexVertexCandidate>& candidates) const
+    CandidateVector<VertexVertexCandidate>& candidates) const
 {
     if (!has_vertices()) {
         return;
@@ -567,13 +568,13 @@ void LBVH::detect_vertex_vertex_candidates(
 
     detect_candidates<VertexVertexCandidate, /*swap_order=*/true>(
         other.vertices.data(), other.vertices.size(), vertex_bvh,
-        /*rightmost_leaves=*/ {}, can_collide, candidates);
+        /*rightmost_leaves=*/ { }, can_collide, candidates);
 }
 
 void LBVH::detect_edge_vertex_candidates(
     const Leaves& other,
     const std::function<bool(size_t, size_t)>& can_collide,
-    std::vector<EdgeVertexCandidate>& candidates) const
+    CandidateVector<EdgeVertexCandidate>& candidates) const
 {
     if (!has_edges()) {
         return;
@@ -583,13 +584,13 @@ void LBVH::detect_edge_vertex_candidates(
 
     detect_candidates<EdgeVertexCandidate, /*swap_order=*/true>(
         other.vertices.data(), other.vertices.size(), edge_bvh,
-        /*rightmost_leaves=*/ {}, can_collide, candidates);
+        /*rightmost_leaves=*/ { }, can_collide, candidates);
 }
 
 void LBVH::detect_vertex_edge_candidates(
     const Leaves& other,
     const std::function<bool(size_t, size_t)>& can_collide,
-    std::vector<EdgeVertexCandidate>& candidates) const
+    CandidateVector<EdgeVertexCandidate>& candidates) const
 {
     if (!has_vertices()) {
         return;
@@ -599,13 +600,13 @@ void LBVH::detect_vertex_edge_candidates(
 
     detect_candidates<EdgeVertexCandidate, /*swap_order=*/false>(
         other.edges.data(), other.edges.size(), vertex_bvh,
-        /*rightmost_leaves=*/ {}, can_collide, candidates);
+        /*rightmost_leaves=*/ { }, can_collide, candidates);
 }
 
 void LBVH::detect_edge_edge_candidates(
     const Leaves& other,
     const std::function<bool(size_t, size_t)>& can_collide,
-    std::vector<EdgeEdgeCandidate>& candidates) const
+    CandidateVector<EdgeEdgeCandidate>& candidates) const
 {
     if (!has_edges()) {
         return;
@@ -615,13 +616,13 @@ void LBVH::detect_edge_edge_candidates(
 
     detect_candidates<EdgeEdgeCandidate, /*swap_order=*/true>(
         other.edges.data(), other.edges.size(), edge_bvh,
-        /*rightmost_leaves=*/ {}, can_collide, candidates);
+        /*rightmost_leaves=*/ { }, can_collide, candidates);
 }
 
 void LBVH::detect_face_vertex_candidates(
     const Leaves& other,
     const std::function<bool(size_t, size_t)>& can_collide,
-    std::vector<FaceVertexCandidate>& candidates) const
+    CandidateVector<FaceVertexCandidate>& candidates) const
 {
     if (!has_faces()) {
         return;
@@ -631,13 +632,13 @@ void LBVH::detect_face_vertex_candidates(
 
     detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
         other.vertices.data(), other.vertices.size(), face_bvh,
-        /*rightmost_leaves=*/ {}, can_collide, candidates);
+        /*rightmost_leaves=*/ { }, can_collide, candidates);
 }
 
 void LBVH::detect_vertex_face_candidates(
     const Leaves& other,
     const std::function<bool(size_t, size_t)>& can_collide,
-    std::vector<FaceVertexCandidate>& candidates) const
+    CandidateVector<FaceVertexCandidate>& candidates) const
 {
     if (!has_vertices()) {
         return;
@@ -647,7 +648,7 @@ void LBVH::detect_vertex_face_candidates(
 
     detect_candidates<FaceVertexCandidate, /*swap_order=*/false>(
         other.faces.data(), other.faces.size(), vertex_bvh,
-        /*rightmost_leaves=*/ {}, can_collide, candidates);
+        /*rightmost_leaves=*/ { }, can_collide, candidates);
 }
 
 // ============================================================================

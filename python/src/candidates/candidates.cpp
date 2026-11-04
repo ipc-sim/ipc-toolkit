@@ -1,3 +1,4 @@
+#include <ipc/candidates/candidate_vector.hpp>
 #include <common.hpp>
 
 #include <ipc/candidates/candidates.hpp>
@@ -51,10 +52,18 @@ void define_candidates(py::module_& m)
         .def("clear", &Candidates::clear)
         .def(
             "__getitem__",
-            [](Candidates& self, size_t i) -> CollisionStencil& {
-                return self[i];
+            // Python is dynamically typed, so the concrete candidate type is
+            // returned rather than a common base. The reference points into the
+            // vector that holds it, with the Candidates object kept alive for
+            // as long as the reference lives.
+            [](py::object self, size_t i) {
+                return self.cast<Candidates&>().visit(i, [&](auto& candidate) {
+                    return py::cast(
+                        &candidate, py::return_value_policy::reference_internal,
+                        self);
+                });
             },
-            py::return_value_policy::reference)
+            "i"_a)
         .def(
             "is_step_collision_free", &Candidates::is_step_collision_free,
             R"ipc_Qu8mg5v7(
@@ -67,13 +76,14 @@ void define_candidates(py::module_& m)
                 mesh: The collision mesh.
                 vertices_t0: Surface vertex starting positions (rowwise).
                 vertices_t1: Surface vertex ending positions (rowwise).
-                min_distance: The minimum distance allowable between any two elements.
+                min_distance: Deprecated: give the mesh a thickness (CollisionMesh.set_thickness) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
                 narrow_phase_ccd: The narrow phase CCD algorithm to use.
 
             Returns:
                 True if <b>any</b> collisions occur.
             )ipc_Qu8mg5v7",
-            "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
+            "mesh"_a, "vertices_t0"_a, "vertices_t1"_a,
+            "min_distance"_a = py::none(),
             "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "compute_collision_free_stepsize",
@@ -88,13 +98,14 @@ void define_candidates(py::module_& m)
                 mesh: The collision mesh.
                 vertices_t0: Surface vertex starting positions (rowwise). Assumed to be intersection free.
                 vertices_t1: Surface vertex ending positions (rowwise).
-                min_distance: The minimum distance allowable between any two elements.
+                min_distance: Deprecated: give the mesh a thickness (CollisionMesh.set_thickness) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
                 narrow_phase_ccd: The narrow phase CCD algorithm to use.
 
             Returns:
                 A step-size :math:`\in [0, 1]` that is collision free. A value of 1.0 if a full step and 0.0 is no step.
             )ipc_Qu8mg5v7",
-            "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
+            "mesh"_a, "vertices_t0"_a, "vertices_t1"_a,
+            "min_distance"_a = py::none(),
             "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "compute_noncandidate_conservative_stepsize",
@@ -121,7 +132,7 @@ void define_candidates(py::module_& m)
                 vertices_t0: Surface vertex starting positions (rowwise).
                 vertices_t1: Surface vertex ending positions (rowwise).
                 dhat: Barrier activation distance.
-                min_distance: Minimum distance allowable between any two elements.
+                min_distance: Deprecated: give the mesh a thickness (CollisionMesh.set_thickness) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
                 broad_phase: Broad phase algorithm to use.
                 narrow_phase_ccd: Narrow phase CCD algorithm to use.
 
@@ -129,7 +140,7 @@ void define_candidates(py::module_& m)
                 A step-size :math:`\in [0, 1]` that is collision free.
             )ipc_Qu8mg5v7",
             "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "dhat"_a,
-            "min_distance"_a = 0.0, "broad_phase"_a = nullptr,
+            "min_distance"_a = py::none(), "broad_phase"_a = nullptr,
             "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "compute_per_vertex_safe_distances",
@@ -144,18 +155,18 @@ void define_candidates(py::module_& m)
                 mesh: The collision mesh.
                 vertices: Collision mesh vertex positions (rowwise).
                 inflation_radius: The inflation radius used to build the candidates.
-                min_distance: The minimum allowable distance between any two elements.
+                min_distance: Deprecated: give the mesh a thickness (CollisionMesh.set_thickness) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
 
             Returns:
                 A vector of minimum distances, one for each vertex.
             )ipc_Qu8mg5v7",
             "mesh"_a, "vertices"_a, "inflation_radius"_a,
-            "min_distance"_a = 0.0)
+            "min_distance"_a = py::none())
         .def(
             "edge_vertex_to_vertex_vertex",
             [](const Candidates& C, const CollisionMesh& mesh,
-               Eigen::ConstRef<Eigen::MatrixXd> vertices,
-               py::object is_active) -> std::vector<VertexVertexCandidate> {
+               Eigen::ConstRef<Eigen::MatrixXd> vertices, py::object is_active)
+                -> ipc::CandidateVector<VertexVertexCandidate> {
                 std::function<bool(double)> is_active_fn = [](double) {
                     return true;
                 };
@@ -182,8 +193,8 @@ void define_candidates(py::module_& m)
         .def(
             "face_vertex_to_vertex_vertex",
             [](const Candidates& C, const CollisionMesh& mesh,
-               Eigen::ConstRef<Eigen::MatrixXd> vertices,
-               py::object is_active) -> std::vector<VertexVertexCandidate> {
+               Eigen::ConstRef<Eigen::MatrixXd> vertices, py::object is_active)
+                -> ipc::CandidateVector<VertexVertexCandidate> {
                 std::function<bool(double)> is_active_fn = [](double) {
                     return true;
                 };
@@ -210,8 +221,8 @@ void define_candidates(py::module_& m)
         .def(
             "face_vertex_to_edge_vertex",
             [](const Candidates& C, const CollisionMesh& mesh,
-               Eigen::ConstRef<Eigen::MatrixXd> vertices,
-               py::object is_active) -> std::vector<EdgeVertexCandidate> {
+               Eigen::ConstRef<Eigen::MatrixXd> vertices, py::object is_active)
+                -> ipc::CandidateVector<EdgeVertexCandidate> {
                 std::function<bool(double)> is_active_fn = [](double) {
                     return true;
                 };
@@ -238,8 +249,8 @@ void define_candidates(py::module_& m)
         .def(
             "edge_edge_to_edge_vertex",
             [](const Candidates& C, const CollisionMesh& mesh,
-               Eigen::ConstRef<Eigen::MatrixXd> vertices,
-               py::object is_active) -> std::vector<EdgeVertexCandidate> {
+               Eigen::ConstRef<Eigen::MatrixXd> vertices, py::object is_active)
+                -> ipc::CandidateVector<EdgeVertexCandidate> {
                 std::function<bool(double)> is_active_fn = [](double) {
                     return true;
                 };

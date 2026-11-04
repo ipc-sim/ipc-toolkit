@@ -1,13 +1,15 @@
 #include <common.hpp>
 
+#include "stencil_methods.hpp"
+
 #include <ipc/candidates/face_vertex.hpp>
 
 using namespace ipc;
 
 void define_face_vertex_candidate(py::module_& m)
 {
-    py::class_<FaceVertexCandidate, CollisionStencil>(m, "FaceVertexCandidate")
-        .def(py::init<index_t, index_t>(), "face_id"_a, "vertex_id"_a)
+    auto cls = py::class_<FaceVertexCandidate>(m, "FaceVertexCandidate");
+    cls.def(py::init<index_t, index_t>(), "face_id"_a, "vertex_id"_a)
         .def(
             py::init([](std::tuple<index_t, index_t> face_and_vertex_id) {
                 return std::make_unique<FaceVertexCandidate>(
@@ -40,4 +42,12 @@ void define_face_vertex_candidate(py::module_& m)
 
     py::implicitly_convertible<
         std::tuple<index_t, index_t>, FaceVertexCandidate>();
+
+    define_stencil_methods<FaceVertexCandidate>(cls);
+
+    // The adapter the collision types derive from; it carries the
+    // polymorphic stencil interface the POD candidate deliberately
+    // lacks.
+    py::class_<FaceVertexStencil, FaceVertexCandidate, CollisionStencil>(
+        m, "FaceVertexStencil");
 }

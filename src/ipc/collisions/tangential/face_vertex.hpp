@@ -6,10 +6,15 @@
 
 namespace ipc {
 
-class FaceVertexTangentialCollision : public FaceVertexCandidate,
+class FaceVertexTangentialCollision : public FaceVertexStencil,
                                       public TangentialCollision {
 public:
-    using FaceVertexCandidate::FaceVertexCandidate;
+    // The adapter also names dim/ndof (the stencil's dof-count overloads); keep
+    // this collision's own no-argument accessors.
+    using TangentialCollision::dim;
+    using TangentialCollision::ndof;
+
+    using FaceVertexStencil::FaceVertexStencil;
 
     FaceVertexTangentialCollision(const FaceVertexNormalCollision& collision);
 

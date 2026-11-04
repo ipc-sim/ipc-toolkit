@@ -16,7 +16,7 @@ void save_obj(
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
     Eigen::ConstRef<Eigen::MatrixXi> F,
-    const std::vector<Candidate>& candidates,
+    const CandidateVector<Candidate>& candidates,
     const int v_offset = 0)
 {
     write_candidates_obj(out, V, E, F, candidates, v_offset);
@@ -30,7 +30,7 @@ bool save_obj(
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
     Eigen::ConstRef<Eigen::MatrixXi> F,
-    const std::vector<Candidate>& candidates)
+    const CandidateVector<Candidate>& candidates)
 {
     return write_candidates_obj(filename, V, E, F, candidates);
 }

@@ -1,8 +1,10 @@
 set(SOURCES
   candidates.cpp
   candidates.hpp
-  collision_stencil.cpp
+  min_distance.hpp
   collision_stencil.hpp
+  stencil_adapter.hpp
+  stencil_mixin.hpp
   edge_edge.cpp
   edge_edge.hpp
   edge_face.cpp

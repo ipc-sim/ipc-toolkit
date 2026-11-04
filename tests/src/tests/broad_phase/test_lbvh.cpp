@@ -1,3 +1,4 @@
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/config.hpp>
 
 #include <tests/config.hpp>
@@ -80,7 +81,8 @@ namespace {
 /// @return false Otherwise.
 template <typename Candidate>
 bool contains_all_candidates(
-    std::vector<Candidate> actual, std::vector<Candidate> expected)
+    ipc::CandidateVector<Candidate> actual,
+    ipc::CandidateVector<Candidate> expected)
 {
     // 1. Sort the actual candidates to prepare for set operations
     tbb::parallel_sort(actual.begin(), actual.end());
@@ -160,10 +162,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
 
     // detect_vertex_vertex_candidates
     {
-        std::vector<VertexVertexCandidate> vv_candidates;
+        ipc::CandidateVector<VertexVertexCandidate> vv_candidates;
         lbvh->detect_vertex_vertex_candidates(vv_candidates);
 
-        std::vector<VertexVertexCandidate> expected_vv_candidates;
+        ipc::CandidateVector<VertexVertexCandidate> expected_vv_candidates;
         spatial_hash->detect_vertex_vertex_candidates(expected_vv_candidates);
 
         CHECK(vv_candidates.size() >= expected_vv_candidates.size());
@@ -171,10 +173,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     }
 
     {
-        std::vector<EdgeVertexCandidate> ev_candidates;
+        ipc::CandidateVector<EdgeVertexCandidate> ev_candidates;
         lbvh->detect_edge_vertex_candidates(ev_candidates);
 
-        std::vector<EdgeVertexCandidate> expected_ev_candidates;
+        ipc::CandidateVector<EdgeVertexCandidate> expected_ev_candidates;
         spatial_hash->detect_edge_vertex_candidates(expected_ev_candidates);
 
         CHECK(ev_candidates.size() >= expected_ev_candidates.size());
@@ -182,10 +184,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     }
 
     {
-        std::vector<EdgeEdgeCandidate> ee_candidates;
+        ipc::CandidateVector<EdgeEdgeCandidate> ee_candidates;
         lbvh->detect_edge_edge_candidates(ee_candidates);
 
-        std::vector<EdgeEdgeCandidate> expected_ee_candidates;
+        ipc::CandidateVector<EdgeEdgeCandidate> expected_ee_candidates;
         spatial_hash->detect_edge_edge_candidates(expected_ee_candidates);
 
         CHECK(ee_candidates.size() >= expected_ee_candidates.size());
@@ -193,10 +195,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     }
 
     {
-        std::vector<FaceVertexCandidate> fv_candidates;
+        ipc::CandidateVector<FaceVertexCandidate> fv_candidates;
         lbvh->detect_face_vertex_candidates(fv_candidates);
 
-        std::vector<FaceVertexCandidate> expected_fv_candidates;
+        ipc::CandidateVector<FaceVertexCandidate> expected_fv_candidates;
         spatial_hash->detect_face_vertex_candidates(expected_fv_candidates);
 
         CHECK(fv_candidates.size() >= expected_fv_candidates.size());
@@ -204,10 +206,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     }
 
     {
-        std::vector<EdgeFaceCandidate> ef_candidates;
+        ipc::CandidateVector<EdgeFaceCandidate> ef_candidates;
         lbvh->detect_edge_face_candidates(ef_candidates);
 
-        std::vector<EdgeFaceCandidate> expected_ef_candidates;
+        ipc::CandidateVector<EdgeFaceCandidate> expected_ef_candidates;
         spatial_hash->detect_edge_face_candidates(expected_ef_candidates);
 
         CHECK(ef_candidates.size() >= expected_ef_candidates.size());
@@ -215,10 +217,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     }
 
     {
-        std::vector<FaceFaceCandidate> ff_candidates;
+        ipc::CandidateVector<FaceFaceCandidate> ff_candidates;
         lbvh->detect_face_face_candidates(ff_candidates);
 
-        std::vector<FaceFaceCandidate> expected_ff_candidates;
+        ipc::CandidateVector<FaceFaceCandidate> expected_ff_candidates;
         spatial_hash->detect_face_face_candidates(expected_ff_candidates);
 
         CHECK(ff_candidates.size() >= expected_ff_candidates.size());
@@ -312,7 +314,7 @@ TEST_CASE(
         return out;
     };
     {
-        std::vector<VertexVertexCandidate> found;
+        CandidateVector<VertexVertexCandidate> found;
         lbvh.detect_vertex_vertex_candidates(other_leaves, accept_all, found);
         check(
             this_vertex_boxes, other_vertex_boxes,
@@ -321,7 +323,7 @@ TEST_CASE(
             }));
     }
     {
-        std::vector<EdgeVertexCandidate> found;
+        CandidateVector<EdgeVertexCandidate> found;
         lbvh.detect_edge_vertex_candidates(other_leaves, accept_all, found);
         check(
             this_edge_boxes, other_vertex_boxes,
@@ -330,7 +332,7 @@ TEST_CASE(
             }));
     }
     {
-        std::vector<EdgeVertexCandidate> found;
+        CandidateVector<EdgeVertexCandidate> found;
         lbvh.detect_vertex_edge_candidates(other_leaves, accept_all, found);
         check(
             this_vertex_boxes, other_edge_boxes,
@@ -339,7 +341,7 @@ TEST_CASE(
             }));
     }
     {
-        std::vector<EdgeEdgeCandidate> found;
+        CandidateVector<EdgeEdgeCandidate> found;
         lbvh.detect_edge_edge_candidates(other_leaves, accept_all, found);
         check(
             this_edge_boxes, other_edge_boxes, pairs(found, [](const auto& c) {
@@ -347,7 +349,7 @@ TEST_CASE(
             }));
     }
     {
-        std::vector<FaceVertexCandidate> found;
+        CandidateVector<FaceVertexCandidate> found;
         lbvh.detect_face_vertex_candidates(other_leaves, accept_all, found);
         check(
             this_face_boxes, other_vertex_boxes,
@@ -356,7 +358,7 @@ TEST_CASE(
             }));
     }
     {
-        std::vector<FaceVertexCandidate> found;
+        CandidateVector<FaceVertexCandidate> found;
         lbvh.detect_vertex_face_candidates(other_leaves, accept_all, found);
         check(
             this_vertex_boxes, other_face_boxes,
@@ -405,7 +407,7 @@ TEST_CASE("LBVH single-primitive trees", "[broad_phase][lbvh]")
     // The LBVH rounds its AABBs outward to floats, so it may report a superset
     // of the exact (double-precision) brute-force set, never a subset.
     {
-        std::vector<FaceVertexCandidate> fv_candidates, expected;
+        ipc::CandidateVector<FaceVertexCandidate> fv_candidates, expected;
         lbvh.detect_face_vertex_candidates(fv_candidates);
         brute_force.detect_face_vertex_candidates(expected);
 
@@ -417,7 +419,7 @@ TEST_CASE("LBVH single-primitive trees", "[broad_phase][lbvh]")
     }
 
     {
-        std::vector<EdgeFaceCandidate> ef_candidates, expected;
+        ipc::CandidateVector<EdgeFaceCandidate> ef_candidates, expected;
         lbvh.detect_edge_face_candidates(ef_candidates);
         brute_force.detect_edge_face_candidates(expected);
 
@@ -429,14 +431,14 @@ TEST_CASE("LBVH single-primitive trees", "[broad_phase][lbvh]")
     // The remaining types traverse multi-node targets here, but are cheap to
     // check on a mesh this small.
     {
-        std::vector<VertexVertexCandidate> vv_candidates, expected;
+        ipc::CandidateVector<VertexVertexCandidate> vv_candidates, expected;
         lbvh.detect_vertex_vertex_candidates(vv_candidates);
         brute_force.detect_vertex_vertex_candidates(expected);
         CHECK(contains_all_candidates(vv_candidates, expected));
     }
 
     {
-        std::vector<EdgeVertexCandidate> ev_candidates, expected;
+        ipc::CandidateVector<EdgeVertexCandidate> ev_candidates, expected;
         lbvh.detect_edge_vertex_candidates(ev_candidates);
         brute_force.detect_edge_vertex_candidates(expected);
         REQUIRE(!expected.empty());
@@ -485,14 +487,14 @@ TEST_CASE("LBVH degenerate domain", "[broad_phase][lbvh]")
     BruteForce brute_force;
     brute_force.build(vertices, edges, faces, 0);
     {
-        std::vector<EdgeEdgeCandidate> candidates, expected;
+        ipc::CandidateVector<EdgeEdgeCandidate> candidates, expected;
         lbvh.detect_edge_edge_candidates(candidates);
         brute_force.detect_edge_edge_candidates(expected);
         REQUIRE(!expected.empty()); // coplanar neighbors do overlap
         CHECK(contains_all_candidates(candidates, expected));
     }
     {
-        std::vector<FaceVertexCandidate> candidates, expected;
+        ipc::CandidateVector<FaceVertexCandidate> candidates, expected;
         lbvh.detect_face_vertex_candidates(candidates);
         brute_force.detect_face_vertex_candidates(expected);
         REQUIRE(!expected.empty());
@@ -555,7 +557,7 @@ TEST_CASE(
 
     BENCHMARK("LBVH::detect_edge_edge_candidates")
     {
-        std::vector<EdgeEdgeCandidate> ee_candidates;
+        ipc::CandidateVector<EdgeEdgeCandidate> ee_candidates;
         lbvh->detect_edge_edge_candidates(ee_candidates);
         return ee_candidates.size();
     };

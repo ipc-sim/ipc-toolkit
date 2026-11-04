@@ -48,6 +48,13 @@ PYBIND11_MODULE(ipctk, m)
     define_cuda_is_available(cuda);
     define_cuda_lbvh(cuda);
 
+    // We define the collision mesh and ESP parameters early because many
+    // signatures below take them. Otherwise, pybind11 falls back to the C++
+    // names (e.g., ipc::CollisionMesh) in the generated Python signatures,
+    // which the docs can't parse.
+    define_collision_mesh(m);
+    define_esp_parameters(m);
+
     // candidates
     define_candidates(m);
     define_collision_stencil(m);
@@ -142,7 +149,6 @@ PYBIND11_MODULE(ipctk, m)
     define_world_bbox_diagonal_length(m);
 
     // root
-    define_collision_mesh(m);
     define_ipc(m);
 
     // dynamics

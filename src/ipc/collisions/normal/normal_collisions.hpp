@@ -11,6 +11,7 @@
 
 #include <Eigen/Core>
 
+#include <optional>
 #include <vector>
 
 namespace ipc {
@@ -37,16 +38,17 @@ public:
     NormalCollisions() = default;
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
+    /// @note Each collision's minimum distance (NormalCollision::dmin) is the sum of its two primitives' thicknesses (CollisionMesh::set_thickness()), and it is active within dhat of that.
     /// @param mesh The collision mesh.
     /// @param vertices Vertices of the collision mesh.
     /// @param dhat The activation distance of the barrier.
-    /// @param dmin Minimum distance.
+    /// @param dmin Deprecated: give the mesh a thickness (CollisionMesh::set_thickness()) instead. If given, every collision keeps this minimum distance and the mesh's thickness is ignored; otherwise each keeps its two primitives' thicknesses (zero without a thickness).
     /// @param broad_phase Broad-phase method to use.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double dhat,
-        const double dmin = 0,
+        const std::optional<double> dmin = std::nullopt,
         BroadPhase* broad_phase = nullptr);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
@@ -54,7 +56,8 @@ public:
     /// @param mesh The collision mesh.
     /// @param vertices Vertices of the collision mesh.
     /// @param dhat The activation distance of the barrier.
-    /// @param  dmin  Minimum distance.
+    /// @param dmin Deprecated: give the mesh a thickness (CollisionMesh::set_thickness()) instead. If given, every collision keeps this minimum distance and the mesh's thickness is ignored; otherwise each keeps its two primitives' thicknesses (zero without a thickness).
+    /// @note With a mesh thickness, the candidates must be built from the same mesh so their boxes cover it (see the other overload).
     /// @throws std::invalid_argument In 3D, if the candidates were built with
     ///         all_types = true (see Candidates::has_all_types).
     void build(
@@ -62,7 +65,7 @@ public:
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double dhat,
-        const double dmin = 0);
+        const std::optional<double> dmin = std::nullopt);
 
     // ------------------------------------------------------------------------
 
@@ -94,6 +97,20 @@ public:
     /// @param i The index of the collision.
     /// @return A const reference to the collision.
     const NormalCollision& operator[](size_t i) const;
+
+    /// @brief Apply a visitor to the collision at index i.
+    ///
+    /// Mirrors Candidates::visit so code can be written once for both. These
+    /// collisions are polymorphic, so the visitor sees a NormalCollision&.
+    ///
+    /// @param i The index of the collision.
+    /// @param f The visitor.
+    /// @return Whatever the visitor returns.
+    template <typename Visitor>
+    decltype(auto) visit(size_t i, Visitor&& f) const
+    {
+        return f((*this)[i]);
+    }
 
     /// @brief Get if the collision at i is a vertex-vertex collision.
     /// @param i The index of the collision.
