@@ -536,7 +536,8 @@ TEST_CASE(
     if (lattice) {
         params.set_auto_lattice(.01, 3);
     }
-    CAPTURE(barrier, lattice);
+    params.local_quadrature_transfer = GENERATE(false, true);
+    CAPTURE(barrier, lattice, params.local_quadrature_transfer);
     ESPCollisions c;
     c.build(s.mesh, s.X, params);
     const ESPPotential normalized(params);
@@ -573,10 +574,4 @@ TEST_CASE(
     ESPCollisions c;
     c.build(s.mesh, s.X, params);
     CHECK_THROWS_AS(p(c, s.mesh, s.X), std::invalid_argument);
-    params.local_quadrature_transfer = true;
-    ESPPotential t(params);
-    t.set_lagged_weights(t.element_near_weights(c, s.mesh, s.X));
-    CHECK_THROWS_AS(t(c, s.mesh, s.X), std::invalid_argument);
-    t.clear_lagged_weights();
-    CHECK_NOTHROW(t(c, s.mesh, s.X));
 }

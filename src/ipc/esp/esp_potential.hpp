@@ -135,7 +135,10 @@ public:
     /// its own stencil, with no dense per-element block. At the reference
     /// state the value equals the normalized energy; its derivatives omit the
     /// derivative of D_e. Applies in 3D with normalized weights and a
-    /// positive dbar_factor; not supported with local_quadrature_transfer.
+    /// positive dbar_factor. Under local_quadrature_transfer D_e is the
+    /// transfer's denominator; each edge-edge pair's transferred term is then
+    /// evaluated once and projected on its own stencil (the pair's plus its
+    /// source endpoints').
     /// @throws std::invalid_argument if a weight is not positive and finite.
     void set_lagged_weights(std::vector<double> weights);
 

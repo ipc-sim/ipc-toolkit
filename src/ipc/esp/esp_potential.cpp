@@ -154,6 +154,38 @@ namespace {
         return 1.0;
     }
 
+    // Under local quadrature transfer an EE sample takes its mass from its
+    // edge's endpoints, at most the element's smallest corner weight c, so
+    // its area scale compares c times the element's measure with the patch
+    // (as esp_local_transfer.cpp).
+    double transfer_ee_area_scale(
+        const CollisionMesh& mesh,
+        const IntegrationElement& elem,
+        const ESPParameters& params)
+    {
+        if (!params.ee_area_scaling) {
+            return 1.0;
+        }
+        const double r = params.ee_area_reference();
+        if (elem.face >= 0) {
+            const auto& w = elem.vertex_weights;
+            return ee_area_scale_factor(
+                std::min({ w[0], w[1], w[2] }) * mesh.face_areas()(elem.face),
+                r, /*face=*/true);
+        }
+        if (elem.num_edges == 1) {
+            return ee_area_scale_factor(
+                0.5 * mesh.edge_area(elem.edges[0]), r, /*face=*/false);
+        }
+        return 1.0;
+    }
+
+    bool uses_transfer(const CollisionMesh& mesh, const ESPParameters& params)
+    {
+        return params.local_quadrature_transfer && mesh.dim() == 3
+            && params.dbar_factor() > 0;
+    }
+
     // ---- Lagged normalization (see ESPPotential::set_lagged_weights) ----
 
     // Edge-edge mollifier weight of the sample on edge e0 closest to e1,
@@ -197,10 +229,18 @@ namespace {
     // summing to W_e), j over its edge-edge samples, and D_e = W_e + sum_j
     // m_j is held fixed. Each sample then contributes coefficient * its own
     // potential, so it is evaluated once instead of once per element.
+    //
+    // Under local quadrature transfer (esp_local_transfer.cpp) the fixed
+    // samples are not normalized,
+    //   E = sum_e w_e [ sum_s w_s (P_near(s) + P_far(s))
+    //                 + sum_j c_e s_e m_j (P_near(q_j) - R_j) / D_e ],
+    // D_e = 1 + sum_j s_e m_j, and the transferred terms have per-edge
+    // coefficients sum_e w_e c_e s_e / D_e (transfer_edge).
     struct LaggedCoefficients {
         Eigen::VectorXd vertex_near, vertex_far; // per vertex
         Eigen::VectorXd face_near, face_far;     // per face, times qp weight
         Eigen::VectorXd edge; // per edge: sum_e w_e * area scale / D_e
+        Eigen::VectorXd transfer_edge; // per edge, under transfer
     };
 
     LaggedCoefficients lagged_coefficients(
@@ -214,9 +254,38 @@ namespace {
         c.face_near.setZero(mesh.num_faces());
         c.face_far.setZero(mesh.num_faces());
         c.edge.setZero(mesh.num_edges());
+        c.transfer_edge.setZero(mesh.num_edges());
+        const bool transfer = uses_transfer(mesh, params);
         for (size_t k = 0; k < num_integration_elements(mesh); k++) {
             const IntegrationElement elem =
                 integration_element(mesh, params, k);
+            if (transfer) {
+                const double w = elem.weight;
+                for (int lv = 0; lv < elem.num_vertices; lv++) {
+                    const double vw = w * elem.vertex_weights[lv];
+                    c.vertex_near[elem.vertices[lv]] += vw;
+                    c.vertex_far[elem.vertices[lv]] += vw;
+                }
+                if (elem.face >= 0) {
+                    c.face_near[elem.face] += w;
+                    c.face_far[elem.face] += w;
+                }
+                const double s = transfer_ee_area_scale(mesh, elem, params);
+                for (int le = 0; le < elem.num_edges; le++) {
+                    const index_t e = elem.edges[le];
+                    double wa = 0, wb = 0;
+                    for (int lv = 0; lv < elem.num_vertices; lv++) {
+                        if (elem.vertices[lv] == mesh.edges()(e, 0)) {
+                            wa = elem.vertex_weights[lv];
+                        } else if (elem.vertices[lv] == mesh.edges()(e, 1)) {
+                            wb = elem.vertex_weights[lv];
+                        }
+                    }
+                    c.transfer_edge[e] +=
+                        w * std::min(wa, wb) * s / lagged_weights[k];
+                }
+                continue;
+            }
             double fixed_weight = 0; // W_e
             for (int lv = 0; lv < elem.num_vertices; lv++) {
                 fixed_weight += elem.vertex_weights[lv];
@@ -281,20 +350,28 @@ std::vector<double> ESPPotential::element_near_weights(
     std::vector<double> weights(n, 0.0);
     std::vector<std::vector<index_t>> edge_elements(mesh.num_edges());
     std::vector<double> elem_ee_scale(n, 1.0);
+    // Under transfer D_e = 1 + sum_j s_e m_j with the transfer's area scale.
+    const bool transfer = uses_transfer(mesh, m_params);
     for (size_t k = 0; k < n; k++) {
         const IntegrationElement elem = integration_element(mesh, m_params, k);
-        for (int lv = 0; lv < elem.num_vertices; lv++) {
-            weights[k] += elem.vertex_weights[lv];
-        }
-        if (elem.face >= 0) {
-            for (const auto& qp : *elem.non_corner) {
-                weights[k] += FACE_QUADRATURE_WEIGHT_SCALE * qp.weight;
+        if (transfer) {
+            weights[k] = 1.0;
+        } else {
+            for (int lv = 0; lv < elem.num_vertices; lv++) {
+                weights[k] += elem.vertex_weights[lv];
+            }
+            if (elem.face >= 0) {
+                for (const auto& qp : *elem.non_corner) {
+                    weights[k] += FACE_QUADRATURE_WEIGHT_SCALE * qp.weight;
+                }
             }
         }
         for (int le = 0; le < elem.num_edges; le++) {
             edge_elements[elem.edges[le]].push_back(static_cast<index_t>(k));
         }
-        elem_ee_scale[k] = ee_area_scale(mesh, elem, m_params);
+        elem_ee_scale[k] = transfer
+            ? transfer_ee_area_scale(mesh, elem, m_params)
+            : ee_area_scale(mesh, elem, m_params);
     }
     if (mesh.dim() == 3 && m_params.dbar_factor() > 0) {
         for (const auto& [pair, dict] :
@@ -329,11 +406,6 @@ bool ESPPotential::uses_lagged_weights(const CollisionMesh& mesh) const
     if (m_lagged_weights.size() != num_integration_elements(mesh)) {
         throw std::invalid_argument(
             "Lagged ESP element weights do not match the mesh's elements.");
-    }
-    if (m_params.local_quadrature_transfer) {
-        throw std::invalid_argument(
-            "Lagged ESP normalization does not support local quadrature "
-            "transfer.");
     }
     return true;
 }
@@ -398,7 +470,12 @@ double ESPPotential::lagged_value(
                 nf);
         total.local() += coef * m * pn;
     });
-    return total.combine(std::plus<double>());
+    double result = total.combine(std::plus<double>());
+    if (uses_transfer(mesh, m_params)) {
+        result += detail::lagged_transfer_value(
+            collisions, mesh, X, m_params, c.transfer_edge);
+    }
+    return result;
 }
 
 Eigen::VectorXd ESPPotential::lagged_gradient(
@@ -483,6 +560,10 @@ Eigen::VectorXd ESPPotential::lagged_gradient(
     for (const auto& g : storage) {
         grad += g;
     }
+    if (uses_transfer(mesh, m_params)) {
+        grad += detail::lagged_transfer_gradient(
+            collisions, mesh, X, m_params, c.transfer_edge);
+    }
     return grad;
 }
 
@@ -493,7 +574,8 @@ Eigen::SparseMatrix<double> ESPPotential::lagged_hessian(
     const PSDProjectionMethod psd) const
 {
     // Every sample's coefficient is nonnegative, so projecting each sample's
-    // Hessian keeps the sum PSD; no per-element dense block is needed.
+    // Hessian keeps the sum PSD; no per-element dense block is needed. Under
+    // transfer each pair's term (a difference) is projected as a whole.
     const LaggedCoefficients c =
         lagged_coefficients(mesh, m_params, m_lagged_weights);
     const NearFarBarrier<> nf(m_params.barrier, m_params.dbar_factor());
@@ -598,6 +680,14 @@ Eigen::SparseMatrix<double> ESPPotential::lagged_hessian(
     std::vector<Eigen::Triplet<double>> triplets;
     for (const auto& t : storage) {
         triplets.insert(triplets.end(), t.begin(), t.end());
+    }
+    if (uses_transfer(mesh, m_params)) {
+        // Each transferred term is projected on its own stencil (its pair's
+        // and its source endpoints' collision stencils).
+        const auto transferred = detail::lagged_transfer_hessian(
+            collisions, mesh, X, m_params, c.transfer_edge, psd);
+        triplets.insert(
+            triplets.end(), transferred.begin(), transferred.end());
     }
     Eigen::SparseMatrix<double> hess(X.size(), X.size());
     hess.setFromTriplets(triplets.begin(), triplets.end());
