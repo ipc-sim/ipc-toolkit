@@ -3,8 +3,14 @@
 #include <common.hpp>
 
 #include <ipc/candidates/collision_stencil.hpp>
+#include <ipc/candidates/edge_edge.hpp>
+#include <ipc/candidates/edge_vertex.hpp>
+#include <ipc/candidates/face_vertex.hpp>
+#include <ipc/candidates/plane_vertex.hpp>
+#include <ipc/candidates/vertex_vertex.hpp>
 
 #include <iostream>
+#include <type_traits>
 #include <tuple>
 
 namespace ipc {
@@ -55,6 +61,45 @@ template <class C, class PyClass> void define_stencil_methods(PyClass& cls)
             },
             "Select this stencil's DOF from the full matrix of DOF.", "X"_a,
             "edges"_a, "faces"_a)
+        .def(
+            "thickness",
+            [](const C& self, Eigen::ConstRef<Eigen::VectorXd> vertex_thickness,
+               Eigen::ConstRef<Eigen::VectorXd> edge_thickness,
+               Eigen::ConstRef<Eigen::VectorXd> face_thickness) {
+                // C++ indexes the vectors unchecked, so an empty or short one
+                // (e.g., a mesh without a thickness) must not reach it.
+                const auto check = [](Eigen::ConstRef<Eigen::VectorXd> t,
+                                      const index_t i, const char* name) {
+                    if (i < 0 || i >= t.size()) {
+                        throw py::index_error(
+                            fmt::format(
+                                "{} has no entry {} (size {})", name, i,
+                                t.size()));
+                    }
+                };
+                if constexpr (std::is_same_v<C, VertexVertexCandidate>) {
+                    check(
+                        vertex_thickness, self.vertex0_id, "vertex_thickness");
+                    check(
+                        vertex_thickness, self.vertex1_id, "vertex_thickness");
+                } else if constexpr (std::is_same_v<C, EdgeVertexCandidate>) {
+                    check(edge_thickness, self.edge_id, "edge_thickness");
+                    check(vertex_thickness, self.vertex_id, "vertex_thickness");
+                } else if constexpr (std::is_same_v<C, EdgeEdgeCandidate>) {
+                    check(edge_thickness, self.edge0_id, "edge_thickness");
+                    check(edge_thickness, self.edge1_id, "edge_thickness");
+                } else if constexpr (std::is_same_v<C, FaceVertexCandidate>) {
+                    check(face_thickness, self.face_id, "face_thickness");
+                    check(vertex_thickness, self.vertex_id, "vertex_thickness");
+                } else {
+                    static_assert(std::is_same_v<C, PlaneVertexCandidate>);
+                    check(vertex_thickness, self.vertex_id, "vertex_thickness");
+                }
+                return self.thickness(
+                    vertex_thickness, edge_thickness, face_thickness);
+            },
+            "Get the sum of the two primitives' thicknesses (see CollisionMesh.set_thickness).",
+            "vertex_thickness"_a, "edge_thickness"_a, "face_thickness"_a)
         // -- distance ------------------------------------------------------
         .def(
             "compute_distance",

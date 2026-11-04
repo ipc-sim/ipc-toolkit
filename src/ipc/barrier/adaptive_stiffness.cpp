@@ -4,10 +4,12 @@
 
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/candidates/candidates.hpp>
+#include <ipc/candidates/min_distance.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
 
 #include <algorithm> // std::min/max
 #include <cassert>
+#include <type_traits>
 
 namespace ipc {
 
@@ -92,8 +94,12 @@ Eigen::VectorXd semi_implicit_stiffness(
     const StencilsT& collisions,
     Eigen::ConstRef<Eigen::VectorXd> vertex_masses,
     const Eigen::SparseMatrix<double>& hess,
-    const double dmin)
+    const std::optional<double> dmin)
 {
+    if (dmin.has_value()) {
+        warn_dmin_deprecated();
+    }
+
     const int dim = mesh.dim();
     assert(vertices.cols() == dim);     // Vertex positions must be 3D
     assert(hess.rows() == hess.cols()); // Hessian must be square
@@ -138,8 +144,19 @@ Eigen::VectorXd semi_implicit_stiffness(
                 }
             }
 
+            // A collision keeps the dmin it was built with; a candidate its
+            // two primitives' thicknesses.
+            double stencil_dmin;
+            if constexpr (std::is_base_of_v<
+                              NormalCollision,
+                              std::decay_t<decltype(collision)>>) {
+                stencil_dmin = dmin.value_or(collision.dmin);
+            } else {
+                stencil_dmin = dmin.value_or(mesh.pair_thickness(collision));
+            }
+
             return semi_implicit_stiffness(
-                collision, positions, local_mass, local_hess, dmin);
+                collision, positions, local_mass, local_hess, stencil_dmin);
         });
     }
 
@@ -152,7 +169,7 @@ template Eigen::VectorXd semi_implicit_stiffness<NormalCollisions>(
     const NormalCollisions& collisions,
     Eigen::ConstRef<Eigen::VectorXd> vertex_masses,
     const Eigen::SparseMatrix<double>& hess,
-    const double dmin);
+    const std::optional<double> dmin);
 
 template Eigen::VectorXd semi_implicit_stiffness<Candidates>(
     const CollisionMesh& mesh,
@@ -160,7 +177,7 @@ template Eigen::VectorXd semi_implicit_stiffness<Candidates>(
     const Candidates& collisions,
     Eigen::ConstRef<Eigen::VectorXd> vertex_masses,
     const Eigen::SparseMatrix<double>& hess,
-    const double dmin);
+    const std::optional<double> dmin);
 
 // -----------------------------------------------------------------------------
 

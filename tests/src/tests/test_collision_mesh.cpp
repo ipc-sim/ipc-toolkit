@@ -3,6 +3,10 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <ipc/collision_mesh.hpp>
+#include <ipc/candidates/edge_edge.hpp>
+#include <ipc/candidates/edge_vertex.hpp>
+#include <ipc/candidates/face_vertex.hpp>
+#include <ipc/candidates/vertex_vertex.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/config.hpp>
@@ -332,5 +336,101 @@ TEST_CASE("User-provided collision mesh areas", "[collision_mesh][areas]")
             mesh.set_vertex_areas(2 * default_areas);
             CHECK_THROWS(mesh.init_area_jacobians());
         }
+    }
+}
+
+TEST_CASE("Collision mesh thickness", "[collision_mesh][thickness]")
+{
+    // Two triangles sharing the edge 1-2, as two panels sewn at a seam, plus
+    // a lone edge 4-5 on no face.
+    Eigen::MatrixXd V(6, 3);
+    V << 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 3, 0, 0, 4, 0, 0;
+    Eigen::MatrixXi F(2, 3);
+    F << 0, 1, 2, 1, 3, 2;
+    Eigen::MatrixXi E(6, 2);
+    E << 0, 1, 1, 2, 2, 0, 1, 3, 3, 2, 4, 5;
+
+    CollisionMesh mesh(V, E, F);
+    CHECK(!mesh.has_thickness());
+    CHECK(mesh.vertex_thickness(0) == 0);
+    CHECK(mesh.max_thickness() == 0);
+
+    const auto edge_id = [&](const index_t a, const index_t b) {
+        for (int i = 0; i < mesh.num_edges(); i++) {
+            const auto& e = mesh.edges().row(i);
+            if ((e(0) == a && e(1) == b) || (e(0) == b && e(1) == a)) {
+                return index_t(i);
+            }
+        }
+        return index_t(-1);
+    };
+
+    SECTION("From faces")
+    {
+        Eigen::VectorXd vertex = Eigen::VectorXd::Zero(6);
+        vertex[5] = 0.7;
+        mesh.set_face_thickness(Eigen::Vector2d(1.5, 2.5), vertex);
+        REQUIRE(mesh.has_thickness());
+
+        CHECK(mesh.face_thickness(0) == 1.5);
+        CHECK(mesh.face_thickness(1) == 2.5);
+        // Vertex 0 is on the thin face only, vertex 3 on the thick one, and
+        // the seam vertices on both.
+        CHECK(mesh.vertex_thickness(0) == 1.5);
+        CHECK(mesh.vertex_thickness(3) == 2.5);
+        CHECK(mesh.vertex_thickness(1) == 2.5);
+        CHECK(mesh.vertex_thickness(2) == 2.5);
+        CHECK(mesh.edge_thickness(edge_id(0, 1)) == 1.5);
+        CHECK(mesh.edge_thickness(edge_id(1, 3)) == 2.5);
+        CHECK(mesh.edge_thickness(edge_id(1, 2)) == 2.5); // the seam
+        // On no face: the vertices keep their own, the edge the larger.
+        CHECK(mesh.vertex_thickness(4) == 0);
+        CHECK(mesh.vertex_thickness(5) == 0.7);
+        CHECK(mesh.edge_thickness(edge_id(4, 5)) == 0.7);
+        CHECK(mesh.max_thickness() == 2.5);
+
+        // A pair rests at the sum of its two sides.
+        CHECK(mesh.pair_thickness(FaceVertexCandidate(1, 0)) == 2.5 + 1.5);
+        CHECK(
+            mesh.pair_thickness(EdgeVertexCandidate(edge_id(4, 5), 0))
+            == 0.7 + 1.5);
+        CHECK(
+            mesh.pair_thickness(EdgeEdgeCandidate(edge_id(0, 1), edge_id(4, 5)))
+            == 1.5 + 0.7);
+        CHECK(mesh.pair_thickness(VertexVertexCandidate(0, 4)) == 1.5);
+        CHECK(
+            FaceVertexCandidate(1, 0).thickness(
+                mesh.vertex_thicknesses(), mesh.edge_thicknesses(),
+                mesh.face_thicknesses())
+            == 2.5 + 1.5);
+
+        mesh.clear_thickness();
+        CHECK(!mesh.has_thickness());
+        CHECK(mesh.pair_thickness(FaceVertexCandidate(1, 0)) == 0);
+    }
+
+    SECTION("From vertices")
+    {
+        Eigen::VectorXd vertex(6);
+        vertex << 1, 2, 3, 4, 5, 6;
+        mesh.set_vertex_thickness(vertex);
+        CHECK(mesh.vertex_thicknesses() == vertex);
+        CHECK(mesh.edge_thickness(edge_id(0, 1)) == 2);
+        CHECK(mesh.edge_thickness(edge_id(4, 5)) == 6);
+        CHECK(mesh.face_thickness(0) == 3);
+        CHECK(mesh.face_thickness(1) == 4);
+        CHECK(mesh.max_thickness() == 6);
+    }
+
+    SECTION("Invalid thicknesses are rejected")
+    {
+        CHECK_THROWS(mesh.set_vertex_thickness(Eigen::VectorXd::Ones(3)));
+        CHECK_THROWS(
+            mesh.set_vertex_thickness(Eigen::VectorXd::Constant(6, -1)));
+        CHECK_THROWS(mesh.set_face_thickness(Eigen::VectorXd::Ones(3)));
+        CHECK_THROWS(mesh.set_thickness(
+            Eigen::VectorXd::Ones(6), Eigen::VectorXd::Ones(6),
+            Eigen::VectorXd::Constant(2, std::nan(""))));
+        CHECK(!mesh.has_thickness());
     }
 }

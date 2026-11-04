@@ -16,6 +16,10 @@ namespace ipc {
 
 class NormalCollisionsBuilder {
 public:
+    // The add_*_collision() functions take is_active(distance_sqr, thickness),
+    // where thickness is the summed thickness of the two primitives that the
+    // collision would keep (CollisionMesh::set_thickness()).
+
     NormalCollisionsBuilder(
         const bool use_area_weighting,
         const bool enable_shape_derivatives,
@@ -26,25 +30,25 @@ public:
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const VertexVertexCandidate& candidate,
-        const std::function<bool(double)>& is_active);
+        const std::function<bool(double, double)>& is_active);
 
     void add_edge_vertex_collision(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const EdgeVertexCandidate& candidate,
-        const std::function<bool(double)>& is_active);
+        const std::function<bool(double, double)>& is_active);
 
     void add_edge_edge_collision(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const EdgeEdgeCandidate& candidate,
-        const std::function<bool(double)>& is_active);
+        const std::function<bool(double, double)>& is_active);
 
     void add_face_vertex_collision(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const FaceVertexCandidate& candidate,
-        const std::function<bool(double)>& is_active);
+        const std::function<bool(double, double)>& is_active);
 
     // ------------------------------------------------------------------------
     // Duplicate removal functions

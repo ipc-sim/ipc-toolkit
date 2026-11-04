@@ -75,6 +75,20 @@ public:
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const;
 
+    /// @brief Get the sum of the two primitives' thicknesses.
+    /// @see CollisionMesh::set_thickness()
+    /// @param vertex_thickness Thickness of each vertex.
+    /// @param edge_thickness Thickness of each edge.
+    /// @param face_thickness Thickness of each face.
+    /// @return How much farther apart than the minimum distance the pair rests.
+    double thickness(
+        Eigen::ConstRef<Eigen::VectorXd> /*vertex_thickness*/,
+        Eigen::ConstRef<Eigen::VectorXd> edge_thickness,
+        Eigen::ConstRef<Eigen::VectorXd> /*face_thickness*/) const
+    {
+        return edge_thickness[edge0_id] + edge_thickness[edge1_id];
+    }
+
     // ------------------------------------------------------------------------
 
     /// @brief The distance type known a priori; AUTO for a plain candidate.
