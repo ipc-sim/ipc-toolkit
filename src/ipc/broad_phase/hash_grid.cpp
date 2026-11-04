@@ -142,10 +142,12 @@ namespace {
 
         // Test every pair between items0[begin0, end0) and items1[begin1, end1)
         // and store the ones that pass the collision filter and whose AABBs
-        // overlap. We run the filter first, so it is called on every pair in
-        // the cell, even ones whose boxes don't overlap. Callers rely on this
-        // filter-first order, and a regression test pins it. This writes to a
-        // thread-local buffer, so it is safe to call from many threads at once.
+        // overlap. This writes to a thread-local buffer, so it is safe to call
+        // from many threads at once.
+        //
+        // We call the filter before the AABB test, as the old HashGrid and the
+        // other CPU broad phases do, so a user's filter sees every pair that
+        // shares a cell. A regression test pins this order.
         const auto emit = [&](long begin0, long end0, long begin1, long end1) {
             auto& local_candidates = storage.local();
             if constexpr (SameItems) {
