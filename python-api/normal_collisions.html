@@ -5269,20 +5269,20 @@
 <span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.NormalCollisions.build" title="ipctk.NormalCollisions.build.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.NormalCollisions.build" title="ipctk.NormalCollisions.build.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.NormalCollisions.build" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>build(self: ipctk.NormalCollisions, mesh: ipctk.CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], dhat: typing.SupportsFloat, dmin: typing.SupportsFloat = 0, broad_phase: ipctk.BroadPhase = None) -&gt; None</p>
+<li><p>build(self: ipctk.NormalCollisions, mesh: ipctk.CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], dhat: typing.SupportsFloat, dmin: typing.SupportsFloat | None = None, broad_phase: ipctk.BroadPhase = None) -&gt; None</p>
 <blockquote>
 <div><p>Initialize the set of collisions used to compute the barrier potential.</p>
 <dl class="simple">
 <dt>Parameters:</dt><dd><p>mesh: The collision mesh.
 vertices: Vertices of the collision mesh.
 dhat: The activation distance of the barrier.
-dmin: Minimum distance.
+dmin: Deprecated: give the mesh a thickness (CollisionMesh.set_thickness) instead. If given, every collision keeps this minimum distance and the mesh’s thickness is ignored; otherwise each keeps its two primitives’ thicknesses.
 broad_phase: Broad-phase to use.</p>
 </dd>
 </dl>
 </div></blockquote>
 </li>
-<li><p>build(self: ipctk.NormalCollisions, candidates: ipctk.Candidates, mesh: ipctk.CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], dhat: typing.SupportsFloat, dmin: typing.SupportsFloat = 0) -&gt; None</p>
+<li><p>build(self: ipctk.NormalCollisions, candidates: ipctk.Candidates, mesh: ipctk.CollisionMesh, vertices: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], dhat: typing.SupportsFloat, dmin: typing.SupportsFloat | None = None) -&gt; None</p>
 <blockquote>
 <div><p>Initialize the set of collisions used to compute the barrier potential.</p>
 <dl class="simple">
@@ -5290,7 +5290,7 @@ broad_phase: Broad-phase to use.</p>
 mesh: The collision mesh.
 vertices: Vertices of the collision mesh.
 dhat: The activation distance of the barrier.
-dmin:  Minimum distance.</p>
+dmin: Deprecated: give the mesh a thickness (CollisionMesh.set_thickness) instead. If given, every collision keeps this minimum distance and the mesh’s thickness is ignored; otherwise each keeps its two primitives’ thicknesses.</p>
 </dd>
 <dt>Raises:</dt><dd><p>ValueError: In 3D, if the candidates were built with all_types=True.</p>
 </dd>
@@ -5858,40 +5858,43 @@ eps_x: The mollifier’s threshold.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.dof" title="ipctk.VertexVertexCandidate.dof (Python method) — Select this stencil's DOF from the full matrix of DOF."><code class="xref py py-obj docutils literal notranslate"><span class="pre">dof</span></code></a>(self, X, edges, faces)</p></td>
 <td><p>Select this stencil's DOF from the full matrix of DOF.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance" title="ipctk.VertexVertexCandidate.compute_distance (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.thickness" title="ipctk.VertexVertexCandidate.thickness (Python method) — Get the sum of the two primitives' thicknesses (see CollisionMesh.set_thickness)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">thickness</span></code></a>(self, vertex_thickness, ...)</p></td>
+<td><p>Get the sum of the two primitives' thicknesses (see CollisionMesh.set_thickness).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance" title="ipctk.VertexVertexCandidate.compute_distance (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance_gradient" title="ipctk.VertexVertexCandidate.compute_distance_gradient (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_gradient</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance_gradient" title="ipctk.VertexVertexCandidate.compute_distance_gradient (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_gradient</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance_hessian" title="ipctk.VertexVertexCandidate.compute_distance_hessian (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance_hessian" title="ipctk.VertexVertexCandidate.compute_distance_hessian (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_coefficients" title="ipctk.VertexVertexCandidate.compute_coefficients (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_coefficients</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_coefficients" title="ipctk.VertexVertexCandidate.compute_coefficients (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_coefficients</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance_vector" title="ipctk.VertexVertexCandidate.compute_distance_vector (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance_vector" title="ipctk.VertexVertexCandidate.compute_distance_vector (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance_vector_with_coefficients" title="ipctk.VertexVertexCandidate.compute_distance_vector_with_coefficients (Python method) — Compute the distance vector and the coefficients together."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_with_coefficients</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance_vector_with_coefficients" title="ipctk.VertexVertexCandidate.compute_distance_vector_with_coefficients (Python method) — Compute the distance vector and the coefficients together."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_with_coefficients</span></code></a>(...)</p></td>
 <td><p>Compute the distance vector and the coefficients together.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance_vector_jacobian" title="ipctk.VertexVertexCandidate.compute_distance_vector_jacobian (Python method) — Compute the Jacobian of the distance vector w.r.t. positions."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_jacobian</span></code></a>(self, positions)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.compute_distance_vector_jacobian" title="ipctk.VertexVertexCandidate.compute_distance_vector_jacobian (Python method) — Compute the Jacobian of the distance vector w.r.t. positions."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_jacobian</span></code></a>(self, positions)</p></td>
 <td><p>Compute the Jacobian of the distance vector w.r.t.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.ccd" title="ipctk.VertexVertexCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, ], vertices_t1, ], ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.ccd" title="ipctk.VertexVertexCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, ], vertices_t1, ], ...)</p></td>
 <td><p>Perform narrow-phase CCD on the candidate.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.print_ccd_query" title="ipctk.VertexVertexCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.print_ccd_query" title="ipctk.VertexVertexCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
 <td><p>Print the CCD query to cout.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.diag_distance_vector_outer" title="ipctk.VertexVertexCandidate.diag_distance_vector_outer (Python method) — Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq. 11)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_outer</span></code></a>(coeffs, dim)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.diag_distance_vector_outer" title="ipctk.VertexVertexCandidate.diag_distance_vector_outer (Python method) — Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq. 11)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_outer</span></code></a>(coeffs, dim)</p></td>
 <td><p>Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.diag_distance_vector_t_outer" title="ipctk.VertexVertexCandidate.diag_distance_vector_t_outer (Python method) — Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq. 12)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_t_outer</span></code></a>(coeffs, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.diag_distance_vector_t_outer" title="ipctk.VertexVertexCandidate.diag_distance_vector_t_outer (Python method) — Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq. 12)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_t_outer</span></code></a>(coeffs, ...)</p></td>
 <td><p>Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.contract_distance_vector_jacobian" title="ipctk.VertexVertexCandidate.contract_distance_vector_jacobian (Python method) — Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs. 13-14)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code></a>(coeffs, p, dim)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.contract_distance_vector_jacobian" title="ipctk.VertexVertexCandidate.contract_distance_vector_jacobian (Python method) — Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs. 13-14)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code></a>(coeffs, p, dim)</p></td>
 <td><p>Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs.</p></td>
 </tr>
 </tbody>
@@ -6119,40 +6122,43 @@ eps_x: The mollifier’s threshold.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.dof" title="ipctk.EdgeVertexCandidate.dof (Python method) — Select this stencil's DOF from the full matrix of DOF."><code class="xref py py-obj docutils literal notranslate"><span class="pre">dof</span></code></a>(self, X, edges, faces)</p></td>
 <td><p>Select this stencil's DOF from the full matrix of DOF.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance" title="ipctk.EdgeVertexCandidate.compute_distance (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.thickness" title="ipctk.EdgeVertexCandidate.thickness (Python method) — Get the sum of the two primitives' thicknesses (see CollisionMesh.set_thickness)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">thickness</span></code></a>(self, vertex_thickness, ...)</p></td>
+<td><p>Get the sum of the two primitives' thicknesses (see CollisionMesh.set_thickness).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance" title="ipctk.EdgeVertexCandidate.compute_distance (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance_gradient" title="ipctk.EdgeVertexCandidate.compute_distance_gradient (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_gradient</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance_gradient" title="ipctk.EdgeVertexCandidate.compute_distance_gradient (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_gradient</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance_hessian" title="ipctk.EdgeVertexCandidate.compute_distance_hessian (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance_hessian" title="ipctk.EdgeVertexCandidate.compute_distance_hessian (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_coefficients" title="ipctk.EdgeVertexCandidate.compute_coefficients (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_coefficients</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_coefficients" title="ipctk.EdgeVertexCandidate.compute_coefficients (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_coefficients</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance_vector" title="ipctk.EdgeVertexCandidate.compute_distance_vector (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance_vector" title="ipctk.EdgeVertexCandidate.compute_distance_vector (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance_vector_with_coefficients" title="ipctk.EdgeVertexCandidate.compute_distance_vector_with_coefficients (Python method) — Compute the distance vector and the coefficients together."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_with_coefficients</span></code></a>(...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance_vector_with_coefficients" title="ipctk.EdgeVertexCandidate.compute_distance_vector_with_coefficients (Python method) — Compute the distance vector and the coefficients together."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_with_coefficients</span></code></a>(...)</p></td>
 <td><p>Compute the distance vector and the coefficients together.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance_vector_jacobian" title="ipctk.EdgeVertexCandidate.compute_distance_vector_jacobian (Python method) — Compute the Jacobian of the distance vector w.r.t. positions."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_jacobian</span></code></a>(self, positions)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.compute_distance_vector_jacobian" title="ipctk.EdgeVertexCandidate.compute_distance_vector_jacobian (Python method) — Compute the Jacobian of the distance vector w.r.t. positions."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_jacobian</span></code></a>(self, positions)</p></td>
 <td><p>Compute the Jacobian of the distance vector w.r.t.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.ccd" title="ipctk.EdgeVertexCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, ], vertices_t1, ], ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.ccd" title="ipctk.EdgeVertexCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, ], vertices_t1, ], ...)</p></td>
 <td><p>Perform narrow-phase CCD on the candidate.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.print_ccd_query" title="ipctk.EdgeVertexCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.print_ccd_query" title="ipctk.EdgeVertexCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
 <td><p>Print the CCD query to cout.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.diag_distance_vector_outer" title="ipctk.EdgeVertexCandidate.diag_distance_vector_outer (Python method) — Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq. 11)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_outer</span></code></a>(coeffs, dim)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.diag_distance_vector_outer" title="ipctk.EdgeVertexCandidate.diag_distance_vector_outer (Python method) — Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq. 11)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_outer</span></code></a>(coeffs, dim)</p></td>
 <td><p>Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.diag_distance_vector_t_outer" title="ipctk.EdgeVertexCandidate.diag_distance_vector_t_outer (Python method) — Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq. 12)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_t_outer</span></code></a>(coeffs, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.diag_distance_vector_t_outer" title="ipctk.EdgeVertexCandidate.diag_distance_vector_t_outer (Python method) — Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq. 12)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_t_outer</span></code></a>(coeffs, ...)</p></td>
 <td><p>Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.contract_distance_vector_jacobian" title="ipctk.EdgeVertexCandidate.contract_distance_vector_jacobian (Python method) — Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs. 13-14)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code></a>(coeffs, p, dim)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.contract_distance_vector_jacobian" title="ipctk.EdgeVertexCandidate.contract_distance_vector_jacobian (Python method) — Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs. 13-14)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code></a>(coeffs, p, dim)</p></td>
 <td><p>Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs.</p></td>
 </tr>
 </tbody>
@@ -6399,40 +6405,43 @@ eps_x: The mollifier’s threshold.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.dof" title="ipctk.EdgeEdgeCandidate.dof (Python method) — Select this stencil's DOF from the full matrix of DOF."><code class="xref py py-obj docutils literal notranslate"><span class="pre">dof</span></code></a>(self, X, edges, faces)</p></td>
 <td><p>Select this stencil's DOF from the full matrix of DOF.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance" title="ipctk.EdgeEdgeCandidate.compute_distance (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.thickness" title="ipctk.EdgeEdgeCandidate.thickness (Python method) — Get the sum of the two primitives' thicknesses (see CollisionMesh.set_thickness)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">thickness</span></code></a>(self, vertex_thickness, ...)</p></td>
+<td><p>Get the sum of the two primitives' thicknesses (see CollisionMesh.set_thickness).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance" title="ipctk.EdgeEdgeCandidate.compute_distance (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance_gradient" title="ipctk.EdgeEdgeCandidate.compute_distance_gradient (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_gradient</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance_gradient" title="ipctk.EdgeEdgeCandidate.compute_distance_gradient (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_gradient</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance_hessian" title="ipctk.EdgeEdgeCandidate.compute_distance_hessian (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance_hessian" title="ipctk.EdgeEdgeCandidate.compute_distance_hessian (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_coefficients" title="ipctk.EdgeEdgeCandidate.compute_coefficients (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_coefficients</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_coefficients" title="ipctk.EdgeEdgeCandidate.compute_coefficients (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_coefficients</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance_vector" title="ipctk.EdgeEdgeCandidate.compute_distance_vector (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance_vector" title="ipctk.EdgeEdgeCandidate.compute_distance_vector (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance_vector_with_coefficients" title="ipctk.EdgeEdgeCandidate.compute_distance_vector_with_coefficients (Python method) — Compute the distance vector and the coefficients together."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_with_coefficients</span></code></a>(...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance_vector_with_coefficients" title="ipctk.EdgeEdgeCandidate.compute_distance_vector_with_coefficients (Python method) — Compute the distance vector and the coefficients together."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_with_coefficients</span></code></a>(...)</p></td>
 <td><p>Compute the distance vector and the coefficients together.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance_vector_jacobian" title="ipctk.EdgeEdgeCandidate.compute_distance_vector_jacobian (Python method) — Compute the Jacobian of the distance vector w.r.t. positions."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_jacobian</span></code></a>(self, positions)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.compute_distance_vector_jacobian" title="ipctk.EdgeEdgeCandidate.compute_distance_vector_jacobian (Python method) — Compute the Jacobian of the distance vector w.r.t. positions."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_jacobian</span></code></a>(self, positions)</p></td>
 <td><p>Compute the Jacobian of the distance vector w.r.t.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.ccd" title="ipctk.EdgeEdgeCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, ], vertices_t1, ], ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.ccd" title="ipctk.EdgeEdgeCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, ], vertices_t1, ], ...)</p></td>
 <td><p>Perform narrow-phase CCD on the candidate.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.print_ccd_query" title="ipctk.EdgeEdgeCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.print_ccd_query" title="ipctk.EdgeEdgeCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
 <td><p>Print the CCD query to cout.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.diag_distance_vector_outer" title="ipctk.EdgeEdgeCandidate.diag_distance_vector_outer (Python method) — Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq. 11)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_outer</span></code></a>(coeffs, dim)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.diag_distance_vector_outer" title="ipctk.EdgeEdgeCandidate.diag_distance_vector_outer (Python method) — Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq. 11)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_outer</span></code></a>(coeffs, dim)</p></td>
 <td><p>Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.diag_distance_vector_t_outer" title="ipctk.EdgeEdgeCandidate.diag_distance_vector_t_outer (Python method) — Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq. 12)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_t_outer</span></code></a>(coeffs, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.diag_distance_vector_t_outer" title="ipctk.EdgeEdgeCandidate.diag_distance_vector_t_outer (Python method) — Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq. 12)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_t_outer</span></code></a>(coeffs, ...)</p></td>
 <td><p>Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.contract_distance_vector_jacobian" title="ipctk.EdgeEdgeCandidate.contract_distance_vector_jacobian (Python method) — Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs. 13-14)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code></a>(coeffs, p, dim)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.contract_distance_vector_jacobian" title="ipctk.EdgeEdgeCandidate.contract_distance_vector_jacobian (Python method) — Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs. 13-14)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code></a>(coeffs, p, dim)</p></td>
 <td><p>Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs.</p></td>
 </tr>
 </tbody>
@@ -6693,40 +6702,43 @@ eps_x: The mollifier’s threshold.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.dof" title="ipctk.FaceVertexCandidate.dof (Python method) — Select this stencil's DOF from the full matrix of DOF."><code class="xref py py-obj docutils literal notranslate"><span class="pre">dof</span></code></a>(self, X, edges, faces)</p></td>
 <td><p>Select this stencil's DOF from the full matrix of DOF.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance" title="ipctk.FaceVertexCandidate.compute_distance (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.thickness" title="ipctk.FaceVertexCandidate.thickness (Python method) — Get the sum of the two primitives' thicknesses (see CollisionMesh.set_thickness)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">thickness</span></code></a>(self, vertex_thickness, ...)</p></td>
+<td><p>Get the sum of the two primitives' thicknesses (see CollisionMesh.set_thickness).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance" title="ipctk.FaceVertexCandidate.compute_distance (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance_gradient" title="ipctk.FaceVertexCandidate.compute_distance_gradient (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_gradient</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance_gradient" title="ipctk.FaceVertexCandidate.compute_distance_gradient (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_gradient</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance_hessian" title="ipctk.FaceVertexCandidate.compute_distance_hessian (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance_hessian" title="ipctk.FaceVertexCandidate.compute_distance_hessian (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_coefficients" title="ipctk.FaceVertexCandidate.compute_coefficients (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_coefficients</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_coefficients" title="ipctk.FaceVertexCandidate.compute_coefficients (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_coefficients</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance_vector" title="ipctk.FaceVertexCandidate.compute_distance_vector (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance_vector" title="ipctk.FaceVertexCandidate.compute_distance_vector (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance_vector_with_coefficients" title="ipctk.FaceVertexCandidate.compute_distance_vector_with_coefficients (Python method) — Compute the distance vector and the coefficients together."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_with_coefficients</span></code></a>(...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance_vector_with_coefficients" title="ipctk.FaceVertexCandidate.compute_distance_vector_with_coefficients (Python method) — Compute the distance vector and the coefficients together."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_with_coefficients</span></code></a>(...)</p></td>
 <td><p>Compute the distance vector and the coefficients together.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance_vector_jacobian" title="ipctk.FaceVertexCandidate.compute_distance_vector_jacobian (Python method) — Compute the Jacobian of the distance vector w.r.t. positions."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_jacobian</span></code></a>(self, positions)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.compute_distance_vector_jacobian" title="ipctk.FaceVertexCandidate.compute_distance_vector_jacobian (Python method) — Compute the Jacobian of the distance vector w.r.t. positions."><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_jacobian</span></code></a>(self, positions)</p></td>
 <td><p>Compute the Jacobian of the distance vector w.r.t.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.ccd" title="ipctk.FaceVertexCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, ], vertices_t1, ], ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.ccd" title="ipctk.FaceVertexCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, ], vertices_t1, ], ...)</p></td>
 <td><p>Perform narrow-phase CCD on the candidate.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.print_ccd_query" title="ipctk.FaceVertexCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.print_ccd_query" title="ipctk.FaceVertexCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
 <td><p>Print the CCD query to cout.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.diag_distance_vector_outer" title="ipctk.FaceVertexCandidate.diag_distance_vector_outer (Python method) — Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq. 11)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_outer</span></code></a>(coeffs, dim)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.diag_distance_vector_outer" title="ipctk.FaceVertexCandidate.diag_distance_vector_outer (Python method) — Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq. 11)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_outer</span></code></a>(coeffs, dim)</p></td>
 <td><p>Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.diag_distance_vector_t_outer" title="ipctk.FaceVertexCandidate.diag_distance_vector_t_outer (Python method) — Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq. 12)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_t_outer</span></code></a>(coeffs, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.diag_distance_vector_t_outer" title="ipctk.FaceVertexCandidate.diag_distance_vector_t_outer (Python method) — Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq. 12)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_t_outer</span></code></a>(coeffs, ...)</p></td>
 <td><p>Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.contract_distance_vector_jacobian" title="ipctk.FaceVertexCandidate.contract_distance_vector_jacobian (Python method) — Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs. 13-14)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code></a>(coeffs, p, dim)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.contract_distance_vector_jacobian" title="ipctk.FaceVertexCandidate.contract_distance_vector_jacobian (Python method) — Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs. 13-14)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code></a>(coeffs, p, dim)</p></td>
 <td><p>Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs.</p></td>
 </tr>
 </tbody>
@@ -6936,40 +6948,43 @@ eps_x: The mollifier’s threshold.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dof</span></code>(self, X, edges, faces)</p></td>
 <td><p>Select this stencil's DOF from the full matrix of DOF.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance</span></code>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">thickness</span></code>(self, vertex_thickness, ...)</p></td>
+<td><p>Get the sum of the two primitives' thicknesses (see CollisionMesh.set_thickness).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance</span></code>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_gradient</span></code>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_gradient</span></code>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_coefficients</span></code>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_coefficients</span></code>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector</span></code>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector</span></code>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_with_coefficients</span></code>(...)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_with_coefficients</span></code>(...)</p></td>
 <td><p>Compute the distance vector and the coefficients together.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_jacobian</span></code>(self, positions)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_vector_jacobian</span></code>(self, positions)</p></td>
 <td><p>Compute the Jacobian of the distance vector w.r.t.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code>(self, vertices_t0, ], vertices_t1, ], ...)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code>(self, vertices_t0, ], vertices_t1, ], ...)</p></td>
 <td><p>Perform narrow-phase CCD on the candidate.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code>(self, vertices_t0, vertices_t1)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code>(self, vertices_t0, vertices_t1)</p></td>
 <td><p>Print the CCD query to cout.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_outer</span></code>(coeffs, dim)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_outer</span></code>(coeffs, dim)</p></td>
 <td><p>Compute diag((dt/dx)(dt/dx)^T) efficiently (Eq.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_t_outer</span></code>(coeffs, ...)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">diag_distance_vector_t_outer</span></code>(coeffs, ...)</p></td>
 <td><p>Compute diag((dt/dx * t)(dt/dx * t)^T) efficiently (Eq.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code>(coeffs, p, dim)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">contract_distance_vector_jacobian</span></code>(coeffs, p, dim)</p></td>
 <td><p>Compute p^T (dt/dx) efficiently as sum(c_i * p_i) (Eqs.</p></td>
 </tr>
 </tbody>
@@ -7126,7 +7141,7 @@ eps_x: The mollifier’s threshold.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Nov 03, 2026
+    Nov 04, 2026
   </span>
 
     

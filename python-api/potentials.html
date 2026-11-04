@@ -5018,7 +5018,7 @@ result in the assembler (use its get_matrix()). Reuse one assembler across calls
 <span class="sig-name descname"><span class="pre">force</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.force" title="ipctk.TangentialPotential.force.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.force" title="ipctk.TangentialPotential.force.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.TangentialPotential.force" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>force(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], normal_potential: ipctk.NormalPotential, dmin: typing.SupportsFloat = 0, no_mu: bool = False) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
+<li><p>force(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], normal_potential: ipctk.NormalPotential, dmin: typing.SupportsFloat | None = None, no_mu: bool = False) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
 <blockquote>
 <div><p>Compute the friction force from the given velocities.</p>
 <dl class="simple">
@@ -5028,7 +5028,7 @@ rest_positions: Rest positions of the vertices (rowwise).
 lagged_displacements: Previous displacements of the vertices (rowwise).
 velocities: Current displacements of the vertices (rowwise).
 normal_potential: Normal potential (used for normal force magnitude).
-dmin: Minimum distance (used for normal force magnitude).
+dmin: Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision’s own dmin.
 no_mu: whether to not multiply by mu</p>
 </dd>
 <dt>Returns:</dt><dd><p>The friction force.</p>
@@ -5036,7 +5036,7 @@ no_mu: whether to not multiply by mu</p>
 </dl>
 </div></blockquote>
 </li>
-<li><p>force(self: ipctk.TangentialPotential, collision: ipctk.TangentialCollision, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], normal_potential: ipctk.NormalPotential, dmin: typing.SupportsFloat = 0, no_mu: bool = False) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
+<li><p>force(self: ipctk.TangentialPotential, collision: ipctk.TangentialCollision, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], normal_potential: ipctk.NormalPotential, dmin: typing.SupportsFloat | None = None, no_mu: bool = False) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”]</p>
 <blockquote>
 <div><p>Compute the friction force.</p>
 <dl class="simple">
@@ -5045,7 +5045,7 @@ rest_positions: Rest positions of the vertices (rowwise).
 lagged_displacements: Previous displacements of the vertices (rowwise).
 velocities: Current displacements of the vertices (rowwise).
 normal_potential: Normal potential (used for normal force magnitude).
-dmin: Minimum distance (used for normal force magnitude).
+dmin: Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision’s own dmin.
 no_mu: Whether to not multiply by mu</p>
 </dd>
 <dt>Returns:</dt><dd><p>Friction force</p>
@@ -5061,7 +5061,7 @@ no_mu: Whether to not multiply by mu</p>
 <span class="sig-name descname"><span class="pre">force_jacobian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.force_jacobian" title="ipctk.TangentialPotential.force_jacobian.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.TangentialPotential.force_jacobian" title="ipctk.TangentialPotential.force_jacobian.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.TangentialPotential.force_jacobian" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>force_jacobian(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], normal_potential: ipctk.NormalPotential, wrt: ipctk.TangentialPotential.DiffWRT, dmin: typing.SupportsFloat = 0) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
+<li><p>force_jacobian(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipctk.CollisionMesh, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”, “flags.f_contiguous”], normal_potential: ipctk.NormalPotential, wrt: ipctk.TangentialPotential.DiffWRT, dmin: typing.SupportsFloat | None = None) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
 <blockquote>
 <div><p>Compute the Jacobian of the friction force wrt the velocities.</p>
 <dl class="simple">
@@ -5072,14 +5072,14 @@ lagged_displacements: Previous displacements of the vertices (rowwise).
 velocities: Current displacements of the vertices (rowwise).
 normal_potential: Normal potential (used for normal force magnitude).
 wrt: The variable to take the derivative with respect to.
-dmin: Minimum distance (used for normal force magnitude).</p>
+dmin: Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision’s own dmin.</p>
 </dd>
 <dt>Returns:</dt><dd><p>The Jacobian of the friction force wrt the velocities.</p>
 </dd>
 </dl>
 </div></blockquote>
 </li>
-<li><p>force_jacobian(self: ipctk.TangentialPotential, collision: ipctk.TangentialCollision, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], normal_potential: ipctk.NormalPotential, wrt: ipctk.TangentialPotential.DiffWRT, dmin: typing.SupportsFloat = 0) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”]</p>
+<li><p>force_jacobian(self: ipctk.TangentialPotential, collision: ipctk.TangentialCollision, rest_positions: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], lagged_displacements: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], velocities: typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, 1]”], normal_potential: ipctk.NormalPotential, wrt: ipctk.TangentialPotential.DiffWRT, dmin: typing.SupportsFloat | None = None) -&gt; typing.Annotated[numpy.typing.NDArray[numpy.float64], “[m, n]”]</p>
 <blockquote>
 <div><p>Compute the friction force Jacobian.</p>
 <dl class="simple">
@@ -5089,7 +5089,7 @@ lagged_displacements: Previous displacements of the vertices (rowwise).
 velocities: Current displacements of the vertices (rowwise).
 normal_potential: Normal potential (used for normal force magnitude).
 wrt: Variable to differentiate the friction force with respect to.
-dmin: Minimum distance (used for normal force magnitude).</p>
+dmin: Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision’s own dmin.</p>
 </dd>
 <dt>Returns:</dt><dd><p>Friction force Jacobian</p>
 </dd>
@@ -5395,7 +5395,7 @@ x: The collision stencil’s degrees of freedom.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    Nov 03, 2026
+    Nov 04, 2026
   </span>
 
     

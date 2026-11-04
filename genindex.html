@@ -2714,6 +2714,8 @@
         <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollisions.clear">(ipctk.TangentialCollisions method)</a>
 </li>
       </ul></li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.clear_thickness">clear_thickness() (ipctk.CollisionMesh method)</a>
+</li>
       <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollision.closest_point">closest_point (ipctk.TangentialCollision property)</a>
 </li>
       <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.codim_edges">codim_edges (ipctk.CollisionMesh property)</a>
@@ -2971,7 +2973,11 @@
       <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.displace_vertices">displace_vertices() (ipctk.CollisionMesh method)</a>
 </li>
       <li><a href="python-api/normal_collisions.html#ipctk.NormalCollision.dmin">dmin (ipctk.NormalCollision property)</a>
+
+      <ul>
+        <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollision.dmin">(ipctk.TangentialCollision property)</a>
 </li>
+      </ul></li>
       <li><a href="python-api/candidates.html#ipctk.EdgeEdgeCandidate.dof">dof() (ipctk.EdgeEdgeCandidate method)</a>
 
       <ul>
@@ -3076,14 +3082,18 @@
       </ul></li>
       <li><a href="python-api/broad_phase.html#ipctk.LBVH.edge_nodes">edge_nodes (ipctk.LBVH property)</a>
 </li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.edge_thickness">edge_thickness() (ipctk.CollisionMesh method)</a>
+</li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.edge_thicknesses">edge_thicknesses (ipctk.CollisionMesh property)</a>
+</li>
       <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.edge_vertex_adjacencies">edge_vertex_adjacencies (ipctk.CollisionMesh property)</a>
 </li>
       <li><a href="python-api/candidates.html#ipctk.Candidates.edge_vertex_to_vertex_vertex">edge_vertex_to_vertex_vertex() (ipctk.Candidates method)</a>
 </li>
-      <li><a href="python-api/candidates.html#ipctk.EdgeEdgeCandidate">EdgeEdgeCandidate (class in ipctk)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="python-api/candidates.html#ipctk.EdgeEdgeCandidate">EdgeEdgeCandidate (class in ipctk)</a>
+</li>
       <li><a href="python-api/distance.html#ipctk.EdgeEdgeDistanceType">EdgeEdgeDistanceType (class in ipctk)</a>
 </li>
       <li><a href="python-api/normal_collisions.html#ipctk.EdgeEdgeNormalCollision">EdgeEdgeNormalCollision (class in ipctk)</a>
@@ -3200,6 +3210,10 @@
 </li>
       <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.face_normals">face_normals() (ipctk.CollisionMesh method)</a>
 </li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.face_thickness">face_thickness() (ipctk.CollisionMesh method)</a>
+</li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.face_thicknesses">face_thicknesses (ipctk.CollisionMesh property)</a>
+</li>
       <li><a href="python-api/candidates.html#ipctk.Candidates.face_vertex_to_edge_vertex">face_vertex_to_edge_vertex() (ipctk.Candidates method)</a>
 </li>
       <li><a href="python-api/candidates.html#ipctk.Candidates.face_vertex_to_vertex_vertex">face_vertex_to_vertex_vertex() (ipctk.Candidates method)</a>
@@ -3216,10 +3230,10 @@
 </li>
       <li><a href="cpp-api/interval.html#_CPPv4N5filib8IntervalE">filib::Interval (C++ class)</a>
 </li>
-      <li><a href="cpp-api/interval.html#_CPPv4N5filib8Interval5emptyEv">filib::Interval::empty (C++ function)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="cpp-api/interval.html#_CPPv4N5filib8Interval5emptyEv">filib::Interval::empty (C++ function)</a>
+</li>
       <li><a href="cpp-api/interval.html#_CPPv4N5filib8Interval8IntervalERK8interval">filib::Interval::Interval (C++ function)</a>, <a href="cpp-api/interval.html#_CPPv4N5filib8Interval8IntervalEd">[1]</a>, <a href="cpp-api/interval.html#_CPPv4N5filib8Interval8IntervalEdd">[2]</a>, <a href="cpp-api/interval.html#_CPPv4N5filib8Interval8IntervalEv">[3]</a>
 </li>
       <li><a href="python-api/barrier.html#ipctk.Barrier.first_derivative">first_derivative() (ipctk.Barrier method)</a>
@@ -3283,6 +3297,8 @@
       <li><a href="python-api/candidates.html#ipctk.Candidates.has_all_types">has_all_types (ipctk.Candidates property)</a>
 </li>
       <li><a href="python-api/intersections.html#ipctk.has_intersections">has_intersections() (in module ipctk)</a>
+</li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.has_thickness">has_thickness() (ipctk.CollisionMesh method)</a>
 </li>
       <li><a href="python-api/broad_phase.html#ipctk.HashGrid">HashGrid (class in ipctk)</a>
 </li>
@@ -3570,13 +3586,13 @@
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4N3ipc10Candidates5clearEv">ipc::Candidates::clear (C++ function)</a>
 </li>
-      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc10Candidates20compute_cfl_stepsizeERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdKdP10BroadPhaseRK14NarrowPhaseCCD">ipc::Candidates::compute_cfl_stepsize (C++ function)</a>
+      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc10Candidates20compute_cfl_stepsizeERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdKNSt8optionalIdEEP10BroadPhaseRK14NarrowPhaseCCD">ipc::Candidates::compute_cfl_stepsize (C++ function)</a>
 </li>
-      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc10Candidates31compute_collision_free_stepsizeERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdRK14NarrowPhaseCCD">ipc::Candidates::compute_collision_free_stepsize (C++ function)</a>
+      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc10Candidates31compute_collision_free_stepsizeERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKNSt8optionalIdEERK14NarrowPhaseCCD">ipc::Candidates::compute_collision_free_stepsize (C++ function)</a>
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc10Candidates42compute_noncandidate_conservative_stepsizeERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKd">ipc::Candidates::compute_noncandidate_conservative_stepsize (C++ function)</a>
 </li>
-      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc10Candidates33compute_per_vertex_safe_distancesERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdKd">ipc::Candidates::compute_per_vertex_safe_distances (C++ function)</a>
+      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc10Candidates33compute_per_vertex_safe_distancesERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdKNSt8optionalIdEE">ipc::Candidates::compute_per_vertex_safe_distances (C++ function)</a>
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4N3ipc10Candidates26convert_candidates_to_setsEv">ipc::Candidates::convert_candidates_to_sets (C++ function)</a>
 </li>
@@ -3624,7 +3640,7 @@
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc10Candidates15is_plane_vertexE6size_t">ipc::Candidates::is_plane_vertex (C++ function)</a>
 </li>
-      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc10Candidates22is_step_collision_freeERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdRK14NarrowPhaseCCD">ipc::Candidates::is_step_collision_free (C++ function)</a>
+      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc10Candidates22is_step_collision_freeERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKNSt8optionalIdEERK14NarrowPhaseCCD">ipc::Candidates::is_step_collision_free (C++ function)</a>
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc10Candidates16is_vertex_vertexE6size_t">ipc::Candidates::is_vertex_vertex (C++ function)</a>
 </li>
@@ -3684,6 +3700,8 @@
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh11can_collideE">ipc::CollisionMesh::can_collide (C++ member)</a>
 </li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh15clear_thicknessEv">ipc::CollisionMesh::clear_thickness (C++ function)</a>
+</li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh11codim_edgesEv">ipc::CollisionMesh::codim_edges (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh14codim_verticesEv">ipc::CollisionMesh::codim_vertices (C++ function)</a>
@@ -3706,6 +3724,10 @@
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh11edge_lengthEK7index_t">ipc::CollisionMesh::edge_length (C++ function)</a>
 </li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh14edge_thicknessEK7index_t">ipc::CollisionMesh::edge_thickness (C++ function)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh16edge_thicknessesEv">ipc::CollisionMesh::edge_thicknesses (C++ function)</a>
+</li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh23edge_vertex_adjacenciesEv">ipc::CollisionMesh::edge_vertex_adjacencies (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh5edgesEv">ipc::CollisionMesh::edges (C++ function)</a>
@@ -3716,6 +3738,10 @@
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh12face_normalsEN5Eigen8ConstRefIN5Eigen8MatrixXdEEE">ipc::CollisionMesh::face_normals (C++ function)</a>
 </li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh14face_thicknessEK7index_t">ipc::CollisionMesh::face_thickness (C++ function)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh16face_thicknessesEv">ipc::CollisionMesh::face_thicknesses (C++ function)</a>
+</li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh5facesEv">ipc::CollisionMesh::faces (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh14faces_to_edgesEv">ipc::CollisionMesh::faces_to_edges (C++ function)</a>
@@ -3723,6 +3749,8 @@
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh9full_ndofEv">ipc::CollisionMesh::full_ndof (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh17full_num_verticesEv">ipc::CollisionMesh::full_num_vertices (C++ function)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh13has_thicknessEv">ipc::CollisionMesh::has_thickness (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh16init_adjacenciesEv">ipc::CollisionMesh::init_adjacencies (C++ function)</a>
 </li>
@@ -3766,6 +3794,8 @@
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh12m_edge_areasE">ipc::CollisionMesh::m_edge_areas (C++ member)</a>
 </li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh16m_edge_thicknessE">ipc::CollisionMesh::m_edge_thickness (C++ member)</a>
+</li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh25m_edge_vertex_adjacenciesE">ipc::CollisionMesh::m_edge_vertex_adjacencies (C++ member)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh7m_edgesE">ipc::CollisionMesh::m_edges (C++ member)</a>
@@ -3773,6 +3803,8 @@
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh16m_edges_to_facesE">ipc::CollisionMesh::m_edges_to_faces (C++ member)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh12m_face_areasE">ipc::CollisionMesh::m_face_areas (C++ member)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh16m_face_thicknessE">ipc::CollisionMesh::m_face_thickness (C++ member)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh7m_facesE">ipc::CollisionMesh::m_faces (C++ member)</a>
 </li>
@@ -3796,6 +3828,8 @@
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh23m_is_vertex_on_boundaryE">ipc::CollisionMesh::m_is_vertex_on_boundary (C++ member)</a>
 </li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh15m_max_thicknessE">ipc::CollisionMesh::m_max_thickness (C++ member)</a>
+</li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh16m_rest_positionsE">ipc::CollisionMesh::m_rest_positions (C++ member)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh12m_select_dofE">ipc::CollisionMesh::m_select_dof (C++ member)</a>
@@ -3810,6 +3844,8 @@
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh25m_vertex_face_adjacenciesE">ipc::CollisionMesh::m_vertex_face_adjacencies (C++ member)</a>
 </li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh18m_vertex_thicknessE">ipc::CollisionMesh::m_vertex_thickness (C++ member)</a>
+</li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh23m_vertex_to_full_vertexE">ipc::CollisionMesh::m_vertex_to_full_vertex (C++ member)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh27m_vertex_vertex_adjacenciesE">ipc::CollisionMesh::m_vertex_vertex_adjacencies (C++ member)</a>
@@ -3821,6 +3857,8 @@
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh17map_displacementsEN5Eigen8ConstRefIN5Eigen8MatrixXdEEE">ipc::CollisionMesh::map_displacements (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh15max_edge_lengthEv">ipc::CollisionMesh::max_edge_length (C++ function)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh13max_thicknessEv">ipc::CollisionMesh::max_thickness (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh4ndofEv">ipc::CollisionMesh::ndof (C++ function)</a>
 </li>
@@ -3834,13 +3872,21 @@
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh12num_verticesEv">ipc::CollisionMesh::num_vertices (C++ function)</a>
 </li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4I0ENK3ipc13CollisionMesh14pair_thicknessEdRK9Candidate">ipc::CollisionMesh::pair_thickness (C++ function)</a>
+</li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh6planesE">ipc::CollisionMesh::planes (C++ member)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh14rest_positionsEv">ipc::CollisionMesh::rest_positions (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh14set_edge_areasEN5Eigen8ConstRefIN5Eigen8VectorXdEEE">ipc::CollisionMesh::set_edge_areas (C++ function)</a>
 </li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh18set_face_thicknessEN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEE">ipc::CollisionMesh::set_face_thickness (C++ function)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh13set_thicknessEN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEE">ipc::CollisionMesh::set_thickness (C++ function)</a>
+</li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh16set_vertex_areasEN5Eigen8ConstRefIN5Eigen8VectorXdEEE">ipc::CollisionMesh::set_vertex_areas (C++ function)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh20set_vertex_thicknessEN5Eigen8ConstRefIN5Eigen8VectorXdEEE">ipc::CollisionMesh::set_vertex_thickness (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh11to_full_dofEN5Eigen8ConstRefIN5Eigen8VectorXdEEE">ipc::CollisionMesh::to_full_dof (C++ function)</a>, <a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh11to_full_dofERKN5Eigen12SparseMatrixIdEE">[1]</a>
 </li>
@@ -3857,6 +3903,10 @@
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh23vertex_face_adjacenciesEv">ipc::CollisionMesh::vertex_face_adjacencies (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMesh27vertex_matrix_to_dof_matrixERKN5Eigen12SparseMatrixIdEEi">ipc::CollisionMesh::vertex_matrix_to_dof_matrix (C++ function)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh16vertex_thicknessEK7index_t">ipc::CollisionMesh::vertex_thickness (C++ function)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh18vertex_thicknessesEv">ipc::CollisionMesh::vertex_thicknesses (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh25vertex_vertex_adjacenciesEv">ipc::CollisionMesh::vertex_vertex_adjacencies (C++ function)</a>
 </li>
@@ -3894,7 +3944,7 @@
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4N3ipc16CollisionStencilD0Ev">ipc::CollisionStencil::~CollisionStencil (C++ function)</a>
 </li>
-      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc31compute_collision_free_stepsizeERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdP10BroadPhaseRK14NarrowPhaseCCD">ipc::compute_collision_free_stepsize (C++ function)</a>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc31compute_collision_free_stepsizeERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKNSt8optionalIdEEP10BroadPhaseRK14NarrowPhaseCCD">ipc::compute_collision_free_stepsize (C++ function)</a>
 </li>
       <li><a href="cpp-api/barrier/CubicBarrier.html#_CPPv4I0EN3ipc12CubicBarrierE">ipc::CubicBarrier (C++ class)</a>
 </li>
@@ -4074,6 +4124,8 @@
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc17EdgeEdgeCandidateeqERK17EdgeEdgeCandidate">ipc::EdgeEdgeCandidate::operator== (C++ function)</a>
 </li>
+      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc17EdgeEdgeCandidate9thicknessEN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEE">ipc::EdgeEdgeCandidate::thickness (C++ function)</a>
+</li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc17EdgeEdgeCandidate10vertex_idsEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE">ipc::EdgeEdgeCandidate::vertex_ids (C++ function)</a>
 </li>
       <li><a href="cpp-api/distance.html#_CPPv4N3ipc20EdgeEdgeDistanceTypeE">ipc::EdgeEdgeDistanceType (C++ enum)</a>
@@ -4203,6 +4255,8 @@
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc19EdgeVertexCandidateltERK19EdgeVertexCandidate">ipc::EdgeVertexCandidate::operator&lt; (C++ function)</a>
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc19EdgeVertexCandidateeqERK19EdgeVertexCandidate">ipc::EdgeVertexCandidate::operator== (C++ function)</a>
+</li>
+      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc19EdgeVertexCandidate9thicknessEN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEE">ipc::EdgeVertexCandidate::thickness (C++ function)</a>
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4N3ipc19EdgeVertexCandidate9vertex_idE">ipc::EdgeVertexCandidate::vertex_id (C++ member)</a>
 </li>
@@ -4372,6 +4426,8 @@
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc19FaceVertexCandidateeqERK19FaceVertexCandidate">ipc::FaceVertexCandidate::operator== (C++ function)</a>
 </li>
+      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc19FaceVertexCandidate9thicknessEN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEE">ipc::FaceVertexCandidate::thickness (C++ function)</a>
+</li>
       <li><a href="cpp-api/candidates.html#_CPPv4N3ipc19FaceVertexCandidate9vertex_idE">ipc::FaceVertexCandidate::vertex_id (C++ member)</a>
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc19FaceVertexCandidate10vertex_idsEN5Eigen8ConstRefIN5Eigen8MatrixXiEEEN5Eigen8ConstRefIN5Eigen8MatrixXiEEE">ipc::FaceVertexCandidate::vertex_ids (C++ function)</a>
@@ -4498,6 +4554,8 @@
 </li>
       <li><a href="cpp-api/ccd.html#_CPPv4N3ipc25inexact_point_edge_ccd_2DEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEEN5Eigen8ConstRefIN5Eigen8Vector2dEEERdKd">ipc::inexact_point_edge_ccd_2D (C++ function)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/barrier/index.html#_CPPv4N3ipc25initial_barrier_stiffnessEKdRK7BarrierKdKdN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEERdKdKd">ipc::initial_barrier_stiffness (C++ function)</a>
 </li>
       <li><a href="cpp-api/ccd.html#_CPPv4N3ipc27IntervalNonlinearTrajectoryE">ipc::IntervalNonlinearTrajectory (C++ class)</a>
@@ -4516,8 +4574,6 @@
 </li>
       <li><a href="cpp-api/barrier/InversePowerBarrier.html#_CPPv4N3ipc19InversePowerBarrier19InversePowerBarrierEKd">ipc::InversePowerBarrier::InversePowerBarrier (C++ function)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/barrier/InversePowerBarrier.html#_CPPv4N3ipc19InversePowerBarrier7m_powerE">ipc::InversePowerBarrier::m_power (C++ member)</a>
 </li>
       <li><a href="cpp-api/barrier/InversePowerBarrier.html#_CPPv4NK3ipc19InversePowerBarrierclEK1TK1T">ipc::InversePowerBarrier::operator() (C++ function)</a>
@@ -4532,7 +4588,7 @@
 </li>
       <li><a href="cpp-api/distance.html#_CPPv4N3ipc21is_parallel_edge_edgeEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEEN5Eigen8ConstRefIN5Eigen8Vector3dEEE">ipc::is_parallel_edge_edge (C++ function)</a>
 </li>
-      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc22is_step_collision_freeERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdP10BroadPhaseRK14NarrowPhaseCCD">ipc::is_step_collision_free (C++ function)</a>
+      <li><a href="cpp-api/ccd.html#_CPPv4N3ipc22is_step_collision_freeERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKNSt8optionalIdEEP10BroadPhaseRK14NarrowPhaseCCD">ipc::is_step_collision_free (C++ function)</a>
 </li>
       <li><a href="cpp-api/broad_phase.html#_CPPv4N3ipc4LBVHE">ipc::LBVH (C++ class)</a>
 </li>
@@ -4932,7 +4988,7 @@
 </li>
       <li><a href="cpp-api/normal_collisions.html#_CPPv4N3ipc16NormalCollisionsE">ipc::NormalCollisions (C++ class)</a>
 </li>
-      <li><a href="cpp-api/normal_collisions.html#_CPPv4N3ipc16NormalCollisions5buildERK10CandidatesRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdKd">ipc::NormalCollisions::build (C++ function)</a>, <a href="cpp-api/normal_collisions.html#_CPPv4N3ipc16NormalCollisions5buildERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdKdP10BroadPhase">[1]</a>
+      <li><a href="cpp-api/normal_collisions.html#_CPPv4N3ipc16NormalCollisions5buildERK10CandidatesRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdKNSt8optionalIdEE">ipc::NormalCollisions::build (C++ function)</a>, <a href="cpp-api/normal_collisions.html#_CPPv4N3ipc16NormalCollisions5buildERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdKNSt8optionalIdEEP10BroadPhase">[1]</a>
 </li>
       <li><a href="cpp-api/normal_collisions.html#_CPPv4N3ipc16NormalCollisions5clearEv">ipc::NormalCollisions::clear (C++ function)</a>
 </li>
@@ -5200,8 +5256,6 @@
 </li>
       <li><a href="cpp-api/interval.html#_CPPv4N3ipc11RowVectorXIE">ipc::RowVectorXI (C++ type)</a>
 </li>
-      <li><a href="cpp-api/barrier/index.html#_CPPv4I0EN3ipc23semi_implicit_stiffnessEN5Eigen8VectorXdERK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEERK9StencilsTN5Eigen8ConstRefIN5Eigen8VectorXdEEERKN5Eigen12SparseMatrixIdEEKd">ipc::semi_implicit_stiffness (C++ function)</a>
-</li>
       <li><a href="cpp-api/utils.html#_CPPv4N3ipc10set_loggerENSt10shared_ptrIN6spdlog6loggerEEE">ipc::set_logger (C++ function)</a>
 </li>
       <li><a href="cpp-api/friction.html#_CPPv4I0EN3ipc18smooth_friction_f0E1TK1TK1T">ipc::smooth_friction_f0 (C++ function)</a>
@@ -5444,6 +5498,8 @@
 </li>
       <li><a href="cpp-api/tangential_collisions.html#_CPPv4NK3ipc19TangentialCollision3dimEv">ipc::TangentialCollision::dim (C++ function)</a>
 </li>
+      <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision4dminE">ipc::TangentialCollision::dmin (C++ member)</a>
+</li>
       <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision13gcp_collisionE">ipc::TangentialCollision::gcp_collision (C++ member)</a>
 </li>
       <li><a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision4initERK15NormalCollisionN5Eigen8ConstRefI12VectorMax12dEEKd">ipc::TangentialCollision::init (C++ function)</a>, <a href="cpp-api/tangential_collisions.html#_CPPv4N3ipc19TangentialCollision4initERK15NormalCollisionN5Eigen8ConstRefI12VectorMax12dEERK15NormalPotential">[1]</a>
@@ -5522,13 +5578,13 @@
 </li>
       <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4N3ipc19TangentialPotential7DiffWRT10VELOCITIESE">ipc::TangentialPotential::DiffWRT::VELOCITIES (C++ enumerator)</a>
 </li>
-      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential5forceERK19TangentialCollisionN5Eigen8ConstRefI12VectorMax12dEEN5Eigen8ConstRefI12VectorMax12dEEN5Eigen8ConstRefI12VectorMax12dEERK15NormalPotentialKdKb">ipc::TangentialPotential::force (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential5forceERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEERK15NormalPotentialKdKb">[1]</a>
+      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential5forceERK19TangentialCollisionN5Eigen8ConstRefI12VectorMax12dEEN5Eigen8ConstRefI12VectorMax12dEEN5Eigen8ConstRefI12VectorMax12dEERK15NormalPotentialKNSt8optionalIdEEKb">ipc::TangentialPotential::force (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential5forceERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEERK15NormalPotentialKNSt8optionalIdEEKb">[1]</a>
 </li>
-      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential14force_jacobianERK19TangentialCollisionN5Eigen8ConstRefI12VectorMax12dEEN5Eigen8ConstRefI12VectorMax12dEEN5Eigen8ConstRefI12VectorMax12dEERK15NormalPotentialK7DiffWRTKd">ipc::TangentialPotential::force_jacobian (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential14force_jacobianERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEERK15NormalPotentialK7DiffWRTKd">[1]</a>
+      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential14force_jacobianERK19TangentialCollisionN5Eigen8ConstRefI12VectorMax12dEEN5Eigen8ConstRefI12VectorMax12dEEN5Eigen8ConstRefI12VectorMax12dEERK15NormalPotentialK7DiffWRTKNSt8optionalIdEE">ipc::TangentialPotential::force_jacobian (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential14force_jacobianERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEERK15NormalPotentialK7DiffWRTKNSt8optionalIdEE">[1]</a>
 </li>
-      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential9gcp_forceERK19TangentialCollisionN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEKbKb">ipc::TangentialPotential::gcp_force (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential9gcp_forceERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdKb">[1]</a>
+      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential9gcp_forceERK19TangentialCollisionN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEKbKb">ipc::TangentialPotential::gcp_force (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential9gcp_forceERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKNSt8optionalIdEEKb">[1]</a>
 </li>
-      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential18gcp_force_jacobianERK19TangentialCollisionN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEK7DiffWRTKb">ipc::TangentialPotential::gcp_force_jacobian (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential18gcp_force_jacobianERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEERK13GCPParametersK7DiffWRTKdKb">[1]</a>
+      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential18gcp_force_jacobianERK19TangentialCollisionN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEK7DiffWRTKb">ipc::TangentialPotential::gcp_force_jacobian (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential18gcp_force_jacobianERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEERK13GCPParametersK7DiffWRTKNSt8optionalIdEEKb">[1]</a>
 </li>
       <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential23gcp_force_jacobian_unitERK19TangentialCollisionN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEK7DiffWRTKb">ipc::TangentialPotential::gcp_force_jacobian_unit (C++ function)</a>
 </li>
@@ -5552,9 +5608,9 @@
 </li>
       <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotentialclERK10TCollisionN5Eigen8ConstRefI11VectorMaxNdEE">ipc::TangentialPotential::operator() (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotentialclERK19TangentialCollisionN5Eigen8ConstRefI12VectorMax12dEE">[1]</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotentialclERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEE">[2]</a>
 </li>
-      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential20smooth_contact_forceERK19TangentialCollisionN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEKbKb">ipc::TangentialPotential::smooth_contact_force (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential20smooth_contact_forceERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKdKb">[1]</a>
+      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential20smooth_contact_forceERK19TangentialCollisionN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEKbKb">ipc::TangentialPotential::smooth_contact_force (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential20smooth_contact_forceERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEKNSt8optionalIdEEKb">[1]</a>
 </li>
-      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential29smooth_contact_force_jacobianERK19TangentialCollisionN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEK7DiffWRTKb">ipc::TangentialPotential::smooth_contact_force_jacobian (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential29smooth_contact_force_jacobianERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEERK13GCPParametersK7DiffWRTKdKb">[1]</a>
+      <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential29smooth_contact_force_jacobianERK19TangentialCollisionN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEK7DiffWRTKb">ipc::TangentialPotential::smooth_contact_force_jacobian (C++ function)</a>, <a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential29smooth_contact_force_jacobianERK20TangentialCollisionsRK13CollisionMeshN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEEN5Eigen8ConstRefIN5Eigen8MatrixXdEEERK13GCPParametersK7DiffWRTKNSt8optionalIdEEKb">[1]</a>
 </li>
       <li><a href="cpp-api/potentials/TangentialPotential.html#_CPPv4NK3ipc19TangentialPotential34smooth_contact_force_jacobian_unitERK19TangentialCollisionN5Eigen8ConstRefI11VectorMaxNdEEN5Eigen8ConstRefI11VectorMaxNdEEK7DiffWRTKb">ipc::TangentialPotential::smooth_contact_force_jacobian_unit (C++ function)</a>
 </li>
@@ -5663,6 +5719,8 @@
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc21VertexVertexCandidateltERK21VertexVertexCandidate">ipc::VertexVertexCandidate::operator&lt; (C++ function)</a>
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc21VertexVertexCandidateeqERK21VertexVertexCandidate">ipc::VertexVertexCandidate::operator== (C++ function)</a>
+</li>
+      <li><a href="cpp-api/candidates.html#_CPPv4NK3ipc21VertexVertexCandidate9thicknessEN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEEN5Eigen8ConstRefIN5Eigen8VectorXdEEE">ipc::VertexVertexCandidate::thickness (C++ function)</a>
 </li>
       <li><a href="cpp-api/candidates.html#_CPPv4N3ipc21VertexVertexCandidate10vertex0_idE">ipc::VertexVertexCandidate::vertex0_id (C++ member)</a>
 </li>
@@ -5874,6 +5932,8 @@
       <li><a href="cpp-api/adhesion.html#_CPPv4I0E35max_normal_adhesion_force_magnitude1TK1TK1TK1T">max_normal_adhesion_force_magnitude (C++ function)</a>
 </li>
       <li><a href="python-api/adhesion.html#ipctk.max_normal_adhesion_force_magnitude">max_normal_adhesion_force_magnitude() (in module ipctk)</a>
+</li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.max_thickness">max_thickness (ipctk.CollisionMesh property)</a>
 </li>
       <li><a href="python-api/interval.html#ipctk.filib.Interval.mid">mid() (ipctk.filib.Interval method)</a>
 </li>
@@ -6238,9 +6298,15 @@
 </li>
       <li><a href="python-api/barrier.html#ipctk.semi_implicit_stiffness">semi_implicit_stiffness() (in module ipctk)</a>
 </li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.set_face_thickness">set_face_thickness() (ipctk.CollisionMesh method)</a>
+</li>
       <li><a href="python-api/utils.html#ipctk.set_logger_level">set_logger_level() (in module ipctk)</a>
 </li>
       <li><a href="python-api/utils.html#ipctk.set_num_threads">set_num_threads() (in module ipctk)</a>
+</li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.set_thickness">set_thickness() (ipctk.CollisionMesh method)</a>
+</li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.set_vertex_thickness">set_vertex_thickness() (ipctk.CollisionMesh method)</a>
 </li>
       <li><a href="python-api/potentials.html#ipctk.NormalPotential.shape_derivative">shape_derivative() (ipctk.NormalPotential method)</a>
 </li>
@@ -6272,12 +6338,12 @@
 </li>
       <li><a href="cpp-api/adhesion.html#_CPPv4I0E12smooth_mu_a01TK1TK1TK1TK1T">smooth_mu_a0 (C++ function)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/adhesion.html#ipctk.smooth_mu_a0">smooth_mu_a0() (in module ipctk)</a>
 </li>
       <li><a href="cpp-api/adhesion.html#_CPPv4I0E12smooth_mu_a11TK1TK1TK1TK1T">smooth_mu_a1 (C++ function)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/adhesion.html#ipctk.smooth_mu_a1">smooth_mu_a1() (in module ipctk)</a>
 </li>
       <li><a href="cpp-api/adhesion.html#_CPPv4I0E19smooth_mu_a1_over_x1TK1TK1TK1TK1T">smooth_mu_a1_over_x (C++ function)</a>
@@ -6360,12 +6426,12 @@
 </li>
       <li><a href="python-api/potentials.html#ipctk.TangentialAdhesionPotential">TangentialAdhesionPotential (class in ipctk)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollision">TangentialCollision (class in ipctk)</a>
 </li>
       <li><a href="python-api/tangential_collisions.html#ipctk.TangentialCollisions">TangentialCollisions (class in ipctk)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="python-api/potentials.html#ipctk.TangentialPotential">TangentialPotential (class in ipctk)</a>
 </li>
       <li><a href="python-api/potentials.html#ipctk.TangentialPotential.DiffWRT">TangentialPotential.DiffWRT (class in ipctk)</a>
@@ -6374,6 +6440,16 @@
 
       <ul>
         <li><a href="python-api/interval.html#ipctk.filib.Interval.tanh">(ipctk.filib.Interval method)</a>
+</li>
+      </ul></li>
+      <li><a href="python-api/candidates.html#ipctk.EdgeEdgeCandidate.thickness">thickness() (ipctk.EdgeEdgeCandidate method)</a>
+
+      <ul>
+        <li><a href="python-api/candidates.html#ipctk.EdgeVertexCandidate.thickness">(ipctk.EdgeVertexCandidate method)</a>
+</li>
+        <li><a href="python-api/candidates.html#ipctk.FaceVertexCandidate.thickness">(ipctk.FaceVertexCandidate method)</a>
+</li>
+        <li><a href="python-api/candidates.html#ipctk.VertexVertexCandidate.thickness">(ipctk.VertexVertexCandidate method)</a>
 </li>
       </ul></li>
       <li><a href="python-api/ccd.html#ipctk.TightInclusionCCD">TightInclusionCCD (class in ipctk)</a>
@@ -6490,10 +6566,10 @@
 </li>
       <li><a href="cpp-api/utils.html#_CPPv4I0E10VectorMax6">VectorMax6 (C++ type)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/utils.html#_CPPv411VectorMax6b">VectorMax6b (C++ type)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/utils.html#_CPPv411VectorMax6d">VectorMax6d (C++ type)</a>
 </li>
       <li><a href="cpp-api/utils.html#_CPPv411VectorMax6f">VectorMax6f (C++ type)</a>
@@ -6543,6 +6619,10 @@
 </li>
       </ul></li>
       <li><a href="python-api/broad_phase.html#ipctk.LBVH.vertex_nodes">vertex_nodes (ipctk.LBVH property)</a>
+</li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.vertex_thickness">vertex_thickness() (ipctk.CollisionMesh method)</a>
+</li>
+      <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.vertex_thicknesses">vertex_thicknesses (ipctk.CollisionMesh property)</a>
 </li>
       <li><a href="python-api/collision_mesh.html#ipctk.CollisionMesh.vertex_vertex_adjacencies">vertex_vertex_adjacencies (ipctk.CollisionMesh property)</a>
 </li>
