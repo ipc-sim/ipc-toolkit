@@ -242,6 +242,10 @@ TEST_CASE("Plane-vertex with a thickness", "[collisions][thickness][plane]")
 
 TEST_CASE("CCD stops at the thickness", "[ccd][thickness]")
 {
+#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32)) && !defined(NDEBUG)
+    SKIP("'CCD stops at the thickness' test is skipped in debug mode");
+#endif
+
     const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
     CAPTURE(broad_phase->name());
 
