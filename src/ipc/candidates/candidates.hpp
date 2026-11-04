@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -30,7 +31,7 @@ public:
     /// @brief Initialize the set of discrete collision detection candidates.
     /// @param mesh The surface of the collision mesh.
     /// @param vertices Surface vertex positions (rowwise).
-    /// @param inflation_radius Amount to inflate the bounding boxes.
+    /// @param inflation_radius Amount to inflate the bounding boxes. With a mesh thickness (CollisionMesh::set_thickness()), each box is inflated by its primitive's thickness on top of this.
     /// @param broad_phase Broad phase method to use.
     /// @param all_types Also detect the candidate types only ESP needs (see
     ///                  BroadPhase::detect_collision_candidates). Recorded in
@@ -49,7 +50,7 @@ public:
     /// @param mesh The surface of the collision mesh.
     /// @param vertices_t0 Surface vertex starting positions (rowwise).
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
-    /// @param inflation_radius Amount to inflate the bounding boxes.
+    /// @param inflation_radius Amount to inflate the bounding boxes. With a mesh thickness, each box is inflated by its primitive's thickness on top of this.
     /// @param broad_phase Broad phase method to use.
     void build(
         const CollisionMesh& mesh,
@@ -160,14 +161,14 @@ public:
     /// @param mesh The collision mesh.
     /// @param vertices_t0 Surface vertex starting positions (rowwise).
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
-    /// @param min_distance The minimum distance allowable between any two elements.
+    /// @param min_distance Deprecated: give the mesh a thickness (CollisionMesh::set_thickness()) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
     /// @param narrow_phase_ccd The narrow phase CCD algorithm to use.
     /// @returns True if <b>any</b> collisions occur.
     bool is_step_collision_free(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-        const double min_distance = 0.0,
+        const std::optional<double> min_distance = std::nullopt,
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const;
 
@@ -176,14 +177,14 @@ public:
     /// @param mesh The collision mesh.
     /// @param vertices_t0 Surface vertex starting positions (rowwise). Assumed to be intersection free.
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
-    /// @param min_distance The minimum distance allowable between any two elements.
+    /// @param min_distance Deprecated: give the mesh a thickness (CollisionMesh::set_thickness()) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
     /// @param narrow_phase_ccd The narrow phase CCD algorithm to use.
     /// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
     double compute_collision_free_stepsize(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-        const double min_distance = 0.0,
+        const std::optional<double> min_distance = std::nullopt,
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const;
 
@@ -202,7 +203,7 @@ public:
     /// @param vertices_t0 Surface vertex starting positions (rowwise).
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
     /// @param dhat Barrier activation distance.
-    /// @param min_distance The minimum distance allowable between any two elements.
+    /// @param min_distance Deprecated: give the mesh a thickness (CollisionMesh::set_thickness()) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
     /// @param broad_phase The broad phase algorithm to use.
     /// @param narrow_phase_ccd The narrow phase CCD algorithm to use.
     /// @returns A step-size \f$\in [0, 1]\f$ that is collision free.
@@ -211,7 +212,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
         const double dhat,
-        const double min_distance = 0.0,
+        const std::optional<double> min_distance = std::nullopt,
         BroadPhase* broad_phase = nullptr,
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const;
@@ -221,13 +222,13 @@ public:
     /// @param mesh The collision mesh.
     /// @param vertices Collision mesh vertex positions (rowwise).
     /// @param inflation_radius The inflation radius used to build the candidates.
-    /// @param min_distance The minimum distance allowable between any two elements.
+    /// @param min_distance Deprecated: give the mesh a thickness (CollisionMesh::set_thickness()) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
     /// @return A vector of minimum distances, one for each vertex.
     Eigen::VectorXd compute_per_vertex_safe_distances(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double inflation_radius,
-        const double min_distance = 0.0) const;
+        const std::optional<double> min_distance = std::nullopt) const;
 
     // clang-format off
     // /// @brief Compute the maximum distance every vertex can move (independently) without colliding with any other element.

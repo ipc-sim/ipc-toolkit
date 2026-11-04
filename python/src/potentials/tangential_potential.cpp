@@ -33,7 +33,7 @@ void define_tangential_potential(py::module_& m)
                 Eigen::ConstRef<Eigen::MatrixXd>,
                 Eigen::ConstRef<Eigen::MatrixXd>,
                 Eigen::ConstRef<Eigen::MatrixXd>, const NormalPotential&,
-                const double, const bool>(
+                const std::optional<double>, const bool>(
                 &TangentialPotential::force, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the friction force from the given velocities.
@@ -45,7 +45,7 @@ void define_tangential_potential(py::module_& m)
                 lagged_displacements: Previous displacements of the vertices (rowwise).
                 velocities: Current displacements of the vertices (rowwise).
                 normal_potential: Normal potential (used for normal force magnitude).
-                dmin: Minimum distance (used for normal force magnitude).
+                dmin: Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision's own dmin.
                 no_mu: whether to not multiply by mu
 
             Returns:
@@ -53,7 +53,7 @@ void define_tangential_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             "collisions"_a, "mesh"_a, "rest_positions"_a,
             "lagged_displacements"_a, "velocities"_a, "normal_potential"_a,
-            "dmin"_a = 0, "no_mu"_a = false)
+            "dmin"_a = py::none(), "no_mu"_a = false)
         .def(
             "force_jacobian",
             py::overload_cast<
@@ -61,7 +61,8 @@ void define_tangential_potential(py::module_& m)
                 Eigen::ConstRef<Eigen::MatrixXd>,
                 Eigen::ConstRef<Eigen::MatrixXd>,
                 Eigen::ConstRef<Eigen::MatrixXd>, const NormalPotential&,
-                const TangentialPotential::DiffWRT, const double>(
+                const TangentialPotential::DiffWRT,
+                const std::optional<double>>(
                 &TangentialPotential::force_jacobian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the Jacobian of the friction force wrt the velocities.
@@ -74,21 +75,21 @@ void define_tangential_potential(py::module_& m)
                 velocities: Current displacements of the vertices (rowwise).
                 normal_potential: Normal potential (used for normal force magnitude).
                 wrt: The variable to take the derivative with respect to.
-                dmin: Minimum distance (used for normal force magnitude).
+                dmin: Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision's own dmin.
 
             Returns:
                 The Jacobian of the friction force wrt the velocities.
             )ipc_Qu8mg5v7",
             "collisions"_a, "mesh"_a, "rest_positions"_a,
             "lagged_displacements"_a, "velocities"_a, "normal_potential"_a,
-            "wrt"_a, "dmin"_a = 0)
+            "wrt"_a, "dmin"_a = py::none())
         .def(
             "force",
             py::overload_cast<
                 const TangentialCollision&, Eigen::ConstRef<VectorMax12d>,
                 Eigen::ConstRef<VectorMax12d>, Eigen::ConstRef<VectorMax12d>,
-                const NormalPotential&, const double, const bool>(
-                &TangentialPotential::force, py::const_),
+                const NormalPotential&, const std::optional<double>,
+                const bool>(&TangentialPotential::force, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the friction force.
 
@@ -98,14 +99,14 @@ void define_tangential_potential(py::module_& m)
                 lagged_displacements: Previous displacements of the vertices (rowwise).
                 velocities: Current displacements of the vertices (rowwise).
                 normal_potential: Normal potential (used for normal force magnitude).
-                dmin: Minimum distance (used for normal force magnitude).
+                dmin: Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision's own dmin.
                 no_mu: Whether to not multiply by mu
 
             Returns:
                 Friction force
             )ipc_Qu8mg5v7",
             "collision"_a, "rest_positions"_a, "lagged_displacements"_a,
-            "velocities"_a, "normal_potential"_a, "dmin"_a = 0,
+            "velocities"_a, "normal_potential"_a, "dmin"_a = py::none(),
             "no_mu"_a = false)
         .def(
             "force_jacobian",
@@ -113,7 +114,8 @@ void define_tangential_potential(py::module_& m)
                 const TangentialCollision&, Eigen::ConstRef<VectorMax12d>,
                 Eigen::ConstRef<VectorMax12d>, Eigen::ConstRef<VectorMax12d>,
                 const NormalPotential&, const TangentialPotential::DiffWRT,
-                const double>(&TangentialPotential::force_jacobian, py::const_),
+                const std::optional<double>>(
+                &TangentialPotential::force_jacobian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the friction force Jacobian.
 
@@ -124,11 +126,12 @@ void define_tangential_potential(py::module_& m)
                 velocities: Current displacements of the vertices (rowwise).
                 normal_potential: Normal potential (used for normal force magnitude).
                 wrt: Variable to differentiate the friction force with respect to.
-                dmin: Minimum distance (used for normal force magnitude).
+                dmin: Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision's own dmin.
 
             Returns:
                 Friction force Jacobian
             )ipc_Qu8mg5v7",
             "collision"_a, "rest_positions"_a, "lagged_displacements"_a,
-            "velocities"_a, "normal_potential"_a, "wrt"_a, "dmin"_a = 0);
+            "velocities"_a, "normal_potential"_a, "wrt"_a,
+            "dmin"_a = py::none());
 }

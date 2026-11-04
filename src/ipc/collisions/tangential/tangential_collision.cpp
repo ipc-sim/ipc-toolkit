@@ -27,6 +27,7 @@ void TangentialCollision::init(
     closest_point = compute_closest_point(positions);
     tangent_basis = compute_tangent_basis(positions);
     normal_force_magnitude = normal_force;
+    dmin = collision.dmin;
 }
 
 } // namespace ipc

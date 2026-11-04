@@ -1,6 +1,7 @@
 set(SOURCES
   candidates.cpp
   candidates.hpp
+  min_distance.hpp
   collision_stencil.hpp
   stencil_adapter.hpp
   stencil_mixin.hpp

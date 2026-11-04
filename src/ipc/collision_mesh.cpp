@@ -392,17 +392,17 @@ void CollisionMesh::init_areas()
 }
 
 namespace {
-    void check_areas(
-        Eigen::ConstRef<Eigen::VectorXd> areas,
+    void check_non_negative(
+        Eigen::ConstRef<Eigen::VectorXd> values,
         const Eigen::Index expected_size,
         const char* name)
     {
-        if (areas.size() != expected_size) {
+        if (values.size() != expected_size) {
             log_and_throw_error<std::invalid_argument>(
-                "{} has size {} but expected {}", name, areas.size(),
+                "{} has size {} but expected {}", name, values.size(),
                 expected_size);
         }
-        if (!areas.allFinite() || (areas.array() < 0).any()) {
+        if (!values.allFinite() || (values.array() < 0).any()) {
             log_and_throw_error<std::invalid_argument>(
                 "{} must be finite and non-negative", name);
         }
@@ -412,7 +412,7 @@ namespace {
 void CollisionMesh::set_vertex_areas(
     Eigen::ConstRef<Eigen::VectorXd> vertex_areas)
 {
-    check_areas(vertex_areas, num_vertices(), "vertex_areas");
+    check_non_negative(vertex_areas, num_vertices(), "vertex_areas");
     if (are_area_jacobians_initialized()) {
         log_and_throw_error(
             "Cannot set custom vertex areas after init_area_jacobians(): the area Jacobians would no longer match.");
@@ -423,13 +423,93 @@ void CollisionMesh::set_vertex_areas(
 
 void CollisionMesh::set_edge_areas(Eigen::ConstRef<Eigen::VectorXd> edge_areas)
 {
-    check_areas(edge_areas, num_edges(), "edge_areas");
+    check_non_negative(edge_areas, num_edges(), "edge_areas");
     if (are_area_jacobians_initialized()) {
         log_and_throw_error(
             "Cannot set custom edge areas after init_area_jacobians(): the area Jacobians would no longer match.");
     }
     m_edge_areas = edge_areas;
     m_has_custom_areas = true;
+}
+
+// ============================================================================
+
+void CollisionMesh::set_thickness(
+    Eigen::ConstRef<Eigen::VectorXd> vertex_thickness,
+    Eigen::ConstRef<Eigen::VectorXd> edge_thickness,
+    Eigen::ConstRef<Eigen::VectorXd> face_thickness)
+{
+    check_non_negative(vertex_thickness, num_vertices(), "vertex_thickness");
+    check_non_negative(edge_thickness, num_edges(), "edge_thickness");
+    check_non_negative(face_thickness, num_faces(), "face_thickness");
+    m_vertex_thickness = vertex_thickness;
+    m_edge_thickness = edge_thickness;
+    m_face_thickness = face_thickness;
+    m_max_thickness = std::max(
+        { m_vertex_thickness.size() ? m_vertex_thickness.maxCoeff() : 0.0,
+          m_edge_thickness.size() ? m_edge_thickness.maxCoeff() : 0.0,
+          m_face_thickness.size() ? m_face_thickness.maxCoeff() : 0.0 });
+}
+
+void CollisionMesh::set_vertex_thickness(
+    Eigen::ConstRef<Eigen::VectorXd> vertex_thickness)
+{
+    check_non_negative(vertex_thickness, num_vertices(), "vertex_thickness");
+
+    Eigen::VectorXd edge_thickness(num_edges());
+    for (int i = 0; i < m_edges.rows(); i++) {
+        edge_thickness[i] = std::max(
+            vertex_thickness[m_edges(i, 0)], vertex_thickness[m_edges(i, 1)]);
+    }
+
+    Eigen::VectorXd face_thickness(num_faces());
+    for (int i = 0; i < m_faces.rows(); i++) {
+        face_thickness[i] = std::max(
+            { vertex_thickness[m_faces(i, 0)], vertex_thickness[m_faces(i, 1)],
+              vertex_thickness[m_faces(i, 2)] });
+    }
+
+    set_thickness(vertex_thickness, edge_thickness, face_thickness);
+}
+
+void CollisionMesh::set_face_thickness(
+    Eigen::ConstRef<Eigen::VectorXd> face_thickness,
+    Eigen::ConstRef<Eigen::VectorXd> vertex_thickness)
+{
+    check_non_negative(face_thickness, num_faces(), "face_thickness");
+
+    Eigen::VectorXd vertex = Eigen::VectorXd::Zero(num_vertices());
+    if (vertex_thickness.size() > 0) {
+        check_non_negative(
+            vertex_thickness, num_vertices(), "vertex_thickness");
+        vertex = vertex_thickness;
+    }
+
+    // An edge no face reaches stays negative until the pass below.
+    Eigen::VectorXd edge = Eigen::VectorXd::Constant(num_edges(), -1);
+    for (int i = 0; i < m_faces.rows(); i++) {
+        for (int j = 0; j < 3; j++) {
+            vertex[m_faces(i, j)] =
+                std::max(vertex[m_faces(i, j)], face_thickness[i]);
+            edge[m_faces_to_edges(i, j)] =
+                std::max(edge[m_faces_to_edges(i, j)], face_thickness[i]);
+        }
+    }
+    for (int i = 0; i < m_edges.rows(); i++) {
+        if (edge[i] < 0) {
+            edge[i] = std::max(vertex[m_edges(i, 0)], vertex[m_edges(i, 1)]);
+        }
+    }
+
+    set_thickness(vertex, edge, face_thickness);
+}
+
+void CollisionMesh::clear_thickness()
+{
+    m_vertex_thickness.resize(0);
+    m_edge_thickness.resize(0);
+    m_face_thickness.resize(0);
+    m_max_thickness = 0;
 }
 
 void CollisionMesh::init_area_jacobians()
