@@ -160,7 +160,7 @@ void define_smooth_potential(py::module_& m)
                 vertices: Vertices of the collision mesh.
 
             Returns:
-                The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|.
+                The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of \|vertices\|.
             )ipc_Qu8mg5v7",
             "collisions"_a, "mesh"_a, "vertices"_a)
         .def(
@@ -179,7 +179,7 @@ void define_smooth_potential(py::module_& m)
                 project_hessian_to_psd: Make sure the hessian is positive semi-definite.
 
             Returns:
-                The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
+                The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of \|vertices\|x\|vertices\|.
             )ipc_Qu8mg5v7",
             "collisions"_a, "mesh"_a, "vertices"_a,
             "project_hessian_to_psd"_a = PSDProjectionMethod::NONE)
@@ -234,7 +234,7 @@ void define_smooth_potential(py::module_& m)
             "project_hessian_to_psd"_a = PSDProjectionMethod::NONE);
 }
 
-void define_esp_potential(py::module& m)
+void define_esp_parameters(py::module& m)
 {
     py::enum_<EEMollifierType>(
         m, "EEMollifierType", "Shape of the 3D edge-edge mollifier.")
@@ -303,8 +303,9 @@ void define_esp_potential(py::module& m)
             )ipc_Qu8mg5v7",
             py::arg("dhat"), py::arg("dbar_factor") = 0.2,
             py::arg("quad_order") = 1, py::arg("area_weights") = true,
-            py::arg("integration_type") =
-                ESPParameters::IntegrationType::NORMAL)
+            py::arg_v(
+                "integration_type", ESPParameters::IntegrationType::NORMAL,
+                "IntegrationType.NORMAL"))
         .def_readonly("dhat", &ESPParameters::dhat)
         .def_readonly("dbar", &ESPParameters::dbar)
         .def_readonly("quad_order", &ESPParameters::quad_order)
@@ -362,7 +363,10 @@ void define_esp_potential(py::module& m)
             "lattice_spacing", &ESPParameters::lattice_spacing,
             "Target spacing of the automatic lattice rules, or 0 for a fixed "
             "rule.");
+}
 
+void define_esp_potential(py::module& m)
+{
     py::class_<ESPPotential>(m, "ESPPotential")
         .def(
             py::init<const ESPParameters&, const bool>(),
@@ -418,7 +422,7 @@ void define_esp_potential(py::module& m)
                 vertices: Vertices of the collision mesh.
 
             Returns:
-                The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|.
+                The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of \|vertices\|.
             )ipc_Qu8mg5v7",
             py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
         .def(
@@ -437,8 +441,10 @@ void define_esp_potential(py::module& m)
                 project_hessian_to_psd: Make sure the hessian is positive semi-definite. With normalized weights and edge-edge terms, each face's block is projected as a whole.
 
             Returns:
-                The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
+                The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of \|vertices\|x\|vertices\|.
             )ipc_Qu8mg5v7",
             py::arg("collisions"), py::arg("mesh"), py::arg("vertices"),
-            py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE);
+            py::arg_v(
+                "project_hessian_to_psd", PSDProjectionMethod::NONE,
+                "PSDProjectionMethod.NONE"));
 }

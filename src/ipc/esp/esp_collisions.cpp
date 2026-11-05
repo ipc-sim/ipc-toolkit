@@ -337,8 +337,11 @@ double ESPCollisions::compute_minimum_distance(
             double& local_min_dist = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                const double dist = m_candidates[i].compute_distance(
-                    m_candidates[i].dof(vertices, edges, faces));
+                const double dist =
+                    m_candidates.visit(i, [&](const auto& candidate) {
+                        return candidate.compute_distance(
+                            candidate.dof(vertices, edges, faces));
+                    });
 
                 local_min_dist = std::min(dist, local_min_dist);
             }

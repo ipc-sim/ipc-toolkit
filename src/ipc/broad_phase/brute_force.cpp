@@ -1,5 +1,6 @@
 #include "brute_force.hpp"
 
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/utils/merge_thread_local.hpp>
 
 #include <tbb/blocked_range2d.h>
@@ -17,9 +18,9 @@ void BruteForce::detect_candidates(
     const AABBs& boxes0,
     const AABBs& boxes1,
     const std::function<bool(size_t, size_t)>& can_collide,
-    std::vector<Candidate>& candidates) const
+    CandidateVector<Candidate>& candidates) const
 {
-    tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
+    tbb::enumerable_thread_specific<CandidateVector<Candidate>> storage;
 
     tbb::parallel_for(
         tbb::blocked_range2d<size_t>(0UL, boxes0.size(), 0UL, boxes1.size()),
@@ -61,7 +62,7 @@ void BruteForce::detect_candidates(
 }
 
 void BruteForce::detect_vertex_vertex_candidates(
-    std::vector<VertexVertexCandidate>& candidates) const
+    CandidateVector<VertexVertexCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates<VertexVertexCandidate, true>(
@@ -69,7 +70,7 @@ void BruteForce::detect_vertex_vertex_candidates(
 }
 
 void BruteForce::detect_edge_vertex_candidates(
-    std::vector<EdgeVertexCandidate>& candidates) const
+    CandidateVector<EdgeVertexCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates(
@@ -79,7 +80,7 @@ void BruteForce::detect_edge_vertex_candidates(
 }
 
 void BruteForce::detect_edge_edge_candidates(
-    std::vector<EdgeEdgeCandidate>& candidates) const
+    CandidateVector<EdgeEdgeCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates<EdgeEdgeCandidate, true>(
@@ -88,7 +89,7 @@ void BruteForce::detect_edge_edge_candidates(
 }
 
 void BruteForce::detect_face_vertex_candidates(
-    std::vector<FaceVertexCandidate>& candidates) const
+    CandidateVector<FaceVertexCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates(
@@ -98,7 +99,7 @@ void BruteForce::detect_face_vertex_candidates(
 }
 
 void BruteForce::detect_edge_face_candidates(
-    std::vector<EdgeFaceCandidate>& candidates) const
+    CandidateVector<EdgeFaceCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates(
@@ -108,7 +109,7 @@ void BruteForce::detect_edge_face_candidates(
 }
 
 void BruteForce::detect_face_face_candidates(
-    std::vector<FaceFaceCandidate>& candidates) const
+    CandidateVector<FaceFaceCandidate>& candidates) const
 {
     candidates.clear();
     detect_candidates<FaceFaceCandidate, true>(

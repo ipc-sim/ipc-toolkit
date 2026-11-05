@@ -3,6 +3,8 @@
 #include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/potentials/potential.hpp>
 
+#include <optional>
+
 namespace ipc {
 
 /// @brief A tangential dissipative potential.
@@ -37,7 +39,7 @@ public:
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
     /// @param normal_potential Normal potential (used for normal force magnitude).
-    /// @param dmin Minimum distance (used for normal force magnitude).
+    /// @param dmin Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision's own dmin (TangentialCollision::dmin, its primitives' thicknesses).
     /// @param no_mu whether to not multiply by mu
     /// @return The friction force.
     Eigen::VectorXd force(
@@ -47,7 +49,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
         Eigen::ConstRef<Eigen::MatrixXd> velocities,
         const NormalPotential& normal_potential,
-        const double dmin = 0,
+        const std::optional<double> dmin = std::nullopt,
         const bool no_mu = false) const;
 
     /// @brief Compute the Jacobian of the friction force wrt the velocities.
@@ -58,7 +60,7 @@ public:
     /// @param velocities Current displacements of the vertices (rowwise).
     /// @param normal_potential Normal potential (used for normal force magnitude).
     /// @param wrt The variable to take the derivative with respect to.
-    /// @param dmin Minimum distance (used for normal force magnitude).
+    /// @param dmin Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision's own dmin (TangentialCollision::dmin, its primitives' thicknesses).
     /// @return The Jacobian of the friction force wrt the velocities.
     Eigen::SparseMatrix<double> force_jacobian(
         const TangentialCollisions& collisions,
@@ -68,7 +70,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> velocities,
         const NormalPotential& normal_potential,
         const DiffWRT wrt,
-        const double dmin = 0) const;
+        const std::optional<double> dmin = std::nullopt) const;
 
     Eigen::VectorXd gcp_force(
         const TangentialCollisions& collisions,
@@ -76,7 +78,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
         Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
         Eigen::ConstRef<Eigen::MatrixXd> velocities,
-        const double dmin = 0,
+        const std::optional<double> dmin = std::nullopt,
         const bool no_mu = false) const;
 
     Eigen::SparseMatrix<double> gcp_force_jacobian(
@@ -87,7 +89,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> velocities,
         const GCPParameters& params,
         const DiffWRT wrt,
-        const double dmin = 0,
+        const std::optional<double> dmin = std::nullopt,
         const bool no_mu = false) const;
 
     // -- Single collision methods ---------------------------------------------
@@ -125,7 +127,7 @@ public:
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
     /// @param normal_potential Normal potential (used for normal force magnitude).
-    /// @param dmin Minimum distance (used for normal force magnitude).
+    /// @param dmin Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision's own dmin (TangentialCollision::dmin, its primitives' thicknesses).
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
     VectorMax12d force(
@@ -134,7 +136,7 @@ public:
         Eigen::ConstRef<VectorMax12d> lagged_displacements,
         Eigen::ConstRef<VectorMax12d> velocities,
         const NormalPotential& normal_potential,
-        const double dmin = 0,
+        const std::optional<double> dmin = std::nullopt,
         const bool no_mu = false) const; //< whether to not multiply by mu
 
     /// @brief Compute the friction force Jacobian.
@@ -144,7 +146,7 @@ public:
     /// @param velocities Current displacements of the vertices (rowwise).
     /// @param normal_potential Normal potential (used for normal force magnitude).
     /// @param wrt Variable to differentiate the friction force with respect to.
-    /// @param dmin Minimum distance (used for normal force magnitude).
+    /// @param dmin Deprecated minimum distance (used for normal force magnitude). If given, it overrides each collision's own dmin (TangentialCollision::dmin, its primitives' thicknesses).
     /// @return Friction force Jacobian
     MatrixMax12d force_jacobian(
         const TangentialCollision& collision,
@@ -153,7 +155,7 @@ public:
         Eigen::ConstRef<VectorMax12d> velocities,
         const NormalPotential& normal_potential,
         const DiffWRT wrt,
-        const double dmin = 0) const;
+        const std::optional<double> dmin = std::nullopt) const;
 
     VectorMaxNd gcp_force(
         const TangentialCollision& collision,
@@ -207,7 +209,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
         Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
         Eigen::ConstRef<Eigen::MatrixXd> velocities,
-        const double dmin = 0,
+        const std::optional<double> dmin = std::nullopt,
         const bool no_mu = false) const
     {
         return gcp_force(
@@ -226,7 +228,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> velocities,
         const GCPParameters& params,
         const DiffWRT wrt,
-        const double dmin = 0,
+        const std::optional<double> dmin = std::nullopt,
         const bool no_mu = false) const
     {
         return gcp_force_jacobian(

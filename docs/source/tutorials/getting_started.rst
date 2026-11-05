@@ -3,6 +3,10 @@ Getting Started
 
 This tutorial will walk you through the basics of using the IPC Toolkit.
 
+.. note::
+   **Before you start:** build the toolkit for C++ (see :doc:`../build/c++`) or install the Python package with ``pip install ipctk`` (see :doc:`../build/python`).
+   The examples also load a mesh from disk, which uses `libigl <https://libigl.github.io/>`__ in C++ and `meshio <https://github.com/nschloe/meshio>`__ in Python.
+
 Collision Mesh
 --------------
 
@@ -62,7 +66,7 @@ Collisions
 
 Now that we have a collision mesh, we can compute the collision barrier potential. To do this we first need to build the set of active collisions (``NormalCollisions``).
 
-To start we need the current positions of the ``vertices``. For this tutorial, let us use squash the bunny has to 1% of its original height.
+To start we need the current positions of the ``vertices``. For this tutorial, we squash the bunny to 1% of its original height.
 
 .. md-tab-set::
 
@@ -117,6 +121,7 @@ Now we can compute the barrier potential using the ``BarrierPotential`` class.
 
         .. code-block:: c++
 
+            const double stiffness = 1e3; // barrier stiffness (kappa)
             const ipc::BarrierPotential B(dhat, stiffness);
             double barrier_potential = B(collisions, collision_mesh, vertices);
 
@@ -124,6 +129,7 @@ Now we can compute the barrier potential using the ``BarrierPotential`` class.
 
         .. code-block:: python
 
+            stiffness = 1e3  # barrier stiffness (kappa)
             B = ipctk.BarrierPotential(dhat, stiffness)
             barrier_potential = B(collisions, collision_mesh, vertices)
 
@@ -262,6 +268,7 @@ To compute the adaptive barrier stiffness, we can use two functions: ``initial_b
             // (beginning of nonlinear solve)
 
             Eigen::VectorXd grad_energy = ...; // gradient of elastic energy potential
+            double avg_mass = ...; // average mass of the mesh vertices
             Eigen::VectorXd grad_barrier = B.gradient(collisions, collision_mesh, vertices);
 
             double bbox_diagonal = ipc::world_bbox_diagonal_length(vertices);
@@ -296,6 +303,7 @@ To compute the adaptive barrier stiffness, we can use two functions: ``initial_b
             # (beginning of nonlinear solve)
 
             grad_energy = ...  # gradient of elastic energy potential
+            avg_mass = ...  # average mass of the mesh vertices
             grad_barrier = B.gradient(collisions, collision_mesh, vertices)
 
             bbox_diagonal = ipctk.world_bbox_diagonal_length(vertices)

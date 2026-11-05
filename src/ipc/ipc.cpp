@@ -2,7 +2,9 @@
 
 #include <ipc/config.hpp>
 #include <ipc/broad_phase/default_broad_phase.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/candidates/candidates.hpp>
+#include <ipc/candidates/min_distance.hpp>
 #include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/geometry/intersection.hpp>
 #include <ipc/utils/logger.hpp>
@@ -22,7 +24,7 @@ bool is_step_collision_free(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-    const double min_distance,
+    const std::optional<double> min_distance,
     BroadPhase* broad_phase,
     const NarrowPhaseCCD& narrow_phase_ccd)
 {
@@ -34,7 +36,7 @@ bool is_step_collision_free(
     Candidates candidates;
     candidates.build(
         mesh, vertices_t0, vertices_t1,
-        /*inflation_radius=*/0.5 * min_distance, broad_phase);
+        /*inflation_radius=*/0.5 * min_distance.value_or(0.0), broad_phase);
 
     // Narrow phase
     return candidates.is_step_collision_free(
@@ -47,7 +49,7 @@ double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-    const double min_distance,
+    const std::optional<double> min_distance,
     BroadPhase* broad_phase,
     const NarrowPhaseCCD& narrow_phase_ccd)
 {
@@ -62,7 +64,13 @@ double compute_collision_free_stepsize(
     }
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
-    if (broad_phase->name() == "SweepAndTiniestQueue") {
+    // The GPU pipeline has no per-primitive thickness, so a mesh with one
+    // takes the general path below, which still uses this broad phase.
+    if (broad_phase->name() == "SweepAndTiniestQueue"
+        && (min_distance.has_value() || !mesh.has_thickness())) {
+        if (min_distance.has_value()) {
+            warn_min_distance_deprecated();
+        }
         if (vertices_t0.cols() != 3) {
             log_and_throw_error(
                 "Sweep and Tiniest Queue is only supported in 3D!");
@@ -93,8 +101,8 @@ double compute_collision_free_stepsize(
     // Broad phase
     Candidates candidates;
     candidates.build(
-        mesh, vertices_t0, vertices_t1, /*inflation_radius=*/0.5 * min_distance,
-        broad_phase);
+        mesh, vertices_t0, vertices_t1,
+        /*inflation_radius=*/0.5 * min_distance.value_or(0.0), broad_phase);
 
     // Narrow phase
     return candidates.compute_collision_free_stepsize(
@@ -127,7 +135,7 @@ bool has_intersections(
 
     if (vertices.cols() == 2) {
         // Need to check segment-segment intersections in 2D
-        std::vector<EdgeEdgeCandidate> ee_candidates;
+        CandidateVector<EdgeEdgeCandidate> ee_candidates;
 
         broad_phase->detect_edge_edge_candidates(ee_candidates);
         broad_phase->clear();
@@ -147,7 +155,7 @@ bool has_intersections(
         // Need to check segment-triangle intersections in 3D
         assert(vertices.cols() == 3);
 
-        std::vector<EdgeFaceCandidate> ef_candidates;
+        CandidateVector<EdgeFaceCandidate> ef_candidates;
         broad_phase->detect_edge_face_candidates(ef_candidates);
         broad_phase->clear();
 

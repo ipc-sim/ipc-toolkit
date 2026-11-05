@@ -8,7 +8,7 @@ message(STATUS "Third-party: creating target 'scalable_ccd::scalable_ccd'")
 
 include(CPM)
 CPMAddPackage(
-    URI "gh:continuous-collision-detection/scalable-ccd#ccf4bc19aba432b9d5abdd41ae55d15ea166a0a5"
+    URI "gh:continuous-collision-detection/scalable-ccd#049d8af986c9cc115e013df7c8af791c2a513dcc"
     OPTIONS "SCALABLE_CCD_WITH_CUDA ${IPC_TOOLKIT_WITH_CUDA}"
 )
 

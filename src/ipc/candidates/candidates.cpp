@@ -2,7 +2,10 @@
 
 #include <ipc/config.hpp>
 #include <ipc/ipc.hpp>
+#include <ipc/broad_phase/aabb.hpp>
 #include <ipc/broad_phase/default_broad_phase.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
+#include <ipc/candidates/min_distance.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_line.hpp>
@@ -44,6 +47,30 @@ namespace {
     {
         return E_padded.leftCols(2);
     }
+
+    /// @brief How much to inflate each vertex's box for the mesh's thickness.
+    ///
+    /// The broad phase builds an edge's or face's box as the union of its
+    /// vertices' boxes, so a vertex's box is inflated by the largest thickness
+    /// of the vertex and the edges and faces it bounds. The box of every
+    /// primitive then covers the primitive's own thickness.
+    Eigen::VectorXd vertex_box_thickness(const CollisionMesh& mesh)
+    {
+        Eigen::VectorXd thickness = mesh.vertex_thicknesses();
+        for (int i = 0; i < mesh.edges().rows(); i++) {
+            for (int j = 0; j < 2; j++) {
+                double& t = thickness[mesh.edges()(i, j)];
+                t = std::max(t, mesh.edge_thickness(i));
+            }
+        }
+        for (int i = 0; i < mesh.faces().rows(); i++) {
+            for (int j = 0; j < 3; j++) {
+                double& t = thickness[mesh.faces()(i, j)];
+                t = std::max(t, mesh.face_thickness(i));
+            }
+        }
+        return thickness;
+    }
 } // namespace
 
 void Candidates::build(
@@ -65,8 +92,26 @@ void Candidates::build(
 
     clear();
 
+    // Each vertex's box is inflated by its thickness on top of
+    // inflation_radius, so the boxes of two primitives overlap whenever they
+    // are within the sum of their thicknesses plus 2 * inflation_radius.
+    const Eigen::VectorXd box_thickness =
+        mesh.has_thickness() ? vertex_box_thickness(mesh) : Eigen::VectorXd();
+    const auto build_broad_phase = [&](Eigen::ConstRef<Eigen::MatrixXd> V,
+                                       Eigen::ConstRef<Eigen::MatrixXi> E,
+                                       Eigen::ConstRef<Eigen::MatrixXi> F,
+                                       Eigen::ConstRef<Eigen::VectorXd> V_t) {
+        if (V_t.size() == 0) {
+            broad_phase->build(V, E, F, inflation_radius);
+            return;
+        }
+        AABBs boxes;
+        build_vertex_boxes(V, boxes, inflation_radius, V_t);
+        broad_phase->build(boxes, E, F, uint8_t(dim));
+    };
+
     broad_phase->can_vertices_collide = mesh.can_collide;
-    broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
+    build_broad_phase(vertices, mesh.edges(), mesh.faces(), box_thickness);
     broad_phase->detect_collision_candidates(*this, all_types);
     has_all_types = all_types;
 
@@ -80,9 +125,11 @@ void Candidates::build(
     // Codim. vertices to codim. vertices:
     if (detect_codim && mesh.num_codim_vertices()) {
         broad_phase->clear();
-        broad_phase->build(
+        build_broad_phase(
             vertices(mesh.codim_vertices(), Eigen::all), //
-            Eigen::MatrixXi(), Eigen::MatrixXi(), inflation_radius);
+            Eigen::MatrixXi(), Eigen::MatrixXi(),
+            mesh.has_thickness() ? box_thickness(mesh.codim_vertices())
+                                 : Eigen::VectorXd());
 
         broad_phase->detect_vertex_vertex_candidates(vv_candidates);
         for (auto& [vi, vj] : vv_candidates) {
@@ -100,12 +147,13 @@ void Candidates::build(
         // Extract the vertices of the codim. edges
         Eigen::MatrixXd CE_V; // vertices of codim. edges
         Eigen::MatrixXi CE;   // codim. edges (indices into CEV)
+        Eigen::VectorXi J;    // map from CE_V to vertices
         {
-            Eigen::VectorXi _I, _J; // unused mappings
+            Eigen::VectorXi _I; // unused mapping
             igl::remove_unreferenced(
                 vertices,
                 pad_edges(mesh.edges()(mesh.codim_edges(), Eigen::all)), CE_V,
-                CE, _I, _J);
+                CE, _I, J);
             CE = unpad_edges(CE);
         }
 
@@ -116,12 +164,19 @@ void Candidates::build(
 
         CE.array() += nCV; // Offset indices to account for codim. vertices
 
+        Eigen::VectorXd V_thickness;
+        if (mesh.has_thickness()) {
+            V_thickness.resize(V.rows());
+            V_thickness.head(nCV) = box_thickness(mesh.codim_vertices());
+            V_thickness.tail(CE_V.rows()) = box_thickness(J);
+        }
+
         // TODO: Can we reuse the broad phase from above?
         broad_phase->clear();
         // Ignore c-edge to c-edge and c-vertex to c-vertex
         broad_phase->can_vertices_collide =
             make_codim_cross_filter(nCV) & mesh.can_collide;
-        broad_phase->build(V, CE, Eigen::MatrixXi(), inflation_radius);
+        build_broad_phase(V, CE, Eigen::MatrixXi(), V_thickness);
 
         broad_phase->detect_edge_vertex_candidates(ev_candidates);
         for (auto& [ei, vi] : ev_candidates) {
@@ -134,7 +189,8 @@ void Candidates::build(
     // Planes to vertices:
     for (const auto& plane : mesh.planes) {
         for (index_t vi = 0; vi < mesh.num_vertices(); ++vi) {
-            if (plane.signedDistance(vertices.row(vi)) < inflation_radius) {
+            if (plane.signedDistance(vertices.row(vi))
+                < inflation_radius + mesh.vertex_thickness(vi)) {
                 pv_candidates.emplace_back(plane, vi);
             }
         }
@@ -161,19 +217,43 @@ void Candidates::build(
 
     clear();
 
+    // See the static build() for the thickness.
+    const Eigen::VectorXd box_thickness =
+        mesh.has_thickness() ? vertex_box_thickness(mesh) : Eigen::VectorXd();
+    const auto build_broad_phase = [&](Eigen::ConstRef<Eigen::MatrixXd> V_t0,
+                                       Eigen::ConstRef<Eigen::MatrixXd> V_t1,
+                                       Eigen::ConstRef<Eigen::MatrixXi> E,
+                                       Eigen::ConstRef<Eigen::MatrixXi> F,
+                                       Eigen::ConstRef<Eigen::VectorXd> V_t) {
+        if (V_t.size() == 0) {
+            broad_phase->build(V_t0, V_t1, E, F, inflation_radius);
+            return;
+        }
+        AABBs boxes;
+        build_vertex_boxes(V_t0, V_t1, boxes, inflation_radius, V_t);
+        broad_phase->build(boxes, E, F, uint8_t(dim));
+    };
+
     broad_phase->can_vertices_collide = mesh.can_collide;
-    broad_phase->build(
-        vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), inflation_radius);
+    build_broad_phase(
+        vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), box_thickness);
     broad_phase->detect_collision_candidates(*this, all_types);
     has_all_types = all_types;
 
+    // As in the static build: with all_types (3D) the whole-mesh pass above
+    // already covers the codim. primitives, and the codim. detectors would
+    // replace its lists.
+    const bool detect_codim = !all_types || dim != 3;
+
     // Codim. vertices to codim. vertices:
-    if (mesh.num_codim_vertices()) {
+    if (detect_codim && mesh.num_codim_vertices()) {
         broad_phase->clear();
-        broad_phase->build(
+        build_broad_phase(
             vertices_t0(mesh.codim_vertices(), Eigen::all),
             vertices_t1(mesh.codim_vertices(), Eigen::all), //
-            Eigen::MatrixXi(), Eigen::MatrixXi(), inflation_radius);
+            Eigen::MatrixXi(), Eigen::MatrixXi(),
+            mesh.has_thickness() ? box_thickness(mesh.codim_vertices())
+                                 : Eigen::VectorXd());
 
         broad_phase->detect_vertex_vertex_candidates(vv_candidates);
         for (auto& [vi, vj] : vv_candidates) {
@@ -186,12 +266,14 @@ void Candidates::build(
     // Only need this in 3D because in 2D, the codim. edges are the same as the
     // edges of the boundary. Only need codim. edge to codim. vertex because
     // codim. edge to non-codim. vertex is the same as edge-edge or face-vertex.
-    if (dim == 3 && mesh.num_codim_vertices() && mesh.num_codim_edges()) {
+    if (detect_codim && dim == 3 && mesh.num_codim_vertices()
+        && mesh.num_codim_edges()) {
         // Extract the vertices of the codim. edges
         Eigen::MatrixXd CE_V_t0, CE_V_t1; // vertices of codim. edges
         Eigen::MatrixXi CE;               // codim. edges (indices into CEV)
+        Eigen::VectorXi J;                // map from CE_V to vertices
         {
-            Eigen::VectorXi _I, J;
+            Eigen::VectorXi _I; // unused mapping
             igl::remove_unreferenced(
                 vertices_t0,
                 pad_edges(mesh.edges()(mesh.codim_edges(), Eigen::all)),
@@ -212,12 +294,19 @@ void Candidates::build(
 
         CE.array() += nCV; // Offset indices to account for codim. vertices
 
+        Eigen::VectorXd V_thickness;
+        if (mesh.has_thickness()) {
+            V_thickness.resize(V_t0.rows());
+            V_thickness.head(nCV) = box_thickness(mesh.codim_vertices());
+            V_thickness.tail(CE_V_t0.rows()) = box_thickness(J);
+        }
+
         // TODO: Can we reuse the broad phase from above?
         broad_phase->clear();
         // Ignore c-edge to c-edge and c-vertex to c-vertex
         broad_phase->can_vertices_collide =
             make_codim_cross_filter(nCV) & mesh.can_collide;
-        broad_phase->build(V_t0, V_t1, CE, Eigen::MatrixXi(), inflation_radius);
+        build_broad_phase(V_t0, V_t1, CE, Eigen::MatrixXi(), V_thickness);
 
         broad_phase->detect_edge_vertex_candidates(ev_candidates);
         for (auto& [ei, vi] : ev_candidates) {
@@ -232,7 +321,8 @@ void Candidates::build(
         for (index_t vi = 0; vi < mesh.num_vertices(); ++vi) {
             const double d_t0 = plane.signedDistance(vertices_t0.row(vi));
             const double d_t1 = plane.signedDistance(vertices_t1.row(vi));
-            if (d_t0 < inflation_radius || d_t1 < inflation_radius) {
+            const double r = inflation_radius + mesh.vertex_thickness(vi);
+            if (d_t0 < r || d_t1 < r) {
                 pv_candidates.emplace_back(plane, vi);
             }
         }
@@ -243,21 +333,25 @@ bool Candidates::is_step_collision_free(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-    const double min_distance,
+    const std::optional<double> min_distance,
     const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
+    if (min_distance.has_value()) {
+        warn_min_distance_deprecated();
+    }
 
     // Narrow phase
     for (size_t i = 0; i < size(); i++) {
-        const CollisionStencil& candidate = (*this)[i];
-
-        double toi;
-        bool is_collision = candidate.ccd(
-            candidate.dof(vertices_t0, mesh.edges(), mesh.faces()),
-            candidate.dof(vertices_t1, mesh.edges(), mesh.faces()), //
-            toi, min_distance, /*tmax=*/1.0, narrow_phase_ccd);
+        const bool is_collision = visit(i, [&](const auto& candidate) {
+            double toi;
+            return candidate.ccd(
+                candidate.dof(vertices_t0, mesh.edges(), mesh.faces()),
+                candidate.dof(vertices_t1, mesh.edges(), mesh.faces()), //
+                toi, pair_min_distance(min_distance, candidate, mesh),
+                /*tmax=*/1.0, narrow_phase_ccd);
+        });
 
         if (is_collision) {
             return false;
@@ -271,12 +365,15 @@ double Candidates::compute_collision_free_stepsize(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-    const double min_distance,
+    const std::optional<double> min_distance,
     const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
     IPC_TOOLKIT_PROFILE_BLOCK("Candidates::compute_collision_free_stepsize");
+    if (min_distance.has_value()) {
+        warn_min_distance_deprecated();
+    }
 
     if (empty()) {
         return 1; // No possible collisions, so can take full step.
@@ -287,13 +384,14 @@ double Candidates::compute_collision_free_stepsize(
     tbb::parallel_for(size_t(0), size(), [&](size_t i) {
         double tmax = earliest_toi.load(std::memory_order_relaxed);
 
-        const CollisionStencil& candidate = (*this)[i];
-
         double toi = std::numeric_limits<double>::infinity(); // output
-        const bool are_colliding = candidate.ccd(
-            candidate.dof(vertices_t0, mesh.edges(), mesh.faces()),
-            candidate.dof(vertices_t1, mesh.edges(), mesh.faces()), //
-            toi, min_distance, tmax, narrow_phase_ccd);
+        const bool are_colliding = visit(i, [&](const auto& candidate) {
+            return candidate.ccd(
+                candidate.dof(vertices_t0, mesh.edges(), mesh.faces()),
+                candidate.dof(vertices_t1, mesh.edges(), mesh.faces()), //
+                toi, pair_min_distance(min_distance, candidate, mesh), tmax,
+                narrow_phase_ccd);
+        });
 
         if (are_colliding) {
             // Update the earliest time of impact (TOI) atomically
@@ -329,12 +427,15 @@ double Candidates::compute_noncandidate_conservative_stepsize(
     }
 
     tbb::parallel_for(size_t(0), size(), [&](size_t i) {
-        for (const index_t vid : (*this)[i].vertex_ids(E, F)) {
-            if (vid < 0) {
-                break;
+        visit(i, [&](const auto& candidate) {
+            for (const index_t vid : candidate.vertex_ids(E, F)) {
+                if (vid < 0) {
+                    break;
+                }
+                is_vertex_a_candidates[vid].store(
+                    true, std::memory_order_relaxed);
             }
-            is_vertex_a_candidates[vid].store(true, std::memory_order_relaxed);
-        }
+        });
     });
 
     double max_displacement = tbb::parallel_reduce(
@@ -358,7 +459,7 @@ double Candidates::compute_cfl_stepsize(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double dhat,
-    const double min_distance,
+    const std::optional<double> min_distance,
     BroadPhase* broad_phase,
     const NarrowPhaseCCD& narrow_phase_ccd) const
 {
@@ -384,35 +485,40 @@ Eigen::VectorXd Candidates::compute_per_vertex_safe_distances(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double inflation_radius,
-    const double min_distance) const
+    const std::optional<double> min_distance) const
 {
-    assert(inflation_radius >= min_distance);
+    if (min_distance.has_value()) {
+        warn_min_distance_deprecated();
+    }
+    assert(inflation_radius >= min_distance.value_or(0.0));
 
     // Initialize atomic distances for each vertex
     std::vector<std::atomic<double>> min_distances(mesh.num_vertices());
     for (size_t i = 0; i < mesh.num_vertices(); ++i) {
         min_distances[i].store(
-            inflation_radius - min_distance, std::memory_order_relaxed);
+            inflation_radius - min_distance.value_or(0.0),
+            std::memory_order_relaxed);
     }
 
     tbb::parallel_for(size_t(0), size(), [&](size_t i) {
-        const CollisionStencil& candidate = (*this)[i];
+        visit(i, [&](const auto& candidate) {
+            const double d = sqrt(candidate.compute_distance(
+                                 vertices, mesh.edges(), mesh.faces()))
+                - pair_min_distance(min_distance, candidate, mesh);
 
-        const double d = sqrt(candidate.compute_distance(
-                             vertices, mesh.edges(), mesh.faces()))
-            - min_distance;
-
-        // Compute the distance for each vertex in the candidate
-        for (auto vid : candidate.vertex_ids(mesh.edges(), mesh.faces())) {
-            if (vid < 0) {
-                break; // No more vertices in this candidate
+            // Compute the distance for each vertex in the candidate
+            for (auto vid : candidate.vertex_ids(mesh.edges(), mesh.faces())) {
+                if (vid < 0) {
+                    break; // No more vertices in this candidate
+                }
+                // Update the minimum distance atomically
+                double old_val =
+                    min_distances[vid].load(std::memory_order_relaxed);
+                while (d < old_val
+                       && !min_distances[vid].compare_exchange_weak(
+                           old_val, d, std::memory_order_relaxed)) { }
             }
-            // Update the minimum distance atomically
-            double old_val = min_distances[vid].load(std::memory_order_relaxed);
-            while (d < old_val
-                   && !min_distances[vid].compare_exchange_weak(
-                       old_val, d, std::memory_order_relaxed)) { }
-        }
+        });
     });
 
     // Convert atomic distances to a vector
@@ -518,62 +624,10 @@ void Candidates::clear()
     m_sets.reset();
 }
 
-CollisionStencil& Candidates::operator[](size_t i)
+void Candidates::throw_out_of_range(const size_t i, const size_t size)
 {
-    // We keep the requested index for the error message, since i is reduced
-    // below as we walk past each list of candidates.
-    const size_t requested = i;
-    if (i < vv_candidates.size()) {
-        return vv_candidates[i];
-    }
-    i -= vv_candidates.size();
-    if (i < ev_candidates.size()) {
-        return ev_candidates[i];
-    }
-    i -= ev_candidates.size();
-    if (i < ee_candidates.size()) {
-        return ee_candidates[i];
-    }
-    i -= ee_candidates.size();
-    if (i < fv_candidates.size()) {
-        return fv_candidates[i];
-    }
-    i -= fv_candidates.size();
-    if (i < pv_candidates.size()) {
-        return pv_candidates[i];
-    }
     log_and_throw_error<std::out_of_range>(
-        "Candidate index {} is out of range! Total candidates: {}", requested,
-        size());
-}
-
-const CollisionStencil& Candidates::operator[](size_t i) const
-{
-    // We keep the requested index for the error message, since i is reduced
-    // below as we walk past each list of candidates.
-    const size_t requested = i;
-    if (i < vv_candidates.size()) {
-        return vv_candidates[i];
-    }
-    i -= vv_candidates.size();
-    if (i < ev_candidates.size()) {
-        return ev_candidates[i];
-    }
-    i -= ev_candidates.size();
-    if (i < ee_candidates.size()) {
-        return ee_candidates[i];
-    }
-    i -= ee_candidates.size();
-    if (i < fv_candidates.size()) {
-        return fv_candidates[i];
-    }
-    i -= fv_candidates.size();
-    if (i < pv_candidates.size()) {
-        return pv_candidates[i];
-    }
-    log_and_throw_error<std::out_of_range>(
-        "Candidate index {} is out of range! Total candidates: {}", requested,
-        size());
+        "Candidate index {} is out of range! Total candidates: {}", i, size);
 }
 
 bool Candidates::is_vertex_vertex(size_t i) const
@@ -622,14 +676,14 @@ namespace {
     /// @param is_active Function to determine if a candidate is active
     /// @return Vertex-vertex candidates
     template <typename Candidate>
-    std::vector<VertexVertexCandidate>
+    CandidateVector<VertexVertexCandidate>
     element_vertex_to_vertex_vertex_candidates(
         Eigen::ConstRef<Eigen::MatrixXi> elements,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const std::vector<Candidate>& candidates,
+        const CandidateVector<Candidate>& candidates,
         const std::function<bool(double)>& is_active)
     {
-        std::vector<VertexVertexCandidate> vv_candidates;
+        CandidateVector<VertexVertexCandidate> vv_candidates;
         for (const auto& [ei, vi] : candidates) {
             for (int j = 0; j < elements.cols(); j++) {
                 const int vj = elements(ei, j);
@@ -651,7 +705,7 @@ namespace {
 
 } // namespace
 
-std::vector<VertexVertexCandidate> Candidates::edge_vertex_to_vertex_vertex(
+CandidateVector<VertexVertexCandidate> Candidates::edge_vertex_to_vertex_vertex(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::function<bool(double)>& is_active) const
@@ -660,7 +714,7 @@ std::vector<VertexVertexCandidate> Candidates::edge_vertex_to_vertex_vertex(
         mesh.edges(), vertices, ev_candidates, is_active);
 }
 
-std::vector<VertexVertexCandidate> Candidates::face_vertex_to_vertex_vertex(
+CandidateVector<VertexVertexCandidate> Candidates::face_vertex_to_vertex_vertex(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::function<bool(double)>& is_active) const
@@ -669,12 +723,12 @@ std::vector<VertexVertexCandidate> Candidates::face_vertex_to_vertex_vertex(
         mesh.faces(), vertices, fv_candidates, is_active);
 }
 
-std::vector<EdgeVertexCandidate> Candidates::face_vertex_to_edge_vertex(
+CandidateVector<EdgeVertexCandidate> Candidates::face_vertex_to_edge_vertex(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::function<bool(double)>& is_active) const
 {
-    std::vector<EdgeVertexCandidate> C_ev;
+    CandidateVector<EdgeVertexCandidate> C_ev;
     for (const auto& [fi, vi] : fv_candidates) {
         for (int j = 0; j < 3; j++) {
             const int ei = mesh.faces_to_edges()(fi, j);
@@ -694,12 +748,12 @@ std::vector<EdgeVertexCandidate> Candidates::face_vertex_to_edge_vertex(
     return C_ev;
 }
 
-std::vector<EdgeVertexCandidate> Candidates::edge_edge_to_edge_vertex(
+CandidateVector<EdgeVertexCandidate> Candidates::edge_edge_to_edge_vertex(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::function<bool(double)>& is_active) const
 {
-    std::vector<EdgeVertexCandidate> C_ev;
+    CandidateVector<EdgeVertexCandidate> C_ev;
     for (const EdgeEdgeCandidate& ee : ee_candidates) {
         for (int i = 0; i < 2; i++) {
             const int ei = i == 0 ? ee.edge0_id : ee.edge1_id;

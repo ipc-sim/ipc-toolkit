@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <fstream>
@@ -14,7 +15,7 @@ void save_obj(
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
     Eigen::ConstRef<Eigen::MatrixXi> F,
-    const std::vector<Candidate>& candidates,
+    const CandidateVector<Candidate>& candidates,
     const int v_offset = 0);
 
 template <typename Candidate>
@@ -23,7 +24,7 @@ bool save_obj(
     Eigen::ConstRef<Eigen::MatrixXd> V,
     Eigen::ConstRef<Eigen::MatrixXi> E,
     Eigen::ConstRef<Eigen::MatrixXi> F,
-    const std::vector<Candidate>& candidates)
+    const CandidateVector<Candidate>& candidates)
 {
     std::ofstream obj(filename);
     if (!obj.is_open()) {

@@ -6,6 +6,7 @@
 
 #include <ipc/config.hpp>
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/ccd/aabb.hpp>
 #include <ipc/utils/merge_thread_local.hpp>
 
@@ -185,9 +186,9 @@ namespace {
         const AABBs& boxesB,
         const std::function<void(int, unordered_set<int>&)>& query_A_for_Bs,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates)
+        CandidateVector<Candidate>& candidates)
     {
-        tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
+        tbb::enumerable_thread_specific<CandidateVector<Candidate>> storage;
 
         tbb::parallel_for(size_t(0), boxesA.size(), [&](size_t i) {
             auto& local_candidates = storage.local();
@@ -225,7 +226,7 @@ namespace {
         const AABBs& boxesA,
         const std::function<void(int, unordered_set<int>&)>& query_A_for_As,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates)
+        CandidateVector<Candidate>& candidates)
     {
         detect_candidates<Candidate, /*swap_order=*/false, /*triangular=*/true>(
             boxesA, boxesA, query_A_for_As, can_collide, candidates);
@@ -234,7 +235,7 @@ namespace {
 } // namespace
 
 void SpatialHash::detect_vertex_vertex_candidates(
-    std::vector<VertexVertexCandidate>& candidates) const
+    CandidateVector<VertexVertexCandidate>& candidates) const
 {
     candidates.clear();
     if (vertex_boxes.empty()) {
@@ -250,7 +251,7 @@ void SpatialHash::detect_vertex_vertex_candidates(
 }
 
 void SpatialHash::detect_edge_vertex_candidates(
-    std::vector<EdgeVertexCandidate>& candidates) const
+    CandidateVector<EdgeVertexCandidate>& candidates) const
 {
     candidates.clear();
     if (edge_boxes.empty() || vertex_boxes.empty()) {
@@ -267,7 +268,7 @@ void SpatialHash::detect_edge_vertex_candidates(
 }
 
 void SpatialHash::detect_edge_edge_candidates(
-    std::vector<EdgeEdgeCandidate>& candidates) const
+    CandidateVector<EdgeEdgeCandidate>& candidates) const
 {
     candidates.clear();
     if (edge_boxes.empty()) {
@@ -283,7 +284,7 @@ void SpatialHash::detect_edge_edge_candidates(
 }
 
 void SpatialHash::detect_face_vertex_candidates(
-    std::vector<FaceVertexCandidate>& candidates) const
+    CandidateVector<FaceVertexCandidate>& candidates) const
 {
     candidates.clear();
     if (face_boxes.empty() || vertex_boxes.empty()) {
@@ -301,7 +302,7 @@ void SpatialHash::detect_face_vertex_candidates(
 }
 
 void SpatialHash::detect_edge_face_candidates(
-    std::vector<EdgeFaceCandidate>& candidates) const
+    CandidateVector<EdgeFaceCandidate>& candidates) const
 {
     candidates.clear();
     if (edge_boxes.empty() || face_boxes.empty()) {
@@ -318,7 +319,7 @@ void SpatialHash::detect_edge_face_candidates(
 }
 
 void SpatialHash::detect_face_face_candidates(
-    std::vector<FaceFaceCandidate>& candidates) const
+    CandidateVector<FaceFaceCandidate>& candidates) const
 {
     candidates.clear();
     if (face_boxes.empty()) {

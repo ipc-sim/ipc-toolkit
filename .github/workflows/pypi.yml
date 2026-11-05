@@ -208,7 +208,7 @@ jobs:
 
       # Attestations are on by default, but only under Trusted Publishing;
       # an API token silently skips them.
-      - uses: pypa/gh-action-pypi-publish@v1.14.0
+      - uses: pypa/gh-action-pypi-publish@v1.14.3
         with:
           # To test (needs its own trusted publisher on TestPyPI):
           # repository-url: https://test.pypi.org/legacy/

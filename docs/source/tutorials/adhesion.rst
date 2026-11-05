@@ -110,6 +110,7 @@ For relative displacement magnitude :math:`y`:
 where :math:`\epsilon_a` (``eps_a``) is the adhesion threshold (in units of displacement) used to smoothly transition from sticking to sliding.
 
 .. figure:: /_static/img/f0a.png
+    :alt: Tangential adhesion mollifier
     :align: center
 
     Tangential adhesion mollifier :math:`f_0^a(y)` for :math:`\epsilon_a = 0.001`.
@@ -160,6 +161,7 @@ We can also compute the first and second derivatives of the tangential adhesion 
             adhesion_potential_hess = A_t.hessian(tangential_collisions, collision_mesh, displacement)
 
 .. figure:: /_static/img/f1a.png
+    :alt: Tangential adhesion force mollifier
     :align: center
 
     Tangential adhesion force mollifier :math:`f_1^a(y) = \frac{\mathrm{d}}{\mathrm{d}y} f_0^a(y)` for :math:`\epsilon_a = 0.001`.
@@ -190,6 +192,7 @@ Similar to the friction model (see, `friction <advanced_friction.html#separate-c
 The tangential adhesion force mollifier is then multiplied by the smooth coefficient of tangential adhesion:
 
 .. figure:: /_static/img/mu_f1a.png
+   :alt: Smooth coefficient of tangential adhesion multiplied by the tangential adhesion mollifier
    :align: center
 
    Smooth coefficient of tangential adhesion multiplied by the tangential adhesion mollifier :math:`\mu(\|\mathbf{u}\|) f_1^a(\|\mathbf{u}\|)` where :math:`\mu_s = 1`, :math:`\mu_k = 0.1`, and :math:`\epsilon_v = 0.001`.
@@ -197,6 +200,7 @@ The tangential adhesion force mollifier is then multiplied by the smooth coeffic
 We integrate their product to obtain a smooth tangential adhesion mollifier:
 
 .. figure:: /_static/img/int_mu_f1a_dx.png
+   :alt: Integrated mollifier
    :align: center
 
    Integrated mollifier :math:`\int \mu(y) f_1^a(y) \mathrm{d} y` where :math:`y=\|\mathbf{u}\|`, :math:`\mu_s = 1`, :math:`\mu_k = 0.1`, and :math:`\epsilon_v = 0.001`.

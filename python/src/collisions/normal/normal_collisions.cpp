@@ -178,7 +178,7 @@ void define_normal_collisions(py::module_& m)
             "build",
             py::overload_cast<
                 const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
-                const double, const double, BroadPhase*>(
+                const double, const std::optional<double>, BroadPhase*>(
                 &NormalCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the barrier potential.
@@ -187,17 +187,17 @@ void define_normal_collisions(py::module_& m)
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
                 dhat: The activation distance of the barrier.
-                dmin: Minimum distance.
+                dmin: Deprecated: give the mesh a thickness (CollisionMesh.set_thickness) instead. If given, every collision keeps this minimum distance and the mesh's thickness is ignored; otherwise each keeps its two primitives' thicknesses.
                 broad_phase: Broad-phase to use.
             )ipc_Qu8mg5v7",
-            "mesh"_a, "vertices"_a, "dhat"_a, "dmin"_a = 0,
+            "mesh"_a, "vertices"_a, "dhat"_a, "dmin"_a = py::none(),
             "broad_phase"_a = nullptr)
         .def(
             "build",
             py::overload_cast<
                 const Candidates&, const CollisionMesh&,
-                Eigen::ConstRef<Eigen::MatrixXd>, const double, const double>(
-                &NormalCollisions::build),
+                Eigen::ConstRef<Eigen::MatrixXd>, const double,
+                const std::optional<double>>(&NormalCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the barrier potential.
 
@@ -206,12 +206,13 @@ void define_normal_collisions(py::module_& m)
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
                 dhat: The activation distance of the barrier.
-                dmin:  Minimum distance.
+                dmin: Deprecated: give the mesh a thickness (CollisionMesh.set_thickness) instead. If given, every collision keeps this minimum distance and the mesh's thickness is ignored; otherwise each keeps its two primitives' thicknesses.
 
             Raises:
                 ValueError: In 3D, if the candidates were built with all_types=True.
             )ipc_Qu8mg5v7",
-            "candidates"_a, "mesh"_a, "vertices"_a, "dhat"_a, "dmin"_a = 0)
+            "candidates"_a, "mesh"_a, "vertices"_a, "dhat"_a,
+            "dmin"_a = py::none())
         .def(
             "compute_minimum_distance",
             &NormalCollisions::compute_minimum_distance,

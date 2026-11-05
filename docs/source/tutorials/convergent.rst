@@ -91,6 +91,7 @@ We next need to smoothly approximate the max operator in the barrier potentials.
 where :math:`V_{\text{int}} \subseteq V` is the subset of internal surface nodes and :math:`E_{\text{int}} \subseteq E` is the subset of internal surface edges (i.e., edges incident to two triangles). For locally convex regions this estimator is tight while remaining smooth. In turn, for nonconvex regions, it improves over direct summation.
 
 .. figure:: /_static/img/improved_max_approx.png
+    :alt: Exact max, direct summation, and the improved max approximator side by side
     :align: center
 
     Comparison of the improved max approximator (right) to and exact max (left) and the direct summation (middle). For obtuse angles, the improved max approximator is tight, while for acute angles it might overestimate the max in concave regions.

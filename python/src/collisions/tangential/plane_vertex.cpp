@@ -7,7 +7,7 @@ using namespace ipc;
 void define_plane_vertex_tangential_collision(py::module_& m)
 {
     py::class_<
-        PlaneVertexTangentialCollision, PlaneVertexCandidate,
+        PlaneVertexTangentialCollision, PlaneVertexStencil,
         TangentialCollision>(m, "PlaneVertexTangentialCollision")
         .def(py::init<const PlaneVertexNormalCollision&>(), "collision"_a)
         .def(

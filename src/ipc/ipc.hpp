@@ -7,6 +7,8 @@
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
+#include <optional>
+
 /// Incremental Potential Contact functions
 namespace ipc {
 
@@ -18,7 +20,7 @@ namespace ipc {
 /// @param mesh The collision mesh.
 /// @param vertices_t0 Surface vertex vertices at start as rows of a matrix.
 /// @param vertices_t1 Surface vertex vertices at end as rows of a matrix.
-/// @param min_distance The minimum distance allowable between any two elements.
+/// @param min_distance Deprecated: give the mesh a thickness (CollisionMesh::set_thickness()) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
 /// @param broad_phase The broad phase method to use.
 /// @param narrow_phase_ccd The narrow phase CCD algorithm to use.
 /// @returns True if <b>any</b> collisions occur.
@@ -26,7 +28,7 @@ bool is_step_collision_free(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-    const double min_distance = 0.0,
+    const std::optional<double> min_distance = std::nullopt,
     BroadPhase* broad_phase = nullptr,
     const NarrowPhaseCCD& narrow_phase_ccd = DEFAULT_NARROW_PHASE_CCD);
 
@@ -38,7 +40,7 @@ bool is_step_collision_free(
 /// @param mesh The collision mesh.
 /// @param vertices_t0 Vertex vertices at start as rows of a matrix. Assumes vertices_t0 is intersection free.
 /// @param vertices_t1 Surface vertex vertices at end as rows of a matrix.
-/// @param min_distance The minimum distance allowable between any two elements.
+/// @param min_distance Deprecated: give the mesh a thickness (CollisionMesh::set_thickness()) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
 /// @param broad_phase The broad phase method to use.
 /// @param narrow_phase_ccd The narrow phase CCD algorithm to use.
 /// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
@@ -46,7 +48,7 @@ double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
-    const double min_distance = 0.0,
+    const std::optional<double> min_distance = std::nullopt,
     BroadPhase* broad_phase = nullptr,
     const NarrowPhaseCCD& narrow_phase_ccd = DEFAULT_NARROW_PHASE_CCD);
 

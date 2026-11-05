@@ -7,8 +7,8 @@ using namespace ipc;
 void define_face_vertex_tangential_collision(py::module_& m)
 {
     py::class_<
-        FaceVertexTangentialCollision, FaceVertexCandidate,
-        TangentialCollision>(m, "FaceVertexTangentialCollision")
+        FaceVertexTangentialCollision, FaceVertexStencil, TangentialCollision>(
+        m, "FaceVertexTangentialCollision")
         .def(py::init<const FaceVertexNormalCollision&>(), "collision"_a)
         .def(
             py::init<

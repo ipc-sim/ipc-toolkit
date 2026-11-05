@@ -23,6 +23,7 @@ where :math:`b(u)` is a barrier potential that increases to infinity as the conf
 All existing contact barrier potentials are defined by aggregating repulsion terms between pairs of points or elements. The key question is how to choose the strength of repulsion so that it is high when two points are close to contact, vanishes when they are far, and satisfies a number of desirable properties. In particular, one important difficulty is distinguishing *true contact* — arising from different objects or parts of the same surface moving toward each other — from points that remain close simply because they are neighbors on the undeformed rest shape.
 
 .. figure:: /_static/img/gcp/nearby-points.svg
+   :alt: Points nearing contact versus nearby non-contacting points
    :align: center
    :width: 200px
    :class: figure-on-light
@@ -82,6 +83,7 @@ where :math:`r = n - 1` (:math:`n \in \{2, 3\}` is the dimension of the scene), 
 Because :math:`h_\epsilon` vanishes for :math:`z \geq \epsilon` and :math:`z^{-r}` diverges as :math:`z \to 0`, the barrier satisfies both the localization and barrier requirements.
 
 .. figure:: /_static/img/gcp/barriers.svg
+   :alt: The cubic spline
    :align: center
    :width: 300px
    :class: figure-on-light
@@ -122,6 +124,7 @@ The interaction set for smooth surfaces is then:
 Note that both constraints are applied symmetrically: :math:`y` must be near a local minimum as seen from :math:`x`, *and* :math:`x` must be near a local minimum as seen from :math:`y`.
 
 .. figure:: /_static/img/gcp/demo-force.png
+   :alt: Contact forces and potential distribution on a 2D object for three potential variants
    :align: center
    :width: 600px
    :class: figure-on-light
@@ -141,6 +144,7 @@ Smooth surfaces are typically approximated by piecewise-linear meshes in practic
 where :math:`\alpha_t` is the tangent-direction smoothing parameter.
 
 .. figure:: /_static/img/gcp/tangent-notation.svg
+   :alt: Tangent directions at a point
    :align: center
    :width: 600px
    :class: figure-on-light
@@ -155,6 +159,7 @@ where :math:`\alpha_t` is the tangent-direction smoothing parameter.
 and the mollified constraint ensures that :math:`\Phi^e_i(x, y) \geq 0` for *at least one* incident face :math:`i`.
 
 .. figure:: /_static/img/gcp/normal-demo.png
+   :alt: 2D and 3D normal directions for contact points
    :align: center
    :width: 600px
    :class: figure-on-light
@@ -162,6 +167,7 @@ and the mollified constraint ensures that :math:`\Phi^e_i(x, y) \geq 0` for *at 
    2D (top) and 3D (bottom) normal directions for contact points. The displacement :math:`f(y) - f(x)` is shown in yellow; face normals :math:`n_i(y)` are shown in red when the exterior constraint is satisfied, and green otherwise. In simple cases such as (A) and (D), all normals satisfy the constraint, but in general only some do.
 
 .. figure:: /_static/img/gcp/cone-filter-edge.svg
+   :alt: 3D and 2D views of the exterior direction test for an edge point
    :align: center
    :width: 600px
    :class: figure-on-light
@@ -205,6 +211,7 @@ Smooth Heaviside Function
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. figure:: /_static/img/gcp/heaviside.svg
+   :alt: The smooth Heaviside function
    :align: center
    :width: 300px
    :class: figure-on-light
@@ -249,6 +256,7 @@ Distance Mollification
 Since closest points may not depend smoothly on vertex positions (e.g., when a closest point moves from the interior of a face to its boundary), GCP introduces mollification factors :math:`M(x, y)` that smoothly vanish near these non-smooth transitions.
 
 .. figure:: /_static/img/gcp/smoothness-demo.svg
+   :alt: Non-smoothness of the closest point position
    :align: center
    :width: 600px
    :class: figure-on-light

@@ -6,13 +6,13 @@
 
 namespace ipc {
 
-class PlaneVertexNormalCollision : public PlaneVertexCandidate,
+class PlaneVertexNormalCollision : public PlaneVertexStencil,
                                    public NormalCollision {
 public:
-    using PlaneVertexCandidate::PlaneVertexCandidate;
+    using PlaneVertexStencil::PlaneVertexStencil;
 
     PlaneVertexNormalCollision(const PlaneVertexCandidate& candidate)
-        : PlaneVertexCandidate(candidate)
+        : PlaneVertexStencil(candidate)
     {
     }
 
@@ -21,7 +21,7 @@ public:
         const index_t _vertex_id,
         const double _weight,
         const Eigen::SparseVector<double>& _weight_gradient)
-        : PlaneVertexCandidate(_plane, _vertex_id)
+        : PlaneVertexStencil(_plane, _vertex_id)
         , NormalCollision(_weight, _weight_gradient)
     {
     }
