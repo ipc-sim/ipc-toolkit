@@ -12,6 +12,7 @@
 #include <ipc/esp/quadrature_potential.hpp>
 #include <ipc/gcp/distance/mollifier.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/combinable.h>
@@ -336,6 +337,55 @@ namespace {
         p.row(2) = X.row(mesh.edges()(pair.second, 0));
         p.row(3) = X.row(mesh.edges()(pair.second, 1));
         return p;
+    }
+
+    // Debug diagnostic for lagged normalization + transfer. With D_e frozen,
+    // an endpoint gives away coef * m_j * (1 - u_j) (or u_j) of near weight
+    // per pair, which exceeds its fixed weight only if the element's EE
+    // weight grew past its frozen value within the time step. Logs the
+    // lowest remaining fraction and the number of endpoints below zero.
+    void log_endpoint_weights(
+        const ESPCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> X,
+        const ESPParameters& params,
+        const LaggedCoefficients& c)
+    {
+        Eigen::VectorXd moved = Eigen::VectorXd::Zero(mesh.num_vertices());
+        for (const auto& [pair, dict] :
+             collisions.maps().edge_edge_collisions) {
+            const double coef = c.transfer_edge[pair.first];
+            if (coef == 0) {
+                continue;
+            }
+            const Eigen::Matrix<double, 4, 3> p = ee_positions(mesh, X, pair);
+            const double m = ee_sample_weight<double>(p, p, params);
+            if (m == 0) {
+                continue;
+            }
+            const double u = closest_point_uv<double>(
+                p.row(0), p.row(1), p.row(2), p.row(3));
+            moved[mesh.edges()(pair.first, 0)] += coef * m * (1 - u);
+            moved[mesh.edges()(pair.first, 1)] += coef * m * u;
+        }
+        int endpoints = 0, negative = 0;
+        double lowest = 1;
+        for (Eigen::Index v = 0; v < moved.size(); v++) {
+            if (moved[v] <= 0 || c.vertex_near[v] <= 0) {
+                continue;
+            }
+            const double left = 1 - moved[v] / c.vertex_near[v];
+            endpoints++;
+            negative += left < 0;
+            lowest = std::min(lowest, left);
+        }
+        if (endpoints > 0) {
+            logger().debug(
+                "ESP lagged transfer: {} endpoint(s) donating, lowest "
+                "remaining near weight {:.3g} of its fixed weight, {} "
+                "negative",
+                endpoints, lowest, negative);
+        }
     }
 } // namespace
 
@@ -682,6 +732,9 @@ Eigen::SparseMatrix<double> ESPPotential::lagged_hessian(
         triplets.insert(triplets.end(), t.begin(), t.end());
     }
     if (uses_transfer(mesh, m_params)) {
+        if (logger().should_log(spdlog::level::debug)) {
+            log_endpoint_weights(collisions, mesh, X, m_params, c);
+        }
         // Each transferred term is projected on its own stencil (its pair's
         // and its source endpoints' collision stencils).
         const auto transferred = detail::lagged_transfer_hessian(
