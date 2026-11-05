@@ -112,9 +112,10 @@ struct ESPParameters {
     /// as its closest points move off the edge endpoints. The default,
     /// SMOOTHSTEP_REL with rel_eps = 1, fades it in over the gap d.
     EEMollifierConfig ee_mollifier;
-    /// Power of the edge-edge mollifier weight. 0 chooses it from the
-    /// barrier: max(1, round(p) + 1) for an InversePowerBarrier of power p,
-    /// otherwise 1.
+    /// Power of the edge-edge sample weight. 0 (the default) chooses it from
+    /// the mollifier: 1 for the smoothstep mollifiers; for the GCP family,
+    /// max(1, round(p) + 1) under an InversePowerBarrier of power p and 1
+    /// otherwise (see ee_mollifier_exponent()).
     int ee_mollifier_power = 0;
     /// Weight of an edge-edge sample relative to a vertex sample, before the
     /// mollifier and ee_area_scaling. The default 1.5 makes it weigh one
@@ -133,16 +134,26 @@ struct ESPParameters {
     /// default) uses dbar.
     double ee_area_ref = 0;
 
-    /// @brief Power applied to the edge-edge mollifier weight:
-    /// ee_mollifier_power if positive, else chosen from the barrier.
+    /// @brief Power applied to the edge-edge sample weight:
+    /// ee_mollifier_power if positive. Otherwise 1, except for the GCP
+    /// mollifiers under an InversePowerBarrier of power p, which use
+    /// max(1, round(p) + 1): their weight starts linearly in the squared
+    /// endpoint clearance, and without the extra power its gradient near an
+    /// endpoint, times the inverse-power potential, is not bounded. The
+    /// smoothstep mollifiers start cubically and need no power; a power would
+    /// also shrink the distance spline and soften edge-edge contact against
+    /// vertex contact at moderate gaps.
     int ee_mollifier_exponent() const
     {
         if (ee_mollifier_power > 0) {
             return ee_mollifier_power;
         }
-        if (const auto* ip =
-                dynamic_cast<const InversePowerBarrier<>*>(barrier.get())) {
-            return std::max(1, static_cast<int>(std::lround(ip->power())) + 1);
+        if (!ee_mollifier.smoothstep()) {
+            if (const auto* ip =
+                    dynamic_cast<const InversePowerBarrier<>*>(barrier.get())) {
+                return std::max(
+                    1, static_cast<int>(std::lround(ip->power())) + 1);
+            }
         }
         return 1;
     }

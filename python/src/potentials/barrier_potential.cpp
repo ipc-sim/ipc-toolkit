@@ -321,8 +321,9 @@ void define_esp_potential(py::module& m)
             "Shape of the edge-edge mollifier.")
         .def_readwrite(
             "ee_mollifier_power", &ESPParameters::ee_mollifier_power,
-            "Power of the edge-edge mollifier weight; 0 chooses it from the "
-            "barrier.")
+            "Power of the edge-edge sample weight; 0 chooses it from the "
+            "mollifier (1 for smoothstep; round(p) + 1 for GCP under an "
+            "inverse-power barrier of power p).")
         .def_readwrite(
             "ee_weight", &ESPParameters::ee_weight,
             "Weight of an edge-edge sample relative to a vertex sample.")

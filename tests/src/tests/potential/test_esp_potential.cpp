@@ -309,10 +309,12 @@ TEST_CASE(
     CHECK(stats.max_abs_P < 1e8);
     CHECK(stats.max_abs_g < 1e10);
     // 10x current measured shift from the smallest-eps sample
-    // (current: max|ΔP|≈2.3e-2, max|Δ|g||≈57; faces weighted by their area,
-    // rule weights summing to 1).
-    CHECK(stats.max_shift_P < 0.23);
-    CHECK(stats.max_shift_g < 575);
+    // (current: max|ΔP|≈0.39, max|Δ|g||≈925, about 5e-5 and 5e-4 of P and
+    // |g|; smoothstep mollifier with no power, faces weighted by their area,
+    // rule weights summing to 1). Main's GCP mollifier needs its power here:
+    // with power 1 the gradient reaches ~7e15.
+    CHECK(stats.max_shift_P < 3.9);
+    CHECK(stats.max_shift_g < 9300);
 }
 
 // Same configuration but with a linear-inverse barrier (1/d divergence).
@@ -325,8 +327,8 @@ TEST_CASE(
     CHECK(stats.max_abs_P < 1e8);
     CHECK(stats.max_abs_g < 1e10);
     // 10x current measured shift from the smallest-eps sample
-    // (current: max|ΔP|≈4.2e-4, max|Δ|g||≈1.9; faces weighted by their area,
-    // rule weights summing to 1).
+    // (measured with GCP and power 2: max|ΔP|≈4.2e-4, max|Δ|g||≈1.9; now,
+    // smoothstep with no power: ≈4.1e-5, ≈6.5e-3).
     CHECK(stats.max_shift_P < 4.2e-3);
     CHECK(stats.max_shift_g < 19);
 }

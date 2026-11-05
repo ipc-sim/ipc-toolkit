@@ -42,10 +42,11 @@ class TestESPLocalTransfer(unittest.TestCase):
         self.assertFalse(params.legacy_element_weights)
         self.assertEqual(params.ee_mollifier_exponent, 1)  # log barrier
         params.barrier = ipctk.InversePowerBarrier(2)
-        self.assertEqual(params.ee_mollifier_exponent, 3)
-        params.ee_mollifier_power = 1
-        self.assertEqual(params.ee_mollifier_exponent, 1)
+        self.assertEqual(params.ee_mollifier_exponent, 1)  # smoothstep
         mollifier = ipctk.EEMollifierConfig()
         mollifier.type = ipctk.EEMollifierType.GCP
         params.ee_mollifier = mollifier
         self.assertEqual(params.ee_mollifier.type, ipctk.EEMollifierType.GCP)
+        self.assertEqual(params.ee_mollifier_exponent, 3)  # GCP, p = 2
+        params.ee_mollifier_power = 1
+        self.assertEqual(params.ee_mollifier_exponent, 1)
