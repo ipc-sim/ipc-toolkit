@@ -1567,12 +1567,13 @@ TEST_CASE("ESP face quadrature rule validation", "[esp_potential]")
 
     // Weights are normalized to sum to 1; corner points are split from the
     // others.
-    params.set_quad_rule({
-        { { { 1., 0., 0. } }, 2. },
-        { { { 0., 1., 0. } }, 2. },
-        { { { 0., 0., 1. } }, 2. },
-        { { { 1. / 3, 1. / 3, 1. / 3 } }, 2. },
-    });
+    params.set_quad_rule(
+        {
+            { { { 1., 0., 0. } }, 2. },
+            { { { 0., 1., 0. } }, 2. },
+            { { { 0., 0., 1. } }, 2. },
+            { { { 1. / 3, 1. / 3, 1. / 3 } }, 2. },
+        });
     for (const double w : params.corner_weights()) {
         CHECK(w == Catch::Approx(0.25));
     }

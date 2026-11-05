@@ -55,7 +55,7 @@ namespace {
         index_t face = -1; ///< Face id, or -1 for an edge or vertex element
         std::array<index_t, 3> edges {}; ///< Edges whose edge-edge pairs count
         int num_edges = 0;
-        std::array<index_t, 3> vertices {}; ///< Vertex samples
+        std::array<index_t, 3> vertices {};      ///< Vertex samples
         std::array<double, 3> vertex_weights {}; ///< Their weights
         int num_vertices = 0;
         /// The face rule's other points (faces only)
@@ -240,7 +240,7 @@ namespace {
     struct LaggedCoefficients {
         Eigen::VectorXd vertex_near, vertex_far; // per vertex
         Eigen::VectorXd face_near, face_far;     // per face, times qp weight
-        Eigen::VectorXd edge; // per edge: sum_e w_e * area scale / D_e
+        Eigen::VectorXd edge;          // per edge: sum_e w_e * area scale / D_e
         Eigen::VectorXd transfer_edge; // per edge, under transfer
     };
 
@@ -739,8 +739,7 @@ Eigen::SparseMatrix<double> ESPPotential::lagged_hessian(
         // and its source endpoints' collision stencils).
         const auto transferred = detail::lagged_transfer_hessian(
             collisions, mesh, X, m_params, c.transfer_edge, psd);
-        triplets.insert(
-            triplets.end(), transferred.begin(), transferred.end());
+        triplets.insert(triplets.end(), transferred.begin(), transferred.end());
     }
     Eigen::SparseMatrix<double> hess(X.size(), X.size());
     hess.setFromTriplets(triplets.begin(), triplets.end());
@@ -1373,9 +1372,10 @@ Eigen::VectorXd ESPPotential::gradient(
                                     evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
                                         X, (*iter->second), m_params,
                                         *nf_barrier);
-                                const_cache.push_back(ConstGradEntry {
-                                    &(*iter->second).dofs(), vw * grad_n,
-                                    vw * grad_f, vw * P_n, vw * P_f });
+                                const_cache.push_back(
+                                    ConstGradEntry { &(*iter->second).dofs(),
+                                                     vw * grad_n, vw * grad_f,
+                                                     vw * P_n, vw * P_f });
                                 total_p_near += vw * P_n;
                             } else {
                                 const double P = PointPotentialHelper::
@@ -1384,9 +1384,10 @@ Eigen::VectorXd ESPPotential::gradient(
                                 const Eigen::VectorXd grad_p = PointPotentialHelper::
                                     evaluate_potential_gradient_at_vertex_with_cached_collisions(
                                         X, (*iter->second), m_params);
-                                const_cache.push_back(ConstGradEntry {
-                                    &(*iter->second).dofs(), vw * grad_p,
-                                    Eigen::VectorXd::Zero(0), vw * P, 0 });
+                                const_cache.push_back(
+                                    ConstGradEntry {
+                                        &(*iter->second).dofs(), vw * grad_p,
+                                        Eigen::VectorXd::Zero(0), vw * P, 0 });
                             }
                         }
                     }
