@@ -154,10 +154,8 @@ TEST_CASE(
     auto s = edge_over_box();
     ESPParameters params(.03, .05);
     params.barrier = std::make_shared<InversePowerBarrier<>>(2);
-    params.ee_mollifier.type = GENERATE(
-        EEMollifierType::SMOOTHSTEP_REL, EEMollifierType::SMOOTHSTEP,
-        EEMollifierType::SMOOTHSTEP_SQRT, EEMollifierType::GCP,
-        EEMollifierType::GCP_FIXED, EEMollifierType::GCP_SQRT);
+    params.ee_mollifier.type =
+        GENERATE(EEMollifierType::SMOOTHSTEP, EEMollifierType::GCP);
     params.ee_area_scaling = GENERATE(true, false);
     params.local_quadrature_transfer = GENERATE(false, true);
     CAPTURE(
@@ -218,15 +216,16 @@ TEST_CASE(
         params.set_auto_lattice(.01, 3);
     }
     if (with_non_corner_points) {
-        params.set_quad_rule({
-            { { { 1., 0., 0. } }, 0.1 },
-            { { { 0., 1., 0. } }, 0.1 },
-            { { { 0., 0., 1. } }, 0.1 },
-            { { { .5, .5, 0. } }, 0.15 },
-            { { { 0., .5, .5 } }, 0.15 },
-            { { { .5, 0., .5 } }, 0.15 },
-            { { { 1. / 3, 1. / 3, 1. / 3 } }, 0.25 },
-        });
+        params.set_quad_rule(
+            {
+                { { { 1., 0., 0. } }, 0.1 },
+                { { { 0., 1., 0. } }, 0.1 },
+                { { { 0., 0., 1. } }, 0.1 },
+                { { { .5, .5, 0. } }, 0.15 },
+                { { { 0., .5, .5 } }, 0.15 },
+                { { { .5, 0., .5 } }, 0.15 },
+                { { { 1. / 3, 1. / 3, 1. / 3 } }, 0.25 },
+            });
     }
     CAPTURE(barrier, params.area_weights, rule_kind);
     check_derivatives(s.mesh, s.X, params);
@@ -496,10 +495,11 @@ TEST_CASE(
     params.area_weights = GENERATE(false, true);
     // Retain positive corner weights and an independently active interior
     // point.
-    params.set_quad_rule({ { { { 1, 0, 0 } }, .1 },
-                           { { { 0, 1, 0 } }, .2 },
-                           { { { 0, 0, 1 } }, .3 },
-                           { { { 1. / 3, 1. / 3, 1. / 3 } }, .4 } });
+    params.set_quad_rule(
+        { { { { 1, 0, 0 } }, .1 },
+          { { { 0, 1, 0 } }, .2 },
+          { { { 0, 0, 1 } }, .3 },
+          { { { 1. / 3, 1. / 3, 1. / 3 } }, .4 } });
     params.local_quadrature_transfer = true;
     ESPCollisions contacts;
     contacts.build(mesh, V, params);

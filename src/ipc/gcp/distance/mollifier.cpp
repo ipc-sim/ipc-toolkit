@@ -298,27 +298,10 @@ std::array<HeavisideType, 4> edge_edge_mollifier_type(
 {
     std::array<HeavisideType, 4> mtypes {};
     if (config.smoothstep()) {
-        const double ell2 = config.rel_width() ? dist_sqr * config.rel_eps
-            : config.sqrt_width()
-            ? std::sqrt(dist_sqr) * MOLLIFIER_THRESHOLD_EPS * config.length
-            : sqr(config.width);
+        const double ell2 = dist_sqr * config.rel_eps;
         const auto t = [&](const double pe) {
             return pe - dist_sqr >= ell2 ? HeavisideType::ONE
                                          : HeavisideType::VARIANT;
-        };
-        mtypes[0] = t(point_edge_distance(ea0, eb0, eb1));
-        mtypes[1] = t(point_edge_distance(ea1, eb0, eb1));
-        mtypes[2] = t(point_edge_distance(eb0, ea0, ea1));
-        mtypes[3] = t(point_edge_distance(eb1, ea0, ea1));
-        return mtypes;
-    }
-    if (config.fixed_width() || config.sqrt_width()) {
-        const double denom = config.fixed_width()
-            ? sqr(config.width)
-            : std::sqrt(dist_sqr) * MOLLIFIER_THRESHOLD_EPS * config.length;
-        const auto t = [&](const double pe) {
-            return pe - dist_sqr >= denom ? HeavisideType::ONE
-                                          : HeavisideType::VARIANT;
         };
         mtypes[0] = t(point_edge_distance(ea0, eb0, eb1));
         mtypes[1] = t(point_edge_distance(ea1, eb0, eb1));

@@ -17,28 +17,16 @@ enum class EEMollifierType : std::uint8_t {
     /// sample fades in over the same scale on which its endpoint vertex
     /// loses potential, the widest width that leaves no hole near the
     /// endpoints.
-    SMOOTHSTEP_REL,
-    /// Smoothstep H(c / w) with a fixed width w = width.
     SMOOTHSTEP,
-    /// Smoothstep H(c / w) with w² = MOLLIFIER_THRESHOLD_EPS d length.
-    SMOOTHSTEP_SQRT,
     /// Original GCP mollifier: x = c² / (MOLLIFIER_THRESHOLD_EPS d²).
     GCP,
-    /// GCP shape with a fixed width: x = c² / width².
-    GCP_FIXED,
-    /// GCP shape with x = c² / (MOLLIFIER_THRESHOLD_EPS d length).
-    GCP_SQRT,
 };
 
 /// @brief Options of the 3D edge-edge mollifier (see EEMollifierType).
 struct EEMollifierConfig {
-    EEMollifierType type = EEMollifierType::SMOOTHSTEP_REL;
-    /// SMOOTHSTEP_REL: squared width over squared gap, w² = rel_eps d².
+    EEMollifierType type = EEMollifierType::SMOOTHSTEP;
+    /// SMOOTHSTEP: squared width over squared gap, w² = rel_eps d².
     double rel_eps = 1.0;
-    /// SMOOTHSTEP, GCP_FIXED: fixed width, in distance units.
-    double width = 150e-6;
-    /// SMOOTHSTEP_SQRT, GCP_SQRT: length scale, in distance units.
-    double length = 1.5e-3;
 
     /// The original GCP mollifier, used by the GCP formulation.
     static EEMollifierConfig gcp()
@@ -48,23 +36,7 @@ struct EEMollifierConfig {
         return c;
     }
 
-    bool smoothstep() const
-    {
-        return type == EEMollifierType::SMOOTHSTEP_REL
-            || type == EEMollifierType::SMOOTHSTEP
-            || type == EEMollifierType::SMOOTHSTEP_SQRT;
-    }
-    bool fixed_width() const
-    {
-        return type == EEMollifierType::SMOOTHSTEP
-            || type == EEMollifierType::GCP_FIXED;
-    }
-    bool sqrt_width() const
-    {
-        return type == EEMollifierType::SMOOTHSTEP_SQRT
-            || type == EEMollifierType::GCP_SQRT;
-    }
-    bool rel_width() const { return type == EEMollifierType::SMOOTHSTEP_REL; }
+    bool smoothstep() const { return type == EEMollifierType::SMOOTHSTEP; }
 };
 
 /// @brief Area-consistent edge-edge weight factor of an element:

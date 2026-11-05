@@ -33,7 +33,7 @@ class TestESPLocalTransfer(unittest.TestCase):
     def test_edge_edge_options(self):
         params = ipctk.ESPParameters(.03, .05)
         self.assertEqual(params.ee_mollifier.type,
-                         ipctk.EEMollifierType.SMOOTHSTEP_REL)
+                         ipctk.EEMollifierType.SMOOTHSTEP)
         self.assertEqual(params.ee_mollifier.rel_eps, 1.0)
         self.assertTrue(params.ee_area_scaling)
         self.assertEqual(params.ee_area_ref, 0)

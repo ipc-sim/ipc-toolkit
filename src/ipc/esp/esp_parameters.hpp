@@ -113,7 +113,8 @@ struct ESPParameters {
 
     /// Shape of the edge-edge mollifier, which fades an edge-edge sample in
     /// as its closest points move off the edge endpoints. The default,
-    /// SMOOTHSTEP_REL with rel_eps = 1, fades it in over the gap d.
+    /// SMOOTHSTEP with rel_eps = 1, fades it in over the gap d; GCP is the
+    /// original mollifier.
     EEMollifierConfig ee_mollifier;
     /// Power of the edge-edge sample weight. 0 (the default) chooses it from
     /// the mollifier: 1 for the smoothstep mollifiers; for the GCP family,

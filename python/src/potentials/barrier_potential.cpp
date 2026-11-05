@@ -239,21 +239,10 @@ void define_esp_parameters(py::module& m)
     py::enum_<EEMollifierType>(
         m, "EEMollifierType", "Shape of the 3D edge-edge mollifier.")
         .value(
-            "SMOOTHSTEP_REL", EEMollifierType::SMOOTHSTEP_REL,
-            "Smoothstep over a width relative to the gap, w^2 = rel_eps d^2")
-        .value(
             "SMOOTHSTEP", EEMollifierType::SMOOTHSTEP,
-            "Smoothstep over a fixed width")
-        .value(
-            "SMOOTHSTEP_SQRT", EEMollifierType::SMOOTHSTEP_SQRT,
-            "Smoothstep over w^2 = eps d length")
-        .value("GCP", EEMollifierType::GCP, "Original GCP mollifier")
-        .value(
-            "GCP_FIXED", EEMollifierType::GCP_FIXED,
-            "GCP shape with a fixed width")
-        .value(
-            "GCP_SQRT", EEMollifierType::GCP_SQRT,
-            "GCP shape with width^2 = eps d length");
+            "Smoothstep over a width relative to the gap, w^2 = rel_eps d^2 "
+            "(default)")
+        .value("GCP", EEMollifierType::GCP, "Original GCP mollifier");
 
     py::class_<EEMollifierConfig>(
         m, "EEMollifierConfig", "Options of the 3D edge-edge mollifier.")
@@ -261,13 +250,7 @@ void define_esp_parameters(py::module& m)
         .def_readwrite("type", &EEMollifierConfig::type)
         .def_readwrite(
             "rel_eps", &EEMollifierConfig::rel_eps,
-            "SMOOTHSTEP_REL: squared width over squared gap.")
-        .def_readwrite(
-            "width", &EEMollifierConfig::width,
-            "SMOOTHSTEP, GCP_FIXED: fixed width (distance units).")
-        .def_readwrite(
-            "length", &EEMollifierConfig::length,
-            "SMOOTHSTEP_SQRT, GCP_SQRT: length scale (distance units).");
+            "SMOOTHSTEP: squared width over squared gap.");
 
     py::class_<ESPParameters> esp_parameters(m, "ESPParameters");
 
@@ -312,7 +295,10 @@ void define_esp_parameters(py::module& m)
         .def_readonly("area_weights", &ESPParameters::area_weights)
         .def_readwrite(
             "local_quadrature_transfer",
-            &ESPParameters::local_quadrature_transfer)
+            &ESPParameters::local_quadrature_transfer,
+            "3D: give edge-edge samples weight taken from their edges' "
+            "endpoint samples instead of renormalizing the element. Needs "
+            "use_near_far and a face rule with positive corner weights.")
         .def_readwrite(
             "legacy_element_weights", &ESPParameters::legacy_element_weights,
             "Weigh faces by area / 9 and edges in no face by length / 4, as "
@@ -385,10 +371,17 @@ void define_esp_potential(py::module& m)
             py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
         .def(
             "set_lagged_weights", &ESPPotential::set_lagged_weights,
-            "Hold each element's normalization fixed at these weights.",
+            "Hold each element's normalization fixed at these weights (from "
+            "element_near_weights at a reference state), so each sample "
+            "enters with a fixed coefficient. Works with "
+            "local_quadrature_transfer.",
             py::arg("weights"))
-        .def("clear_lagged_weights", &ESPPotential::clear_lagged_weights)
-        .def_property_readonly("lagged_weights", &ESPPotential::lagged_weights)
+        .def(
+            "clear_lagged_weights", &ESPPotential::clear_lagged_weights,
+            "Return to recomputing the normalization at every evaluation.")
+        .def_property_readonly(
+            "lagged_weights", &ESPPotential::lagged_weights,
+            "The lagged element weights (empty if not lagged).")
         .def(
             "__call__",
             py::overload_cast<
