@@ -7,6 +7,14 @@ ESP Parameters
 .. doxygenstruct:: ipc::ESPParameters
     :allow-dot-graphs:
 
+Edge-Edge Mollifier
+-------------------
+
+.. doxygenenum:: ipc::EEMollifierType
+
+.. doxygenstruct:: ipc::EEMollifierConfig
+    :allow-dot-graphs:
+
 ESP Collisions
 --------------
 
