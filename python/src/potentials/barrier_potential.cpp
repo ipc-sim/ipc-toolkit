@@ -325,6 +325,34 @@ void define_esp_parameters(py::module& m)
         .def_readwrite("barrier", &ESPParameters::barrier)
         .def_readonly("integration_type", &ESPParameters::integration_type)
         .def(
+            "set_quad_rule",
+            [](ESPParameters& self, Eigen::ConstRef<Eigen::MatrixXd> points,
+               Eigen::ConstRef<Eigen::VectorXd> weights) {
+                if (points.cols() != 3 || points.rows() != weights.size()) {
+                    throw py::value_error(
+                        "points must be n x 3 barycentric coordinates and "
+                        "weights a length-n vector.");
+                }
+                FaceQuadRule rule(points.rows());
+                for (Eigen::Index i = 0; i < points.rows(); i++) {
+                    rule[i] = { { { points(i, 0), points(i, 1),
+                                    points(i, 2) } },
+                                weights(i) };
+                }
+                self.set_quad_rule(std::move(rule));
+            },
+            R"ipc_Qu8mg5v7(
+            Set the face quadrature rule (3D). The weights are normalized to sum to 1.
+
+            Parameters:
+                points: Barycentric coordinates of the points (n x 3).
+                weights: Weight of each point (n).
+
+            Raises:
+                ValueError: If the rule is empty, a weight is negative or not finite, the weights sum to zero, or a coordinate is negative or not finite.
+            )ipc_Qu8mg5v7",
+            py::arg("points"), py::arg("weights"))
+        .def(
             "set_lattice_rule",
             [](ESPParameters& self, const int m) {
                 self.set_quad_rule(ESPParameters::lattice_rule(m));

@@ -49,3 +49,31 @@ class TestESPLocalTransfer(unittest.TestCase):
         self.assertEqual(params.ee_mollifier_exponent, 3)  # GCP, p = 2
         params.ee_mollifier_power = 1
         self.assertEqual(params.ee_mollifier_exponent, 1)
+
+    def test_face_rules(self):
+        # Two triangles facing each other, 4 mm apart.
+        V = np.array([[0, 0, 0], [.1, 0, 0], [0, .1, 0],
+                      [.02, .01, .004], [.09, .02, .006], [.01, .08, .005]])
+        F = np.array([[0, 1, 2], [3, 5, 4]])
+        E = np.array([[0, 1], [1, 2], [2, 0], [3, 5], [5, 4], [4, 3]])
+        mesh = ipctk.CollisionMesh(V, E, F)
+        mesh.init_adjacencies()
+
+        def energy(params):
+            contacts = ipctk.ESPCollisions()
+            contacts.build(mesh, V, params)
+            return ipctk.ESPPotential(params, use_near_far=True)(contacts, mesh, V)
+
+        default = ipctk.ESPParameters(.01, 1.0)
+        explicit = ipctk.ESPParameters(.01, 1.0)
+        # The vertex rule with unnormalized weights: same energy as the default.
+        explicit.set_quad_rule(np.eye(3), np.array([2., 2., 2.]))
+        self.assertGreater(energy(default), 0)
+        self.assertAlmostEqual(energy(explicit) / energy(default), 1, places=12)
+        lattice = ipctk.ESPParameters(.01, 1.0)
+        lattice.set_lattice_rule(1)
+        self.assertAlmostEqual(energy(lattice) / energy(default), 1, places=12)
+        with self.assertRaises(ValueError):
+            explicit.set_quad_rule(np.zeros((0, 3)), np.zeros(0))
+        with self.assertRaises(ValueError):
+            explicit.set_quad_rule(np.eye(3), np.array([1., -1., 1.]))
