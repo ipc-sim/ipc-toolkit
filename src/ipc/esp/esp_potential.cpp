@@ -78,8 +78,7 @@ namespace {
     {
         // With area weights, an element weighs its rest measure: a face its
         // area, an edge in no face its edge area, and an isolated vertex its
-        // vertex area (one by default), each times
-        // params.element_weight_scale(). These have different units, so on a
+        // vertex area (one by default). These have different units, so on a
         // mesh that mixes faces with rods or particles the barrier stiffness
         // has to be chosen with that in mind.
         IntegrationElement elem;
@@ -98,9 +97,7 @@ namespace {
                 elem.vertex_weights[j] = rule.corner_weights[j];
             }
             elem.non_corner = rule.non_corner;
-            elem.weight = params.area_weights
-                ? mesh.face_areas()(f) * params.element_weight_scale(3)
-                : 1.;
+            elem.weight = params.area_weights ? mesh.face_areas()(f) : 1.;
             return elem;
         }
         k -= mesh.num_faces();
@@ -113,9 +110,7 @@ namespace {
             elem.vertices[0] = mesh.edges()(e, 0);
             elem.vertices[1] = mesh.edges()(e, 1);
             elem.vertex_weights = { { 0.5, 0.5, 0 } };
-            elem.weight = params.area_weights
-                ? mesh.edge_area(e) * params.element_weight_scale(2)
-                : 1.;
+            elem.weight = params.area_weights ? mesh.edge_area(e) : 1.;
             return elem;
         }
         k -= mesh.num_codim_edges();

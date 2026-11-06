@@ -91,14 +91,12 @@ namespace {
     double
     face_weight(const CollisionMesh& mesh, const ESPParameters& p, index_t f)
     {
-        return p.area_weights ? mesh.face_areas()(f) * p.element_weight_scale(3)
-                              : 1.0;
+        return p.area_weights ? mesh.face_areas()(f) : 1.0;
     }
     double
     rod_weight(const CollisionMesh& mesh, const ESPParameters& p, index_t e)
     {
-        return p.area_weights ? mesh.edge_area(e) * p.element_weight_scale(2)
-                              : 1.0;
+        return p.area_weights ? mesh.edge_area(e) : 1.0;
     }
 
     // Each vertex sample's coefficient: the sum over its elements of the

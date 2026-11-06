@@ -39,7 +39,6 @@ class TestESPLocalTransfer(unittest.TestCase):
         self.assertEqual(params.ee_area_ref, 0)
         self.assertEqual(params.ee_weight, 1.5)
         self.assertEqual(params.ee_mollifier_power, 0)
-        self.assertFalse(params.legacy_element_weights)
         self.assertEqual(params.ee_mollifier_exponent, 1)  # log barrier
         params.barrier = ipctk.InversePowerBarrier(2)
         self.assertEqual(params.ee_mollifier_exponent, 1)  # smoothstep

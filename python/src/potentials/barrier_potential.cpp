@@ -302,10 +302,6 @@ void define_esp_parameters(py::module& m)
             "edges. Needs use_near_far and a face rule with positive corner "
             "weights.")
         .def_readwrite(
-            "legacy_element_weights", &ESPParameters::legacy_element_weights,
-            "Weigh faces by area / 9 and edges in no face by length / 4, as "
-            "earlier versions did.")
-        .def_readwrite(
             "ee_mollifier", &ESPParameters::ee_mollifier,
             "Shape of the edge-edge mollifier.")
         .def_readwrite(

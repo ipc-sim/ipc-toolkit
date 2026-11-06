@@ -94,13 +94,6 @@ struct ESPParameters {
     /// by its edge area and an isolated vertex by its vertex area. If false,
     /// every weight is 1.
     bool area_weights;
-    /// With area weights in 3D, weigh each face by area / 9 and each edge in
-    /// no face by its edge area / 4, the outer weights earlier versions used.
-    /// This does not restore earlier versions exactly: their vertex samples
-    /// weighed 1 each, the face rules' corner weights now sum to 1, so an
-    /// edge-edge sample's share and, without normalization, the energy differ.
-    /// Off by default.
-    bool legacy_element_weights = false;
     /// Experimental 3D near-field quadrature: transfer weight locally from
     /// edge endpoints to EE samples instead of renormalizing all samples.
     /// Each face corner splits its weight evenly between its two edges, and
@@ -176,16 +169,6 @@ struct ESPParameters {
     double ee_area_reference() const
     {
         return ee_area_ref > 0 ? ee_area_ref : dbar;
-    }
-
-    /// @brief Factor on the rest measure of an element with
-    /// @p num_vertices vertices: 1, or 1 / num_vertices² under
-    /// legacy_element_weights (faces and edges in no face).
-    double element_weight_scale(const int num_vertices) const
-    {
-        return legacy_element_weights && num_vertices > 1
-            ? 1.0 / (num_vertices * num_vertices)
-            : 1.0;
     }
 
     /// @brief Near/far split parameter dbar / dhat, in [0, 2].

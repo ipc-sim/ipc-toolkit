@@ -349,8 +349,7 @@ void TangentialCollisions::build(
         // Per-face normalized scale: area_f * [1/total_w_f if normalize]
         Eigen::VectorXd face_scale(faces.rows());
         for (index_t f = 0; f < faces.rows(); f++) {
-            const double w_f =
-                mesh.face_areas()(f) * params.element_weight_scale(3);
+            const double w_f = mesh.face_areas()(f);
             face_scale(f) =
                 normalize_weights ? (w_f / total_w_per_face(f)) : w_f;
         }
@@ -384,7 +383,7 @@ void TangentialCollisions::build(
                 const auto& cw =
                     params.face_rule(mesh.face_areas()(f)).corner_weights;
                 face_scale(f) = params.area_weights
-                    ? mesh.face_areas()(f) * params.element_weight_scale(3)
+                    ? mesh.face_areas()(f)
                     : 1.0; // fixed samples: not normalized
                 for (int lv = 0; lv < 3; lv++) {
                     v_far_w(faces(f, lv)) += face_scale(f) * cw[lv];

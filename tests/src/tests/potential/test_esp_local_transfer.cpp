@@ -161,38 +161,6 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "ESP legacy element weights divide face-only energies by 9",
-    "[esp_potential][esp_local_transfer]")
-{
-    // Two triangles facing each other: every element is a face.
-    Eigen::MatrixXd V(6, 3);
-    V << 0, 0, 0, .1, 0, 0, 0, .1, 0, .02, .01, .004, .09, .02, .006, .01, .08,
-        .005;
-    Eigen::MatrixXi F(2, 3);
-    F << 0, 1, 2, 3, 5, 4;
-    Eigen::MatrixXi E;
-    igl::edges(F, E);
-    CollisionMesh mesh(V, E, F);
-    mesh.init_adjacencies();
-    ESPParameters params(.01, 1.0);
-    params.local_quadrature_transfer = GENERATE(false, true);
-    const bool use_near_far =
-        params.local_quadrature_transfer || GENERATE(true, false);
-    ESPParameters legacy = params;
-    legacy.legacy_element_weights = true;
-    CAPTURE(params.local_quadrature_transfer, use_near_far);
-    const ESPPotential p(params, use_near_far), l(legacy, use_near_far);
-    ESPCollisions c;
-    c.build(mesh, V, params);
-    const double e = p(c, mesh, V);
-    REQUIRE(e > 0);
-    CHECK(l(c, mesh, V) == Catch::Approx(e / 9).epsilon(1e-12));
-    CHECK(
-        (9 * l.gradient(c, mesh, V) - p.gradient(c, mesh, V)).norm()
-        < 1e-10 * p.gradient(c, mesh, V).norm());
-}
-
-TEST_CASE(
     "ESP local transfer full gradient Hessian and PSD",
     "[esp_potential][esp_local_transfer]")
 {
