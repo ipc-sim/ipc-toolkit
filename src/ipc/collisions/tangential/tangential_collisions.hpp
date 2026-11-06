@@ -114,7 +114,12 @@ public:
     /// @param normalize_weights Divide each face's weight by its total weight
     ///        (vertex or face-rule weights plus the edge-edge mollifier
     ///        weights). Unlike ESPPotential with use_near_far = true, near and
-    ///        far parts are not normalized separately. 3D only.
+    ///        far parts are not normalized separately. 3D only. Ignored
+    ///        under ESPParameters::local_quadrature_transfer: each sample's
+    ///        weight is then its coefficient in the transferred energy (an
+    ///        edge-edge sample's near potential gains the mass its source
+    ///        edge's endpoints give up), and a sample's normal force uses its
+    ///        near and far weights separately. Faces only.
     /// @throws std::invalid_argument if params' quadrature differs from the
     ///         one collisions were built with (see
     ///         ESPCollisions::check_quadrature()).

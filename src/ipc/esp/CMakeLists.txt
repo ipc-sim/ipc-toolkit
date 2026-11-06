@@ -8,6 +8,8 @@ set(SOURCES
   esp_collisions_builder.hpp
   esp_distance.hpp
   esp_parameters.hpp
+  esp_local_transfer.cpp
+  esp_local_transfer.hpp
   esp_potential.cpp
   esp_potential.hpp
   esp_tangential_collisions.cpp

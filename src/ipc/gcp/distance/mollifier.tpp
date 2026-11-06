@@ -3,6 +3,7 @@
 #include "mollifier.hpp"
 
 #include <ipc/distance/point_line.hpp>
+#include <ipc/gcp/distance/mollifier_config.hpp>
 
 namespace ipc {
 template <typename scalar, int dim>
@@ -26,10 +27,43 @@ scalar edge_edge_mollifier(
     Eigen::ConstRef<Eigen::Vector3<scalar>> eb0,
     Eigen::ConstRef<Eigen::Vector3<scalar>> eb1,
     const std::array<HeavisideType, 4>& mtypes,
-    const scalar& dist_sqr)
+    const scalar& dist_sqr,
+    const EEMollifierConfig& config)
 {
-    const scalar da = dist_sqr * MOLLIFIER_THRESHOLD_EPS;
-    const scalar db = dist_sqr * MOLLIFIER_THRESHOLD_EPS;
+    if (config.smoothstep()) {
+        // H(c / w) with H(t) = 10t^3 - 15t^4 + 6t^5 (C2), where
+        // c = sqrt(d_PE^2 - d^2) is the endpoint clearance.
+        using std::sqrt;
+        const scalar ell2 = scalar(dist_sqr * config.rel_eps);
+        const auto H = [&](const scalar& c2) -> scalar {
+            if (c2 <= 0) {
+                return scalar(0.);
+            }
+            if (c2 >= ell2) {
+                return scalar(1.);
+            }
+            const scalar t = sqrt(c2 / ell2);
+            return t * t * t * (10. + t * (-15. + 6. * t));
+        };
+        using PE = PointEdgeDistance<scalar, 3>;
+        scalar w(1.);
+        if (mtypes[0] == HeavisideType::VARIANT) {
+            w = w * H(PE::point_edge_sqr_distance(ea0, eb0, eb1) - dist_sqr);
+        }
+        if (mtypes[1] == HeavisideType::VARIANT) {
+            w = w * H(PE::point_edge_sqr_distance(ea1, eb0, eb1) - dist_sqr);
+        }
+        if (mtypes[2] == HeavisideType::VARIANT) {
+            w = w * H(PE::point_edge_sqr_distance(eb0, ea0, ea1) - dist_sqr);
+        }
+        if (mtypes[3] == HeavisideType::VARIANT) {
+            w = w * H(PE::point_edge_sqr_distance(eb1, ea0, ea1) - dist_sqr);
+        }
+        return w;
+    }
+    const scalar denom = dist_sqr * MOLLIFIER_THRESHOLD_EPS;
+    const scalar da = denom;
+    const scalar db = denom;
     scalar a = (mtypes[0] == HeavisideType::VARIANT)
         ? Math<scalar>::mollifier(
               (PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(

@@ -293,9 +293,22 @@ std::array<HeavisideType, 4> edge_edge_mollifier_type(
     Eigen::ConstRef<Eigen::Vector3d> ea1,
     Eigen::ConstRef<Eigen::Vector3d> eb0,
     Eigen::ConstRef<Eigen::Vector3d> eb1,
-    const double dist_sqr)
+    const double dist_sqr,
+    const EEMollifierConfig& config)
 {
     std::array<HeavisideType, 4> mtypes {};
+    if (config.smoothstep()) {
+        const double ell2 = dist_sqr * config.rel_eps;
+        const auto t = [&](const double pe) {
+            return pe - dist_sqr >= ell2 ? HeavisideType::ONE
+                                         : HeavisideType::VARIANT;
+        };
+        mtypes[0] = t(point_edge_distance(ea0, eb0, eb1));
+        mtypes[1] = t(point_edge_distance(ea1, eb0, eb1));
+        mtypes[2] = t(point_edge_distance(eb0, ea0, ea1));
+        mtypes[3] = t(point_edge_distance(eb1, ea0, ea1));
+        return mtypes;
+    }
     mtypes[0] = (point_edge_distance(ea0, eb0, eb1) - dist_sqr)
             >= dist_sqr * MOLLIFIER_THRESHOLD_EPS
         ? HeavisideType::ONE

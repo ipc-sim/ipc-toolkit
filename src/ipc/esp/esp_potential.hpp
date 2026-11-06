@@ -3,6 +3,7 @@
 #include <ipc/collision_mesh.hpp>
 #include <ipc/esp/esp_collisions.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace ipc {
 
@@ -16,6 +17,16 @@ public:
         : m_params(_params)
         , m_use_near_far(_use_near_far)
     {
+        // Automatic lattice rules always weigh their corners.
+        const auto& cw = _params.corner_weights();
+        const bool corners = _params.lattice_spacing() > 0
+            || (cw[0] > 0 && cw[1] > 0 && cw[2] > 0);
+        if (_params.local_quadrature_transfer && (!_use_near_far || !corners)) {
+            log_and_throw_error<std::invalid_argument>(
+                "Local quadrature transfer requires normalized near/far "
+                "integration and a face rule with positive weight at every "
+                "corner.");
+        }
     }
 
     virtual ~ESPPotential() = default;
@@ -53,9 +64,11 @@ public:
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
     /// @param project_hessian_to_psd Make sure the hessian is positive semi-definite.
-    ///        With normalized weights and edge-edge terms, each face's block is
-    ///        projected as a whole, since its weight-derivative terms are
-    ///        indefinite; otherwise each stencil's block is projected.
+    ///        With normalized weights and edge-edge terms, each element's block
+    ///        is projected as a whole, since its weight-derivative terms are
+    ///        indefinite. Under local_quadrature_transfer each fixed sample's
+    ///        block and each edge's edge-edge block is projected on its own;
+    ///        otherwise each stencil's block.
     /// @returns The Hessian of the potential w.r.t. X. This will have a size of |X|×|X|.
     /// @throws std::invalid_argument if the potential's quadrature differs
     ///         from the one collisions were built with (see

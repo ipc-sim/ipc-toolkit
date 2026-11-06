@@ -82,7 +82,8 @@ public:
             x.template head<3>() /* edge 0 */,
             x.template segment<3>(3) /* edge 0 */,
             x.template segment<3>(6) /* edge 1 */,
-            x.template tail<3>() /* edge 1 */, types, dist_sqr);
+            x.template tail<3>() /* edge 1 */, types, dist_sqr,
+            EEMollifierConfig::gcp());
     }
 };
 

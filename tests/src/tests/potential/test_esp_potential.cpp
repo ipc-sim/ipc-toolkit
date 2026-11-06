@@ -293,9 +293,10 @@ TEST_CASE(
     REQUIRE(stats.max_abs_P < 2);
     REQUIRE(stats.max_abs_g < 200);
     // 10x current measured shift from the smallest-eps sample
-    // (current: max|ΔP|≈2.4e-5, max|Δ|g||≈1.64).
-    CHECK(stats.max_shift_P < 2.4e-4);
-    CHECK(stats.max_shift_g < 16.5);
+    // (current: max|ΔP|≈6.4e-4, max|Δ|g||≈94; faces weighted by their area,
+    // rule weights summing to 1).
+    CHECK(stats.max_shift_P < 6.4e-3);
+    CHECK(stats.max_shift_g < 940);
 }
 
 // Same configuration as above, but uses an inverse-quadratic barrier to probe
@@ -309,9 +310,12 @@ TEST_CASE(
     CHECK(stats.max_abs_P < 1e8);
     CHECK(stats.max_abs_g < 1e10);
     // 10x current measured shift from the smallest-eps sample
-    // (current: max|ΔP|≈1.4e-3, max|Δ|g||≈1.55).
-    CHECK(stats.max_shift_P < 1.4e-2);
-    CHECK(stats.max_shift_g < 15.5);
+    // (current: max|ΔP|≈0.39, max|Δ|g||≈925, about 5e-5 and 5e-4 of P and
+    // |g|; smoothstep mollifier with no power, faces weighted by their area,
+    // rule weights summing to 1). Main's GCP mollifier needs its power here:
+    // with power 1 the gradient reaches ~7e15.
+    CHECK(stats.max_shift_P < 3.9);
+    CHECK(stats.max_shift_g < 9300);
 }
 
 // Same configuration but with a linear-inverse barrier (1/d divergence).
@@ -324,9 +328,10 @@ TEST_CASE(
     CHECK(stats.max_abs_P < 1e8);
     CHECK(stats.max_abs_g < 1e10);
     // 10x current measured shift from the smallest-eps sample
-    // (current: max|ΔP|≈1.85e-5, max|Δ|g||≈0.044).
-    CHECK(stats.max_shift_P < 1.85e-4);
-    CHECK(stats.max_shift_g < 0.44);
+    // (measured with GCP and power 2: max|ΔP|≈4.2e-4, max|Δ|g||≈1.9; now,
+    // smoothstep with no power: ≈4.1e-5, ≈6.5e-3).
+    CHECK(stats.max_shift_P < 4.2e-3);
+    CHECK(stats.max_shift_g < 19);
 }
 
 TEST_CASE(
@@ -343,9 +348,15 @@ TEST_CASE(
     const double dhat = 0.15 / std::min(dbar_factor, 1.0);
     CAPTURE(dbar_factor);
     ESPParameters params(dhat, dbar_factor, 0);
+    // Per-face lattice rules from the rest area, with spacing about half the
+    // typical edge so faces get different subdivisions.
+    const bool auto_lattice = GENERATE(false, true);
+    if (auto_lattice) {
+        params.set_auto_lattice(0.5 * std::sqrt(mesh.face_areas().mean()), 3);
+    }
 
     const bool use_near_far = GENERATE(true, false);
-    CAPTURE(use_near_far, dbar_factor);
+    CAPTURE(use_near_far, dbar_factor, auto_lattice);
     ESPPotential potential(params, use_near_far);
 
     ESPCollisions collisions;
@@ -653,8 +664,8 @@ TEST_CASE(
     const CollisionMesh mesh(V, E, F);
 
     // dbar_factor = 0 drops the edge-edge terms, so every face's total weight
-    // is that of its three vertices, 3, and the normalized potential is the
-    // unnormalized one divided by 3.
+    // is that of its rule, which sums to 1, and the normalized potential
+    // equals the unnormalized one.
     const ESPParameters params(0.15, 0.0);
     ESPCollisions collisions;
     collisions.build(mesh, V, params);
@@ -666,17 +677,17 @@ TEST_CASE(
     REQUIRE(energy > 0);
     CHECK(
         normalized(collisions, mesh, V)
-        == Catch::Approx(energy / 3).epsilon(1e-12));
+        == Catch::Approx(energy).epsilon(1e-12));
 
     const Eigen::VectorXd grad = unnormalized.gradient(collisions, mesh, V);
     CHECK(
-        (normalized.gradient(collisions, mesh, V) - grad / 3).norm()
+        (normalized.gradient(collisions, mesh, V) - grad).norm()
         <= 1e-12 * grad.norm());
 
     const Eigen::SparseMatrix<double> hess =
         unnormalized.hessian(collisions, mesh, V);
     CHECK(
-        (normalized.hessian(collisions, mesh, V) - hess / 3).norm()
+        (normalized.hessian(collisions, mesh, V) - hess).norm()
         <= 1e-12 * hess.norm());
 }
 
@@ -1424,11 +1435,11 @@ TEST_CASE(
     REQUIRE(!collisions.empty());
     CHECK(ESPPotential(params)(collisions, mesh, V) > 0);
 
-    // An empty rule is what an ESPPotential constructed before
+    // The default vertex rule is what an ESPPotential constructed before
     // set_quad_rule() holds, since it copies the parameters. The other rules
     // have fewer points, more points, or the same points with other weights.
     const std::string other_rule =
-        GENERATE("empty", "centroid", "vertices+centroid", "reweighted");
+        GENERATE("default", "centroid", "vertices+centroid", "reweighted");
     CAPTURE(other_rule);
     ESPParameters other_params(0.1, 1.0);
     if (other_rule == "centroid") {
@@ -1451,10 +1462,123 @@ TEST_CASE(
     CHECK(other(collisions, mesh, V) == 0);
 }
 
+TEST_CASE("ESP lattice rules", "[esp_potential]")
+{
+    // Composite vertex rules: positive weights summing to 1, the corners and
+    // edge points included, exact for linear functions.
+    for (int m = 1; m <= 6; m++) {
+        CAPTURE(m);
+        const FaceQuadRule rule = ESPParameters::lattice_rule(m);
+        CHECK(rule.size() == size_t((m + 1) * (m + 2) / 2));
+        double sum = 0;
+        std::array<double, 3> moment { { 0, 0, 0 } };
+        int corners = 0;
+        for (const auto& qp : rule) {
+            CHECK(qp.weight > 0);
+            sum += qp.weight;
+            for (int i = 0; i < 3; i++) {
+                moment[i] += qp.weight * qp.lambda[i];
+                corners += qp.lambda[i] == 1 ? 1 : 0;
+            }
+        }
+        CHECK(sum == Catch::Approx(1));
+        CHECK(corners == 3);
+        for (const double mi : moment) {
+            CHECK(mi == Catch::Approx(1. / 3)); // centroid
+        }
+        ESPParameters params(0.1);
+        params.set_quad_rule(rule);
+        for (const double c : params.corner_weights()) {
+            CHECK(c == Catch::Approx(1. / (3. * m * m)));
+        }
+    }
+    CHECK_THROWS_AS(ESPParameters::lattice_rule(0), std::invalid_argument);
+
+    // The automatic subdivisions follow the rest area: an equilateral face of
+    // side s gets ceil(s / spacing), clamped to [1, max].
+    ESPParameters params(0.1);
+    params.set_auto_lattice(0.25, 3);
+    const double equilateral = std::sqrt(3.) / 4; // area for side 1
+    CHECK(params.lattice_subdivisions(equilateral * 0.01) == 1);
+    CHECK(params.lattice_subdivisions(equilateral * 0.25 * 0.25) == 1);
+    CHECK(params.lattice_subdivisions(equilateral * 0.4 * 0.4) == 2);
+    CHECK(params.lattice_subdivisions(equilateral * 0.7 * 0.7) == 3);
+    CHECK(params.lattice_subdivisions(equilateral * 100) == 3);
+    CHECK_THROWS_AS(params.set_auto_lattice(0), std::invalid_argument);
+    CHECK_THROWS_AS(params.set_auto_lattice(0.1, 0), std::invalid_argument);
+
+    // On a mesh whose faces all get the same subdivisions, the automatic
+    // rules match the fixed lattice rule.
+    // Two unit squares 0.05 apart, the top one turned 45 degrees so their
+    // edges cross: four triangles of equal area.
+    const double h = std::sqrt(0.5);
+    Eigen::MatrixXd V(8, 3);
+    V << 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, //
+        0.5, 0.5 - h, 0.05, 0.5 + h, 0.5, 0.05, 0.5, 0.5 + h, 0.05, 0.5 - h,
+        0.5, 0.05;
+    Eigen::MatrixXi F(4, 3), E;
+    F << 0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7;
+    igl::edges(F, E);
+    const CollisionMesh mesh(V, E, F);
+    const Eigen::VectorXd& areas = mesh.face_areas();
+    REQUIRE(areas.maxCoeff() - areas.minCoeff() < 1e-12 * areas.maxCoeff());
+    const double side = std::sqrt(4 * areas(0) / std::sqrt(3.));
+    ESPParameters auto_params(0.1, 1.0), fixed_params(0.1, 1.0);
+    auto_params.set_auto_lattice(side / 2.5); // m = 3 on every face
+    REQUIRE(auto_params.lattice_subdivisions(areas(0)) == 3);
+    fixed_params.set_quad_rule(ESPParameters::lattice_rule(3));
+    ESPCollisions auto_collisions, fixed_collisions;
+    auto_collisions.build(mesh, V, auto_params);
+    fixed_collisions.build(mesh, V, fixed_params);
+    REQUIRE(!auto_collisions.empty());
+    const ESPPotential auto_potential(auto_params),
+        fixed_potential(fixed_params);
+    CHECK(
+        auto_potential(auto_collisions, mesh, V)
+        == Catch::Approx(fixed_potential(fixed_collisions, mesh, V))
+               .epsilon(1e-12));
+    const Eigen::VectorXd g =
+        fixed_potential.gradient(fixed_collisions, mesh, V);
+    CHECK(
+        (auto_potential.gradient(auto_collisions, mesh, V) - g).norm()
+        <= 1e-12 * g.norm());
+
+    // Collisions built for one choice cannot be evaluated with the other.
+    CHECK_THROWS_AS(
+        fixed_potential(auto_collisions, mesh, V), std::invalid_argument);
+    CHECK_THROWS_AS(
+        auto_potential(fixed_collisions, mesh, V), std::invalid_argument);
+
+    // A fixed rule replaces the automatic one.
+    auto_params.set_quad_rule(ESPParameters::vertex_rule());
+    CHECK(auto_params.lattice_spacing() == 0);
+}
+
 TEST_CASE("ESP face quadrature rule validation", "[esp_potential]")
 {
     ESPParameters params(0.1);
-    CHECK(params.quad_rule().empty());
+    // The default is the vertex rule: the corners, weight 1/3 each, all
+    // integrated with the shared vertex samples.
+    CHECK(params.quad_rule().size() == 3);
+    for (const double w : params.corner_weights()) {
+        CHECK(w == Catch::Approx(1. / 3));
+    }
+    CHECK(params.non_corner_rule().empty());
+
+    // Weights are normalized to sum to 1; corner points are split from the
+    // others.
+    params.set_quad_rule(
+        {
+            { { { 1., 0., 0. } }, 2. },
+            { { { 0., 1., 0. } }, 2. },
+            { { { 0., 0., 1. } }, 2. },
+            { { { 1. / 3, 1. / 3, 1. / 3 } }, 2. },
+        });
+    for (const double w : params.corner_weights()) {
+        CHECK(w == Catch::Approx(0.25));
+    }
+    REQUIRE(params.non_corner_rule().size() == 1);
+    CHECK(params.non_corner_rule()[0].weight == Catch::Approx(0.25));
 
     const FaceQuadRule centroid = { { { { 1. / 3, 1. / 3, 1. / 3 } }, 1.0 } };
     CHECK_NOTHROW(params.set_quad_rule(centroid));
@@ -1510,8 +1634,11 @@ TEST_CASE("ESP face quadrature rule validation", "[esp_potential]")
     }
     CHECK(params.quad_rule().size() == 3); // unchanged on failure
 
-    CHECK_NOTHROW(params.set_quad_rule({})); // back to vertex integration
-    CHECK(params.quad_rule().empty());
+    // An empty rule is rejected; there is no implicit vertex integration.
+    CHECK_THROWS_AS(params.set_quad_rule({}), std::invalid_argument);
+    CHECK(params.quad_rule().size() == 3); // unchanged on failure
+    CHECK_NOTHROW(params.set_quad_rule(ESPParameters::vertex_rule()));
+    CHECK(params.non_corner_rule().empty());
 }
 
 TEST_CASE("ESP 2D Gauss-Lobatto weights are positive", "[esp_potential]")
@@ -2399,7 +2526,9 @@ TEST_CASE(
         quad_order = 2;
     }
     ESPParameters params(dhat, 1., quad_order);
-    params.set_quad_rule(face_quad_rule);
+    if (!face_quad_rule.empty()) { // else the default vertex rule
+        params.set_quad_rule(face_quad_rule);
+    }
 
     // The rows below V hold values far from the mesh, so reading them instead
     // of V changes the result.

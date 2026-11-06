@@ -48,9 +48,13 @@ void ESPCollisions::build(
     clear();
 
     if (&_candidates != &m_candidates) {
-        m_candidates = _candidates;
+        m_candidates = _candidates; // shares _candidates' sets, if any
     }
-    m_candidates.convert_candidates_to_sets();
+    // Candidates reused across builds (e.g., a line search's) keep their
+    // sets; build() and clear() reset them.
+    if (!m_candidates.has_sets()) {
+        m_candidates.convert_candidates_to_sets();
+    }
     const Candidates& candidates = m_candidates;
 
     // Record the quadrature so that evaluating the set with different
@@ -59,6 +63,8 @@ void ESPCollisions::build(
     m_dim = mesh.dim();
     m_quad_order = params.quad_order;
     m_face_quad_rule = params.quad_rule();
+    m_lattice_spacing = params.lattice_spacing();
+    m_max_lattice_subdivisions = params.max_lattice_subdivisions();
 
     if (mesh.dim() == 2) {
         tbb::enumerable_thread_specific<ESPCollisionsBuilder<2>> storage {
@@ -92,27 +98,16 @@ void ESPCollisions::build(
             vertex_mask[candidate.vertex1_id] = true;
         }
 
-        // Face quadrature includes the face vertices, so a face's vertices
-        // are only integrated separately when there is no face quadrature
-        // rule. Edges in no face and isolated vertices have no face
-        // quadrature, so ESPPotential always integrates over their vertices.
-        const bool use_face_quadrature = !params.quad_rule().empty();
-        std::vector<bool> is_vertex_sample(
-            mesh.num_vertices(), !use_face_quadrature);
-        if (use_face_quadrature) {
-            for (const index_t ei : mesh.codim_edges()) {
-                is_vertex_sample[mesh.edges()(ei, 0)] = true;
-                is_vertex_sample[mesh.edges()(ei, 1)] = true;
-            }
-            for (const index_t vi : mesh.codim_vertices()) {
-                is_vertex_sample[vi] = true;
-            }
-        }
+        // Every vertex is a sample: a face rule's corner points use the
+        // shared vertex samples (ESPParameters::corner_weights()), and edges
+        // in no face and isolated vertices integrate over their vertices.
+        // Only the rule's other points need per-face samples.
+        const bool use_face_quadrature = params.has_non_corner_points();
 
         std::vector<index_t> vertices_to_process;
         vertices_to_process.reserve(mesh.num_vertices());
         for (int i = 0; i < mesh.num_vertices(); ++i) {
-            if (vertex_mask[i] && is_vertex_sample[i]) {
+            if (vertex_mask[i]) {
                 vertices_to_process.push_back(i);
             }
         }
@@ -213,6 +208,8 @@ void ESPCollisions::clear()
     m_dim = 0;
     m_quad_order = 0;
     m_face_quad_rule.clear();
+    m_lattice_spacing = 0;
+    m_max_lattice_subdivisions = 0;
 }
 
 void ESPCollisions::check_quadrature(const ESPParameters& params) const
@@ -241,6 +238,17 @@ void ESPCollisions::check_quadrature(const ESPParameters& params) const
                 "to evaluate them, and call set_quad_rule() before "
                 "constructing ESPPotential, which copies the parameters.",
                 m_face_quad_rule.size(), rule.size());
+        }
+        if (params.lattice_spacing() != m_lattice_spacing
+            || params.max_lattice_subdivisions()
+                != m_max_lattice_subdivisions) {
+            log_and_throw_error<std::invalid_argument>(
+                "ESPCollisions were built with lattice spacing {} (at most "
+                "{} subdivisions), but the parameters use {} (at most {}). "
+                "Use the same ESPParameters to build the collisions and to "
+                "evaluate them.",
+                m_lattice_spacing, m_max_lattice_subdivisions,
+                params.lattice_spacing(), params.max_lattice_subdivisions());
         }
     }
 }
