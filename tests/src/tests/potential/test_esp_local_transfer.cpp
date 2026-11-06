@@ -47,13 +47,9 @@ Scene edge_over_box()
 void check_derivatives(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
-    const ESPParameters& params,
-    const std::vector<double>& lagged_weights = {})
+    const ESPParameters& params)
 {
-    ESPPotential potential(params);
-    if (!lagged_weights.empty()) {
-        potential.set_lagged_weights(lagged_weights);
-    }
+    const ESPPotential potential(params);
     ESPCollisions c;
     c.build(mesh, X, params);
     const auto g = potential.gradient(c, mesh, X);
@@ -113,13 +109,13 @@ TEST_CASE(
         == Catch::Approx(.10589380670845851).epsilon(1e-9));
     CHECK(
         new_p(c, s.mesh, s.X)
-        == Catch::Approx(.0893123239682775).epsilon(1e-9));
+        == Catch::Approx(.08851093734424446).epsilon(1e-9));
     CHECK(
         -old_p.gradient(c, s.mesh, s.X)[ax]
         == Catch::Approx(852.69739536).epsilon(1e-8));
     CHECK(
         -new_p.gradient(c, s.mesh, s.X)[ax]
-        == Catch::Approx(77.01422187).epsilon(1e-7));
+        == Catch::Approx(39.48226564).epsilon(1e-7));
 }
 
 TEST_CASE(
@@ -128,7 +124,7 @@ TEST_CASE(
 {
     // Defaults: smoothstep mollifier with w = d and area scaling, without
     // and with local transfer. The prototype's force on the rod endpoint is
-    // 852.7 (77.0 with transfer); see the test above.
+    // 852.7 (39.5 with transfer); see the test above.
     auto s = edge_over_box();
     ESPParameters params(.03, .05);
     ESPParameters transfer = params;
@@ -144,7 +140,7 @@ TEST_CASE(
         == Catch::Approx(.13926232364268853).epsilon(1e-7));
     CHECK(
         -t.gradient(c, s.mesh, s.X)[ax]
-        == Catch::Approx(.0014658930997628).epsilon(1e-6));
+        == Catch::Approx(.00146588810429446).epsilon(1e-6));
 }
 
 TEST_CASE(
@@ -521,57 +517,4 @@ TEST_CASE(
     CHECK(
         (Eigen::MatrixXd(local.hessian(contacts, mesh, V)) - H).norm()
         < 1e-11 * std::max(1., H.norm()));
-}
-
-TEST_CASE(
-    "ESP lagged normalization", "[esp_potential][esp_lagged_normalization]")
-{
-    auto s = edge_over_box();
-    ESPParameters params(.03, .05);
-    const int barrier = GENERATE(0, 2);
-    if (barrier) {
-        params.barrier = std::make_shared<InversePowerBarrier<>>(barrier);
-    }
-    const bool lattice = GENERATE(false, true);
-    if (lattice) {
-        params.set_auto_lattice(.01, 3);
-    }
-    params.local_quadrature_transfer = GENERATE(false, true);
-    CAPTURE(barrier, lattice, params.local_quadrature_transfer);
-    ESPCollisions c;
-    c.build(s.mesh, s.X, params);
-    const ESPPotential normalized(params);
-    ESPPotential lagged(params);
-    const std::vector<double> weights =
-        lagged.element_near_weights(c, s.mesh, s.X);
-    lagged.set_lagged_weights(weights);
-
-    // At the reference state the value is the normalized energy.
-    CHECK(
-        lagged(c, s.mesh, s.X)
-        == Catch::Approx(normalized(c, s.mesh, s.X)).epsilon(1e-12));
-    // With the weights held, gradient and Hessian are exact derivatives of
-    // the lagged energy, and the projected Hessian is PSD.
-    check_derivatives(s.mesh, s.X, params, weights);
-    // The lagged gradient omits only the normalization's derivative, so it
-    // differs from the normalized gradient where edge-edge samples are
-    // active.
-    CHECK(
-        (lagged.gradient(c, s.mesh, s.X) - normalized.gradient(c, s.mesh, s.X))
-            .norm()
-        > 0);
-}
-
-TEST_CASE(
-    "ESP lagged normalization rejects invalid use",
-    "[esp_potential][esp_lagged_normalization]")
-{
-    auto s = edge_over_box();
-    ESPParameters params(.03, .05);
-    ESPPotential p(params);
-    CHECK_THROWS_AS(p.set_lagged_weights({ 1.0, 0.0 }), std::invalid_argument);
-    p.set_lagged_weights({ 1.0, 1.0 }); // wrong size for this mesh
-    ESPCollisions c;
-    c.build(s.mesh, s.X, params);
-    CHECK_THROWS_AS(p(c, s.mesh, s.X), std::invalid_argument);
 }

@@ -80,9 +80,9 @@ struct ESPParameters {
     const double dbar;
 
     /// Barrier evaluated on each pair's unsquared distance d with activation
-    /// distance dhat, in 2D and 3D. With an InversePowerBarrier of power p, the
-    /// 3D edge-edge mollifier weights are raised to the power max(1, round(p) +
-    /// 1).
+    /// distance dhat, in 2D and 3D. With an InversePowerBarrier of power p and
+    /// the GCP edge-edge mollifier, the 3D edge-edge weights are raised to the
+    /// power max(1, round(p) + 1) (see ee_mollifier_exponent()).
     std::shared_ptr<Barrier> barrier =
         std::make_shared<NormalizedClampedLogBarrier<>>();
     /// Gauss-Lobatto edge quadrature order (2D): order n uses n + 1 points and
@@ -95,17 +95,24 @@ struct ESPParameters {
     /// every weight is 1.
     bool area_weights;
     /// With area weights in 3D, weigh each face by area / 9 and each edge in
-    /// no face by its edge area / 4, as earlier versions did. On a face-only
-    /// mesh this is the same as dividing the barrier stiffness by 9. Off by
-    /// default.
+    /// no face by its edge area / 4, the outer weights earlier versions used.
+    /// This does not restore earlier versions exactly: their vertex samples
+    /// weighed 1 each, the face rules' corner weights now sum to 1, so an
+    /// edge-edge sample's share and, without normalization, the energy differ.
+    /// Off by default.
     bool legacy_element_weights = false;
     /// Experimental 3D near-field quadrature: transfer weight locally from
     /// edge endpoints to EE samples instead of renormalizing all samples.
-    /// Requires use_near_far=true and a face rule with positive weight at
-    /// every corner (the corners donate the weight).
+    /// Each face corner splits its weight evenly between its two edges, and
+    /// the EE samples on an edge take weight only from that edge's halves,
+    /// with their own normalization, so a corner always keeps part of its
+    /// weight and different edges' samples are independent.
+    /// ESPPotential requires use_near_far=true and a face rule with positive
+    /// weight at every corner (the corners donate the weight), also in 2D.
     /// Friction uses each sample's coefficient in the transferred energy
     /// (faces only, as the rest of ESP friction).
-    /// Has no effect in 2D or when dbar_factor=0. Disabled by default.
+    /// The energy is unchanged in 2D or when dbar_factor=0. Disabled by
+    /// default.
     bool local_quadrature_transfer = false;
     const IntegrationType integration_type;
 
@@ -121,15 +128,17 @@ struct ESPParameters {
     /// max(1, round(p) + 1) under an InversePowerBarrier of power p and 1
     /// otherwise (see ee_mollifier_exponent()).
     int ee_mollifier_power = 0;
-    /// Weight of an edge-edge sample relative to a vertex sample, before the
-    /// mollifier and ee_area_scaling. The default 1.5 makes it weigh one
-    /// vertex sample at zero gap (1.5 times cubic_spline(0)).
+    /// Weight of an edge-edge sample relative to the element's fixed samples,
+    /// whose weights sum to 1, before the mollifier and ee_area_scaling. The
+    /// default 1.5 makes it weigh 1 at zero gap (1.5 times cubic_spline(0)),
+    /// as much as all of the element's fixed samples together.
     double ee_weight = 1.5;
     /// Scale each element's edge-edge samples by (1 + (a / ρ)²)^(-1/2), a
     /// smooth min(1, ρ / a), with ρ = r² on faces and r on rods for
     /// r = ee_area_reference(). a is the element's rest measure (face area,
     /// rod length); under local_quadrature_transfer, that measure times the
-    /// smallest corner weight, the share an edge-edge sample can take. An
+    /// share c an edge-edge sample can take (half the smaller corner weight
+    /// of its edge's endpoints on faces, 1/2 on rods). An
     /// edge-edge sample then stands for about one r x r patch instead of a
     /// fixed share of its element, which keeps coarse elements from moving
     /// a large share of their energy onto it. On by default.
@@ -364,8 +373,11 @@ struct ESPParameters {
     int lattice_subdivisions(const double rest_area) const
     {
         const double side = std::sqrt(4 * rest_area / std::sqrt(3.0));
-        const int m = int(std::ceil(side / m_lattice_spacing - 1e-12));
-        return std::clamp(m, 1, max_lattice_subdivisions());
+        // Clamp before converting: a tiny spacing would overflow int.
+        const double m = std::clamp(
+            std::ceil(side / m_lattice_spacing - 1e-12), 1.0,
+            double(max_lattice_subdivisions()));
+        return int(m);
     }
 
     /// A face's rule, split into corner weights and other points.

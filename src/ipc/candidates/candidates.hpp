@@ -314,7 +314,9 @@ public:
     void convert_candidates_to_sets();
 
     /// @brief Whether convert_candidates_to_sets() has been called since the
-    /// candidates were last built or cleared. Copies share the sets.
+    /// candidates were last built or cleared. Copies share the sets. Editing
+    /// the candidate lists directly does not reset this: call
+    /// convert_candidates_to_sets() again after doing so.
     bool has_sets() const { return m_sets != nullptr; }
 
     /// @brief Vertices near vertex id (2D: also the endpoints of nearby edges).

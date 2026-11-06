@@ -22,25 +22,4 @@ Eigen::SparseMatrix<double> local_transfer_hessian(
     const ESPParameters& p,
     PSDProjectionMethod psd);
 
-// Lagged normalization: the transferred terms only, with per-source-edge
-// coefficients sum_{e ∋ ea} w_e c_e s_e / D_e (see esp_potential.cpp).
-double lagged_transfer_value(
-    const ESPCollisions& c,
-    const CollisionMesh& m,
-    Eigen::ConstRef<Eigen::MatrixXd> X,
-    const ESPParameters& p,
-    const Eigen::VectorXd& edge_coef);
-Eigen::VectorXd lagged_transfer_gradient(
-    const ESPCollisions& c,
-    const CollisionMesh& m,
-    Eigen::ConstRef<Eigen::MatrixXd> X,
-    const ESPParameters& p,
-    const Eigen::VectorXd& edge_coef);
-std::vector<Eigen::Triplet<double>> lagged_transfer_hessian(
-    const ESPCollisions& c,
-    const CollisionMesh& m,
-    Eigen::ConstRef<Eigen::MatrixXd> X,
-    const ESPParameters& p,
-    const Eigen::VectorXd& edge_coef,
-    PSDProjectionMethod psd);
 } // namespace ipc::detail

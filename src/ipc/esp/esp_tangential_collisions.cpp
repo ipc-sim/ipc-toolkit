@@ -366,35 +366,28 @@ void TangentialCollisions::build(
 
         // Local quadrature transfer (see esp_local_transfer.cpp): per face f
         //   E_f = w_f [sum_i w_i (N_i + F_i) + sum_q w_q (N_q + F_q)
-        //              + sum_j c s m_j (N(q_j) - (1 - u_j) N_a - u_j N_b) /
-        //              D_f],
-        // D_f = 1 + sum_j s m_j. The fixed samples are not normalized, an EE
-        // sample's near potential has coefficient w_f c s m_j / D_f, and that
-        // mass leaves its edge's endpoints' near potentials in proportion
-        // (1 - u_j, u_j). Far potentials keep w_f w_i. Every coefficient
-        // stays nonnegative (c <= w_i). Faces only, as above.
+        //              + sum_{e in f} c s sum_j m_j (N(q_j) - R_j) / D_e],
+        // R_j = (1 - u_j) N_a + u_j N_b, D_e = 1 + s sum_{j on e} m_j, with
+        // c = half the smaller corner weight of e's endpoints in f (each
+        // corner splits its weight between its two edges) and s the area
+        // scale of c times the face area. The fixed samples are not
+        // normalized, an EE sample's near potential has coefficient
+        // sum_{f ∋ e} w_f c s m_j / D_e, and that mass leaves its edge's
+        // endpoints' near potentials in proportion (1 - u_j, u_j). Far
+        // potentials keep w_f w_i. Every coefficient stays positive: a corner
+        // gives each of its edges less than half its weight. Faces only, as
+        // above.
         Eigen::VectorXd v_near_w, v_far_w, ee_coef_per_edge;
-        std::vector<std::array<double, 2>> ee_endpoint_c;
         if (transfer) {
-            Eigen::VectorXd tf_weight(faces.rows()), tf_scale(faces.rows());
-            Eigen::VectorXd tf_denominator =
-                Eigen::VectorXd::Ones(faces.rows());
             v_far_w = Eigen::VectorXd::Zero(n_verts);
             for (index_t f = 0; f < faces.rows(); f++) {
-                const double area = mesh.face_areas()(f);
-                const auto rule = params.face_rule(area);
-                tf_weight(f) = params.area_weights
-                    ? area * params.element_weight_scale(3)
-                    : 1.0;
-                const auto& cw = rule.corner_weights;
-                tf_scale(f) = params.ee_area_scaling
-                    ? ee_area_scale_factor(
-                          std::min({ cw[0], cw[1], cw[2] }) * area,
-                          params.ee_area_reference(), /*face=*/true)
-                    : 1.0;
-                face_scale(f) = tf_weight(f); // fixed samples: not normalized
+                const auto& cw =
+                    params.face_rule(mesh.face_areas()(f)).corner_weights;
+                face_scale(f) = params.area_weights
+                    ? mesh.face_areas()(f) * params.element_weight_scale(3)
+                    : 1.0; // fixed samples: not normalized
                 for (int lv = 0; lv < 3; lv++) {
-                    v_far_w(faces(f, lv)) += tf_weight(f) * cw[lv];
+                    v_far_w(faces(f, lv)) += face_scale(f) * cw[lv];
                 }
             }
             v_near_w = v_far_w;
@@ -404,6 +397,7 @@ void TangentialCollisions::build(
                 double m, u;
             };
             std::vector<ActivePair> active;
+            Eigen::VectorXd edge_m = Eigen::VectorXd::Zero(edges.rows());
             for (const auto& [ei_pair, dict_ptr] :
                  collisions.maps().edge_edge_collisions) {
                 const index_t e0 = ei_pair.first, e1 = ei_pair.second;
@@ -422,14 +416,13 @@ void TangentialCollisions::build(
                     continue;
                 }
                 active.push_back({ e0, e00, e01, m, u });
-                for (const index_t f : mesh.edges_to_faces()[e0]) {
-                    tf_denominator(f) += tf_scale(f) * m;
-                }
+                edge_m(e0) += m;
             }
 
             // Coefficient of an EE sample's near potential per unit mollifier
-            // weight: sum_{f ∋ e0} w_f c_f s_f / D_f (c_f: the smaller corner
-            // weight of e0's endpoints in f).
+            // weight: sum_{f ∋ e0} w_f c s / (1 + s M_e0).
+            const double r =
+                params.ee_area_scaling ? params.ee_area_reference() : 0.0;
             ee_coef_per_edge = Eigen::VectorXd::Zero(edges.rows());
             for (const auto& p : active) {
                 if (ee_coef_per_edge(p.e0) != 0) {
@@ -437,8 +430,8 @@ void TangentialCollisions::build(
                 }
                 double coef = 0;
                 for (const index_t f : mesh.edges_to_faces()[p.e0]) {
-                    const auto& cw =
-                        params.face_rule(mesh.face_areas()(f)).corner_weights;
+                    const double area = mesh.face_areas()(f);
+                    const auto& cw = params.face_rule(area).corner_weights;
                     double wa = 0, wb = 0;
                     for (int lv = 0; lv < 3; lv++) {
                         if (faces(f, lv) == p.e00) {
@@ -447,8 +440,10 @@ void TangentialCollisions::build(
                             wb = cw[lv];
                         }
                     }
-                    coef += tf_weight(f) * std::min(wa, wb) * tf_scale(f)
-                        / tf_denominator(f);
+                    const double c = 0.5 * std::min(wa, wb);
+                    const double s =
+                        ee_area_scale_factor(c * area, r, /*face=*/true);
+                    coef += face_scale(f) * c * s / (1 + s * edge_m(p.e0));
                 }
                 ee_coef_per_edge(p.e0) = coef;
             }

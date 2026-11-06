@@ -296,9 +296,11 @@ void define_esp_parameters(py::module& m)
         .def_readwrite(
             "local_quadrature_transfer",
             &ESPParameters::local_quadrature_transfer,
-            "3D: give edge-edge samples weight taken from their edges' "
-            "endpoint samples instead of renormalizing the element. Needs "
-            "use_near_far and a face rule with positive corner weights.")
+            "3D: give edge-edge samples weight taken from their edge's "
+            "endpoint samples instead of renormalizing the element; each "
+            "face corner gives part of half its weight to each of its two "
+            "edges. Needs use_near_far and a face rule with positive corner "
+            "weights.")
         .def_readwrite(
             "legacy_element_weights", &ESPParameters::legacy_element_weights,
             "Weigh faces by area / 9 and edges in no face by length / 4, as "
@@ -364,24 +366,6 @@ void define_esp_potential(py::module& m)
                 use_near_far: Whether to normalize the quadrature weights so they sum to 1, splitting near and far contributions when 0 < dbar_factor <= 2 (the far part vanishes at 2).
             )ipc_Qu8mg5v7",
             py::arg("param"), py::arg("use_near_far") = true)
-        .def(
-            "element_near_weights", &ESPPotential::element_near_weights,
-            "Each integration element's near-weight total at the given "
-            "vertices (see set_lagged_weights).",
-            py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
-        .def(
-            "set_lagged_weights", &ESPPotential::set_lagged_weights,
-            "Hold each element's normalization fixed at these weights (from "
-            "element_near_weights at a reference state), so each sample "
-            "enters with a fixed coefficient. Works with "
-            "local_quadrature_transfer.",
-            py::arg("weights"))
-        .def(
-            "clear_lagged_weights", &ESPPotential::clear_lagged_weights,
-            "Return to recomputing the normalization at every evaluation.")
-        .def_property_readonly(
-            "lagged_weights", &ESPPotential::lagged_weights,
-            "The lagged element weights (empty if not lagged).")
         .def(
             "__call__",
             py::overload_cast<

@@ -86,65 +86,90 @@ namespace {
         return product(a, inv);
     }
 
-    struct Element {
-        std::array<index_t, 3> vertices {}, edges {};
-        int num_vertices = 0, num_edges = 0;
-        std::array<double, 3> vertex_weights {};
-        index_t face = -1;
-        const FaceQuadRule* non_corner = nullptr;
-        double ee_scale = 1.0; // ESPParameters::ee_area_scaling factor
-        double weight;
-    };
-    // Reference length of ESPParameters::ee_area_scaling (0 = no scaling).
-    // An EE sample takes at most the smaller endpoint weight c of the
-    // element's mass, so the measure it can stand for is c times the
-    // element's measure (area / 3 on faces with the vertex rule, length / 2
-    // on rods).
-    double area_ref(const ESPParameters& p)
+    // Rest-shape weights of the integration elements (faces, rods,
+    // particles), as in ESPPotential.
+    double
+    face_weight(const CollisionMesh& mesh, const ESPParameters& p, index_t f)
     {
-        return p.ee_area_scaling ? p.ee_area_reference() : 0.0; // 0: no scale
+        return p.area_weights ? mesh.face_areas()(f) * p.element_weight_scale(3)
+                              : 1.0;
+    }
+    double
+    rod_weight(const CollisionMesh& mesh, const ESPParameters& p, index_t e)
+    {
+        return p.area_weights ? mesh.edge_area(e) * p.element_weight_scale(2)
+                              : 1.0;
     }
 
-    Element element(const CollisionMesh& mesh, const ESPParameters& p, size_t k)
+    // Each vertex sample's coefficient: the sum over its elements of the
+    // element weight times its corner weight. Under transfer the fixed
+    // samples are not normalized, so this is constant.
+    Eigen::VectorXd
+    vertex_coefficients(const CollisionMesh& mesh, const ESPParameters& p)
     {
-        Element out;
-        if (k < mesh.num_faces()) {
-            const auto rule = p.face_rule(mesh.face_areas()(k));
-            const auto& cw = rule.corner_weights;
-            out.non_corner = rule.non_corner;
-            out.face = static_cast<index_t>(k);
-            out.vertex_weights = { { cw[0], cw[1], cw[2] } };
-            out.num_vertices = out.num_edges = 3;
+        Eigen::VectorXd coef = Eigen::VectorXd::Zero(mesh.num_vertices());
+        for (index_t f = 0; f < index_t(mesh.num_faces()); ++f) {
+            const auto& cw = p.face_rule(mesh.face_areas()(f)).corner_weights;
+            const double w = face_weight(mesh, p, f);
             for (int i = 0; i < 3; ++i) {
-                out.vertices[i] = mesh.faces()(k, i);
-                out.edges[i] = mesh.faces_to_edges()(k, i);
+                coef[mesh.faces()(f, i)] += w * cw[i];
             }
-            out.weight = p.area_weights
-                ? mesh.face_areas()(k) * p.element_weight_scale(3)
-                : 1.0;
-            const double c = std::min({ cw[0], cw[1], cw[2] });
-            out.ee_scale = ee_area_scale_factor(
-                c * mesh.face_areas()(k), area_ref(p), /*face=*/true);
-        } else if ((k -= mesh.num_faces()) < mesh.num_codim_edges()) {
-            const auto e = mesh.codim_edges()[k];
-            out.vertex_weights = { { 0.5, 0.5, 0.0 } };
-            out.num_vertices = 2;
-            out.num_edges = 1;
-            out.vertices = { { mesh.edges()(e, 0), mesh.edges()(e, 1) } };
-            out.edges = { { e } };
-            out.weight = p.area_weights
-                ? mesh.edge_area(e) * p.element_weight_scale(2)
-                : 1.0;
-            out.ee_scale = ee_area_scale_factor(
-                0.5 * mesh.edge_area(e), area_ref(p), /*face=*/false);
-        } else {
-            const auto v = mesh.codim_vertices()[k - mesh.num_codim_edges()];
-            out.vertex_weights = { { 1.0, 0.0, 0.0 } };
-            out.num_vertices = 1;
-            out.vertices = { { v } };
-            out.weight = p.area_weights ? mesh.vertex_area(v) : 1.0;
         }
-        return out;
+        for (const index_t e : mesh.codim_edges()) {
+            const double w = rod_weight(mesh, p, e);
+            coef[mesh.edges()(e, 0)] += 0.5 * w;
+            coef[mesh.edges()(e, 1)] += 0.5 * w;
+        }
+        for (const index_t v : mesh.codim_vertices()) {
+            coef[v] += p.area_weights ? mesh.vertex_area(v) : 1.0;
+        }
+        return coef;
+    }
+
+    // One element's share of an edge's EE term. Each face corner splits its
+    // weight evenly between the face's two edges at that corner, so the EE
+    // samples on an edge take weight from a pool holding half of each
+    // endpoint's corner weight, and the pools of different edges are
+    // independent. A rod's single edge holds both endpoints' full weight.
+    // An EE sample takes at most c = the smaller endpoint share of the pool,
+    // so its area scale compares c times the element's measure with the
+    // patch (ESPParameters::ee_area_scaling).
+    struct Pool {
+        double coef;  // w_e c s_e, multiplying sum_j m_j (N(q_j) - R_j)
+        double scale; // s_e, multiplying sum_j m_j in the denominator
+    };
+
+    void edge_pools(
+        const CollisionMesh& mesh,
+        const ESPParameters& p,
+        index_t e,
+        std::vector<Pool>& pools)
+    {
+        pools.clear();
+        const double r = p.ee_area_scaling ? p.ee_area_reference() : 0.0;
+        const index_t a = mesh.edges()(e, 0), b = mesh.edges()(e, 1);
+        const auto& faces = mesh.edges_to_faces()[e];
+        for (const index_t f : faces) {
+            const double area = mesh.face_areas()(f);
+            const auto& cw = p.face_rule(area).corner_weights;
+            double wa = 0, wb = 0;
+            for (int i = 0; i < 3; ++i) {
+                if (mesh.faces()(f, i) == a) {
+                    wa = cw[i];
+                } else if (mesh.faces()(f, i) == b) {
+                    wb = cw[i];
+                }
+            }
+            const double c = 0.5 * std::min(wa, wb);
+            const double s = ee_area_scale_factor(c * area, r, /*face=*/true);
+            pools.push_back({ face_weight(mesh, p, f) * c * s, s });
+        }
+        if (faces.empty()) { // a rod
+            const double c = 0.5;
+            const double s =
+                ee_area_scale_factor(c * mesh.edge_area(e), r, /*face=*/false);
+            pools.push_back({ rod_weight(mesh, p, e) * c * s, s });
+        }
     }
 
     template <typename T> double value(const T& x)
@@ -163,10 +188,12 @@ namespace {
         std::conditional_t<Order == 1, ADGrad<12>, ADHessian<12>>>;
 
     template <int Order> struct VertexSample {
+        index_t vertex;
         const ESPCollisionDict<PointType::VERTEX>* dict;
         Jet<Order> near, far;
-        explicit VertexSample(const ESPCollisionDict<PointType::VERTEX>* d)
-            : dict(d)
+        VertexSample(index_t v, const ESPCollisionDict<PointType::VERTEX>* d)
+            : vertex(v)
+            , dict(d)
         {
         }
     };
@@ -186,8 +213,8 @@ namespace {
     };
 
     // All entries are rebuilt for this X, collision set, parameters, and
-    // derivative order. Only dict-local jets are cached: face reference and
-    // denominator terms, cross-stencil coupling, and PSD remain face-local.
+    // derivative order: each vertex sample and each EE sample is evaluated
+    // once, and the EE samples are grouped by source edge.
     template <int Order> struct EvaluationCache {
         EvaluationCache() = default;
         EvaluationCache(const EvaluationCache&) = delete;
@@ -307,7 +334,7 @@ namespace {
         cache.vertex_at.resize(mesh.num_vertices(), nullptr);
         cache.vertices.reserve(maps.vertex_collisions.size());
         for (const auto& [v, dict] : maps.vertex_collisions) {
-            cache.vertices.emplace_back(dict.get());
+            cache.vertices.emplace_back(v, dict.get());
             cache.vertex_at[v] = &cache.vertices.back();
         }
 
@@ -363,264 +390,55 @@ namespace {
         return cache;
     }
 
-    template <int O> struct ElementResult {
-        std::vector<index_t> vertices;
-        Jet<O> energy;
-        ElementResult(std::vector<index_t> ids = {})
-            : vertices(std::move(ids))
-            , energy(3 * vertices.size())
-        {
-        }
-    };
-
-    // Private to a worker and this evaluation. Resize/zero every active jet;
-    // only vector/matrix storage survives between source elements. The result
-    // is scattered before the next element reuses it, including after PSD.
-    template <int Order> struct ElementScratch {
-        ElementResult<Order> result;
-        std::vector<const EdgeSample<Order>*> pairs;
-        std::vector<int> scatter_ids;
-        std::array<Jet<Order>, 3> near_vertices;
-        Jet<Order> far, numerator, denominator, potential;
-    };
-
-    template <int Order>
-    ElementResult<Order>& evaluate_element(
-        const Element& elem,
-        const CollisionMesh& mesh,
-        const EvaluationCache<Order>& cache,
-        ElementScratch<Order>& scratch,
-        const ESPCollisions& collisions,
-        Eigen::ConstRef<Eigen::MatrixXd> X,
-        const ESPParameters& params)
-    {
-        using T = GeometryScalar<Order>;
-        auto& pairs = scratch.pairs;
-        pairs.clear();
-        auto& result = scratch.result;
-        auto& ids = result.vertices;
-        ids.assign(
-            elem.vertices.begin(), elem.vertices.begin() + elem.num_vertices);
-        for (int j = 0; j < elem.num_vertices; ++j) {
-            const auto v = elem.vertices[j];
-            if (const auto* sample = cache.vertex_at[v]) {
-                const auto& more = sample->dict->vertex_ids();
-                ids.insert(ids.end(), more.begin(), more.end());
-            }
-        }
-        const auto& maps = collisions.maps();
-        // The face rule's non-corner points (corner points are the vertex
-        // samples above).
-        const auto face_it = elem.face >= 0
-            ? maps.face_collisions.find(elem.face)
-            : maps.face_collisions.end();
-        if (face_it != maps.face_collisions.end()) {
-            for (const auto& dict : face_it->second) {
-                const auto& more = dict->vertex_ids();
-                ids.insert(ids.end(), more.begin(), more.end());
-            }
-        }
-        for (int j = 0; j < elem.num_edges; ++j) {
-            const auto ea = elem.edges[j];
-            for (size_t k = cache.edge_offsets[ea];
-                 k < cache.edge_offsets[ea + 1]; ++k) {
-                const auto& sample = cache.edges[k];
-                pairs.push_back(&sample);
-                const auto& more = sample.dict->vertex_ids();
-                ids.insert(ids.end(), more.begin(), more.end());
-                for (const auto v : sample.dict->primary_vertex_ids()) {
-                    if (v >= 0) {
-                        ids.push_back(v);
-                    }
-                }
-            }
-        }
-        std::sort(ids.begin(), ids.end());
-        ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
-        const int ndof = 3 * result.vertices.size();
-        const auto local_index = [&](index_t v) {
-            const auto it = std::lower_bound(ids.begin(), ids.end(), v);
-            assert(it != ids.end() && *it == v);
-            return int(it - ids.begin());
-        };
-
-        auto scatter = [&](Jet<Order>& out, const auto& vids,
-                           const Eigen::VectorXd& g, const Eigen::MatrixXd& h) {
-            if constexpr (Order >= 1) {
-                auto& indices = scratch.scatter_ids;
-                indices.resize(vids.size());
-                for (int i = 0; i < int(vids.size()); ++i) {
-                    indices[i] = local_index(vids[i]);
-                    out.grad.template segment<3>(3 * indices[i]) +=
-                        g.segment<3>(3 * i);
-                }
-                if constexpr (Order == 2) {
-                    for (int i = 0; i < int(vids.size()); ++i) {
-                        for (int j = 0; j < int(vids.size()); ++j) {
-                            out.hess.template block<3, 3>(
-                                3 * indices[i], 3 * indices[j]) +=
-                                h.block<3, 3>(3 * i, 3 * j);
-                        }
-                    }
-                }
-            }
-        };
-        auto geometry_jet = [&](const T& x,
-                                const std::array<index_t, 4>& prim) {
-            Jet<Order> out(ndof, value(x));
-            if constexpr (Order >= 1) {
-                std::array<int, 4> indices;
-                for (int i = 0; i < 4; ++i) {
-                    indices[i] = local_index(prim[i]);
-                }
-                for (int i = 0; i < 4; ++i) {
-                    out.grad.template segment<3>(3 * indices[i]) +=
-                        x.grad.template segment<3>(3 * i);
-                }
-                if constexpr (Order == 2) {
-                    for (int i = 0; i < 4; ++i) {
-                        for (int j = 0; j < 4; ++j) {
-                            out.hess.template block<3, 3>(
-                                3 * indices[i], 3 * indices[j]) +=
-                                x.Hess.template block<3, 3>(3 * i, 3 * j);
-                        }
-                    }
-                }
-            }
-            return out;
-        };
-
-        auto& base = result.energy;
-        auto& numerator = scratch.numerator;
-        auto& denominator = scratch.denominator;
-        base.set_zero(ndof);
-        numerator.set_zero(ndof);
-        denominator.set_zero(ndof, 1.0);
-        for (int j = 0; j < elem.num_vertices; ++j) {
-            const auto v = elem.vertices[j];
-            auto& near = scratch.near_vertices[j];
-            auto& far = scratch.far;
-            near.set_zero(ndof);
-            far.set_zero(ndof);
-            if (const auto* sample = cache.vertex_at[v]) {
-                near.value = sample->near.value;
-                far.value = sample->far.value;
-                scatter(
-                    near, sample->dict->vertex_ids(), sample->near.grad,
-                    sample->near.hess);
-                scatter(
-                    far, sample->dict->vertex_ids(), sample->far.grad,
-                    sample->far.hess);
-            }
-            base += scale(near, elem.vertex_weights[j]);
-            base += scale(far, elem.vertex_weights[j]);
-        }
-        const NearFarBarrier<> nf(params.barrier, params.dbar_factor());
-        if (face_it != maps.face_collisions.end()) {
-            const auto& rule = *elem.non_corner;
-            for (size_t qi = 0; qi < rule.size(); ++qi) {
-                const auto& qp = rule[qi];
-                const auto& dict = *face_it->second[qi];
-                if (dict.size() == 0) {
-                    continue;
-                }
-                Eigen::RowVector3d q_pos = Eigen::RowVector3d::Zero();
-                for (int i = 0; i < 3; ++i) {
-                    q_pos += qp.lambda[i] * X.row(elem.vertices[i]);
-                }
-                const VertexMatrixView<3> X_qp(X, q_pos);
-                Jet<Order> near(ndof), far(ndof);
-                std::tie(near.value, far.value) = PointPotentialHelper::
-                    evaluate_potential_at_face_interior_point_with_cached_collisions_nearfar(
-                        X_qp, dict, params, nf);
-                if constexpr (Order >= 1) {
-                    auto [gn, gf] = PointPotentialHelper::
-                        evaluate_potential_gradient_at_face_interior_point_with_cached_collisions_nearfar(
-                            X_qp, dict, params, qp.lambda, nf);
-                    Eigen::MatrixXd hn, hf;
-                    if constexpr (Order == 2) {
-                        std::tie(hn, hf) = PointPotentialHelper::
-                            evaluate_potential_hessian_at_face_interior_point_with_cached_collisions_nearfar(
-                                X_qp, dict, params, qp.lambda,
-                                PSDProjectionMethod::NONE, nf);
-                    }
-                    scatter(near, dict.vertex_ids(), gn, hn);
-                    scatter(far, dict.vertex_ids(), gf, hf);
-                }
-                base += scale(near, qp.weight);
-                base += scale(far, qp.weight);
-            }
-        }
-        const auto near_vertex = [&](index_t v) -> const Jet<Order>& {
-            const auto* const end = elem.vertices.begin() + elem.num_vertices;
-            const auto* const it = std::find(elem.vertices.begin(), end, v);
-            assert(it != end);
-            return scratch.near_vertices[it - elem.vertices.begin()];
-        };
-        for (const auto* pair : pairs) {
-            const std::array<index_t, 4> prim = { {
-                mesh.edges()(pair->ea, 0),
-                mesh.edges()(pair->ea, 1),
-                mesh.edges()(pair->eb, 0),
-                mesh.edges()(pair->eb, 1),
-            } };
-            auto& potential = scratch.potential;
-            potential.set_zero(ndof, pair->potential.value);
-            scatter(
-                potential, pair->dict->vertex_ids(), pair->potential.grad,
-                pair->potential.hess);
-            const auto uj = geometry_jet(pair->u, prim);
-            Jet<Order> one_minus_u = scale(uj, -1);
-            one_minus_u.value += 1;
-            auto reference = product(one_minus_u, near_vertex(prim[0]));
-            reference += product(uj, near_vertex(prim[1]));
-            potential += scale(reference, -1);
-            // Cache only edge geometry common to all incident elements.
-            // Area scaling and endpoint quadrature weights remain
-            // element-local.
-            const auto mj = scale(geometry_jet(pair->m, prim), elem.ee_scale);
-            const auto weight_at = [&](index_t v) {
-                const auto* const end =
-                    elem.vertices.begin() + elem.num_vertices;
-                const auto* const it = std::find(elem.vertices.begin(), end, v);
-                assert(it != end);
-                return elem.vertex_weights[it - elem.vertices.begin()];
-            };
-            const double c = std::min(weight_at(prim[0]), weight_at(prim[1]));
-            numerator += scale(product(mj, potential), c);
-            denominator += mj;
-        }
-        // E = w [sum_i w_i (P_near + P_far)(vertex i)
-        //        + sum_q w_q (P_near + P_far)(non-corner point q)
-        //        + sum_j c_j m_j (P(q_j) - P_ref,j) / (1 + sum_j m_j)].
-        // Each vertex donates at most c M / (1 + M) < c <= w_i, so all
-        // coefficients stay nonnegative, including with multiple EE samples.
-        // With the vertex rule (w_i = c = 1/3) this is the original
-        // w/3 [...] formula; rods use w_i = c = 1/2.
-        base += quotient(numerator, denominator);
-        const double weight = elem.weight;
-        base.value *= weight;
-        if constexpr (Order >= 1) {
-            base.grad *= weight;
-        }
-        if constexpr (Order == 2) {
-            base.hess *= weight;
-        }
-        return result;
-    }
-
+    // Per-thread output of one evaluation.
     template <int Order> struct Result {
         double energy = 0;
         Eigen::VectorXd gradient;
         std::vector<Eigen::Triplet<double>> hessian;
-        ElementScratch<Order> scratch;
+        std::vector<index_t> ids; // scratch: a block's vertex ids
+        std::vector<Pool> pools;  // scratch: an edge's pools
         explicit Result(int n)
         {
             if constexpr (Order == 1) {
                 gradient = Eigen::VectorXd::Zero(n);
             }
         }
+
+        // Add c * (value, gradient, Hessian) of a term on vertices @p vids.
+        template <typename IDs>
+        void
+        add(const IDs& vids,
+            double v,
+            const Eigen::VectorXd& g,
+            Eigen::MatrixXd h,
+            PSDProjectionMethod projection,
+            int num_vertices)
+        {
+            if constexpr (Order == 0) {
+                energy += v;
+            }
+            if constexpr (Order == 1) {
+                local_gradient_to_global_gradient(g, vids, 3, gradient);
+            }
+            if constexpr (Order == 2) {
+                if (projection != PSDProjectionMethod::NONE) {
+                    h = project_to_psd(h, projection);
+                }
+                local_hessian_to_global_triplets(
+                    h, vids, 3, hessian, num_vertices);
+            }
+        }
     };
+
+    // E = sum_e w_e [ sum_i w_i (N_i + F_i) + sum_q w_q (N_q + F_q) ]
+    //   + sum_edges sum_pools w c s sum_j m_j (N(q_j) - R_j) / (1 + s M),
+    // R_j = (1 - u_j) N_a + u_j N_b, M = sum_j m_j over the edge's EE
+    // samples. The fixed samples (vertices, face-rule points) have constant
+    // coefficients, so each is evaluated and projected on its own stencil.
+    // Each edge's EE term couples only that edge's samples and its two
+    // endpoints, so it is one block. A corner gives an edge at most
+    // c s M / (1 + s M) < c <= half its weight, so every coefficient stays
+    // positive.
     template <int Order>
     Result<Order> evaluate(
         const ESPCollisions& collisions,
@@ -630,232 +448,132 @@ namespace {
         PSDProjectionMethod projection = PSDProjectionMethod::NONE)
     {
         const auto cache = build_cache<Order>(collisions, mesh, X, params);
+        const Eigen::VectorXd vertex_coef = vertex_coefficients(mesh, params);
+        const NearFarBarrier<> nf(params.barrier, params.dbar_factor());
+        const int nv = int(mesh.num_vertices());
+        const auto& maps = collisions.maps();
         tbb::enumerable_thread_specific<Result<Order>> storage(
             [&] { return Result<Order>(X.size()); });
-        // Contact is usually localized on a much larger surface. An element
-        // with no vertex, face-interior, or source-edge EE dict contributes
-        // identically zero at every derivative order. Reject it before building
-        // vertex unions, allocating jets, projecting a zero Hessian, or
-        // emitting zero triplets. Rebuild these masks on every evaluation: the
-        // collision set can change between line-search trials.
-        const auto& maps = collisions.maps();
-        std::vector<unsigned char> vertex_active(mesh.num_vertices(), 0);
-        std::vector<unsigned char> edge_active(mesh.num_edges(), 0);
-        std::vector<unsigned char> face_active(mesh.num_faces(), 0);
-        for (const auto& [v, dict] : maps.vertex_collisions) {
-            vertex_active[v] = 1;
-        }
-        for (const auto& [edges, dict] : maps.edge_edge_collisions) {
-            edge_active[edges.first] = 1;
-        }
-        for (const auto& [face, dicts] : maps.face_collisions) {
-            face_active[face] = 1;
-        }
 
-        const auto is_active = [&](size_t k) {
-            if (k < mesh.num_faces()) {
-                if (face_active[k]) {
-                    return true;
-                }
-                for (int j = 0; j < 3; ++j) {
-                    if (vertex_active[mesh.faces()(k, j)]
-                        || edge_active[mesh.faces_to_edges()(k, j)]) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            k -= mesh.num_faces();
-            if (k < mesh.num_codim_edges()) {
-                const auto e = mesh.codim_edges()[k];
-                return bool(
-                    edge_active[e] || vertex_active[mesh.edges()(e, 0)]
-                    || vertex_active[mesh.edges()(e, 1)]);
-            }
-            return bool(
-                vertex_active
-                    [mesh.codim_vertices()[k - mesh.num_codim_edges()]]);
-        };
-        const size_t count = mesh.num_faces() + mesh.num_codim_edges()
-            + mesh.num_codim_vertices();
+        // Vertex samples.
         tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, count), [&](const auto& range) {
-                auto& local = storage.local();
+            tbb::blocked_range<size_t>(0, cache.vertices.size()),
+            [&](const auto& range) {
+                auto& out = storage.local();
                 for (size_t i = range.begin(); i < range.end(); ++i) {
-                    if (!is_active(i)) {
-                        continue;
-                    }
-                    auto& r = evaluate_element<Order>(
-                        element(mesh, params, i), mesh, cache, local.scratch,
-                        collisions, X, params);
-                    if constexpr (Order == 0) {
-                        local.energy += r.energy.value;
-                    }
-                    if constexpr (Order == 1) {
-                        local_gradient_to_global_gradient(
-                            r.energy.grad, r.vertices, 3, local.gradient);
+                    const auto& s = cache.vertices[i];
+                    const double c = vertex_coef[s.vertex];
+                    Eigen::VectorXd g;
+                    Eigen::MatrixXd h;
+                    if constexpr (Order >= 1) {
+                        g = c * (s.near.grad + s.far.grad);
                     }
                     if constexpr (Order == 2) {
-                        if (projection != PSDProjectionMethod::NONE) {
-                            r.energy.hess =
-                                project_to_psd(r.energy.hess, projection);
+                        h = c * (s.near.hess + s.far.hess);
+                    }
+                    out.add(
+                        s.dict->vertex_ids(), c * (s.near.value + s.far.value),
+                        g, std::move(h), projection, nv);
+                }
+            });
+
+        // Face-rule points other than the corners.
+        std::vector<typename std::decay_t<
+            decltype(maps.face_collisions)>::const_pointer>
+            faces;
+        faces.reserve(maps.face_collisions.size());
+        for (const auto& entry : maps.face_collisions) {
+            faces.push_back(&entry);
+        }
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(0, faces.size()),
+            [&](const auto& range) {
+                auto& out = storage.local();
+                for (size_t i = range.begin(); i < range.end(); ++i) {
+                    const index_t f = faces[i]->first;
+                    const auto& dicts = faces[i]->second;
+                    const auto& rule =
+                        *params.face_rule(mesh.face_areas()(f)).non_corner;
+                    const double w = face_weight(mesh, params, f);
+                    for (size_t qi = 0;
+                         qi < std::min(rule.size(), dicts.size()); ++qi) {
+                        const auto& dict = *dicts[qi];
+                        if (dict.size() == 0) {
+                            continue;
                         }
-                        local_hessian_to_global_triplets(
-                            r.energy.hess, r.vertices, 3, local.hessian,
-                            mesh.num_vertices());
+                        const auto& qp = rule[qi];
+                        Eigen::RowVector3d q = Eigen::RowVector3d::Zero();
+                        for (int k = 0; k < 3; ++k) {
+                            q += qp.lambda[k] * X.row(mesh.faces()(f, k));
+                        }
+                        const VertexMatrixView<3> Xq(X, q);
+                        const double c = w * qp.weight;
+                        const auto [pn, pf] = PointPotentialHelper::
+                            evaluate_potential_at_face_interior_point_with_cached_collisions_nearfar(
+                                Xq, dict, params, nf);
+                        Eigen::VectorXd g;
+                        Eigen::MatrixXd h;
+                        if constexpr (Order >= 1) {
+                            const auto [gn, gf] = PointPotentialHelper::
+                                evaluate_potential_gradient_at_face_interior_point_with_cached_collisions_nearfar(
+                                    Xq, dict, params, qp.lambda, nf);
+                            g = c * (gn + gf);
+                        }
+                        if constexpr (Order == 2) {
+                            const auto [hn, hf] = PointPotentialHelper::
+                                evaluate_potential_hessian_at_face_interior_point_with_cached_collisions_nearfar(
+                                    Xq, dict, params, qp.lambda,
+                                    PSDProjectionMethod::NONE, nf);
+                            h = c * (hn + hf);
+                        }
+                        out.add(
+                            dict.vertex_ids(), c * (pn + pf), g, std::move(h),
+                            projection, nv);
                     }
                 }
             });
-        Result<Order> out(X.size());
-        for (auto& local : storage) {
-            if constexpr (Order == 0) {
-                out.energy += local.energy;
-            }
-            if constexpr (Order == 1) {
-                out.gradient += local.gradient;
-            }
-            if constexpr (Order == 2) {
-                out.hessian.insert(
-                    out.hessian.end(), local.hessian.begin(),
-                    local.hessian.end());
-            }
-        }
-        return out;
-    }
 
-    // ---- Lagged normalization (ESPPotential::set_lagged_weights) ----
-    //
-    // With each element's denominator D_e held, element e's transferred
-    // term w_e c_e s_e m_j (N(q_j) - R_j) / D_e is a fixed multiple of its
-    // pair's term, and every element containing the source edge ea uses the
-    // same pair. So each pair is one term
-    //   coef[ea] m_j (N(q_j) - (1 - u_j) N_a - u_j N_b),
-    // coef[ea] = sum_{e ∋ ea} w_e c_e s_e / D_e, on the union of the
-    // stencils of its closest point, its source endpoints, and its four
-    // edge vertices. Its Hessian is projected on that union.
-    template <int Order> struct LaggedResult {
-        double energy = 0;
-        Eigen::VectorXd gradient;
-        std::vector<Eigen::Triplet<double>> hessian;
-        explicit LaggedResult(int n)
-        {
-            if constexpr (Order == 1) {
-                gradient = Eigen::VectorXd::Zero(n);
+        // EE samples, one block per source edge.
+        std::vector<index_t> active_edges;
+        for (index_t e = 0; e < index_t(mesh.num_edges()); ++e) {
+            if (cache.edge_offsets[e + 1] > cache.edge_offsets[e]) {
+                active_edges.push_back(e);
             }
         }
-    };
-
-    template <int Order>
-    LaggedResult<Order> evaluate_lagged(
-        const ESPCollisions& collisions,
-        const CollisionMesh& mesh,
-        Eigen::ConstRef<Eigen::MatrixXd> X,
-        const ESPParameters& params,
-        const Eigen::VectorXd& edge_coef,
-        PSDProjectionMethod projection)
-    {
-        const auto& maps = collisions.maps();
-        // Pairs with a coefficient, in the transfer's pair membership (see
-        // build_cache).
-        std::vector<EdgeSample<Order>> pairs;
-        {
-            struct Pair {
-                index_t ea, eb;
-                const ESPCollisionDict<PointType::EDGE>* dict;
-            };
-            std::vector<Pair> all;
-            for (const auto& [edges, dict] : maps.edge_edge_collisions) {
-                if (edge_coef[edges.first] != 0) {
-                    all.push_back({ edges.first, edges.second, dict.get() });
-                }
-            }
-            std::sort(all.begin(), all.end(), [](const Pair& a, const Pair& b) {
-                return std::tie(a.ea, a.eb) < std::tie(b.ea, b.eb);
-            });
-            for (size_t begin = 0; begin < all.size();) {
-                const auto ea = all[begin].ea;
-                const auto neighbors = collisions.m_candidates.ee_set(mesh, ea);
-                size_t end = begin;
-                for (; end < all.size() && all[end].ea == ea; ++end) {
-                    if (neighbors.contains(all[end].eb)) {
-                        pairs.emplace_back(ea, all[end].eb, all[end].dict);
-                    }
-                }
-                begin = end;
-            }
-        }
-        LaggedResult<Order> out(X.size());
-        if (pairs.empty()) {
-            return out;
-        }
-
-        // Near potentials of the source edges' endpoints.
-        std::vector<VertexSample<Order>> vertices;
-        std::vector<int> vertex_index(mesh.num_vertices(), -1);
-        for (const auto& pair : pairs) {
-            for (int k = 0; k < 2; ++k) {
-                const index_t v = mesh.edges()(pair.ea, k);
-                if (vertex_index[v] >= 0) {
-                    continue;
-                }
-                const auto it = maps.vertex_collisions.find(v);
-                if (it == maps.vertex_collisions.end()) {
-                    continue;
-                }
-                vertex_index[v] = int(vertices.size());
-                vertices.emplace_back(it->second.get());
-            }
-        }
-        const NearFarBarrier<> nf(params.barrier, params.dbar_factor());
         tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, vertices.size()),
+            tbb::blocked_range<size_t>(0, active_edges.size()),
             [&](const auto& range) {
+                auto& out = storage.local();
                 for (size_t i = range.begin(); i < range.end(); ++i) {
-                    evaluate_vertex_sample(vertices[i], X, params, nf);
-                }
-            });
-
-        struct Local {
-            LaggedResult<Order> result;
-            std::vector<index_t> ids;
-            explicit Local(int n) : result(n) { }
-        };
-        tbb::enumerable_thread_specific<Local> storage(
-            [&] { return Local(X.size()); });
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(0, pairs.size()),
-            [&](const auto& range) {
-                auto& local = storage.local();
-                for (size_t i = range.begin(); i < range.end(); ++i) {
-                    auto& pair = pairs[i];
-                    evaluate_edge_sample(pair, mesh, X, params, nf);
-                    if (value(pair.m) == 0) {
-                        continue; // m, and its derivatives, vanish
+                    const index_t e = active_edges[i];
+                    const size_t begin = cache.edge_offsets[e];
+                    const size_t end = cache.edge_offsets[e + 1];
+                    bool any = false;
+                    for (size_t k = begin; k < end; ++k) {
+                        any = any || value(cache.edges[k].m) != 0;
                     }
-                    const std::array<index_t, 4> prim = { {
-                        mesh.edges()(pair.ea, 0),
-                        mesh.edges()(pair.ea, 1),
-                        mesh.edges()(pair.eb, 0),
-                        mesh.edges()(pair.eb, 1),
-                    } };
-                    std::array<const VertexSample<Order>*, 2> ends = {
-                        { nullptr, nullptr }
+                    if (!any) {
+                        continue; // every m, and its derivatives, vanish
+                    }
+                    edge_pools(mesh, params, e, out.pools);
+
+                    const std::array<index_t, 2> ends = {
+                        { mesh.edges()(e, 0), mesh.edges()(e, 1) }
                     };
-                    for (int k = 0; k < 2; ++k) {
-                        if (vertex_index[prim[k]] >= 0) {
-                            ends[k] = &vertices[vertex_index[prim[k]]];
+                    auto& ids = out.ids;
+                    ids.assign(ends.begin(), ends.end());
+                    for (const index_t v : ends) {
+                        if (const auto* s = cache.vertex_at[v]) {
+                            const auto& more = s->dict->vertex_ids();
+                            ids.insert(ids.end(), more.begin(), more.end());
                         }
                     }
-
-                    auto& ids = local.ids;
-                    ids.assign(prim.begin(), prim.end());
-                    const auto& more = pair.dict->vertex_ids();
-                    ids.insert(ids.end(), more.begin(), more.end());
-                    for (const auto* end : ends) {
-                        if (end) {
-                            const auto& vids = end->dict->vertex_ids();
-                            ids.insert(ids.end(), vids.begin(), vids.end());
-                        }
+                    for (size_t k = begin; k < end; ++k) {
+                        const auto& s = cache.edges[k];
+                        const auto& more = s.dict->vertex_ids();
+                        ids.insert(ids.end(), more.begin(), more.end());
+                        ids.push_back(mesh.edges()(s.eb, 0));
+                        ids.push_back(mesh.edges()(s.eb, 1));
                     }
                     std::sort(ids.begin(), ids.end());
                     ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
@@ -866,6 +584,7 @@ namespace {
                         assert(it != ids.end() && *it == v);
                         return int(it - ids.begin());
                     };
+                    // A dict-local term as a jet on the block's vertices.
                     const auto scattered = [&](double v, const auto& vids,
                                                const Eigen::VectorXd& g,
                                                const Eigen::MatrixXd& h) {
@@ -891,74 +610,85 @@ namespace {
                         }
                         return jet;
                     };
-                    const auto geometry = [&](const GeometryScalar<Order>& x) {
-                        Jet<Order> jet(ndof, value(x));
-                        if constexpr (Order >= 1) {
-                            for (int a = 0; a < 4; ++a) {
-                                const int ia = local_index(prim[a]);
-                                jet.grad.template segment<3>(3 * ia) +=
-                                    x.grad.template segment<3>(3 * a);
-                                if constexpr (Order == 2) {
-                                    for (int b = 0; b < 4; ++b) {
-                                        jet.hess.template block<3, 3>(
-                                            3 * ia, 3 * local_index(prim[b])) +=
-                                            x.Hess.template block<3, 3>(
-                                                3 * a, 3 * b);
+                    // A function of an EE pair's four vertices as a jet.
+                    const auto geometry =
+                        [&](const GeometryScalar<Order>& x,
+                            const std::array<index_t, 4>& prim) {
+                            Jet<Order> jet(ndof, value(x));
+                            if constexpr (Order >= 1) {
+                                for (int a = 0; a < 4; ++a) {
+                                    const int ia = local_index(prim[a]);
+                                    jet.grad.template segment<3>(3 * ia) +=
+                                        x.grad.template segment<3>(3 * a);
+                                    if constexpr (Order == 2) {
+                                        for (int b = 0; b < 4; ++b) {
+                                            jet.hess.template block<3, 3>(
+                                                3 * ia,
+                                                3 * local_index(prim[b])) +=
+                                                x.Hess.template block<3, 3>(
+                                                    3 * a, 3 * b);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        return jet;
-                    };
+                            return jet;
+                        };
 
-                    Jet<Order> residual = scattered(
-                        pair.potential.value, pair.dict->vertex_ids(),
-                        pair.potential.grad, pair.potential.hess);
-                    const Jet<Order> u = geometry(pair.u);
-                    Jet<Order> one_minus_u = scale(u, -1);
-                    one_minus_u.value += 1;
+                    std::array<Jet<Order>, 2> near;
                     for (int k = 0; k < 2; ++k) {
-                        if (!ends[k]) {
-                            continue;
+                        near[k].set_zero(ndof);
+                        if (const auto* s = cache.vertex_at[ends[k]]) {
+                            near[k] = scattered(
+                                s->near.value, s->dict->vertex_ids(),
+                                s->near.grad, s->near.hess);
                         }
-                        const Jet<Order> near = scattered(
-                            ends[k]->near.value, ends[k]->dict->vertex_ids(),
-                            ends[k]->near.grad, ends[k]->near.hess);
-                        residual +=
-                            scale(product(k == 0 ? one_minus_u : u, near), -1);
                     }
-                    const Jet<Order> term = scale(
-                        product(geometry(pair.m), residual),
-                        edge_coef[pair.ea]);
-                    if constexpr (Order == 0) {
-                        local.result.energy += term.value;
+                    // A = sum_j m_j (N(q_j) - R_j), B = sum_j m_j.
+                    Jet<Order> A(ndof), B(ndof);
+                    for (size_t k = begin; k < end; ++k) {
+                        const auto& s = cache.edges[k];
+                        const std::array<index_t, 4> prim = { {
+                            ends[0],
+                            ends[1],
+                            mesh.edges()(s.eb, 0),
+                            mesh.edges()(s.eb, 1),
+                        } };
+                        Jet<Order> residual = scattered(
+                            s.potential.value, s.dict->vertex_ids(),
+                            s.potential.grad, s.potential.hess);
+                        const Jet<Order> u = geometry(s.u, prim);
+                        Jet<Order> one_minus_u = scale(u, -1);
+                        one_minus_u.value += 1;
+                        residual += scale(product(one_minus_u, near[0]), -1);
+                        residual += scale(product(u, near[1]), -1);
+                        const Jet<Order> m = geometry(s.m, prim);
+                        A += product(m, residual);
+                        B += m;
                     }
-                    if constexpr (Order == 1) {
-                        local_gradient_to_global_gradient(
-                            term.grad, ids, 3, local.result.gradient);
+                    Jet<Order> term(ndof);
+                    for (const Pool& pool : out.pools) {
+                        Jet<Order> denominator = scale(B, pool.scale);
+                        denominator.value += 1;
+                        term += scale(quotient(A, denominator), pool.coef);
                     }
-                    if constexpr (Order == 2) {
-                        Eigen::MatrixXd h = term.hess;
-                        if (projection != PSDProjectionMethod::NONE) {
-                            h = project_to_psd(h, projection);
-                        }
-                        local_hessian_to_global_triplets(
-                            h, ids, 3, local.result.hessian,
-                            mesh.num_vertices());
-                    }
+                    out.add(
+                        ids, term.value, term.grad, std::move(term.hess),
+                        projection, nv);
                 }
             });
+
+        Result<Order> out(X.size());
         for (auto& local : storage) {
             if constexpr (Order == 0) {
-                out.energy += local.result.energy;
+                out.energy += local.energy;
             }
             if constexpr (Order == 1) {
-                out.gradient += local.result.gradient;
+                out.gradient += local.gradient;
             }
             if constexpr (Order == 2) {
                 out.hessian.insert(
-                    out.hessian.end(), local.result.hessian.begin(),
-                    local.result.hessian.end());
+                    out.hessian.end(), local.hessian.begin(),
+                    local.hessian.end());
             }
         }
         return out;
@@ -996,36 +726,5 @@ Eigen::SparseMatrix<double> local_transfer_hessian(
     Eigen::SparseMatrix<double> H(X.size(), X.size());
     H.setFromTriplets(r.hessian.begin(), r.hessian.end());
     return H;
-}
-
-double lagged_transfer_value(
-    const ESPCollisions& c,
-    const CollisionMesh& m,
-    Eigen::ConstRef<Eigen::MatrixXd> X,
-    const ESPParameters& p,
-    const Eigen::VectorXd& edge_coef)
-{
-    return evaluate_lagged<0>(c, m, X, p, edge_coef, PSDProjectionMethod::NONE)
-        .energy;
-}
-Eigen::VectorXd lagged_transfer_gradient(
-    const ESPCollisions& c,
-    const CollisionMesh& m,
-    Eigen::ConstRef<Eigen::MatrixXd> X,
-    const ESPParameters& p,
-    const Eigen::VectorXd& edge_coef)
-{
-    return evaluate_lagged<1>(c, m, X, p, edge_coef, PSDProjectionMethod::NONE)
-        .gradient;
-}
-std::vector<Eigen::Triplet<double>> lagged_transfer_hessian(
-    const ESPCollisions& c,
-    const CollisionMesh& m,
-    Eigen::ConstRef<Eigen::MatrixXd> X,
-    const ESPParameters& p,
-    const Eigen::VectorXd& edge_coef,
-    PSDProjectionMethod psd)
-{
-    return evaluate_lagged<2>(c, m, X, p, edge_coef, psd).hessian;
 }
 } // namespace ipc::detail
