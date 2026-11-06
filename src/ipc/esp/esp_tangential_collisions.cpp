@@ -237,17 +237,20 @@ void TangentialCollisions::build(
             }
             const double dist = sqrt(d2);
             const double dhat_val = params.dhat;
-            if (!(dist > 0 && dist < dhat_val)) {
-                return 0.0;
-            }
-            if (nf && far_w >= 0) {
-                return normal_stiffness
+            if (dist > 0 && dist < dhat_val) { // false for NaN, too
+                if (nf && far_w >= 0) {
+                    return normal_stiffness
+                        * std::abs(
+                               outer_w
+                                   * nf->first_derivative_near(dist, dhat_val)
+                               + far_w
+                                   * nf->first_derivative_far(dist, dhat_val));
+                }
+                return outer_w * normal_stiffness
                     * std::abs(
-                           outer_w * nf->first_derivative_near(dist, dhat_val)
-                           + far_w * nf->first_derivative_far(dist, dhat_val));
+                           params.barrier->first_derivative(dist, dhat_val));
             }
-            return outer_w * normal_stiffness
-                * std::abs(params.barrier->first_derivative(dist, dhat_val));
+            return 0.0;
         };
 
         // Helper: assign EE mu values

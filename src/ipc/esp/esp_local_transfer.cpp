@@ -29,18 +29,22 @@ namespace {
         void set_zero(int ndof, double v = 0)
         {
             value = v;
-            if constexpr (Order >= 1)
+            if constexpr (Order >= 1) {
                 grad.setZero(ndof);
-            if constexpr (Order == 2)
+            }
+            if constexpr (Order == 2) {
                 hess.setZero(ndof, ndof);
+            }
         }
         Jet& operator+=(const Jet& b)
         {
             value += b.value;
-            if constexpr (Order >= 1)
+            if constexpr (Order >= 1) {
                 grad += b.grad;
-            if constexpr (Order == 2)
+            }
+            if constexpr (Order == 2) {
                 hess += b.hess;
+            }
             return *this;
         }
     };
@@ -48,31 +52,37 @@ namespace {
     template <int O> Jet<O> scale(Jet<O> a, double s)
     {
         a.value *= s;
-        if constexpr (O >= 1)
+        if constexpr (O >= 1) {
             a.grad *= s;
-        if constexpr (O == 2)
+        }
+        if constexpr (O == 2) {
             a.hess *= s;
+        }
         return a;
     }
     template <int O> Jet<O> product(const Jet<O>& a, const Jet<O>& b)
     {
         Jet<O> out(a.grad.size(), a.value * b.value);
-        if constexpr (O >= 1)
+        if constexpr (O >= 1) {
             out.grad = b.value * a.grad + a.value * b.grad;
-        if constexpr (O == 2)
+        }
+        if constexpr (O == 2) {
             out.hess = b.value * a.hess + a.value * b.hess
                 + a.grad * b.grad.transpose() + b.grad * a.grad.transpose();
+        }
         return out;
     }
     template <int O> Jet<O> quotient(const Jet<O>& a, const Jet<O>& b)
     {
         Jet<O> inv(b.grad.size(), 1.0 / b.value);
-        if constexpr (O >= 1)
+        if constexpr (O >= 1) {
             inv.grad = -b.grad / (b.value * b.value);
-        if constexpr (O == 2)
+        }
+        if constexpr (O == 2) {
             inv.hess = -b.hess / (b.value * b.value)
                 + (2.0 / (b.value * b.value * b.value)) * b.grad
                     * b.grad.transpose();
+        }
         return product(a, inv);
     }
 
@@ -139,10 +149,11 @@ namespace {
 
     template <typename T> double value(const T& x)
     {
-        if constexpr (std::is_same_v<T, double>)
+        if constexpr (std::is_same_v<T, double>) {
             return x;
-        else
+        } else {
             return x.val;
+        }
     }
 
     template <int Order>
@@ -198,14 +209,16 @@ namespace {
         std::tie(sample.near.value, sample.far.value) = PointPotentialHelper::
             evaluate_potential_at_vertex_with_cached_collisions_nearfar(
                 X, dict, params, nf);
-        if constexpr (Order >= 1)
+        if constexpr (Order >= 1) {
             std::tie(sample.near.grad, sample.far.grad) = PointPotentialHelper::
                 evaluate_potential_gradient_at_vertex_with_cached_collisions_nearfar(
                     X, dict, params, nf);
-        if constexpr (Order == 2)
+        }
+        if constexpr (Order == 2) {
             std::tie(sample.near.hess, sample.far.hess) = PointPotentialHelper::
                 evaluate_potential_hessian_at_vertex_with_cached_collisions_nearfar(
                     X, dict, params, PSDProjectionMethod::NONE, nf);
+        }
     }
 
     // The EE sample's source-edge parameter u, mollifier weight m (without
@@ -227,12 +240,14 @@ namespace {
         } };
         Eigen::Matrix<T, 4, 3> positions;
         if constexpr (Order == 0) {
-            for (int j = 0; j < 4; ++j)
+            for (int j = 0; j < 4; ++j) {
                 positions.row(j) = X.row(prim[j]);
+            }
         } else {
             Eigen::Vector<double, 12> flat;
-            for (int j = 0; j < 4; ++j)
+            for (int j = 0; j < 4; ++j) {
                 flat.segment<3>(3 * j) = X.row(prim[j]);
+            }
             positions = slice_positions<T, 4, 3>(flat);
         }
         sample.u = closest_point_uv<T>(
@@ -252,28 +267,32 @@ namespace {
                 positions.row(2).transpose(), positions.row(3).transpose(),
                 types, d2, params.ee_mollifier);
         const T initial = sample.m;
-        for (int j = 1; j < params.ee_mollifier_exponent(); ++j)
+        for (int j = 1; j < params.ee_mollifier_exponent(); ++j) {
             sample.m = sample.m * initial;
+        }
         const Eigen::Vector3<T> q =
             (positions.row(0)
              + sample.u * (positions.row(1) - positions.row(0)))
                 .transpose();
         Eigen::RowVector3d qvalue;
-        for (int j = 0; j < 3; ++j)
+        for (int j = 0; j < 3; ++j) {
             qvalue(j) = value(q(j));
+        }
         const VertexMatrixView<3> extended(X, qvalue);
         const auto& dict = *sample.dict;
         sample.potential.value = PointPotentialHelper::
             evaluate_potential_at_edge_edge_closest_point_with_cached_collisions_near(
                 extended, dict, params, dict.ee_dtype(), nf);
-        if constexpr (Order >= 1)
+        if constexpr (Order >= 1) {
             sample.potential.grad = PointPotentialHelper::
                 evaluate_potential_gradient_at_edge_edge_closest_point_with_cached_collisions_near<
                     T>(extended, dict, params, q, nf);
-        if constexpr (Order == 2)
+        }
+        if constexpr (Order == 2) {
             sample.potential.hess = PointPotentialHelper::
                 evaluate_potential_hessian_at_edge_edge_closest_point_with_cached_collisions_near(
                     extended, dict, params, q, nf);
+        }
     }
 
     template <int Order>
@@ -298,8 +317,9 @@ namespace {
         };
         std::vector<Pair> pairs;
         pairs.reserve(maps.edge_edge_collisions.size());
-        for (const auto& [edges, dict] : maps.edge_edge_collisions)
+        for (const auto& [edges, dict] : maps.edge_edge_collisions) {
             pairs.push_back({ edges.first, edges.second, dict.get() });
+        }
         std::sort(pairs.begin(), pairs.end(), [](const Pair& a, const Pair& b) {
             return std::tie(a.ea, a.eb) < std::tie(b.ea, b.eb);
         });
@@ -329,14 +349,16 @@ namespace {
         tbb::parallel_for(
             tbb::blocked_range<size_t>(0, cache.vertices.size()),
             [&](const auto& range) {
-                for (size_t i = range.begin(); i < range.end(); ++i)
+                for (size_t i = range.begin(); i < range.end(); ++i) {
                     evaluate_vertex_sample(cache.vertices[i], X, params, nf);
+                }
             });
         tbb::parallel_for(
             tbb::blocked_range<size_t>(0, cache.edges.size()),
             [&](const auto& range) {
-                for (size_t i = range.begin(); i < range.end(); ++i)
+                for (size_t i = range.begin(); i < range.end(); ++i) {
                     evaluate_edge_sample(cache.edges[i], mesh, X, params, nf);
+                }
             });
         return cache;
     }
@@ -406,9 +428,11 @@ namespace {
                 pairs.push_back(&sample);
                 const auto& more = sample.dict->vertex_ids();
                 ids.insert(ids.end(), more.begin(), more.end());
-                for (const auto v : sample.dict->primary_vertex_ids())
-                    if (v >= 0)
+                for (const auto v : sample.dict->primary_vertex_ids()) {
+                    if (v >= 0) {
                         ids.push_back(v);
+                    }
+                }
             }
         }
         std::sort(ids.begin(), ids.end());
@@ -431,11 +455,13 @@ namespace {
                         g.segment<3>(3 * i);
                 }
                 if constexpr (Order == 2) {
-                    for (int i = 0; i < int(vids.size()); ++i)
-                        for (int j = 0; j < int(vids.size()); ++j)
+                    for (int i = 0; i < int(vids.size()); ++i) {
+                        for (int j = 0; j < int(vids.size()); ++j) {
                             out.hess.template block<3, 3>(
                                 3 * indices[i], 3 * indices[j]) +=
                                 h.block<3, 3>(3 * i, 3 * j);
+                        }
+                    }
                 }
             }
         };
@@ -444,17 +470,21 @@ namespace {
             Jet<Order> out(ndof, value(x));
             if constexpr (Order >= 1) {
                 std::array<int, 4> indices;
-                for (int i = 0; i < 4; ++i)
+                for (int i = 0; i < 4; ++i) {
                     indices[i] = local_index(prim[i]);
-                for (int i = 0; i < 4; ++i)
+                }
+                for (int i = 0; i < 4; ++i) {
                     out.grad.template segment<3>(3 * indices[i]) +=
                         x.grad.template segment<3>(3 * i);
+                }
                 if constexpr (Order == 2) {
-                    for (int i = 0; i < 4; ++i)
-                        for (int j = 0; j < 4; ++j)
+                    for (int i = 0; i < 4; ++i) {
+                        for (int j = 0; j < 4; ++j) {
                             out.hess.template block<3, 3>(
                                 3 * indices[i], 3 * indices[j]) +=
                                 x.Hess.template block<3, 3>(3 * i, 3 * j);
+                        }
+                    }
                 }
             }
             return out;
@@ -491,11 +521,13 @@ namespace {
             for (size_t qi = 0; qi < rule.size(); ++qi) {
                 const auto& qp = rule[qi];
                 const auto& dict = *face_it->second[qi];
-                if (dict.size() == 0)
+                if (dict.size() == 0) {
                     continue;
+                }
                 Eigen::RowVector3d q_pos = Eigen::RowVector3d::Zero();
-                for (int i = 0; i < 3; ++i)
+                for (int i = 0; i < 3; ++i) {
                     q_pos += qp.lambda[i] * X.row(elem.vertices[i]);
+                }
                 const VertexMatrixView<3> X_qp(X, q_pos);
                 Jet<Order> near(ndof), far(ndof);
                 std::tie(near.value, far.value) = PointPotentialHelper::
@@ -506,11 +538,12 @@ namespace {
                         evaluate_potential_gradient_at_face_interior_point_with_cached_collisions_nearfar(
                             X_qp, dict, params, qp.lambda, nf);
                     Eigen::MatrixXd hn, hf;
-                    if constexpr (Order == 2)
+                    if constexpr (Order == 2) {
                         std::tie(hn, hf) = PointPotentialHelper::
                             evaluate_potential_hessian_at_face_interior_point_with_cached_collisions_nearfar(
                                 X_qp, dict, params, qp.lambda,
                                 PSDProjectionMethod::NONE, nf);
+                    }
                     scatter(near, dict.vertex_ids(), gn, hn);
                     scatter(far, dict.vertex_ids(), gf, hf);
                 }
@@ -519,8 +552,8 @@ namespace {
             }
         }
         const auto near_vertex = [&](index_t v) -> const Jet<Order>& {
-            const auto end = elem.vertices.begin() + elem.num_vertices;
-            const auto it = std::find(elem.vertices.begin(), end, v);
+            const auto* const end = elem.vertices.begin() + elem.num_vertices;
+            const auto* const it = std::find(elem.vertices.begin(), end, v);
             assert(it != end);
             return scratch.near_vertices[it - elem.vertices.begin()];
         };
@@ -547,8 +580,9 @@ namespace {
             // element-local.
             const auto mj = scale(geometry_jet(pair->m, prim), elem.ee_scale);
             const auto weight_at = [&](index_t v) {
-                const auto end = elem.vertices.begin() + elem.num_vertices;
-                const auto it = std::find(elem.vertices.begin(), end, v);
+                const auto* const end =
+                    elem.vertices.begin() + elem.num_vertices;
+                const auto* const it = std::find(elem.vertices.begin(), end, v);
                 assert(it != end);
                 return elem.vertex_weights[it - elem.vertices.begin()];
             };
@@ -566,10 +600,12 @@ namespace {
         base += quotient(numerator, denominator);
         const double weight = elem.weight;
         base.value *= weight;
-        if constexpr (Order >= 1)
+        if constexpr (Order >= 1) {
             base.grad *= weight;
-        if constexpr (Order == 2)
+        }
+        if constexpr (Order == 2) {
             base.hess *= weight;
+        }
         return result;
     }
 
@@ -580,8 +616,9 @@ namespace {
         ElementScratch<Order> scratch;
         explicit Result(int n)
         {
-            if constexpr (Order == 1)
+            if constexpr (Order == 1) {
                 gradient = Eigen::VectorXd::Zero(n);
+            }
         }
     };
     template <int Order>
@@ -605,21 +642,27 @@ namespace {
         std::vector<unsigned char> vertex_active(mesh.num_vertices(), 0);
         std::vector<unsigned char> edge_active(mesh.num_edges(), 0);
         std::vector<unsigned char> face_active(mesh.num_faces(), 0);
-        for (const auto& [v, dict] : maps.vertex_collisions)
+        for (const auto& [v, dict] : maps.vertex_collisions) {
             vertex_active[v] = 1;
-        for (const auto& [edges, dict] : maps.edge_edge_collisions)
+        }
+        for (const auto& [edges, dict] : maps.edge_edge_collisions) {
             edge_active[edges.first] = 1;
-        for (const auto& [face, dicts] : maps.face_collisions)
+        }
+        for (const auto& [face, dicts] : maps.face_collisions) {
             face_active[face] = 1;
+        }
 
         const auto is_active = [&](size_t k) {
             if (k < mesh.num_faces()) {
-                if (face_active[k])
+                if (face_active[k]) {
                     return true;
-                for (int j = 0; j < 3; ++j)
+                }
+                for (int j = 0; j < 3; ++j) {
                     if (vertex_active[mesh.faces()(k, j)]
-                        || edge_active[mesh.faces_to_edges()(k, j)])
+                        || edge_active[mesh.faces_to_edges()(k, j)]) {
                         return true;
+                    }
+                }
                 return false;
             }
             k -= mesh.num_faces();
@@ -639,20 +682,24 @@ namespace {
             tbb::blocked_range<size_t>(0, count), [&](const auto& range) {
                 auto& local = storage.local();
                 for (size_t i = range.begin(); i < range.end(); ++i) {
-                    if (!is_active(i))
+                    if (!is_active(i)) {
                         continue;
+                    }
                     auto& r = evaluate_element<Order>(
                         element(mesh, params, i), mesh, cache, local.scratch,
                         collisions, X, params);
-                    if constexpr (Order == 0)
+                    if constexpr (Order == 0) {
                         local.energy += r.energy.value;
-                    if constexpr (Order == 1)
+                    }
+                    if constexpr (Order == 1) {
                         local_gradient_to_global_gradient(
                             r.energy.grad, r.vertices, 3, local.gradient);
+                    }
                     if constexpr (Order == 2) {
-                        if (projection != PSDProjectionMethod::NONE)
+                        if (projection != PSDProjectionMethod::NONE) {
                             r.energy.hess =
                                 project_to_psd(r.energy.hess, projection);
+                        }
                         local_hessian_to_global_triplets(
                             r.energy.hess, r.vertices, 3, local.hessian,
                             mesh.num_vertices());
@@ -661,14 +708,17 @@ namespace {
             });
         Result<Order> out(X.size());
         for (auto& local : storage) {
-            if constexpr (Order == 0)
+            if constexpr (Order == 0) {
                 out.energy += local.energy;
-            if constexpr (Order == 1)
+            }
+            if constexpr (Order == 1) {
                 out.gradient += local.gradient;
-            if constexpr (Order == 2)
+            }
+            if constexpr (Order == 2) {
                 out.hessian.insert(
                     out.hessian.end(), local.hessian.begin(),
                     local.hessian.end());
+            }
         }
         return out;
     }
@@ -689,8 +739,9 @@ namespace {
         std::vector<Eigen::Triplet<double>> hessian;
         explicit LaggedResult(int n)
         {
-            if constexpr (Order == 1)
+            if constexpr (Order == 1) {
                 gradient = Eigen::VectorXd::Zero(n);
+            }
         }
     };
 
@@ -713,9 +764,11 @@ namespace {
                 const ESPCollisionDict<PointType::EDGE>* dict;
             };
             std::vector<Pair> all;
-            for (const auto& [edges, dict] : maps.edge_edge_collisions)
-                if (edge_coef[edges.first] != 0)
+            for (const auto& [edges, dict] : maps.edge_edge_collisions) {
+                if (edge_coef[edges.first] != 0) {
                     all.push_back({ edges.first, edges.second, dict.get() });
+                }
+            }
             std::sort(all.begin(), all.end(), [](const Pair& a, const Pair& b) {
                 return std::tie(a.ea, a.eb) < std::tie(b.ea, b.eb);
             });
@@ -723,15 +776,18 @@ namespace {
                 const auto ea = all[begin].ea;
                 const auto neighbors = collisions.m_candidates.ee_set(mesh, ea);
                 size_t end = begin;
-                for (; end < all.size() && all[end].ea == ea; ++end)
-                    if (neighbors.contains(all[end].eb))
+                for (; end < all.size() && all[end].ea == ea; ++end) {
+                    if (neighbors.contains(all[end].eb)) {
                         pairs.emplace_back(ea, all[end].eb, all[end].dict);
+                    }
+                }
                 begin = end;
             }
         }
         LaggedResult<Order> out(X.size());
-        if (pairs.empty())
+        if (pairs.empty()) {
             return out;
+        }
 
         // Near potentials of the source edges' endpoints.
         std::vector<VertexSample<Order>> vertices;
@@ -739,11 +795,13 @@ namespace {
         for (const auto& pair : pairs) {
             for (int k = 0; k < 2; ++k) {
                 const index_t v = mesh.edges()(pair.ea, k);
-                if (vertex_index[v] >= 0)
+                if (vertex_index[v] >= 0) {
                     continue;
+                }
                 const auto it = maps.vertex_collisions.find(v);
-                if (it == maps.vertex_collisions.end())
+                if (it == maps.vertex_collisions.end()) {
                     continue;
+                }
                 vertex_index[v] = int(vertices.size());
                 vertices.emplace_back(it->second.get());
             }
@@ -752,8 +810,9 @@ namespace {
         tbb::parallel_for(
             tbb::blocked_range<size_t>(0, vertices.size()),
             [&](const auto& range) {
-                for (size_t i = range.begin(); i < range.end(); ++i)
+                for (size_t i = range.begin(); i < range.end(); ++i) {
                     evaluate_vertex_sample(vertices[i], X, params, nf);
+                }
             });
 
         struct Local {
@@ -770,8 +829,9 @@ namespace {
                 for (size_t i = range.begin(); i < range.end(); ++i) {
                     auto& pair = pairs[i];
                     evaluate_edge_sample(pair, mesh, X, params, nf);
-                    if (value(pair.m) == 0)
+                    if (value(pair.m) == 0) {
                         continue; // m, and its derivatives, vanish
+                    }
                     const std::array<index_t, 4> prim = { {
                         mesh.edges()(pair.ea, 0),
                         mesh.edges()(pair.ea, 1),
@@ -781,19 +841,22 @@ namespace {
                     std::array<const VertexSample<Order>*, 2> ends = {
                         { nullptr, nullptr }
                     };
-                    for (int k = 0; k < 2; ++k)
-                        if (vertex_index[prim[k]] >= 0)
+                    for (int k = 0; k < 2; ++k) {
+                        if (vertex_index[prim[k]] >= 0) {
                             ends[k] = &vertices[vertex_index[prim[k]]];
+                        }
+                    }
 
                     auto& ids = local.ids;
                     ids.assign(prim.begin(), prim.end());
                     const auto& more = pair.dict->vertex_ids();
                     ids.insert(ids.end(), more.begin(), more.end());
-                    for (const auto* end : ends)
+                    for (const auto* end : ends) {
                         if (end) {
                             const auto& vids = end->dict->vertex_ids();
                             ids.insert(ids.end(), vids.begin(), vids.end());
                         }
+                    }
                     std::sort(ids.begin(), ids.end());
                     ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
                     const int ndof = 3 * int(ids.size());
@@ -806,41 +869,46 @@ namespace {
                     const auto scattered = [&](double v, const auto& vids,
                                                const Eigen::VectorXd& g,
                                                const Eigen::MatrixXd& h) {
-                        Jet<Order> out(ndof, v);
+                        Jet<Order> jet(ndof, v);
                         if constexpr (Order >= 1) {
                             const int n = int(vids.size());
                             std::vector<int> at(n);
                             for (int a = 0; a < n; ++a) {
                                 at[a] = local_index(vids[a]);
-                                out.grad.template segment<3>(3 * at[a]) +=
+                                jet.grad.template segment<3>(3 * at[a]) +=
                                     g.template segment<3>(3 * a);
                             }
-                            if constexpr (Order == 2)
-                                for (int a = 0; a < n; ++a)
-                                    for (int b = 0; b < n; ++b)
-                                        out.hess.template block<3, 3>(
+                            if constexpr (Order == 2) {
+                                for (int a = 0; a < n; ++a) {
+                                    for (int b = 0; b < n; ++b) {
+                                        jet.hess.template block<3, 3>(
                                             3 * at[a], 3 * at[b]) +=
                                             h.template block<3, 3>(
                                                 3 * a, 3 * b);
+                                    }
+                                }
+                            }
                         }
-                        return out;
+                        return jet;
                     };
                     const auto geometry = [&](const GeometryScalar<Order>& x) {
-                        Jet<Order> out(ndof, value(x));
+                        Jet<Order> jet(ndof, value(x));
                         if constexpr (Order >= 1) {
                             for (int a = 0; a < 4; ++a) {
                                 const int ia = local_index(prim[a]);
-                                out.grad.template segment<3>(3 * ia) +=
+                                jet.grad.template segment<3>(3 * ia) +=
                                     x.grad.template segment<3>(3 * a);
-                                if constexpr (Order == 2)
-                                    for (int b = 0; b < 4; ++b)
-                                        out.hess.template block<3, 3>(
+                                if constexpr (Order == 2) {
+                                    for (int b = 0; b < 4; ++b) {
+                                        jet.hess.template block<3, 3>(
                                             3 * ia, 3 * local_index(prim[b])) +=
                                             x.Hess.template block<3, 3>(
                                                 3 * a, 3 * b);
+                                    }
+                                }
                             }
                         }
-                        return out;
+                        return jet;
                     };
 
                     Jet<Order> residual = scattered(
@@ -850,8 +918,9 @@ namespace {
                     Jet<Order> one_minus_u = scale(u, -1);
                     one_minus_u.value += 1;
                     for (int k = 0; k < 2; ++k) {
-                        if (!ends[k])
+                        if (!ends[k]) {
                             continue;
+                        }
                         const Jet<Order> near = scattered(
                             ends[k]->near.value, ends[k]->dict->vertex_ids(),
                             ends[k]->near.grad, ends[k]->near.hess);
@@ -861,15 +930,18 @@ namespace {
                     const Jet<Order> term = scale(
                         product(geometry(pair.m), residual),
                         edge_coef[pair.ea]);
-                    if constexpr (Order == 0)
+                    if constexpr (Order == 0) {
                         local.result.energy += term.value;
-                    if constexpr (Order == 1)
+                    }
+                    if constexpr (Order == 1) {
                         local_gradient_to_global_gradient(
                             term.grad, ids, 3, local.result.gradient);
+                    }
                     if constexpr (Order == 2) {
                         Eigen::MatrixXd h = term.hess;
-                        if (projection != PSDProjectionMethod::NONE)
+                        if (projection != PSDProjectionMethod::NONE) {
                             h = project_to_psd(h, projection);
+                        }
                         local_hessian_to_global_triplets(
                             h, ids, 3, local.result.hessian,
                             mesh.num_vertices());
@@ -877,14 +949,17 @@ namespace {
                 }
             });
         for (auto& local : storage) {
-            if constexpr (Order == 0)
+            if constexpr (Order == 0) {
                 out.energy += local.result.energy;
-            if constexpr (Order == 1)
+            }
+            if constexpr (Order == 1) {
                 out.gradient += local.result.gradient;
-            if constexpr (Order == 2)
+            }
+            if constexpr (Order == 2) {
                 out.hessian.insert(
                     out.hessian.end(), local.result.hessian.begin(),
                     local.result.hessian.end());
+            }
         }
         return out;
     }
@@ -914,8 +989,9 @@ Eigen::SparseMatrix<double> local_transfer_hessian(
     const ESPParameters& p,
     PSDProjectionMethod psd)
 {
-    if (c.empty())
+    if (c.empty()) {
         return Eigen::SparseMatrix<double>(X.size(), X.size());
+    }
     auto r = evaluate<2>(c, m, X, p, psd);
     Eigen::SparseMatrix<double> H(X.size(), X.size());
     H.setFromTriplets(r.hessian.begin(), r.hessian.end());

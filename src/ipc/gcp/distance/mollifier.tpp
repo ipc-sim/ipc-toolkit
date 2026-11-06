@@ -47,14 +47,18 @@ scalar edge_edge_mollifier(
         };
         using PE = PointEdgeDistance<scalar, 3>;
         scalar w(1.);
-        if (mtypes[0] == HeavisideType::VARIANT)
+        if (mtypes[0] == HeavisideType::VARIANT) {
             w = w * H(PE::point_edge_sqr_distance(ea0, eb0, eb1) - dist_sqr);
-        if (mtypes[1] == HeavisideType::VARIANT)
+        }
+        if (mtypes[1] == HeavisideType::VARIANT) {
             w = w * H(PE::point_edge_sqr_distance(ea1, eb0, eb1) - dist_sqr);
-        if (mtypes[2] == HeavisideType::VARIANT)
+        }
+        if (mtypes[2] == HeavisideType::VARIANT) {
             w = w * H(PE::point_edge_sqr_distance(eb0, ea0, ea1) - dist_sqr);
-        if (mtypes[3] == HeavisideType::VARIANT)
+        }
+        if (mtypes[3] == HeavisideType::VARIANT) {
             w = w * H(PE::point_edge_sqr_distance(eb1, ea0, ea1) - dist_sqr);
+        }
         return w;
     }
     const scalar denom = dist_sqr * MOLLIFIER_THRESHOLD_EPS;
