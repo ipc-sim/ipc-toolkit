@@ -266,7 +266,7 @@ namespace {
             // 1. Create a buffer of the correct architecture-dependent size
             alignas(xs::default_arch::alignment())
                 std::array<float, batch_t::size>
-                    buffer { };
+                    buffer {};
 
 #ifdef __clang__
 #pragma unroll
@@ -568,7 +568,7 @@ void LBVH::detect_vertex_vertex_candidates(
 
     detect_candidates<VertexVertexCandidate, /*swap_order=*/true>(
         other.vertices.data(), other.vertices.size(), vertex_bvh,
-        /*rightmost_leaves=*/ { }, can_collide, candidates);
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
 }
 
 void LBVH::detect_edge_vertex_candidates(
@@ -584,7 +584,7 @@ void LBVH::detect_edge_vertex_candidates(
 
     detect_candidates<EdgeVertexCandidate, /*swap_order=*/true>(
         other.vertices.data(), other.vertices.size(), edge_bvh,
-        /*rightmost_leaves=*/ { }, can_collide, candidates);
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
 }
 
 void LBVH::detect_vertex_edge_candidates(
@@ -600,7 +600,7 @@ void LBVH::detect_vertex_edge_candidates(
 
     detect_candidates<EdgeVertexCandidate, /*swap_order=*/false>(
         other.edges.data(), other.edges.size(), vertex_bvh,
-        /*rightmost_leaves=*/ { }, can_collide, candidates);
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
 }
 
 void LBVH::detect_edge_edge_candidates(
@@ -616,7 +616,7 @@ void LBVH::detect_edge_edge_candidates(
 
     detect_candidates<EdgeEdgeCandidate, /*swap_order=*/true>(
         other.edges.data(), other.edges.size(), edge_bvh,
-        /*rightmost_leaves=*/ { }, can_collide, candidates);
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
 }
 
 void LBVH::detect_face_vertex_candidates(
@@ -632,7 +632,7 @@ void LBVH::detect_face_vertex_candidates(
 
     detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
         other.vertices.data(), other.vertices.size(), face_bvh,
-        /*rightmost_leaves=*/ { }, can_collide, candidates);
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
 }
 
 void LBVH::detect_vertex_face_candidates(
@@ -648,7 +648,7 @@ void LBVH::detect_vertex_face_candidates(
 
     detect_candidates<FaceVertexCandidate, /*swap_order=*/false>(
         other.faces.data(), other.faces.size(), vertex_bvh,
-        /*rightmost_leaves=*/ { }, can_collide, candidates);
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
 }
 
 // ============================================================================
