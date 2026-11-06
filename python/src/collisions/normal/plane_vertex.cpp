@@ -1,3 +1,4 @@
+#include <Eigen/Geometry>
 #include <common.hpp>
 
 #include <ipc/collisions/normal/plane_vertex.hpp>

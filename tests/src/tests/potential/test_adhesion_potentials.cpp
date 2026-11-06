@@ -9,9 +9,9 @@
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/potentials/normal_adhesion_potential.hpp>
 #include <ipc/potentials/tangential_adhesion_potential.hpp>
+#include <ipc/math/constants.hpp>
 
 #include <finitediff.hpp>
-#include <igl/PI.h>
 
 using namespace ipc;
 
@@ -39,7 +39,7 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
     if (rotated) {
         Eigen::Matrix3d R =
             Eigen::AngleAxis<double>(
-                Eigen::AngleAxisd(igl::PI / 4, Eigen::Vector3d::UnitY()))
+                Eigen::AngleAxisd(ipc::PI / 4, Eigen::Vector3d::UnitY()))
                 .toRotationMatrix();
         vertices.bottomRows(n) =
             (vertices.bottomRows(n) * R.transpose()).eval();

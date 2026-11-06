@@ -677,3 +677,6 @@ CMakeGraphVizOptions.cmake
 .claude
 graphify-out
 __cmake_systeminformation
+simulator_test.glb
+**/.polyscope.ini
+**/imgui.ini

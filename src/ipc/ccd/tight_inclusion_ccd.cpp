@@ -36,8 +36,19 @@ bool TightInclusionCCD::ccd_strategy(
     const double min_distance,
     const double initial_distance,
     const double conservative_rescaling,
-    double& toi)
+    double& toi,
+    const NarrowPhaseCCDMode mode)
 {
+    if (mode != NarrowPhaseCCDMode::STANDALONE) {
+        // As the per-piece linear CCD inside a piecewise driver (e.g.,
+        // NonlinearCCD), the driver supplies its own conservative margins, so
+        // we run Tight Inclusion directly with the caller's minimum separation
+        // and zero-TOI requirement (no inflation, rerun, or rescaling).
+        return ccd(
+            min_distance, mode == NarrowPhaseCCDMode::COMPONENT_NO_ZERO_TOI,
+            toi);
+    }
+
     if (check_initial_distance(initial_distance, min_distance, toi)) {
         return true;
     }
@@ -81,7 +92,8 @@ bool TightInclusionCCD::point_point_ccd_3D(
     Eigen::ConstRef<Eigen::Vector3d> p1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -94,10 +106,11 @@ bool TightInclusionCCD::point_point_ccd_3D(
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](const double _min_distance, const bool no_zero_toi,
+    const auto ccd = [&](const double _min_distance, const bool _no_zero_toi,
                          double& _toi) -> bool {
-        const long _max_iterations =
-            no_zero_toi ? TIGHT_INCLUSION_UNLIMITED_ITERATIONS : max_iterations;
+        const long _max_iterations = _no_zero_toi
+            ? TIGHT_INCLUSION_UNLIMITED_ITERATIONS
+            : max_iterations;
 
         double output_tolerance;
         // NOTE: Use degenerate edge-edge
@@ -110,7 +123,7 @@ bool TightInclusionCCD::point_point_ccd_3D(
             tmax,                         // maximum time to check
             _max_iterations,              // maximum number of iterations
             output_tolerance,             // delta_actual
-            no_zero_toi);
+            _no_zero_toi);
 
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
             logger().trace(
@@ -124,7 +137,7 @@ bool TightInclusionCCD::point_point_ccd_3D(
     };
 
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 bool TightInclusionCCD::point_point_ccd(
@@ -134,14 +147,15 @@ bool TightInclusionCCD::point_point_ccd(
     Eigen::ConstRef<VectorMax3d> p1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(p0_t0.size() == p1_t0.size());
     assert(p0_t0.size() == p0_t1.size());
     assert(p0_t0.size() == p1_t1.size());
     return point_point_ccd_3D(
         to_3D(p0_t0), to_3D(p1_t0), to_3D(p0_t1), to_3D(p1_t1), toi,
-        min_distance, tmax);
+        min_distance, tmax, mode);
 }
 
 bool TightInclusionCCD::point_edge_ccd_3D(
@@ -153,7 +167,8 @@ bool TightInclusionCCD::point_edge_ccd_3D(
     Eigen::ConstRef<Eigen::Vector3d> e1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -167,10 +182,11 @@ bool TightInclusionCCD::point_edge_ccd_3D(
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](const double _min_distance, const bool no_zero_toi,
+    const auto ccd = [&](const double _min_distance, const bool _no_zero_toi,
                          double& _toi) -> bool {
-        const long _max_iterations =
-            no_zero_toi ? TIGHT_INCLUSION_UNLIMITED_ITERATIONS : max_iterations;
+        const long _max_iterations = _no_zero_toi
+            ? TIGHT_INCLUSION_UNLIMITED_ITERATIONS
+            : max_iterations;
 
         double output_tolerance = tolerance;
         // NOTE: Use degenerate edge-edge
@@ -183,7 +199,7 @@ bool TightInclusionCCD::point_edge_ccd_3D(
             tmax,                         // maximum time to check
             _max_iterations,              // maximum number of iterations
             output_tolerance,             // delta_actual
-            no_zero_toi);
+            _no_zero_toi);
 
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
             logger().trace(
@@ -197,7 +213,7 @@ bool TightInclusionCCD::point_edge_ccd_3D(
     };
 
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 bool TightInclusionCCD::point_edge_ccd(
@@ -209,14 +225,15 @@ bool TightInclusionCCD::point_edge_ccd(
     Eigen::ConstRef<VectorMax3d> e1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(p_t1.size() == p_t0.size());
     assert(e0_t0.size() == p_t0.size() && e1_t0.size() == p_t0.size());
     assert(e0_t1.size() == p_t0.size() && e1_t1.size() == p_t0.size());
     return point_edge_ccd_3D(
         to_3D(p_t0), to_3D(e0_t0), to_3D(e1_t0), to_3D(p_t1), to_3D(e0_t1),
-        to_3D(e1_t1), toi, min_distance, tmax);
+        to_3D(e1_t1), toi, min_distance, tmax, mode);
 }
 
 bool TightInclusionCCD::edge_edge_ccd(
@@ -230,7 +247,8 @@ bool TightInclusionCCD::edge_edge_ccd(
     Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -245,10 +263,11 @@ bool TightInclusionCCD::edge_edge_ccd(
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](const double _min_distance, const bool no_zero_toi,
+    const auto ccd = [&](const double _min_distance, const bool _no_zero_toi,
                          double& _toi) -> bool {
-        const long _max_iterations =
-            no_zero_toi ? TIGHT_INCLUSION_UNLIMITED_ITERATIONS : max_iterations;
+        const long _max_iterations = _no_zero_toi
+            ? TIGHT_INCLUSION_UNLIMITED_ITERATIONS
+            : max_iterations;
 
         double output_tolerance;
         bool is_impacting = ticcd::edgeEdgeCCD(
@@ -260,7 +279,7 @@ bool TightInclusionCCD::edge_edge_ccd(
             tmax,                         // maximum time to check
             _max_iterations,              // maximum number of iterations
             output_tolerance,             // delta_actual
-            no_zero_toi);
+            _no_zero_toi);
 
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
             logger().trace(
@@ -274,7 +293,7 @@ bool TightInclusionCCD::edge_edge_ccd(
     };
 
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 bool TightInclusionCCD::point_triangle_ccd(
@@ -288,7 +307,8 @@ bool TightInclusionCCD::point_triangle_ccd(
     Eigen::ConstRef<Eigen::Vector3d> t2_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -303,10 +323,11 @@ bool TightInclusionCCD::point_triangle_ccd(
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](const double _min_distance, const bool no_zero_toi,
+    const auto ccd = [&](const double _min_distance, const bool _no_zero_toi,
                          double& _toi) -> bool {
-        const long _max_iterations =
-            no_zero_toi ? TIGHT_INCLUSION_UNLIMITED_ITERATIONS : max_iterations;
+        const long _max_iterations = _no_zero_toi
+            ? TIGHT_INCLUSION_UNLIMITED_ITERATIONS
+            : max_iterations;
 
         double output_tolerance;
         bool is_impacting = ticcd::vertexFaceCCD(
@@ -318,7 +339,7 @@ bool TightInclusionCCD::point_triangle_ccd(
             tmax,                         // maximum time to check
             _max_iterations,              // maximum number of iterations
             output_tolerance,             // delta_actual
-            no_zero_toi);
+            _no_zero_toi);
 
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
             logger().trace(
@@ -332,7 +353,7 @@ bool TightInclusionCCD::point_triangle_ccd(
     };
 
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 } // namespace ipc
