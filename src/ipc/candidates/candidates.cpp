@@ -240,9 +240,10 @@ void Candidates::build(
     broad_phase->detect_collision_candidates(*this, all_types);
     has_all_types = all_types;
 
-    // As in the static build: with all_types (3D) the whole-mesh pass above
-    // already covers the codim. primitives, and the codim. detectors would
-    // replace its lists.
+    // With all_types (3D), the whole-mesh pass above already detected the
+    // vertex-vertex and edge-vertex candidates for every primitive, codim. ones
+    // included. The codim.-only passes below would clear those lists and refill
+    // them with codim. pairs only, so skip them (as the static build does).
     const bool detect_codim = !all_types || dim != 3;
 
     // Codim. vertices to codim. vertices:
