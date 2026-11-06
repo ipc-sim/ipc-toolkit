@@ -677,7 +677,3 @@ CMakeGraphVizOptions.cmake
 .claude
 graphify-out
 __cmake_systeminformation
-# ESP local-transfer notes, reports and example (kept locally, not tracked)
-docs/esp-local-transfer.md
-docs/reports/
-python/examples/esp_local_transfer.py
