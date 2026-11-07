@@ -45,7 +45,7 @@
         <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.6efbe22605a23fcd6.min.css?v=b2ceb110" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=39975cc5" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=93eb8535" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -5592,6 +5592,7 @@ Gradient assembly, before and after, with the strategy selected per scene. Bench
 </ul>
 </li>
 <li><p>Recovering the compile-time dimension in the tangent, closest-point, relative-velocity, and area kernels is worth 1.5–4.8× on the call site that dominates in practice (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/249">#249</a>):</p>
+<div class="ipc-table colwidths-given tight-table docutils container">
 <table class="tight-table docutils data align-center">
 <colgroup>
 <col style="width: 47.1%" />
@@ -5649,6 +5650,7 @@ Gradient assembly, before and after, with the strategy selected per scene. Bench
 </tr>
 </tbody>
 </table>
+</div>
 </li>
 <li><p>Branch once on the dimension in <code class="docutils literal notranslate"><span class="pre">EdgeVertexCandidate::compute_distance_gradient</span></code>/<code class="docutils literal notranslate"><span class="pre">_hessian</span></code> so the statically sized kernels are selected (3.1× on the gradient).</p></li>
 <li><p>Move all cold <code class="docutils literal notranslate"><span class="pre">throw</span></code> bodies in the distance dispatch functions out of line behind <code class="docutils literal notranslate"><span class="pre">[[noreturn]]</span></code> helpers; constructing the exception inline consumed the caller’s inlining budget (the single largest lever found: up to 2× by itself).</p></li>

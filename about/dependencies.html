@@ -45,7 +45,7 @@
         <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.6efbe22605a23fcd6.min.css?v=b2ceb110" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=39975cc5" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=93eb8535" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -2165,142 +2165,135 @@ Default dependencies of the <code class="docutils literal notranslate"><span cla
 <p>The IPC Toolkit depends on a handful of third-party libraries, which are used to provide various functionality.</p>
 <p><strong>All required dependencies are downloaded through CMake</strong> depending on the build options, and are built automatically when you build the IPC Toolkit. You do not need to install them separately.</p>
 <p>These dependencies are all <a class="reference external" href="license.html">permissively licensed</a>, and we list them here to give due credit!</p>
+<div class="ipc-table docutils container">
 <table class="docutils data align-default">
-<colgroup>
-<col style="width: 15.0%" />
-<col style="width: 35.0%" />
-<col style="width: 10.0%" />
-<col style="width: 40.0%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Purpose</p></th>
 <th class="head"><p>License</p></th>
-<th class="head"><p>Link</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Eigen</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="http://eigen.tuxfamily.org/">Eigen</a></p></td>
 <td><p>Linear algebra</p></td>
 <td><p>MPL-2.0</p></td>
-<td><p><a class="reference external" href="http://eigen.tuxfamily.org/">eigen.tuxfamily.org</a></p></td>
 </tr>
-<tr class="row-odd"><td><p>libigl</p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://libigl.github.io/">libigl</a></p></td>
 <td><p>Geometry functions and predicates</p></td>
 <td><p>MPL-2.0</p></td>
-<td><p><a class="reference external" href="https://libigl.github.io/">libigl.github.io</a></p></td>
 </tr>
-<tr class="row-even"><td><p>oneTBB</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/oneapi-src/oneTBB">oneTBB</a></p></td>
 <td><p>Multithreading</p></td>
 <td><p>Apache-2.0</p></td>
-<td><p><a class="reference external" href="https://github.com/oneapi-src/oneTBB">github.com/oneapi-src/oneTBB</a></p></td>
 </tr>
-<tr class="row-odd"><td><p>Tight-Inclusion</p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">Tight-Inclusion</a></p></td>
 <td><p>Provably conservative CCD</p></td>
 <td><p>MIT</p></td>
-<td><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">github.com/Continuous-Collision-Detection/Tight-Inclusion</a></p></td>
 </tr>
-<tr class="row-even"><td><p>Scalable-CCD</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Scalable-CCD">Scalable-CCD</a></p></td>
 <td><p>Scalable (GPU) CCD</p></td>
 <td><p>Apache-2.0</p></td>
-<td><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Scalable-CCD">github.com/Continuous-Collision-Detection/Scalable-CCD</a></p></td>
 </tr>
-<tr class="row-odd"><td><p>spdlog</p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a></p></td>
 <td><p>Logger</p></td>
 <td><p>MIT</p></td>
-<td><p><a class="reference external" href="https://github.com/gabime/spdlog">github.com/gabime/spdlog</a></p></td>
 </tr>
-<tr class="row-even"><td><p>TinyAD</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/patr-schm/TinyAD">TinyAD</a></p></td>
 <td><p>Automatic differentiation for testing and in non-performance critical smooth contact functions</p></td>
 <td><p>MIT</p></td>
-<td><p><a class="reference external" href="https://github.com/patr-schm/TinyAD">github.com/microsoft/TinyAD</a></p></td>
 </tr>
-<tr class="row-odd"><td><p>geogram (MultiPrecision PSM)</p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/BrunoLevy/geogram/releases">geogram (MultiPrecision PSM)</a></p></td>
 <td><p>Exact arithmetic for the exact distance-type classification used by the ESP potential. We only use the lightweight, two-file MultiPrecision PSM, not the full geogram library.</p></td>
 <td><p>BSD-3-Clause</p></td>
-<td><p><a class="reference external" href="https://github.com/BrunoLevy/geogram/releases">github.com/BrunoLevy/geogram</a></p></td>
 </tr>
 </tbody>
 </table>
+</div>
 <h2 id="optional-dependencies">Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading">¶</a></h2>
 <p>Additionally, IPC Toolkit may optionally use the following libraries:</p>
+<div class="ipc-table docutils container">
 <table class="docutils data align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Purpose</p></th>
 <th class="head"><p>License</p></th>
-<th class="head"><p>Link</p></th>
 <th class="head"><p>Enabled</p></th>
 <th class="head"><p>CMake Option</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>xsimd</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://xsimd.readthedocs.io/en/latest">xsimd</a></p></td>
 <td><p>Cross-platform SIMD library for vectorization</p></td>
 <td><p>BSD-3-Clause</p></td>
-<td><p><a class="reference external" href="https://xsimd.readthedocs.io/en/latest">xsimd.readthedocs.io</a></p></td>
 <td><p>✅</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_SIMD</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>robin-map</p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/Tessil/robin-map">robin-map</a></p></td>
 <td><p>Faster hashing</p></td>
 <td><p>MIT</p></td>
-<td><p><a class="reference external" href="https://github.com/Tessil/robin-map">github.com/Tessil/robin-map</a></p></td>
 <td><p>✅</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_ROBIN_MAP</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>Abseil</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://abseil.io/">Abseil</a></p></td>
 <td><p>Hashing utilities</p></td>
 <td><p>Apache-2.0</p></td>
-<td><p><a class="reference external" href="https://abseil.io/">abseil.io</a></p></td>
 <td><p>✅</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_ABSEIL</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>filib</p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/zfergus/filib">filib</a></p></td>
 <td><p>Interval arithmetic for nonlinear trajectories/CCD</p></td>
 <td><p>LGPL-2.1</p></td>
-<td><p><a class="reference external" href="https://github.com/zfergus/filib">github.com/zfergus/filib</a></p></td>
 <td><p>✅</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_FILIB</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>MeshFEMSparse</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/MeshFEM/MeshFEMSparse">MeshFEMSparse</a></p></td>
 <td><p>Block-CSC data structures for fast Hessian assembly (see <a class="desctype reference internal" href="../cpp-api/utils.html#_CPPv4N3ipc23MeshFEMHessianAssemblerE" title="ipc::MeshFEMHessianAssembler (C++ class) — HessianAssembler backed by MeshFEMSparse's block-CSC data structures (Mohammadian et al."><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ipc::MeshFEMHessianAssembler</span></code></a>)</p></td>
 <td><p>MIT</p></td>
-<td><p><a class="reference external" href="https://github.com/MeshFEM/MeshFEMSparse">github.com/MeshFEM/MeshFEMSparse</a></p></td>
 <td><p>✅</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_MESHFEM_SPARSE</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>nlohmann/json</p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/nlohmann/json">nlohmann/json</a></p></td>
 <td><p>JSON parsing for profiler and tests</p></td>
 <td><p>MIT</p></td>
-<td><p><a class="reference external" href="https://github.com/nlohmann/json">github.com/nlohmann/json</a></p></td>
 <td><p>⬜</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_PROFILER</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>Tracy</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/wolfpld/tracy">Tracy</a></p></td>
 <td><p>Frame profiler</p></td>
 <td><p>BSD-3-Clause</p></td>
-<td><p><a class="reference external" href="https://github.com/wolfpld/tracy">github.com/wolfpld/tracy</a></p></td>
 <td><p>⬜</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_TRACY</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>rational-cpp</p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.io/zfergus/rational-cpp">rational-cpp</a></p></td>
 <td><p>Rational arithmetic used for exact intersection checks (requires <a class="reference external" href="https://gmplib.org">GMP</a> to be installed at a system level)</p></td>
 <td><p>MIT</p></td>
-<td><p><a class="reference external" href="https://github.io/zfergus/rational-cpp">github.io/zfergus/rational-cpp</a></p></td>
 <td><p>⬜</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>Etienne Vouga’s Collision Detection Library</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/evouga/collisiondetection">Etienne Vouga’s Collision Detection Library</a></p></td>
 <td><p>Inexact CCD (included for comparison with the original IPC library)</p></td>
 <td><p>???</p></td>
-<td><p><a class="reference external" href="https://github.com/evouga/collisiondetection">github.com/evouga/collisiondetection</a></p></td>
 <td><p>⬜</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_INEXACT_CCD</span></code></p></td>
 </tr>
 </tbody>
 </table>
+</div>
 <p>Some of these libraries are enabled by default, and some are not. You can enable or disable them by passing the appropriate CMake option when you configure the IPC Toolkit build.</p>
+<div class="warning admonition">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">filib</span></code> is licensed under <a class="reference external" href="https://github.com/zfergus/filib/blob/main/LICENSE">LGPL-2.1</a> and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynamic linkage requires copying the <code class="docutils literal notranslate"><span class="pre">.so</span></code>/<code class="docutils literal notranslate"><span class="pre">.dylib</span></code>/<code class="docutils literal notranslate"><span class="pre">.dll</span></code> file to the binary directory or system path. To enable this, set the CMake option <code class="docutils literal notranslate"><span class="pre">FILIB_BUILD_SHARED_LIBS</span></code> to <code class="docutils literal notranslate"><span class="pre">ON</span></code> and add this CMake code to copy the shared library object to the binary directory:</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><code><span class="c"># Copy shared lib to the output directory</span>
+<span class="nb">add_custom_command</span><span class="p">(</span>
+<span class="w">    </span><span class="s">TARGET</span><span class="w"> </span><span class="o">${</span><span class="nv">MY_EXE_TARGET</span><span class="o">}</span><span class="w"> </span><span class="s">POST_BUILD</span>
+<span class="w">    </span><span class="s">COMMAND</span><span class="w"> </span><span class="o">${</span><span class="nv">CMAKE_COMMAND</span><span class="o">}</span><span class="w"> </span><span class="s">-E</span><span class="w"> </span><span class="s">copy_if_different</span><span class="w"> </span><span class="o">$&lt;</span><span class="nv">TARGET_RUNTIME_DLLS:${MY_EXE_TARGET}</span><span class="o">&gt;</span><span class="w"> </span><span class="o">$&lt;</span><span class="nv">TARGET_FILE_DIR:${MY_EXE_TARGET}</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="s">COMMAND_EXPAND_LISTS</span>
+<span class="p">)</span>
+</code></pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">${MY_EXE_TARGET}</span></code> is the name of your executable target. If you know a better way to handle this, please <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/discussions">let us know</a>!</p>
+<p>If you would rather avoid LGPL code entirely, you can disable filib by setting <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_FILIB</span></code> to <code class="docutils literal notranslate"><span class="pre">OFF</span></code>. With this option disabled, CMake will not download or use any of filib’s code.</p>
+</div>
 <div class="warning admonition">
 <p class="admonition-title">Warning</p>
 <p><code class="docutils literal notranslate"><span class="pre">xsimd</span></code> is linked <strong>publicly</strong>, and the detected SIMD flags (<code class="docutils literal notranslate"><span class="pre">SIMD_CXX_FLAGS</span></code>, typically <code class="docutils literal notranslate"><span class="pre">-march=native</span></code>) are applied publicly to anything linking <code class="docutils literal notranslate"><span class="pre">ipc::toolkit</span></code>. This is a requirement rather than a convenience: <code class="docutils literal notranslate"><span class="pre">ipc/utils/simd.hpp</span></code> exposes <code class="docutils literal notranslate"><span class="pre">ipc::SimdBatch&lt;T&gt;</span></code> in the public API, and <code class="docutils literal notranslate"><span class="pre">xsimd::default_arch</span></code> is resolved from each translation unit’s <em>own</em> compiler flags. A consumer compiled without these flags therefore names a different batch type than the one instantiated inside the library, and the link fails.</p>
@@ -2318,78 +2311,62 @@ Default dependencies of the <code class="docutils literal notranslate"><span cla
 <p class="admonition-title">Note</p>
 <p>The Gauss–Lobatto quadrature used by the ESP potential (<code class="docutils literal notranslate"><span class="pre">ipc/esp/collisions/esp_quadrature.hpp</span></code>) is adapted from John Burkardt’s <a class="reference external" href="https://people.sc.fsu.edu/~jburkardt/c_src/quad_rule/quad_rule.html">quad_rule</a> library, which is distributed under the MIT license.</p>
 </div>
-<div class="warning admonition">
-<p class="admonition-title">Warning</p>
-<p><code class="docutils literal notranslate"><span class="pre">filib</span></code> is licensed under <a class="reference external" href="https://github.com/zfergus/filib/blob/main/LICENSE">LGPL-2.1</a> and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynamic linkage requires copying the <code class="docutils literal notranslate"><span class="pre">.so</span></code>/<code class="docutils literal notranslate"><span class="pre">.dylib</span></code>/<code class="docutils literal notranslate"><span class="pre">.dll</span></code> file to the binary directory or system path. To enable this, set the CMake option <code class="docutils literal notranslate"><span class="pre">FILIB_BUILD_SHARED_LIBS</span></code> to <code class="docutils literal notranslate"><span class="pre">ON</span></code> and add this CMake code to copy the shared library object to the binary directory:</p>
-<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><code><span class="c"># Copy shared lib to the output directory</span>
-<span class="nb">add_custom_command</span><span class="p">(</span>
-<span class="w">    </span><span class="s">TARGET</span><span class="w"> </span><span class="o">${</span><span class="nv">MY_EXE_TARGET</span><span class="o">}</span><span class="w"> </span><span class="s">POST_BUILD</span>
-<span class="w">    </span><span class="s">COMMAND</span><span class="w"> </span><span class="o">${</span><span class="nv">CMAKE_COMMAND</span><span class="o">}</span><span class="w"> </span><span class="s">-E</span><span class="w"> </span><span class="s">copy_if_different</span><span class="w"> </span><span class="o">$&lt;</span><span class="nv">TARGET_RUNTIME_DLLS:${MY_EXE_TARGET}</span><span class="o">&gt;</span><span class="w"> </span><span class="o">$&lt;</span><span class="nv">TARGET_FILE_DIR:${MY_EXE_TARGET}</span><span class="o">&gt;</span>
-<span class="w">    </span><span class="s">COMMAND_EXPAND_LISTS</span>
-<span class="p">)</span>
-</code></pre></div>
-</div>
-<p>where <code class="docutils literal notranslate"><span class="pre">${MY_EXE_TARGET}</span></code> is the name of your executable target. If you know a better way to handle this, please <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/discussions">let us know</a>!</p>
-<p>If you would rather avoid LGPL code entirely, you can disable filib by setting <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_FILIB</span></code> to <code class="docutils literal notranslate"><span class="pre">OFF</span></code>. With this option disabled, CMake will not download or use any of filib’s code.</p>
-</div>
 <h2 id="python-bindings-dependencies">Python Bindings Dependencies<a class="headerlink" href="#python-bindings-dependencies" title="Link to this heading">¶</a></h2>
 <p>The following dependencies are optionally used when building Python bindings:</p>
+<div class="ipc-table docutils container">
 <table class="docutils data align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Purpose</p></th>
 <th class="head"><p>License</p></th>
-<th class="head"><p>Link</p></th>
 <th class="head"><p>Enabled</p></th>
 <th class="head"><p>CMake Option</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Pybind11</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/pybind/pybind11">Pybind11</a></p></td>
 <td><p>Python bindings</p></td>
 <td><p>BSD-3-Clause</p></td>
-<td><p><a class="reference external" href="https://github.com/pybind/pybind11">github.com/pybind/pybind11</a></p></td>
 <td><p>✅</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_PYTHON</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>pybind11_json</p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/pybind/pybind11_json">pybind11_json</a></p></td>
 <td><p>JSON support for pybind11 (used in profiler)</p></td>
 <td><p>MIT</p></td>
-<td><p><a class="reference external" href="https://github.com/pybind/pybind11_json">github.com/pybind/pybind11_json</a></p></td>
 <td><p>⬜</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_PYTHON</span></code> and <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_PROFILER</span></code></p></td>
 </tr>
 </tbody>
 </table>
+</div>
 <h2 id="unit-test-dependencies">Unit Test Dependencies<a class="headerlink" href="#unit-test-dependencies" title="Link to this heading">¶</a></h2>
 <p>The following dependencies are optionally used when unit tests are enabled:</p>
+<div class="ipc-table docutils container">
 <table class="docutils data align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Purpose</p></th>
 <th class="head"><p>License</p></th>
-<th class="head"><p>Link</p></th>
 <th class="head"><p>Enabled</p></th>
 <th class="head"><p>CMake Option</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Catch2</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/catchorg/Catch2.git">Catch2</a></p></td>
 <td><p>Testing framework</p></td>
 <td><p>BSL-1.0</p></td>
-<td><p><a class="reference external" href="https://github.com/catchorg/Catch2.git">github.com/catchorg/Catch2</a></p></td>
 <td><p>✅</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_TESTS</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>finite-diff</p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/zfergus/finite-diff">finite-diff</a></p></td>
 <td><p>Finite-difference comparisons</p></td>
 <td><p>MIT</p></td>
-<td><p><a class="reference external" href="https://github.com/zfergus/finite-diff">github.com/zfergus/finite-diff</a></p></td>
 <td><p>✅</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_TESTS</span></code></p></td>
 </tr>
 </tbody>
 </table>
+</div>
 
 
 

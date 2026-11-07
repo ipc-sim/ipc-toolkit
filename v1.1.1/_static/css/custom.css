@@ -17,7 +17,8 @@ li {
 }
 
 .md-grid {
-    max-width: max(1250px, 75vw) !important;
+    /*max-width: max(1250px, 75vw) !important;*/
+    max-width: 75rem !important;
 }
 
 span.colon {
@@ -74,6 +75,106 @@ dl.py.objdesc > dd > details.toggle-details > summary > svg.tb-icon {
 
 table.autosummary {
     font-size: 0.75rem !important;
+}
+
+/* ── Tables ── */
+
+/* We draw every hand-written table as a card, matching the Rigid IPC
+   comparison page: a bordered box, rounded like the admonitions, with small
+   uppercase headers and a rule between rows, instead of Material's gridded
+   table.
+   Generated tables (autosummary member lists and the indices) keep the
+   theme's look, and so do the comparison page's side-by-side boxes, which
+   style themselves. These colors mirror the ones that page uses. */
+.md-typeset {
+    --ipc-table-bg: var(--md-default-bg-color);
+    --ipc-table-rule: #e5e7eb;
+    --ipc-table-faint: #f4f5f7;
+    --ipc-table-muted: #7a8089;
+}
+
+[data-md-color-scheme="slate"] .md-typeset {
+    --ipc-table-bg: color-mix(in srgb, var(--md-default-bg-color), white 3%);
+    --ipc-table-rule: rgba(255, 255, 255, 0.09);
+    --ipc-table-faint: rgba(255, 255, 255, 0.04);
+    --ipc-table-muted: #8d949e;
+}
+
+/* conf.py puts each hand-written table in a div.ipc-table, and that div is
+   the card. It also scrolls sideways, so a table wider than the column stays
+   inside its card while every table still fills it at 100%. */
+.md-content .md-typeset .ipc-table {
+    margin: 1em 0;
+    overflow-x: auto;
+    border: 1px solid var(--ipc-table-rule);
+    border-radius: 0.2rem;
+    background: var(--ipc-table-bg);
+}
+
+/* The theme styles these through table.data with several qualifiers, so we
+   name the same class to outrank it. */
+.md-content .md-typeset .ipc-table > table.data {
+    display: table;
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-collapse: collapse;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    font-size: .64rem;
+    line-height: 1.6;
+}
+
+/* The theme holds every header cell to at least 5rem, which spends 100px on
+   a column of checkboxes. We let columns size to their content instead. */
+.md-content .md-typeset .ipc-table > table.data th {
+    min-width: 0;
+    padding: 14px 12px 8px;
+    border: 0;
+    border-bottom: 1px solid var(--ipc-table-rule);
+    background: none;
+    color: var(--ipc-table-muted);
+    font-size: .64rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+    vertical-align: bottom;
+}
+
+.md-content .md-typeset .ipc-table > table.data td {
+    padding: 9px 12px;
+    border: 0;
+    border-top: 1px solid var(--ipc-table-rule);
+    vertical-align: top;
+}
+
+/* A table with a header row already has a rule under it, and one without
+   needs no rule above its first row. */
+.md-content .md-typeset .ipc-table > table.data tbody tr:first-child td {
+    border-top: 0;
+}
+
+.md-content .md-typeset .ipc-table > table.data :is(th, td):first-child {
+    padding-left: 20px;
+}
+
+.md-content .md-typeset .ipc-table > table.data :is(th, td):last-child {
+    padding-right: 20px;
+}
+
+.md-content .md-typeset .ipc-table > table.data :is(th, td) > p {
+    margin: 0;
+}
+
+.md-content .md-typeset .ipc-table > table.data tbody tr {
+    transition: background 0.15s;
+}
+
+.md-content .md-typeset .ipc-table > table.data tbody tr:hover {
+    background: var(--ipc-table-faint);
+    box-shadow: none;
 }
 
 /* Compress the padding inside table cells for the custom class */

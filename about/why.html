@@ -45,7 +45,7 @@
         <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.6efbe22605a23fcd6.min.css?v=b2ceb110" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=39975cc5" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=93eb8535" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -2367,6 +2367,7 @@
 <p>The IPC Toolkit is <strong>not</strong> a full simulation library. It does not include any physics or solvers. We think of that as the point of the project rather than a limitation: we implement the contact and leave everything else to you.</p>
 </div>
 <h2 id="what-you-get">What You Get<a class="headerlink" href="#what-you-get" title="Link to this heading">¶</a></h2>
+<div class="ipc-table colwidths-given docutils container">
 <table class="docutils data align-default">
 <colgroup>
 <col style="width: 25.0%" />
@@ -2401,6 +2402,7 @@
 </tr>
 </tbody>
 </table>
+</div>
 <h2 id="where-the-toolkit-fits">Where the Toolkit Fits<a class="headerlink" href="#where-the-toolkit-fits" title="Link to this heading">¶</a></h2>
 <p>Simulation software generally falls into one of two groups. Either you build on top of it, or you embed it inside your own solver.</p>
 <ul class="simple">
@@ -2473,6 +2475,7 @@
 </div>
 <p><em>Illustrative positioning based on each project’s stated scope. This is not a benchmark, and it leaves out many other projects. The horizontal axis asks whether you embed the project in your solver or build on top of it. The vertical axis asks how closely the project’s contact handling resembles IPC (a barrier with intersection-free CCD).</em></p>
 <p>The table below lists the projects in the figure, starting with the ones closest to the IPC Toolkit. Compare the <em>Embed in your solver?</em> and <em>IPC-grade contact?</em> columns. Projects with IPC-grade contact are almost always frameworks that you build on, and the projects you can embed in your own solver almost never handle contact.</p>
+<div class="ipc-table colwidths-given docutils container">
 <table class="docutils data align-default">
 <colgroup>
 <col style="width: 16.0%" />
@@ -2612,6 +2615,7 @@
 </tr>
 </tbody>
 </table>
+</div>
 <div class="note admonition">
 <p class="admonition-title">Note</p>
 <p>IPC, C-IPC, Rigid IPC, and GIPC are reference implementations of their papers. They are valuable for reproducing results and studying the algorithms, but the code is not actively maintained, so we would not build a long-lived project on top of them. The IPC Toolkit is maintained by authors of the original IPC paper, and it aims to be the maintained home for the building blocks that these methods share. “Rarely updated” means the project still works but sees infrequent changes.</p>
