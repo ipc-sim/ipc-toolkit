@@ -166,7 +166,9 @@ TEST_CASE(
     Eigen::MatrixXd V;
     Eigen::MatrixXi E, F;
     REQUIRE(tests::load_mesh("cube.ply", V, E, F));
-    constexpr double L = 0.5, W = 1.0, H = 2.0;
+    // Static so the lambda inside GENERATE can use them: MSVC can't capture
+    // a local constexpr implicitly, and GENERATE's lambda has no captures.
+    static constexpr double L = 0.5, W = 1.0, H = 2.0;
     V.col(0).array() *= L;
     V.col(1).array() *= W;
     V.col(2).array() *= H;
