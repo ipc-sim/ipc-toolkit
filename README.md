@@ -28,7 +28,7 @@ IPC Toolkit is a set of reusable functions to integrate Incremental Potential Co
 
 This is not a full simulation library. As such, it does not include any solvers. For a full simulation implementation, we recommend [PolyFEM](https://polyfem.github.io/) (a finite element library) or [Rigid IPC](https://github.com/ipc-sim/rigid-ipc) (rigid-body dynamics), both of which utilize the IPC Toolkit.
 
-A small demo simulator ([`demo/`](demo)) shows how to assemble the toolkit's components (energies, time integration, and CCD) into a rigid/affine body simulator driven by [polysolve](https://github.com/polyfem/polysolve).
+A small demo simulator ([`demo/`](demo)) shows how to assemble the toolkit's components (energies, time integration, and CCD) into a rigid/affine body simulator driven by [PolySolve](https://github.com/polyfem/polysolve).
 
 ## Build
 

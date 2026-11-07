@@ -2,7 +2,7 @@
 # IPC Toolkit Demo Simulator
 #
 # Application-side code intentionally kept out of the core library: the
-# incremental potential presented to the (polysolve) nonlinear solver and the
+# incremental potential presented to the (PolySolve) nonlinear solver and the
 # time-stepping loop. The core library only provides the modular components
 # (energies, time integrators, potentials, and CCD); this target is the living
 # proof that they are easy to assemble into a simulator.
@@ -26,7 +26,7 @@ target_include_directories(ipc_toolkit_demo PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/
 # the demo (or on any solver).
 target_link_libraries(ipc_toolkit_demo PUBLIC ipc::toolkit)
 
-# polysolve (nonlinear solver with PolyFEM-grade Newton + line search).
+# PolySolve (nonlinear solver with PolyFEM-grade Newton + line search).
 # PUBLIC: the Simulator IS a polysolve::nonlinear::Problem.
 include(polysolve)
 target_link_libraries(ipc_toolkit_demo PUBLIC polysolve::polysolve)

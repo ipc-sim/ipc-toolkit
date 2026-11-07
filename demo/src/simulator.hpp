@@ -57,7 +57,7 @@ namespace ipc::demo {
 ///
 /// Minimizes an incremental potential (inertia + body forces
 /// [+ orthogonality in affine mode] + barrier) over the DOFs of the selected
-/// dynamics model with polysolve's Newton solver:
+/// dynamics model with PolySolve's Newton solver:
 /// - RIGID [Ferguson et al. 2021]: 6-DOF [p; θ] per body with
 ///   curved-trajectory (nonlinear) CCD.
 /// - AFFINE [Lan et al. 2022]: 12-DOF [p; vec(A)] per body with a stiff
@@ -177,17 +177,17 @@ public:
         /// Newton step moves every vertex slower than this × the bounding box
         /// diagonal (per unit time) [Ferguson et al. 2021]. Measured in world
         /// space through the step_norm() override and enforced through
-        /// polysolve's Δx criterion (solver_params["x_delta_tol"], set
-        /// automatically unless already present). While enabled, polysolve's
+        /// PolySolve's Δx criterion (solver_params["x_delta_tol"], set
+        /// automatically unless already present). While enabled, PolySolve's
         /// absolute gradient criterion (solver_params["grad_norm_tol"]) also
         /// defaults to 0, so this is the only convergence test. Set ≤ 0 to
         /// disable, which restores a grad_norm_tol of 1e-6.
         double velocity_conv_tol = 1e-2;
         /// @brief polysolve nonlinear solver parameters.
-        /// Validated by polysolve; entries not set here get the defaults of
+        /// Validated by PolySolve; entries not set here get the defaults of
         /// https://github.com/polyfem/polysolve/blob/main/nonlinear-solver-spec.json
         // NOTE: The strategy ladder starts PSD-projected (like the original
-        //       Rigid IPC solver) instead of polysolve's default plain Newton,
+        //       Rigid IPC solver) instead of PolySolve's default plain Newton,
         //       whose indefinite-Hessian direction is discarded at every
         //       contact step; gradient descent is excluded because its
         //       barrier-scaled directions (‖Δx‖ ~ 1e14) make the CCD-filtered
@@ -203,7 +203,7 @@ public:
         //       leaving the descent-direction check and the line search as the
         //       safety net (exactly the original Rigid IPC solver's guards).
         // NOTE: We leave grad_norm_tol unset on purpose so the constructor
-        //       can pick it. polysolve's gradient criterion is absolute, so
+        //       can pick it. PolySolve's gradient criterion is absolute, so
         //       any fixed value depends on the scene's mass and length
         //       scale: at 1e-6, a 7 g coin (gradients ~1e-11) stops after
         //       one Newton iteration every step. With the velocity
@@ -222,18 +222,18 @@ public:
             { "line_search",
               { { "method", "Backtracking" }, { "min_step_size", 1e-12 } } },
         };
-        /// @brief polysolve linear solver parameters.
+        /// @brief PolySolve linear solver parameters.
         /// @note SimplicialLDLT (a direct solver, as in the original Rigid IPC
-        ///       solver) is selected explicitly: polysolve's fallback default
+        ///       solver) is selected explicitly: PolySolve's fallback default
         ///       is the iterative Eigen::BiCGSTAB, which does not converge on
         ///       the severely ill-conditioned barrier systems (entries spanning
         ///       ~1e2 to ~1e14), causing spurious direction failures.
         nlohmann::json linear_solver_params = {
             { "solver", "Eigen::SimplicialLDLT" },
         };
-        /// @brief Verbosity of polysolve's own logger (separate from the
+        /// @brief Verbosity of PolySolve's own logger (separate from the
         /// toolkit's logger).
-        /// @note Silenced by default: polysolve logs a per-solve "Finished"
+        /// @note Silenced by default: PolySolve logs a per-solve "Finished"
         /// report at *error* level whenever the stop was not the gradient
         /// criterion — i.e., on every velocity-criterion stop — and
         /// per-iteration [timing] lines at debug. Lower this (e.g., to warn
@@ -362,7 +362,7 @@ public:
     /// @brief Norm of a proposed step: the maximum world-space vertex
     /// displacement it produces (from the current iterate).
     ///
-    /// polysolve's Δx stopping criterion uses this norm, so with
+    /// PolySolve's Δx stopping criterion uses this norm, so with
     /// Settings::velocity_conv_tol this reproduces the velocity convergence
     /// criterion of Rigid IPC [Ferguson et al. 2021] in a space where a
     /// single scalar tolerance is meaningful (raw DOF-space Δx mixes
@@ -677,12 +677,12 @@ protected:
     /// @brief Broad phase collision handler for efficiently finding potential collisions.
     std::unique_ptr<BroadPhase> m_broad_phase;
 
-    /// @brief Dedicated logger for polysolve (see Settings::solver_log_level).
+    /// @brief Dedicated logger for PolySolve (see Settings::solver_log_level).
     /// @note Declared before m_solver: the solver holds a reference to it, so
     /// it must be destroyed after the solver.
     std::shared_ptr<spdlog::logger> m_solver_logger;
 
-    /// @brief polysolve Newton solver used to minimize the incremental potential.
+    /// @brief PolySolve Newton solver used to minimize the incremental potential.
     std::unique_ptr<polysolve::nonlinear::Solver> m_solver;
 
     // ---- Energy terms (rebuilt by initialize_terms) ------------------------
@@ -692,7 +692,7 @@ protected:
     /// Lagrangian, all behind the parameterization's to-affine map.
     std::optional<dynamics::BodyPotentials> m_body_potentials;
 
-    /// @brief Whether hessian() projects each term to PSD (set by polysolve
+    /// @brief Whether hessian() projects each term to PSD (set by PolySolve
     /// per descent strategy).
     bool m_project_to_psd = true;
 

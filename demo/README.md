@@ -27,10 +27,10 @@ This demo (`ipc::toolkit::demo`) owns everything application-side, in two
 source pairs:
 
 - `demo/src/simulator.hpp` — the `Simulator`: it *is* a
-  [polysolve](https://github.com/polyfem/polysolve)
+  [PolySolve](https://github.com/polyfem/polysolve)
   `nonlinear::Problem` (energy/gradient/Hessian summed from the library's
   `BodyPotentials` for the body terms plus the barrier and friction contact
-  terms, the toolkit's CCD routed into polysolve's line search via
+  terms, the toolkit's CCD routed into PolySolve's line search via
   `max_step_size`, and the joint-constraint change of variables x = Uz
   [Chen et al. 2022, §4.1] applied around the interface), plus the time-stepping
   loop, adaptive barrier stiffness, the friction/kinematic outer loop, pose
@@ -42,7 +42,7 @@ source pairs:
   discretizations (FEM nodal DOFs, SPH particles) slot in as additional
   `Kinematics` implementations.
 
-The core library never depends on the demo, on polysolve, or on any solver.
+The core library never depends on the demo, on PolySolve, or on any solver.
 
 ## The incremental potential (objective units)
 
@@ -99,13 +99,13 @@ via the `step_norm()` override) with a gradient-norm early exit. The one
 algorithmic difference is the **regularization schedule**: Rigid IPC adapted
 a diagonal regularization coefficient continuously inside one Newton loop
 (doubled on a failed solve, halved on success, persisting across iterations
-and time steps); polysolve instead escalates between discrete strategies —
+and time steps); PolySolve instead escalates between discrete strategies —
 `ProjectedNewton` → `RegularizedProjectedNewton` (whose internal weight ramps
 1e-8 → 1e8) — resetting each solve. Rigid IPC's gradient-descent failsafe is
 also dropped: at barrier stiffness scales a −∇f direction is ~1e14 long, so
 its CCD-capped line search never yields a usable step.
 
-The remaining non-default polysolve settings in `Settings::solver_params`
+The remaining non-default PolySolve settings in `Settings::solver_params`
 (`Backtracking` line search, no plain-Newton stage, `residual_tolerance`
 effectively disabled, explicit `SimplicialLDLT`) exist to reproduce the
 original behavior — see the comments in `simulator.hpp`.
@@ -199,7 +199,7 @@ bodies->planes.emplace_back(Eigen::Vector3d(0, 1, 0), 0); // ground
 (*bodies)[0].set_type(rigid::RigidBody::Type::STATIC);
 
 // Sum the energy terms into an incremental potential and minimize it with
-// polysolve's Newton solver, stepping in time with the library's BDF
+// PolySolve's Newton solver, stepping in time with the library's BDF
 // integrator and filtering the line search with the library's CCD.
 demo::Simulator::Settings settings;
 settings.friction_coefficient = 0.3; // optional lagged friction
@@ -212,10 +212,10 @@ std::vector<rigid::Pose> final_poses = sim.rigid_poses();
 ```
 
 The same scene runs in affine mode (`Settings::body_dynamics = AFFINE`) with
-optional joint constraints (`affine::JointConstraints`). The polysolve solver
+optional joint constraints (`affine::JointConstraints`). The PolySolve solver
 is configured through `Settings::solver_params` /
-`Settings::linear_solver_params` (raw polysolve json; unset entries get the
-defaults of polysolve's `nonlinear-solver-spec.json`). polysolve logs through
+`Settings::linear_solver_params` (raw PolySolve json; unset entries get the
+defaults of PolySolve's `nonlinear-solver-spec.json`). PolySolve logs through
 its own logger, silenced by default (it reports non-gradient stops — e.g.,
 every velocity-criterion stop — at error level and per-iteration timings at
 debug); set `Settings::solver_log_level` to re-enable it.
@@ -249,7 +249,7 @@ The demo's tests live in the unified `ipc_toolkit_tests` binary
 both dynamics models, friction (finite-difference derivatives plus analytic
 stick/slip and deceleration), static/kinematic bodies (both modes), 2D
 simulation, codimensional contact, and finite-difference checks of the
-gradient/Hessian through the polysolve `Problem` interface. The `ToAffine`
+gradient/Hessian through the PolySolve `Problem` interface. The `ToAffine`
 change of variables and the `BodyPotentials` aggregator are finite-difference-
 tested in `tests/src/tests/dynamics/` (`test_to_affine`, `test_body_potentials`),
 and the augmented Lagrangian in `tests/src/tests/dynamics/affine/`.

@@ -158,20 +158,20 @@ void define_simulator(py::module_& m)
         .def_readwrite(
             "solver_params", &Simulator::Settings::solver_params,
             R"ipc_Qu8mg5v7(
-             polysolve nonlinear solver parameters (a dict). Entries not set
-             here get the defaults of polysolve's nonlinear-solver-spec.json.
+             PolySolve nonlinear solver parameters (a dict). Entries not set
+             here get the defaults of PolySolve's nonlinear-solver-spec.json.
 
              Note: this property returns a copy -- assign a whole dict, e.g.
              ``settings.solver_params = {**settings.solver_params, "max_iterations": 50}``.
              )ipc_Qu8mg5v7")
         .def_readwrite(
             "linear_solver_params", &Simulator::Settings::linear_solver_params,
-            "polysolve linear solver parameters (a dict; empty selects "
-            "polysolve's default Eigen solver). Returns a copy -- assign a "
+            "PolySolve linear solver parameters (a dict; empty selects "
+            "PolySolve's default Eigen solver). Returns a copy -- assign a "
             "whole dict.")
         .def_readwrite(
             "solver_log_level", &Simulator::Settings::solver_log_level,
-            "Verbosity of polysolve's own logger (separate from the "
+            "Verbosity of PolySolve's own logger (separate from the "
             "toolkit's logger; silenced by default -- lower to, e.g., "
             "ipctk.debug to see the solver's per-iteration reports).");
 
@@ -224,7 +224,7 @@ void define_simulator(py::module_& m)
         .def_property_readonly("settings", &Simulator::settings)
         .def(
             "run", &Simulator::run, "t_end"_a,
-            "callback"_a = std::function<void(bool)>([](bool) {}))
+            "callback"_a = std::function<void(bool)>([](bool) { }))
         .def("step", &Simulator::step)
         .def("reset", &Simulator::reset)
         .def(

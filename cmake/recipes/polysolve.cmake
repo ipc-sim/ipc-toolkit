@@ -34,10 +34,10 @@ CPMAddPackage(
     "POLYSOLVE_WITH_UMFPACK OFF"
 )
 
-# polysolve always lists its cuSolver backend (CuSolverDN.cu) as a source, even
+# PolySolve always lists its cuSolver backend (CuSolverDN.cu) as a source, even
 # with POLYSOLVE_WITH_CUSOLVER off. That is harmless until we enable the CUDA
 # language for our own kernels: CMake then compiles the file with nvcc, under
-# polysolve's directory-wide MSVC flags (/experimental:external, /FS, ...),
+# PolySolve's directory-wide MSVC flags (/experimental:external, /FS, ...),
 # which nvcc reads as extra input files and rejects on Windows. We never use
 # that backend, so we keep the file out of the build.
 set_source_files_properties(
@@ -45,7 +45,7 @@ set_source_files_properties(
     TARGET_DIRECTORY polysolve_linear
     PROPERTIES HEADER_FILE_ONLY ON)
 
-# polysolve also hands consumers a bare /utf-8 on MSVC, which would reach nvcc
+# PolySolve also hands consumers a bare /utf-8 on MSVC, which would reach nvcc
 # in our CUDA tests the same way. We limit it to C++ sources; CUDA sources
 # already get -Xcompiler=/utf-8 from ipc_toolkit.
 get_target_property(_polysolve_options polysolve_linear INTERFACE_COMPILE_OPTIONS)
@@ -60,7 +60,7 @@ unset(_polysolve_options)
 # ipc_toolkit compiles with EIGEN_DONT_VECTORIZE=1 when SIMD is enabled, which
 # changes Eigen's alignment (and so the size and layout of fixed-size members).
 # The demo Simulator is a polysolve::nonlinear::Problem, so its Eigen objects
-# cross the polysolve library boundary all the time. If polysolve is built with
+# cross the PolySolve library boundary all the time. If PolySolve is built with
 # a different vectorization setting than the code calling it, the two sides
 # disagree about those layouts. We make the define PUBLIC so both sides always
 # agree, the same way we do for finite-diff and MeshFEMSparse.

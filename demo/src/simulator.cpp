@@ -247,7 +247,7 @@ Simulator::Simulator(
 
     rebuild_dof_mask();
 
-    // Create the polysolve Newton solver (the tolerances are rescaled by the
+    // Create the PolySolve Newton solver (the tolerances are rescaled by the
     // characteristic length; use the initial world bounding box diagonal).
     const Eigen::MatrixXd V0 =
         m_kinematics->world_vertices(m_kinematics->dof(initial_poses));
@@ -258,7 +258,7 @@ Simulator::Simulator(
     // The velocity convergence criterion [Ferguson et al. 2021]: converged
     // when the proposed step moves every vertex slower than the tolerance.
     // The step_norm() override measures steps as world-space vertex
-    // displacements, so polysolve's Δx criterion compares against
+    // displacements, so PolySolve's Δx criterion compares against
     // tol × bbox × dt.
     nlohmann::json solver_params = m_settings.solver_params;
     const bool use_velocity_criterion = m_settings.velocity_conv_tol > 0;
@@ -266,7 +266,7 @@ Simulator::Simulator(
         solver_params["x_delta_tol"] =
             m_settings.velocity_conv_tol * m_bbox_diagonal * dt;
     }
-    // We disable polysolve's absolute gradient criterion whenever the
+    // We disable PolySolve's absolute gradient criterion whenever the
     // velocity criterion is on. Its threshold doesn't scale with the scene,
     // so for light or small bodies it fires after the first Newton iteration
     // and accepts unconverged steps. Without the velocity criterion it is
@@ -275,7 +275,7 @@ Simulator::Simulator(
         solver_params["grad_norm_tol"] = use_velocity_criterion ? 0.0 : 1e-6;
     }
 
-    // polysolve logs through a dedicated logger so its chatter (a per-solve
+    // PolySolve logs through a dedicated logger so its chatter (a per-solve
     // "Finished" report at error level whenever the stop was not the
     // gradient criterion, per-iteration [timing] lines at debug, ...) can be
     // silenced independently of the toolkit's logger. Created without
@@ -649,7 +649,7 @@ double Simulator::step_norm(
 {
     // Guard the velocity convergence criterion until at least one step has
     // been taken this solve (the original Rigid IPC solver's `iter > 0`
-    // check): polysolve tests its Δx criterion on the *proposed* direction
+    // check): PolySolve tests its Δx criterion on the *proposed* direction
     // before the first step, so a quasi-static scene whose per-step motion
     // (~g·dt²) is below the tolerance would otherwise freeze forever — the
     // step is never taken, and the integrator then re-derives zero velocity.
@@ -881,7 +881,7 @@ bool Simulator::step()
         try {
             m_solver->minimize(*this, v);
         } catch (const std::exception& e) {
-            // polysolve throws on convergence failures (line search failure,
+            // PolySolve throws on convergence failures (line search failure,
             // iteration limit, non-finite energy, ...).
             logger().warn("solve failed: {}", e.what());
             converged = false;
