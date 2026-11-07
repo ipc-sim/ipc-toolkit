@@ -22,8 +22,22 @@ bool InexactCCD::ccd_strategy(
     const double min_distance,
     const double initial_distance,
     const double conservative_rescaling,
-    double& toi)
+    double& toi,
+    const NarrowPhaseCCDMode mode)
 {
+    if (mode != NarrowPhaseCCDMode::STANDALONE) {
+        // As the per-piece linear CCD inside a piecewise driver (e.g.,
+        // NonlinearCCD), the driver supplies its own conservative margins, so
+        // we run the CCD directly with the caller's minimum separation (no
+        // inflation, rerun, or rescaling). This CCD has no zero-TOI option, so
+        // when zero is unacceptable we shrink the separation until the initial
+        // distance clears it.
+        const double d = mode == NarrowPhaseCCDMode::COMPONENT_NO_ZERO_TOI
+            ? shrink_min_distance_below(initial_distance, min_distance)
+            : min_distance;
+        return ccd(d, toi);
+    }
+
     if (check_initial_distance(initial_distance, min_distance, toi)) {
         return true;
     }
@@ -57,7 +71,8 @@ bool InexactCCD::point_point_ccd_3D(
     Eigen::ConstRef<Eigen::Vector3d> p1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -73,7 +88,7 @@ bool InexactCCD::point_point_ccd_3D(
     };
 
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 bool InexactCCD::point_point_ccd(
@@ -83,14 +98,15 @@ bool InexactCCD::point_point_ccd(
     Eigen::ConstRef<VectorMax3d> p1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(p0_t0.size() == p1_t0.size());
     assert(p0_t0.size() == p0_t1.size());
     assert(p0_t0.size() == p1_t1.size());
     return point_point_ccd_3D(
         to_3D(p0_t0), to_3D(p1_t0), to_3D(p0_t1), to_3D(p1_t1), toi,
-        min_distance, tmax);
+        min_distance, tmax, mode);
 }
 
 bool InexactCCD::point_edge_ccd_3D(
@@ -102,7 +118,8 @@ bool InexactCCD::point_edge_ccd_3D(
     Eigen::ConstRef<Eigen::Vector3d> e1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -119,7 +136,7 @@ bool InexactCCD::point_edge_ccd_3D(
     };
 
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 bool InexactCCD::point_edge_ccd(
@@ -131,14 +148,15 @@ bool InexactCCD::point_edge_ccd(
     Eigen::ConstRef<VectorMax3d> e1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(p_t1.size() == p_t0.size());
     assert(e0_t0.size() == p_t0.size() && e1_t0.size() == p_t0.size());
     assert(e0_t1.size() == p_t0.size() && e1_t1.size() == p_t0.size());
     return point_edge_ccd_3D(
         to_3D(p_t0), to_3D(e0_t0), to_3D(e1_t0), to_3D(p_t1), to_3D(e0_t1),
-        to_3D(e1_t1), toi, min_distance, tmax);
+        to_3D(e1_t1), toi, min_distance, tmax, mode);
 }
 
 bool InexactCCD::edge_edge_ccd(
@@ -152,7 +170,8 @@ bool InexactCCD::edge_edge_ccd(
     Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -171,7 +190,7 @@ bool InexactCCD::edge_edge_ccd(
     };
 
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 bool InexactCCD::point_triangle_ccd(
@@ -185,7 +204,8 @@ bool InexactCCD::point_triangle_ccd(
     Eigen::ConstRef<Eigen::Vector3d> t2_t1,
     double& toi,
     const double min_distance,
-    const double tmax) const
+    const double tmax,
+    const NarrowPhaseCCDMode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -204,7 +224,7 @@ bool InexactCCD::point_triangle_ccd(
     };
 
     return ccd_strategy(
-        ccd, min_distance, initial_distance, conservative_rescaling, toi);
+        ccd, min_distance, initial_distance, conservative_rescaling, toi, mode);
 }
 
 } // namespace ipc

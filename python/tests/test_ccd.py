@@ -1,3 +1,6 @@
+import gc
+import warnings
+
 import numpy as np
 from find_ipctk import ipctk
 from ipctk.filib import Interval
@@ -27,12 +30,28 @@ def test_custom_ccd():
             ipctk.NarrowPhaseCCD.__init__(self)
 
         def point_point_ccd(
-            self, p0_t0, p1_t0, p0_t1, p1_t1, min_distance=0.0, tmax=1.0
+            self,
+            p0_t0,
+            p1_t0,
+            p0_t1,
+            p1_t1,
+            min_distance=0.0,
+            tmax=1.0,
+            mode=ipctk.NarrowPhaseCCDMode.STANDALONE,
         ):
             return True, 0.0
 
         def point_edge_ccd(
-            self, p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, min_distance=0.0, tmax=1.0
+            self,
+            p_t0,
+            e0_t0,
+            e1_t0,
+            p_t1,
+            e0_t1,
+            e1_t1,
+            min_distance=0.0,
+            tmax=1.0,
+            mode=ipctk.NarrowPhaseCCDMode.STANDALONE,
         ):
             return True, 0.0
 
@@ -48,6 +67,7 @@ def test_custom_ccd():
             t2_t1,
             min_distance=0.0,
             tmax=1.0,
+            mode=ipctk.NarrowPhaseCCDMode.STANDALONE,
         ):
             return True, 0.0
 
@@ -63,6 +83,7 @@ def test_custom_ccd():
             eb1_t1,
             min_distance=0.0,
             tmax=1.0,
+            mode=ipctk.NarrowPhaseCCDMode.STANDALONE,
         ):
             return True, 0.0
 
@@ -81,6 +102,96 @@ def test_custom_ccd():
         mesh, V0, V1, narrow_phase_ccd=DumbNarrowPhaseCCD()
     )
     assert 0 <= toi <= 1
+
+
+class _LinearTrajectory(ipctk.NonlinearTrajectory):
+    def __init__(self, p0, p1):
+        ipctk.NonlinearTrajectory.__init__(self)
+        self.p0 = p0
+        self.p1 = p1
+
+    def __call__(self, t):
+        return (self.p1 - self.p0) * t + self.p0
+
+    def max_distance_from_linear(self, t0, t1):
+        return 0
+
+
+def _crossing_points():
+    return (
+        _LinearTrajectory(np.array([-1.0, 0, 0]), np.array([1.0, 0, 0])),
+        _LinearTrajectory(np.array([0, -1.0, 0]), np.array([0, 1.0, 0])),
+    )
+
+
+def test_custom_ccd_without_mode_parameter():
+    # Overrides written before NarrowPhaseCCDMode existed take no `mode`.
+    # They must keep working, including as NonlinearCCD's per-piece CCD and
+    # after the Python object is otherwise unreferenced.
+    calls = []
+
+    class LegacyNarrowPhaseCCD(ipctk.NarrowPhaseCCD):
+        def __init__(self):
+            ipctk.NarrowPhaseCCD.__init__(self)
+
+        def point_point_ccd(
+            self, p0_t0, p1_t0, p0_t1, p1_t1, min_distance=0.0, tmax=1.0
+        ):
+            calls.append(min_distance)
+            return False, 1.0
+
+    ccd = ipctk.NonlinearCCD(narrow_phase_ccd=LegacyNarrowPhaseCCD())
+    gc.collect()
+
+    is_colliding, _ = ccd.point_point_ccd(*_crossing_points())
+
+    assert not is_colliding
+    assert len(calls) > 0
+
+
+def test_custom_ccd_receives_component_mode():
+    modes = []
+
+    class ModeAwareNarrowPhaseCCD(ipctk.NarrowPhaseCCD):
+        def __init__(self):
+            ipctk.NarrowPhaseCCD.__init__(self)
+
+        def point_point_ccd(
+            self,
+            p0_t0,
+            p1_t0,
+            p0_t1,
+            p1_t1,
+            min_distance=0.0,
+            tmax=1.0,
+            mode=ipctk.NarrowPhaseCCDMode.STANDALONE,
+        ):
+            modes.append(mode)
+            return False, 1.0
+
+    narrow_phase_ccd = ModeAwareNarrowPhaseCCD()
+    ccd = ipctk.NonlinearCCD(narrow_phase_ccd=narrow_phase_ccd)
+    ccd.point_point_ccd(*_crossing_points())
+
+    # The first piece starts separated, so a zero time of impact is ruled out.
+    assert modes[0] == ipctk.NarrowPhaseCCDMode.COMPONENT_NO_ZERO_TOI
+    assert ipctk.NarrowPhaseCCDMode.STANDALONE not in modes
+
+    # Sharing the object with NonlinearCCD leaves standalone queries (made
+    # through the C++ interface) alone.
+    modes.clear()
+    ipctk.NarrowPhaseCCD.point_point_ccd(narrow_phase_ccd, *[np.zeros(3)] * 4)
+    assert modes == [ipctk.NarrowPhaseCCDMode.STANDALONE]
+
+
+def test_nonlinear_ccd_tolerance_constructor_is_deprecated():
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        ccd = ipctk.NonlinearCCD(1e-6, 1000, 0.5)
+
+    assert any(issubclass(w.category, DeprecationWarning) for w in caught)
+    assert ccd.conservative_rescaling == 0.5
+    assert isinstance(ccd.narrow_phase_ccd, ipctk.TightInclusionCCD)
 
 
 def test_custom_broad_phase():
@@ -155,9 +266,13 @@ def test_nonlinear_ccd():
 
     is_colliding, toi = ccd.point_point_ccd(p0, p1)
 
+    # The points meet at t = 0.5, but the CCD stops early once the gap
+    # shrinks to (1 - conservative_rescaling) of its initial value.
     assert is_colliding
-    assert 0 < toi < 1
-    assert np.abs(toi - 0.5) < 1e-6
+    assert 0 < toi <= 0.5
+    d0 = np.linalg.norm(p0(0) - p1(0))
+    target = (1 - ccd.conservative_rescaling) * d0
+    assert np.linalg.norm(p0(toi) - p1(toi)) >= target
 
     # class IntervalLinearTrajectory(ipctk.IntervalNonlinearTrajectory):
     #     def __init__(self, p0, p1):
@@ -220,8 +335,8 @@ def test_nonlinear_ccd():
     e0 = Rigid2DTrajectory(np.array([-1, 0]), np.zeros(2), np.zeros(2), 0, np.pi)
     e1 = Rigid2DTrajectory(np.array([1, 0]), np.zeros(2), np.zeros(2), 0, np.pi)
 
-    # increase the conservative_rescaling from 0.8 to 0.9 to get a more accurate estimate
-    ccd.conservative_rescaling = 0.9
+    # increase the conservative_rescaling from 0.8 to 0.99 to get a more accurate estimate
+    ccd.conservative_rescaling = 0.99
     collision, toi = ccd.point_edge_ccd(p, e0, e1)
 
     assert collision

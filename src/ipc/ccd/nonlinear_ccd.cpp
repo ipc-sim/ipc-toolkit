@@ -6,8 +6,6 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
-#include <tight_inclusion/ccd.hpp>
-
 #include <stack>
 
 // #define USE_FIXED_PIECES
@@ -51,14 +49,40 @@ double IntervalNonlinearTrajectory::max_distance_from_linear(
 
 // ============================================================================
 
+namespace {
+    /// The mode of a per-piece query made by the piecewise driver.
+    NarrowPhaseCCDMode component_mode(const bool no_zero_toi)
+    {
+        return no_zero_toi ? NarrowPhaseCCDMode::COMPONENT_NO_ZERO_TOI
+                           : NarrowPhaseCCDMode::COMPONENT;
+    }
+} // namespace
+
 NonlinearCCD::NonlinearCCD(
-    const double _tolerance,
-    const long _max_iterations,
+    std::shared_ptr<const NarrowPhaseCCD> _narrow_phase_ccd,
     const double _conservative_rescaling)
-    : tolerance(_tolerance)
-    , max_iterations(_max_iterations)
-    , conservative_rescaling(_conservative_rescaling)
+    : conservative_rescaling(_conservative_rescaling)
 {
+    set_narrow_phase_ccd(std::move(_narrow_phase_ccd));
+}
+
+NonlinearCCD::NonlinearCCD(
+    const double tolerance,
+    const long max_iterations,
+    const double _conservative_rescaling)
+    : NonlinearCCD(
+          std::make_shared<TightInclusionCCD>(tolerance, max_iterations),
+          _conservative_rescaling)
+{
+}
+
+void NonlinearCCD::set_narrow_phase_ccd(
+    std::shared_ptr<const NarrowPhaseCCD> _narrow_phase_ccd)
+{
+    if (_narrow_phase_ccd == nullptr) {
+        _narrow_phase_ccd = std::make_shared<TightInclusionCCD>();
+    }
+    m_narrow_phase_ccd = std::move(_narrow_phase_ccd);
 }
 
 bool NonlinearCCD::conservative_piecewise_linear_ccd(
@@ -82,6 +106,15 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
     }
     assert(distance_t0 > min_distance);
 
+    // We report an impact once the distance shrinks to the target separation,
+    // which keeps (1 - conservative_rescaling) of the initial gap above
+    // min_distance. Each piece's linear CCD stops at this target (inflated by
+    // the piece's linearization error), so the returned toi is as large as
+    // possible while every point along the trajectory up to it stays at
+    // least this far apart.
+    const double target_distance = min_distance
+        + (1 - conservative_rescaling) * (distance_t0 - min_distance);
+
     double ti0 = 0;
     std::stack<double> ts;
 
@@ -101,24 +134,17 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
 
         const double distance_ti0 = distance(ti0);
 
-        // If distance has decreased by a factor and the toi is not near zero,
-        // then we can call this a collision.
-        if (distance_ti0 < (1 - conservative_rescaling) * distance_t0
-            && ti0 >= TightInclusionCCD::SMALL_TOI) {
-            toi = ti0;
-            logger().trace(
-                "Distance small enough distance_ti0={:g}; toi={:g}",
-                distance_ti0, toi);
-            return true;
-        }
-
         double min_distance_linear = max_distance_from_linear(ti0, ti1);
 
 #ifndef USE_FIXED_PIECES
-        // Check if the minimum distance is too large and we need to subdivide
-        // (Large distances cause the slow CCD)
-        if ((min_distance_linear
-             >= std::min((1 - conservative_rescaling) * distance_ti0, 0.01))
+        // We subdivide while the linearization error is large compared to the
+        // slack the piece has above the target separation. A large error
+        // inflates the minimum separation, which slows the linear CCD and can
+        // swallow the slack entirely (reporting toi = 0 at the piece start).
+        if ((min_distance_linear >= std::min(
+                 (1 - conservative_rescaling)
+                     * (distance_ti0 - target_distance),
+                 0.01))
             && (num_subdivisions < MAX_NUM_SUBDIVISIONS || ti0 == 0)) {
             logger().trace(
                 "Subdividing at ti=[{:g}, {:g}] min_distance={:g} distance_ti0={:g}",
@@ -129,7 +155,7 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
         }
 #endif
 
-        min_distance_linear += min_distance;
+        min_distance_linear += target_distance;
 
         const bool is_impacting = linear_ccd(
             ti0, ti1, min_distance_linear, /*no_zero_toi=*/ti0 == 0, toi);
@@ -143,7 +169,8 @@ bool NonlinearCCD::conservative_piecewise_linear_ccd(
         if (is_impacting) {
             toi = (ti1 - ti0) * toi + ti0;
             if (toi == 0) {
-                // This is impossible because distance_t0 > min_distance
+                // The linearization error swallowed the slack above the
+                // target separation, so we split the piece to shrink it.
                 ts.push((ti1 + ti0) / 2);
                 num_subdivisions++;
                 continue;
@@ -172,24 +199,14 @@ bool NonlinearCCD::point_point_ccd(
             return sqrt(point_point_distance(p0(t), p1(t)));
         },
         [&](const double t0, const double t1) {
-            return std::max(
-                p0.max_distance_from_linear(t0, t1),
-                p1.max_distance_from_linear(t0, t1));
+            return p0.max_distance_from_linear(t0, t1)
+                + p1.max_distance_from_linear(t0, t1);
         },
         [&](const double ti0, const double ti1, const double _min_distance,
             const bool no_zero_toi, double& _toi) {
-            double output_tolerance;
-            return ticcd::edgeEdgeCCD(
-                to_3D(p0(ti0)), to_3D(p0(ti0)), to_3D(p1(ti0)), to_3D(p1(ti0)),
-                to_3D(p0(ti1)), to_3D(p0(ti1)), to_3D(p1(ti1)), to_3D(p1(ti1)),
-                Eigen::Array3d::Constant(-1), // rounding error (auto)
-                _min_distance,                // minimum separation distance
-                _toi,                         // time of impact
-                tolerance,                    // delta
-                1.0,                          // maximum time to check
-                max_iterations,               // maximum number of iterations
-                output_tolerance,             // delta_actual
-                no_zero_toi);                 // no zero toi
+            return m_narrow_phase_ccd->point_point_ccd(
+                p0(ti0), p1(ti0), p0(ti1), p1(ti1), _toi, _min_distance,
+                /*tmax=*/1.0, component_mode(no_zero_toi));
         },
         toi, min_distance, tmax, conservative_rescaling);
 }
@@ -214,18 +231,9 @@ bool NonlinearCCD::point_edge_ccd(
         },
         [&](const double ti0, const double ti1, const double _min_distance,
             const bool no_zero_toi, double& _toi) {
-            double output_tolerance;
-            return ticcd::edgeEdgeCCD(
-                to_3D(p(ti0)), to_3D(p(ti0)), to_3D(e0(ti0)), to_3D(e1(ti0)),
-                to_3D(p(ti1)), to_3D(p(ti1)), to_3D(e0(ti1)), to_3D(e1(ti1)),
-                Eigen::Array3d::Constant(-1), // rounding error (auto)
-                _min_distance,                // minimum separation distance
-                _toi,                         // time of impact
-                tolerance,                    // delta
-                1.0,                          // maximum time to check
-                max_iterations,               // maximum number of iterations
-                output_tolerance,             // delta_actual
-                no_zero_toi);                 // no zero toi
+            return m_narrow_phase_ccd->point_edge_ccd(
+                p(ti0), e0(ti0), e1(ti0), p(ti1), e0(ti1), e1(ti1), _toi,
+                _min_distance, /*tmax=*/1.0, component_mode(no_zero_toi));
         },
         toi, min_distance, tmax, conservative_rescaling);
 }
@@ -253,18 +261,10 @@ bool NonlinearCCD::edge_edge_ccd(
         },
         [&](const double ti0, const double ti1, const double _min_distance,
             const bool no_zero_toi, double& _toi) {
-            double output_tolerance;
-            return ticcd::edgeEdgeCCD(
+            return m_narrow_phase_ccd->edge_edge_ccd(
                 ea0(ti0), ea1(ti0), eb0(ti0), eb1(ti0), //
-                ea0(ti1), ea1(ti1), eb0(ti1), eb1(ti1),
-                Eigen::Array3d::Constant(-1), // rounding error (auto)
-                _min_distance,                // minimum separation distance
-                _toi,                         // time of impact
-                tolerance,                    // delta
-                1.0,                          // maximum time to check
-                max_iterations,               // maximum number of iterations
-                output_tolerance,             // delta_actual
-                no_zero_toi);                 // no zero toi
+                ea0(ti1), ea1(ti1), eb0(ti1), eb1(ti1), //
+                _toi, _min_distance, /*tmax=*/1.0, component_mode(no_zero_toi));
         },
         toi, min_distance, tmax, conservative_rescaling);
 }
@@ -291,18 +291,10 @@ bool NonlinearCCD::point_triangle_ccd(
         },
         [&](const double ti0, const double ti1, const double _min_distance,
             const bool no_zero_toi, double& _toi) {
-            double output_tolerance;
-            return ticcd::vertexFaceCCD(
+            return m_narrow_phase_ccd->point_triangle_ccd(
                 p(ti0), t0(ti0), t1(ti0), t2(ti0), //
-                p(ti1), t0(ti1), t1(ti1), t2(ti1),
-                Eigen::Array3d::Constant(-1), // rounding error (auto)
-                _min_distance,                // minimum separation distance
-                _toi,                         // time of impact
-                tolerance,                    // delta
-                1.0,                          // maximum time to check
-                max_iterations,               // maximum number of iterations
-                output_tolerance,             // delta_actual
-                no_zero_toi);                 // no zero toi
+                p(ti1), t0(ti1), t1(ti1), t2(ti1), //
+                _toi, _min_distance, /*tmax=*/1.0, component_mode(no_zero_toi));
         },
         toi, min_distance, tmax, conservative_rescaling);
 }
