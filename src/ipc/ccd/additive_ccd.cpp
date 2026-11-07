@@ -72,7 +72,7 @@ AdditiveCCD::AdditiveCCD(
 bool AdditiveCCD::handle_initial_proximity(
     const double initial_distance_sq,
     double& min_distance,
-    const NarrowPhaseCCDMode mode,
+    const NarrowPhaseCCD::Mode mode,
     double& toi) const
 {
     if (initial_distance_sq > min_distance * min_distance) {
@@ -80,7 +80,7 @@ bool AdditiveCCD::handle_initial_proximity(
     }
 
     const double initial_distance = std::sqrt(initial_distance_sq);
-    if (mode == NarrowPhaseCCDMode::COMPONENT_NO_ZERO_TOI
+    if (mode == NarrowPhaseCCD::Mode::COMPONENT_NO_ZERO_TOI
         && initial_distance > 0) {
         // The piecewise driver cannot accept toi = 0, so we trade separation
         // margin for a positive TOI.
@@ -89,7 +89,7 @@ bool AdditiveCCD::handle_initial_proximity(
         return false;
     }
 
-    if (mode == NarrowPhaseCCDMode::COMPONENT) {
+    if (mode == NarrowPhaseCCD::Mode::COMPONENT) {
         // Expected per-piece situation: the driver's linearization error can
         // exceed the current distance; it handles toi = 0 by subdividing.
         logger().trace(
@@ -113,12 +113,13 @@ bool AdditiveCCD::additive_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     // As the per-piece linear CCD inside a piecewise driver, which supplies
     // its own conservative margins, we use the least conservative rescaling
     // that still terminates (see COMPONENT_CONSERVATIVE_RESCALING).
-    const double conservative_rescaling = mode == NarrowPhaseCCDMode::STANDALONE
+    const double conservative_rescaling =
+        mode == NarrowPhaseCCD::Mode::STANDALONE
         ? this->conservative_rescaling
         : COMPONENT_CONSERVATIVE_RESCALING;
     assert(conservative_rescaling > 0 && conservative_rescaling <= 1);
@@ -178,7 +179,7 @@ bool AdditiveCCD::point_point_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     const int dim = p0_t0.size();
     assert(dim == p1_t0.size() && dim == p0_t1.size() && dim == p1_t1.size());
@@ -221,7 +222,7 @@ bool AdditiveCCD::point_edge_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     const int dim = p_t0.size();
     assert(dim == e0_t0.size() && dim == e1_t0.size());
@@ -270,7 +271,7 @@ bool AdditiveCCD::point_triangle_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     const double initial_distance =
         point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0);
@@ -318,7 +319,7 @@ bool AdditiveCCD::edge_edge_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     const double initial_distance =
         edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0);

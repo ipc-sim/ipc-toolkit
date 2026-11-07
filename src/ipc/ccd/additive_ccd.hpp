@@ -25,7 +25,7 @@ public:
     /// exactly to impact. Value choosen to based on [Li et al. 2021].
     static constexpr double DEFAULT_CONSERVATIVE_RESCALING = 0.9;
     /// The conservative rescaling used for component queries (see
-    /// NarrowPhaseCCDMode::COMPONENT). Additive CCD terminates by advancing
+    /// NarrowPhaseCCD::Mode::COMPONENT). Additive CCD terminates by advancing
     /// until the remaining gap shrinks to (1 - conservative_rescaling) times
     /// the initial gap, so a truly raw TOI (rescaling -> 1) never terminates
     /// and values above 0.99 behave badly; 0.99 is as raw as it can safely
@@ -47,7 +47,7 @@ public:
     /// @param[out] toi The time of impact between the two points.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
-    /// @param mode How the query is used (see NarrowPhaseCCDMode).
+    /// @param mode How the query is used (see NarrowPhaseCCD::Mode).
     /// @return True if a collision was detected, false otherwise.
     bool point_point_ccd(
         Eigen::ConstRef<VectorMax3d> p0_t0,
@@ -57,8 +57,8 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const NarrowPhaseCCDMode mode =
-            NarrowPhaseCCDMode::STANDALONE) const override;
+        const NarrowPhaseCCD::Mode mode =
+            NarrowPhaseCCD::Mode::STANDALONE) const override;
 
     /// @brief Computes the time of impact between a point and an edge using continuous collision detection.
     /// @param p_t0 The initial position of the point.
@@ -70,7 +70,7 @@ public:
     /// @param[out] toi The time of impact between the point and the edge.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
-    /// @param mode How the query is used (see NarrowPhaseCCDMode).
+    /// @param mode How the query is used (see NarrowPhaseCCD::Mode).
     /// @return True if a collision was detected, false otherwise.
     bool point_edge_ccd(
         Eigen::ConstRef<VectorMax3d> p_t0,
@@ -82,8 +82,8 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const NarrowPhaseCCDMode mode =
-            NarrowPhaseCCDMode::STANDALONE) const override;
+        const NarrowPhaseCCD::Mode mode =
+            NarrowPhaseCCD::Mode::STANDALONE) const override;
 
     /// @brief Computes the time of impact between a point and a triangle using continuous collision detection.
     /// @param p_t0 The initial position of the point.
@@ -97,7 +97,7 @@ public:
     /// @param[out] toi The time of impact between the point and the triangle.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
-    /// @param mode How the query is used (see NarrowPhaseCCDMode).
+    /// @param mode How the query is used (see NarrowPhaseCCD::Mode).
     /// @return True if a collision was detected, false otherwise.
     bool point_triangle_ccd(
         Eigen::ConstRef<Eigen::Vector3d> p_t0,
@@ -111,8 +111,8 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const NarrowPhaseCCDMode mode =
-            NarrowPhaseCCDMode::STANDALONE) const override;
+        const NarrowPhaseCCD::Mode mode =
+            NarrowPhaseCCD::Mode::STANDALONE) const override;
 
     /// @brief Computes the time of impact between two edges using continuous collision detection.
     /// @param ea0_t0 The initial position of the first endpoint of the first edge.
@@ -126,7 +126,7 @@ public:
     /// @param[out] toi The time of impact between the two edges.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
-    /// @param mode How the query is used (see NarrowPhaseCCDMode).
+    /// @param mode How the query is used (see NarrowPhaseCCD::Mode).
     /// @return True if a collision was detected, false otherwise.
     bool edge_edge_ccd(
         Eigen::ConstRef<Eigen::Vector3d> ea0_t0,
@@ -140,8 +140,8 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const NarrowPhaseCCDMode mode =
-            NarrowPhaseCCDMode::STANDALONE) const override;
+        const NarrowPhaseCCD::Mode mode =
+            NarrowPhaseCCD::Mode::STANDALONE) const override;
 
     /// @brief Maximum number of iterations.
     long max_iterations;
@@ -158,13 +158,13 @@ private:
     ///
     /// @param initial_distance_sq The squared initial distance between the objects.
     /// @param[in,out] min_distance The minimum separation (possibly reduced).
-    /// @param mode How the query is used (see NarrowPhaseCCDMode).
+    /// @param mode How the query is used (see NarrowPhaseCCD::Mode).
     /// @param[out] toi Set to 0 when returning true.
     /// @return True if the query should return early (toi = 0), false to continue.
     bool handle_initial_proximity(
         const double initial_distance_sq,
         double& min_distance,
-        const NarrowPhaseCCDMode mode,
+        const NarrowPhaseCCD::Mode mode,
         double& toi) const;
 
     /// @brief Computes the time of impact between two objects using additive continuous collision detection.
@@ -175,7 +175,7 @@ private:
     /// @param[out] toi The time of impact between the two objects.
     /// @param min_distance The minimum distance between the objects.
     /// @param tmax The maximum time to check for collisions.
-    /// @param mode How the query is used (see NarrowPhaseCCDMode).
+    /// @param mode How the query is used (see NarrowPhaseCCD::Mode).
     /// @return True if a collision was detected, false otherwise.
     template <typename DistanceSqrFunc>
     bool additive_ccd(
@@ -186,7 +186,8 @@ private:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const NarrowPhaseCCDMode mode = NarrowPhaseCCDMode::STANDALONE) const;
+        const NarrowPhaseCCD::Mode mode =
+            NarrowPhaseCCD::Mode::STANDALONE) const;
 };
 
 } // namespace ipc

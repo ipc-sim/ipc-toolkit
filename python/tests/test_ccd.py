@@ -37,7 +37,7 @@ def test_custom_ccd():
             p1_t1,
             min_distance=0.0,
             tmax=1.0,
-            mode=ipctk.NarrowPhaseCCDMode.STANDALONE,
+            mode=ipctk.NarrowPhaseCCD.Mode.STANDALONE,
         ):
             return True, 0.0
 
@@ -51,7 +51,7 @@ def test_custom_ccd():
             e1_t1,
             min_distance=0.0,
             tmax=1.0,
-            mode=ipctk.NarrowPhaseCCDMode.STANDALONE,
+            mode=ipctk.NarrowPhaseCCD.Mode.STANDALONE,
         ):
             return True, 0.0
 
@@ -67,7 +67,7 @@ def test_custom_ccd():
             t2_t1,
             min_distance=0.0,
             tmax=1.0,
-            mode=ipctk.NarrowPhaseCCDMode.STANDALONE,
+            mode=ipctk.NarrowPhaseCCD.Mode.STANDALONE,
         ):
             return True, 0.0
 
@@ -83,7 +83,7 @@ def test_custom_ccd():
             eb1_t1,
             min_distance=0.0,
             tmax=1.0,
-            mode=ipctk.NarrowPhaseCCDMode.STANDALONE,
+            mode=ipctk.NarrowPhaseCCD.Mode.STANDALONE,
         ):
             return True, 0.0
 
@@ -125,7 +125,7 @@ def _crossing_points():
 
 
 def test_custom_ccd_without_mode_parameter():
-    # Overrides written before NarrowPhaseCCDMode existed take no `mode`.
+    # Overrides written before NarrowPhaseCCD.Mode existed take no `mode`.
     # They must keep working, including as NonlinearCCD's per-piece CCD and
     # after the Python object is otherwise unreferenced.
     calls = []
@@ -164,7 +164,7 @@ def test_custom_ccd_receives_component_mode():
             p1_t1,
             min_distance=0.0,
             tmax=1.0,
-            mode=ipctk.NarrowPhaseCCDMode.STANDALONE,
+            mode=ipctk.NarrowPhaseCCD.Mode.STANDALONE,
         ):
             modes.append(mode)
             return False, 1.0
@@ -174,14 +174,14 @@ def test_custom_ccd_receives_component_mode():
     ccd.point_point_ccd(*_crossing_points())
 
     # The first piece starts separated, so a zero time of impact is ruled out.
-    assert modes[0] == ipctk.NarrowPhaseCCDMode.COMPONENT_NO_ZERO_TOI
-    assert ipctk.NarrowPhaseCCDMode.STANDALONE not in modes
+    assert modes[0] == ipctk.NarrowPhaseCCD.Mode.COMPONENT_NO_ZERO_TOI
+    assert ipctk.NarrowPhaseCCD.Mode.STANDALONE not in modes
 
     # Sharing the object with NonlinearCCD leaves standalone queries (made
     # through the C++ interface) alone.
     modes.clear()
     ipctk.NarrowPhaseCCD.point_point_ccd(narrow_phase_ccd, *[np.zeros(3)] * 4)
-    assert modes == [ipctk.NarrowPhaseCCDMode.STANDALONE]
+    assert modes == [ipctk.NarrowPhaseCCD.Mode.STANDALONE]
 
 
 def test_nonlinear_ccd_tolerance_constructor_is_deprecated():

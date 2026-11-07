@@ -37,15 +37,15 @@ bool TightInclusionCCD::ccd_strategy(
     const double initial_distance,
     const double conservative_rescaling,
     double& toi,
-    const NarrowPhaseCCDMode mode)
+    const NarrowPhaseCCD::Mode mode)
 {
-    if (mode != NarrowPhaseCCDMode::STANDALONE) {
+    if (mode != NarrowPhaseCCD::Mode::STANDALONE) {
         // As the per-piece linear CCD inside a piecewise driver (e.g.,
         // NonlinearCCD), the driver supplies its own conservative margins, so
         // we run Tight Inclusion directly with the caller's minimum separation
         // and zero-TOI requirement (no inflation, rerun, or rescaling).
         return ccd(
-            min_distance, mode == NarrowPhaseCCDMode::COMPONENT_NO_ZERO_TOI,
+            min_distance, mode == NarrowPhaseCCD::Mode::COMPONENT_NO_ZERO_TOI,
             toi);
     }
 
@@ -93,7 +93,7 @@ bool TightInclusionCCD::point_point_ccd_3D(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -148,7 +148,7 @@ bool TightInclusionCCD::point_point_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(p0_t0.size() == p1_t0.size());
     assert(p0_t0.size() == p0_t1.size());
@@ -168,7 +168,7 @@ bool TightInclusionCCD::point_edge_ccd_3D(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -226,7 +226,7 @@ bool TightInclusionCCD::point_edge_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(p_t1.size() == p_t0.size());
     assert(e0_t0.size() == p_t0.size() && e1_t0.size() == p_t0.size());
@@ -248,7 +248,7 @@ bool TightInclusionCCD::edge_edge_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -308,7 +308,7 @@ bool TightInclusionCCD::point_triangle_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 

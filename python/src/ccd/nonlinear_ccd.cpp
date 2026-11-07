@@ -88,7 +88,7 @@ void define_nonlinear_ccd(py::module_& m)
             Construct a new NonlinearCCD object.
 
             Parameters:
-                narrow_phase_ccd: The narrow-phase CCD used for the per-piece linear CCD (if None, a default-constructed TightInclusionCCD is used). It is queried with a COMPONENT NarrowPhaseCCDMode and never modified, so it may be shared with standalone users.
+                narrow_phase_ccd: The narrow-phase CCD used for the per-piece linear CCD (if None, a default-constructed TightInclusionCCD is used). It is queried with a COMPONENT NarrowPhaseCCD.Mode and never modified, so it may be shared with standalone users.
                 conservative_rescaling: Fraction of the initial gap (above min_distance) a step may close: the CCD reports an impact once the distance shrinks to min_distance + (1 - conservative_rescaling) * (d0 - min_distance).
             )ipc_Qu8mg5v7",
             "narrow_phase_ccd"_a = nullptr,

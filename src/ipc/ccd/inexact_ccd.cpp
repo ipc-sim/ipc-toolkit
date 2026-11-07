@@ -23,16 +23,16 @@ bool InexactCCD::ccd_strategy(
     const double initial_distance,
     const double conservative_rescaling,
     double& toi,
-    const NarrowPhaseCCDMode mode)
+    const NarrowPhaseCCD::Mode mode)
 {
-    if (mode != NarrowPhaseCCDMode::STANDALONE) {
+    if (mode != NarrowPhaseCCD::Mode::STANDALONE) {
         // As the per-piece linear CCD inside a piecewise driver (e.g.,
         // NonlinearCCD), the driver supplies its own conservative margins, so
         // we run the CCD directly with the caller's minimum separation (no
         // inflation, rerun, or rescaling). This CCD has no zero-TOI option, so
         // when zero is unacceptable we shrink the separation until the initial
         // distance clears it.
-        const double d = mode == NarrowPhaseCCDMode::COMPONENT_NO_ZERO_TOI
+        const double d = mode == NarrowPhaseCCD::Mode::COMPONENT_NO_ZERO_TOI
             ? shrink_min_distance_below(initial_distance, min_distance)
             : min_distance;
         return ccd(d, toi);
@@ -72,7 +72,7 @@ bool InexactCCD::point_point_ccd_3D(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -99,7 +99,7 @@ bool InexactCCD::point_point_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(p0_t0.size() == p1_t0.size());
     assert(p0_t0.size() == p0_t1.size());
@@ -119,7 +119,7 @@ bool InexactCCD::point_edge_ccd_3D(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -149,7 +149,7 @@ bool InexactCCD::point_edge_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(p_t1.size() == p_t0.size());
     assert(e0_t0.size() == p_t0.size() && e1_t0.size() == p_t0.size());
@@ -171,7 +171,7 @@ bool InexactCCD::edge_edge_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -205,7 +205,7 @@ bool InexactCCD::point_triangle_ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const NarrowPhaseCCDMode mode) const
+    const NarrowPhaseCCD::Mode mode) const
 {
     assert(tmax >= 0 && tmax <= 1.0);
 

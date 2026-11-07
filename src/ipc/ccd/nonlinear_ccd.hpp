@@ -63,7 +63,7 @@ public:
     static constexpr double DEFAULT_CONSERVATIVE_RESCALING = 0.8;
 
     /// @brief Construct a new NonlinearCCD object.
-    /// @param narrow_phase_ccd The narrow-phase CCD used for the per-piece linear CCD (if null, a default-constructed TightInclusionCCD is used). Each per-piece query is made with a COMPONENT NarrowPhaseCCDMode, so the object is not modified and may be shared with standalone users.
+    /// @param narrow_phase_ccd The narrow-phase CCD used for the per-piece linear CCD (if null, a default-constructed TightInclusionCCD is used). Each per-piece query is made with a COMPONENT NarrowPhaseCCD::Mode, so the object is not modified and may be shared with standalone users.
     /// @param conservative_rescaling Fraction of the initial gap (above min_distance) a step may close: the CCD reports an impact once the distance shrinks to min_distance + (1 - conservative_rescaling) * (d₀ - min_distance).
     explicit NonlinearCCD(
         std::shared_ptr<const NarrowPhaseCCD> narrow_phase_ccd = nullptr,
