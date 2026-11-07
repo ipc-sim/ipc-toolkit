@@ -6,41 +6,90 @@
 
 #include <Eigen/SVD>
 
+#include <algorithm>
+
 namespace ipc {
 namespace {
 
-    // Rotation-variant SVD for a fixed-size square matrix. Folds any reflection
-    // into the smallest singular value so that U and V are proper rotations
-    // (det = +1), following the standard signed SVD.
-    template <int dim>
+    // Rotation-variant SVD of a fixed-size rows x cols matrix A = U diag(sigma)
+    // Vᵀ, where U is rows x rows, V is cols x cols, and sigma has
+    // min(rows, cols) entries. We compute the full U and V, then adjust signs
+    // so that both are proper rotations (det = +1) whenever we can.
+    //
+    // For a square matrix, the only freedom we have is the sign of the
+    // smallest singular value. So we fold any reflection into it, following the
+    // standard signed SVD. This means sigma can go negative when det(A) < 0.
+    //
+    // For a rectangular matrix, the larger factor has extra columns that span
+    // the null space of A, and flipping one of them changes nothing about
+    // U diag(sigma) Vᵀ. We use that spare column to fix the determinant of the
+    // larger factor. For the smaller factor, we flip the same column in both
+    // U and V, which also leaves the product untouched. The tradeoff is that
+    // sigma stays non-negative here, so U_thin Vᵀ (the nearest matrix with
+    // orthonormal columns or rows) is exactly the polar factor.
+    template <int rows, int cols>
     void svd_rv(
-        const Eigen::Matrix<double, dim, dim>& A,
-        Eigen::Matrix<double, dim, dim>& U,
-        Eigen::Matrix<double, dim, dim>& V,
-        Eigen::Vector<double, dim>& sigma)
+        const Eigen::Matrix<double, rows, cols>& A,
+        Eigen::Matrix<double, rows, rows>& U,
+        Eigen::Matrix<double, cols, cols>& V,
+        Eigen::Vector<double, std::min(rows, cols)>& sigma)
     {
-        using MatrixType = Eigen::Matrix<double, dim, dim>;
+        constexpr int k = std::min(rows, cols);
         // Compute-time U/V options (runtime options are deprecated in Eigen).
         constexpr int COMPUTE_FULL_UV =
             Eigen::ComputeFullU | Eigen::ComputeFullV;
 
-        Eigen::JacobiSVD<MatrixType, COMPUTE_FULL_UV> svd(A);
+        Eigen::JacobiSVD<Eigen::Matrix<double, rows, cols>, COMPUTE_FULL_UV>
+            svd(A);
 
         U = svd.matrixU();
         V = svd.matrixV();
         sigma = svd.singularValues();
 
-        MatrixType L = MatrixType::Identity();
-        L(dim - 1, dim - 1) = (U * V.transpose()).determinant();
+        if constexpr (rows == cols) {
+            using MatrixType = Eigen::Matrix<double, rows, rows>;
+            MatrixType L = MatrixType::Identity();
+            L(rows - 1, rows - 1) = (U * V.transpose()).determinant();
 
-        const double detU = U.determinant();
-        const double detV = V.determinant();
-        if (detU < 0 && detV > 0) {
-            U = U * L;
-        } else if (detU > 0 && detV < 0) {
-            V = V * L;
+            const double detU = U.determinant();
+            const double detV = V.determinant();
+            if (detU < 0 && detV > 0) {
+                U = U * L;
+            } else if (detU > 0 && detV < 0) {
+                V = V * L;
+            }
+            sigma = L * sigma;
+        } else {
+            // Flipping column k-1 of both U and V keeps U diag(sigma) Vᵀ the
+            // same, and flipping a null-space column of the larger factor
+            // changes nothing at all.
+            const auto fix_signs = [](auto& small, auto& big) {
+                if (small.determinant() < 0) {
+                    small.col(k - 1) *= -1;
+                    big.col(k - 1) *= -1;
+                }
+                if (big.determinant() < 0) {
+                    big.col(big.cols() - 1) *= -1;
+                }
+            };
+            if constexpr (rows > cols) {
+                fix_signs(V, U);
+            } else {
+                fix_signs(U, V);
+            }
         }
-        sigma = L * sigma;
+    }
+
+    // The nearest rotation (rows x cols) built from the rotation-variant SVD.
+    template <int rows, int cols>
+    MatrixMax3d nearest_rotation_fixed(Eigen::ConstRef<MatrixMax3d> A)
+    {
+        constexpr int k = std::min(rows, cols);
+        Eigen::Matrix<double, rows, rows> U;
+        Eigen::Matrix<double, cols, cols> V;
+        Eigen::Vector<double, k> sigma;
+        svd_rv<rows, cols>(Eigen::Matrix<double, rows, cols>(A), U, V, sigma);
+        return U.template leftCols<k>() * V.template leftCols<k>().transpose();
     }
 
     /*
@@ -58,18 +107,15 @@ namespace {
 
 MatrixMax3d nearest_rotation(Eigen::ConstRef<MatrixMax3d> A)
 {
-    assert(A.rows() == A.cols());
-    if (A.rows() == 2) {
-        Eigen::Matrix2d U, V;
-        Eigen::Vector2d sigma;
-        svd_rv<2>(Eigen::Matrix2d(A), U, V, sigma);
-        return U * V.transpose();
+    assert(A.rows() >= 2 && A.rows() <= 3 && A.cols() >= 2 && A.cols() <= 3);
+    if (A.rows() == 2 && A.cols() == 2) {
+        return nearest_rotation_fixed<2, 2>(A);
+    } else if (A.rows() == 3 && A.cols() == 3) {
+        return nearest_rotation_fixed<3, 3>(A);
+    } else if (A.rows() == 3 && A.cols() == 2) {
+        return nearest_rotation_fixed<3, 2>(A);
     } else {
-        assert(A.rows() == 3);
-        Eigen::Matrix3d U, V;
-        Eigen::Vector3d sigma;
-        svd_rv<3>(Eigen::Matrix3d(A), U, V, sigma);
-        return U * V.transpose();
+        return nearest_rotation_fixed<2, 3>(A);
     }
 }
 
