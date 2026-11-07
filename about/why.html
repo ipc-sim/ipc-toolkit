@@ -1,0 +1,2796 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../index.html">
+      
+      
+        <link rel="next" href="gallery.html">
+      
+      
+      <link rel="icon" href="../_static/favicon.ico">
+    
+    
+      
+        <title>Why the IPC Toolkit - IPC Toolkit</title>
+      
+    
+    
+      
+        
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.6efbe22605a23fcd6.min.css?v=b2ceb110" />
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=39975cc5" />
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#what-you-get" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="IPC Toolkit" class="md-header__button md-logo" aria-label="IPC Toolkit" data-md-component="logo">
+      <img src="../_static/hammer-wrench.svg" alt="logo">
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IPC Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Why the IPC Toolkit
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ipc-sim/ipc-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ipc-sim/ipc-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="../index.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>About</span>
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../build/c%2B%2B.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>Build</span>
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../tutorials/getting_started.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>Tutorials</span>
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../cpp-api/index.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>C++ API</span>
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../python-api/index.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>Python API</span>
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../developers/contributing.html" class="md-tabs__link">
+        
+  
+    
+  
+  <span>Developers</span>
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="IPC Toolkit" class="md-nav__button md-logo" aria-label="IPC Toolkit" data-md-component="logo">
+      <img src="../_static/hammer-wrench.svg" alt="logo">
+    </a>
+    IPC Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ipc-sim/ipc-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ipc-sim/ipc-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>About</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            <span>About</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/index.rst (reference label)"><span>Home</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    <span title="/about/why.rst (reference label)"><span>Why the IPC Toolkit</span></span>
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/about/why.rst (reference label)"><span>Why the IPC Toolkit</span></span>
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-you-get" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#what-you-get (reference label)"><span>What You Get</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-the-toolkit-fits" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#where-the-toolkit-fits (reference label)"><span>Where the Toolkit Fits</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-use-a-component-library" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#why-use-a-component-library (reference label)"><span>Why Use a Component Library</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why Use a Component Library">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bring-your-own-solver" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#bring-your-own-solver (reference label)"><span>Bring Your Own Solver</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#it-solves-the-hard-part-and-only-the-hard-part" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#it-solves-the-hard-part-and-only-the-hard-part (reference label)"><span>It Solves the Hard Part, and Only the Hard Part</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-thin-dependency" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#a-thin-dependency (reference label)"><span>A Thin Dependency</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#easy-to-wire-in" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#easy-to-wire-in (reference label)"><span>Easy to Wire In</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maintained-and-tested" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#maintained-and-tested (reference label)"><span>Maintained and Tested</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-it-s-going" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#where-it-s-going (reference label)"><span>Where It’s Going</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Where It’s Going">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-few-lines-of-code-test" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#the-few-lines-of-code-test (reference label)"><span>The “Few Lines of Code” Test</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-choose-something-else" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#when-to-choose-something-else (reference label)"><span>When to Choose Something Else</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#next-steps (reference label)"><span>Next Steps</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="gallery.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/about/gallery.rst (reference label)"><span>Gallery</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="release_notes.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/about/release_notes.rst (reference label)"><span>Release Notes</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="license.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/about/license.rst (reference label)"><span>License</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dependencies.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/about/dependencies.rst (reference label)"><span>Dependencies</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>Build</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            <span>Build</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build/c%2B%2B.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/build/c++.rst (reference label)"><span>C++ Library</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build/python.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/build/python.rst (reference label)"><span>Python Bindings</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>Tutorials</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            <span>Tutorials</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/getting_started.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/getting_started.rst (reference label)"><span>Getting Started</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/advanced_friction.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/advanced_friction.rst (reference label)"><span>Advanced Friction</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/convergent.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/convergent.rst (reference label)"><span>Convergent Formulation</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/gcp.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/gcp.rst (reference label)"><span>Geometric Contact Potential</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/ogc.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/ogc.rst (reference label)"><span>Offset Geometric Contact</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/nonlinear_ccd.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/nonlinear_ccd.rst (reference label)"><span>Nonlinear CCD</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/adhesion.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/adhesion.rst (reference label)"><span>Adhesion</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/simulation.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/simulation.rst (reference label)"><span>Physical Simulation</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/misc.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/misc.rst (reference label)"><span>Miscellaneous</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/faq.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/faq.rst (reference label)"><span>Frequently Asked Questions</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/references.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorials/references.rst (reference label)"><span>References</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>C++ API</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            <span>C++ API</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/index.rst (reference label)"><span>Index</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/adhesion.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/adhesion.rst (reference label)"><span>Adhesion</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/barrier/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/barrier/index.rst (reference label)"><span>Barrier</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/broad_phase.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/broad_phase.rst (reference label)"><span>Broad Phase</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/candidates.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/candidates.rst (reference label)"><span>Candidates</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/ccd.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/ccd.rst (reference label)"><span>Continuous Collision Detection</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/collision_mesh.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/collision_mesh.rst (reference label)"><span>Collision Mesh</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/distance.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/distance.rst (reference label)"><span>Distance</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/esp.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/esp.rst (reference label)"><span>Extremum-<wbr>Sum Potential</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/friction.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/friction.rst (reference label)"><span>Friction</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/intersections.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/intersections.rst (reference label)"><span>Intersections</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/interval.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/interval.rst (reference label)"><span>Interval Arithmetic</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/normal_collisions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/normal_collisions.rst (reference label)"><span>Normal Collisions</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/potentials/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/potentials/index.rst (reference label)"><span>Potentials</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/tangent.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/tangent.rst (reference label)"><span>Tangent</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/tangential_collisions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/tangential_collisions.rst (reference label)"><span>Tangential Collisions</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/utils.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/utils.rst (reference label)"><span>Utils</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>Python API</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            <span>Python API</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/index.rst (reference label)"><span>Index</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/adhesion.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/adhesion.rst (reference label)"><span>Adhesion</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/barrier.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/barrier.rst (reference label)"><span>Barrier</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/broad_phase.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/broad_phase.rst (reference label)"><span>Broad Phase</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/candidates.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/candidates.rst (reference label)"><span>Candidates</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/ccd.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/ccd.rst (reference label)"><span>Continuous Collision Detection</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/collision_mesh.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/collision_mesh.rst (reference label)"><span>Collision Mesh</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/distance.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/distance.rst (reference label)"><span>Distance</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/esp.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/esp.rst (reference label)"><span>Extremum-<wbr>Sum Potential</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/friction.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/friction.rst (reference label)"><span>Friction</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/intersections.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/intersections.rst (reference label)"><span>Intersections</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/interval.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/interval.rst (reference label)"><span>Interval Arithmetic</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/normal_collisions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/normal_collisions.rst (reference label)"><span>Normal Collisions</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/potentials.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/potentials.rst (reference label)"><span>Potentials</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/tangent.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/tangent.rst (reference label)"><span>Tangent</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/tangential_collisions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/tangential_collisions.rst (reference label)"><span>Tangential Collisions</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/utils.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/utils.rst (reference label)"><span>Utils</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <span>Developers</span>
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            <span>Developers</span>
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/contributing.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/developers/contributing.rst (reference label)"><span>Contributing</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/style_guide.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/developers/style_guide.rst (reference label)"><span>Style Guide</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/code_of_conduct.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/developers/code_of_conduct.rst (reference label)"><span>Code of Conduct</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/tools.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/developers/tools.rst (reference label)"><span>Tools for Developers</span></span>
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-you-get" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#what-you-get (reference label)"><span>What You Get</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-the-toolkit-fits" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#where-the-toolkit-fits (reference label)"><span>Where the Toolkit Fits</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-use-a-component-library" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#why-use-a-component-library (reference label)"><span>Why Use a Component Library</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why Use a Component Library">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bring-your-own-solver" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#bring-your-own-solver (reference label)"><span>Bring Your Own Solver</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#it-solves-the-hard-part-and-only-the-hard-part" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#it-solves-the-hard-part-and-only-the-hard-part (reference label)"><span>It Solves the Hard Part, and Only the Hard Part</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-thin-dependency" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#a-thin-dependency (reference label)"><span>A Thin Dependency</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#easy-to-wire-in" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#easy-to-wire-in (reference label)"><span>Easy to Wire In</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maintained-and-tested" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#maintained-and-tested (reference label)"><span>Maintained and Tested</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-it-s-going" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#where-it-s-going (reference label)"><span>Where It’s Going</span></span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Where It’s Going">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-few-lines-of-code-test" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#the-few-lines-of-code-test (reference label)"><span>The “Few Lines of Code” Test</span></span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-choose-something-else" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#when-to-choose-something-else (reference label)"><span>When to Choose Something Else</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    
+    <span class="md-ellipsis">
+      <span title="/about/why.rst#next-steps (reference label)"><span>Next Steps</span></span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset" role="main">
+                
+                
+                  
+
+
+<h1 id="why-the-ipc-toolkit">Why the IPC Toolkit<a class="headerlink" href="#why-the-ipc-toolkit" title="Link to this heading">¶</a></h1>
+<p>The IPC Toolkit is a set of functions for computing contact in a simulation. Instead of adopting a new simulator, you call these functions from your own solver, time integrator, and data structures.</p>
+<p>Contact is the hardest, most failure-prone part of any physics simulation. Getting it intersection-free, with correct derivatives, robust continuous collision detection (CCD), and stable friction takes years of research and engineering. Many people already have a solver and a mesh pipeline that they are happy with. What they are missing is contact that they can trust, and that is the gap the toolkit fills.</p>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>The IPC Toolkit is <strong>not</strong> a full simulation library. It does not include any physics or solvers. We think of that as the point of the project rather than a limitation: we implement the contact and leave everything else to you.</p>
+</div>
+<h2 id="what-you-get">What You Get<a class="headerlink" href="#what-you-get" title="Link to this heading">¶</a></h2>
+<table class="docutils data align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Component</p></th>
+<th class="head"><p>What it provides</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Barrier potential</p></td>
+<td><p>The IPC log-barrier with its gradient, Hessian (optionally projected to be positive semi-definite), and the adaptive barrier stiffness algorithm. See <a class="reference internal" href="../tutorials/getting_started.html"><span class="doc">Getting Started</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Continuous collision detection</p></td>
+<td><p>Broad- and narrow-phase CCD for linear and nonlinear trajectories, and a collision-free step size to use in your line search. See <a class="reference internal" href="../tutorials/nonlinear_ccd.html"><span class="doc">Nonlinear CCD</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p>Distances</p></td>
+<td><p>Edge–edge distances in 2D and triangle-based distances in 3D, with derivatives.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Friction and adhesion</p></td>
+<td><p>Smooth, lagged dissipative friction and adhesion potentials with derivatives. See <a class="reference internal" href="../tutorials/advanced_friction.html"><span class="doc">Advanced Friction</span></a> and <a class="reference internal" href="../tutorials/adhesion.html"><span class="doc">Adhesion</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p>Alternative formulations</p></td>
+<td><p>The convergent formulation, the Geometric Contact Potential, and Offset Geometric Contact, alongside the original IPC formulation. See <a class="reference internal" href="../tutorials/convergent.html"><span class="doc">Convergent Formulation</span></a>, <a class="reference internal" href="../tutorials/gcp.html"><span class="doc">Geometric Contact Potential</span></a>, and <a class="reference internal" href="../tutorials/ogc.html"><span class="doc">Offset Geometric Contact</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Languages</p></td>
+<td><p>Modern C++17 built with CMake, and Python bindings with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">ipctk</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p>License</p></td>
+<td><p>MIT, so you can use it in commercial products. See <a class="reference internal" href="license.html"><span class="doc">License</span></a>.</p></td>
+</tr>
+</tbody>
+</table>
+<h2 id="where-the-toolkit-fits">Where the Toolkit Fits<a class="headerlink" href="#where-the-toolkit-fits" title="Link to this heading">¶</a></h2>
+<p>Simulation software generally falls into one of two groups. Either you build on top of it, or you embed it inside your own solver.</p>
+<ul class="simple">
+<li><p><strong>Integrated frameworks</strong> own the whole stack: the scene description, solver, integrator, and I/O. You get a complete simulator, but you have to work within its architecture.</p></li>
+<li><p><strong>Component libraries</strong> solve one problem and hand the result back to you. You keep control of everything else.</p></li>
+</ul>
+<p>Both are useful. However, as far as we know, the projects with IPC-grade contact are full frameworks that you build on, and the projects that you can embed do not handle contact. The IPC Toolkit aims to do both.</p>
+<div class="ipctk-landscape">
+<svg viewBox="0 0 780 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="landscape-title landscape-desc">
+<title id="landscape-title">Where the IPC Toolkit fits</title>
+<desc id="landscape-desc">Projects placed by integration model (modular component to integrated framework) and contact handling (generic to IPC-grade). The IPC Toolkit is the only project in the modular, IPC-grade corner.</desc>
+<rect class="ls-quad" x="64" y="16" width="700" height="418"/>
+<rect class="ls-open" x="64" y="16" width="350.0" height="209.0"/>
+<line class="ls-grid" x1="414.0" y1="16" x2="414.0" y2="434"/>
+<line class="ls-grid" x1="64" y1="225.0" x2="764" y2="225.0"/>
+<text class="ls-note" x="74" y="34">Open territory: IPC-grade contact you can embed</text>
+<text class="ls-axis" x="64" y="454">MODULAR COMPONENTS</text>
+<text class="ls-axis" x="764" y="454" text-anchor="end">INTEGRATED FRAMEWORKS</text>
+<text class="ls-axis-title" x="414.0" y="476" text-anchor="middle">Integration model →</text>
+<text class="ls-axis" x="54" y="28" text-anchor="end" transform="rotate(-90 54 28)">IPC-GRADE</text>
+<text class="ls-axis" x="54" y="434" text-anchor="start" transform="rotate(-90 54 434)">GENERIC</text>
+<text class="ls-axis-title" x="24" y="225.0" text-anchor="middle" transform="rotate(-90 24 225.0)">Contact handling: barrier + CCD →</text>
+<circle class="ls-dot ls-toolkit" cx="155.0" cy="74.5" r="11"/>
+<circle class="ls-dot ls-other" cx="113.0" cy="183.2" r="7"/>
+<circle class="ls-dot ls-other" cx="183.0" cy="258.4" r="7"/>
+<circle class="ls-dot ls-other" cx="274.0" cy="321.1" r="7"/>
+<circle class="ls-dot ls-other" cx="176.0" cy="375.5" r="7"/>
+<circle class="ls-dot ls-other" cx="358.0" cy="388.0" r="7"/>
+<circle class="ls-dot ls-other" cx="617.0" cy="45.3" r="7"/>
+<circle class="ls-dot ls-other" cx="708.0" cy="95.4" r="7"/>
+<circle class="ls-dot ls-other" cx="729.0" cy="57.8" r="7"/>
+<circle class="ls-dot ls-other" cx="477.0" cy="70.3" r="7"/>
+<circle class="ls-dot ls-other" cx="449.0" cy="166.5" r="7"/>
+<circle class="ls-dot ls-other" cx="617.0" cy="87.1" r="7"/>
+<circle class="ls-dot ls-uses" cx="589.0" cy="120.5" r="7"/>
+<circle class="ls-dot ls-uses" cx="729.0" cy="133.0" r="7"/>
+<circle class="ls-dot ls-uses" cx="729.0" cy="174.8" r="7"/>
+<circle class="ls-dot ls-other" cx="498.0" cy="258.4" r="7"/>
+<circle class="ls-dot ls-other" cx="442.0" cy="304.4" r="7"/>
+<circle class="ls-dot ls-other" cx="596.0" cy="308.6" r="7"/>
+<circle class="ls-dot ls-other" cx="484.0" cy="375.5" r="7"/>
+<circle class="ls-dot ls-other" cx="694.0" cy="350.4" r="7"/>
+<text class="ls-label ls-label-toolkit" x="172.0" y="78.5" text-anchor="start">IPC Toolkit</text>
+<text class="ls-label" x="126.0" y="187.2" text-anchor="start">Tight-Inclusion / Scalable-CCD</text>
+<text class="ls-label" x="196.0" y="262.4" text-anchor="start">FCL / Coal</text>
+<text class="ls-label" x="287.0" y="325.1" text-anchor="start">Ipopt</text>
+<text class="ls-label" x="189.0" y="379.5" text-anchor="start">TinyAD / Bartels</text>
+<text class="ls-label" x="371.0" y="392.0" text-anchor="start">SimKit</text>
+<text class="ls-label" x="604.0" y="49.3" text-anchor="end">libuipc</text>
+<text class="ls-label" x="695.0" y="99.4" text-anchor="end">GIPC</text>
+<text class="ls-label" x="716.0" y="61.8" text-anchor="end">IPC / C-IPC</text>
+<text class="ls-label" x="490.0" y="74.3" text-anchor="start">YASPS</text>
+<text class="ls-label" x="462.0" y="170.5" text-anchor="start">SymX</text>
+<text class="ls-label" x="604.0" y="91.1" text-anchor="end">STARK</text>
+<text class="ls-label" x="576.0" y="124.5" text-anchor="end">PolyFEM</text>
+<text class="ls-label" x="716.0" y="137.0" text-anchor="end">Rigid IPC</text>
+<text class="ls-label" x="716.0" y="178.8" text-anchor="end">SfePy / FEDOO / MeshFEM</text>
+<text class="ls-label" x="511.0" y="262.4" text-anchor="start">FEBio / Abaqus / Ansys / LS-DYNA</text>
+<text class="ls-label" x="455.0" y="308.4" text-anchor="start">SOFA</text>
+<text class="ls-label" x="609.0" y="312.6" text-anchor="start">Chrono / Drake</text>
+<text class="ls-label" x="497.0" y="379.5" text-anchor="start">Bullet / PhysX / MuJoCo</text>
+<text class="ls-label" x="681.0" y="354.4" text-anchor="end">NVIDIA Newton</text>
+<circle class="ls-dot ls-toolkit" cx="214" cy="502" r="6"/>
+<text class="ls-legend" x="226" y="506">IPC Toolkit</text>
+<circle class="ls-dot ls-uses" cx="354" cy="502" r="6"/>
+<text class="ls-legend" x="366" y="506">Built on the IPC Toolkit</text>
+<circle class="ls-dot ls-other" cx="564" cy="502" r="6"/>
+<text class="ls-legend" x="576" y="506">Other projects</text>
+</svg>
+</div>
+<p><em>Illustrative positioning based on each project’s stated scope. This is not a benchmark, and it leaves out many other projects. The horizontal axis asks whether you embed the project in your solver or build on top of it. The vertical axis asks how closely the project’s contact handling resembles IPC (a barrier with intersection-free CCD).</em></p>
+<p>The table below lists the projects in the figure, starting with the ones closest to the IPC Toolkit. Compare the <em>Embed in your solver?</em> and <em>IPC-grade contact?</em> columns. Projects with IPC-grade contact are almost always frameworks that you build on, and the projects you can embed in your own solver almost never handle contact.</p>
+<table class="docutils data align-default">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 34.0%" />
+<col style="width: 18.0%" />
+<col style="width: 18.0%" />
+<col style="width: 14.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Project</p></th>
+<th class="head"><p>What it is</p></th>
+<th class="head"><p>Embed in your solver?</p></th>
+<th class="head"><p>IPC-grade contact?</p></th>
+<th class="head"><p>Actively maintained?</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>IPC Toolkit</strong></p></td>
+<td><p>Modular IPC contact, friction, and CCD components (C++ and Python)</p></td>
+<td><p>Yes, by design</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/spiriMirror/libuipc">libuipc</a></p></td>
+<td><p>Unified GPU IPC framework for rigid, soft, cloth, and thread simulation</p></td>
+<td><p>No, you build on it</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/KemengHuang/GPU_IPC">GIPC</a></p></td>
+<td><p>GPU-accelerated IPC with Gauss–Newton optimization of the barrier energy <span class="bibtex-citation" id="id1">[<a class="reference internal" href="../tutorials/references.html#id12" title="Kemeng Huang, Floyd M. Chitalu, Huancheng Lin, and Taku Komura. GIPC: fast and stable gauss-newton optimization of ipc barrier energy. ACM Transactions on Graphics, 43(2):1–18, April 2024. doi:10.1145/3643028.">Huang <em>et al.</em>, 2024</a>]</span></p></td>
+<td><p>No, it is its own simulator</p></td>
+<td><p>Yes</p></td>
+<td><p>No, a reference implementation</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/ipc-sim/IPC">IPC</a> and <a class="reference external" href="https://github.com/ipc-sim/Codim-IPC">C-IPC</a></p></td>
+<td><p>The reference implementations of <span class="bibtex-citation" id="id2">Li <em>et al.</em> [<a class="reference internal" href="../tutorials/references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span> and <span class="bibtex-citation" id="id3">Li <em>et al.</em> [<a class="reference internal" href="../tutorials/references.html#id3" title="Minchen Li, Danny M. Kaufman, and Chenfanfu Jiang. Codimensional incremental potential contact. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/C-IPC.">2021</a>]</span></p></td>
+<td><p>No, it is research code built around one solver</p></td>
+<td><p>Yes</p></td>
+<td><p>No, a reference implementation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/InteractiveComputerGraphics/SymX">SymX</a></p></td>
+<td><p>C++ symbolic differentiation with JIT code generation and global gradient and Hessian assembly for nonlinear optimization. It is the engine of <a class="reference external" href="https://github.com/InteractiveComputerGraphics/stark">STARK</a>.</p></td>
+<td><p>Partly, you bring your own data but build the simulator in SymX</p></td>
+<td><p>Yes, as IPC energies you write in SymX (see its IPC example and STARK)</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/txstc55/yasps">YASPS</a></p></td>
+<td><p>Symbolic framework that generates CUDA code for extensible, high-performance IPC simulation, mixing free and affine-body parameterizations (<a class="reference external" href="https://arxiv.org/abs/2605.23088">arXiv:2605.23088</a>)</p></td>
+<td><p>No, you build on it</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/InteractiveComputerGraphics/stark">STARK</a></p></td>
+<td><p>C++ and Python platform for strongly coupled rigid and deformable simulation (FEM, shells, rods, and joints) with frictional contact, built on SymX</p></td>
+<td><p>No, you build on it</p></td>
+<td><p>Yes</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://polyfem.github.io/">PolyFEM</a></p></td>
+<td><p>Full finite element simulator</p></td>
+<td><p>No, it is an application</p></td>
+<td><p>Yes, via the IPC Toolkit</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/ipc-sim/rigid-ipc">Rigid IPC</a></p></td>
+<td><p>Intersection-free rigid body dynamics <span class="bibtex-citation" id="id5">[<a class="reference internal" href="../tutorials/references.html#id8" title="Zachary Ferguson, Minchen Li, Teseo Schneider, Francisca Gil-Ureta, Timothy Langlois, Chenfanfu Jiang, Denis Zorin, Danny M. Kaufman, and Daniele Panozzo. Intersection-free rigid body dynamics. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/rigid-ipc.">Ferguson <em>et al.</em>, 2021</a>]</span></p></td>
+<td><p>No, it is an application</p></td>
+<td><p>Yes, via the IPC Toolkit</p></td>
+<td><p>No, a reference implementation</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/sfepy/sfepy">SfePy</a>, <a class="reference external" href="https://3mah.github.io/fedoo-docs">FEDOO</a>, <a class="reference external" href="https://github.com/MeshFEM/MeshFEM">MeshFEM</a></p></td>
+<td><p>Finite element libraries (see the <a class="reference internal" href="gallery.html"><span class="doc">Gallery</span></a>)</p></td>
+<td><p>No, they are frameworks</p></td>
+<td><p>Yes, via the IPC Toolkit</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">Tight-Inclusion</a>, <a class="reference external" href="https://github.com/Continuous-Collision-Detection/Scalable-CCD">Scalable-CCD</a></p></td>
+<td><p>Provably conservative CCD, on the CPU and GPU. The IPC Toolkit builds on both.</p></td>
+<td><p>Yes</p></td>
+<td><p>CCD only, no barrier or friction</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/flexible-collision-library/fcl">FCL</a>, <a class="reference external" href="https://github.com/humanoid-path-planner/hpp-fcl">Coal</a></p></td>
+<td><p>Collision and distance queries for robotics and planning</p></td>
+<td><p>Yes</p></td>
+<td><p>Queries only, no contact potentials</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/patr-schm/TinyAD">TinyAD</a>, <a class="reference external" href="https://github.com/dilevin/Bartels">Bartels</a></p></td>
+<td><p>Automatic differentiation and finite element energy collections</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+<td><p>Rarely updated</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/otmanon/simkit">SimKit</a></p></td>
+<td><p>Python toolbox for prototyping physics-based animation research</p></td>
+<td><p>Yes</p></td>
+<td><p>No</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://coin-or.github.io/Ipopt/">Ipopt</a></p></td>
+<td><p>General nonlinear optimizer using an interior-point method</p></td>
+<td><p>Yes, you write the physics</p></td>
+<td><p>No</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://febio.org/">FEBio</a>, <a class="reference external" href="https://www.3ds.com/products/simulia/abaqus">Abaqus</a>, <a class="reference external" href="https://ansys.synopsys.com/">Ansys</a>, <a class="reference external" href="https://lsdyna.ansys.com/">LS-DYNA</a></p></td>
+<td><p>General-purpose finite element packages with their own contact algorithms</p></td>
+<td><p>No, they are applications</p></td>
+<td><p>A different approach</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://www.sofa-framework.org/">SOFA</a></p></td>
+<td><p>Interactive simulation framework with a plugin architecture</p></td>
+<td><p>Partly, through plugins</p></td>
+<td><p>A different approach</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://projectchrono.org/">Chrono</a>, <a class="reference external" href="https://drake.mit.edu/">Drake</a></p></td>
+<td><p>Multibody dynamics and robotics toolboxes</p></td>
+<td><p>No, they are their own engines</p></td>
+<td><p>A different approach</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://pybullet.org/">Bullet</a>, <a class="reference external" href="https://developer.nvidia.com/physx-sdk">PhysX</a>, <a class="reference external" href="https://mujoco.org/">MuJoCo</a></p></td>
+<td><p>Real-time rigid-body and robotics physics engines</p></td>
+<td><p>No, they are their own engines</p></td>
+<td><p>A different approach</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://developer.nvidia.com/newton-physics">NVIDIA Newton</a></p></td>
+<td><p>GPU differentiable robotics engine built on Warp</p></td>
+<td><p>No, it is its own engine</p></td>
+<td><p>Not its focus</p></td>
+<td><p>Yes</p></td>
+</tr>
+</tbody>
+</table>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>IPC, C-IPC, Rigid IPC, and GIPC are reference implementations of their papers. They are valuable for reproducing results and studying the algorithms, but the code is not actively maintained, so we would not build a long-lived project on top of them. The IPC Toolkit is maintained by authors of the original IPC paper, and it aims to be the maintained home for the building blocks that these methods share. “Rarely updated” means the project still works but sees infrequent changes.</p>
+</div>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>SymX and YASPS take a different route to a similar goal. You write the energies, including IPC contact, in a symbolic framework, and it generates the derivatives and assembly code for you. The IPC Toolkit instead provides hand-derived, tested contact functions that you call from your own code. The tradeoff is flexibility in how you define energies versus keeping your existing solver and data structures.</p>
+</div>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>“A different approach” is not a criticism. Penalty, augmented Lagrangian, complementarity, and soft-contact models work well for many problems. By construction, though, they do not guarantee an intersection-free state the way a barrier with CCD does, and that guarantee is what we mean by IPC-grade contact.</p>
+</div>
+<h2 id="why-use-a-component-library">Why Use a Component Library<a class="headerlink" href="#why-use-a-component-library" title="Link to this heading">¶</a></h2>
+<h3 id="bring-your-own-solver">Bring Your Own Solver<a class="headerlink" href="#bring-your-own-solver" title="Link to this heading">¶</a></h3>
+<p>Every potential provides an energy, a gradient, and a sparse Hessian (optionally projected to be positive semi-definite). You add these to the objective of whatever Newton, quasi-Newton, or projected solver you already use. There is no framework to adopt and no scene format to learn. See <a class="reference internal" href="../tutorials/simulation.html"><span class="doc">Physical Simulation</span></a> for how the pieces fit into an optimization-based time integrator.</p>
+<h3 id="it-solves-the-hard-part-and-only-the-hard-part">It Solves the Hard Part, and Only the Hard Part<a class="headerlink" href="#it-solves-the-hard-part-and-only-the-hard-part" title="Link to this heading">¶</a></h3>
+<p>Writing a Newton loop is a weekend project. Getting intersection-free contact with robust CCD, a collision-free line-search step, and stable friction derivatives is a research program. The IPC Toolkit gives you the research program and leaves the weekend to you.</p>
+<h3 id="a-thin-dependency">A Thin Dependency<a class="headerlink" href="#a-thin-dependency" title="Link to this heading">¶</a></h3>
+<p>The core library is centered on Eigen. CMake downloads the dependencies for you, and anything beyond the core (SIMD, faster hashing, interval arithmetic, etc.) is behind an opt-in or opt-out build flag, so you only pay for what you use. See <a class="reference internal" href="dependencies.html"><span class="doc">Dependencies</span></a> for the full list and their licenses.</p>
+<h3 id="easy-to-wire-in">Easy to Wire In<a class="headerlink" href="#easy-to-wire-in" title="Link to this heading">¶</a></h3>
+<p>The toolkit asks very little of your solver. You evaluate the value, gradient, and Hessian, and ask for the maximum feasible step size before your line search. This maps onto almost any optimization-based integrator, so integrating the toolkit usually only requires a short adapter instead of restructuring your code. For example, the demo simulator described in <a class="reference internal" href="#where-it-s-going">Where It’s Going</a> plugs the toolkit into the nonlinear <code class="docutils literal notranslate"><span class="pre">Problem</span></code> interface of <a class="reference external" href="https://github.com/polyfem/polysolve">PolySolve</a> and passes our collision-free step size to PolySolve’s line search.</p>
+<h3 id="maintained-and-tested">Maintained and Tested<a class="headerlink" href="#maintained-and-tested" title="Link to this heading">¶</a></h3>
+<p>The toolkit comes from authors of the original IPC paper <span class="bibtex-citation" id="id6">[<a class="reference internal" href="../tutorials/references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">Li <em>et al.</em>, 2020</a>]</span>, and we continue to maintain it. It has continuous integration, code coverage, published documentation, and Python bindings that match the C++ API. It is meant to be production-friendly and publication-friendly at the same time, so if you use it in your work, please cite it (see <a class="reference internal" href="license.html"><span class="doc">License</span></a>).</p>
+<h2 id="where-it-s-going">Where It’s Going<a class="headerlink" href="#where-it-s-going" title="Link to this heading">¶</a></h2>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>This section describes the <code class="docutils literal notranslate"><span class="pre">dynamics</span></code> branch, which is a big part of the upcoming v2.0.0 release. It is not in the current release yet.</p>
+</div>
+<p>Version 2.0.0 extends the toolkit beyond contact, but we are not turning it into a simulator. Something only belongs in the core if it is dependency-light math and does not make the library an application.</p>
+<ul class="simple">
+<li><p><strong>Rigid and affine body energies.</strong> Inertia, body forces, the orthogonality potential for rigid bodies, an augmented Lagrangian, and joints are all energy terms that you add as needed. We write each one once in affine coordinates and use a change of variables to apply them to rigid bodies, so rigid and affine bodies share a single formulation.</p></li>
+<li><p><strong>A swappable BDF time integrator.</strong> It takes a state history and a time step and returns the predicted state used by the inertial term. It knows nothing about solvers or stepping loops, so you can replace it with your own integrator.</p></li>
+<li><p><strong>A separate demo simulator.</strong> The <code class="docutils literal notranslate"><span class="pre">demo/</span></code> directory combines these components with <a class="reference external" href="https://github.com/polyfem/polysolve">PolySolve</a>, steps them with BDF, and exports the result. It is application code, so the library itself never depends on it, PolySolve, or any other solver.</p></li>
+</ul>
+<h3 id="the-few-lines-of-code-test">The “Few Lines of Code” Test<a class="headerlink" href="#the-few-lines-of-code-test" title="Link to this heading">¶</a></h3>
+<p>The demo is also a test of our interfaces. If connecting the toolkit’s components to an off-the-shelf solver only takes a few lines of code, then the interfaces are doing their job. This makes the demo both an integration test of the components and an example of how to adopt the toolkit.</p>
+<h2 id="when-to-choose-something-else">When to Choose Something Else<a class="headerlink" href="#when-to-choose-something-else" title="Link to this heading">¶</a></h2>
+<p>Knowing your lane is part of being useful, so here is when we would point you elsewhere:</p>
+<ul class="simple">
+<li><p>If you need a complete finite element application, <a class="reference external" href="https://polyfem.github.io/">PolyFEM</a> already ships one, powered by the IPC Toolkit.</p></li>
+<li><p>If you are training robot policies at scale, <a class="reference external" href="https://developer.nvidia.com/newton-physics">NVIDIA Newton</a> is the natural home.</p></li>
+<li><p>If you want a turnkey GPU simulator for cloth, soft bodies, and rigid bodies, <a class="reference external" href="https://github.com/spiriMirror/libuipc">libuipc</a> is built for that.</p></li>
+</ul>
+<p>But if you already have a solver and need contact that you can trust inside it, the IPC Toolkit is for you.</p>
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../build/c%2B%2B.html"><span class="doc">Building the C++ Library</span></a> or <a class="reference internal" href="../build/python.html"><span class="doc">Python Bindings</span></a> to install the toolkit.</p></li>
+<li><p><a class="reference internal" href="../tutorials/getting_started.html"><span class="doc">Getting Started</span></a> for a first collision mesh, barrier potential, and CCD query.</p></li>
+<li><p><a class="reference internal" href="../tutorials/simulation.html"><span class="doc">Physical Simulation</span></a> to see how the toolkit slots into a time integrator.</p></li>
+<li><p><a class="reference internal" href="gallery.html"><span class="doc">Gallery</span></a> for projects and papers that already use the toolkit.</p></li>
+</ul>
+
+
+
+
+
+
+
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    Nov 07, 2026
+  </span>
+
+    
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../index.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: IPC Toolkit">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                IPC Toolkit
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="gallery.html" class="md-footer__link md-footer__link--next" aria-label="Next: Gallery">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Gallery
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        &#169; Copyright 2020-2026, Zachary Ferguson; MIT License.
+        
+    </div>
+  
+    Created using
+    <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
+    8.2.3.
+     and
+    <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.tabs.link", "navigation.footer", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
+    
+      
+        <script src="../_static/sphinx_immaterial_theme.32136f45f91ae6956.min.js?v=a7a9472a"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+  </body>
+</html>

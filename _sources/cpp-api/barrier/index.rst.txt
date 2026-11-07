@@ -89,4 +89,4 @@ Adaptive Barrier Stiffness
 Semi-Implicit Stiffness
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-.. doxygenfunction:: semi_implicit_stiffness(const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>, const StencilsT&, Eigen::ConstRef<Eigen::VectorXd>, const Eigen::SparseMatrix<double>&, const double)
+.. doxygenfunction:: semi_implicit_stiffness(const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>, const StencilsT&, Eigen::ConstRef<Eigen::VectorXd>, const Eigen::SparseMatrix<double>&, const std::optional<double>)
