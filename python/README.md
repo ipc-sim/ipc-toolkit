@@ -69,5 +69,5 @@ make -j$(nproc)
 ## Help/Documentation
 
 * Tutorials on how to use the toolkit can be found [here](https://ipctk.xyz/tutorials/getting_started.html).
-* We provide a Jupyter notebook (`python/example.ipynb`) with some simple examples.
+* We provide a Jupyter notebook (`python/examples/example.ipynb`) with some simple examples.
 * A function reference can be found [here](https://ipctk.xyz/).
