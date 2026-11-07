@@ -2,11 +2,29 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
+#include <cstdint>
+
 namespace ipc {
 
 /// @brief Narrow Phase Continuous Collision Detection (CCD) interface.
 class NarrowPhaseCCD {
 public:
+    /// @brief How a narrow-phase CCD query is used.
+    enum class Mode : uint8_t {
+        /// A standalone query: the method applies its own conservative strategy
+        /// (minimum-distance inflation, small-TOI reruns, and rescaling).
+        STANDALONE,
+        /// The per-piece linear CCD inside a piecewise driver (e.g.,
+        /// NonlinearCCD), which supplies its own conservative margins (a target
+        /// separation inflated by the linearization error as the minimum
+        /// separation, and subdivision on zero TOI). The method skips its
+        /// standalone strategy and returns the raw time of impact.
+        COMPONENT,
+        /// Like COMPONENT, but the caller cannot accept a time of impact of
+        /// exactly zero (it knows the start of the piece is separated).
+        COMPONENT_NO_ZERO_TOI,
+    };
+
     NarrowPhaseCCD() = default;
 
     virtual ~NarrowPhaseCCD() = default;
@@ -19,6 +37,7 @@ public:
     /// @param toi The time of impact.
     /// @param min_distance The minimum distance between the two points.
     /// @param tmax The maximum time to check for collision.
+    /// @param mode How the query is used (see Mode).
     /// @return True if a collision was detected, false otherwise.
     virtual bool point_point_ccd(
         Eigen::ConstRef<VectorMax3d> p0_t0,
@@ -27,7 +46,8 @@ public:
         Eigen::ConstRef<VectorMax3d> p1_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const = 0;
+        const double tmax = 1.0,
+        const Mode mode = Mode::STANDALONE) const = 0;
 
     /// @brief Perform narrow phase CCD between a point and a linear edge.
     /// @param p_t0 The starting position of the point.
@@ -39,6 +59,7 @@ public:
     /// @param toi The time of impact.
     /// @param min_distance The minimum distance between the point and the edge.
     /// @param tmax The maximum time to check for collision.
+    /// @param mode How the query is used (see Mode).
     /// @return True if a collision was detected, false otherwise.
     virtual bool point_edge_ccd(
         Eigen::ConstRef<VectorMax3d> p_t0,
@@ -49,7 +70,8 @@ public:
         Eigen::ConstRef<VectorMax3d> e1_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const = 0;
+        const double tmax = 1.0,
+        const Mode mode = Mode::STANDALONE) const = 0;
 
     /// @brief Perform narrow phase CCD between a point and a linear triangle.
     /// @param p_t0 The starting position of the point.
@@ -63,6 +85,7 @@ public:
     /// @param toi The time of impact.
     /// @param min_distance The minimum distance between the point and the triangle.
     /// @param tmax The maximum time to check for collision.
+    /// @param mode How the query is used (see Mode).
     /// @return True if a collision was detected, false otherwise.
     virtual bool point_triangle_ccd(
         Eigen::ConstRef<Eigen::Vector3d> p_t0,
@@ -75,7 +98,8 @@ public:
         Eigen::ConstRef<Eigen::Vector3d> t2_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const = 0;
+        const double tmax = 1.0,
+        const Mode mode = Mode::STANDALONE) const = 0;
 
     /// @brief Perform narrow phase CCD between two linear edges.
     /// @param ea0_t0 The starting position of the first edge's first endpoint.
@@ -89,6 +113,7 @@ public:
     /// @param toi The time of impact.
     /// @param min_distance The minimum distance between the two edges.
     /// @param tmax The maximum time to check for collision.
+    /// @param mode How the query is used (see Mode).
     /// @return True if a collision was detected, false otherwise.
     virtual bool edge_edge_ccd(
         Eigen::ConstRef<Eigen::Vector3d> ea0_t0,
@@ -101,7 +126,8 @@ public:
         Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0) const = 0;
+        const double tmax = 1.0,
+        const Mode mode = Mode::STANDALONE) const = 0;
 
     /// @brief The conservative rescaling value used to avoid taking steps exactly to impact.
     ///
