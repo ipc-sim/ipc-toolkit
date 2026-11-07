@@ -64,9 +64,11 @@ namespace {
             // same, and flipping a null-space column of the larger factor
             // changes nothing at all.
             const auto fix_signs = [](auto& small, auto& big) {
+                // The smaller factor is k x k, so its last column is k - 1.
+                const Eigen::Index last = small.cols() - 1;
                 if (small.determinant() < 0) {
-                    small.col(k - 1) *= -1;
-                    big.col(k - 1) *= -1;
+                    small.col(last) *= -1;
+                    big.col(last) *= -1;
                 }
                 if (big.determinant() < 0) {
                     big.col(big.cols() - 1) *= -1;
