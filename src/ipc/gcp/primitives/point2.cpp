@@ -105,6 +105,39 @@ namespace {
 
         return tangent_term * measure;
     }
+    // We select the quadrature weight in one place so the potential, gradient,
+    // and Hessian can never disagree about which measure they differentiate.
+    // With the rest-shape measure the weight is a constant, so no derivative
+    // flows through it. Otherwise it is the (deformed) average half-edge
+    // length, which does depend on the vertex positions.
+    template <class scalar>
+    scalar point2_two_sided_measure(
+        const bool use_rest_shape_measure,
+        const double rest_measure,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> v,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> e0,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> e1)
+    {
+        if (use_rest_shape_measure) {
+            return scalar(rest_measure);
+        }
+        return ((e0 - v).norm() + (e1 - v).norm()) / 2.0;
+    }
+
+    // Same as above for a vertex with a single neighboring edge, where the
+    // weight is the length of that edge.
+    template <class scalar>
+    scalar point2_one_sided_measure(
+        const bool use_rest_shape_measure,
+        const double rest_measure,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> v,
+        Eigen::ConstRef<Eigen::Vector2<scalar>> e0)
+    {
+        if (use_rest_shape_measure) {
+            return scalar(rest_measure);
+        }
+        return (e0 - v).norm();
+    }
 } // namespace
 
 Point2::Point2(
@@ -161,18 +194,16 @@ double Point2::potential(
     const VectorMax<double, MAX_SIZE>& x) const
 {
     if (has_neighbor_1 && has_neighbor_2) {
-        const double measure = m_params.use_rest_shape_measure
-            ? m_rest_measure
-            : ((x.segment<DIM>(DIM) - x.segment<DIM>(0)).norm()
-               + (x.segment<DIM>(2 * DIM) - x.segment<DIM>(0)).norm())
-                / 2.0;
+        const double measure = point2_two_sided_measure<double>(
+            m_params.use_rest_shape_measure, m_rest_measure, x.segment<DIM>(0),
+            x.segment<DIM>(DIM), x.segment<DIM>(2 * DIM));
         return smooth_point2_term<double>(
             x.segment<DIM>(0), d, x.segment<DIM>(DIM), x.segment<DIM>(2 * DIM),
             m_params, orientable, measure);
     } else if (has_neighbor_1 || has_neighbor_2) {
-        const double measure = m_params.use_rest_shape_measure
-            ? m_rest_measure
-            : (x.segment<DIM>(DIM) - x.segment<DIM>(0)).norm();
+        const double measure = point2_one_sided_measure<double>(
+            m_params.use_rest_shape_measure, m_rest_measure, x.segment<DIM>(0),
+            x.segment<DIM>(DIM));
         return smooth_point2_term_one_side<double>(
             x.segment<DIM>(0), d, x.segment<DIM>(DIM), m_params, measure);
     } else {
@@ -189,10 +220,9 @@ VectorMax<double, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
         Eigen::Vector<double, 4 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
-        const T measure = m_params.use_rest_shape_measure
-            ? T(m_rest_measure)
-            : ((X.row(2) - X.row(1)).norm() + (X.row(3) - X.row(1)).norm())
-                / 2.0;
+        const T measure = point2_two_sided_measure<T>(
+            m_params.use_rest_shape_measure, m_rest_measure, X.row(1), X.row(2),
+            X.row(3));
         return smooth_point2_term<T>(
                    X.row(1), X.row(0), X.row(2), X.row(3), m_params, orientable,
                    measure)
@@ -203,9 +233,9 @@ VectorMax<double, Point2::MAX_SIZE + Point2::DIM> Point2::grad(
         Eigen::Vector<double, 3 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
-        const T measure = m_params.use_rest_shape_measure
-            ? T(m_rest_measure)
-            : (X.row(2) - X.row(1)).norm();
+        const T measure = point2_one_sided_measure<T>(
+            m_params.use_rest_shape_measure, m_rest_measure, X.row(1),
+            X.row(2));
         return smooth_point2_term_one_side<T>(
                    X.row(1), X.row(0), X.row(2), m_params, measure)
             .grad;
@@ -228,10 +258,9 @@ Point2::hessian(
         Eigen::Vector<double, 4 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 4, DIM> X = slice_positions<T, 4, DIM>(tmp);
-        const T measure = m_params.use_rest_shape_measure
-            ? T(m_rest_measure)
-            : ((X.row(2) - X.row(1)).norm() + (X.row(3) - X.row(1)).norm())
-                / 2.0;
+        const T measure = point2_two_sided_measure<T>(
+            m_params.use_rest_shape_measure, m_rest_measure, X.row(1), X.row(2),
+            X.row(3));
         return smooth_point2_term<T>(
                    X.row(1), X.row(0), X.row(2), X.row(3), m_params, orientable,
                    measure)
@@ -242,9 +271,9 @@ Point2::hessian(
         Eigen::Vector<double, 3 * DIM> tmp;
         tmp << d, x;
         Eigen::Matrix<T, 3, DIM> X = slice_positions<T, 3, DIM>(tmp);
-        const T measure = m_params.use_rest_shape_measure
-            ? T(m_rest_measure)
-            : (X.row(2) - X.row(1)).norm();
+        const T measure = point2_one_sided_measure<T>(
+            m_params.use_rest_shape_measure, m_rest_measure, X.row(1),
+            X.row(2));
         return smooth_point2_term_one_side<T>(
                    X.row(1), X.row(0), X.row(2), m_params, measure)
             .Hess;

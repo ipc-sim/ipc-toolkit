@@ -51,7 +51,7 @@ Face::Face(
 }
 int Face::n_vertices() const { return N_FACE_NEIGHBORS_3D; }
 double Face::potential(
-    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const
+    Eigen::ConstRef<Eigen::Vector3d> /*d*/, Eigen::ConstRef<Vector9d> x) const
 {
     if (!m_params.use_rest_shape_measure) {
         return smooth_face_term<double>(
@@ -62,7 +62,7 @@ double Face::potential(
     return m_rest_area;
 }
 Vector12d Face::grad(
-    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const
+    Eigen::ConstRef<Eigen::Vector3d> /*d*/, Eigen::ConstRef<Vector9d> x) const
 {
     if (!m_params.use_rest_shape_measure) {
         Vector12d g;
@@ -77,7 +77,7 @@ Vector12d Face::grad(
     return Vector12d::Zero();
 }
 Matrix12d Face::hessian(
-    Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const
+    Eigen::ConstRef<Eigen::Vector3d> /*d*/, Eigen::ConstRef<Vector9d> x) const
 {
     if (!m_params.use_rest_shape_measure) {
         Matrix12d h;

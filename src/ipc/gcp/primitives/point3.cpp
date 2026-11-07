@@ -61,10 +61,11 @@ Point3::Point3(
     n_neighbors = local_to_global_vids.size() - 1;
     m_vertex_ids = local_to_global_vids;
 
-    if (m_params.use_rest_shape_measure) {
-        // Rest-shape vertex area measure: sum of squared rest 1-ring edge
-        // lengths / 3 Constant quadrature weight per the paper (Eq. 13), never
-        // differentiated through
+    // Rest-shape vertex area measure: the sum of squared rest 1-ring edge
+    // lengths divided by 3 (Eq. 13 of the paper). We compute this
+    // unconditionally, even when `use_rest_shape_measure` is off, because it is
+    // cheap and it means `m_rest_weight` never holds an indeterminate value.
+    {
         const Eigen::MatrixXd& rp = mesh.rest_positions();
         m_rest_weight = 0.0;
         for (int a = 0; a < edges.rows(); a++) {

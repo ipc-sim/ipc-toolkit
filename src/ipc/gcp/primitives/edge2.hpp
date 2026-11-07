@@ -32,7 +32,7 @@ public:
         Eigen::ConstRef<Eigen::Vector4d> x) const;
 
 private:
-    double
-        m_rest_length; ///< Rest-shape edge length (quadrature weight, constant)
+    double m_rest_length =
+        0.0; ///< Rest-shape edge length (quadrature weight, constant)
 };
 } // namespace ipc

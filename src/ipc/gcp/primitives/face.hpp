@@ -29,7 +29,8 @@ public:
         Eigen::ConstRef<Eigen::Vector3d> d, Eigen::ConstRef<Vector9d> x) const;
 
 private:
-    double m_rest_area; ///< Rest-shape face area (quadrature weight, constant)
+    double m_rest_area =
+        0.0; ///< Rest-shape face area (quadrature weight, constant)
 };
 
 /// @brief d points from triangle to the point
