@@ -7,7 +7,7 @@
 #include <ipc/candidates/edge_face.hpp>
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/eigen_ext.hpp>
-#include <ipc/utils/save_obj.hpp>
+#include <ipc/io/write_candidates_obj.hpp>
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 
@@ -66,7 +66,7 @@ TEST_CASE("Project to PD", "[utils][project_to_pd]")
     CHECK(A_pd.isApprox(A));
 }
 
-TEST_CASE("Save OBJ of candidates", "[utils][save_obj]")
+TEST_CASE("Write OBJ of candidates", "[utils][write_candidates_obj]")
 {
     Eigen::MatrixXd V(4, 3);
     V.row(0) << 0, 0, 0;
@@ -81,21 +81,21 @@ TEST_CASE("Save OBJ of candidates", "[utils][save_obj]")
     SECTION("VertexVertexCandidate")
     {
         std::stringstream ss;
-        ipc::save_obj<ipc::VertexVertexCandidate>(
+        ipc::write_candidates_obj<ipc::VertexVertexCandidate>(
             ss, V, E, F, { { ipc::VertexVertexCandidate(0, 1) } });
         CHECK(ss.str() == "o VV\nv 0 0 0\nv 1 0 0\n");
     }
     SECTION("EdgeVertexCandidate")
     {
         std::stringstream ss;
-        ipc::save_obj<ipc::EdgeVertexCandidate>(
+        ipc::write_candidates_obj<ipc::EdgeVertexCandidate>(
             ss, V, E, F, { { ipc::EdgeVertexCandidate(0, 0) } });
         CHECK(ss.str() == "o EV\nv 1 0 0\nv 0 1 0\nv 0 0 0\nl 1 2\n");
     }
     SECTION("EdgeEdgeCandidate")
     {
         std::stringstream ss;
-        ipc::save_obj<ipc::EdgeEdgeCandidate>(
+        ipc::write_candidates_obj<ipc::EdgeEdgeCandidate>(
             ss, V, E, F, { { ipc::EdgeEdgeCandidate(0, 1) } });
         CHECK(
             ss.str()
@@ -104,7 +104,7 @@ TEST_CASE("Save OBJ of candidates", "[utils][save_obj]")
     SECTION("FaceVertexCandidate")
     {
         std::stringstream ss;
-        ipc::save_obj<ipc::FaceVertexCandidate>(
+        ipc::write_candidates_obj<ipc::FaceVertexCandidate>(
             ss, V, E, F, { { ipc::FaceVertexCandidate(0, 0) } });
         CHECK(
             ss.str() == "o FV\nv 1 0 0\nv 0 1 0\nv 0 0 1\nv 0 0 0\nf 1 2 3\n");
@@ -112,7 +112,7 @@ TEST_CASE("Save OBJ of candidates", "[utils][save_obj]")
     SECTION("EdgeFaceCandidate")
     {
         std::stringstream ss;
-        ipc::save_obj<ipc::EdgeFaceCandidate>(
+        ipc::write_candidates_obj<ipc::EdgeFaceCandidate>(
             ss, V, E, F, { { ipc::EdgeFaceCandidate(0, 0) } });
         CHECK(
             ss.str()
