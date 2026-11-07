@@ -8,7 +8,7 @@ message(STATUS "Third-party: creating target 'tinygltf::tinygltf'")
 
 include(CPM)
 CPMAddPackage(
-    URI "gh:syoyo/tinygltf@3.1.0"
+    URI "gh:syoyo/tinygltf@2.9.6"
     DOWNLOAD_ONLY TRUE
 )
 
