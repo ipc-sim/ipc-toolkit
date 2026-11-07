@@ -57,6 +57,18 @@ if(_polysolve_options)
 endif()
 unset(_polysolve_options)
 
+# ipc_toolkit compiles with EIGEN_DONT_VECTORIZE=1 when SIMD is enabled, which
+# changes Eigen's alignment (and so the size and layout of fixed-size members).
+# The demo Simulator is a polysolve::nonlinear::Problem, so its Eigen objects
+# cross the polysolve library boundary all the time. If polysolve is built with
+# a different vectorization setting than the code calling it, the two sides
+# disagree about those layouts. We make the define PUBLIC so both sides always
+# agree, the same way we do for finite-diff and MeshFEMSparse.
+if(IPC_TOOLKIT_WITH_SIMD)
+    target_compile_definitions(polysolve PUBLIC EIGEN_DONT_VECTORIZE=1)
+    target_compile_definitions(polysolve_linear PUBLIC EIGEN_DONT_VECTORIZE=1)
+endif()
+
 # Folder name for IDE
 set_target_properties(polysolve PROPERTIES FOLDER "ThirdParty")
 set_target_properties(polysolve_linear PROPERTIES FOLDER "ThirdParty")
