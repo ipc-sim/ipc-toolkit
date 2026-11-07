@@ -10,7 +10,59 @@
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/brute_force.hpp>
 
+#include <tbb/global_control.h>
+
 using namespace ipc;
+
+namespace {
+class HashGridTraversalBenchmark : public HashGrid {
+public:
+    void prepare(size_t count, bool sparse)
+    {
+        clear();
+        dim = 3;
+        vertex_boxes.resize(count);
+        vertex_items.reserve(count);
+        // Prebuilt sorted cell runs isolate traversal from grid construction.
+        for (size_t i = 0; i < count; ++i) {
+            const long cell = sparse ? static_cast<long>(i / 2) : 0;
+            const double x =
+                sparse ? static_cast<double>(cell) + (i % 2 ? .75 : .25) : 0.;
+            auto& box = vertex_boxes[i];
+            box.min = Eigen::Array3d(x, 0., 0.);
+            box.max = box.min;
+            box.vertex_ids = { { static_cast<index_t>(i), -1, -1 } };
+            vertex_items.emplace_back(cell, static_cast<long>(i));
+        }
+        if (!sparse) {
+            can_vertices_collide = [](size_t, size_t) { return false; };
+        }
+    }
+};
+} // namespace
+
+TEST_CASE(
+    "Benchmark HashGrid traversal on sparse and reject-heavy cells",
+    "[!benchmark][broad_phase][hash_grid][traversal]")
+{
+    const int threads = GENERATE(1, 16);
+    const bool sparse = GENERATE(false, true);
+    const tbb::global_control limit(
+        tbb::global_control::max_allowed_parallelism, threads);
+    HashGridTraversalBenchmark grid;
+    grid.prepare(sparse ? 1048578 : 4096, sparse);
+    CandidateVector<VertexVertexCandidate> candidates;
+    BENCHMARK(
+        fmt::format(
+            "HashGrid {} ({} threads)", sparse ? "sparse" : "reject-all",
+            threads))
+    {
+        grid.detect_vertex_vertex_candidates(candidates);
+        return candidates.size();
+    };
+    grid.detect_vertex_vertex_candidates(candidates);
+    CHECK(candidates.empty());
+}
 
 TEST_CASE("Benchmark broad phase on simple scenes", "[!benchmark][broad_phase]")
 {
