@@ -188,6 +188,10 @@ public:
     /// body's swept boxes) against a prebuilt LBVH. Building a full LBVH for
     /// such a set costs Morton codes, a sort, and a bottom-up pass per tree,
     /// and for a handful of boxes that fixed cost dwarfs the query itself.
+    ///
+    /// The queries batch the leaves for SIMD in the order given, and a batch
+    /// descends the hierarchy once for all its leaves, so leaves that are near
+    /// each other in space should be near each other in order.
     struct Leaves {
         /// @brief One leaf per vertex box.
         Nodes vertices;
@@ -199,8 +203,7 @@ public:
         /// @brief Build the leaves from vertex boxes.
         ///
         /// Edge and face boxes are the unions of their vertices' boxes, as in
-        /// LBVH::build. We build serially because a Leaves set is meant for a
-        /// few boxes, where a parallel launch costs more than the work.
+        /// LBVH::build.
         ///
         /// @param vertex_boxes The vertex boxes.
         /// @param edges The edges, as rows of vertex ids into vertex_boxes.

@@ -560,6 +560,7 @@ void LBVH::detect_vertex_vertex_candidates(
     const std::function<bool(size_t, size_t)>& can_collide,
     CandidateVector<VertexVertexCandidate>& candidates) const
 {
+    candidates.clear();
     if (!has_vertices()) {
         return;
     }
@@ -576,6 +577,7 @@ void LBVH::detect_edge_vertex_candidates(
     const std::function<bool(size_t, size_t)>& can_collide,
     CandidateVector<EdgeVertexCandidate>& candidates) const
 {
+    candidates.clear();
     if (!has_edges()) {
         return;
     }
@@ -592,6 +594,7 @@ void LBVH::detect_vertex_edge_candidates(
     const std::function<bool(size_t, size_t)>& can_collide,
     CandidateVector<EdgeVertexCandidate>& candidates) const
 {
+    candidates.clear();
     if (!has_vertices()) {
         return;
     }
@@ -608,6 +611,7 @@ void LBVH::detect_edge_edge_candidates(
     const std::function<bool(size_t, size_t)>& can_collide,
     CandidateVector<EdgeEdgeCandidate>& candidates) const
 {
+    candidates.clear();
     if (!has_edges()) {
         return;
     }
@@ -624,6 +628,7 @@ void LBVH::detect_face_vertex_candidates(
     const std::function<bool(size_t, size_t)>& can_collide,
     CandidateVector<FaceVertexCandidate>& candidates) const
 {
+    candidates.clear();
     if (!has_faces()) {
         return;
     }
@@ -640,6 +645,7 @@ void LBVH::detect_vertex_face_candidates(
     const std::function<bool(size_t, size_t)>& can_collide,
     CandidateVector<FaceVertexCandidate>& candidates) const
 {
+    candidates.clear();
     if (!has_vertices()) {
         return;
     }
