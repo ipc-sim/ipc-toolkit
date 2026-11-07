@@ -6,6 +6,7 @@ set(SOURCES
   test_vertex_matrix_view.cpp
   test_profiler.cpp
   test_simd_utils.cpp
+  test_sinc.cpp
   test_utils.cpp
 
   # Benchmarks

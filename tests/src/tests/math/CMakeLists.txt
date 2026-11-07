@@ -1,6 +1,7 @@
 set(SOURCES
   # Tests
   test_interval.cpp
+  test_rotation_utils.cpp
 
   # Benchmarks
 

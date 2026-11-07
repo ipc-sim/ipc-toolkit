@@ -11,7 +11,6 @@
 #include <ipc/distance/line_line.hpp>
 
 #include <finitediff.hpp>
-#include <igl/PI.h>
 #include <igl/edges.h>
 #include <igl/readCSV.h>
 #include <ipc/ipc.hpp>
@@ -26,6 +25,7 @@
 #include <ipc/esp/collisions/esp_collision_template.hpp>
 #include <ipc/esp/collisions/esp_quadrature.hpp>
 #include <ipc/esp/collisions/vertex_matrix_view.hpp>
+#include <ipc/math/constants.hpp>
 
 #include <tbb/global_control.h>
 
@@ -268,8 +268,8 @@ inline void build_apex_to_apex_tets(
     Eigen::MatrixXi& E,
     Eigen::MatrixXi& F)
 {
-    const double c = std::cos(2 * igl::PI / 3), s = std::sin(2 * igl::PI / 3);
-    const double r = std::cos(igl::PI / 3), q = std::sin(igl::PI / 3);
+    const double c = std::cos(2 * ipc::PI / 3), s = std::sin(2 * ipc::PI / 3);
+    const double r = std::cos(ipc::PI / 3), q = std::sin(ipc::PI / 3);
     V.resize(8, 3);
     V << 0, 0, gap / 2, 1, 0, 1, c, s, 1, c, -s, 1, //
         0, 0, -gap / 2, r, q, -1, -1, 0, -1, r, -q, -1;
@@ -1828,8 +1828,8 @@ TEST_CASE(
     Eigen::MatrixXd V(n, 2);
     Eigen::MatrixXi E(n, 2);
     for (int i = 0; i < n; i++) {
-        V(i, 0) = std::cos(2 * igl::PI * i / n);
-        V(i, 1) = std::sin(2 * igl::PI * i / n);
+        V(i, 0) = std::cos(2 * ipc::PI * i / n);
+        V(i, 1) = std::sin(2 * ipc::PI * i / n);
         E(i, 0) = i;
         E(i, 1) = (i + 1) % n;
     }
