@@ -51,10 +51,10 @@ double IntervalNonlinearTrajectory::max_distance_from_linear(
 
 namespace {
     /// The mode of a per-piece query made by the piecewise driver.
-    NarrowPhaseCCDMode component_mode(const bool no_zero_toi)
+    NarrowPhaseCCD::Mode component_mode(const bool no_zero_toi)
     {
-        return no_zero_toi ? NarrowPhaseCCDMode::COMPONENT_NO_ZERO_TOI
-                           : NarrowPhaseCCDMode::COMPONENT;
+        return no_zero_toi ? NarrowPhaseCCD::Mode::COMPONENT_NO_ZERO_TOI
+                           : NarrowPhaseCCD::Mode::COMPONENT;
     }
 } // namespace
 

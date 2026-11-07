@@ -9,7 +9,7 @@ using namespace ipc;
 namespace {
 /// @brief Whether a Python override accepts the `mode` keyword argument.
 ///
-/// Overrides written before NarrowPhaseCCDMode existed take no `mode`
+/// Overrides written before NarrowPhaseCCD::Mode existed take no `mode`
 /// parameter, so we only pass it to overrides that declare it (or accept
 /// **kwargs). Older overrides keep working; they just never learn that a
 /// query comes from a piecewise driver.
@@ -48,8 +48,8 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const NarrowPhaseCCDMode mode =
-            NarrowPhaseCCDMode::STANDALONE) const override
+        const NarrowPhaseCCD::Mode mode =
+            NarrowPhaseCCD::Mode::STANDALONE) const override
     {
         py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
         py::function override = py::get_override(this, "point_point_ccd");
@@ -72,8 +72,8 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const NarrowPhaseCCDMode mode =
-            NarrowPhaseCCDMode::STANDALONE) const override
+        const NarrowPhaseCCD::Mode mode =
+            NarrowPhaseCCD::Mode::STANDALONE) const override
     {
         py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
         py::function override = py::get_override(this, "point_edge_ccd");
@@ -98,8 +98,8 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const NarrowPhaseCCDMode mode =
-            NarrowPhaseCCDMode::STANDALONE) const override
+        const NarrowPhaseCCD::Mode mode =
+            NarrowPhaseCCD::Mode::STANDALONE) const override
     {
         py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
         py::function override = py::get_override(this, "point_triangle_ccd");
@@ -124,8 +124,8 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const NarrowPhaseCCDMode mode =
-            NarrowPhaseCCDMode::STANDALONE) const override
+        const NarrowPhaseCCD::Mode mode =
+            NarrowPhaseCCD::Mode::STANDALONE) const override
     {
         py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
         py::function override = py::get_override(this, "edge_edge_ccd");
@@ -146,7 +146,7 @@ private:
     py::object call_override(
         const int method,
         const py::function& override,
-        const NarrowPhaseCCDMode mode,
+        const NarrowPhaseCCD::Mode mode,
         Args&&... args) const
     {
         int8_t& accepts = m_accepts_mode[method];
@@ -165,25 +165,27 @@ private:
 
 void define_narrow_phase_ccd(py::module_& m)
 {
-    py::enum_<NarrowPhaseCCDMode>(
-        m, "NarrowPhaseCCDMode", "How a narrow-phase CCD query is used.")
+    py::class_<
+        NarrowPhaseCCD, PyNarrowPhaseCCD, std::shared_ptr<NarrowPhaseCCD>>
+        narrow_phase_ccd(m, "NarrowPhaseCCD");
+
+    py::enum_<NarrowPhaseCCD::Mode>(
+        narrow_phase_ccd, "Mode", "How a narrow-phase CCD query is used.")
         .value(
-            "STANDALONE", NarrowPhaseCCDMode::STANDALONE,
+            "STANDALONE", NarrowPhaseCCD::Mode::STANDALONE,
             "A standalone query: the method applies its own conservative "
             "strategy.")
         .value(
-            "COMPONENT", NarrowPhaseCCDMode::COMPONENT,
+            "COMPONENT", NarrowPhaseCCD::Mode::COMPONENT,
             "The per-piece linear CCD inside a piecewise driver (e.g., "
             "NonlinearCCD): return the raw time of impact.")
         .value(
-            "COMPONENT_NO_ZERO_TOI", NarrowPhaseCCDMode::COMPONENT_NO_ZERO_TOI,
+            "COMPONENT_NO_ZERO_TOI",
+            NarrowPhaseCCD::Mode::COMPONENT_NO_ZERO_TOI,
             "Like COMPONENT, but a time of impact of exactly zero is "
             "unacceptable.");
 
-    py::class_<
-        NarrowPhaseCCD, PyNarrowPhaseCCD, std::shared_ptr<NarrowPhaseCCD>>(
-        m, "NarrowPhaseCCD")
-        .def(py::init<>())
+    narrow_phase_ccd.def(py::init<>())
         .def(
             "point_point_ccd",
             [](const NarrowPhaseCCD& self, Eigen::ConstRef<VectorMax3d> p0_t0,
@@ -191,14 +193,15 @@ void define_narrow_phase_ccd(py::module_& m)
                Eigen::ConstRef<VectorMax3d> p0_t1,
                Eigen::ConstRef<VectorMax3d> p1_t1,
                const double min_distance = 0.0, const double tmax = 1.0,
-               const NarrowPhaseCCDMode mode = NarrowPhaseCCDMode::STANDALONE) {
+               const NarrowPhaseCCD::Mode mode =
+                   NarrowPhaseCCD::Mode::STANDALONE) {
                 double toi;
                 bool r = self.point_point_ccd(
                     p0_t0, p1_t0, p0_t1, p1_t1, toi, min_distance, tmax, mode);
                 return std::make_tuple(r, toi);
             },
             "p0_t0"_a, "p1_t0"_a, "p0_t1"_a, "p1_t1"_a, "min_distance"_a = 0.0,
-            "tmax"_a = 1.0, "mode"_a = NarrowPhaseCCDMode::STANDALONE)
+            "tmax"_a = 1.0, "mode"_a = NarrowPhaseCCD::Mode::STANDALONE)
         .def(
             "point_edge_ccd",
             [](const NarrowPhaseCCD& self, Eigen::ConstRef<VectorMax3d> p_t0,
@@ -208,7 +211,8 @@ void define_narrow_phase_ccd(py::module_& m)
                Eigen::ConstRef<VectorMax3d> e0_t1,
                Eigen::ConstRef<VectorMax3d> e1_t1,
                const double min_distance = 0.0, const double tmax = 1.0,
-               const NarrowPhaseCCDMode mode = NarrowPhaseCCDMode::STANDALONE) {
+               const NarrowPhaseCCD::Mode mode =
+                   NarrowPhaseCCD::Mode::STANDALONE) {
                 double toi;
                 bool r = self.point_edge_ccd(
                     p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi, min_distance,
@@ -217,7 +221,7 @@ void define_narrow_phase_ccd(py::module_& m)
             },
             "p_t0"_a, "e0_t0"_a, "e1_t0"_a, "p_t1"_a, "e0_t1"_a, "e1_t1"_a,
             "min_distance"_a = 0.0, "tmax"_a = 1.0,
-            "mode"_a = NarrowPhaseCCDMode::STANDALONE)
+            "mode"_a = NarrowPhaseCCD::Mode::STANDALONE)
         .def(
             "point_triangle_ccd",
             [](const NarrowPhaseCCD& self,
@@ -230,7 +234,8 @@ void define_narrow_phase_ccd(py::module_& m)
                Eigen::ConstRef<Eigen::Vector3d> t1_t1,
                Eigen::ConstRef<Eigen::Vector3d> t2_t1,
                const double min_distance = 0.0, const double tmax = 1.0,
-               const NarrowPhaseCCDMode mode = NarrowPhaseCCDMode::STANDALONE) {
+               const NarrowPhaseCCD::Mode mode =
+                   NarrowPhaseCCD::Mode::STANDALONE) {
                 double toi;
                 bool r = self.point_triangle_ccd(
                     p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi,
@@ -239,7 +244,7 @@ void define_narrow_phase_ccd(py::module_& m)
             },
             "p_t0"_a, "t0_t0"_a, "t1_t0"_a, "t2_t0"_a, "p_t1"_a, "t0_t1"_a,
             "t1_t1"_a, "t2_t1"_a, "min_distance"_a = 0.0, "tmax"_a = 1.0,
-            "mode"_a = NarrowPhaseCCDMode::STANDALONE)
+            "mode"_a = NarrowPhaseCCD::Mode::STANDALONE)
         .def(
             "edge_edge_ccd",
             [](const NarrowPhaseCCD& self,
@@ -252,7 +257,8 @@ void define_narrow_phase_ccd(py::module_& m)
                Eigen::ConstRef<Eigen::Vector3d> eb0_t1,
                Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
                const double min_distance = 0.0, const double tmax = 1.0,
-               const NarrowPhaseCCDMode mode = NarrowPhaseCCDMode::STANDALONE) {
+               const NarrowPhaseCCD::Mode mode =
+                   NarrowPhaseCCD::Mode::STANDALONE) {
                 double toi;
                 bool r = self.edge_edge_ccd(
                     ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1,
@@ -261,5 +267,5 @@ void define_narrow_phase_ccd(py::module_& m)
             },
             "ea0_t0"_a, "ea1_t0"_a, "eb0_t0"_a, "eb1_t0"_a, "ea0_t1"_a,
             "ea1_t1"_a, "eb0_t1"_a, "eb1_t1"_a, "min_distance"_a = 0.0,
-            "tmax"_a = 1.0, "mode"_a = NarrowPhaseCCDMode::STANDALONE);
+            "tmax"_a = 1.0, "mode"_a = NarrowPhaseCCD::Mode::STANDALONE);
 }
