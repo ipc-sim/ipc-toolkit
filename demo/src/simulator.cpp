@@ -1095,12 +1095,15 @@ void Simulator::apply_friction_pairs()
         // coefficient, since an analytic plane is not a body.
         const auto ids =
             collision.vertex_ids(m_bodies->edges(), m_bodies->faces());
-        const auto* const last = std::find(ids.begin(), ids.end(), -1) - 1;
-        if (last == ids.begin()) {
+        // We use an index instead of a pointer here because std::array
+        // iterators are not raw pointers on MSVC.
+        const size_t n_ids =
+            std::find(ids.begin(), ids.end(), -1) - ids.begin();
+        if (n_ids <= 1) {
             continue;
         }
         const size_t b0 = m_vertex_bodies[ids.front()];
-        const size_t b1 = m_vertex_bodies[*last];
+        const size_t b1 = m_vertex_bodies[ids[n_ids - 1]];
 
         const auto it = m_pair_friction.find(std::minmax(b0, b1));
         if (it != m_pair_friction.end()) {
