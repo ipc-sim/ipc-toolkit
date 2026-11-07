@@ -81,7 +81,7 @@ public:
     double thickness(
         Eigen::ConstRef<Eigen::VectorXd> vertex_thickness,
         Eigen::ConstRef<Eigen::VectorXd> edge_thickness,
-        Eigen::ConstRef<Eigen::VectorXd> /*face_thickness*/) const
+        [[maybe_unused]] Eigen::ConstRef<Eigen::VectorXd> face_thickness) const
     {
         return edge_thickness[edge_id] + vertex_thickness[vertex_id];
     }

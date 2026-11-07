@@ -46,8 +46,11 @@ public:
     using StencilMixin<EdgeEdgeCandidate>::compute_distance_gradient;
     using StencilMixin<EdgeEdgeCandidate>::compute_distance_hessian;
 
+    /// @brief Compute the distance of the stencil.
+    /// @param positions Positions of the stencil's four vertices, stacked.
     /// @param dtype The distance type, when it is known a priori.
     /// Defaults to AUTO, which classifies the pair from the positions.
+    /// @return Distance of the stencil.
     double compute_distance(
         Eigen::ConstRef<VectorMax12d> positions,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
@@ -82,9 +85,9 @@ public:
     /// @param face_thickness Thickness of each face.
     /// @return How much farther apart than the minimum distance the pair rests.
     double thickness(
-        Eigen::ConstRef<Eigen::VectorXd> /*vertex_thickness*/,
+        [[maybe_unused]] Eigen::ConstRef<Eigen::VectorXd> vertex_thickness,
         Eigen::ConstRef<Eigen::VectorXd> edge_thickness,
-        Eigen::ConstRef<Eigen::VectorXd> /*face_thickness*/) const
+        [[maybe_unused]] Eigen::ConstRef<Eigen::VectorXd> face_thickness) const
     {
         return edge_thickness[edge0_id] + edge_thickness[edge1_id];
     }

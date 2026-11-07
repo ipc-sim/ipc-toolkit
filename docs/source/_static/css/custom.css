@@ -438,3 +438,84 @@ table.autosummary {
     display: block;
     font-weight: 700;
 }
+
+/* ── Landscape figure (about/why.rst) ──
+   The SVG is inlined so these rules can use the theme's variables and follow
+   the light/dark toggle. Regenerate it with
+   _static/img/about/generate_landscape.py. */
+.ipctk-landscape {
+    margin: 1rem 0;
+}
+
+.ipctk-landscape svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    font-family: var(--md-text-font-family, inherit);
+}
+
+.ipctk-landscape .ls-quad {
+    fill: none;
+    stroke: var(--md-default-fg-color--lighter);
+    stroke-width: 1;
+}
+
+.ipctk-landscape .ls-open {
+    fill: var(--md-primary-fg-color);
+    fill-opacity: 0.12;
+}
+
+.ipctk-landscape .ls-grid {
+    stroke: var(--md-default-fg-color--lighter);
+    stroke-width: 1;
+}
+
+.ipctk-landscape .ls-note {
+    font-size: 12px;
+    fill: var(--md-primary-fg-color);
+}
+
+[data-md-color-scheme="slate"] .ipctk-landscape .ls-note {
+    fill: var(--md-default-fg-color);
+}
+
+.ipctk-landscape .ls-axis {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    fill: var(--md-default-fg-color--light);
+}
+
+.ipctk-landscape .ls-axis-title,
+.ipctk-landscape .ls-legend {
+    font-size: 12px;
+    fill: var(--md-default-fg-color--light);
+}
+
+.ipctk-landscape .ls-label {
+    font-size: 13px;
+    fill: var(--md-default-fg-color);
+}
+
+.ipctk-landscape .ls-label-toolkit {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.ipctk-landscape .ls-dot {
+    stroke: var(--md-default-bg-color);
+    stroke-width: 1.5;
+}
+
+.ipctk-landscape .ls-toolkit {
+    fill: var(--md-primary-fg-color);
+    stroke: var(--md-default-fg-color);
+    stroke-width: 2;
+}
+
+.ipctk-landscape .ls-uses {
+    fill: #26a69a;
+}
+
+.ipctk-landscape .ls-other {
+    fill: var(--md-default-fg-color--light);
+}
