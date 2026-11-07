@@ -451,8 +451,28 @@ def drop_pybind11_bases():
     utils.find_inherited_attrs = find_without_pybind11_bases
 
 
+def generate_landscape(app):
+    """Regenerate the positioning figure embedded in about/why.rst.
+
+    The figure is inline SVG written by a small script, so editing its POINTS
+    list is all it takes to move a project. Running the script here means we
+    never have to remember to do it by hand, and the committed
+    `_static/landscape.html` cannot drift from the script.
+    """
+    import importlib.util
+
+    script = pathlib.Path(__file__).parent / "_static/img/about/generate_landscape.py"
+    spec = importlib.util.spec_from_file_location("generate_landscape", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.write()
+
+
 def setup(app):
     drop_pybind11_bases()
+
+    # Before Sphinx reads any sources, so `.. raw:: html :file:` sees the result.
+    app.connect("builder-inited", generate_landscape)
 
     if SHOW_PROGRESS:
         connect_progress(app)

@@ -3,6 +3,7 @@
     :hidden:
 
     Home <self>
+    about/why.rst
     about/gallery.rst
     about/release_notes.rst
     about/license.rst
@@ -133,7 +134,7 @@ Features
 Limitations
 -----------
 
-This is not a full simulation library. As such it does not include any physics or solvers. For a full simulation implementation, we recommend `PolyFEM <https://polyfem.github.io/>`_ (a finite element library) or `Rigid IPC <https://github.com/ipc-sim/rigid-ipc>`_ (rigid-body dynamics) both of which utilize the IPC Toolkit.
+This is not a full simulation library. As such it does not include any physics or solvers. For a full simulation implementation, we recommend `PolyFEM <https://polyfem.github.io/>`_ (a finite element library) or `Rigid IPC <https://github.com/ipc-sim/rigid-ipc>`_ (rigid-body dynamics) both of which utilize the IPC Toolkit. See :doc:`about/why` for where the toolkit fits among other simulation software.
 
 Usage
 -----
