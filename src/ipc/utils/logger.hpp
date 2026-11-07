@@ -17,13 +17,26 @@ spdlog::logger& logger();
 /// @param logger New logger object to be used.
 void set_logger(std::shared_ptr<spdlog::logger> logger);
 
-[[noreturn]] void log_and_throw_error(const std::string& msg);
+template <typename Exception = std::runtime_error>
+[[noreturn]] void log_and_throw_error(const std::string& msg)
+{
+    logger().error(msg);
+    throw Exception(msg);
+}
 
 template <typename... Args>
 [[noreturn]] void
 log_and_throw_error(const std::string& msg, const Args&... args)
 {
-    log_and_throw_error(fmt::format(fmt::runtime(msg), args...));
+    log_and_throw_error<std::runtime_error>(
+        fmt::format(fmt::runtime(msg), args...));
+}
+
+template <typename Exception, typename... Args>
+[[noreturn]] void
+log_and_throw_error(const std::string& msg, const Args&... args)
+{
+    log_and_throw_error<Exception>(fmt::format(fmt::runtime(msg), args...));
 }
 
 } // namespace ipc

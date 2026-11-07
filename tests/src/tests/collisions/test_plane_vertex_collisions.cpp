@@ -285,13 +285,10 @@ TEST_CASE(
                 + candidates.ev_candidates.size()
                 + candidates.ee_candidates.size()
                 + candidates.fv_candidates.size();
-            auto& pv_ref = candidates[pv_start];
-            CHECK(&pv_ref == &candidates.pv_candidates[0]);
-
-            // const version
-            const Candidates& const_cand = candidates;
-            auto& pv_const_ref = const_cand[pv_start];
-            CHECK(&pv_const_ref == &candidates.pv_candidates[0]);
+            CHECK(candidates.visit(pv_start, [&](const auto& c) {
+                return static_cast<const void*>(&c)
+                    == static_cast<const void*>(&(candidates.pv_candidates[0]));
+            }));
         }
     }
 

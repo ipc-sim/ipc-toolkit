@@ -17,7 +17,8 @@ li {
 }
 
 .md-grid {
-    max-width: max(1250px, 75vw) !important;
+    /*max-width: max(1250px, 75vw) !important;*/
+    max-width: 75rem !important;
 }
 
 span.colon {
@@ -76,6 +77,114 @@ table.autosummary {
     font-size: 0.75rem !important;
 }
 
+/* ── Tables ── */
+
+/* We draw every hand-written table as a card, matching the Rigid IPC
+   comparison page: a bordered box, rounded like the admonitions, with small
+   uppercase headers and a rule between rows, instead of Material's gridded
+   table.
+   Generated tables (autosummary member lists and the indices) keep the
+   theme's look, and so do the comparison page's side-by-side boxes, which
+   style themselves. These colors mirror the ones that page uses. */
+.md-typeset {
+    --ipc-table-bg: var(--md-default-bg-color);
+    --ipc-table-rule: #e5e7eb;
+    --ipc-table-faint: #f4f5f7;
+    --ipc-table-muted: #7a8089;
+}
+
+[data-md-color-scheme="slate"] .md-typeset {
+    --ipc-table-bg: color-mix(in srgb, var(--md-default-bg-color), white 3%);
+    --ipc-table-rule: rgba(255, 255, 255, 0.09);
+    --ipc-table-faint: rgba(255, 255, 255, 0.04);
+    --ipc-table-muted: #8d949e;
+}
+
+/* conf.py puts each hand-written table in a div.ipc-table, and that div is
+   the card. It also scrolls sideways, so a table wider than the column stays
+   inside its card while every table still fills it at 100%. */
+.md-content .md-typeset .ipc-table {
+    margin: 1em 0;
+    overflow-x: auto;
+    border: 1px solid var(--ipc-table-rule);
+    border-radius: 0.2rem;
+    background: var(--ipc-table-bg);
+}
+
+/* The theme styles these through table.data with several qualifiers, so we
+   name the same class to outrank it. */
+.md-content .md-typeset .ipc-table > table.data {
+    display: table;
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-collapse: collapse;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    font-size: .64rem;
+    line-height: 1.6;
+}
+
+/* The theme holds every header cell to at least 5rem, which spends 100px on
+   a column of checkboxes. We let columns size to their content instead. */
+.md-content .md-typeset .ipc-table > table.data th {
+    min-width: 0;
+    padding: 14px 12px 8px;
+    border: 0;
+    border-bottom: 1px solid var(--ipc-table-rule);
+    background: none;
+    color: var(--ipc-table-muted);
+    font-size: .64rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+    vertical-align: bottom;
+}
+
+.md-content .md-typeset .ipc-table > table.data td {
+    padding: 9px 12px;
+    border: 0;
+    border-top: 1px solid var(--ipc-table-rule);
+    vertical-align: top;
+}
+
+/* A table with a header row already has a rule under it, and one without
+   needs no rule above its first row. */
+.md-content .md-typeset .ipc-table > table.data tbody tr:first-child td {
+    border-top: 0;
+}
+
+.md-content .md-typeset .ipc-table > table.data :is(th, td):first-child {
+    padding-left: 20px;
+}
+
+.md-content .md-typeset .ipc-table > table.data :is(th, td):last-child {
+    padding-right: 20px;
+}
+
+.md-content .md-typeset .ipc-table > table.data :is(th, td) > p {
+    margin: 0;
+}
+
+.md-content .md-typeset .ipc-table > table.data tbody tr {
+    transition: background 0.15s;
+}
+
+.md-content .md-typeset .ipc-table > table.data tbody tr:hover {
+    background: var(--ipc-table-faint);
+    box-shadow: none;
+}
+
+/* Compress the padding inside table cells for the custom class */
+.tight-table th,
+.tight-table td {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    line-height: 1.2 !important;
+}
+
 /* ── Gallery Grid ── */
 .gallery-grid {
     display: grid;
@@ -126,8 +235,16 @@ table.autosummary {
     pointer-events: none;
 }
 
-.gallery-card .gallery-media[data-lightbox]:hover::after {
+.gallery-card .gallery-media[data-lightbox]:hover::after,
+.gallery-card .gallery-media[data-lightbox]:focus-visible::after {
     opacity: 1;
+}
+
+/* The gallery script makes each tile a keyboard button, so it needs a
+   visible focus ring. */
+.gallery-card .gallery-media[data-lightbox]:focus-visible {
+    outline: 2px solid var(--md-accent-fg-color);
+    outline-offset: 2px;
 }
 
 .gallery-card .gallery-media img,
@@ -200,9 +317,15 @@ table.autosummary {
         visibility 0.25s ease;
 }
 
+/* We switch visibility on instantly when opening (and only fade it on close)
+   because the script moves focus to the close button right away, and a
+   button that is still visibility-hidden can't take focus. */
 .gallery-lightbox.active {
     opacity: 1;
     visibility: visible;
+    transition:
+        opacity 0.25s ease,
+        visibility 0s;
 }
 
 .gallery-lightbox img,
@@ -256,4 +379,143 @@ table.autosummary {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Wide display equations scroll inside their own box instead of making the
+   whole page scroll sideways on narrow screens. We hide vertical overflow
+   because otherwise MathJax's bottom margin counts as overflow and tall
+   equations get a pointless vertical scrollbar. That margin is empty space,
+   so nothing visible gets clipped. */
+.md-typeset div.math {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* ── Home page ── */
+
+/* The logo already shows the project name, so we hide the H1 visually but
+   keep it for screen readers, search, and the page title. sphinx-immaterial
+   unwraps the top-level section, so we target the heading by its id. */
+.md-typeset h1#ipc-toolkit {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.md-typeset h1#ipc-toolkit ~ img {
+    width: 100%;
+    max-width: 40rem;
+}
+
+/* Sphinx can't read image paths with a #only-light fragment, so we mark the
+   two logos with classes instead and show only the one for the active scheme.
+   We center the visible logo with display: block. */
+.md-typeset img.only-light,
+.md-typeset img.only-dark {
+    display: none;
+}
+
+[data-md-color-scheme="default"] .md-typeset img.only-light,
+[data-md-color-scheme="slate"] .md-typeset img.only-dark {
+    display: block;
+    margin-inline: auto;
+}
+
+.ipc-home__badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.3rem;
+}
+
+/* Each destination is a link followed by a one-line description in the same
+   paragraph, so we put the link on its own line to separate the two. */
+.md-typeset ul.ipc-destinations > li > p > a.internal:first-child {
+    display: block;
+    font-weight: 700;
+}
+
+/* ── Landscape figure (about/why.rst) ──
+   The SVG is inlined so these rules can use the theme's variables and follow
+   the light/dark toggle. Regenerate it with
+   _static/img/about/generate_landscape.py. */
+.ipctk-landscape {
+    margin: 1rem 0;
+}
+
+.ipctk-landscape svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    font-family: var(--md-text-font-family, inherit);
+}
+
+.ipctk-landscape .ls-quad {
+    fill: none;
+    stroke: var(--md-default-fg-color--lighter);
+    stroke-width: 1;
+}
+
+.ipctk-landscape .ls-open {
+    fill: var(--md-primary-fg-color);
+    fill-opacity: 0.12;
+}
+
+.ipctk-landscape .ls-grid {
+    stroke: var(--md-default-fg-color--lighter);
+    stroke-width: 1;
+}
+
+.ipctk-landscape .ls-note {
+    font-size: 12px;
+    fill: var(--md-primary-fg-color);
+}
+
+[data-md-color-scheme="slate"] .ipctk-landscape .ls-note {
+    fill: var(--md-default-fg-color);
+}
+
+.ipctk-landscape .ls-axis {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    fill: var(--md-default-fg-color--light);
+}
+
+.ipctk-landscape .ls-axis-title,
+.ipctk-landscape .ls-legend {
+    font-size: 12px;
+    fill: var(--md-default-fg-color--light);
+}
+
+.ipctk-landscape .ls-label {
+    font-size: 13px;
+    fill: var(--md-default-fg-color);
+}
+
+.ipctk-landscape .ls-label-toolkit {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.ipctk-landscape .ls-dot {
+    stroke: var(--md-default-bg-color);
+    stroke-width: 1.5;
+}
+
+.ipctk-landscape .ls-toolkit {
+    fill: var(--md-primary-fg-color);
+    stroke: var(--md-default-fg-color);
+    stroke-width: 2;
+}
+
+.ipctk-landscape .ls-uses {
+    fill: #26a69a;
+}
+
+.ipctk-landscape .ls-other {
+    fill: var(--md-default-fg-color--light);
 }

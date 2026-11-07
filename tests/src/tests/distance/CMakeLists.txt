@@ -9,12 +9,21 @@ set(SOURCES
   test_point_plane.cpp
   test_point_point.cpp
   test_point_triangle.cpp
+  test_simd_distance.cpp
+  test_simd_edge_edge_mollifier.cpp
+  test_simd_signed_distance.cpp
   test_signed_distance.cpp
 
   # Benchmarks
 
   # Utilities
 )
+
+if(IPC_TOOLKIT_WITH_CUDA)
+  list(APPEND SOURCES
+    test_gpu_distance.cu
+  )
+endif()
 
 target_sources(ipc_toolkit_tests PRIVATE ${SOURCES})
 

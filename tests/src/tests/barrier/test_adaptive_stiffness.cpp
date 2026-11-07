@@ -12,7 +12,7 @@ using namespace ipc;
 TEST_CASE("Initial barrier stiffness", "[stiffness][adaptive_stiffness]")
 {
     const double bbox_diagonal = 1.0;
-    const ClampedLogBarrier barrier;
+    const ClampedLogBarrier<> barrier;
     const double dhat = 1e-3;
     const double average_mass = 1.0;
     const Eigen::VectorXd grad_energy = Eigen::VectorXd::Constant(1, 100);

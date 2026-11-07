@@ -8,7 +8,7 @@ using namespace ipc;
 void define_edge_edge_distance(py::module_& m)
 {
     m.def(
-        "edge_edge_distance", &edge_edge_distance,
+        "edge_edge_distance", &detail::edge_edge_distance<double>,
         R"ipc_Qu8mg5v7(
         Compute the distance between a two lines segments in 3D.
 
@@ -29,7 +29,8 @@ void define_edge_edge_distance(py::module_& m)
         "dtype"_a = EdgeEdgeDistanceType::AUTO);
 
     m.def(
-        "edge_edge_distance_gradient", &edge_edge_distance_gradient,
+        "edge_edge_distance_gradient",
+        &detail::edge_edge_distance_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a two lines segments.
 
@@ -50,7 +51,8 @@ void define_edge_edge_distance(py::module_& m)
         "dtype"_a = EdgeEdgeDistanceType::AUTO);
 
     m.def(
-        "edge_edge_distance_hessian", &edge_edge_distance_hessian,
+        "edge_edge_distance_hessian",
+        &detail::edge_edge_distance_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a two lines segments.
 

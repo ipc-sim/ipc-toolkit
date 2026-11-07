@@ -23,16 +23,18 @@ void define_ipc(py::module_& m)
             mesh: The collision mesh.
             vertices_t0: Surface vertex vertices at start as rows of a matrix.
             vertices_t1: Surface vertex vertices at end as rows of a matrix.
-            min_distance: The minimum distance allowable between any two elements.
+            min_distance: Deprecated: give the mesh a thickness (CollisionMesh.set_thickness) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
             broad_phase: Broad phase to use.
             narrow_phase_ccd: The narrow phase CCD algorithm to use.
 
         Returns:
             True if <b>any</b> collisions occur.
         )ipc_Qu8mg5v7",
-        "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
-        "broad_phase"_a = nullptr,
-        "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD);
+        "mesh"_a, "vertices_t0"_a, "vertices_t1"_a,
+        "min_distance"_a = py::none(), "broad_phase"_a = nullptr,
+        py::arg_v(
+            "narrow_phase_ccd", DEFAULT_NARROW_PHASE_CCD,
+            "TightInclusionCCD()"));
 
     m.def(
         "compute_collision_free_stepsize", &compute_collision_free_stepsize,
@@ -49,16 +51,18 @@ void define_ipc(py::module_& m)
             mesh: The collision mesh.
             vertices_t0: Vertex vertices at start as rows of a matrix. Assumes vertices_t0 is intersection free.
             vertices_t1: Surface vertex vertices at end as rows of a matrix.
-            min_distance: The minimum distance allowable between any two elements.
+            min_distance: Deprecated: give the mesh a thickness (CollisionMesh.set_thickness) instead. If given, every pair keeps this distance and the mesh's thickness is ignored; otherwise each pair keeps its two primitives' thicknesses (zero without a thickness).
             broad_phase: Broad phase to use.
             narrow_phase_ccd: The narrow phase CCD algorithm to use.
 
         Returns:
             A step-size :math:`\in [0, 1]` that is collision free. A value of 1.0 if a full step and 0.0 is no step.
         )ipc_Qu8mg5v7",
-        "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
-        "broad_phase"_a = nullptr,
-        "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD);
+        "mesh"_a, "vertices_t0"_a, "vertices_t1"_a,
+        "min_distance"_a = py::none(), "broad_phase"_a = nullptr,
+        py::arg_v(
+            "narrow_phase_ccd", DEFAULT_NARROW_PHASE_CCD,
+            "TightInclusionCCD()"));
 
     m.def(
         "has_intersections", &has_intersections,

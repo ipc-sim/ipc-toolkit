@@ -1,5 +1,9 @@
 #include "lbvh.hpp"
 
+#include <ipc/broad_phase/details/connectivity_filters.hpp>
+#include <ipc/broad_phase/details/lbvh_build.hpp>
+#include <ipc/broad_phase/details/lbvh_traverse.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/math/morton.hpp>
 #include <ipc/utils/merge_thread_local.hpp>
 #include <ipc/utils/profiler.hpp>
@@ -18,27 +22,11 @@ namespace xs = xsimd;
 #endif
 
 #include <array>
+#include <atomic>
 
 using namespace std::placeholders;
 
 namespace ipc {
-
-namespace {
-    // Helper to safely convert double AABB to float AABB
-    inline void assign_inflated_aabb(const AABB& box, LBVH::Node& node)
-    {
-        // Round Min down
-        node.aabb_min = box.min.unaryExpr([](double val) {
-            return std::nextafter(
-                float(val), -std::numeric_limits<float>::infinity());
-        });
-        // Round Max up
-        node.aabb_max = box.max.unaryExpr([](double val) {
-            return std::nextafter(
-                float(val), std::numeric_limits<float>::infinity());
-        });
-    }
-} // namespace
 
 LBVH::LBVH() : BroadPhase()
 {
@@ -94,103 +82,6 @@ void LBVH::build(
     face_boxes.clear();
 }
 
-namespace {
-    int delta(
-        const LBVH::MortonCodeElements& sorted_morton_codes,
-        int i,
-        uint64_t code_i,
-        int j)
-    {
-        if (j < 0 || j >= sorted_morton_codes.size()) {
-            return -1;
-        }
-        uint64_t code_j = sorted_morton_codes[j].morton_code;
-        if (code_i == code_j) {
-            // handle duplicate morton codes
-            int element_idx_i = i; // sorted_morton_codes[i].elementIdx;
-            int element_idx_j = j; // sorted_morton_codes[j].elementIdx;
-
-            // add 32 for common prefix of code_i ^ code_j
-#if defined(__GNUC__) || defined(__clang__)
-            return 32 + __builtin_clz(element_idx_i ^ element_idx_j);
-#elif defined(WIN32)
-            return 32 + __lzcnt(element_idx_i ^ element_idx_j);
-#endif
-        }
-#if defined(__GNUC__) || defined(__clang__)
-        return __builtin_clzll(code_i ^ code_j);
-#elif defined(WIN32)
-        return __lzcnt64(code_i ^ code_j);
-#endif
-    }
-
-    void determine_range(
-        const LBVH::MortonCodeElements& sorted_morton_codes,
-        int idx,
-        int& lower,
-        int& upper)
-    {
-        // determine direction of the range (+1 or -1)
-        const uint64_t code = sorted_morton_codes[idx].morton_code;
-        const int delta_l = delta(sorted_morton_codes, idx, code, idx - 1);
-        const int delta_r = delta(sorted_morton_codes, idx, code, idx + 1);
-        const int d = (delta_r >= delta_l) ? 1 : -1;
-
-        // compute upper bound for the length of the range
-        const int delta_min = std::min(delta_l, delta_r);
-        int l_max = 2;
-        while (delta(sorted_morton_codes, idx, code, idx + l_max * d)
-               > delta_min) {
-            l_max = l_max << 1;
-        }
-
-        // find the other end using binary search
-        int l = 0;
-        for (int t = l_max >> 1; t > 0; t >>= 1) {
-            if (delta(sorted_morton_codes, idx, code, idx + (l + t) * d)
-                > delta_min) {
-                l += t;
-            }
-        }
-        int jdx = idx + l * d;
-
-        // ensure idx < jdx
-        lower = std::min(idx, jdx);
-        upper = std::max(idx, jdx);
-    }
-
-    int find_split(
-        const LBVH::MortonCodeElements& sorted_morton_codes,
-        int first,
-        int last)
-    {
-        uint64_t first_code = sorted_morton_codes[first].morton_code;
-
-        // Calculate the number of highest bits that are the same
-        // for all objects, using the count-leading-zeros intrinsic.
-        int common_prefix = delta(sorted_morton_codes, first, first_code, last);
-
-        // Use binary search to find where the next bit differs.
-        // Specifically, we are looking for the highest object that
-        // shares more than common_prefix bits with the first one.
-        int split = first; // initial guess
-        int stride = last - first;
-        do {
-            stride = (stride + 1) >> 1;     // exponential decrease
-            int new_split = split + stride; // proposed new position
-            if (new_split < last) {
-                int split_prefix =
-                    delta(sorted_morton_codes, first, first_code, new_split);
-                if (split_prefix > common_prefix) {
-                    split = new_split; // accept proposal
-                }
-            }
-        } while (stride > 1);
-
-        return split;
-    }
-} // namespace
-
 void LBVH::init_bvh(
     const AABBs& boxes, Nodes& lbvh, RightmostLeaves& rightmost_leaves) const
 {
@@ -209,21 +100,13 @@ void LBVH::init_bvh(
     {
         IPC_TOOLKIT_PROFILE_BLOCK("compute_morton_codes");
 
-        const Eigen::Array3d mesh_width = mesh_aabb.max - mesh_aabb.min;
+        const Eigen::Array3d mesh_width_inv =
+            morton_domain_width_inv(mesh_aabb.min, mesh_aabb.max);
         tbb::parallel_for(size_t(0), boxes.size(), [&](size_t i) {
             const auto& box = boxes[i];
 
-            const Eigen::Array3d center = 0.5 * (box.min + box.max);
-            const Eigen::Array3d mapped_center =
-                (center - mesh_aabb.min) / mesh_width;
-
-            if (dim == 2) {
-                morton_codes[i].morton_code =
-                    morton_2D(mapped_center.x(), mapped_center.y());
-            } else {
-                morton_codes[i].morton_code = morton_3D(
-                    mapped_center.x(), mapped_center.y(), mapped_center.z());
-            }
+            morton_codes[i].morton_code = morton_code(
+                0.5 * (box.min + box.max), mesh_aabb.min, mesh_width_inv, dim);
             morton_codes[i].box_id = i;
         });
     }
@@ -238,7 +121,7 @@ void LBVH::init_bvh(
     }
 
     assert(boxes.size() <= std::numeric_limits<int>::max());
-    const int LEAF_OFFSET = int(boxes.size()) - 1;
+    const int N_LEAVES = int(boxes.size());
 
     if (rightmost_leaves.size() != lbvh.size()) {
         rightmost_leaves.resize(lbvh.size());
@@ -246,100 +129,54 @@ void LBVH::init_bvh(
 
     LBVH::ConstructionInfos construction_infos(lbvh.size());
     {
-        IPC_TOOLKIT_PROFILE_BLOCK("build_hierarchy");
-        tbb::parallel_for(size_t(0), boxes.size(), [&](size_t i) {
-            assert(i < boxes.size());
-            {
-                const auto& box = boxes[morton_codes[i].box_id];
+        IPC_TOOLKIT_PROFILE_BLOCK("init_visitation_counts");
+        tbb::parallel_for(size_t(0), lbvh.size(), [&](size_t i) {
+            construction_infos[i].visitation_count.store(
+                0, std::memory_order_relaxed);
+        });
+    }
 
-                Node leaf_node; // Create leaf node
-                assign_inflated_aabb(box, leaf_node);
-                leaf_node.primitive_id = morton_codes[i].box_id;
-                leaf_node.is_inner_marker = 0;
-                lbvh[LEAF_OFFSET + i] = leaf_node; // Store leaf
-                // A leaf's rightmost leaf is itself
-                rightmost_leaves[LEAF_OFFSET + i] = i;
-            }
+    // Apetrei 2014: single bottom-up pass that simultaneously builds the
+    // hierarchy and computes bounding boxes. See
+    // ipc::details::build_hierarchy_from_leaf(), shared with the device build
+    // in ipc::cuda::LBVH.
+    std::atomic<int> root_idx(-1);
+    {
+        IPC_TOOLKIT_PROFILE_BLOCK("build_hierarchy_and_boxes");
+        tbb::parallel_for(0, N_LEAVES, [&](int i) {
+            const size_t box_id = morton_codes[i].box_id;
+            details::init_leaf_node(
+                i, N_LEAVES, box_id, boxes[box_id].min, boxes[box_id].max,
+                lbvh.data(), rightmost_leaves.data());
 
-            if (i < LEAF_OFFSET) {
-                // Find out which range of objects the node corresponds
-                // to. (This is where the magic happens!)
+            const int root = details::build_hierarchy_from_leaf(
+                i, N_LEAVES, [&](int k) { return morton_codes[k].morton_code; },
+                lbvh.data(), rightmost_leaves.data(), construction_infos.data(),
+                // std::atomic's post-increment is sequentially consistent, so
+                // it already orders this thread's writes before the arrival
+                // and the arrival before its later reads.
+                [](std::atomic<int>& count) { return count++; });
 
-                int first, last;
-                determine_range(morton_codes, int(i), first, last);
-
-                // Determine where to split the range
-                int split = find_split(morton_codes, first, last);
-
-                // Select child_a
-                int child_a = -1;
-                if (split == first) {
-                    // pointer to leaf node
-                    child_a = LEAF_OFFSET + split;
-                } else {
-                    child_a = split; // pointer to internal node
-                }
-
-                // Select child_b
-                int child_b = -1;
-                if (split + 1 == last) {
-                    child_b = LEAF_OFFSET + split + 1; // pointer to leaf node
-                } else {
-                    child_b = split + 1; // pointer to internal node
-                }
-
-                // Record parent-child relationships
-                lbvh[i].left = child_a;
-                lbvh[i].right = child_b;
-                construction_infos[child_a].parent = int(i);
-                construction_infos[child_b].parent = int(i);
-                construction_infos[child_a].visitation_count.store(
-                    0, std::memory_order_relaxed);
-                construction_infos[child_b].visitation_count.store(
-                    0, std::memory_order_relaxed);
-            }
-
-            // node 0 is the root and has no parent to set these values
-            if (i == 0) {
-                construction_infos[0].parent = 0;
-                construction_infos[0].visitation_count.store(
-                    0, std::memory_order_relaxed);
+            if (root >= 0) {
+                // Only one thread should ever reach the root.
+                int expected = -1;
+                [[maybe_unused]] const bool set =
+                    root_idx.compare_exchange_strong(expected, root);
+                assert(set);
             }
         });
     }
 
-    {
-        IPC_TOOLKIT_PROFILE_BLOCK("populate_boxes");
-        tbb::parallel_for(size_t(0), boxes.size(), [&](size_t i) {
-            int node_idx = construction_infos[LEAF_OFFSET + i].parent;
-            while (true) {
-                auto& info = construction_infos[node_idx];
-                if (info.visitation_count++ == 0) {
-                    // this is the first thread that arrived at this
-                    // node -> finished
-                    break;
-                }
-                // this is the second thread that arrived at this node,
-                // both children are computed -> compute aabb union and
-                // continue
-                assert(lbvh[node_idx].is_inner());
-                const Node& child_b = lbvh[lbvh[node_idx].right];
-                const Node& child_a = lbvh[lbvh[node_idx].left];
-                lbvh[node_idx].aabb_min =
-                    child_a.aabb_min.min(child_b.aabb_min);
-                lbvh[node_idx].aabb_max =
-                    child_a.aabb_max.max(child_b.aabb_max);
+    // --- Move the root to index 0 so traversal can start there. ---
+    // In the Apetrei layout the root's index equals the global split position,
+    // which is generally != 0.
+    const int root = root_idx.load();
+    if (root > 0) {
+        IPC_TOOLKIT_PROFILE_BLOCK("swap_root_to_zero");
+        details::swap_root_to_zero(lbvh.data(), rightmost_leaves.data(), root);
 
-                // Compute rightmost leaf: max of children's rightmost
-                rightmost_leaves[node_idx] = std::max(
-                    rightmost_leaves[lbvh[node_idx].left],
-                    rightmost_leaves[lbvh[node_idx].right]);
-
-                if (node_idx == 0) {
-                    break; // root node
-                }
-                node_idx = info.parent;
-            }
+        tbb::parallel_for(size_t(0), lbvh.size(), [&](size_t i) {
+            details::patch_left_pointer(lbvh[i], root);
         });
     }
 }
@@ -366,7 +203,7 @@ namespace {
         const LBVH::Node& query,
         const LBVH::Node& node,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates)
+        CandidateVector<Candidate>& candidates)
     {
         int i = query.primitive_id, j = node.primitive_id;
         if constexpr (swap_order) {
@@ -380,6 +217,10 @@ namespace {
         candidates.emplace_back(i, j);
     }
 
+    /// Scalar traversal: descend the target BVH for one query leaf and record
+    /// every overlapping, filter-passing pair. The descent itself is
+    /// ipc::details::traverse_lbvh(), shared with the SIMD traversal below and
+    /// with ipc::cuda::LBVH; only the overlap test and the emission are ours.
     template <typename Candidate, bool swap_order, bool triangular>
     void traverse_lbvh(
         const LBVH::Node& query,
@@ -387,88 +228,25 @@ namespace {
         const LBVH::Nodes& lbvh,
         const LBVH::RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates)
+        CandidateVector<Candidate>& candidates)
     {
-        // Use a fixed-size array as a stack to avoid dynamic allocations
-        constexpr int MAX_STACK_SIZE = 64;
-        int stack[MAX_STACK_SIZE];
-        int stack_ptr = 0;
-        stack[stack_ptr++] = LBVH::Node::INVALID_POINTER;
-
-        int node_idx = 0; // root
-        do {
-            const LBVH::Node& node = lbvh[node_idx];
-
-            if (lbvh.size() == 1) {     // Single node case (only root)
-                assert(node.is_leaf()); // Only one node, so it must be a leaf
-                if constexpr (triangular) {
-                    break; // No self-collision if only one node
-                }
-                if (node.intersects(query)) {
-                    attempt_add_candidate<Candidate, swap_order>(
-                        query, node, can_collide, candidates);
-                }
-                break;
-            }
-
-            // Check left and right are valid pointers
-            assert(node.is_inner());
-
-#if defined(__GNUC__) || defined(__clang__)
-            // Prefetch child nodes to reduce cache misses
-            __builtin_prefetch(&lbvh[node.left], 0, 1);
-            __builtin_prefetch(&lbvh[node.right], 0, 1);
-#endif
-
-            const LBVH::Node& child_l = lbvh[node.left];
-            const LBVH::Node& child_r = lbvh[node.right];
-            bool intersects_l = child_l.intersects(query);
-            bool intersects_r = child_r.intersects(query);
-
-            // Ignore overlap if the subtree is fully on the
-            // left-hand side of the query (triangular traversal only).
-            if constexpr (triangular) {
-                if (intersects_l
-                    && rightmost_leaves[node.left] <= query_leaf_idx) {
-                    intersects_l = false;
-                }
-                if (intersects_r
-                    && rightmost_leaves[node.right] <= query_leaf_idx) {
-                    intersects_r = false;
-                }
-            }
-
-            // Query overlaps a leaf node => report collision.
-            if (intersects_l && child_l.is_leaf()) {
+        details::traverse_lbvh<triangular>(
+            int(query_leaf_idx), lbvh.data(), int(lbvh.size()),
+            rightmost_leaves.data(),
+            [&](const LBVH::Node& node) { return node.intersects(query); },
+            [&](const LBVH::Node& leaf, const int /*leaf_idx*/,
+                const bool /*intersects*/) {
                 attempt_add_candidate<Candidate, swap_order>(
-                    query, child_l, can_collide, candidates);
-            }
-            if (intersects_r && child_r.is_leaf()) {
-                attempt_add_candidate<Candidate, swap_order>(
-                    query, child_r, can_collide, candidates);
-            }
-
-            // Query overlaps an internal node => traverse.
-            bool traverse_l = (intersects_l && !child_l.is_leaf());
-            bool traverse_r = (intersects_r && !child_r.is_leaf());
-
-            if (!traverse_l && !traverse_r) {
-                assert(stack_ptr > 0);
-                node_idx = stack[--stack_ptr];
-            } else {
-                node_idx = traverse_l ? node.left : node.right;
-                if (traverse_l && traverse_r) {
-                    // Postpone traversal of the right child
-                    assert(stack_ptr < MAX_STACK_SIZE);
-                    stack[stack_ptr++] = node.right;
-                }
-            }
-        } while (node_idx != LBVH::Node::INVALID_POINTER); // Same as root
+                    query, leaf, can_collide, candidates);
+            });
     }
 
 #ifdef IPC_TOOLKIT_WITH_SIMD
-    // SIMD Traversal
-    // Traverses multiple queries simultaneously using SIMD.
+    /// SIMD traversal: descend the target BVH once for a batch of up to
+    /// xs::batch<float>::size query leaves, testing every node against all of
+    /// them at once. The descent is the same ipc::details::traverse_lbvh() as
+    /// the scalar path; the overlap test returns a lane mask instead of a bool,
+    /// and the emission fans a leaf out to the lanes that overlap it.
     template <typename Candidate, bool swap_order, bool triangular>
     void traverse_lbvh_simd(
         const LBVH::Node* queries,
@@ -477,9 +255,10 @@ namespace {
         const LBVH::Nodes& lbvh,
         const LBVH::RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
-        std::vector<Candidate>& candidates)
+        CandidateVector<Candidate>& candidates)
     {
         using batch_t = xs::batch<float>;
+        using mask_t = xs::batch_bool<float>;
         assert(n_queries >= 1 && n_queries <= batch_t::size);
 
         // Load queries into single registers
@@ -489,7 +268,11 @@ namespace {
                 std::array<float, batch_t::size>
                     buffer {};
 
+#ifdef __clang__
 #pragma unroll
+#elif defined(__GNUC__)
+#pragma GCC unroll 16
+#endif
             // 2. Fill the buffer, respecting the actual number of queries
             for (size_t i = 0; i < batch_t::size; ++i) {
                 buffer[i] = (i < n_queries) ? F(static_cast<int>(i)) : 0.0f;
@@ -512,136 +295,36 @@ namespace {
         const auto q_max_z =
             make_simd([&](int k) { return queries[k].aabb_max.z(); });
 
-        // Use a fixed-size array as a stack to avoid dynamic allocations
-        constexpr int MAX_STACK_SIZE = 64;
-        int stack[MAX_STACK_SIZE];
-        int stack_ptr = 0;
-        stack[stack_ptr++] = LBVH::Node::INVALID_POINTER;
-
-        int node_idx = 0; // root
-        do {
-            const LBVH::Node& node = lbvh[node_idx];
-
-            if (lbvh.size() == 1) {     // Single node case (only root)
-                assert(node.is_leaf()); // Only one node, so it must be a leaf
-                if constexpr (triangular) {
-                    break; // No self-collision if only one node
-                }
-                // Check intersection with all queries simultaneously
-                const xs::batch_bool<float> intersects =
-                    (node.aabb_min.x() <= q_max_x)
+        details::traverse_lbvh<triangular>(
+            int(first_query_leaf_idx), lbvh.data(), int(lbvh.size()),
+            rightmost_leaves.data(),
+            // Intersect all queries at once:
+            // (node.min <= query.max) && (query.min <= node.max)
+            [&](const LBVH::Node& node) -> mask_t {
+                return (node.aabb_min.x() <= q_max_x)
                     & (node.aabb_min.y() <= q_max_y)
                     & (node.aabb_min.z() <= q_max_z)
                     & (q_min_x <= node.aabb_max.x())
                     & (q_min_y <= node.aabb_max.y())
                     & (q_min_z <= node.aabb_max.z());
-                if (xs::any(intersects)) {
-                    for (int k = 0; k < n_queries; ++k) {
-                        if (intersects.get(k)) {
-                            attempt_add_candidate<Candidate, swap_order>(
-                                queries[k], node, can_collide, candidates);
-                        }
-                    }
-                }
-                break;
-            }
-
-            // Check left and right are valid pointers
-            assert(node.is_inner());
-
-#if defined(__GNUC__) || defined(__clang__)
-            // Prefetch child nodes to reduce cache misses
-            __builtin_prefetch(&lbvh[node.left], 0, 1);
-            __builtin_prefetch(&lbvh[node.right], 0, 1);
-#endif
-
-            const LBVH::Node& child_l = lbvh[node.left];
-            const LBVH::Node& child_r = lbvh[node.right];
-
-            // 1. Intersect multiple queries at once
-            // (child_l.min <= query.max) && (query.min <= child_l.max)
-            xs::batch_bool<float> intersects_l =
-                (child_l.aabb_min.x() <= q_max_x)
-                & (child_l.aabb_min.y() <= q_max_y)
-                & (child_l.aabb_min.z() <= q_max_z)
-                & (q_min_x <= child_l.aabb_max.x())
-                & (q_min_y <= child_l.aabb_max.y())
-                & (q_min_z <= child_l.aabb_max.z());
-
-            // 2. Intersect multiple queries at once
-            // (child_r.min <= query.max) && (query.min <= child_r.max)
-            xs::batch_bool<float> intersects_r =
-                (child_r.aabb_min.x() <= q_max_x)
-                & (child_r.aabb_min.y() <= q_max_y)
-                & (child_r.aabb_min.z() <= q_max_z)
-                & (q_min_x <= child_r.aabb_max.x())
-                & (q_min_y <= child_r.aabb_max.y())
-                & (q_min_z <= child_r.aabb_max.z());
-
-            // Ignore overlap if the subtree is fully on the left-hand side
-            // of all queries (triangular traversal only).
-            // We use first_query_leaf_idx (the smallest query leaf index
-            // in the SIMD batch) for a conservative check: if all leaves
-            // in the subtree are <= the smallest query, they are also <=
-            // every other query in the batch.
-            if constexpr (triangular) {
-                if (rightmost_leaves[node.left] <= first_query_leaf_idx) {
-                    intersects_l = xs::batch_bool<float>(false);
-                }
-                if (rightmost_leaves[node.right] <= first_query_leaf_idx) {
-                    intersects_r = xs::batch_bool<float>(false);
-                }
-            }
-
-            const bool any_intersects_l = xs::any(intersects_l);
-            const bool any_intersects_r = xs::any(intersects_r);
-
-            // Query overlaps a leaf node => report collision
-            if (any_intersects_l && child_l.is_leaf()) {
-                for (int k = 0; k < n_queries; ++k) {
+            },
+            [&](const LBVH::Node& leaf, const int leaf_idx,
+                const mask_t& intersects) {
+                for (size_t k = 0; k < n_queries; ++k) {
                     if constexpr (triangular) {
-                        if (rightmost_leaves[node.left]
+                        // The shared descent skipped subtrees left of the
+                        // batch's FIRST query; finish the check per lane.
+                        if (rightmost_leaves[leaf_idx]
                             <= first_query_leaf_idx + k) {
                             continue;
                         }
                     }
-                    if (intersects_l.get(k)) {
+                    if (intersects.get(k)) {
                         attempt_add_candidate<Candidate, swap_order>(
-                            queries[k], child_l, can_collide, candidates);
+                            queries[k], leaf, can_collide, candidates);
                     }
                 }
-            }
-            if (any_intersects_r && child_r.is_leaf()) {
-                for (int k = 0; k < n_queries; ++k) {
-                    if constexpr (triangular) {
-                        if (rightmost_leaves[node.right]
-                            <= first_query_leaf_idx + k) {
-                            continue;
-                        }
-                    }
-                    if (intersects_r.get(k)) {
-                        attempt_add_candidate<Candidate, swap_order>(
-                            queries[k], child_r, can_collide, candidates);
-                    }
-                }
-            }
-
-            // Query overlaps an internal node => traverse.
-            bool traverse_l = (any_intersects_l && !child_l.is_leaf());
-            bool traverse_r = (any_intersects_r && !child_r.is_leaf());
-
-            if (!traverse_l && !traverse_r) {
-                assert(stack_ptr > 0);
-                node_idx = stack[--stack_ptr];
-            } else {
-                node_idx = traverse_l ? node.left : node.right;
-                if (traverse_l && traverse_r) {
-                    // Postpone traversal of the right child
-                    assert(stack_ptr < MAX_STACK_SIZE);
-                    stack[stack_ptr++] = node.right;
-                }
-            }
-        } while (node_idx != LBVH::Node::INVALID_POINTER); // Same as root
+            });
     }
 #endif
 
@@ -651,11 +334,12 @@ namespace {
         bool triangular,
         bool use_simd = true>
     void independent_traversal(
-        const LBVH::Nodes& source,
+        const LBVH::Node* source_leaves,
+        const size_t n_source_leaves,
         const LBVH::Nodes& target,
         const LBVH::RightmostLeaves& rightmost_leaves,
         const std::function<bool(size_t, size_t)>& can_collide,
-        tbb::enumerable_thread_specific<std::vector<Candidate>>& storage)
+        tbb::enumerable_thread_specific<CandidateVector<Candidate>>& storage)
     {
 #ifdef IPC_TOOLKIT_WITH_SIMD // Enable SIMD acceleration when available
         constexpr size_t SIMD_SIZE = use_simd ? xs::batch<float>::size : 1;
@@ -667,10 +351,6 @@ namespace {
         constexpr size_t SIMD_SIZE = 1;
         constexpr size_t GRAIN_SIZE = 1;
 #endif
-
-        // Calculate the offset to the first leaf node in the source BVH.
-        const size_t source_leaf_offset = source.size() / 2;
-        const size_t n_source_leaves = source_leaf_offset + 1;
 
         const size_t n_tasks =
             n_source_leaves / SIMD_SIZE + (n_source_leaves % SIMD_SIZE != 0);
@@ -689,14 +369,14 @@ namespace {
                     if constexpr (use_simd) {
                         assert(actual_end - idx >= 1);
                         traverse_lbvh_simd<Candidate, swap_order, triangular>(
-                            &source[source_leaf_offset + idx], idx,
+                            source_leaves + idx, idx,
                             std::min(SIMD_SIZE, actual_end - idx), target,
                             rightmost_leaves, can_collide, local_candidates);
                     } else {
 #endif
                         traverse_lbvh<Candidate, swap_order, triangular>(
-                            source[source_leaf_offset + idx], idx, target,
-                            rightmost_leaves, can_collide, local_candidates);
+                            source_leaves[idx], idx, target, rightmost_leaves,
+                            can_collide, local_candidates);
 #ifdef IPC_TOOLKIT_WITH_SIMD
                     }
 #endif
@@ -707,27 +387,36 @@ namespace {
 
 template <typename Candidate, bool swap_order, bool triangular>
 void LBVH::detect_candidates(
-    const Nodes& source,
+    const Node* source_leaves,
+    const size_t n_source_leaves,
     const Nodes& target,
     const RightmostLeaves& rightmost_leaves,
     const std::function<bool(size_t, size_t)>& can_collide,
-    std::vector<Candidate>& candidates)
+    CandidateVector<Candidate>& candidates)
 {
-    if (source.empty() || target.empty()) {
+    if (n_source_leaves == 0 || target.empty()) {
         return;
     }
 
-    tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
+    tbb::enumerable_thread_specific<CandidateVector<Candidate>> storage;
 
-    independent_traversal<Candidate, swap_order, triangular>(
-        source, target, rightmost_leaves, can_collide, storage);
+    {
+        IPC_TOOLKIT_PROFILE_BLOCK("traverse");
+        independent_traversal<Candidate, swap_order, triangular>(
+            source_leaves, n_source_leaves, target, rightmost_leaves,
+            can_collide, storage);
+    }
 
-    merge_thread_local_vectors(storage, candidates);
+    {
+        IPC_TOOLKIT_PROFILE_BLOCK("merge_thread_local_candidates");
+        merge_thread_local_vectors(storage, candidates);
+    }
 }
 
 void LBVH::detect_vertex_vertex_candidates(
-    std::vector<VertexVertexCandidate>& candidates) const
+    CandidateVector<VertexVertexCandidate>& candidates) const
 {
+    candidates.clear();
     if (vertex_bvh.size() <= 1) { // Need at least 2 vertices for a collision
         return;
     }
@@ -739,8 +428,9 @@ void LBVH::detect_vertex_vertex_candidates(
 }
 
 void LBVH::detect_edge_vertex_candidates(
-    std::vector<EdgeVertexCandidate>& candidates) const
+    CandidateVector<EdgeVertexCandidate>& candidates) const
 {
+    candidates.clear();
     if (!has_edges() || !has_vertices()) {
         return;
     }
@@ -755,8 +445,9 @@ void LBVH::detect_edge_vertex_candidates(
 }
 
 void LBVH::detect_edge_edge_candidates(
-    std::vector<EdgeEdgeCandidate>& candidates) const
+    CandidateVector<EdgeEdgeCandidate>& candidates) const
 {
+    candidates.clear();
     if (edge_bvh.size() <= 1) { // Need at least 2 edges for a collision
         return;
     }
@@ -769,8 +460,9 @@ void LBVH::detect_edge_edge_candidates(
 }
 
 void LBVH::detect_face_vertex_candidates(
-    std::vector<FaceVertexCandidate>& candidates) const
+    CandidateVector<FaceVertexCandidate>& candidates) const
 {
+    candidates.clear();
     if (!has_faces() || !has_vertices()) {
         return;
     }
@@ -784,8 +476,9 @@ void LBVH::detect_face_vertex_candidates(
 }
 
 void LBVH::detect_edge_face_candidates(
-    std::vector<EdgeFaceCandidate>& candidates) const
+    CandidateVector<EdgeFaceCandidate>& candidates) const
 {
+    candidates.clear();
     if (!has_edges() || !has_faces()) {
         return;
     }
@@ -799,8 +492,9 @@ void LBVH::detect_edge_face_candidates(
 }
 
 void LBVH::detect_face_face_candidates(
-    std::vector<FaceFaceCandidate>& candidates) const
+    CandidateVector<FaceFaceCandidate>& candidates) const
 {
+    candidates.clear();
     if (face_bvh.size() <= 1) { // Need at least 2 faces for a collision
         return;
     }
@@ -812,14 +506,165 @@ void LBVH::detect_face_face_candidates(
 }
 
 // ============================================================================
+// Two-tree queries against leaves.
+//
+// The other set's leaves are the source (they are iterated) and this BVH is
+// the target (its tree is traversed), so this BVH should be the one with
+// more primitives to take advantage of the log(n) traversal. The
+// rightmost_leaves argument is only used for triangular (self-collision)
+// traversal, so an empty vector is passed here.
+
+namespace {
+    LBVH::Node make_leaf(
+        const Eigen::Array3d& box_min,
+        const Eigen::Array3d& box_max,
+        const size_t primitive_id)
+    {
+        LBVH::Node leaf;
+        details::set_inflated_aabb(box_min, box_max, leaf);
+        leaf.primitive_id = static_cast<int32_t>(primitive_id);
+        leaf.is_inner_marker = 0;
+        return leaf;
+    }
+} // namespace
+
+void LBVH::Leaves::build(
+    const AABBs& vertex_boxes,
+    Eigen::ConstRef<Eigen::MatrixXi> _edges,
+    Eigen::ConstRef<Eigen::MatrixXi> _faces)
+{
+    vertices.resize(vertex_boxes.size());
+    tbb::parallel_for(size_t(0), size_t(vertex_boxes.size()), [&](size_t i) {
+        vertices[i] = make_leaf(vertex_boxes[i].min, vertex_boxes[i].max, i);
+    });
+
+    edges.resize(_edges.rows());
+    tbb::parallel_for(size_t(0), size_t(_edges.rows()), [&](size_t i) {
+        const AABB& a = vertex_boxes[_edges(i, 0)];
+        const AABB& b = vertex_boxes[_edges(i, 1)];
+        edges[i] = make_leaf(a.min.min(b.min), a.max.max(b.max), i);
+    });
+
+    faces.resize(_faces.rows());
+    tbb::parallel_for(size_t(0), size_t(_faces.rows()), [&](size_t i) {
+        const AABB& a = vertex_boxes[_faces(i, 0)];
+        const AABB& b = vertex_boxes[_faces(i, 1)];
+        const AABB& c = vertex_boxes[_faces(i, 2)];
+        faces[i] = make_leaf(
+            a.min.min(b.min).min(c.min), a.max.max(b.max).max(c.max), i);
+    });
+}
+
+void LBVH::detect_vertex_vertex_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    CandidateVector<VertexVertexCandidate>& candidates) const
+{
+    candidates.clear();
+    if (!has_vertices()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_vertex_vertex_candidates(leaves)");
+
+    detect_candidates<VertexVertexCandidate, /*swap_order=*/true>(
+        other.vertices.data(), other.vertices.size(), vertex_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
+}
+
+void LBVH::detect_edge_vertex_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    CandidateVector<EdgeVertexCandidate>& candidates) const
+{
+    candidates.clear();
+    if (!has_edges()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_edge_vertex_candidates(leaves)");
+
+    detect_candidates<EdgeVertexCandidate, /*swap_order=*/true>(
+        other.vertices.data(), other.vertices.size(), edge_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
+}
+
+void LBVH::detect_vertex_edge_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    CandidateVector<EdgeVertexCandidate>& candidates) const
+{
+    candidates.clear();
+    if (!has_vertices()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_vertex_edge_candidates(leaves)");
+
+    detect_candidates<EdgeVertexCandidate, /*swap_order=*/false>(
+        other.edges.data(), other.edges.size(), vertex_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
+}
+
+void LBVH::detect_edge_edge_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    CandidateVector<EdgeEdgeCandidate>& candidates) const
+{
+    candidates.clear();
+    if (!has_edges()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_edge_edge_candidates(leaves)");
+
+    detect_candidates<EdgeEdgeCandidate, /*swap_order=*/true>(
+        other.edges.data(), other.edges.size(), edge_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
+}
+
+void LBVH::detect_face_vertex_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    CandidateVector<FaceVertexCandidate>& candidates) const
+{
+    candidates.clear();
+    if (!has_faces()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_face_vertex_candidates(leaves)");
+
+    detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
+        other.vertices.data(), other.vertices.size(), face_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
+}
+
+void LBVH::detect_vertex_face_candidates(
+    const Leaves& other,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    CandidateVector<FaceVertexCandidate>& candidates) const
+{
+    candidates.clear();
+    if (!has_vertices()) {
+        return;
+    }
+
+    IPC_TOOLKIT_PROFILE_BLOCK("LBVH::detect_vertex_face_candidates(leaves)");
+
+    detect_candidates<FaceVertexCandidate, /*swap_order=*/false>(
+        other.faces.data(), other.faces.size(), vertex_bvh,
+        /*rightmost_leaves=*/ {}, can_collide, candidates);
+}
+
+// ============================================================================
 
 bool LBVH::can_edge_vertex_collide(size_t ei, size_t vi) const
 {
     assert(ei < edge_vertex_ids.size());
     const auto& [e0i, e1i] = edge_vertex_ids[ei];
 
-    return vi != e0i && vi != e1i
-        && (can_vertices_collide(vi, e0i) || can_vertices_collide(vi, e1i));
+    return details::can_edge_vertex_collide(e0i, e1i, vi, can_vertices_collide);
 }
 
 bool LBVH::can_edges_collide(size_t eai, size_t ebi) const
@@ -829,13 +674,8 @@ bool LBVH::can_edges_collide(size_t eai, size_t ebi) const
     assert(ebi < edge_vertex_ids.size());
     const auto& [eb0i, eb1i] = edge_vertex_ids[ebi];
 
-    const bool share_endpoint =
-        ea0i == eb0i || ea0i == eb1i || ea1i == eb0i || ea1i == eb1i;
-
-    return !share_endpoint
-        && (can_vertices_collide(ea0i, eb0i) || can_vertices_collide(ea0i, eb1i)
-            || can_vertices_collide(ea1i, eb0i)
-            || can_vertices_collide(ea1i, eb1i));
+    return details::can_edges_collide(
+        ea0i, ea1i, eb0i, eb1i, can_vertices_collide);
 }
 
 bool LBVH::can_face_vertex_collide(size_t fi, size_t vi) const
@@ -843,9 +683,8 @@ bool LBVH::can_face_vertex_collide(size_t fi, size_t vi) const
     assert(fi < face_vertex_ids.size());
     const auto& [f0i, f1i, f2i] = face_vertex_ids[fi];
 
-    return vi != f0i && vi != f1i && vi != f2i
-        && (can_vertices_collide(vi, f0i) || can_vertices_collide(vi, f1i)
-            || can_vertices_collide(vi, f2i));
+    return details::can_face_vertex_collide(
+        f0i, f1i, f2i, vi, can_vertices_collide);
 }
 
 bool LBVH::can_edge_face_collide(size_t ei, size_t fi) const
@@ -855,14 +694,8 @@ bool LBVH::can_edge_face_collide(size_t ei, size_t fi) const
     assert(fi < face_vertex_ids.size());
     const auto& [f0i, f1i, f2i] = face_vertex_ids[fi];
 
-    const bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i
-        || e1i == f0i || e1i == f1i || e1i == f2i;
-
-    return !share_endpoint
-        && (can_vertices_collide(e0i, f0i) || can_vertices_collide(e0i, f1i)
-            || can_vertices_collide(e0i, f2i) || can_vertices_collide(e1i, f0i)
-            || can_vertices_collide(e1i, f1i)
-            || can_vertices_collide(e1i, f2i));
+    return details::can_edge_face_collide(
+        e0i, e1i, f0i, f1i, f2i, can_vertices_collide);
 }
 
 bool LBVH::can_faces_collide(size_t fai, size_t fbi) const
@@ -872,19 +705,67 @@ bool LBVH::can_faces_collide(size_t fai, size_t fbi) const
     assert(fbi < face_vertex_ids.size());
     const auto& [fb0i, fb1i, fb2i] = face_vertex_ids[fbi];
 
-    const bool share_endpoint = fa0i == fb0i || fa0i == fb1i || fa0i == fb2i
-        || fa1i == fb0i || fa1i == fb1i || fa1i == fb2i || fa2i == fb0i
-        || fa2i == fb1i || fa2i == fb2i;
+    return details::can_faces_collide(
+        fa0i, fa1i, fa2i, fb0i, fb1i, fb2i, can_vertices_collide);
+}
 
-    return !share_endpoint
-        && (can_vertices_collide(fa0i, fb0i) || can_vertices_collide(fa0i, fb1i)
-            || can_vertices_collide(fa0i, fb2i)
-            || can_vertices_collide(fa1i, fb0i)
-            || can_vertices_collide(fa1i, fb1i)
-            || can_vertices_collide(fa1i, fb2i)
-            || can_vertices_collide(fa2i, fb0i)
-            || can_vertices_collide(fa2i, fb1i)
-            || can_vertices_collide(fa2i, fb2i));
+namespace {
+    /// @brief Build a query node whose AABB is a cube of half-width `radius`
+    /// centered at p, for use with LBVH::Node::intersects(). Only the AABB is
+    /// meaningful.
+    ///
+    /// We pad a 2D point to (x, y, 0), which is what AABB does to 2D
+    /// primitives (it zero-fills the unused component), so the query's z range
+    /// [-radius, radius] straddles the tree's.
+    LBVH::Node
+    point_query_node(Eigen::ConstRef<RowVectorMax3d> p, const double radius)
+    {
+        Eigen::Array3d c = Eigen::Array3d::Zero();
+        c.head(p.size()) = p.transpose().array();
+
+        LBVH::Node n;
+        n.aabb_min = (c - radius).cast<float>();
+        n.aabb_max = (c + radius).cast<float>();
+        n.primitive_id = -1;
+        n.is_inner_marker = 0;
+        return n;
+    }
+
+    /// @brief Collect the primitive ids of every leaf of one tree that
+    /// intersects the query node. We reuse the descent of the pairwise
+    /// queries, whose fixed-size stack is sized for the deepest tree a
+    /// Morton-code build can produce and throws instead of overflowing.
+    void query_tree(
+        const LBVH::Nodes& bvh,
+        const LBVH::Node& query,
+        std::vector<index_t>& hits)
+    {
+        hits.clear();
+        if (bvh.empty()) {
+            return;
+        }
+
+        details::traverse_lbvh</*triangular=*/false>(
+            /*query_leaf_idx=*/-1, bvh.data(), static_cast<int>(bvh.size()),
+            /*target_rightmost=*/nullptr,
+            [&](const LBVH::Node& node) { return node.intersects(query); },
+            [&](const LBVH::Node& leaf, int /*leaf_idx*/, bool /*mask*/) {
+                hits.push_back(leaf.primitive_id);
+            });
+    }
+} // namespace
+
+void LBVH::query_point(
+    Eigen::ConstRef<RowVectorMax3d> q,
+    const double radius,
+    std::vector<index_t>& vertex_ids,
+    std::vector<index_t>& edge_ids,
+    std::vector<index_t>& face_ids) const
+{
+    const Node query = point_query_node(q, radius);
+    query_tree(vertex_bvh, query, vertex_ids);
+    query_tree(edge_bvh, query, edge_ids);
+    query_tree(face_bvh, query, face_ids);
 }
 
 } // namespace ipc

@@ -1,5 +1,5 @@
-Building Library
-================
+Building the C++ Library
+========================
 
 .. role:: cpp(code)
    :language: c++
@@ -37,7 +37,7 @@ where ``IPC_TOOLKIT_GIT_TAG`` is set to the version of the toolkit you want to u
 where ``PROJECT_NAME`` is the name of your library/binary.
 
 .. tip::
-   If your ``IPC_TOOLKIT_GIT_TAG`` is a tag (e.g. ``v1.3.1``), then you can use the ``FetchContent_Declare`` argument ``GIT_SHALLOW TRUE`` to download only a single commit. Otherwise, you should use the default ``GIT_SHALLOW FALSE``.
+   If your ``IPC_TOOLKIT_GIT_TAG`` is a tag (e.g. ``v1.6.1``), then you can use the ``FetchContent_Declare`` argument ``GIT_SHALLOW TRUE`` to download only a single commit. Otherwise, you should use the default ``GIT_SHALLOW FALSE``.
 
 Building the Library
 --------------------
@@ -62,5 +62,7 @@ Dependencies
 ------------
 
 **All required dependencies are downloaded through CMake** depending on the build options, and are built automatically when you build the IPC Toolkit. You do not need to install them separately.
+
+Fetching them does need ``git`` and the ``patch`` command-line utility on your ``PATH`` (one dependency is fetched with a patch applied). Both ship with the usual developer tool sets -- ``build-essential`` on Debian/Ubuntu, the Xcode command line tools on macOS, Git for Windows on Windows -- but a minimal container image may need them installed.
 
 A full list of dependencies can be found on the `dependencies page <https://ipctk.xyz/dependencies.html>`_.

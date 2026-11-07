@@ -2,6 +2,15 @@
 
 #include <ipc/config.hpp>
 
+#ifdef IPC_TOOLKIT_WITH_TRACY
+#include <tracy/Tracy.hpp>
+#else
+// Empty macro to avoid compilation errors when Tracy is not enabled.
+#define ZoneScopedN(name) ((void)0)
+#endif
+
+#include <string>
+
 #ifdef IPC_TOOLKIT_WITH_PROFILER
 
 // clang-format off
@@ -21,7 +30,8 @@
 
 #define IPC_TOOLKIT_PROFILE_BLOCK(...)                                         \
     ipc::ProfilePoint IPC_TOOLKIT_PROFILE_BLOCK_CONCAT(                        \
-        __ipc_profile_point_, __COUNTER__)(__VA_ARGS__)
+        __ipc_profile_point_, __COUNTER__)(__VA_ARGS__);                       \
+    ZoneScopedN(__VA_ARGS__)
 
 namespace ipc {
 
@@ -63,12 +73,19 @@ public:
     /// @brief Access the profiling data as a JSON object.
     nlohmann::json& data() { return m_data; }
 
+    /// @brief Returns true if the current thread should record profiling data.
+    ///        When the current thread is not in a TBB arena, this returns
+    ///        true. Inside a TBB arena, only the external/coordinator thread
+    ///        (slot 0) records, giving a single-thread estimate of parallel
+    ///        block costs.
+    bool is_recording_thread() const;
+
 protected:
     /// @brief The profiling data stored as a JSON object.
     nlohmann::json m_data;
 
     /// @brief The global scope pointer into the JSON data.
-    nlohmann::json::json_pointer current_scope;
+    nlohmann::json::json_pointer m_current_scope;
 };
 
 Profiler& profiler();
@@ -96,26 +113,33 @@ public:
 
     ProfilePoint(Profiler& p_profiler, const std::string& name)
         : m_profiler(p_profiler)
+        , m_active(p_profiler.is_recording_thread())
     {
-        m_profiler.start(name);
-        timer.start();
+        if (m_active) {
+            m_profiler.start(name);
+            timer.start();
+        }
     }
 
     ~ProfilePoint()
     {
-        timer.stop();
-        m_profiler.stop(timer.getElapsedTimeInMilliSec());
+        if (m_active) {
+            timer.stop();
+            m_profiler.stop(timer.getElapsedTimeInMilliSec());
+        }
     }
 
 protected:
     Profiler& m_profiler;
     Timer timer;
+    bool m_active;
 };
 
 } // namespace ipc
 
 #else
 
-#define IPC_TOOLKIT_PROFILE_BLOCK(...)
+// Custom profiler disabled: Tracy zone only.
+#define IPC_TOOLKIT_PROFILE_BLOCK(...) ZoneScopedN(__VA_ARGS__)
 
 #endif

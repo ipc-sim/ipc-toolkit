@@ -3,6 +3,9 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <ipc/distance/edge_edge_mollifier.hpp>
+#include <ipc/collision_mesh.hpp>
+#include <ipc/collisions/normal/normal_collisions.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
 
 #include <finitediff.hpp>
 
@@ -283,4 +286,82 @@ TEST_CASE("Edge-Edge Mollifier Threshold", "[distance][edge-edge][mollifier]")
         fgrad);
 
     CHECK(fd::compare_gradient(grad, fgrad));
+}
+
+// Single mollified EE pair, FD-check shape_derivative against gradient.
+TEST_CASE(
+    "Edge-Edge Mollifier Shape Derivative",
+    "[distance][edge-edge][mollifier][shape_derivative]")
+{
+    const double dhat = 1e-3;
+    const bool aw = GENERATE(false, true);
+    const double y_sep = GENERATE(9.99e-4, 9.9e-4, 9.5e-4);
+    const double z_twist = GENERATE(5e-3, 1e-2, 2e-2);
+
+    Eigen::MatrixXd rest(4, 3);
+    rest << 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, y_sep, 0.0, 1.0, y_sep, z_twist;
+    const Eigen::MatrixXd displaced = rest;
+    Eigen::MatrixXi edges(2, 2);
+    edges << 0, 1, 2, 3;
+    Eigen::MatrixXi faces(0, 3);
+
+    CollisionMesh mesh(rest, edges, faces);
+    if (!mesh.are_area_jacobians_initialized())
+        mesh.init_area_jacobians();
+
+    NormalCollisions collisions;
+    collisions.set_use_area_weighting(aw);
+    collisions.set_enable_shape_derivatives(true);
+    collisions.build(mesh, displaced, dhat);
+    REQUIRE(collisions.size() == 1);
+    REQUIRE(collisions.is_edge_edge(0));
+    REQUIRE(collisions[0].is_mollified());
+
+    BarrierPotential bp(
+        dhat, /*stiffness=*/1e8, /*use_physical_barrier=*/false);
+
+    Eigen::SparseMatrix<double> JF_an_sparse =
+        bp.shape_derivative(collisions, mesh, displaced);
+    Eigen::MatrixXd JF_an(JF_an_sparse);
+
+    // Column-wise central FD on rest DOFs, fixed collision set.
+    const int n_verts = static_cast<int>(rest.rows());
+    const int dim = static_cast<int>(rest.cols());
+    const int ndof = n_verts * dim;
+    const double eps = 1e-7;
+    Eigen::MatrixXd JF_fd(ndof, ndof);
+    JF_fd.setZero();
+    for (int v = 0; v < n_verts; ++v) {
+        for (int d = 0; d < dim; ++d) {
+            Eigen::MatrixXd rest_plus = rest;
+            Eigen::MatrixXd rest_minus = rest;
+            rest_plus(v, d) += eps;
+            rest_minus(v, d) -= eps;
+            const Eigen::MatrixXd disp_plus = rest_plus + (displaced - rest);
+            const Eigen::MatrixXd disp_minus = rest_minus + (displaced - rest);
+            CollisionMesh mesh_plus(rest_plus, edges, faces);
+            if (mesh.are_area_jacobians_initialized())
+                mesh_plus.init_area_jacobians();
+            CollisionMesh mesh_minus(rest_minus, edges, faces);
+            if (mesh.are_area_jacobians_initialized())
+                mesh_minus.init_area_jacobians();
+            const Eigen::VectorXd F_plus =
+                bp.gradient(collisions, mesh_plus, disp_plus);
+            const Eigen::VectorXd F_minus =
+                bp.gradient(collisions, mesh_minus, disp_minus);
+            JF_fd.col(v * dim + d) = (F_plus - F_minus) / (2.0 * eps);
+        }
+    }
+
+    const double an = JF_an.norm();
+    const double fn = JF_fd.norm();
+    const double diff = (JF_an - JF_fd).norm();
+    const double rel = diff / std::max(std::max(an, fn), 1e-30);
+
+    UNSCOPED_INFO(
+        "aw=" << aw << " y_sep=" << y_sep << " z_twist=" << z_twist
+              << "  ||analytic||=" << an << "  ||fd||=" << fn
+              << "  ||diff||=" << diff << "  rel=" << rel);
+
+    CHECK(rel < 1e-4);
 }

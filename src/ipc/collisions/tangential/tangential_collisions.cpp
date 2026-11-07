@@ -3,6 +3,8 @@
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/friction/smooth_mu.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/logger.hpp>
+#include <ipc/utils/profiler.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
@@ -69,6 +71,7 @@ void TangentialCollisions::build(
 {
     assert(mu_s.size() == vertices.rows());
     assert(mu_k.size() == vertices.rows());
+    IPC_TOOLKIT_PROFILE_BLOCK("TangentialCollisions::build");
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
@@ -171,8 +174,8 @@ void TangentialCollisions::build(
 void TangentialCollisions::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
-    const SmoothCollisions& collisions,
-    const SmoothContactParameters& params,
+    const GCPCollisions& collisions,
+    const GCPParameters& params,
     const double normal_stiffness,
     Eigen::ConstRef<Eigen::VectorXd> mu_s,
     Eigen::ConstRef<Eigen::VectorXd> mu_k,
@@ -180,6 +183,7 @@ void TangentialCollisions::build(
 {
     assert(mu_k.size() == vertices.rows());
     assert(mu_s.size() == vertices.rows());
+    IPC_TOOLKIT_PROFILE_BLOCK("TangentialCollisions::build(smooth)");
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
@@ -198,8 +202,9 @@ void TangentialCollisions::build(
 
         if (mesh.dim() == 3) {
             TangentialCollision* ptr = nullptr;
-            if (const auto* const cvv = dynamic_cast<
-                    const SmoothCollisionTemplate<Point3, Point3>*>(&cc)) {
+            if (const auto* const cvv =
+                    dynamic_cast<const GCPCollisionTemplate<Point3, Point3>*>(
+                        &cc)) {
                 Eigen::VectorXd collision_points = cvv->core_dof(vertices);
                 FC_vv.emplace_back(
                     VertexVertexNormalCollision(
@@ -213,7 +218,7 @@ void TangentialCollisions::build(
                 ptr = &(FC_vv.back());
             } else if (
                 const auto* const cev =
-                    dynamic_cast<const SmoothCollisionTemplate<Edge3, Point3>*>(
+                    dynamic_cast<const GCPCollisionTemplate<Edge3, Point3>*>(
                         &cc)) {
                 Eigen::VectorXd collision_points = cev->core_dof(vertices);
                 collision_points =
@@ -239,7 +244,7 @@ void TangentialCollisions::build(
                 ptr = &(FC_ev.back());
             } else if (
                 const auto* const cee =
-                    dynamic_cast<const SmoothCollisionTemplate<Edge3, Edge3>*>(
+                    dynamic_cast<const GCPCollisionTemplate<Edge3, Edge3>*>(
                         &cc)) {
                 Eigen::VectorXd collision_points = cee->core_dof(vertices);
                 const auto vert_ids = cee->core_vertex_ids();
@@ -278,7 +283,7 @@ void TangentialCollisions::build(
                 ptr = &(FC_ee.back());
             } else if (
                 const auto* const cfv =
-                    dynamic_cast<const SmoothCollisionTemplate<Face, Point3>*>(
+                    dynamic_cast<const GCPCollisionTemplate<Face, Point3>*>(
                         &cc)) {
                 Eigen::VectorXd collision_points = cfv->core_dof(vertices);
                 collision_points =
@@ -304,12 +309,13 @@ void TangentialCollisions::build(
                 ptr = &(FC_fv.back());
             }
             if (ptr) {
-                ptr->smooth_collision = collisions.collisions[i];
+                ptr->gcp_collision = collisions.collisions[i];
             }
         } else {
             TangentialCollision* ptr = nullptr;
-            if (const auto* const cvv = dynamic_cast<
-                    const SmoothCollisionTemplate<Point2, Point2>*>(&cc)) {
+            if (const auto* const cvv =
+                    dynamic_cast<const GCPCollisionTemplate<Point2, Point2>*>(
+                        &cc)) {
                 Eigen::VectorXd collision_points = cvv->core_dof(vertices);
                 FC_vv.emplace_back(
                     VertexVertexNormalCollision(
@@ -323,7 +329,7 @@ void TangentialCollisions::build(
                 ptr = &(FC_vv.back());
             } else if (
                 const auto* const cev =
-                    dynamic_cast<const SmoothCollisionTemplate<Edge2, Point2>*>(
+                    dynamic_cast<const GCPCollisionTemplate<Edge2, Point2>*>(
                         &cc)) {
                 Eigen::VectorXd collision_points = cev->core_dof(vertices);
                 collision_points =
@@ -349,7 +355,7 @@ void TangentialCollisions::build(
                 ptr = &(FC_ev.back());
             }
             if (ptr) {
-                ptr->smooth_collision = collisions.collisions[i];
+                ptr->gcp_collision = collisions.collisions[i];
             }
         }
     }
@@ -462,7 +468,8 @@ TangentialCollision& TangentialCollisions::operator[](size_t i)
     if (i < pv_collisions.size()) {
         return pv_collisions[i];
     }
-    throw std::out_of_range("Friction collision index is out of range!");
+    log_and_throw_error<std::out_of_range>(
+        "Friction collision index is out of range!");
 }
 
 const TangentialCollision& TangentialCollisions::operator[](size_t i) const
@@ -486,7 +493,8 @@ const TangentialCollision& TangentialCollisions::operator[](size_t i) const
     if (i < pv_collisions.size()) {
         return pv_collisions[i];
     }
-    throw std::out_of_range("Friction collision index is out of range!");
+    log_and_throw_error<std::out_of_range>(
+        "Friction collision index is out of range!");
 }
 
 } // namespace ipc

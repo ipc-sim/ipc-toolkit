@@ -2,6 +2,7 @@
 
 #include <ipc/collision_mesh.hpp>
 #include <ipc/broad_phase/aabb.hpp>
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/edge_face.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
@@ -63,42 +64,45 @@ public:
     virtual void clear();
 
     /// @brief Detect all collision candidates needed for a given dimensional simulation.
-    /// @param candidates The detected collision candidates.
-    void detect_collision_candidates(Candidates& candidates) const;
+    /// @param candidates The detected collision candidates (cleared first).
+    /// @param all_types Also detect the candidate types that only ESP contact
+    ///                  needs (vertex-vertex, edge-vertex, edge-face, and
+    ///                  face-face in 3D).
+    void detect_collision_candidates(
+        Candidates& candidates, bool all_types = false) const;
 
     /// @brief Find the candidate vertex-vertex collisions.
-    /// @param[out] candidates The candidate vertex-vertex collisions.
+    /// @param[out] candidates The candidate vertex-vertex collisions (cleared first).
     virtual void detect_vertex_vertex_candidates(
-        std::vector<VertexVertexCandidate>& candidates) const = 0;
+        CandidateVector<VertexVertexCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate edge-vertex collisions.
-    /// @param[out] candidates The candidate edge-vertex collisions.
+    /// @param[out] candidates The candidate edge-vertex collisions (cleared first).
     virtual void detect_edge_vertex_candidates(
-        std::vector<EdgeVertexCandidate>& candidates) const = 0;
+        CandidateVector<EdgeVertexCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate edge-edge collisions.
-    /// @param[out] candidates The candidate edge-edge collisions.
+    /// @param[out] candidates The candidate edge-edge collisions (cleared first).
     virtual void detect_edge_edge_candidates(
-        std::vector<EdgeEdgeCandidate>& candidates) const = 0;
+        CandidateVector<EdgeEdgeCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate face-vertex collisions.
-    /// @param[out] candidates The candidate face-vertex collisions.
+    /// @param[out] candidates The candidate face-vertex collisions (cleared first).
     virtual void detect_face_vertex_candidates(
-        std::vector<FaceVertexCandidate>& candidates) const = 0;
+        CandidateVector<FaceVertexCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate edge-face intersections.
-    /// @param[out] candidates The candidate edge-face intersections.
+    /// @param[out] candidates The candidate edge-face intersections (cleared first).
     virtual void detect_edge_face_candidates(
-        std::vector<EdgeFaceCandidate>& candidates) const = 0;
+        CandidateVector<EdgeFaceCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate face-face collisions.
-    /// @param[out] candidates The candidate face-face collisions.
+    /// @param[out] candidates The candidate face-face collisions (cleared first).
     virtual void detect_face_face_candidates(
-        std::vector<FaceFaceCandidate>& candidates) const = 0;
+        CandidateVector<FaceFaceCandidate>& candidates) const = 0;
 
-    /// @brief Function for determining if two vertices can collide.
-    std::function<bool(size_t, size_t)> can_vertices_collide =
-        default_can_vertices_collide;
+    /// @brief Filter for determining if two vertices can collide.
+    CollisionFilter can_vertices_collide;
 
 protected:
     /// @brief Build the broad phase for collision detection.
@@ -121,12 +125,6 @@ protected:
     virtual bool can_face_vertex_collide(size_t fi, size_t vi) const;
     virtual bool can_edge_face_collide(size_t ei, size_t fi) const;
     virtual bool can_faces_collide(size_t fai, size_t fbi) const;
-
-    static bool
-    default_can_vertices_collide(size_t /*unused*/, size_t /*unused*/)
-    {
-        return true;
-    }
 
     /// @brief AABBs for the vertices.
     AABBs vertex_boxes;

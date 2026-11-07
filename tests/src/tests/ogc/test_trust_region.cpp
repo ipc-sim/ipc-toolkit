@@ -4,6 +4,8 @@
 #include <ipc/collision_mesh.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
 
+#include <igl/edges.h>
+
 #include <Eigen/Dense>
 
 using namespace ipc;
@@ -13,9 +15,9 @@ using namespace ipc;
 // its interior, close enough to generate an FV collision with the given dhat.
 //
 // Layout (y-up):
-//   V[0] = (0,  0, 0)   \
-//   V[1] = (2,  0, 0)    > triangle in y=0 plane
-//   V[2] = (1,  0, 2)   /
+//   V[0] = (0,  0, 0)   ┐
+//   V[1] = (2,  0, 0)   │ triangle in y=0 plane
+//   V[2] = (1,  0, 2)   ┘
 //   V[3] = (1, gap, 1)    <- vertex directly above triangle centroid
 //
 // Returned mesh has one face [0,1,2] and three boundary edges.
@@ -171,11 +173,6 @@ TEST_CASE(
 
     // Call filter_step
     tr.filter_step(mesh, x, dx);
-
-    // Compute expected beta using same stable formula as implementation
-    const Eigen::RowVector3d ci = tr.trust_region_centers.row(0);
-    const Eigen::RowVector3d xi = x.row(0);
-    const Eigen::RowVector3d dxi = Eigen::RowVector3d(1.0, 0.0, 0.0);
 
     // After filtering, dx should be scaled by expected_beta
     CHECK(dx(0, 0) == Catch::Approx(0.5));
@@ -587,4 +584,127 @@ TEST_CASE(
     const double final_y = x(2, 1) + dx(2, 1);
     CHECK(final_y > 0.0);
     CHECK(std::abs(dx(2, 1)) < 0.6);
+}
+
+// Helper: (N+1)×(N+1) cloth grid in the xz-plane at y = y_offset.
+// Vertices are on a regular grid; edges are extracted from a triangulation.
+static std::tuple<Eigen::MatrixXd, Eigen::MatrixXi, Eigen::MatrixXi>
+make_grid_layer(int N, double spacing, double y_offset)
+{
+    const int nv = (N + 1) * (N + 1);
+    Eigen::MatrixXd V(nv, 3);
+    for (int i = 0; i <= N; ++i) {
+        for (int j = 0; j <= N; ++j) {
+            V.row(i * (N + 1) + j) << j * spacing, y_offset, i * spacing;
+        }
+    }
+
+    Eigen::MatrixXi F(2 * N * N, 3);
+    int f = 0;
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            const int a = i * (N + 1) + j, b = a + 1;
+            const int c = (i + 1) * (N + 1) + j, d = c + 1;
+            F.row(f++) << a, b, d;
+            F.row(f++) << a, d, c;
+        }
+    }
+
+    Eigen::MatrixXi E;
+    igl::edges(F, E);
+    return { V, E, F };
+}
+
+TEST_CASE(
+    "planar_filter_step: stacked parallel cloth layers", "[ogc][planar_dat]")
+{
+    // Flat cloth grids stacked at y = gap * i (layer 0 at bottom).
+    // Even-indexed layers (0, 2, ...) move downward (−y);
+    // odd-indexed layers (1, 3, ...) move upward (+y).
+    // Adjacent pairs where an odd layer is directly below an even layer
+    // (e.g. layers 1 and 2) approach each other and must be truncated.
+    // Adjacent pairs where an even layer is below an odd layer (e.g. 0 and 1)
+    // move apart and must not be spuriously truncated.
+
+    const int N_LAYERS = GENERATE(range(1, 5)); // test 1 to 4 layers
+
+#ifdef NDEBUG
+    const int N = GENERATE(2, 10);
+#else
+    const int N = 2; // smaller N for debug mode to keep test fast
+#endif
+    const int NV = (N + 1) * (N + 1);
+    constexpr double spacing = 0.1;
+    constexpr double gap = 0.3;   // y-separation between adjacent layers
+    constexpr double dhat = 0.35; // > gap so adjacent layers are active
+    constexpr double step = 0.2;  // approach speed; combined 0.4 > gap
+
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    for (int i = 0; i < N_LAYERS; ++i) {
+        auto [Vi, Ei, Fi] = make_grid_layer(N, spacing, gap * i);
+        const int prev_nv = static_cast<int>(V.rows());
+        V.conservativeResize(V.rows() + Vi.rows(), 3);
+        E.conservativeResize(E.rows() + Ei.rows(), 2);
+        F.conservativeResize(F.rows() + Fi.rows(), 3);
+        V.bottomRows(Vi.rows()) = Vi;
+        E.bottomRows(Ei.rows()) = Ei.array() + prev_nv;
+        F.bottomRows(Fi.rows()) = Fi.array() + prev_nv;
+    }
+
+    CollisionMesh mesh(V, E, F);
+
+    ipc::ogc::TrustRegion tr(dhat);
+    ipc::NormalCollisions collisions;
+    collisions.set_collision_set_type(
+        ipc::NormalCollisions::CollisionSetType::OGC);
+    tr.update(mesh, V, collisions);
+
+    if (N_LAYERS > 1) {
+        REQUIRE(!collisions.empty());
+    }
+
+    Eigen::MatrixXd x = V;
+    Eigen::MatrixXd dx = Eigen::MatrixXd::Zero(V.rows(), 3);
+    for (int i = 0; i < N_LAYERS; ++i) {
+        const double dir = (i % 2 == 0) ? -1.0 : 1.0; // even down, odd up
+        dx.middleRows(i * NV, NV).col(1).array() = dir * step;
+    }
+
+    tr.planar_filter_step(mesh, x, dx);
+
+    // Every layer must still move in its original direction — intra-layer
+    // parallel-edge pairs must not produce spurious truncations.
+    for (int i = 0; i < N_LAYERS; ++i) {
+        for (int j = 0; j < NV; ++j) {
+            const int k = NV * i + j;
+            CHECK(dx(k, 0) == Catch::Approx(0.0));
+            CHECK(dx(k, 2) == Catch::Approx(0.0));
+            if (i % 2 == 0) {
+                CHECK(dx(k, 1) < 0.0); // even: downward
+            } else {
+                CHECK(dx(k, 1) > 0.0); // odd: upward
+            }
+        }
+    }
+
+    // Single layer: no collision pairs, so the step must be completely
+    // unmodified.
+    if (N_LAYERS == 1) {
+        for (int j = 0; j < NV; ++j) {
+            CHECK(dx(j, 1) == Catch::Approx(-step));
+        }
+    }
+
+    // Approaching pairs (odd layer i below even layer i+1): step must be
+    // truncated and the result must be penetration-free.
+    const Eigen::MatrixXd x_new = x + dx;
+    for (int i = 1; i + 1 < N_LAYERS; i += 2) {
+        CHECK(dx(i * NV, 1) < step - 1e-10);
+
+        const double max_yi = x_new.middleRows(i * NV, NV).col(1).maxCoeff();
+        const double min_yi1 =
+            x_new.middleRows((i + 1) * NV, NV).col(1).minCoeff();
+        CHECK(min_yi1 > max_yi);
+    }
 }

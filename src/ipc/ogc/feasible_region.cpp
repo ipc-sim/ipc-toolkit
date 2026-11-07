@@ -1,6 +1,7 @@
 #include "feasible_region.hpp"
 
 #include <ipc/tangent/closest_point.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace ipc::ogc {
 
@@ -83,9 +84,8 @@ bool is_edge_vertex_feasible(
 
     case PointEdgeDistanceType::AUTO:
     default:
-        throw std::invalid_argument(
-            fmt::format(
-                "Invalid PointEdgeDistanceType: {}", static_cast<int>(dtype)));
+        log_and_throw_error<std::invalid_argument>(
+            "Invalid PointEdgeDistanceType: {}", static_cast<int>(dtype));
     }
 }
 
@@ -162,9 +162,8 @@ bool is_edge_edge_feasible(
 
     case EdgeEdgeDistanceType::AUTO:
     default:
-        throw std::invalid_argument(
-            fmt::format(
-                "Invalid EdgeEdgeDistanceType: {}", static_cast<int>(dtype)));
+        log_and_throw_error<std::invalid_argument>(
+            "Invalid EdgeEdgeDistanceType: {}", static_cast<int>(dtype));
     }
 }
 
@@ -215,10 +214,8 @@ bool is_face_vertex_feasible(
 
     case PointTriangleDistanceType::AUTO:
     default:
-        throw std::invalid_argument(
-            fmt::format(
-                "Invalid PointTriangleDistanceType: {}",
-                static_cast<int>(dtype)));
+        log_and_throw_error<std::invalid_argument>(
+            "Invalid PointTriangleDistanceType: {}", static_cast<int>(dtype));
     }
 }
 

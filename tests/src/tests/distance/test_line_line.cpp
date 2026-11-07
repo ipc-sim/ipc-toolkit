@@ -5,7 +5,7 @@
 #include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <ipc/distance/line_line.hpp>
-#include <ipc/smooth_contact/distance/edge_edge.hpp>
+#include <ipc/gcp/distance/edge_edge.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <finitediff.hpp>

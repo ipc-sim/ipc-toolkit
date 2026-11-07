@@ -9,7 +9,7 @@
 
 #include <ipc/distance/point_line.hpp>
 #include <ipc/utils/eigen_ext.hpp>
-#include <ipc/smooth_contact/distance/point_edge.hpp>
+#include <ipc/gcp/distance/point_edge.hpp>
 
 #include <finitediff.hpp>
 

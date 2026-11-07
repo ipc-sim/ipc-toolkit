@@ -20,6 +20,8 @@ Python API
       - Data structures representing collision meshes.
     * - `Distance <distance.rst>`__
       - Functions for computing distances between geometric entities.
+    * - `Extremum-Sum Potential <esp.rst>`__
+      - The Extremum-Sum Proximity Potential (ESP).
     * - `Friction <friction.rst>`__
       - Models and functions for frictional contact.
     * - `Intersections <intersections.rst>`__

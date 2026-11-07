@@ -43,7 +43,9 @@ public:
 };
 } // namespace filib
 
+/// @cond DOXYGEN_SKIP
 template <> struct fmt::formatter<filib::Interval> : ostream_formatter { };
+/// @endcond
 
 namespace ipc {
 

@@ -1,6 +1,8 @@
-<p align="center">
-<a href="https://ipctk.xyz"><img alt="IPC Toolkit" src="docs/source/_static/logo.png" width="80%"></a>
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/source/_static/logo-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/source/_static/logo-light.svg">
+  <img alt="Fallback description of the image" src="docs/source/_static/logo-light.svg">
+</picture>
 
 <p align="center">
 <a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg"></a>

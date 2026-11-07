@@ -1,4 +1,6 @@
 set(SOURCES
+  collision_filter.cpp
+  collision_filter.hpp
   collision_mesh.cpp
   collision_mesh.hpp
   ipc.hpp
@@ -20,9 +22,11 @@ add_subdirectory(collisions)
 add_subdirectory(distance)
 add_subdirectory(friction)
 add_subdirectory(geometry)
+add_subdirectory(io)
 add_subdirectory(math)
 add_subdirectory(ogc)
 add_subdirectory(potentials)
-add_subdirectory(smooth_contact)
+add_subdirectory(gcp)
+add_subdirectory(esp)
 add_subdirectory(tangent)
 add_subdirectory(utils)

@@ -1,9 +1,11 @@
+#include <ipc/candidates/candidate_vector.hpp>
 #include <tests/config.hpp>
 #include <tests/broad_phase/brute_force_comparison.hpp>
 #include <tests/utils.hpp>
 
 #include <ipc/broad_phase/brute_force.hpp>
 #include <ipc/broad_phase/create_broad_phase.hpp>
+#include <ipc/broad_phase/hash_grid.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -11,9 +13,242 @@
 #include <igl/readCSV.h>
 #include <igl/readDMAT.h>
 
+#include <array>
+#include <atomic>
 #include <optional>
 
 using namespace ipc;
+
+namespace {
+class SingleCellHashGrid : public HashGrid {
+public:
+    using HashGrid::build;
+
+protected:
+    void build(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) override
+    {
+        BroadPhase::build(edges, faces);
+        Eigen::Array3d lo, hi;
+        compute_mesh_aabb(lo, hi);
+        resize(lo, hi, (hi - lo).maxCoeff() + 1.);
+        insert_boxes();
+    }
+};
+
+class UnitCellHashGrid : public HashGrid {
+public:
+    using HashGrid::build;
+
+protected:
+    void build(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) override
+    {
+        BroadPhase::build(edges, faces);
+        Eigen::Array3d lo, hi;
+        compute_mesh_aabb(lo, hi);
+        resize(lo.floor(), hi.ceil(), 1.);
+        insert_boxes();
+    }
+};
+
+using CandidateIDs = std::array<index_t, 2>;
+CandidateIDs candidate_ids(const VertexVertexCandidate& c)
+{
+    return { { c.vertex0_id, c.vertex1_id } };
+}
+CandidateIDs candidate_ids(const EdgeVertexCandidate& c)
+{
+    return { { c.edge_id, c.vertex_id } };
+}
+CandidateIDs candidate_ids(const EdgeEdgeCandidate& c)
+{
+    return { { c.edge0_id, c.edge1_id } };
+}
+CandidateIDs candidate_ids(const FaceVertexCandidate& c)
+{
+    return { { c.face_id, c.vertex_id } };
+}
+CandidateIDs candidate_ids(const EdgeFaceCandidate& c)
+{
+    return { { c.edge_id, c.face_id } };
+}
+CandidateIDs candidate_ids(const FaceFaceCandidate& c)
+{
+    return { { c.face0_id, c.face1_id } };
+}
+
+template <typename Candidate>
+std::vector<CandidateIDs>
+candidate_ids(const CandidateVector<Candidate>& candidates)
+{
+    std::vector<CandidateIDs> result;
+    result.reserve(candidates.size());
+    for (const auto& candidate : candidates) {
+        result.push_back(candidate_ids(candidate));
+    }
+    return result;
+}
+
+void check_all_hash_grid_relations(HashGrid& grid, BruteForce& reference)
+{
+#define COMPARE_RELATION(TYPE, METHOD)                                         \
+    {                                                                          \
+        CandidateVector<TYPE> actual, expected;                                \
+        grid.METHOD(actual);                                                   \
+        reference.METHOD(expected);                                            \
+        CHECK(std::is_sorted(actual.begin(), actual.end()));                   \
+        std::sort(expected.begin(), expected.end());                           \
+        CHECK(                                                                 \
+            std::adjacent_find(actual.begin(), actual.end()) == actual.end()); \
+        CHECK(candidate_ids(actual) == candidate_ids(expected));               \
+    }
+    COMPARE_RELATION(VertexVertexCandidate, detect_vertex_vertex_candidates)
+    COMPARE_RELATION(EdgeVertexCandidate, detect_edge_vertex_candidates)
+    COMPARE_RELATION(EdgeEdgeCandidate, detect_edge_edge_candidates)
+    COMPARE_RELATION(FaceVertexCandidate, detect_face_vertex_candidates)
+    COMPARE_RELATION(EdgeFaceCandidate, detect_edge_face_candidates)
+    COMPARE_RELATION(FaceFaceCandidate, detect_face_face_candidates)
+#undef COMPARE_RELATION
+}
+} // namespace
+
+TEST_CASE(
+    "HashGrid cell groups preserve all candidate relations",
+    "[broad_phase][hash_grid][regression]")
+{
+    const int dim = GENERATE(2, 3);
+    const bool swept = GENERATE(false, true);
+    const int filter = GENERATE(0, 1, 2);
+    const bool single_cell = GENERATE(false, true);
+    CAPTURE(dim, swept, filter, single_cell);
+    Eigen::MatrixXd V(132, dim);
+    for (int i = 0; i < V.rows(); ++i) {
+        V(i, 0) = (i % 11) * .02 - .1;
+        V(i, 1) = ((i / 11) % 7) * .03 - .08;
+        if (dim == 3) {
+            V(i, 2) = (i % 5) * .01;
+        }
+    }
+    Eigen::MatrixXd V1 = V;
+    for (int i = 0; i < V.rows(); ++i) {
+        V1(i, 0) += (i % 3 - 1) * .04;
+    }
+    Eigen::MatrixXi E(100, 2), F(80, 3);
+    for (int i = 0; i < E.rows(); ++i) {
+        E.row(i) << i % V.rows(), (i + 3) % V.rows();
+    }
+    for (int i = 0; i < F.rows(); ++i) {
+        F.row(i) << (i * 3) % V.rows(), (i * 3 + 1) % V.rows(),
+            (i * 3 + 2) % V.rows();
+    }
+    HashGrid ordinary;
+    SingleCellHashGrid dense;
+    HashGrid& grid = single_cell ? static_cast<HashGrid&>(dense) : ordinary;
+    BruteForce reference;
+    if (filter == 1) {
+        grid.can_vertices_collide = [](size_t a, size_t b) {
+            return (a + b) % 3 != 0 && a % 5 != b % 5;
+        };
+    } else if (filter == 2) {
+        grid.can_vertices_collide = [](size_t, size_t) { return false; };
+    }
+    reference.can_vertices_collide = grid.can_vertices_collide;
+    for (double inflation : { 0., .02, .3 }) {
+        CAPTURE(inflation);
+        if (swept) {
+            grid.build(V, V1, E, F, inflation);
+            reference.build(V, V1, E, F, inflation);
+        } else {
+            grid.build(V, E, F, inflation);
+            reference.build(V, E, F, inflation);
+        }
+        check_all_hash_grid_relations(grid, reference);
+    }
+    grid.clear();
+    reference.clear();
+    check_all_hash_grid_relations(grid, reference);
+    grid.build(V, E, F, .02);
+    reference.build(V, E, F, .02);
+    check_all_hash_grid_relations(grid, reference);
+}
+
+TEST_CASE(
+    "HashGrid cell groups handle empty primitive relations",
+    "[broad_phase][hash_grid][regression]")
+{
+    Eigen::MatrixXd V(5, 3);
+    V << 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1;
+    Eigen::MatrixXi E(0, 2), F(0, 3);
+    const int primitives = GENERATE(0, 1, 2);
+    if (primitives == 1) {
+        E.resize(1, 2);
+        E << 0, 1;
+    }
+    if (primitives == 2) {
+        F.resize(1, 3);
+        F << 0, 1, 2;
+    }
+    HashGrid grid;
+    BruteForce reference;
+    grid.build(V, E, F, .02);
+    reference.build(V, E, F, .02);
+    check_all_hash_grid_relations(grid, reference);
+}
+
+TEST_CASE(
+    "HashGrid cell batches preserve exact candidate IDs and order",
+    "[broad_phase][hash_grid][regression]")
+{
+    // Exercise full and partial batches for same-type and cross-type queries.
+    const int num_cells = GENERATE(65535, 65536, 65537);
+    Eigen::MatrixXd V(4 * num_cells, 3);
+    Eigen::MatrixXi E(num_cells, 2), F(0, 3);
+    std::vector<CandidateIDs> expected_vv, expected_ev;
+    expected_vv.reserve(2 * num_cells);
+    expected_ev.reserve(2 * num_cells);
+    for (int c = 0; c < num_cells; ++c) {
+        V.row(4 * c) << c + .25, .25, .25;
+        V.row(4 * c + 1) = V.row(4 * c);
+        V.row(4 * c + 2) << c + .75, .25, .25;
+        V.row(4 * c + 3) = V.row(4 * c + 2);
+        E.row(c) << 4 * c, 4 * c + 2;
+        expected_vv.push_back({ { 4 * c, 4 * c + 1 } });
+        expected_vv.push_back({ { 4 * c + 2, 4 * c + 3 } });
+        expected_ev.push_back({ { c, 4 * c + 1 } });
+        expected_ev.push_back({ { c, 4 * c + 3 } });
+    }
+    UnitCellHashGrid grid;
+    grid.build(V, E, F);
+    CandidateVector<VertexVertexCandidate> vv;
+    CandidateVector<EdgeVertexCandidate> ev;
+    grid.detect_vertex_vertex_candidates(vv);
+    grid.detect_edge_vertex_candidates(ev);
+    CHECK(candidate_ids(vv) == expected_vv);
+    CHECK(candidate_ids(ev) == expected_ev);
+}
+
+TEST_CASE(
+    "HashGrid filters cell pairs before testing AABB overlap",
+    "[broad_phase][hash_grid][regression]")
+{
+    Eigen::MatrixXd V(2, 3);
+    V << 0, 0, 0, 1, 0, 0;
+    Eigen::MatrixXi E(0, 2), F(0, 3);
+    std::atomic<int> calls { 0 };
+    SingleCellHashGrid grid;
+    grid.can_vertices_collide = [&](size_t, size_t) {
+        ++calls;
+        return false;
+    };
+    grid.build(V, E, F);
+    CandidateVector<VertexVertexCandidate> candidates;
+    grid.detect_vertex_vertex_candidates(candidates);
+    CHECK(candidates.empty());
+    CHECK(calls.load() == 1);
+}
 
 void test_face_face_broad_phase(
     const CollisionMesh& mesh,
@@ -37,7 +272,7 @@ void test_face_face_broad_phase(
     } else {
         broad_phase->build(V0, mesh.edges(), mesh.faces(), inflation_radius);
     }
-    std::vector<FaceFaceCandidate> ff_candidates;
+    ipc::CandidateVector<FaceFaceCandidate> ff_candidates;
     broad_phase->detect_face_face_candidates(ff_candidates);
 
     BruteForce bf;
@@ -47,7 +282,7 @@ void test_face_face_broad_phase(
     } else {
         bf.build(V0, mesh.edges(), mesh.faces(), inflation_radius);
     }
-    std::vector<FaceFaceCandidate> bf_ff_candidates;
+    ipc::CandidateVector<FaceFaceCandidate> bf_ff_candidates;
     bf.detect_face_face_candidates(bf_ff_candidates);
 
     CHECK(!ff_candidates.empty());
@@ -286,7 +521,7 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
     const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
     broad_phase->build(boxes, Eigen::MatrixXi(), Eigen::MatrixXi(), /*dim=*/3);
 
-    std::vector<VertexVertexCandidate> candidates;
+    ipc::CandidateVector<VertexVertexCandidate> candidates;
     broad_phase->detect_vertex_vertex_candidates(candidates);
 
     CAPTURE(broad_phase->name());
@@ -295,12 +530,23 @@ TEST_CASE("Broad phase build from boxes", "[broad_phase]")
 
 TEST_CASE("Create broad phase", "[broad_phase]")
 {
-#ifdef IPC_TOOLKIT_WITH_CUDA
-    uint8_t n_broad_phase_methods = 6;
-#else
-    uint8_t n_broad_phase_methods = 5;
+    using ipc::BroadPhaseMethod;
+
+    constexpr auto NUM_METHODS =
+        static_cast<uint8_t>(BroadPhaseMethod::NUM_BROAD_PHASE_METHODS);
+    for (uint8_t i = 0; i < NUM_METHODS; i++) {
+        const auto method = static_cast<BroadPhaseMethod>(i);
+        CAPTURE(i);
+#ifndef IPC_TOOLKIT_WITH_CUDA
+        if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+            || method == BroadPhaseMethod::LBVH_CUDA) {
+            CHECK_THROWS(create_broad_phase(method));
+            continue;
+        }
 #endif
-    for (uint8_t i = 0; i < n_broad_phase_methods; i++) {
-        CHECK(create_broad_phase(static_cast<ipc::BroadPhaseMethod>(i)));
+        CHECK(create_broad_phase(method));
     }
+
+    // The sentinel is not a method.
+    CHECK_THROWS(create_broad_phase(BroadPhaseMethod::NUM_BROAD_PHASE_METHODS));
 }

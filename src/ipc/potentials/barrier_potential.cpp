@@ -2,13 +2,17 @@
 
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/barrier/barrier_force_magnitude.hpp>
+#include <ipc/utils/logger.hpp>
+
+#include <cmath>
+#include <stdexcept>
 
 namespace ipc {
 
 BarrierPotential::BarrierPotential(
     const double dhat, const double stiffness, const bool use_physical_barrier)
     : BarrierPotential(
-          std::make_shared<ClampedLogBarrier>(),
+          std::make_shared<ClampedLogBarrier<>>(),
           dhat,
           stiffness,
           use_physical_barrier)
@@ -19,11 +23,13 @@ BarrierPotential::BarrierPotential(
     std::shared_ptr<Barrier> barrier,
     const double dhat,
     const double stiffness,
-    const bool use_physical_barrier)
+    const bool use_physical_barrier,
+    const bool use_squared_distance)
     : m_barrier(std::move(barrier))
     , m_dhat(dhat)
     , m_stiffness(stiffness)
     , m_use_physical_barrier(use_physical_barrier)
+    , m_use_squared_distance(use_squared_distance)
 {
     assert(dhat > 0);
     assert(stiffness > 0);
@@ -33,6 +39,12 @@ BarrierPotential::BarrierPotential(
 double BarrierPotential::force_magnitude(
     const double distance_squared, const double dmin) const
 {
+    if (!m_use_squared_distance) {
+        log_and_throw_error(
+            "BarrierPotential: force_magnitude not implemented for "
+            "use_squared_distance=false");
+    }
+
     double N = barrier_force_magnitude(
         distance_squared, barrier(), dhat(), stiffness(), dmin);
 
@@ -48,6 +60,12 @@ VectorMax12d BarrierPotential::force_magnitude_gradient(
     Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
     const double dmin) const
 {
+    if (!m_use_squared_distance) {
+        log_and_throw_error(
+            "BarrierPotential: force_magnitude_gradient not implemented for "
+            "use_squared_distance=false");
+    }
+
     VectorMax12d grad_N = barrier_force_magnitude_gradient(
         distance_squared, distance_squared_gradient, barrier(), dhat(),
         stiffness(), dmin);
@@ -62,6 +80,15 @@ VectorMax12d BarrierPotential::force_magnitude_gradient(
 double BarrierPotential::operator()(
     const double distance_squared, const double dmin) const
 {
+    if (!m_use_squared_distance) {
+        const double d = std::sqrt(distance_squared);
+        double b = barrier()(d - dmin, dhat());
+        if (use_physical_barrier()) {
+            b *= dhat() / barrier().units(dhat());
+        }
+        return stiffness() * b;
+    }
+
     double b =
         barrier()(distance_squared - dmin * dmin, (2 * dmin + dhat()) * dhat());
 
@@ -75,6 +102,24 @@ double BarrierPotential::operator()(
 double BarrierPotential::gradient(
     const double distance_squared, const double dmin) const
 {
+    if (!m_use_squared_distance) {
+        const double d = std::sqrt(distance_squared);
+        // Chain-ruling b'(d) to d/d(d²) divides by d, so exact contact would
+        // give 0/0 = NaN (or ±inf, which the zero ∇d² then turns into NaN).
+        // We return 0 there instead to match the squared mode, where the
+        // barriers report zero derivatives once the distance reaches 0 (for
+        // the log barriers the energy is +inf there, so a line search rejects
+        // the step either way).
+        if (d == 0) {
+            return 0;
+        }
+        double db = barrier().first_derivative(d - dmin, dhat()) / (2.0 * d);
+        if (use_physical_barrier()) {
+            db *= dhat() / barrier().units(dhat());
+        }
+        return stiffness() * db;
+    }
+
     double db = barrier().first_derivative(
         distance_squared - dmin * dmin, (2 * dmin + dhat()) * dhat());
 
@@ -88,6 +133,21 @@ double BarrierPotential::gradient(
 double BarrierPotential::hessian(
     const double distance_squared, const double dmin) const
 {
+    if (!m_use_squared_distance) {
+        const double d = std::sqrt(distance_squared);
+        if (d == 0) {
+            return 0; // Same reasoning as in gradient().
+        }
+        const double b1 = barrier().first_derivative(d - dmin, dhat());
+        const double b2 = barrier().second_derivative(d - dmin, dhat());
+        double d2b =
+            b2 / (4.0 * distance_squared) - b1 / (4.0 * d * distance_squared);
+        if (use_physical_barrier()) {
+            d2b *= dhat() / barrier().units(dhat());
+        }
+        return stiffness() * d2b;
+    }
+
     double d2b = barrier().second_derivative(
         distance_squared - dmin * dmin, (2 * dmin + dhat()) * dhat());
 

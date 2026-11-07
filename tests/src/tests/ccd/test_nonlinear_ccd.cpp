@@ -2,9 +2,10 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <ipc/ccd/additive_ccd.hpp>
 #include <ipc/ccd/nonlinear_ccd.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/distance/point_line.hpp>
-
 #include <igl/PI.h>
 
 using namespace ipc;
@@ -180,7 +181,7 @@ TEST_CASE("Nonlinear Point-Point CCD", "[ccd][nonlinear][point-point]")
 #endif
 
     NonlinearCCD ccd;
-    ccd.conservative_rescaling = 0.9;
+    ccd.conservative_rescaling = 0.99;
 
     double toi;
     bool collision = ccd.point_point_ccd(p0, *p1, toi);
@@ -188,6 +189,45 @@ TEST_CASE("Nonlinear Point-Point CCD", "[ccd][nonlinear][point-point]")
     CHECK(collision);
     CHECK(toi <= 0.5);
     CHECK(toi == Catch::Approx(0.5).margin(1e-2));
+}
+
+TEST_CASE(
+    "Nonlinear CCD stops once the gap shrinks to its target",
+    "[ccd][nonlinear][point-point]")
+{
+    const double s = GENERATE(0.5, 0.8, 0.9);
+    // A point swings around the unit circle toward a static point. At y = 1
+    // they collide at t = 0.5. At y = 1.05 they never touch, but they still
+    // come within 0.05 of each other, which closes more than s of the gap.
+    const double y = GENERATE(1.0, 1.05);
+
+    const StaticTrajectory p0(Eigen::Vector2d(0, y));
+    const RotationalTrajectory p1(
+        Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), igl::PI);
+    const auto distance = [&](const double t) {
+        return (p0(t) - p1(t)).norm();
+    };
+    const double target = (1 - s) * distance(0);
+
+    const bool use_additive = GENERATE(false, true);
+    NonlinearCCD ccd(
+        use_additive ? std::shared_ptr<const NarrowPhaseCCD>(
+                           std::make_shared<AdditiveCCD>())
+                     : std::make_shared<TightInclusionCCD>());
+    ccd.conservative_rescaling = s;
+
+    double toi;
+    const bool collision = ccd.point_point_ccd(p0, p1, toi);
+
+    // We expect the step to stop before the closest approach, keeping at
+    // least (1 - s) of the initial gap but not much more. Additive CCD stops
+    // within a few percent of the target. Tight Inclusion measures the
+    // minimum separation in the infinity norm, so it can stop while the
+    // Euclidean distance is still up to √2 times the target in 2D.
+    CHECK(collision);
+    CHECK(toi <= 0.5);
+    CHECK(distance(toi) >= target);
+    CHECK(distance(toi) <= (use_additive ? 1.05 : std::sqrt(2.0)) * target);
 }
 
 TEST_CASE("Nonlinear Point-Edge CCD", "[ccd][nonlinear][point-edge]")
@@ -199,7 +239,7 @@ TEST_CASE("Nonlinear Point-Edge CCD", "[ccd][nonlinear][point-edge]")
         Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), 2 * igl::PI);
 
     NonlinearCCD ccd;
-    ccd.conservative_rescaling = 0.9;
+    ccd.conservative_rescaling = 0.99;
 
     double toi;
     bool collision = ccd.point_edge_ccd(p, e0, e1, toi);
@@ -225,7 +265,7 @@ TEST_CASE("Rigid 2D Trajectory", "[ccd][nonlinear][point-edge]")
         Eigen::Vector2d::Zero(), 0, igl::PI);
 
     NonlinearCCD ccd;
-    ccd.conservative_rescaling = 0.9;
+    ccd.conservative_rescaling = 0.99;
 
     double toi;
     bool collision = ccd.point_edge_ccd(p, e0, e1, toi);
@@ -244,8 +284,11 @@ TEST_CASE("Nonlinear Edge-Edge CCD", "[ccd][nonlinear][edge-edge]")
     const StaticTrajectory eb0(Eigen::Vector3d(-1, 0.5, 0));
     const StaticTrajectory eb1(Eigen::Vector3d(1, 0.5, 0));
 
+    NonlinearCCD ccd;
+    ccd.conservative_rescaling = 0.99;
+
     double toi;
-    bool collision = NonlinearCCD().edge_edge_ccd(ea0, ea1, eb0, eb1, toi);
+    bool collision = ccd.edge_edge_ccd(ea0, ea1, eb0, eb1, toi);
 
     CHECK(collision);
     CHECK(toi <= 30 / 360.0);
@@ -265,7 +308,7 @@ TEST_CASE("Nonlinear Point-Triangle CCD", "[ccd][nonlinear][point-triangle]")
     const StaticTrajectory p(Eigen::Vector3d(0, 0.5, 0));
 
     NonlinearCCD ccd;
-    ccd.conservative_rescaling = 0.9;
+    ccd.conservative_rescaling = 0.99;
 
     double toi;
     bool collision = ccd.point_triangle_ccd(p, t0, t1, t2, toi);

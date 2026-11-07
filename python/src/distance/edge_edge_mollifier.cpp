@@ -7,7 +7,8 @@ using namespace ipc;
 void define_edge_edge_mollifier(py::module_& m)
 {
     m.def(
-        "edge_edge_cross_squarednorm", &edge_edge_cross_squarednorm,
+        "edge_edge_cross_squarednorm",
+        &detail::edge_edge_cross_squarednorm<double>,
         R"ipc_Qu8mg5v7(
         Compute the squared norm of the edge-edge cross product.
 
@@ -24,7 +25,7 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_cross_squarednorm_gradient",
-        &edge_edge_cross_squarednorm_gradient,
+        &detail::edge_edge_cross_squarednorm_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the squared norm of the edge cross product.
 
@@ -41,7 +42,7 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_cross_squarednorm_hessian",
-        &edge_edge_cross_squarednorm_hessian,
+        &detail::edge_edge_cross_squarednorm_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the squared norm of the edge cross product.
 
@@ -58,7 +59,8 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_mollifier",
-        py::overload_cast<const double, const double>(&edge_edge_mollifier),
+        py::overload_cast<const double, const double>(
+            &edge_edge_mollifier<double>),
         R"ipc_Qu8mg5v7(
         Mollifier function for edge-edge distance.
 
@@ -74,7 +76,7 @@ void define_edge_edge_mollifier(py::module_& m)
     m.def(
         "edge_edge_mollifier_gradient",
         py::overload_cast<const double, const double>(
-            &edge_edge_mollifier_gradient),
+            &edge_edge_mollifier_gradient<double>),
         R"ipc_Qu8mg5v7(
         The gradient of the mollifier function for edge-edge distance.
 
@@ -89,7 +91,7 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_mollifier_derivative_wrt_eps_x",
-        &edge_edge_mollifier_derivative_wrt_eps_x,
+        &edge_edge_mollifier_derivative_wrt_eps_x<double>,
         R"ipc_Qu8mg5v7(
         The derivative of the mollifier function for edge-edge distance wrt eps_x.
 
@@ -105,7 +107,7 @@ void define_edge_edge_mollifier(py::module_& m)
     m.def(
         "edge_edge_mollifier_hessian",
         py::overload_cast<const double, const double>(
-            &edge_edge_mollifier_hessian),
+            &edge_edge_mollifier_hessian<double>),
         R"ipc_Qu8mg5v7(
         The hessian of the mollifier function for edge-edge distance.
 
@@ -120,7 +122,7 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_mollifier_gradient_derivative_wrt_eps_x",
-        &edge_edge_mollifier_gradient_derivative_wrt_eps_x,
+        &edge_edge_mollifier_gradient_derivative_wrt_eps_x<double>,
         R"ipc_Qu8mg5v7(
         The derivative of the gradient of the mollifier function for edge-edge distance wrt eps_x.
 
@@ -134,13 +136,7 @@ void define_edge_edge_mollifier(py::module_& m)
         "x"_a, "eps_x"_a);
 
     m.def(
-        "edge_edge_mollifier",
-        py::overload_cast<
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>, const double>(
-            &edge_edge_mollifier),
+        "edge_edge_mollifier", &detail::edge_edge_mollifier<double>,
         R"ipc_Qu8mg5v7(
         Compute a mollifier for the edge-edge distance.
 
@@ -160,12 +156,7 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_mollifier_gradient",
-        py::overload_cast<
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>, const double>(
-            &edge_edge_mollifier_gradient),
+        &detail::edge_edge_mollifier_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the mollifier for the edge-edge distance.
 
@@ -183,12 +174,7 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_mollifier_hessian",
-        py::overload_cast<
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>,
-            Eigen::ConstRef<const Eigen::Vector3d>, const double>(
-            &edge_edge_mollifier_hessian),
+        &detail::edge_edge_mollifier_hessian<double>,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the mollifier for the edge-edge distance.
 
@@ -206,7 +192,7 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_mollifier_gradient_wrt_x",
-        &edge_edge_mollifier_gradient_wrt_x,
+        &detail::edge_edge_mollifier_gradient_wrt_x<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the mollifier for the edge-edge distance wrt rest positions.
 
@@ -228,7 +214,7 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_mollifier_gradient_jacobian_wrt_x",
-        &edge_edge_mollifier_gradient_jacobian_wrt_x,
+        &detail::edge_edge_mollifier_gradient_jacobian_wrt_x<double>,
         R"ipc_Qu8mg5v7(
         Compute the jacobian of the edge-edge distance mollifier's gradient wrt rest positions.
 
@@ -252,7 +238,8 @@ void define_edge_edge_mollifier(py::module_& m)
         "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
-        "edge_edge_mollifier_threshold", &edge_edge_mollifier_threshold,
+        "edge_edge_mollifier_threshold",
+        &detail::edge_edge_mollifier_threshold<double>,
         R"ipc_Qu8mg5v7(
         Compute the threshold of the mollifier edge-edge distance.
 
@@ -271,7 +258,7 @@ void define_edge_edge_mollifier(py::module_& m)
 
     m.def(
         "edge_edge_mollifier_threshold_gradient",
-        &edge_edge_mollifier_threshold_gradient,
+        &detail::edge_edge_mollifier_threshold_gradient<double>,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the threshold of the mollifier edge-edge distance.
 

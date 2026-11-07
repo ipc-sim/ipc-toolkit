@@ -7,7 +7,7 @@ using namespace ipc;
 void define_adhesion(py::module_& m)
 {
     m.def(
-        "normal_adhesion_potential", &normal_adhesion_potential,
+        "normal_adhesion_potential", &normal_adhesion_potential<double>,
         R"ipc_Qu8mg5v7(
         The normal adhesion potential.
 
@@ -24,7 +24,7 @@ void define_adhesion(py::module_& m)
 
     m.def(
         "normal_adhesion_potential_first_derivative",
-        &normal_adhesion_potential_first_derivative,
+        &normal_adhesion_potential_first_derivative<double>,
         R"ipc_Qu8mg5v7(
         The first derivative of the normal adhesion potential wrt d.
 
@@ -41,7 +41,7 @@ void define_adhesion(py::module_& m)
 
     m.def(
         "normal_adhesion_potential_second_derivative",
-        &normal_adhesion_potential_second_derivative,
+        &normal_adhesion_potential_second_derivative<double>,
         R"ipc_Qu8mg5v7(
         The second derivative of the normal adhesion potential wrt d.
 
@@ -58,7 +58,7 @@ void define_adhesion(py::module_& m)
 
     m.def(
         "max_normal_adhesion_force_magnitude",
-        &max_normal_adhesion_force_magnitude,
+        &max_normal_adhesion_force_magnitude<double>,
         R"ipc_Qu8mg5v7(
         The maximum normal adhesion force magnitude.
 
@@ -73,7 +73,7 @@ void define_adhesion(py::module_& m)
         "dhat_p"_a, "dhat_a"_a, "a2"_a);
 
     m.def(
-        "tangential_adhesion_f0", &tangential_adhesion_f0,
+        "tangential_adhesion_f0", &tangential_adhesion_f0<double>,
         R"ipc_Qu8mg5v7(
         The tangential adhesion mollifier function.
 
@@ -87,7 +87,7 @@ void define_adhesion(py::module_& m)
         "y"_a, "eps_a"_a);
 
     m.def(
-        "tangential_adhesion_f1", &tangential_adhesion_f1,
+        "tangential_adhesion_f1", &tangential_adhesion_f1<double>,
         R"ipc_Qu8mg5v7(
         The first derivative of the tangential adhesion mollifier function.
 
@@ -101,7 +101,7 @@ void define_adhesion(py::module_& m)
         "y"_a, "eps_a"_a);
 
     m.def(
-        "tangential_adhesion_f2", &tangential_adhesion_f2,
+        "tangential_adhesion_f2", &tangential_adhesion_f2<double>,
         R"ipc_Qu8mg5v7(
         The second derivative of the tangential adhesion mollifier function.
 
@@ -115,7 +115,7 @@ void define_adhesion(py::module_& m)
         "y"_a, "eps_a"_a);
 
     m.def(
-        "tangential_adhesion_f1_over_x", &tangential_adhesion_f1_over_x,
+        "tangential_adhesion_f1_over_x", &tangential_adhesion_f1_over_x<double>,
         R"ipc_Qu8mg5v7(
         The first derivative of the tangential adhesion mollifier function divided by y.
 
@@ -130,7 +130,7 @@ void define_adhesion(py::module_& m)
 
     m.def(
         "tangential_adhesion_f2_x_minus_f1_over_x3",
-        &tangential_adhesion_f2_x_minus_f1_over_x3,
+        &tangential_adhesion_f2_x_minus_f1_over_x3<double>,
         R"ipc_Qu8mg5v7(
         The second derivative of the tangential adhesion mollifier function times y minus the first derivative all divided by y cubed.
 
@@ -144,7 +144,7 @@ void define_adhesion(py::module_& m)
         "y"_a, "eps_a"_a);
 
     m.def(
-        "smooth_mu_a0", &smooth_mu_a0,
+        "smooth_mu_a0", &smooth_mu_a0<double>,
         R"ipc_Qu8mg5v7(
         Compute the value of the ∫ μ(y) a₁(y) dy, where a₁ is the first derivative of the smooth tangential adhesion mollifier.
 
@@ -163,7 +163,7 @@ void define_adhesion(py::module_& m)
         "y"_a, "mu_s"_a, "mu_k"_a, "eps_a"_a);
 
     m.def(
-        "smooth_mu_a1", &smooth_mu_a1,
+        "smooth_mu_a1", &smooth_mu_a1<double>,
         R"ipc_Qu8mg5v7(
         Compute the value of the μ(y) a₁(y), where a₁ is the first derivative of the smooth tangential adhesion mollifier.
 
@@ -182,7 +182,7 @@ void define_adhesion(py::module_& m)
         "y"_a, "mu_s"_a, "mu_k"_a, "eps_a"_a);
 
     m.def(
-        "smooth_mu_a2", &smooth_mu_a2,
+        "smooth_mu_a2", &smooth_mu_a2<double>,
         R"ipc_Qu8mg5v7(
         Compute the value of d/dy (μ(y) a₁(y)), where a₁ is the first derivative of the smooth tangential adhesion mollifier.
 
@@ -201,7 +201,7 @@ void define_adhesion(py::module_& m)
         "y"_a, "mu_s"_a, "mu_k"_a, "eps_a"_a);
 
     m.def(
-        "smooth_mu_a1_over_x", &smooth_mu_a1_over_x,
+        "smooth_mu_a1_over_x", &smooth_mu_a1_over_x<double>,
         R"ipc_Qu8mg5v7(
         Compute the value of the μ(y) a₁(y) / y, where a₁ is the first derivative of the smooth tangential adhesion mollifier.
 
@@ -222,7 +222,7 @@ void define_adhesion(py::module_& m)
 
     m.def(
         "smooth_mu_a2_x_minus_mu_a1_over_x3",
-        &smooth_mu_a2_x_minus_mu_a1_over_x3,
+        &smooth_mu_a2_x_minus_mu_a1_over_x3<double>,
         R"ipc_Qu8mg5v7(
         Compute the value of the [(d/dy μ(y) a₁(y)) ⋅ y - μ(y) a₁(y)] / y³, where a₁ and a₂ are the first and second derivatives of the smooth tangential adhesion mollifier.
 

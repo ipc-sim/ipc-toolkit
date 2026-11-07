@@ -78,14 +78,14 @@ namespace {
 
 template <typename T> T Math<T>::cubic_spline(const T& x)
 {
-    if (abs(x) >= 1) {
+    if (Math<T>::abs(x) >= 1) {
         return T(0.);
     }
-    if (abs(x) >= 0.5) {
-        return cubic(1 - abs(x)) * (4. / 3.);
+    if (Math<T>::abs(x) >= 0.5) {
+        return cubic(1 - Math<T>::abs(x)) * (4. / 3.);
     }
 
-    return 2. / 3. - 4. * (x * x) * (1 - abs(x));
+    return 2. / 3. - 4. * (x * x) * (1 - Math<T>::abs(x));
 }
 template <typename T> double Math<T>::cubic_spline_grad(const double x)
 {

@@ -118,6 +118,14 @@ However, with multi-threading enabled, it is expected that the results can be no
 
         to reset the number of threads to the default.
 
+        The thread limit can also be controlled by setting the ``TBB_NUM_THREADS`` environment variable before importing ``ipctk``. This is useful in production environments where you want to enforce a global thread limit without modifying every script that uses the IPC Toolkit:
+
+        .. code-block:: bash
+
+            export TBB_NUM_THREADS=1
+
+        If set, this takes effect as soon as ``ipctk`` is imported (equivalent to calling ``ipctk.set_num_threads`` with the given value), and can still be overridden later in the script by calling ``ipctk.set_num_threads`` directly. If the variable is unset or invalid, it is ignored and the default thread count is used.
+
 You can also get the current maximum number of threads as follows:
 
 .. md-tab-set::

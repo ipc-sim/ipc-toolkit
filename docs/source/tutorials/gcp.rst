@@ -23,6 +23,7 @@ where :math:`b(u)` is a barrier potential that increases to infinity as the conf
 All existing contact barrier potentials are defined by aggregating repulsion terms between pairs of points or elements. The key question is how to choose the strength of repulsion so that it is high when two points are close to contact, vanishes when they are far, and satisfies a number of desirable properties. In particular, one important difficulty is distinguishing *true contact* — arising from different objects or parts of the same surface moving toward each other — from points that remain close simply because they are neighbors on the undeformed rest shape.
 
 .. figure:: /_static/img/gcp/nearby-points.svg
+   :alt: Points nearing contact versus nearby non-contacting points
    :align: center
    :width: 200px
    :class: figure-on-light
@@ -82,6 +83,7 @@ where :math:`r = n - 1` (:math:`n \in \{2, 3\}` is the dimension of the scene), 
 Because :math:`h_\epsilon` vanishes for :math:`z \geq \epsilon` and :math:`z^{-r}` diverges as :math:`z \to 0`, the barrier satisfies both the localization and barrier requirements.
 
 .. figure:: /_static/img/gcp/barriers.svg
+   :alt: The cubic spline
    :align: center
    :width: 300px
    :class: figure-on-light
@@ -122,6 +124,7 @@ The interaction set for smooth surfaces is then:
 Note that both constraints are applied symmetrically: :math:`y` must be near a local minimum as seen from :math:`x`, *and* :math:`x` must be near a local minimum as seen from :math:`y`.
 
 .. figure:: /_static/img/gcp/demo-force.png
+   :alt: Contact forces and potential distribution on a 2D object for three potential variants
    :align: center
    :width: 600px
    :class: figure-on-light
@@ -141,6 +144,7 @@ Smooth surfaces are typically approximated by piecewise-linear meshes in practic
 where :math:`\alpha_t` is the tangent-direction smoothing parameter.
 
 .. figure:: /_static/img/gcp/tangent-notation.svg
+   :alt: Tangent directions at a point
    :align: center
    :width: 600px
    :class: figure-on-light
@@ -155,6 +159,7 @@ where :math:`\alpha_t` is the tangent-direction smoothing parameter.
 and the mollified constraint ensures that :math:`\Phi^e_i(x, y) \geq 0` for *at least one* incident face :math:`i`.
 
 .. figure:: /_static/img/gcp/normal-demo.png
+   :alt: 2D and 3D normal directions for contact points
    :align: center
    :width: 600px
    :class: figure-on-light
@@ -162,6 +167,7 @@ and the mollified constraint ensures that :math:`\Phi^e_i(x, y) \geq 0` for *at 
    2D (top) and 3D (bottom) normal directions for contact points. The displacement :math:`f(y) - f(x)` is shown in yellow; face normals :math:`n_i(y)` are shown in red when the exterior constraint is satisfied, and green otherwise. In simple cases such as (A) and (D), all normals satisfy the constraint, but in general only some do.
 
 .. figure:: /_static/img/gcp/cone-filter-edge.svg
+   :alt: 3D and 2D views of the exterior direction test for an edge point
    :align: center
    :width: 600px
    :class: figure-on-light
@@ -205,6 +211,7 @@ Smooth Heaviside Function
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. figure:: /_static/img/gcp/heaviside.svg
+   :alt: The smooth Heaviside function
    :align: center
    :width: 300px
    :class: figure-on-light
@@ -249,6 +256,7 @@ Distance Mollification
 Since closest points may not depend smoothly on vertex positions (e.g., when a closest point moves from the interior of a face to its boundary), GCP introduces mollification factors :math:`M(x, y)` that smoothly vanish near these non-smooth transitions.
 
 .. figure:: /_static/img/gcp/smoothness-demo.svg
+   :alt: Non-smoothness of the closest point position
    :align: center
    :width: 600px
    :class: figure-on-light
@@ -297,17 +305,17 @@ GCP is implemented as separate collision and potential classes. A basic example 
             double beta_n = 0.0;    // exterior direction constraint offset
             int r = 2;              // barrier exponent (dimension - 1)
 
-            ipc::SmoothContactParameters params(dhat, alpha_t, beta_t, alpha_n, beta_n, r);
+            ipc::GCPParameters params(dhat, alpha_t, beta_t, alpha_n, beta_n, r);
 
             // Build collision set
             bool use_adaptive_dhat = true;
-            ipc::SmoothCollisions collisions;
+            ipc::GCPCollisions collisions;
             if (use_adaptive_dhat)
                 collisions.compute_adaptive_dhat(collision_mesh, vertices, params);
             collisions.build(collision_mesh, vertices, params, use_adaptive_dhat);
 
             // Compute potential
-            ipc::SmoothContactPotential barrier_potential(params);
+            ipc::GCPPotential barrier_potential(params);
             double b = barrier_potential(collisions, collision_mesh, vertices);
 
             // Compute gradient
@@ -331,17 +339,17 @@ GCP is implemented as separate collision and potential classes. A basic example 
             beta_n = 0.0      # exterior direction constraint offset
             r = 2             # barrier exponent (dimension - 1)
 
-            params = ipctk.SmoothContactParameters(dhat, alpha_t, beta_t, alpha_n, beta_n, r)
+            params = ipctk.GCPParameters(dhat, alpha_t, beta_t, alpha_n, beta_n, r)
 
             # Build collision set
             use_adaptive_dhat = True
-            collisions = ipctk.SmoothCollisions()
+            collisions = ipctk.GCPCollisions()
             if use_adaptive_dhat:
                 collisions.compute_adaptive_dhat(collision_mesh, vertices, params)
             collisions.build(collision_mesh, vertices, params, use_adaptive_dhat)
 
             # Compute potential
-            barrier_potential = ipctk.SmoothContactPotential(params)
+            barrier_potential = ipctk.GCPPotential(params)
             b = barrier_potential(collisions, collision_mesh, vertices)
 
             # Compute gradient
@@ -351,15 +359,15 @@ GCP is implemented as separate collision and potential classes. A basic example 
             hess = barrier_potential.hessian(collisions, collision_mesh, vertices)
 
 .. important::
-    If ``use_adaptive_dhat`` is true, make sure to call ``SmoothCollisions::compute_adaptive_dhat()`` **before** ``SmoothCollisions::build()``. Adaptive :math:`\hat{d}` computes per-element barrier extents based on the rest configuration to guarantee zero potential (and zero forces) in the undeformed state.
+    If ``use_adaptive_dhat`` is true, make sure to call ``GCPCollisions::compute_adaptive_dhat()`` **before** ``GCPCollisions::build()``. Adaptive :math:`\hat{d}` computes per-element barrier extents based on the rest configuration to guarantee zero potential (and zero forces) in the undeformed state.
 
 .. note::
-    Unlike ``NormalCollisions`` in IPC, ``SmoothCollisions`` must be rebuilt whenever vertex positions change, because the interaction set depends on the current geometry (normals, tangents, and distances).
+    Unlike ``NormalCollisions`` in IPC, ``GCPCollisions`` must be rebuilt whenever vertex positions change, because the interaction set depends on the current geometry (normals, tangents, and distances).
 
 Parameter Choices
 -----------------
 
-The ``SmoothContactParameters`` structure contains the following parameters:
+The ``GCPParameters`` structure contains the following parameters:
 
 .. list-table::
    :header-rows: 1
@@ -392,7 +400,7 @@ As :math:`\alpha + \beta` decreases, the support of the Heaviside function shrin
 
 Additional internal parameters that may affect behavior:
 
-- **Adaptive dhat ratio** (default ``0.5``): Controls the ratio :math:`\epsilon(x) / d_c(x, f_0)` in the adaptive barrier localization. Can be set via ``SmoothContactParameters::set_adaptive_dhat_ratio()``.
+- **Adaptive dhat ratio** (default ``0.5``): Controls the ratio :math:`\epsilon(x) / d_c(x, f_0)` in the adaptive barrier localization. Set it via ``GCPParameters::set_adaptive_dhat_ratio()`` in C++ or the ``GCPParameters.adaptive_dhat_ratio`` property in Python.
 - **Element measure** :math:`L`: For vertices, this is set to the average edge length around the vertex; for edges, to the edge length; for faces, :math:`L` is not needed. This determines the strength of the potential for low-dimensional contact (edge–edge, edge–vertex, vertex–vertex).
 
 Friction

@@ -8,13 +8,16 @@
 #include <ipc/collisions/tangential/plane_vertex.hpp>
 #include <ipc/collisions/tangential/tangential_collision.hpp>
 #include <ipc/collisions/tangential/vertex_vertex.hpp>
-#include <ipc/smooth_contact/smooth_collisions.hpp>
+#include <ipc/gcp/gcp_collisions.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
 namespace ipc {
+
+class ESPCollisions;
+struct ESPParameters;
 
 class TangentialCollisions {
 public:
@@ -91,13 +94,41 @@ public:
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
-        const SmoothCollisions& collisions,
-        const SmoothContactParameters& params,
+        const GCPCollisions& collisions,
+        const GCPParameters& params,
         const double normal_stiffness,
         Eigen::ConstRef<Eigen::VectorXd> mu_s,
         Eigen::ConstRef<Eigen::VectorXd> mu_k,
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
+
+    /// @brief Build the tangential collisions for ESP contact.
+    /// @param mesh The collision mesh.
+    /// @param vertices The vertices of the mesh.
+    /// @param collisions The set of ESP collisions.
+    /// @param params Parameters of Extremum Sum Potential (ESP).
+    /// @param normal_stiffness Stiffness of the normal potential.
+    /// @param mu_s The static friction coefficient per vertex.
+    /// @param mu_k The kinetic friction coefficient per vertex.
+    /// @param blend_mu Function to blend vertex-based coefficients of friction. Defaults to average.
+    /// @param normalize_weights Divide each face's weight by its total weight
+    ///        (vertex or face-rule weights plus the edge-edge mollifier
+    ///        weights). Unlike ESPPotential with use_near_far = true, near and
+    ///        far parts are not normalized separately. 3D only.
+    /// @throws std::invalid_argument if params' quadrature differs from the
+    ///         one collisions were built with (see
+    ///         ESPCollisions::check_quadrature()).
+    void build(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        const ESPCollisions& collisions,
+        const ESPParameters& params,
+        const double normal_stiffness,
+        Eigen::ConstRef<Eigen::VectorXd> mu_s,
+        Eigen::ConstRef<Eigen::VectorXd> mu_k,
+        const std::function<double(double, double)>& blend_mu =
+            default_blend_mu,
+        const bool normalize_weights = true);
 
     /// @brief Set lagged effective μ to scalar mu_s/mu_k on every collision (after build).
     void reset_lagged_anisotropic_friction_coefficients();

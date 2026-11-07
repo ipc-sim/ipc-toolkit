@@ -1,5 +1,4 @@
 set(SOURCES
-  adhesion.cpp
   adhesion.hpp
 )
 

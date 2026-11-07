@@ -44,13 +44,11 @@ void AABB::conservative_inflation(
     // Nudge the bounds outward to ensure conservativity.
 
     min = min.unaryExpr([inflation_radius](double v) {
-        return std::nextafter(
-            v - inflation_radius, -std::numeric_limits<double>::infinity());
+        return conservative_lower_bound(v, inflation_radius);
     });
 
     max = max.unaryExpr([inflation_radius](double v) {
-        return std::nextafter(
-            v + inflation_radius, std::numeric_limits<double>::infinity());
+        return conservative_upper_bound(v, inflation_radius);
     });
 }
 
@@ -82,6 +80,44 @@ void build_vertex_boxes(
     tbb::parallel_for(0, index_t(vertices_t0.rows()), [&](index_t i) {
         vertex_boxes[i] = AABB::from_point(
             vertices_t0.row(i), vertices_t1.row(i), inflation_radius);
+        vertex_boxes[i].vertex_ids = { { i, -1, -1 } };
+    });
+}
+
+void build_vertex_boxes(
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    AABBs& vertex_boxes,
+    const double inflation_radius,
+    Eigen::ConstRef<Eigen::VectorXd> vertex_inflation)
+{
+    IPC_TOOLKIT_PROFILE_BLOCK("build_vertex_boxes");
+    assert(vertex_inflation.size() == vertices.rows());
+
+    vertex_boxes.resize(vertices.rows());
+
+    tbb::parallel_for(0, index_t(vertices.rows()), [&](index_t i) {
+        vertex_boxes[i] = AABB::from_point(
+            vertices.row(i), inflation_radius + vertex_inflation[i]);
+        vertex_boxes[i].vertex_ids = { { i, -1, -1 } };
+    });
+}
+
+void build_vertex_boxes(
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+    AABBs& vertex_boxes,
+    const double inflation_radius,
+    Eigen::ConstRef<Eigen::VectorXd> vertex_inflation)
+{
+    IPC_TOOLKIT_PROFILE_BLOCK("build_vertex_boxes");
+    assert(vertex_inflation.size() == vertices_t0.rows());
+
+    vertex_boxes.resize(vertices_t0.rows());
+
+    tbb::parallel_for(0, index_t(vertices_t0.rows()), [&](index_t i) {
+        vertex_boxes[i] = AABB::from_point(
+            vertices_t0.row(i), vertices_t1.row(i),
+            inflation_radius + vertex_inflation[i]);
         vertex_boxes[i].vertex_ids = { { i, -1, -1 } };
     });
 }

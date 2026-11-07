@@ -1,57 +1,40 @@
 #include "point_plane.hpp"
 
-namespace ipc {
+#include <ipc/utils/simd.hpp>
 
-Vector12d point_plane_signed_distance_gradient(
-    Eigen::ConstRef<Eigen::Vector3d> p,
-    Eigen::ConstRef<Eigen::Vector3d> t0,
-    Eigen::ConstRef<Eigen::Vector3d> t1,
-    Eigen::ConstRef<Eigen::Vector3d> t2)
-{
-    const Eigen::Vector3d n = triangle_normal(t0, t1, t2);
-    const Eigen::Matrix<double, 3, 9> jac_n =
-        triangle_normal_jacobian(t0, t1, t2);
+namespace ipc::detail {
 
-    Vector12d grad;
-    grad.segment<3>(0) = n;
-    grad.segment<3>(3) = jac_n.leftCols<3>().transpose() * (p - t0) - n;
-    grad.segment<3>(6) = jac_n.middleCols<3>(3).transpose() * (p - t0);
-    grad.segment<3>(9) = jac_n.rightCols<3>().transpose() * (p - t0);
-
-    return grad;
-}
-
-Matrix12d point_plane_signed_distance_hessian(
-    Eigen::ConstRef<Eigen::Vector3d> p,
-    Eigen::ConstRef<Eigen::Vector3d> t0,
-    Eigen::ConstRef<Eigen::Vector3d> t1,
-    Eigen::ConstRef<Eigen::Vector3d> t2)
+template <typename T>
+IPC_TOOLKIT_HOST_DEVICE Eigen::Matrix<T, 12, 12>
+point_plane_signed_distance_hessian(
+    Eigen::ConstRef<Eigen::Vector3<T>> p,
+    Eigen::ConstRef<Eigen::Vector3<T>> t0,
+    Eigen::ConstRef<Eigen::Vector3<T>> t1,
+    Eigen::ConstRef<Eigen::Vector3<T>> t2)
 {
     // Precompute normal's Jacobian and Hessian
-    const Eigen::Matrix<double, 3, 9> jac_n =
-        triangle_normal_jacobian(t0, t1, t2);
-    const Eigen::Matrix<double, 27, 9> hess_n =
-        triangle_normal_hessian(t0, t1, t2);
+    const Eigen::Matrix<T, 3, 9> jac_n = triangle_normal_jacobian(t0, t1, t2);
+    const Eigen::Matrix<T, 27, 9> hess_n = triangle_normal_hessian(t0, t1, t2);
 
     // Vector from t0 to p
-    const Eigen::Vector3d v = p - t0;
+    const Eigen::Vector3<T> v = p - t0;
 
-    Matrix12d hess;
+    Eigen::Matrix<T, 12, 12> hess;
 
     // ---------------------------------------------------------
     // 0. Fill Point-Point Block (p, p)
     // ---------------------------------------------------------
     // The second derivative w.r.t p is zero since the normal is constant w.r.t
     // p.
-    hess.block<3, 3>(0, 0).setZero();
+    hess.template block<3, 3>(0, 0).setZero();
 
     // ---------------------------------------------------------
     // 1. Fill Mixed Derivatives (p, t) and (t, p)
     // ---------------------------------------------------------
     // The gradient w.r.t p is n.
     // The mixed derivative is the Jacobian of n w.r.t t.
-    hess.block<3, 9>(0, 3) = jac_n;
-    hess.block<9, 3>(3, 0) = jac_n.transpose();
+    hess.template block<3, 9>(0, 3) = jac_n;
+    hess.template block<9, 3>(3, 0) = jac_n.transpose();
 
     // ---------------------------------------------------------
     // 2. Fill Triangle-Triangle Block (t, t)
@@ -60,33 +43,62 @@ Matrix12d point_plane_signed_distance_hessian(
 
     // A. Contraction of the normal Hessian tensor with vector v
     // hess_n is 3x81. v is 3x1. Result is 1x81, which maps to 9x9.
-    hess.block<9, 9>(3, 3) =
-        (hess_n.reshaped(3, 81).transpose() * v).reshaped(9, 9);
+    // We spell the two reshapes out as Maps rather than calling
+    // .reshaped(Eigen::fix<...>). Both are fixed-size views over the same
+    // column-major storage, so the result is identical, but .reshaped()
+    // returns a nested expression template that nvcc does not handle, and
+    // this contraction has to stay device-callable.
+    {
+        const Eigen::Map<const Eigen::Matrix<T, 3, 81>> hess_n_3_81(
+            hess_n.data());
+        const Eigen::Matrix<T, 81, 1> contracted =
+            (hess_n_3_81.transpose() * v).eval();
+        hess.template block<9, 9>(3, 3) =
+            Eigen::Map<const Eigen::Matrix<T, 9, 9>>(contracted.data());
+    }
 
     // B. Subtract first derivative terms (Product Rule corrections)
     // Extract 3x3 Jacobian blocks for t0, t1, t2
-    const auto J0 = jac_n.leftCols<3>();
-    const auto J1 = jac_n.middleCols<3>(3);
-    const auto J2 = jac_n.rightCols<3>();
+    const auto J0 = jac_n.template leftCols<3>();
+    const auto J1 = jac_n.template middleCols<3>(3);
+    const auto J2 = jac_n.template rightCols<3>();
 
     // Apply corrections for terms involving t0 (index 0)
 
     // Block (t0, t0): i=0, j=0. Subtract J0 + J0^T
-    hess.block<3, 3>(3, 3) -= (J0 + J0.transpose());
+    hess.template block<3, 3>(3, 3) -= (J0 + J0.transpose());
 
     // Block (t0, t1): i=0, j=1. Subtract J1
-    hess.block<3, 3>(3, 6) -= J1;
+    hess.template block<3, 3>(3, 6) -= J1;
 
     // Block (t0, t2): i=0, j=2. Subtract J2
-    hess.block<3, 3>(3, 9) -= J2;
+    hess.template block<3, 3>(3, 9) -= J2;
 
     // Block (t1, t0): i=1, j=0. Subtract J1^T
-    hess.block<3, 3>(6, 3) -= J1.transpose();
+    hess.template block<3, 3>(6, 3) -= J1.transpose();
 
     // Block (t2, t0): i=2, j=0. Subtract J2^T
-    hess.block<3, 3>(9, 3) -= J2.transpose();
+    hess.template block<3, 3>(9, 3) -= J2.transpose();
 
     return hess;
 }
 
-} // namespace ipc
+#define IPC_INSTANTIATE_POINT_PLANE_SIGNED_DISTANCE_HESSIAN(T)                 \
+    template Eigen::Matrix<T, 12, 12> point_plane_signed_distance_hessian<T>(  \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>,                                    \
+        Eigen::ConstRef<Eigen::Vector3<T>>)
+
+#if IPC_TOOLKIT_INSTANTIATE_DEVICE_SCALARS
+IPC_INSTANTIATE_POINT_PLANE_SIGNED_DISTANCE_HESSIAN(float);
+IPC_INSTANTIATE_POINT_PLANE_SIGNED_DISTANCE_HESSIAN(double);
+#endif
+#ifdef IPC_TOOLKIT_WITH_SIMD
+IPC_INSTANTIATE_POINT_PLANE_SIGNED_DISTANCE_HESSIAN(SimdBatch<float>);
+IPC_INSTANTIATE_POINT_PLANE_SIGNED_DISTANCE_HESSIAN(SimdBatch<double>);
+#endif
+
+#undef IPC_INSTANTIATE_POINT_PLANE_SIGNED_DISTANCE_HESSIAN
+
+} // namespace ipc::detail

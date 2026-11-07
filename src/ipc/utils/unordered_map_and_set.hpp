@@ -10,11 +10,27 @@
 #ifdef IPC_TOOLKIT_WITH_ABSEIL
 #include <absl/hash/hash.h>
 #else
+#include <array>
 #include <cstddef>
 #include <functional>
+#include <type_traits>
+#include <utility>
 
 namespace ipc {
+// Types without a std::hash (e.g., the collision candidates) hash themselves
+// by declaring a friend AbslHashValue, exactly as they would for Abseil. We
+// only declare the primary template so those friends have something to
+// overload.
 template <typename H, typename T> H AbslHashValue(H h, T t);
+
+// Instead of listing every pair and array key type we use, we hash them
+// generically, element by element. This keeps the fallback in step with any
+// index_t width.
+template <typename H, typename T1, typename T2>
+H AbslHashValue(H h, const std::pair<T1, T2>& p);
+
+template <typename H, typename T, std::size_t N>
+H AbslHashValue(H h, const std::array<T, N>& a);
 
 template <class T> struct Hash {
     Hash() = default;
@@ -45,13 +61,34 @@ template <class T> struct Hash {
 
     size_t operator()(const T& t) const
     {
-        return AbslHashValue<Hash>(*this, t);
+        // Integers (and anything else with a std::hash) need no
+        // AbslHashValue, so every index_t width works out of the box.
+        if constexpr (std::is_default_constructible<std::hash<T>>::value) {
+            return Hash::combine(*this, t);
+        } else {
+            return AbslHashValue<Hash>(*this, t);
+        }
     }
 
     operator size_t() const { return hash; }
 
     size_t hash = 0;
 };
+
+template <typename H, typename T1, typename T2>
+H AbslHashValue(H h, const std::pair<T1, T2>& p)
+{
+    return H::combine(std::move(h), p.first, p.second);
+}
+
+template <typename H, typename T, std::size_t N>
+H AbslHashValue(H h, const std::array<T, N>& a)
+{
+    for (const T& x : a) {
+        h = H::combine(std::move(h), x);
+    }
+    return h;
+}
 } // namespace ipc
 #endif
 

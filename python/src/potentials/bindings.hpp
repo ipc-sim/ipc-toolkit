@@ -4,6 +4,8 @@
 
 void define_barrier_potential(py::module_& m);
 void define_smooth_potential(py::module_& m);
+void define_esp_parameters(py::module_& m);
+void define_esp_potential(py::module_& m);
 void define_friction_potential(py::module_& m);
 void define_normal_adhesion_potential(py::module_& m);
 void define_normal_potential(py::module_& m);

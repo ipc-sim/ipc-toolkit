@@ -13,6 +13,11 @@ Multi-Threading
 .. autofunction:: ipctk.get_num_threads
 .. autofunction:: ipctk.set_num_threads
 
+CUDA Availability
+-----------------
+
+.. autofunction:: ipctk.cuda.is_available
+
 Positive Semi-Definite Projection
 ---------------------------------
 

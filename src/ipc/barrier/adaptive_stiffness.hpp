@@ -8,9 +8,12 @@
 
 #include <Eigen/Core>
 
+#include <optional>
+
 namespace ipc {
 
 /// @brief Compute an inital barrier stiffness using the barrier potential gradient.
+/// @note This heuristic was designed for unweighted collisions. With area weighting and a physical barrier, the stiffness is a material parameter in the same units as Young's modulus, so choosing it directly relative to the elastic stiffness is usually more appropriate than adapting it. If you still use this function with weighted collisions, pass average_mass / mean(weight) as average_mass so the adaptive range accounts for the weights.
 /// @param[in] bbox_diagonal Length of the diagonal of the bounding box of the scene.
 /// @param[in] barrier Barrier function.
 /// @param[in] dhat Activation distance of the barrier.
@@ -58,12 +61,43 @@ double update_barrier_stiffness(
 /// @param local_hess Local hessian of the elasticity energy function.
 /// @param dmin Minimum distance between elements.
 /// @return The semi-implicit stiffness.
+/// @tparam StencilT The stencil type; any candidate or collision.
+template <typename StencilT>
 double semi_implicit_stiffness(
-    const CollisionStencil& stencil,
+    const StencilT& stencil,
     Eigen::ConstRef<VectorMax12d> vertices,
     Eigen::ConstRef<VectorMax4d> mass,
     Eigen::ConstRef<MatrixMax12d> local_hess,
-    const double dmin);
+    const double dmin)
+{
+    const unsigned N = stencil.num_vertices();
+    assert(vertices.size() % N == 0);
+    const unsigned dim = stencil.dim(vertices.size());
+
+    const VectorMax4d value = stencil.compute_coefficients(vertices);
+
+    // Compute the contact normal (i.e., the vector from the )
+    VectorMax3d normal = VectorMax3d::Zero(dim);
+    for (unsigned i = 0; i < N; ++i) {
+        normal += value[i] * vertices.segment(dim * i, dim);
+    }
+
+    // d²
+    const double distance = normal.norm() - dmin;
+    const double distance_sqr = distance * distance;
+
+    // average mass: mᵢ = cᵀMc / ‖c‖²
+    const double avg_mass =
+        value.dot(mass.asDiagonal() * value) / value.squaredNorm();
+
+    VectorMax12d w = VectorMax12d::Zero(dim * N);
+    for (unsigned i = 0; i < N; ++i) {
+        w.segment(dim * i, dim) = value[i] * normal;
+    }
+    w.normalize();
+
+    return avg_mass / distance_sqr + w.dot(local_hess * w);
+}
 
 /// @brief Compute the semi-implicit stiffness's for all collisions.
 /// @note See [Ando 2024] for details.
@@ -72,7 +106,7 @@ double semi_implicit_stiffness(
 /// @param collisions Normal collisions or collision candidates.
 /// @param vertex_masses Lumped vertex masses.
 /// @param hess Hessian of the elasticity energy function.
-/// @param dmin Minimum distance between elements.
+/// @param dmin Deprecated minimum distance between elements. If given, it overrides each stencil's own: a collision's dmin, or a candidate's two primitives' thicknesses (CollisionMesh::set_thickness()).
 /// @return The semi-implicit stiffness's.
 template <typename StencilsT>
 Eigen::VectorXd semi_implicit_stiffness(
@@ -81,6 +115,6 @@ Eigen::VectorXd semi_implicit_stiffness(
     const StencilsT& collisions,
     Eigen::ConstRef<Eigen::VectorXd> vertex_masses,
     const Eigen::SparseMatrix<double>& hess,
-    const double dmin);
+    const std::optional<double> dmin = std::nullopt);
 
 } // namespace ipc

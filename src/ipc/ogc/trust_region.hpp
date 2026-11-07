@@ -1,7 +1,11 @@
+#pragma once
+
 #include <ipc/collision_mesh.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+
+#include <optional>
 
 namespace ipc::ogc {
 
@@ -49,7 +53,7 @@ struct TrustRegion {
     /// @param pred_x Predicted vertex positions.
     /// @param collisions Collisions to be initialized.
     /// @param dhat The offset distance for contact.
-    /// @param min_distance Minimum distance between elements.
+    /// @param min_distance Deprecated minimum distance between elements, which overrides the mesh's thickness when given (see Candidates::compute_per_vertex_safe_distances()).
     /// @param broad_phase Broad phase collision detection.
     void warm_start_time_step(
         const CollisionMesh& mesh,
@@ -57,33 +61,33 @@ struct TrustRegion {
         Eigen::ConstRef<Eigen::MatrixXd> pred_x,
         NormalCollisions& collisions,
         const double dhat,
-        const double min_distance = 0.0,
+        const std::optional<double> min_distance = std::nullopt,
         BroadPhase* broad_phase = nullptr);
 
     /// @brief Update the trust region based on the current positions.
     /// @param[in] mesh The collision mesh.
     /// @param[in] x Current vertex positions.
     /// @param[out] collisions Collisions to be updated.
-    /// @param[in] min_distance Minimum distance between elements.
+    /// @param[in] min_distance Deprecated minimum distance between elements, which overrides the mesh's thickness when given (see Candidates::compute_per_vertex_safe_distances()).
     /// @param[in] broad_phase Broad phase collision detection.
     void update(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> x,
         NormalCollisions& collisions,
-        const double min_distance = 0.0,
+        const std::optional<double> min_distance = std::nullopt,
         BroadPhase* broad_phase = nullptr);
 
     /// @brief Update the trust region if should_update_trust_region is true.
     /// @param[in] mesh The collision mesh.
     /// @param[in] x Current vertex positions.
     /// @param[out] collisions Collisions to be updated.
-    /// @param[in] min_distance Minimum distance between elements.
+    /// @param[in] min_distance Deprecated minimum distance between elements, which overrides the mesh's thickness when given (see Candidates::compute_per_vertex_safe_distances()).
     /// @param[in] broad_phase Broad phase collision detection.
     void update_if_needed(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> x,
         NormalCollisions& collisions,
-        const double min_distance = 0.0,
+        const std::optional<double> min_distance = std::nullopt,
         BroadPhase* broad_phase = nullptr)
     {
         if (should_update_trust_region) {

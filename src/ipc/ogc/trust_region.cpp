@@ -17,7 +17,7 @@ void TrustRegion::warm_start_time_step(
     Eigen::ConstRef<Eigen::MatrixXd> pred_x,
     NormalCollisions& collisions,
     const double dhat,
-    const double min_distance,
+    const std::optional<double> min_distance,
     BroadPhase* broad_phase)
 {
     // Assign a default broad phase if none is provided.
@@ -67,7 +67,7 @@ void TrustRegion::update(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> x,
     NormalCollisions& collisions,
-    const double min_distance,
+    const std::optional<double> min_distance,
     BroadPhase* broad_phase)
 {
     assert(0 < relaxed_radius_scaling && relaxed_radius_scaling < 1);
@@ -83,7 +83,8 @@ void TrustRegion::update(
     }
 
     candidates.build(
-        mesh, vertices, trust_region_inflation_radius + min_distance,
+        mesh, vertices,
+        trust_region_inflation_radius + min_distance.value_or(0.0),
         broad_phase);
 
     // Compute the trust region distances for the reduced set of collision
@@ -165,7 +166,7 @@ namespace {
             beta = (-b + sqrt_d) / (2 * a);
         }
         // β should be the positive root
-        assert(beta > 0);
+        assert(beta >= 0);
 
         return beta;
     }
@@ -243,14 +244,21 @@ void TrustRegion::planar_filter_step(
     }
 
     tbb::parallel_for(size_t(0), candidates.size(), [&](size_t i) {
-        const CollisionStencil& c = candidates[i];
-        const auto ids = c.vertex_ids(mesh.edges(), mesh.faces());
-        const int nv = c.num_vertices();
-        const VectorMax12d pos = c.dof(vertices, mesh.edges(), mesh.faces());
-
+        // The candidate types are not polymorphic, so take what is needed
+        // from the visitor and work with values from here on.
         // dv = c_first − c_second; positive coeffs → first primitive
+        std::array<index_t, CollisionStencil::STENCIL_SIZE> ids {};
+        int nv = 0;
+        VectorMax12d pos;
         VectorMax4d coeffs;
-        const VectorMax3d dv = c.compute_distance_vector(pos, coeffs);
+        VectorMax3d dv;
+        candidates.visit(i, [&](const auto& c) {
+            ids = c.vertex_ids(mesh.edges(), mesh.faces());
+            nv = c.num_vertices();
+            pos = c.dof(vertices, mesh.edges(), mesh.faces());
+            dv = c.compute_distance_vector(pos, coeffs);
+        });
+
         const double dist = dv.norm();
         if (dist < 1e-10) {
             return;
@@ -258,8 +266,11 @@ void TrustRegion::planar_filter_step(
 
         const VectorMax3d n = dv / dist;
 
+        // Compute the closest points on the two primitives: c_first/c_second.
         VectorMax3d c_first = VectorMax3d::Zero(d);
         VectorMax3d c_second = VectorMax3d::Zero(d);
+        // Compute the approach velocity of the vertices relative to the
+        // division plane: max(-Δxⱼ⋅n)
         double delta_first = 0, delta_second = 0;
 
         for (int j = 0; j < nv; ++j) {
@@ -277,12 +288,29 @@ void TrustRegion::planar_filter_step(
         delta_first = std::max(delta_first, 0.0);
         delta_second = std::max(delta_second, 0.0);
 
+        // Skip if the approach velocity is negligible relative to the distance.
+        // This prevents numerical noise in n from nearly-parallel edges from
+        // truncating uniform displacements.
+        constexpr double APPROACH_TOL = 1e-3;
+        if (candidates.is_edge_edge(i)
+            && delta_first + delta_second <= APPROACH_TOL * dist) {
+            // Check that the edges are nearly parallel:
+            constexpr double EE_PARALLEL_TOL_SQ = 1e-6; // sin of ~0.057°
+            const Eigen::Vector3d ea = pos.segment<3>(3) - pos.segment<3>(0);
+            const Eigen::Vector3d eb = pos.segment<3>(9) - pos.segment<3>(6);
+            const double sin_angle_sq = ea.cross(eb).squaredNorm()
+                / (ea.squaredNorm() * eb.squaredNorm());
+            if (sin_angle_sq < EE_PARALLEL_TOL_SQ) {
+                return;
+            }
+        }
+
         const double lambda = (delta_first == 0 && delta_second == 0)
             ? 0.5
             : delta_second / (delta_first + delta_second);
 
-        // Division plane: p = c_second + λ·dv  (λ=0 → plane at
-        // second prim, λ=1 → plane at first prim).
+        // Point on the division plane: p = c_second + λ·dv
+        // (λ=0 → plane at second prim, λ=1 → plane at first prim).
         const VectorMax3d p = c_second + lambda * dv;
 
         for (int j = 0; j < nv; ++j) {

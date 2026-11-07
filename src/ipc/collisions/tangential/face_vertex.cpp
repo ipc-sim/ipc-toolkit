@@ -9,7 +9,7 @@ namespace ipc {
 
 FaceVertexTangentialCollision::FaceVertexTangentialCollision(
     const FaceVertexNormalCollision& collision)
-    : FaceVertexCandidate(collision.face_id, collision.vertex_id)
+    : FaceVertexStencil(collision.face_id, collision.vertex_id)
 {
     this->weight = collision.weight;
     this->weight_gradient = collision.weight_gradient;

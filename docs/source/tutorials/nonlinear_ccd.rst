@@ -5,27 +5,27 @@ We also implement CCD of nonlinear trajectories (of linear geometry) using the m
 
 The method works by transforming the nonlinear trajectories into (adaptive) piecewise linear trajectories with an envelope/minimum separation around each piece, enclosing the nonlinear trajectory. The method then performs CCD on the piecewise linear trajectories to find the earliest time of impact.
 
-We provide the following functions to perform nonlinear CCD:
+Nonlinear CCD is provided by the ``NonlinearCCD`` class, which exposes the following methods:
 
 .. md-tab-set::
 
     .. md-tab-item:: C++
 
-        * :cpp:func:`ipc::point_point_nonlinear_ccd`,
-        * :cpp:func:`ipc::point_edge_nonlinear_ccd`,
-        * :cpp:func:`ipc::edge_edge_nonlinear_ccd`, and
-        * :cpp:func:`ipc::point_triangle_nonlinear_ccd`.
+        * :cpp:func:`ipc::NonlinearCCD::point_point_ccd`,
+        * :cpp:func:`ipc::NonlinearCCD::point_edge_ccd`,
+        * :cpp:func:`ipc::NonlinearCCD::edge_edge_ccd`, and
+        * :cpp:func:`ipc::NonlinearCCD::point_triangle_ccd`.
 
-        Each of these functions take as input a :cpp:class:`ipc::NonlinearTrajectory` object for the endpoints of the linear geometry.
+        Each of these methods take as input a :cpp:class:`ipc::NonlinearTrajectory` object for the endpoints of the linear geometry.
 
     .. md-tab-item:: Python
 
-        * :py:func:`ipctk.point_point_nonlinear_ccd`,
-        * :py:func:`ipctk.point_edge_nonlinear_ccd`,
-        * :py:func:`ipctk.edge_edge_nonlinear_ccd`, and
-        * :py:func:`ipctk.point_triangle_nonlinear_ccd`.
+        * :py:meth:`ipctk.NonlinearCCD.point_point_ccd`,
+        * :py:meth:`ipctk.NonlinearCCD.point_edge_ccd`,
+        * :py:meth:`ipctk.NonlinearCCD.edge_edge_ccd`, and
+        * :py:meth:`ipctk.NonlinearCCD.point_triangle_ccd`.
 
-        Each of these functions take as input a :py:class:`ipctk.NonlinearTrajectory` object for the endpoints of the linear geometry.
+        Each of these methods take as input a :py:class:`ipctk.NonlinearTrajectory` object for the endpoints of the linear geometry.
 
 For example, the following code defines a rigid trajectory in 2D in order to perform nonlinear CCD between a point and edge:
 
@@ -207,7 +207,7 @@ The following code snippet shows an example of how to use interval arithmetic to
                 Eigen::ConstRef<VectorMax3d> center,
                 Eigen::ConstRef<VectorMax3d> point,
                 const double omega,
-                const Interval& t)
+                const filib::Interval& t)
             {
                 // 2×2 matrix of intervals representing the rotation matrix
                 Matrix2I R;

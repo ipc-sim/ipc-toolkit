@@ -1,5 +1,11 @@
 <!-- Lightbox overlay (shared by all gallery items) -->
-<div class="gallery-lightbox" id="galleryLightbox">
+<div
+    class="gallery-lightbox"
+    id="galleryLightbox"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Enlarged simulation"
+>
     <button class="gallery-lightbox-close" aria-label="Close">&times;</button>
     <div class="gallery-lightbox-caption"></div>
 </div>
@@ -129,6 +135,53 @@
         var lightbox = document.getElementById("galleryLightbox");
         var captionEl = lightbox.querySelector(".gallery-lightbox-caption");
         var closeBtn = lightbox.querySelector(".gallery-lightbox-close");
+        var videos = Array.prototype.slice.call(
+            document.querySelectorAll(".gallery-grid video"),
+        );
+        var returnFocusTo = null;
+
+        /* The clips loop forever, so we keep them paused when the reader
+         * asked the OS for reduced motion. They can still play a clip from
+         * the enlarged view, which has controls. We also pause any clip
+         * scrolled out of view so six videos aren't decoding in the
+         * background. */
+        var paused = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+        ).matches;
+        var visible = new Set();
+
+        function syncVideos() {
+            videos.forEach(function (video) {
+                if (!paused && visible.has(video)) {
+                    video.play().catch(function () {});
+                } else {
+                    video.pause();
+                }
+            });
+        }
+
+        videos.forEach(function (video) {
+            video.removeAttribute("autoplay");
+        });
+
+        if ("IntersectionObserver" in window) {
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) visible.add(entry.target);
+                    else visible.delete(entry.target);
+                });
+                syncVideos();
+            });
+            videos.forEach(function (video) {
+                observer.observe(video);
+            });
+        } else {
+            videos.forEach(function (video) {
+                visible.add(video);
+            });
+        }
+
+        syncVideos();
 
         function openLightbox(mediaEl, caption) {
             /* Clone the <img> or <video> so we don't move it out of the card */
@@ -139,13 +192,23 @@
             lightbox.insertBefore(clone, captionEl);
             captionEl.textContent = caption || "";
             captionEl.style.display = caption ? "" : "none";
+            if (clone.tagName === "VIDEO") {
+                clone.removeAttribute("aria-hidden");
+                clone.controls = true;
+                if (!paused) clone.play().catch(function () {});
+            }
+            lightbox.setAttribute("aria-label", caption || "Enlarged simulation");
             lightbox.classList.add("active");
             document.body.style.overflow = "hidden";
+            returnFocusTo = document.activeElement;
+            closeBtn.focus();
         }
 
         function closeLightbox() {
+            if (!lightbox.classList.contains("active")) return;
             lightbox.classList.remove("active");
             document.body.style.overflow = "";
+            if (returnFocusTo) returnFocusTo.focus();
             var media = lightbox.querySelector("img, video");
             if (media) {
                 /* Small delay so the fade-out plays before removal */
@@ -159,13 +222,21 @@
         document
             .querySelectorAll(".gallery-media[data-lightbox]")
             .forEach(function (container) {
-                container.addEventListener("click", function () {
+                var caption = container.getAttribute("data-caption");
+                function open() {
                     var media = container.querySelector("img, video");
-                    if (media) {
-                        openLightbox(
-                            media,
-                            container.getAttribute("data-caption"),
-                        );
+                    if (media) openLightbox(media, caption);
+                }
+                /* The tiles are plain divs in the markup, so we make them
+                 * behave like buttons for keyboard and screen-reader users. */
+                container.setAttribute("role", "button");
+                container.setAttribute("tabindex", "0");
+                container.setAttribute("aria-label", "Enlarge: " + caption);
+                container.addEventListener("click", open);
+                container.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        open();
                     }
                 });
             });
@@ -175,7 +246,22 @@
             if (e.target === lightbox) closeLightbox();
         });
         document.addEventListener("keydown", function (e) {
+            if (!lightbox.classList.contains("active")) return;
             if (e.key === "Escape") closeLightbox();
+            /* Keep focus inside the dialog. The video controls and the close
+             * button are the only stops, so we cycle between them. */
+            if (e.key === "Tab") {
+                var stops = lightbox.querySelectorAll("button, video[controls]");
+                var first = stops[0];
+                var last = stops[stops.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
         });
     });
 </script>

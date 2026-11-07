@@ -4,6 +4,7 @@ set(SOURCES
 
   # Tests
   test_cfl.cpp
+  test_collision_filter.cpp
   test_collision_mesh.cpp
   test_has_intersections.cpp
   test_ipc.cpp
@@ -12,9 +13,15 @@ set(SOURCES
   benchmark_eigen.cpp
 
   # Utilities
+  simd_utils.hpp
   utils.cpp
   utils.hpp
 )
+
+# Shared scaffolding for the test_gpu_*.cu parity tests; defines device code.
+if(IPC_TOOLKIT_WITH_CUDA)
+  list(APPEND SOURCES gpu_utils.hpp)
+endif()
 
 target_sources(ipc_toolkit_tests PRIVATE ${SOURCES})
 

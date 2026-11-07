@@ -2,7 +2,9 @@
 
 #include <pybind11/pybind11.h>
 
+void define_cuda_is_available(py::module_& cuda); // into ipctk.cuda
 void define_eigen_ext(py::module_& m);
+void define_hessian_assembler(py::module_& m);
 void define_logger(py::module_& m);
 void define_profiler(py::module_& m);
 void define_thread_limiter(py::module_& m);

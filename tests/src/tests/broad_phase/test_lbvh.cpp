@@ -1,80 +1,25 @@
+#include <ipc/candidates/candidate_vector.hpp>
 #include <ipc/config.hpp>
 
 #include <tests/config.hpp>
 #include <tests/utils.hpp>
 
+#include <tests/broad_phase/lbvh_validation.hpp>
+
+#include <ipc/broad_phase/brute_force.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/lbvh.hpp>
 #include <ipc/utils/profiler.hpp>
+
+#include <igl/edges.h>
 
 #include <tbb/parallel_sort.h>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/benchmark/catch_benchmark.hpp>
 
-#include <iostream>
-
 using namespace ipc;
-
-namespace {
-
-bool is_aabb_union(
-    const LBVH::Node& parent,
-    const LBVH::Node& childA,
-    const LBVH::Node& childB)
-{
-    AABB children;
-    children.min = childA.aabb_min.min(childB.aabb_min).cast<double>();
-    children.max = childA.aabb_max.max(childB.aabb_max).cast<double>();
-    constexpr float EPS = 1e-4f;
-    return (abs(parent.aabb_max.cast<double>() - children.max) < EPS).all()
-        && (abs(parent.aabb_min.cast<double>() - children.min) < EPS).all();
-}
-
-void traverse_lbvh(
-    const LBVH::Nodes& lbvh_nodes,
-    const uint32_t index,
-    std::vector<bool>& visited)
-{
-    const LBVH::Node& node = lbvh_nodes[index];
-    CHECK(node.is_valid());
-
-    if (node.is_leaf()) {
-        // leaf
-        CHECK(!visited[index]);
-        visited[index] = true;
-    } else {
-        // inner node
-        CHECK(!visited[index]);
-        visited[index] = true;
-
-        // verify aabbs
-        LBVH::Node childA = lbvh_nodes[node.left];
-        LBVH::Node childB = lbvh_nodes[node.right];
-
-        {
-            CAPTURE(
-                index, node.left, node.right, node.aabb_min.transpose(),
-                childA.aabb_min.transpose(), childB.aabb_min.transpose(),
-                node.aabb_max.transpose(), childA.aabb_max.transpose(),
-                childB.aabb_max.transpose());
-            CHECK(is_aabb_union(node, childA, childB));
-        }
-
-        // continue traversal
-        traverse_lbvh(lbvh_nodes, node.left, visited);
-        traverse_lbvh(lbvh_nodes, node.right, visited);
-    }
-}
-
-void check_valid_lbvh_nodes(const LBVH::Nodes& lbvh_nodes)
-{
-    std::vector<bool> visited(lbvh_nodes.size(), false);
-    traverse_lbvh(lbvh_nodes, 0, visited);
-    REQUIRE(
-        std::all_of(visited.begin(), visited.end(), [](bool v) { return v; }));
-}
-} // namespace
+using ipc::tests::check_valid_lbvh_nodes;
 
 TEST_CASE("LBVH::build", "[broad_phase][lbvh]")
 {
@@ -136,7 +81,8 @@ namespace {
 /// @return false Otherwise.
 template <typename Candidate>
 bool contains_all_candidates(
-    std::vector<Candidate> actual, std::vector<Candidate> expected)
+    ipc::CandidateVector<Candidate> actual,
+    ipc::CandidateVector<Candidate> expected)
 {
     // 1. Sort the actual candidates to prepare for set operations
     tbb::parallel_sort(actual.begin(), actual.end());
@@ -216,10 +162,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
 
     // detect_vertex_vertex_candidates
     {
-        std::vector<VertexVertexCandidate> vv_candidates;
+        ipc::CandidateVector<VertexVertexCandidate> vv_candidates;
         lbvh->detect_vertex_vertex_candidates(vv_candidates);
 
-        std::vector<VertexVertexCandidate> expected_vv_candidates;
+        ipc::CandidateVector<VertexVertexCandidate> expected_vv_candidates;
         spatial_hash->detect_vertex_vertex_candidates(expected_vv_candidates);
 
         CHECK(vv_candidates.size() >= expected_vv_candidates.size());
@@ -227,10 +173,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     }
 
     {
-        std::vector<EdgeVertexCandidate> ev_candidates;
+        ipc::CandidateVector<EdgeVertexCandidate> ev_candidates;
         lbvh->detect_edge_vertex_candidates(ev_candidates);
 
-        std::vector<EdgeVertexCandidate> expected_ev_candidates;
+        ipc::CandidateVector<EdgeVertexCandidate> expected_ev_candidates;
         spatial_hash->detect_edge_vertex_candidates(expected_ev_candidates);
 
         CHECK(ev_candidates.size() >= expected_ev_candidates.size());
@@ -238,10 +184,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     }
 
     {
-        std::vector<EdgeEdgeCandidate> ee_candidates;
+        ipc::CandidateVector<EdgeEdgeCandidate> ee_candidates;
         lbvh->detect_edge_edge_candidates(ee_candidates);
 
-        std::vector<EdgeEdgeCandidate> expected_ee_candidates;
+        ipc::CandidateVector<EdgeEdgeCandidate> expected_ee_candidates;
         spatial_hash->detect_edge_edge_candidates(expected_ee_candidates);
 
         CHECK(ee_candidates.size() >= expected_ee_candidates.size());
@@ -249,10 +195,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     }
 
     {
-        std::vector<FaceVertexCandidate> fv_candidates;
+        ipc::CandidateVector<FaceVertexCandidate> fv_candidates;
         lbvh->detect_face_vertex_candidates(fv_candidates);
 
-        std::vector<FaceVertexCandidate> expected_fv_candidates;
+        ipc::CandidateVector<FaceVertexCandidate> expected_fv_candidates;
         spatial_hash->detect_face_vertex_candidates(expected_fv_candidates);
 
         CHECK(fv_candidates.size() >= expected_fv_candidates.size());
@@ -260,10 +206,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     }
 
     {
-        std::vector<EdgeFaceCandidate> ef_candidates;
+        ipc::CandidateVector<EdgeFaceCandidate> ef_candidates;
         lbvh->detect_edge_face_candidates(ef_candidates);
 
-        std::vector<EdgeFaceCandidate> expected_ef_candidates;
+        ipc::CandidateVector<EdgeFaceCandidate> expected_ef_candidates;
         spatial_hash->detect_edge_face_candidates(expected_ef_candidates);
 
         CHECK(ef_candidates.size() >= expected_ef_candidates.size());
@@ -271,10 +217,10 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     }
 
     {
-        std::vector<FaceFaceCandidate> ff_candidates;
+        ipc::CandidateVector<FaceFaceCandidate> ff_candidates;
         lbvh->detect_face_face_candidates(ff_candidates);
 
-        std::vector<FaceFaceCandidate> expected_ff_candidates;
+        ipc::CandidateVector<FaceFaceCandidate> expected_ff_candidates;
         spatial_hash->detect_face_face_candidates(expected_ff_candidates);
 
         CHECK(ff_candidates.size() >= expected_ff_candidates.size());
@@ -285,6 +231,275 @@ TEST_CASE("LBVH::detect_*_candidates", "[broad_phase][lbvh]")
     ipc::profiler().print();
     ipc::profiler().clear();
 #endif
+}
+
+TEST_CASE(
+    "Querying an LBVH with bare leaves finds every overlapping box pair",
+    "[broad_phase][lbvh]")
+{
+    const std::string mesh =
+        GENERATE("two-cubes-close.ply", "bunny (lowpoly).ply");
+
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    REQUIRE(tests::load_mesh(mesh, vertices, edges, faces));
+
+    // The other set is the same mesh swept straight through itself along a
+    // diagonal, so every swept vertex box contains its original vertex and
+    // every query type has candidates.
+    const double diagonal =
+        (vertices.colwise().maxCoeff() - vertices.colwise().minCoeff()).norm();
+    const Eigen::RowVector3d offset =
+        0.01 * diagonal * Eigen::RowVector3d(1, -1, 0.5).normalized();
+    constexpr double inflation_radius = 1e-3;
+
+    LBVH lbvh;
+    lbvh.build(vertices, edges, faces, inflation_radius);
+
+    AABBs this_vertex_boxes, this_edge_boxes, this_face_boxes;
+    build_vertex_boxes(vertices, this_vertex_boxes, inflation_radius);
+    build_edge_boxes(this_vertex_boxes, edges, this_edge_boxes);
+    build_face_boxes(this_vertex_boxes, faces, this_face_boxes);
+
+    AABBs other_vertex_boxes, other_edge_boxes, other_face_boxes;
+    build_vertex_boxes(
+        vertices.rowwise() - offset, vertices.rowwise() + offset,
+        other_vertex_boxes, inflation_radius);
+    build_edge_boxes(other_vertex_boxes, edges, other_edge_boxes);
+    build_face_boxes(other_vertex_boxes, faces, other_face_boxes);
+
+    LBVH::Leaves other_leaves;
+    other_leaves.build(other_vertex_boxes, edges, faces);
+
+    // The LBVH rounds its boxes outward to floats, so the pairs it finds sit
+    // between the exact (double-precision) overlaps and the overlaps of boxes
+    // padded by far more than that rounding. We compare (this id, other id)
+    // pairs rather than candidates because the vertex-vertex and edge-edge
+    // candidates compare as unordered pairs, which would merge (i, j) with
+    // (j, i) even though i and j index different sets here.
+    using Pairs = std::vector<std::pair<size_t, size_t>>;
+    const double pad = 1e-6 * diagonal;
+    const auto check = [&](const AABBs& a, const AABBs& b, Pairs found) {
+        Pairs exact, padded;
+        for (size_t i = 0; i < a.size(); ++i) {
+            for (size_t j = 0; j < b.size(); ++j) {
+                const double gap =
+                    (a[i].min - b[j].max).max(b[j].min - a[i].max).maxCoeff();
+                if (gap <= 0) {
+                    exact.emplace_back(i, j);
+                }
+                if (gap <= pad) {
+                    padded.emplace_back(i, j);
+                }
+            }
+        }
+        std::sort(found.begin(), found.end());
+        REQUIRE(!exact.empty());
+        CHECK(std::adjacent_find(found.begin(), found.end()) == found.end());
+        CHECK(
+            std::includes(
+                found.begin(), found.end(), exact.begin(), exact.end()));
+        CHECK(
+            std::includes(
+                padded.begin(), padded.end(), found.begin(), found.end()));
+    };
+
+    const auto accept_all = [](size_t, size_t) { return true; };
+    // Each query's candidates, as (this id, other id) pairs.
+    const auto pairs = [](const auto& candidates, auto to_pair) {
+        Pairs out;
+        for (const auto& c : candidates) {
+            out.push_back(to_pair(c));
+        }
+        return out;
+    };
+    {
+        CandidateVector<VertexVertexCandidate> found;
+        lbvh.detect_vertex_vertex_candidates(other_leaves, accept_all, found);
+        check(
+            this_vertex_boxes, other_vertex_boxes,
+            pairs(found, [](const auto& c) {
+                return std::make_pair(c.vertex0_id, c.vertex1_id);
+            }));
+    }
+    {
+        CandidateVector<EdgeVertexCandidate> found;
+        lbvh.detect_edge_vertex_candidates(other_leaves, accept_all, found);
+        check(
+            this_edge_boxes, other_vertex_boxes,
+            pairs(found, [](const auto& c) {
+                return std::make_pair(c.edge_id, c.vertex_id);
+            }));
+    }
+    {
+        CandidateVector<EdgeVertexCandidate> found;
+        lbvh.detect_vertex_edge_candidates(other_leaves, accept_all, found);
+        check(
+            this_vertex_boxes, other_edge_boxes,
+            pairs(found, [](const auto& c) {
+                return std::make_pair(c.vertex_id, c.edge_id);
+            }));
+    }
+    {
+        CandidateVector<EdgeEdgeCandidate> found;
+        lbvh.detect_edge_edge_candidates(other_leaves, accept_all, found);
+        check(
+            this_edge_boxes, other_edge_boxes, pairs(found, [](const auto& c) {
+                return std::make_pair(c.edge0_id, c.edge1_id);
+            }));
+    }
+    {
+        CandidateVector<FaceVertexCandidate> found;
+        lbvh.detect_face_vertex_candidates(other_leaves, accept_all, found);
+        check(
+            this_face_boxes, other_vertex_boxes,
+            pairs(found, [](const auto& c) {
+                return std::make_pair(c.face_id, c.vertex_id);
+            }));
+    }
+    {
+        CandidateVector<FaceVertexCandidate> found;
+        lbvh.detect_vertex_face_candidates(other_leaves, accept_all, found);
+        check(
+            this_vertex_boxes, other_face_boxes,
+            pairs(found, [](const auto& c) {
+                return std::make_pair(c.vertex_id, c.face_id);
+            }));
+    }
+}
+
+TEST_CASE("LBVH single-primitive trees", "[broad_phase][lbvh]")
+{
+    // A BVH over a single primitive is one node, which is both the root and a
+    // leaf. When such a BVH is the traversal TARGET the descent takes a
+    // dedicated branch, because the root cannot be descended into. Only two
+    // detections put a BVH there that can have one node -- face-vertex (the
+    // face BVH) and edge-face (the edge BVH) -- and the meshes the other tests
+    // load never reduce either to a single primitive.
+    //
+    // One face and one edge, sharing no vertices so the connectivity filter
+    // keeps the pair, and inflated enough that the AABBs actually overlap.
+    Eigen::MatrixXd vertices(5, 3);
+    vertices << 0.00, 0.00, 0.00, // 0 |
+        1.00, 0.00, 0.00,         // 1 |- the face
+        0.00, 1.00, 0.00,         // 2 |
+        0.05, 0.05, 0.05,         // 3 |- the edge
+        0.15, 0.05, 0.05;         // 4 |
+
+    Eigen::MatrixXi edges(1, 2);
+    edges << 3, 4;
+
+    Eigen::MatrixXi faces(1, 3);
+    faces << 0, 1, 2;
+
+    constexpr double inflation_radius = 0.1;
+
+    LBVH lbvh;
+    lbvh.build(vertices, edges, faces, inflation_radius);
+
+    BruteForce brute_force;
+    brute_force.build(vertices, edges, faces, inflation_radius);
+
+    // The branch under test is only reached if these really are single nodes.
+    REQUIRE(lbvh.face_nodes().size() == 1);
+    REQUIRE(lbvh.edge_nodes().size() == 1);
+
+    // The LBVH rounds its AABBs outward to floats, so it may report a superset
+    // of the exact (double-precision) brute-force set, never a subset.
+    {
+        ipc::CandidateVector<FaceVertexCandidate> fv_candidates, expected;
+        lbvh.detect_face_vertex_candidates(fv_candidates);
+        brute_force.detect_face_vertex_candidates(expected);
+
+        // Without this the checks below would pass on an empty set, which is
+        // exactly what a broken single-node branch would produce.
+        REQUIRE(!expected.empty());
+        CHECK(fv_candidates.size() >= expected.size());
+        CHECK(contains_all_candidates(fv_candidates, expected));
+    }
+
+    {
+        ipc::CandidateVector<EdgeFaceCandidate> ef_candidates, expected;
+        lbvh.detect_edge_face_candidates(ef_candidates);
+        brute_force.detect_edge_face_candidates(expected);
+
+        REQUIRE(!expected.empty());
+        CHECK(ef_candidates.size() >= expected.size());
+        CHECK(contains_all_candidates(ef_candidates, expected));
+    }
+
+    // The remaining types traverse multi-node targets here, but are cheap to
+    // check on a mesh this small.
+    {
+        ipc::CandidateVector<VertexVertexCandidate> vv_candidates, expected;
+        lbvh.detect_vertex_vertex_candidates(vv_candidates);
+        brute_force.detect_vertex_vertex_candidates(expected);
+        CHECK(contains_all_candidates(vv_candidates, expected));
+    }
+
+    {
+        ipc::CandidateVector<EdgeVertexCandidate> ev_candidates, expected;
+        lbvh.detect_edge_vertex_candidates(ev_candidates);
+        brute_force.detect_edge_vertex_candidates(expected);
+        REQUIRE(!expected.empty());
+        CHECK(contains_all_candidates(ev_candidates, expected));
+    }
+
+    // The device build reaches the same branch through the same shared code;
+    // its parity with these trees is checked in test_gpu_lbvh.cu, where a
+    // missing GPU skips rather than fails.
+}
+
+// A planar mesh with no inflation has zero-width vertex boxes along z, so the
+// Morton normalization domain is degenerate on that axis. The reciprocal width
+// must be 0 there, not infinity: 0 * inf is NaN, and converting NaN to an
+// integer code is undefined. The tree must still be valid and complete.
+TEST_CASE("LBVH degenerate domain", "[broad_phase][lbvh]")
+{
+    // A 4x4 grid of vertices in the z = 0 plane, triangulated.
+    constexpr int N = 4;
+    Eigen::MatrixXd vertices(N * N, 3);
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            vertices.row(N * i + j) << i, j, 0.0;
+        }
+    }
+    Eigen::MatrixXi faces(2 * (N - 1) * (N - 1), 3);
+    for (int i = 0, f = 0; i < N - 1; ++i) {
+        for (int j = 0; j < N - 1; ++j) {
+            const int v00 = N * i + j, v10 = v00 + N;
+            faces.row(f++) << v00, v10, v00 + 1;
+            faces.row(f++) << v10, v10 + 1, v00 + 1;
+        }
+    }
+    Eigen::MatrixXi edges;
+    igl::edges(faces, edges);
+
+    // Inflation 0 keeps the z extent of every box exactly zero.
+    LBVH lbvh;
+    lbvh.build(vertices, edges, faces, /*inflation_radius=*/0);
+
+    check_valid_lbvh_nodes(lbvh.vertex_nodes());
+    check_valid_lbvh_nodes(lbvh.edge_nodes());
+    check_valid_lbvh_nodes(lbvh.face_nodes());
+
+    // And the result still matches brute force (a superset, as usual).
+    BruteForce brute_force;
+    brute_force.build(vertices, edges, faces, 0);
+    {
+        ipc::CandidateVector<EdgeEdgeCandidate> candidates, expected;
+        lbvh.detect_edge_edge_candidates(candidates);
+        brute_force.detect_edge_edge_candidates(expected);
+        REQUIRE(!expected.empty()); // coplanar neighbors do overlap
+        CHECK(contains_all_candidates(candidates, expected));
+    }
+    {
+        ipc::CandidateVector<FaceVertexCandidate> candidates, expected;
+        lbvh.detect_face_vertex_candidates(candidates);
+        brute_force.detect_face_vertex_candidates(expected);
+        REQUIRE(!expected.empty());
+        CHECK(contains_all_candidates(candidates, expected));
+    }
 }
 
 TEST_CASE(
@@ -342,8 +557,57 @@ TEST_CASE(
 
     BENCHMARK("LBVH::detect_edge_edge_candidates")
     {
-        std::vector<EdgeEdgeCandidate> ee_candidates;
+        ipc::CandidateVector<EdgeEdgeCandidate> ee_candidates;
         lbvh->detect_edge_edge_candidates(ee_candidates);
         return ee_candidates.size();
     };
+    // The cuda::LBVH counterpart lives in test_gpu_lbvh.cu, behind the GPU
+    // skip.
+}
+
+TEST_CASE("Benchmark LBVH::build", "[!benchmark][broad_phase][lbvh]")
+{
+    constexpr double inflation_radius = 0;
+
+    struct Scene {
+        std::string name, mesh_t0, mesh_t1;
+    };
+
+#ifdef NDEBUG
+    constexpr int NUM_SCENES = 6;
+#else
+    constexpr int NUM_SCENES = 1;
+#endif
+
+    const std::array<Scene, NUM_SCENES> scenes = { {
+        Scene { "Cloth-Ball", "cloth_ball92.ply", "cloth_ball93.ply" },
+#ifdef NDEBUG
+        Scene { "Cloth-Funnel", "cloth-funnel/227.ply",
+                "cloth-funnel/228.ply" },
+        Scene { "Armadillo-Rollers", "armadillo-rollers/326.ply",
+                "armadillo-rollers/327.ply" },
+        Scene { "Rod-Twist", "rod-twist/3036.ply", "rod-twist/3037.ply" },
+        Scene { "N-Body-Simulation", "n-body-simulation/balls16_18.ply",
+                "n-body-simulation/balls16_19.ply" },
+        Scene { "Puffer-Ball", "puffer-ball/20.ply", "puffer-ball/21.ply" },
+#endif
+    } };
+
+    for (const auto& [scene, mesh_t0, mesh_t1] : scenes) {
+        Eigen::MatrixXd vertices_t0, vertices_t1;
+        Eigen::MatrixXi edges, faces;
+        REQUIRE(tests::load_mesh(mesh_t0, vertices_t0, edges, faces));
+        REQUIRE(tests::load_mesh(mesh_t1, vertices_t1, edges, faces));
+
+        const std::shared_ptr<LBVH> lbvh = std::make_shared<LBVH>();
+
+        BENCHMARK(fmt::format("LBVH::build [{}]", scene))
+        {
+            lbvh->build(
+                vertices_t0, vertices_t1, edges, faces, inflation_radius);
+            return lbvh->edge_nodes().size();
+        };
+        // The cuda::LBVH counterpart lives in test_gpu_lbvh.cu, behind the
+        // GPU skip.
+    }
 }

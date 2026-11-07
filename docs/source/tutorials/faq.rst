@@ -34,20 +34,22 @@ To build the edge matrix you can use :cpp:`igl::edges(faces, edges);` in C++ or 
 Is there a way to ignore select collisions?
 -------------------------------------------
 
-Yes, it is possible to ignore select collisions.
+Yes. Both :cpp:`CollisionMesh::can_collide` and :cpp:`BroadPhase::can_vertices_collide` are :cpp:`CollisionFilter` objects — composable predicates of the form :cpp:`bool(size_t vi, size_t vj)` that control which vertex pairs enter the collision pipeline.
 
-The functionality for doing so is through the :cpp:`BroadPhase::can_vertices_collide`.
-This function takes two vertex IDs and returns a true if the vertices can collide otherwise false.
+When building candidates through :cpp:`Candidates::build`, the broad phase automatically inherits :cpp:`CollisionMesh::can_collide`, so you only need to set it once on the mesh.
 
-This is used to determine if any geometry connected to the verties can collide. E.g., when checking if vertex ``vi`` can collide with triangle ``f = (vj, vk, vl)``, the code checks:
+**How primitive-level checks work**
+
+:cpp:`BroadPhase` expands vertex-level decisions to primitive pairs. For example, checking whether vertex ``vi`` can collide with triangle ``f = (vj, vk, vl)`` evaluates:
 
 .. code-block::
 
-    can_face_vertex_collide(f, vi) := can_vertices_collide(vj, vi) && can_vertices_collide(vk, vi) && can_vertices_collide(vl, vi)
+    can_face_vertex_collide(f, vi) :=
+        can_vertices_collide(vj, vi)
+        && can_vertices_collide(vk, vi)
+        && can_vertices_collide(vl, vi)
 
-This is a little limited since it will ignore the one-ring around a vertex instead of a single face-vertex pair, but hopefully that can get you started.
-
-To get something more customized, you can try to modify the BroadPhase class, which has these functions hard-coded:
+This means the filter acts on the one-ring of a vertex rather than a single primitive pair. For finer control you can subclass :cpp:`BroadPhase` and override the virtual methods:
 
 .. code-block:: c++
 
@@ -57,14 +59,62 @@ To get something more customized, you can try to modify the BroadPhase class, wh
     virtual bool can_edge_face_collide(size_t ei, size_t fi) const;
     virtual bool can_faces_collide(size_t fai, size_t fbi) const;
 
-You can modify these with function pointers or override them to have the specific implementation you are interested in.
+:cpp:`CollisionFilter` wraps any :cpp:`bool(size_t, size_t)` callable and supports logical composition via ``|`` (union) and ``&`` (intersection). Negation uses ``!`` in C++ and ``~`` in Python.
 
-.. note::
+The available factory functions are:
 
-    If you are building collisions through the ``Candidates`` class, the ``Candidates::build`` function sets the ``BroadPhase::can_vertices_collide`` using the ``CollisionMesh::can_collide`` function pointer. This ``CollisionMesh::can_collide`` function uses the same interface as the ``BroadPhase::can_vertices_collide`` above.
+- :cpp:`make_connected_components_filter(faces)` — blocks pairs within the same connected component (prevents self-collision).
+- :cpp:`make_static_obstacle_filter(n_dynamic)` — blocks static-vs-static pairs; vertices with index ``>= n_dynamic`` are considered static.
+- :cpp:`make_vertex_patches_filter(patch_ids)` — blocks pairs that share the same integer patch label.
+- :cpp:`make_sparse_filter(explicit_values, default_value)` — sparse explicit overrides with a fallback default (Python only).
 
-.. warning::
-    This method is not recommended for Python since calling a Python lambda function from the C++ side is too slow to use. Instead there are ``SparseCanCollide`` and ``VertexPatchesCanCollide`` classes in Python to help do this efficiently.
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            #include <ipc/collision_filter.hpp>
+
+            // Built-in factory functions
+            CollisionFilter no_self   = make_connected_components_filter(mesh.faces());
+            CollisionFilter no_static = make_static_obstacle_filter(n_dynamic_verts);
+            CollisionFilter by_patch  = make_vertex_patches_filter(patch_ids);
+
+            // Combine with | (union), & (intersection), ! (negation)
+            mesh.can_collide = no_self & no_static;
+
+            // Or construct directly from a lambda
+            mesh.can_collide = CollisionFilter([&](size_t vi, size_t vj) {
+                return group[vi] != group[vj];
+            });
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            import numpy as np
+            from ipctk import (
+                CollisionFilter,
+                make_connected_components_filter,
+                make_sparse_filter,
+                make_static_obstacle_filter,
+                make_vertex_patches_filter,
+            )
+
+            # Built-in factory functions
+            no_self   = make_connected_components_filter(mesh.faces)
+            no_static = make_static_obstacle_filter(n_dynamic)
+            by_patch  = make_vertex_patches_filter(np.array([0, 0, 1, 1], dtype=np.int32))
+
+            # Composition: &, |, ~
+            mesh.can_collide = no_self & no_static
+
+            # Sparse explicit overrides (e.g. always allow pair (2, 5))
+            mesh.can_collide = make_sparse_filter({(2, 5): True}, default_value=False)
+
+            # Arbitrary callable (slower — prefer factory functions for large meshes)
+            mesh.can_collide = CollisionFilter(lambda i, j: group[i] != group[j])
 
 My question is not answered here. What should I do?
 ---------------------------------------------------

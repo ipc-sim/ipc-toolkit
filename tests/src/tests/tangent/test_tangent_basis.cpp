@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include <ipc/tangent/tangent_basis.hpp>
 
@@ -201,4 +202,57 @@ TEST_CASE(
         J_fd);
 
     CHECK(fd::compare_jacobian(J, J_fd));
+}
+
+TEST_CASE(
+    "Tangent bases agree whether or not the dimension is known at compile time",
+    "[friction][tangent_basis][tangent_basis_jacobian]")
+{
+    // The front ends dispatch on `dim_v<Derived>` when the argument type
+    // carries its size, and fall back to a runtime branch on `size()` when it
+    // does not. Every other test here passes a fixed-size vector, so only the
+    // `if constexpr` arms ever run. Passing the same points as a dynamically
+    // sized vector takes the fallback instead, and the two must agree exactly:
+    // they call the same kernel, so any difference is a dispatch bug.
+    const int dim = GENERATE(2, 3);
+    CAPTURE(dim);
+
+    const Eigen::VectorXd p = Eigen::VectorXd::LinSpaced(dim, 0.25, 1.0);
+    const Eigen::VectorXd q = Eigen::VectorXd::LinSpaced(dim, -1.0, 0.5);
+
+    // VectorMax3d keeps its size at runtime, so dim_v is not a constant.
+    const VectorMax3d p_dyn = p, q_dyn = q;
+
+    const Eigen::VectorXd r = Eigen::VectorXd::LinSpaced(dim, 0.75, -0.5);
+    const VectorMax3d r_dyn = r;
+
+    if (dim == 2) {
+        const Eigen::Vector2d a = p, b = q, c = r;
+        CHECK(
+            point_point_tangent_basis(p_dyn, q_dyn)
+            == point_point_tangent_basis(a, b));
+        CHECK(
+            point_point_tangent_basis_jacobian(p_dyn, q_dyn)
+            == point_point_tangent_basis_jacobian(a, b));
+        CHECK(
+            point_edge_tangent_basis(p_dyn, q_dyn, r_dyn)
+            == point_edge_tangent_basis(a, b, c));
+        CHECK(
+            point_edge_tangent_basis_jacobian(p_dyn, q_dyn, r_dyn)
+            == point_edge_tangent_basis_jacobian(a, b, c));
+    } else {
+        const Eigen::Vector3d a = p, b = q, c = r;
+        CHECK(
+            point_point_tangent_basis(p_dyn, q_dyn)
+            == point_point_tangent_basis(a, b));
+        CHECK(
+            point_point_tangent_basis_jacobian(p_dyn, q_dyn)
+            == point_point_tangent_basis_jacobian(a, b));
+        CHECK(
+            point_edge_tangent_basis(p_dyn, q_dyn, r_dyn)
+            == point_edge_tangent_basis(a, b, c));
+        CHECK(
+            point_edge_tangent_basis_jacobian(p_dyn, q_dyn, r_dyn)
+            == point_edge_tangent_basis_jacobian(a, b, c));
+    }
 }

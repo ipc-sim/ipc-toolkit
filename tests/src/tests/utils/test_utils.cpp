@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
+#include <ipc/candidates/candidates.hpp>
 #include <ipc/candidates/vertex_vertex.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/edge_edge.hpp>
@@ -7,10 +8,12 @@
 #include <ipc/candidates/edge_face.hpp>
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/eigen_ext.hpp>
-#include <ipc/utils/save_obj.hpp>
+#include <ipc/io/write_candidates_obj.hpp>
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 
+#include <filesystem>
+#include <fstream>
 #include <sstream>
 
 TEST_CASE("Logger", "[utils][logger]")
@@ -66,7 +69,7 @@ TEST_CASE("Project to PD", "[utils][project_to_pd]")
     CHECK(A_pd.isApprox(A));
 }
 
-TEST_CASE("Save OBJ of candidates", "[utils][save_obj]")
+TEST_CASE("Write OBJ of candidates", "[utils][write_candidates_obj]")
 {
     Eigen::MatrixXd V(4, 3);
     V.row(0) << 0, 0, 0;
@@ -81,21 +84,21 @@ TEST_CASE("Save OBJ of candidates", "[utils][save_obj]")
     SECTION("VertexVertexCandidate")
     {
         std::stringstream ss;
-        ipc::save_obj<ipc::VertexVertexCandidate>(
+        ipc::write_candidates_obj<ipc::VertexVertexCandidate>(
             ss, V, E, F, { { ipc::VertexVertexCandidate(0, 1) } });
         CHECK(ss.str() == "o VV\nv 0 0 0\nv 1 0 0\n");
     }
     SECTION("EdgeVertexCandidate")
     {
         std::stringstream ss;
-        ipc::save_obj<ipc::EdgeVertexCandidate>(
+        ipc::write_candidates_obj<ipc::EdgeVertexCandidate>(
             ss, V, E, F, { { ipc::EdgeVertexCandidate(0, 0) } });
         CHECK(ss.str() == "o EV\nv 1 0 0\nv 0 1 0\nv 0 0 0\nl 1 2\n");
     }
     SECTION("EdgeEdgeCandidate")
     {
         std::stringstream ss;
-        ipc::save_obj<ipc::EdgeEdgeCandidate>(
+        ipc::write_candidates_obj<ipc::EdgeEdgeCandidate>(
             ss, V, E, F, { { ipc::EdgeEdgeCandidate(0, 1) } });
         CHECK(
             ss.str()
@@ -104,7 +107,7 @@ TEST_CASE("Save OBJ of candidates", "[utils][save_obj]")
     SECTION("FaceVertexCandidate")
     {
         std::stringstream ss;
-        ipc::save_obj<ipc::FaceVertexCandidate>(
+        ipc::write_candidates_obj<ipc::FaceVertexCandidate>(
             ss, V, E, F, { { ipc::FaceVertexCandidate(0, 0) } });
         CHECK(
             ss.str() == "o FV\nv 1 0 0\nv 0 1 0\nv 0 0 1\nv 0 0 0\nf 1 2 3\n");
@@ -112,10 +115,58 @@ TEST_CASE("Save OBJ of candidates", "[utils][save_obj]")
     SECTION("EdgeFaceCandidate")
     {
         std::stringstream ss;
-        ipc::save_obj<ipc::EdgeFaceCandidate>(
+        ipc::write_candidates_obj<ipc::EdgeFaceCandidate>(
             ss, V, E, F, { { ipc::EdgeFaceCandidate(0, 0) } });
         CHECK(
             ss.str()
             == "o EF\nv 1 0 0\nv 0 1 0\nv 1 0 0\nv 0 1 0\nv 0 0 1\nl 1 2\nf 3 4 5\n");
     }
+}
+TEST_CASE("Write OBJ of candidates to a file", "[utils][write_candidates_obj]")
+{
+    Eigen::MatrixXd V(3, 3);
+    V.row(0) << 0, 0, 0;
+    V.row(1) << 1, 0, 0;
+    V.row(2) << 0, 1, 0;
+    Eigen::MatrixXi E(1, 2);
+    E.row(0) << 0, 1;
+    const Eigen::MatrixXi F(0, 3);
+
+    const std::filesystem::path path =
+        std::filesystem::temp_directory_path() / "ipctk_candidates_test.obj";
+    const auto read_file = [&path]() {
+        std::ifstream in(path);
+        std::stringstream ss;
+        ss << in.rdbuf();
+        return ss.str();
+    };
+
+    ipc::Candidates candidates;
+    candidates.vv_candidates.emplace_back(0, 1);
+
+    SECTION("Candidates::write_obj")
+    {
+        CHECK(candidates.write_obj(path.string(), V, E, F));
+        // Groups with no candidates still get an (empty) object header.
+        CHECK(read_file() == "o VV\nv 0 0 0\nv 1 0 0\no EV\no EE\no FV\n");
+    }
+    SECTION("write_candidates_obj with a filename")
+    {
+        CHECK(
+            ipc::write_candidates_obj<ipc::VertexVertexCandidate>(
+                path.string(), V, E, F, candidates.vv_candidates));
+        CHECK(read_file() == "o VV\nv 0 0 0\nv 1 0 0\n");
+    }
+    SECTION("An unwritable path reports failure")
+    {
+        const std::string bad = (std::filesystem::temp_directory_path()
+                                 / "ipctk_no_such_dir" / "candidates.obj")
+                                    .string();
+        CHECK_FALSE(candidates.write_obj(bad, V, E, F));
+        CHECK_FALSE(
+            ipc::write_candidates_obj<ipc::VertexVertexCandidate>(
+                bad, V, E, F, candidates.vv_candidates));
+    }
+
+    std::filesystem::remove(path);
 }

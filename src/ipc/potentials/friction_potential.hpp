@@ -24,6 +24,8 @@ public:
         m_eps_v = eps_v;
     }
 
+    std::string name() const override { return "FrictionPotential"; }
+
 protected:
     /// @brief Compute the value of the ∫ μ(y) f₁(y) dy, where f₁ is the first derivative of the smooth mollifier.
     /// @param x The tangential relative speed.

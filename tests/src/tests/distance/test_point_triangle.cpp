@@ -8,8 +8,8 @@
 #include <ipc/tangent/closest_point.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
-#include <ipc/smooth_contact/distance/point_face.hpp>
-#include <ipc/smooth_contact/distance/primitive_distance.hpp>
+#include <ipc/gcp/distance/point_face.hpp>
+#include <ipc/gcp/distance/primitive_distance.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <finitediff.hpp>

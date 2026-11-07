@@ -2,6 +2,18 @@
 # Create Python module for IPC Toolkit
 include(pybind11)
 
+# pybind11_add_module() adds -flto unless CMAKE_INTERPROCEDURAL_OPTIMIZATION is
+# defined, and CMake passes that link flag on to nvcc's device-link step too.
+# With GCC, the device-link stub then defines fatbinData in top-level asm that
+# LTO cannot see, so the module fails to import with "undefined symbol:
+# fatbinData". We turn LTO off for the module in CUDA builds. The tradeoff is
+# small: only the binding code loses LTO, since ipc_toolkit is built without it.
+# This is a normal (not cache) variable scoped to this directory, so it still
+# respects a -DCMAKE_INTERPROCEDURAL_OPTIMIZATION the user passes.
+if(IPC_TOOLKIT_WITH_CUDA AND NOT DEFINED CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+endif()
+
 pybind11_add_module(ipctk)
 
 add_subdirectory(src) # Add sources to ipctk
