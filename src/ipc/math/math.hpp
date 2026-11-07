@@ -136,9 +136,14 @@ HessianType<9> negative_orientation_penalty_hess(
     const double alpha,
     const double beta);
 
-/// @brief The nearest rotation (in SO(dim)) to a square matrix A.
-/// @param A The (square) matrix (dim ∈ {2, 3}).
-/// @return The rotation factor R = U Vᵀ of the rotation-variant SVD.
+/// @brief The nearest rotation to a matrix A.
+///
+/// For a square matrix this is the nearest element of SO(dim). For a
+/// rectangular matrix (e.g., 3x2), it is the nearest matrix with orthonormal
+/// columns (or rows, if A is wider than tall), i.e., the polar factor of A.
+/// @param A The matrix (each dimension is 2 or 3).
+/// @return The rotation factor U_thin Vᵀ of the rotation-variant SVD, with the
+///         same shape as A.
 MatrixMax3d nearest_rotation(Eigen::ConstRef<MatrixMax3d> A);
 
 } // namespace ipc
