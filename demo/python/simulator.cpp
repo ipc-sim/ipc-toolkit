@@ -224,7 +224,7 @@ void define_simulator(py::module_& m)
         .def_property_readonly("settings", &Simulator::settings)
         .def(
             "run", &Simulator::run, "t_end"_a,
-            "callback"_a = std::function<void(bool)>([](bool) { }))
+            "callback"_a = std::function<void(bool)>([](bool) {}))
         .def("step", &Simulator::step)
         .def("reset", &Simulator::reset)
         .def(
