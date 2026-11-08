@@ -91,7 +91,6 @@ rotation_vector_to_matrix_hessian(Eigen::ConstRef<Eigen::Vector3d> theta)
     // Flatten in column-major order
     Eigen::Matrix<double, 9, 9> d2R;
     for (int j = 0; j < 3; ++j) {
-        const Eigen::Matrix3d K_dKj = K * dK[j];
         for (int i = j; i < 3; ++i) {
             const Eigen::Matrix3d dKj_dKi = dK[j] * dK[i];
             d2R.col(j * 3 + i) =
