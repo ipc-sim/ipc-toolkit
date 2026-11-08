@@ -61,30 +61,30 @@ void SweepAndPrune::build(
 }
 
 void SweepAndPrune::build(
-    const AABBs& p_vertex_boxes,
+    const AABBs& _vertex_boxes,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces,
-    const uint8_t p_dim)
+    const uint8_t _dim)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
 
     clear();
 
-    dim = p_dim;
+    dim = _dim;
 
     // Convert from ipc::AABB to scalable_ccd::AABB (additional element_id)
-    boxes->vertices.resize(p_vertex_boxes.size());
-    for (int i = 0; i < p_vertex_boxes.size(); ++i) {
+    boxes->vertices.resize(_vertex_boxes.size());
+    for (int i = 0; i < _vertex_boxes.size(); ++i) {
         boxes->vertices[i].min =
-            p_vertex_boxes[i].min.cast<scalable_ccd::Scalar>();
+            _vertex_boxes[i].min.cast<scalable_ccd::Scalar>();
         boxes->vertices[i].max =
-            p_vertex_boxes[i].max.cast<scalable_ccd::Scalar>();
-        assert(p_vertex_boxes[i].vertex_ids[0] >= 0);
-        assert(p_vertex_boxes[i].vertex_ids[1] < 0);
-        assert(p_vertex_boxes[i].vertex_ids[2] < 0);
-        boxes->vertices[i].vertex_ids[0] = p_vertex_boxes[i].vertex_ids[0];
-        boxes->vertices[i].vertex_ids[1] = -p_vertex_boxes[i].vertex_ids[0] - 1;
+            _vertex_boxes[i].max.cast<scalable_ccd::Scalar>();
+        assert(_vertex_boxes[i].vertex_ids[0] >= 0);
+        assert(_vertex_boxes[i].vertex_ids[1] < 0);
+        assert(_vertex_boxes[i].vertex_ids[2] < 0);
+        boxes->vertices[i].vertex_ids[0] = _vertex_boxes[i].vertex_ids[0];
+        boxes->vertices[i].vertex_ids[1] = -_vertex_boxes[i].vertex_ids[0] - 1;
         boxes->vertices[i].vertex_ids[2] = boxes->vertices[i].vertex_ids[1];
         boxes->vertices[i].element_id = i;
     }
