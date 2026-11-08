@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/math/constants.hpp>
 #include <ipc/utils/logger.hpp>
 
 #include <algorithm>
@@ -699,11 +700,6 @@ lobatto_compute(int n1, std::vector<double>& x, std::vector<double>& w)
     Output, double W[N], the weights.
 */
 {
-    // M_PI is not standard C++: MSVC only defines it when _USE_MATH_DEFINES is
-    // set before <cmath>, which a consumer of this header cannot be relied on
-    // to do.
-    static constexpr double pi_v = 3.14159265358979323846;
-
     int i;
     int j;
     double test;
@@ -731,7 +727,7 @@ lobatto_compute(int n1, std::vector<double>& x, std::vector<double>& w)
       Initial estimate for the abscissas is the Chebyshev-Gauss-Lobatto nodes.
     */
     for (i = 0; i < n; i++) {
-        x[i] = cos(pi_v * static_cast<double>(i) / static_cast<double>(n - 1));
+        x[i] = cos(PI * static_cast<double>(i) / static_cast<double>(n - 1));
     }
 
     std::vector<double> xold(n);
