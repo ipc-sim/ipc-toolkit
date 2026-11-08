@@ -104,6 +104,108 @@ TEST_CASE("Smooth barrier potential codim", "[gcp_potential]")
     CHECK((hess_b - fhess_b).norm() / hess_b.norm() < 1e-5);
 }
 
+TEST_CASE(
+    "GCP rest-shape measure keeps quadrature weights constant",
+    "[gcp_potential][rest_shape_measure]")
+{
+    const auto method = make_default_broad_phase();
+    const bool orientable = GENERATE(true, false);
+
+    double dhat = -1;
+    double perturbation = 0;
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    bool all_vertices_on_surface = true;
+
+    SECTION("2D edges and a codimensional point")
+    {
+        dhat = 2;
+        perturbation = 5e-2;
+        vertices.resize(4, 2);
+        vertices << -1, 0, 0, 0, 1, 0, 1.5, 0.2;
+        edges.resize(2, 2);
+        edges << 0, 1, 1, 2;
+    }
+    SECTION("3D two cubes")
+    {
+        dhat = 1e-1;
+        perturbation = 1e-3;
+        all_vertices_on_surface = false;
+        REQUIRE(
+            tests::load_mesh("two-cubes-close.ply", vertices, edges, faces));
+    }
+
+    const std::vector<bool> is_on_surface = all_vertices_on_surface
+        ? std::vector<bool>(vertices.rows(), true)
+        : CollisionMesh::construct_is_on_surface(vertices.rows(), edges);
+    const CollisionMesh mesh(
+        is_on_surface, std::vector<bool>(vertices.rows(), orientable), vertices,
+        edges, faces);
+
+    // The mesh was constructed from the rest shape, so we deform it a little
+    // to make the rest and deformed measures differ.
+    const Eigen::MatrixXd rest = mesh.rest_positions();
+    const Eigen::MatrixXd deformed =
+        rest + perturbation * Eigen::MatrixXd::Random(rest.rows(), rest.cols());
+
+    auto make_params = [&](const bool use_rest_shape_measure) {
+        GCPParameters params(dhat, 0.85, 0.5, 0.95, 0.6, 2);
+        params.use_rest_shape_measure = use_rest_shape_measure;
+        return params;
+    };
+    auto energy = [&](const bool use_rest_shape_measure,
+                      Eigen::ConstRef<Eigen::MatrixXd> V) {
+        const GCPParameters params = make_params(use_rest_shape_measure);
+        GCPCollisions collisions;
+        collisions.build(mesh, V, params, false, method.get());
+        REQUIRE(!collisions.empty());
+        return GCPPotential(params)(collisions, mesh, V);
+    };
+
+    // The rest-shape measure only changes the quadrature weights, so the two
+    // formulations have to agree when the mesh is in its rest configuration.
+    const double rest_energy = energy(true, rest);
+    CHECK(rest_energy > 0);
+    CHECK(rest_energy == Catch::Approx(energy(false, rest)).epsilon(1e-10));
+
+    // Once the mesh deforms, the deformed measure changes but the rest-shape
+    // measure does not, so the energies must differ.
+    CHECK(energy(true, deformed) != Catch::Approx(energy(false, deformed)));
+
+    // The rest-shape energy must be consistently differentiated: since the
+    // measure is constant, the analytic derivatives only come from the
+    // smooth contact terms, and have to match finite differences of the energy.
+    const GCPParameters params = make_params(true);
+    GCPCollisions collisions;
+    collisions.build(mesh, deformed, params, false, method.get());
+    REQUIRE(!collisions.empty());
+    const GCPPotential potential(params);
+
+    const Eigen::VectorXd grad = potential.gradient(collisions, mesh, deformed);
+    Eigen::VectorXd fgrad;
+    fd::finite_gradient(
+        tests::flatten(deformed),
+        [&](const Eigen::VectorXd& x) {
+            return potential(
+                collisions, mesh, tests::unflatten(x, deformed.cols()));
+        },
+        fgrad, fd::AccuracyOrder::SECOND, 1e-8);
+    REQUIRE(grad.norm() > 0);
+    CHECK((grad - fgrad).norm() / grad.norm() < 1e-5);
+
+    const Eigen::MatrixXd hess = potential.hessian(collisions, mesh, deformed);
+    Eigen::MatrixXd fhess;
+    fd::finite_jacobian(
+        tests::flatten(deformed),
+        [&](const Eigen::VectorXd& x) {
+            return potential.gradient(
+                collisions, mesh, tests::unflatten(x, deformed.cols()));
+        },
+        fhess, fd::AccuracyOrder::SECOND, 1e-8);
+    REQUIRE(hess.norm() > 0);
+    CHECK((hess - fhess).norm() / hess.norm() < 1e-5);
+}
+
 #if defined(NDEBUG) && !defined(WIN32)
 static std::string tagsopt = "[gcp_potential]";
 #else

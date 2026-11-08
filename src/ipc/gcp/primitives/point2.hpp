@@ -41,5 +41,7 @@ public:
 private:
     bool has_neighbor_1, has_neighbor_2;
     bool orientable;
+    double m_rest_measure = 0.0; ///< Rest-shape vertex length measure
+                                 ///< (quadrature weight, constant)
 };
 } // namespace ipc
