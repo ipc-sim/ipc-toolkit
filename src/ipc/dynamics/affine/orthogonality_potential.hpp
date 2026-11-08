@@ -6,7 +6,7 @@ namespace ipc::affine {
 
 class OrthogonalityPotential {
 public:
-    OrthogonalityPotential(const double stiffness) : stiffness(stiffness) { }
+    OrthogonalityPotential(const double _stiffness) : stiffness(_stiffness) { }
 
     // ---- Cumulative functions -----------------------------------------------
 
