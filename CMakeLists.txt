@@ -264,6 +264,18 @@ endif()
 include(eigen)
 target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
 
+# Pin Eigen's ABI on the Eigen target, so every library that links it agrees.
+# See cmake/ipc_toolkit/ipc_toolkit_eigen_abi.cmake for why this lives here.
+include(ipc_toolkit_eigen_abi)
+set(IPC_TOOLKIT_EIGEN_ABI_OPTIONS)
+if(IPC_TOOLKIT_WITH_SIMD)
+  list(APPEND IPC_TOOLKIT_EIGEN_ABI_OPTIONS DONT_VECTORIZE)
+endif()
+if(IPC_TOOLKIT_WITH_CUDA)
+  list(APPEND IPC_TOOLKIT_EIGEN_ABI_OPTIONS PIN_ALIGNMENT)
+endif()
+ipc_toolkit_pin_eigen_abi(Eigen3::Eigen ${IPC_TOOLKIT_EIGEN_ABI_OPTIONS})
+
 # Logger
 # NOTE: Included before the CCD dependencies on purpose. Scalable CCD carries
 # its own spdlog recipe guarded on `if(TARGET spdlog::spdlog)`, so whichever
@@ -383,24 +395,8 @@ if(IPC_TOOLKIT_WITH_SIMD)
   include(xsimd)
   target_link_libraries(ipc_toolkit PUBLIC xsimd::xsimd)
 
-  # Disable vectorization in Eigen since I've found it to have alignment issues.
-  # NOTE: I don't know why this needs to be public, but it crashes if I make it private.
-  target_compile_definitions(ipc_toolkit PUBLIC EIGEN_DONT_VECTORIZE=1)
-endif()
-
-if(IPC_TOOLKIT_WITH_CUDA)
-  # Pin Eigen's alignment so C++ and CUDA translation units agree on object
-  # layout. Eigen picks its alignment per translation unit from the flags that
-  # unit was compiled with, and nvcc never sees the host compiler's -march
-  # flags -- so the two sides disagree whenever anything makes them differ.
-  # Two ways that happens here: EIGEN_DONT_VECTORIZE yields align=0 under the
-  # host compiler but align=16 under nvcc, and -march=native yields align=32
-  # (AVX) or 64 (AVX-512) in C++ against nvcc's 16. Fixed-max types (e.g.
-  # VectorMax<double, 18>) then get a different sizeof/alignof in each, which
-  # smashes the stack when one is returned by value across that boundary.
-  target_compile_definitions(ipc_toolkit PUBLIC
-    EIGEN_MAX_STATIC_ALIGN_BYTES=0
-    EIGEN_MAX_ALIGN_BYTES=0)
+  # NOTE: EIGEN_DONT_VECTORIZE is set on the Eigen target, see the Eigen block
+  # in the Dependencies section above.
 endif()
 
 # For MSVC, do not use the min and max macros.

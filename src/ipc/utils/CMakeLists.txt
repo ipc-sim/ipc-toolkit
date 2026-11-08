@@ -1,6 +1,8 @@
 set(SOURCES
   autodiff_types.hpp
   default_init_allocator.hpp
+  eigen_abi.cpp
+  eigen_abi.hpp
   eigen_ext.hpp
   eigen_ext.tpp
   gradient_assembler.hpp

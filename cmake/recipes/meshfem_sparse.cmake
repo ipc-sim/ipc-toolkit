@@ -86,14 +86,5 @@ target_compile_definitions(MeshFEMSparse PUBLIC
     _USE_MATH_DEFINES
 )
 
-# ipc_toolkit is compiled with EIGEN_DONT_VECTORIZE=1 when SIMD is enabled;
-# compiling the same Eigen templates with different vectorization settings is
-# an ODR violation with real alignment/layout consequences. PUBLIC so the
-# setting travels with the target: anything including MeshFEMSparse's headers
-# must agree with how its own translation units were compiled.
-if(IPC_TOOLKIT_WITH_SIMD)
-    target_compile_definitions(MeshFEMSparse PUBLIC EIGEN_DONT_VECTORIZE=1)
-endif()
-
 # Folder name for IDE
 set_target_properties(MeshFEMSparse PROPERTIES FOLDER "ThirdParty")
