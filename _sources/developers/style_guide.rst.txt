@@ -29,6 +29,11 @@ In general, we stick to the following naming conventions:
 * ``m_`` prefix for class member variables (if the member is not public)
 * ``member()`` to get a class member variable (if the member is not public)
 * ``set_member()`` to set a class member variable (if the member is not public)
+* ``_`` prefix for function parameters that would otherwise shadow a member or another name in scope (e.g., ``_dim`` for a parameter that initializes the member ``dim``); ``.clang-tidy`` exempts these names from the naming checks
+
+  * Always put the underscore first, never last (e.g., ``_p``, not ``p_``).
+  * Follow the underscore with a lowercase letter. A leading underscore before an uppercase letter (e.g., ``_V``) is reserved by the C++ standard, so pick a different name instead.
+  * Do not use a ``p_`` prefix for this. In geometry code ``p`` is conventionally a point, so names like ``p_t0`` (the point at time ``t0``) and ``p_x`` (the x component of ``p``) already have a meaning.
 
 Specific
 ^^^^^^^^
@@ -41,6 +46,7 @@ Specific
 * Mesh face matrix: ``faces``
 * Element vertices: Use a numeral suffix (e.g., ``e0`` and ``e1`` for the end-points of an edge).
 * Edge-edge pairings: Use suffixes ``a`` and ``b``.
+* CUDA device pointers: Use the ``d_`` prefix (e.g., ``d_vertex_boxes``, ``d_box_min``) to tell device memory apart from its host counterpart.
 * Continuous collision detection pairs: Use the suffix ``_t0`` for starting values and ``_t1`` for end values.
 * Favor the term "collision" over "contact" (but this is not a hard rule).
 * Prefer the term "potential" over "constraint" when referring to collisions and friction.

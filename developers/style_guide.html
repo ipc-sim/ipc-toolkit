@@ -2228,6 +2228,13 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">m_</span></code> prefix for class member variables (if the member is not public)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">member()</span></code> to get a class member variable (if the member is not public)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">set_member()</span></code> to set a class member variable (if the member is not public)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_</span></code> prefix for function parameters that would otherwise shadow a member or another name in scope (e.g., <code class="docutils literal notranslate"><span class="pre">_dim</span></code> for a parameter that initializes the member <code class="docutils literal notranslate"><span class="pre">dim</span></code>); <code class="docutils literal notranslate"><span class="pre">.clang-tidy</span></code> exempts these names from the naming checks</p>
+<ul>
+<li><p>Always put the underscore first, never last (e.g., <code class="docutils literal notranslate"><span class="pre">_p</span></code>, not <code class="docutils literal notranslate"><span class="pre">p_</span></code>).</p></li>
+<li><p>Follow the underscore with a lowercase letter. A leading underscore before an uppercase letter (e.g., <code class="docutils literal notranslate"><span class="pre">_V</span></code>) is reserved by the C++ standard, so pick a different name instead.</p></li>
+<li><p>Do not use a <code class="docutils literal notranslate"><span class="pre">p_</span></code> prefix for this. In geometry code <code class="docutils literal notranslate"><span class="pre">p</span></code> is conventionally a point, so names like <code class="docutils literal notranslate"><span class="pre">p_t0</span></code> (the point at time <code class="docutils literal notranslate"><span class="pre">t0</span></code>) and <code class="docutils literal notranslate"><span class="pre">p_x</span></code> (the x component of <code class="docutils literal notranslate"><span class="pre">p</span></code>) already have a meaning.</p></li>
+</ul>
+</li>
 </ul>
 <h3 id="specific">Specific<a class="headerlink" href="#specific" title="Link to this heading">¶</a></h3>
 <ul class="simple">
@@ -2239,6 +2246,7 @@
 <li><p>Mesh face matrix: <code class="docutils literal notranslate"><span class="pre">faces</span></code></p></li>
 <li><p>Element vertices: Use a numeral suffix (e.g., <code class="docutils literal notranslate"><span class="pre">e0</span></code> and <code class="docutils literal notranslate"><span class="pre">e1</span></code> for the end-points of an edge).</p></li>
 <li><p>Edge-edge pairings: Use suffixes <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code>.</p></li>
+<li><p>CUDA device pointers: Use the <code class="docutils literal notranslate"><span class="pre">d_</span></code> prefix (e.g., <code class="docutils literal notranslate"><span class="pre">d_vertex_boxes</span></code>, <code class="docutils literal notranslate"><span class="pre">d_box_min</span></code>) to tell device memory apart from its host counterpart.</p></li>
 <li><p>Continuous collision detection pairs: Use the suffix <code class="docutils literal notranslate"><span class="pre">_t0</span></code> for starting values and <code class="docutils literal notranslate"><span class="pre">_t1</span></code> for end values.</p></li>
 <li><p>Favor the term “collision” over “contact” (but this is not a hard rule).</p></li>
 <li><p>Prefer the term “potential” over “constraint” when referring to collisions and friction.</p></li>
