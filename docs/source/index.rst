@@ -38,18 +38,22 @@
 
     Index <cpp-api/index.rst>
     cpp-api/adhesion.rst
+    cpp-api/affine_bodies.rst
     cpp-api/barrier/index.rst
     cpp-api/broad_phase.rst
     cpp-api/candidates.rst
     cpp-api/ccd.rst
     cpp-api/collision_mesh.rst
     cpp-api/distance.rst
+    cpp-api/dynamics.rst
     cpp-api/esp.rst
     cpp-api/friction.rst
+    cpp-api/io.rst
     cpp-api/intersections.rst
     cpp-api/interval.rst
     cpp-api/normal_collisions.rst
     cpp-api/potentials/index.rst
+    cpp-api/rigid_bodies.rst
     cpp-api/tangent.rst
     cpp-api/tangential_collisions.rst
     cpp-api/utils.rst
@@ -60,18 +64,22 @@
 
     Index <python-api/index.rst>
     python-api/adhesion.rst
+    python-api/affine_bodies.rst
     python-api/barrier.rst
     python-api/broad_phase.rst
     python-api/candidates.rst
     python-api/ccd.rst
     python-api/collision_mesh.rst
+    python-api/demo.rst
     python-api/distance.rst
     python-api/esp.rst
     python-api/friction.rst
+    python-api/io.rst
     python-api/intersections.rst
     python-api/interval.rst
     python-api/normal_collisions.rst
     python-api/potentials.rst
+    python-api/rigid_bodies.rst
     python-api/tangent.rst
     python-api/tangential_collisions.rst
     python-api/utils.rst

@@ -8,6 +8,8 @@ Python API
       - Description
     * - `Adhesion <adhesion.rst>`__
       - Adhesion potential functions.
+    * - `Affine Bodies <affine_bodies.rst>`__
+      - Affine body poses and joint constraints.
     * - `Barrier <barrier.rst>`__
       - Barrier functions and functionals.
     * - `Broad Phase <broad_phase.rst>`__
@@ -18,12 +20,16 @@ Python API
       - Methods for detecting collisions over continuous motion.
     * - `Collision Mesh <collision_mesh.rst>`__
       - Data structures representing collision meshes.
+    * - `Demo Simulator <demo.rst>`__
+      - A rigid/affine body dynamics simulator built from toolkit components.
     * - `Distance <distance.rst>`__
       - Functions for computing distances between geometric entities.
     * - `Extremum-Sum Potential <esp.rst>`__
       - The Extremum-Sum Proximity Potential (ESP).
     * - `Friction <friction.rst>`__
       - Models and functions for frictional contact.
+    * - `I/O <io.rst>`__
+      - Reading and writing glTF scenes.
     * - `Intersections <intersections.rst>`__
       - Algorithms for detecting intersections between primitives.
     * - `Interval Arithmetic <interval.rst>`__
@@ -32,6 +38,8 @@ Python API
       - Functions for handling normal contact collisions.
     * - `Potentials <potentials.rst>`__
       - General potential energy functions for contact modeling.
+    * - `Rigid Bodies <rigid_bodies.rst>`__
+      - Rigid bodies and poses.
     * - `Tangent <tangent.rst>`__
       - Utilities for tangent vector computations.
     * - `Tangential Collisions <tangential_collisions.rst>`__
