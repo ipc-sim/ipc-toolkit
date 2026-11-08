@@ -80,7 +80,10 @@ jobs:
       - name: Run Coverage
         run: |
           cd build
-          ctest --verbose -j ${{ steps.cpu-cores.outputs.count }}
+          # The demo simulator tests run alongside the slow barrier potential
+          # tests, so CPU contention can push a test past ctest's default
+          # 1500 s timeout even though it finishes in ~450 s on its own.
+          ctest --verbose --timeout 3600 -j ${{ steps.cpu-cores.outputs.count }}
           lcov --directory . --capture --output-file coverage.info --ignore-errors inconsistent,format,gcov,mismatch
           lcov --remove coverage.info --ignore-errors unused,inconsistent '/usr/*' "$HOME/.cache/*" "*tests/*" --output-file coverage.info
 
