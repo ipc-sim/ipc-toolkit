@@ -11,6 +11,7 @@ set(SOURCES
   test_joints.cpp
   test_rigid_simulator.cpp
   test_static_kinematic.cpp
+  test_tutorial.cpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

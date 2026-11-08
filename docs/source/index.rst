@@ -28,6 +28,7 @@
     tutorials/nonlinear_ccd.rst
     tutorials/adhesion.rst
     tutorials/simulation.rst
+    tutorials/rigid_affine_dynamics.rst
     tutorials/misc.rst
     tutorials/faq.rst
     tutorials/references.rst
