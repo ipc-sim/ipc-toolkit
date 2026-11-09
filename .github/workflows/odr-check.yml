@@ -9,18 +9,24 @@ name: ODR Check
 # This check catches it every time.
 
 on:
+  # We also run on main so that it saves a ccache that new PRs can restore.
+  # GitHub only lets a PR read caches from its own branch and its base branch.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/odr-check.yml'
+      - 'cmake/**'
+      - 'CMakeLists.txt'
   pull_request:
     paths:
       - '.github/workflows/odr-check.yml'
       - 'cmake/**'
       - 'CMakeLists.txt'
-  schedule:
-    - cron: '0 6 * * 1' # Mondays at 06:00 UTC
   workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   odr:
@@ -30,6 +36,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
+      - name: Dependencies
+        run: sudo apt-get install ccache
 
       - name: Get number of CPU cores
         uses: SimenB/github-actions-cpu-cores@v2
@@ -42,6 +51,22 @@ jobs:
           for f in avx2 bmi1 bmi2 f16c fma abm movbe xsave; do
             grep -qw "$f" /proc/cpuinfo || { echo "::error::Runner CPU lacks $f, which x86-64-v3 requires"; exit 1; }
           done
+
+      # ccache only skips compiling. GCC still runs the LTO link, where -Wodr
+      # does its cross-object comparison, so cache hits don't hide violations.
+      # We give each run its own key and restore the newest one by prefix,
+      # because a fixed key is saved once and never updated.
+      - name: Restore ccache
+        uses: actions/cache/restore@v5
+        with:
+          path: ~/.cache/ccache
+          key: ${{ runner.os }}-odr-ccache-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-odr-ccache-
+
+      - name: Prepare ccache
+        run: |
+          ccache --max-size=1.0G
+          ccache --zero-stats
 
       - name: Configure
         run: |
@@ -57,6 +82,16 @@ jobs:
         run: |
           set -o pipefail
           cmake --build build -j ${{ steps.cpu-cores.outputs.count }} --target ipc_toolkit_tests 2>&1 | tee build.log
+          ccache --show-stats
+
+      # We save the cache even when the check fails, so the next push to the PR
+      # starts from it.
+      - name: Save ccache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: ~/.cache/ccache
+          key: ${{ runner.os }}-odr-ccache-${{ github.run_id }}
 
       - name: Check for ODR violations
         run: |
