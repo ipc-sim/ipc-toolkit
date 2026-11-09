@@ -392,8 +392,8 @@ if(IPC_TOOLKIT_WITH_SIMD)
   include(xsimd)
   target_link_libraries(ipc_toolkit PUBLIC xsimd::xsimd)
 
-  # NOTE: EIGEN_DONT_VECTORIZE is set on the Eigen target, see the Eigen block
-  # in the Dependencies section above.
+  # NOTE: EIGEN_DONT_VECTORIZE is set on the Eigen target, see
+  # cmake/recipes/eigen.cmake.
 endif()
 
 # For MSVC, do not use the min and max macros.
