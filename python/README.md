@@ -25,7 +25,7 @@ pip install git+https://github.com/ipc-sim/ipc-toolkit
 
 ## Build
 
-To manually build the python binding you can either use the `setup.py` script or use `cmake` directly. The easiest way is to use the `setup.py` script which uses `setuptools`. To do this, use the following command from the root of the repository:
+To manually build the python binding you can either use `pip` or use `cmake` directly. The easiest way is `pip`, which builds the bindings with [scikit-build-core](https://scikit-build-core.readthedocs.io). To do this, use the following command from the root of the repository:
 
 ```sh
 pip install .
@@ -37,6 +37,19 @@ You can test that the installation was successful by doing
 ```sh
 python -c "import ipctk"
 ```
+
+The build lives in `build/<wheel tag>/`, so re-running `pip install .` only recompiles what changed.
+
+#### CMake options
+
+Pass CMake options with `-C cmake.define.<NAME>=<VALUE>`, or through the `CMAKE_ARGS` environment variable:
+
+```sh
+pip install . -C cmake.define.IPC_TOOLKIT_WITH_CUDA=ON
+CMAKE_ARGS="-DIPC_TOOLKIT_WITH_CUDA=ON" pip install .
+```
+
+To build in debug mode, set `SKBUILD_CMAKE_BUILD_TYPE=Debug` (or pass `-C cmake.build-type=Debug`).
 
 #### SIMD
 
