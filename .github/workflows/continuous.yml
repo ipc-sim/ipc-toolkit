@@ -80,12 +80,16 @@ jobs:
           echo "CPU: $(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)"
           echo "SIMD_ARGS=-DSIMD_CXX_FLAGS=-march=x86-64-v3" >> "$GITHUB_ENV"
 
-      - name: Cache Build
-        id: cache-build
-        uses: actions/cache@v5
+      # Cache entries are immutable, so a fixed key is saved once and never
+      # updated. We give each run its own key and restore the newest one by
+      # prefix instead. Only pushes to main save (see "Save ccache" below), and
+      # PRs restore from those.
+      - name: Restore ccache
+        uses: actions/cache/restore@v5
         with:
           path: ${{ env.CACHE_PATH }}
-          key: ${{ runner.os }}-${{ matrix.config }}-cache
+          key: ${{ runner.os }}-${{ matrix.config }}-ccache-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-${{ matrix.config }}-ccache-
 
       - name: Prepare ccache
         run: |
@@ -93,9 +97,12 @@ jobs:
           ccache -V && ccache --show-config
           ccache --show-stats && ccache --zero-stats
 
-      # Debug keeps the asserts (NDEBUG stays undefined) and -O0 but drops -g.
-      # Debug info made the Debug ccache about 20x larger than Release, and CI
-      # never reads it: assert and Catch2 messages carry __FILE__ and __LINE__.
+      # Debug keeps the asserts (NDEBUG stays undefined) but drops -g and builds
+      # at -O1. Debug info made the Debug ccache about 20x larger than Release,
+      # and CI never reads it: assert and Catch2 messages carry __FILE__ and
+      # __LINE__. At -O0 none of Eigen's small template functions get inlined,
+      # which made the Debug tests about 10x slower than Release. -O1 lets the
+      # compiler inline most of them, and every assert is still checked.
       - name: Configure (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
@@ -103,17 +110,22 @@ jobs:
           cd build
           cmake .. \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
-            -DCMAKE_C_FLAGS_DEBUG=-O0 \
-            -DCMAKE_CXX_FLAGS_DEBUG=-O0 \
+            -DCMAKE_C_FLAGS_DEBUG=-O1 \
+            -DCMAKE_CXX_FLAGS_DEBUG=-O1 \
             $SIMD_ARGS \
             -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 
+      # MSVC's default Debug flags include /Zi, which writes debug info to a
+      # shared PDB that ccache cannot cache, so we drop it the same way the
+      # Linux/macOS configure drops -g.
       - name: Configure (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
           cmake -G Ninja ^
             -DIPC_TOOLKIT_BUILD_TESTS=ON ^
+            -DCMAKE_C_FLAGS_DEBUG="/Od /Ob0 /RTC1" ^
+            -DCMAKE_CXX_FLAGS_DEBUG="/Od /Ob0 /RTC1" ^
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
             -B build ^
             -S .
@@ -129,6 +141,15 @@ jobs:
         shell: cmd
         run: |
           cmake --build build -j ${{ steps.cpu-cores.outputs.count }} && ccache --show-stats
+
+      # We save after a failed build too, so the next run reuses what did
+      # compile.
+      - name: Save ccache
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: ${{ runner.os }}-${{ matrix.config }}-ccache-${{ github.run_id }}
 
       - name: Tests
         run: cd build; ctest --verbose -j ${{ steps.cpu-cores.outputs.count }}

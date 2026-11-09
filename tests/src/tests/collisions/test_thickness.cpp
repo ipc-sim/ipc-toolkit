@@ -2,6 +2,7 @@
 
 #include <ipc/ipc.hpp>
 #include <ipc/barrier/adaptive_stiffness.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/collision_mesh.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
@@ -242,12 +243,16 @@ TEST_CASE("Plane-vertex with a thickness", "[collisions][thickness][plane]")
 
 TEST_CASE("CCD stops at the thickness", "[ccd][thickness]")
 {
-#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32)) && !defined(NDEBUG)
-    SKIP("'CCD stops at the thickness' test is skipped in debug mode");
-#endif
-
     const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
     CAPTURE(broad_phase->name());
+
+    // Tight Inclusion slows down sharply as the minimum separation grows,
+    // because every point within the thickness counts as a root it has to
+    // refine. With a 0.2 separation and the default 1e-6 tolerance, this test
+    // took 30-100 s in Release and over 20 minutes in Debug. We only check the
+    // step to within 0.1, so a 1e-3 tolerance loses nothing and runs about
+    // 20x faster.
+    const TightInclusionCCD ccd(/*tolerance=*/1e-3);
 
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
@@ -259,13 +264,13 @@ TEST_CASE("CCD stops at the thickness", "[ccd][thickness]")
     const double thickness = 0.1; // per face, so a pair rests 0.2 apart
 
     const double plain_step = compute_collision_free_stepsize(
-        mesh, V0, V1, /*min_distance=*/std::nullopt, broad_phase.get());
+        mesh, V0, V1, /*min_distance=*/std::nullopt, broad_phase.get(), ccd);
     CHECK(plain_step <= 0.5);
     CHECK(plain_step > 0.3);
 
     mesh.set_face_thickness(Eigen::Vector2d::Constant(thickness));
     const double step = compute_collision_free_stepsize(
-        mesh, V0, V1, /*min_distance=*/std::nullopt, broad_phase.get());
+        mesh, V0, V1, /*min_distance=*/std::nullopt, broad_phase.get(), ccd);
     // Contact at a gap of 0.2, so z = 0.2 at t = 0.4.
     CHECK(step <= 0.4);
     CHECK(step > 0.3);
@@ -274,18 +279,20 @@ TEST_CASE("CCD stops at the thickness", "[ccd][thickness]")
     // A min_distance (deprecated) overrides the thickness.
     CHECK(
         compute_collision_free_stepsize(
-            mesh, V0, V1, /*min_distance=*/0.0, broad_phase.get())
+            mesh, V0, V1, /*min_distance=*/0.0, broad_phase.get(), ccd)
         == Catch::Approx(plain_step));
 
     Eigen::MatrixXd V_close = V0;
     V_close.bottomRows(3).col(2).setConstant(0.15);
     CHECK(!is_step_collision_free(
-        mesh, V0, V_close, /*min_distance=*/std::nullopt, broad_phase.get()));
+        mesh, V0, V_close, /*min_distance=*/std::nullopt, broad_phase.get(),
+        ccd));
     CHECK(is_step_collision_free(
-        mesh, V0, V_close, /*min_distance=*/0.0, broad_phase.get()));
+        mesh, V0, V_close, /*min_distance=*/0.0, broad_phase.get(), ccd));
     mesh.clear_thickness();
     CHECK(is_step_collision_free(
-        mesh, V0, V_close, /*min_distance=*/std::nullopt, broad_phase.get()));
+        mesh, V0, V_close, /*min_distance=*/std::nullopt, broad_phase.get(),
+        ccd));
 }
 
 TEST_CASE(

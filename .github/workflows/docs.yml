@@ -34,12 +34,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r docs/requirements.txt
 
-      - name: Cache Build
-        id: cache-build
-        uses: actions/cache@v5
+      # Cache entries are immutable, so a fixed key is saved once and never
+      # updated. We give each run its own key and restore the newest one by
+      # prefix instead.
+      - name: Restore ccache
+        uses: actions/cache/restore@v5
         with:
           path: ${{ env.CACHE_PATH }}
-          key: docs-ccache
+          key: docs-ccache-${{ github.run_id }}
+          restore-keys: docs-ccache-
 
       - name: Prepare Ccache
         run: |
@@ -119,6 +122,13 @@ jobs:
         run: |
           pip install --verbose .
           ccache --show-stats
+
+      - name: Save ccache
+        if: ${{ !cancelled() }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: docs-ccache-${{ github.run_id }}
 
       - name: Build docs
         run: |
