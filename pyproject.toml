@@ -1,11 +1,6 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel",
-    "ninja",
-    # "cmake>=3.24",
-]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core>=0.11"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "ipctk"
@@ -30,6 +25,34 @@ keywords = ["IPC", "simulation", "physics", "science", "research"]
 "Homepage" = "https://ipctk.xyz"
 "Bug Tracker" = "https://github.com/ipc-sim/ipc-toolkit/issues"
 "Source Code" = "https://github.com/ipc-sim/ipc-toolkit"
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+# scikit-build-core downloads CMake and Ninja from PyPI only when the system
+# doesn't already have suitable versions.
+cmake.version = ">=3.24"
+# Override with SKBUILD_CMAKE_BUILD_TYPE=Debug (or -Ccmake.build-type=Debug).
+cmake.build-type = "Release"
+# We keep the build folder at a stable, per-wheel path instead of a temporary
+# one, so rebuilds are incremental and ccache sees the same paths every time.
+build-dir = "build/{wheel_tag}"
+# We build only the extension. Building ALL would also build extras like
+# oneTBB's tbbmalloc that the module never links.
+build.targets = ["ipctk"]
+# Third-party dependencies (oneTBB, spdlog, ...) register their own install
+# rules. We install only our "python" component, so their headers and static
+# libraries stay out of the wheel.
+install.components = ["python"]
+# The SDist holds the git-tracked files minus these. Developer-only folders
+# stay out; the PyPI README stays in because the metadata needs it.
+sdist.exclude = [".github/", "docs/", "notebooks/", "tests/"]
+sdist.include = ["docs/PYPI_README.md"]
+
+[tool.scikit-build.cmake.define]
+IPC_TOOLKIT_BUILD_TESTS = "OFF"
+IPC_TOOLKIT_BUILD_PYTHON = "ON"
+# Set IPCTK_WITH_SIMD=0 (or off/false/no) to build without SIMD.
+IPC_TOOLKIT_WITH_SIMD = { env = "IPCTK_WITH_SIMD", default = "ON" }
 
 [tool.cibuildwheel]
 build-frontend = "build"

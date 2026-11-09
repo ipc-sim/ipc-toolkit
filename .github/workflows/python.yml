@@ -8,12 +8,11 @@ on:
       - '.github/workflows/python.yml'
       - 'cmake/**'
       - 'python/src/**'
+      - 'python/CMakeLists.txt'
       - 'python/src/CMakeLists.txt'
       - 'src/**'
       - 'CMakeLists.txt'
-      - 'MANIFEST.in'
       - 'pyproject.toml'
-      - 'setup.py'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
