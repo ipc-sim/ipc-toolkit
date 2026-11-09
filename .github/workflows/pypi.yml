@@ -43,7 +43,7 @@ jobs:
         # windows-latest ships MSVC 19.5x (VS 2026), which CUDA 12.8 rejects, so
         # the Windows wheels build on the VS 2022 image.
         os: [ubuntu-latest, macos-latest, windows-2022]
-        python-version: [cp310, cp311, cp312, cp313, cp314]
+        python-version: [cp311, cp312, cp313, cp314, cp315]
         arch: [x86_64, arm64]
         exclude:
           - os: ubuntu-latest

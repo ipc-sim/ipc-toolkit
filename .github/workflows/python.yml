@@ -19,14 +19,41 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  Python-Versions:
+    runs-on: ubuntu-latest
+    outputs:
+      all: ${{ steps.matrix.outputs.all }}
+      pr: ${{ steps.matrix.outputs.pr }}
+    steps:
+      - id: matrix
+        env:
+          MIN_MINOR: 11   # our own floor; raise it manually if we ever need to
+        run: |
+          today=$(date +%F)
+          all=$(curl -fsS https://endoflife.date/api/python.json | jq -c \
+            --arg today "$today" --argjson min "$MIN_MINOR" '
+              [ .[]
+                | select(.cycle | startswith("3."))
+                | select((.cycle | split(".")[1] | tonumber) >= $min)
+                | select(.releaseDate <= $today)   # already released
+                | select(.eol > $today)            # not yet EOL
+                | .cycle ]
+              | sort_by(split(".")[1] | tonumber)')
+          # PRs: second-newest release (currently 3.14), so we don't
+          # chase brand-new wheels on every PR
+          pr=$(jq -c '[.[-2]]' <<< "$all")
+          echo "all=$all" >> "$GITHUB_OUTPUT"
+          echo "pr=$pr"   >> "$GITHUB_OUTPUT"
+
   Build:
+    needs: Python-Versions
     name: ${{ matrix.name }} Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ${{ github.event_name == 'pull_request' && fromJSON('["3.14"]') || fromJSON('["3.10", "3.11", "3.12", "3.13", "3.14"]') }}
+        python-version: ${{ github.event_name == 'pull_request' && fromJSON(needs.versions.outputs.pr) || fromJSON(needs.versions.outputs.all) }}
         include:
           - os: ubuntu-latest
             name: Linux
