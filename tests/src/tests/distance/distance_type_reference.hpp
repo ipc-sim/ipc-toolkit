@@ -19,14 +19,14 @@ inline ExVec3 make_exact(Eigen::ConstRef<VectorMax3d> v)
     return ExVec3::from(v.data(), int(v.size())); // z = 0 for 2D vectors
 }
 inline PointEdgeDistanceType point_edge_distance_type_reference(
-    Eigen::ConstRef<VectorMax3d> p_,
-    Eigen::ConstRef<VectorMax3d> e0_,
-    Eigen::ConstRef<VectorMax3d> e1_)
+    Eigen::ConstRef<VectorMax3d> _p,
+    Eigen::ConstRef<VectorMax3d> _e0,
+    Eigen::ConstRef<VectorMax3d> _e1)
 {
     init_pck();
-    const ExVec3 p = make_exact(p_);
-    const ExVec3 e0 = make_exact(e0_);
-    const ExVec3 e1 = make_exact(e1_);
+    const ExVec3 p = make_exact(_p);
+    const ExVec3 e0 = make_exact(_e0);
+    const ExVec3 e1 = make_exact(_e1);
     const ExVec3 e = e1 - e0;
 
     if (e.dot(p - e0) <= 0) {
@@ -39,16 +39,16 @@ inline PointEdgeDistanceType point_edge_distance_type_reference(
 }
 
 inline PointTriangleDistanceType point_triangle_distance_type_reference(
-    Eigen::ConstRef<Eigen::Vector3d> p_,
-    Eigen::ConstRef<Eigen::Vector3d> t0_,
-    Eigen::ConstRef<Eigen::Vector3d> t1_,
-    Eigen::ConstRef<Eigen::Vector3d> t2_)
+    Eigen::ConstRef<Eigen::Vector3d> _p,
+    Eigen::ConstRef<Eigen::Vector3d> _t0,
+    Eigen::ConstRef<Eigen::Vector3d> _t1,
+    Eigen::ConstRef<Eigen::Vector3d> _t2)
 {
     init_pck();
-    const ExVec3 p = make_exact(p_);
-    const ExVec3 t0 = make_exact(t0_);
-    const ExVec3 t1 = make_exact(t1_);
-    const ExVec3 t2 = make_exact(t2_);
+    const ExVec3 p = make_exact(_p);
+    const ExVec3 t0 = make_exact(_t0);
+    const ExVec3 t1 = make_exact(_t1);
+    const ExVec3 t2 = make_exact(_t2);
 
     const ExVec3 e0 = t1 - t0;
     const ExVec3 e1 = t2 - t1;
@@ -84,17 +84,17 @@ inline PointTriangleDistanceType point_triangle_distance_type_reference(
 }
 
 inline bool is_parallel_edge_edge_reference(
-    Eigen::ConstRef<Eigen::Vector3d> ea0_,
-    Eigen::ConstRef<Eigen::Vector3d> ea1_,
-    Eigen::ConstRef<Eigen::Vector3d> eb0_,
-    Eigen::ConstRef<Eigen::Vector3d> eb1_)
+    Eigen::ConstRef<Eigen::Vector3d> _ea0,
+    Eigen::ConstRef<Eigen::Vector3d> _ea1,
+    Eigen::ConstRef<Eigen::Vector3d> _eb0,
+    Eigen::ConstRef<Eigen::Vector3d> _eb1)
 {
     // TODO use a zero filter?
     init_pck();
-    const ExVec3 ea0 = make_exact(ea0_);
-    const ExVec3 ea1 = make_exact(ea1_);
-    const ExVec3 eb0 = make_exact(eb0_);
-    const ExVec3 eb1 = make_exact(eb1_);
+    const ExVec3 ea0 = make_exact(_ea0);
+    const ExVec3 ea1 = make_exact(_ea1);
+    const ExVec3 eb0 = make_exact(_eb0);
+    const ExVec3 eb1 = make_exact(_eb1);
 
     const ExVec3 u = ea1 - ea0;
     const ExVec3 v = eb1 - eb0;
@@ -108,16 +108,16 @@ inline bool is_parallel_edge_edge_reference(
 }
 
 inline EdgeEdgeDistanceType edge_edge_parallel_distance_type_reference(
-    Eigen::ConstRef<Eigen::Vector3d> ea0_,
-    Eigen::ConstRef<Eigen::Vector3d> ea1_,
-    Eigen::ConstRef<Eigen::Vector3d> eb0_,
-    Eigen::ConstRef<Eigen::Vector3d> eb1_)
+    Eigen::ConstRef<Eigen::Vector3d> _ea0,
+    Eigen::ConstRef<Eigen::Vector3d> _ea1,
+    Eigen::ConstRef<Eigen::Vector3d> _eb0,
+    Eigen::ConstRef<Eigen::Vector3d> _eb1)
 {
     init_pck();
-    const ExVec3 ea0 = make_exact(ea0_);
-    const ExVec3 ea1 = make_exact(ea1_);
-    const ExVec3 eb0 = make_exact(eb0_);
-    const ExVec3 eb1 = make_exact(eb1_);
+    const ExVec3 ea0 = make_exact(_ea0);
+    const ExVec3 ea1 = make_exact(_ea1);
+    const ExVec3 eb0 = make_exact(_eb0);
+    const ExVec3 eb1 = make_exact(_eb1);
 
     const ExVec3 ea = ea1 - ea0;
     const ExReal ea_len_sqr = ea.squared_norm();
@@ -161,17 +161,17 @@ inline EdgeEdgeDistanceType edge_edge_parallel_distance_type_reference(
 ///        genuinely parallel edges. Defaults to the library's threshold so the
 ///        reference mirrors the shipped behaviour unless asked otherwise.
 inline EdgeEdgeDistanceType edge_edge_distance_type_reference(
-    Eigen::ConstRef<Eigen::Vector3d> ea0_,
-    Eigen::ConstRef<Eigen::Vector3d> ea1_,
-    Eigen::ConstRef<Eigen::Vector3d> eb0_,
-    Eigen::ConstRef<Eigen::Vector3d> eb1_,
+    Eigen::ConstRef<Eigen::Vector3d> _ea0,
+    Eigen::ConstRef<Eigen::Vector3d> _ea1,
+    Eigen::ConstRef<Eigen::Vector3d> _eb0,
+    Eigen::ConstRef<Eigen::Vector3d> _eb1,
     const double parallel_threshold = REFERENCE_PARALLEL_THRESHOLD)
 {
     init_pck();
-    const ExVec3 ea0 = make_exact(ea0_);
-    const ExVec3 ea1 = make_exact(ea1_);
-    const ExVec3 eb0 = make_exact(eb0_);
-    const ExVec3 eb1 = make_exact(eb1_);
+    const ExVec3 ea0 = make_exact(_ea0);
+    const ExVec3 ea1 = make_exact(_ea1);
+    const ExVec3 eb0 = make_exact(_eb0);
+    const ExVec3 eb1 = make_exact(_eb1);
 
     const ExVec3 u = ea1 - ea0;
     const ExVec3 v = eb1 - eb0;
@@ -203,7 +203,7 @@ inline EdgeEdgeDistanceType edge_edge_distance_type_reference(
     }
     if (is_parallel) {
         return edge_edge_parallel_distance_type_reference(
-            ea0_, ea1_, eb0_, eb1_);
+            _ea0, _ea1, _eb0, _eb1);
     }
 
     EdgeEdgeDistanceType default_case = EdgeEdgeDistanceType::EA_EB;

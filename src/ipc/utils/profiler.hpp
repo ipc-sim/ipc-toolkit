@@ -111,9 +111,9 @@ template <class Timer = ChronoTimer> class ProfilePoint {
 public:
     ProfilePoint(const std::string& name) : ProfilePoint(profiler(), name) { }
 
-    ProfilePoint(Profiler& p_profiler, const std::string& name)
-        : m_profiler(p_profiler)
-        , m_active(p_profiler.is_recording_thread())
+    ProfilePoint(Profiler& _profiler, const std::string& name)
+        : m_profiler(_profiler)
+        , m_active(_profiler.is_recording_thread())
     {
         if (m_active) {
             m_profiler.start(name);

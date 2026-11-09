@@ -111,25 +111,25 @@ point_triangle_closest_point_direction_grad(
         break;
 
     case PointTriangleDistanceType::P_E0: {
-        const auto [pts_, d_grad] = PointEdgeDistanceDerivatives<
+        const auto [_pts, d_grad] = PointEdgeDistanceDerivatives<
             3>::point_line_closest_point_direction_grad(p, t0, t1);
-        pts = pts_;
+        pts = _pts;
         grad(Eigen::all, { 0, 1, 2, 3, 4, 5, 6, 7, 8 }) = d_grad;
         break;
     }
 
     case PointTriangleDistanceType::P_E1: {
-        const auto [pts_, d_grad] = PointEdgeDistanceDerivatives<
+        const auto [_pts, d_grad] = PointEdgeDistanceDerivatives<
             3>::point_line_closest_point_direction_grad(p, t1, t2);
-        pts = pts_;
+        pts = _pts;
         grad(Eigen::all, { 0, 1, 2, 6, 7, 8, 9, 10, 11 }) = d_grad;
         break;
     }
 
     case PointTriangleDistanceType::P_E2: {
-        const auto [pts_, d_grad] = PointEdgeDistanceDerivatives<
+        const auto [_pts, d_grad] = PointEdgeDistanceDerivatives<
             3>::point_line_closest_point_direction_grad(p, t2, t0);
-        pts = pts_;
+        pts = _pts;
         grad(Eigen::all, { 0, 1, 2, 9, 10, 11, 3, 4, 5 }) = d_grad;
         break;
     }
