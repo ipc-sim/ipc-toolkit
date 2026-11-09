@@ -55,6 +55,16 @@ function(ipc_toolkit_pin_eigen_abi eigen_target)
     set(real_target ${eigen_target})
   endif()
 
+  # cmake/recipes/eigen.cmake calls this every time it is included, so we skip
+  # definitions the target already carries instead of adding duplicates.
+  get_target_property(existing ${real_target} INTERFACE_COMPILE_DEFINITIONS)
+  if(existing)
+    list(REMOVE_ITEM definitions ${existing})
+  endif()
+  if(NOT definitions)
+    return()
+  endif()
+
   set_property(TARGET ${real_target} APPEND PROPERTY
     INTERFACE_COMPILE_DEFINITIONS ${definitions})
 endfunction()

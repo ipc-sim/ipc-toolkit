@@ -264,18 +264,6 @@ endif()
 include(eigen)
 target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
 
-# Pin Eigen's ABI on the Eigen target, so every library that links it agrees.
-# See cmake/ipc_toolkit/ipc_toolkit_eigen_abi.cmake for why this lives here.
-include(ipc_toolkit_eigen_abi)
-set(IPC_TOOLKIT_EIGEN_ABI_OPTIONS)
-if(IPC_TOOLKIT_WITH_SIMD)
-  list(APPEND IPC_TOOLKIT_EIGEN_ABI_OPTIONS DONT_VECTORIZE)
-endif()
-if(IPC_TOOLKIT_WITH_CUDA)
-  list(APPEND IPC_TOOLKIT_EIGEN_ABI_OPTIONS PIN_ALIGNMENT)
-endif()
-ipc_toolkit_pin_eigen_abi(Eigen3::Eigen ${IPC_TOOLKIT_EIGEN_ABI_OPTIONS})
-
 # Logger
 # NOTE: Included before the CCD dependencies on purpose. Scalable CCD carries
 # its own spdlog recipe guarded on `if(TARGET spdlog::spdlog)`, so whichever
