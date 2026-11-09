@@ -17,7 +17,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
 ]
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 dependencies = ["numpy", "scipy"]
 keywords = ["IPC", "simulation", "physics", "science", "research"]
 
