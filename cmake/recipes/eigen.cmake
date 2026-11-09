@@ -1,22 +1,6 @@
 # Eigen (https://gitlab.com/libeigen/eigen, mirrored at https://github.com/eigen-mirror/eigen)
 # License: MPL 2.0
-
-# Pin Eigen's ABI on the Eigen target, so every library that links it agrees.
-# See cmake/ipc_toolkit/ipc_toolkit_eigen_abi.cmake for why this lives here.
-include(ipc_toolkit_eigen_abi)
-set(IPC_TOOLKIT_EIGEN_ABI_OPTIONS)
-if(IPC_TOOLKIT_WITH_SIMD)
-    list(APPEND IPC_TOOLKIT_EIGEN_ABI_OPTIONS DONT_VECTORIZE)
-endif()
-if(IPC_TOOLKIT_WITH_CUDA)
-    list(APPEND IPC_TOOLKIT_EIGEN_ABI_OPTIONS PIN_ALIGNMENT)
-endif()
-
 if(TARGET Eigen3::Eigen)
-    # The parent project (or an earlier include of this file) already created
-    # the target. We still pin it, since a parent's Eigen needs the same
-    # settings as ours.
-    ipc_toolkit_pin_eigen_abi(Eigen3::Eigen ${IPC_TOOLKIT_EIGEN_ABI_OPTIONS})
     return()
 endif()
 
@@ -125,8 +109,6 @@ endif()
 if(WIN32 AND eigen_SOURCE_DIR)
     target_sources(Eigen3_Eigen INTERFACE $<BUILD_INTERFACE:${eigen_SOURCE_DIR}/debug/msvc/eigen.natvis>)
 endif()
-
-ipc_toolkit_pin_eigen_abi(Eigen3::Eigen ${IPC_TOOLKIT_EIGEN_ABI_OPTIONS})
 
 # Install rules
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME eigen)
