@@ -39,6 +39,22 @@ of magnitude faster than the triplet path on large scenes.
 
 .. doxygenclass:: ipc::MeshFEMHessianAssembler
 
+Eigen ABI Check
+---------------
+
+Eigen picks its alignment, and so the size and layout of fixed-size types and
+the way it allocates memory, from the flags each translation unit is compiled
+with. The IPC Toolkit defines ``EIGEN_DONT_VECTORIZE`` when SIMD is enabled, so
+code that passes Eigen objects to it must be compiled the same way. Linking the
+``ipc::toolkit`` CMake target does this for you. Use these functions to check it
+at runtime, for example in a test.
+
+.. doxygenstruct:: ipc::EigenAbi
+    :members:
+.. doxygenfunction:: ipc::eigen_abi
+.. doxygenfunction:: ipc::library_eigen_abi
+.. doxygenfunction:: ipc::eigen_abi_matches_library
+
 Eigen Extensions
 ----------------
 
