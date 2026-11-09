@@ -25,7 +25,8 @@ jobs:
       all: ${{ steps.matrix.outputs.all }}
       pr: ${{ steps.matrix.outputs.pr }}
     steps:
-      - id: matrix
+      - name: Compute supported Python versions
+        id: matrix
         env:
           MIN_MINOR: 11   # our own floor; raise it manually if we ever need to
         run: |
@@ -53,7 +54,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ${{ github.event_name == 'pull_request' && fromJSON(needs.versions.outputs.pr) || fromJSON(needs.versions.outputs.all) }}
+        python-version: ${{ github.event_name == 'pull_request' && fromJSON(needs.Python-Versions.outputs.pr) || fromJSON(needs.Python-Versions.outputs.all) }}
         include:
           - os: ubuntu-latest
             name: Linux
