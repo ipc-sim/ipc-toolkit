@@ -16,7 +16,7 @@ on:
       - '.github/workflows/pypi.yml'
       - 'python/tests/check_cuda_wheel.py'
       - 'python/tests/test_cuda.py'
-      - 'setup.py'
+      - 'python/CMakeLists.txt'
       - 'pyproject.toml'
 
 concurrency:
@@ -78,10 +78,11 @@ jobs:
           method: 'network'
           use-github-cache: false
 
-      # setup.py builds with the Visual Studio generator by default, which needs
-      # the toolkit's MSBuild integration. We use Ninja instead, as cuda.yml
-      # does, so we need MSVC's environment on PATH. check_language(CUDA) does
-      # not reliably find nvcc on this runner, so we name it with CUDACXX.
+      # On Windows, scikit-build-core builds with the Visual Studio generator
+      # by default, which needs the toolkit's MSBuild integration. We use Ninja
+      # instead, as cuda.yml does, so we need MSVC's environment on PATH.
+      # check_language(CUDA) does not reliably find nvcc on this runner, so we
+      # name it with CUDACXX.
       - name: Setup MSVC (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1

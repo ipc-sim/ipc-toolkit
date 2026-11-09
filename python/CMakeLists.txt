@@ -53,6 +53,18 @@ if (FILIB_BUILD_SHARED_LIB AND WIN32)
   )
 endif()
 
+# scikit-build-core builds the wheel from what `cmake --install` puts in the
+# "python" component (see pyproject.toml), so anything the module needs at run
+# time must be installed here. We place it at the wheel's root, where Python
+# imports ipctk from.
+if(SKBUILD)
+  install(TARGETS ipctk LIBRARY DESTINATION . COMPONENT python)
+  if(FILIB_BUILD_SHARED_LIB AND WIN32)
+    # The DLLs copied above must ship next to the module too.
+    install(FILES $<TARGET_RUNTIME_DLLS:ipctk> DESTINATION . COMPONENT python)
+  endif()
+endif()
+
 if (IPC_TOOLKIT_WITH_PROFILER)
   include(pybind11_json)
   target_link_libraries(ipctk PRIVATE pybind11::json)
