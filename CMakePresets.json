@@ -72,7 +72,8 @@
       "cacheVariables": {
         "IPC_TOOLKIT_BUILD_PYTHON": "ON",
         "IPC_TOOLKIT_BUILD_TESTS": "OFF",
-        "IPC_TOOLKIT_WITH_CUDA": "OFF"
+        "IPC_TOOLKIT_WITH_CUDA": "ON",
+        "IPC_TOOLKIT_WITH_GLTF": "ON"
       }
     },
     {

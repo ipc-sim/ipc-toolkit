@@ -21,6 +21,13 @@ requires-python = ">=3.8"
 dependencies = ["numpy", "scipy"]
 keywords = ["IPC", "simulation", "physics", "science", "research"]
 
+[project.optional-dependencies]
+# Extra packages for the interactive demos in ipctk.demo
+demo = ["polyscope", "meshio"]
+
+[project.scripts]
+ipctk-rigid = "ipctk.demo.rigid:main"
+
 [project.urls]
 "Homepage" = "https://ipctk.xyz"
 "Bug Tracker" = "https://github.com/ipc-sim/ipc-toolkit/issues"
@@ -39,6 +46,8 @@ build-dir = "build/{wheel_tag}"
 # We build only the extension. Building ALL would also build extras like
 # oneTBB's tbbmalloc that the module never links.
 build.targets = ["ipctk"]
+# The pure-Python ipctk package, which wraps the compiled ipctk._ipctk
+wheel.packages = ["python/ipctk"]
 # Third-party dependencies (oneTBB, spdlog, ...) register their own install
 # rules. We install only our "python" component, so their headers and static
 # libraries stay out of the wheel.
@@ -51,6 +60,10 @@ sdist.include = ["docs/PYPI_README.md"]
 [tool.scikit-build.cmake.define]
 IPC_TOOLKIT_BUILD_TESTS = "OFF"
 IPC_TOOLKIT_BUILD_PYTHON = "ON"
+# The demo simulator (ipctk.demo) and glTF I/O back the bundled demos, e.g.,
+# `python -m ipctk.demo.rigid scene.glb`.
+IPC_TOOLKIT_BUILD_DEMO = "ON"
+IPC_TOOLKIT_WITH_GLTF = "ON"
 # Set IPCTK_WITH_SIMD=0 (or off/false/no) to build without SIMD.
 IPC_TOOLKIT_WITH_SIMD = { env = "IPCTK_WITH_SIMD", default = "ON" }
 

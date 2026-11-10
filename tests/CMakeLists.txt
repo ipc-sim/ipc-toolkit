@@ -48,6 +48,11 @@ source_group(TREE "${PROJECT_SOURCE_DIR}/tests" FILES ${IPC_TOOLKIT_TESTS_SOURCE
 
 target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit)
 
+# Demo simulator (optional; adds the simulator tests in src/tests/demo/)
+if(IPC_TOOLKIT_BUILD_DEMO)
+  target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::demo)
+endif()
+
 # libigl (use igl::edges)
 include(libigl)
 target_link_libraries(ipc_toolkit_tests PRIVATE igl::core)

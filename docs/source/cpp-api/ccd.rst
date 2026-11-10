@@ -11,8 +11,6 @@ Narrow Phase CCD
 .. doxygenclass:: ipc::NarrowPhaseCCD
     :allow-dot-graphs:
 
-.. doxygenenum:: ipc::NarrowPhaseCCD::Mode
-
 Tight Inclusion CCD
 ^^^^^^^^^^^^^^^^^^^
 

@@ -118,7 +118,7 @@ jobs:
 
       - name: Build ipctk
         env:
-          CMAKE_ARGS: -DSIMD_CXX_FLAGS=-march=x86-64-v3
+          CMAKE_ARGS: -DSIMD_CXX_FLAGS=-march=x86-64-v3 -DIPC_TOOLKIT_WITH_GLTF=ON
         run: |
           pip install --verbose .
           ccache --show-stats

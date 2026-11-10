@@ -4,12 +4,29 @@
 #include <map>
 #include <string>
 
-PYBIND11_MODULE(ipctk, m)
+#ifdef IPCTK_WITH_DEMO
+// Defined in demo/python/simulator.cpp
+void define_simulator(py::module_& m);
+#endif
+
+// We build this extension as ipctk._ipctk and wrap it in a pure-Python ipctk
+// package (python/ipctk/), so the package can also ship Python modules such as
+// ipctk.demo.rigid.
+PYBIND11_MODULE(_ipctk, m)
 {
     // py::options options;
     // options.disable_function_signatures();
 
     m.doc() = "IPC Toolkit";
+
+    // pybind11 names every class, function, and submodule after the module's
+    // __name__. We present ourselves as "ipctk" while defining them so users
+    // see ipctk.Foo instead of ipctk._ipctk.Foo in reprs, pickles, and the
+    // docs. This also registers the submodules in sys.modules under their
+    // public names (e.g., ipctk.filib), so `from ipctk.filib import Interval`
+    // keeps working. We restore the real name at the end of this function.
+    const py::object module_name = m.attr("__name__");
+    m.attr("__name__") = "ipctk";
 
     // define these early because they are used in other definitions
     define_eigen_ext(m);
@@ -146,6 +163,18 @@ PYBIND11_MODULE(ipctk, m)
     // root
     define_ipc(m);
 
+    // dynamics
+    define_rigid_bodies(m); // must precede the others (binds Pose/RigidBodies)
+    define_affine_joints(m);
+
+#ifdef IPCTK_WITH_DEMO
+    // demo simulator (demo/)
+    py::module_ demo = m.def_submodule(
+        "demo",
+        "Demo body-dynamics simulator built from IPC Toolkit components");
+    define_simulator(demo);
+#endif
+
     // Deprecated names from before the smooth_contact -> gcp rename. We resolve
     // them in a module-level __getattr__ (PEP 562) instead of plain aliases, so
     // using an old name raises a DeprecationWarning. Python only calls this
@@ -172,4 +201,6 @@ PYBIND11_MODULE(ipctk, m)
         }
         return py::module_::import("ipctk").attr(it->second.c_str());
     });
+
+    m.attr("__name__") = module_name;
 }

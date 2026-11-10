@@ -1,8 +1,8 @@
-#include <ipc/candidates/plane_vertex.hpp>
-
 #include <common.hpp>
 
 #include "stencil_methods.hpp"
+
+#include <ipc/candidates/plane_vertex.hpp>
 
 using namespace ipc;
 
