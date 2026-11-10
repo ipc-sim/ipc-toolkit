@@ -11,10 +11,11 @@ jobs:
   Docs:
     runs-on: ubuntu-latest
     # The deploy step pushes the built site to the gh-pages branch, which needs
-    # write access. We scope it to this job so the repo default can stay
-    # read-only.
+    # write access, and the prune step deletes older ccaches. We scope both to
+    # this job so the repo default can stay read-only.
     permissions:
       contents: write
+      actions: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -129,6 +130,13 @@ jobs:
         with:
           path: ${{ env.CACHE_PATH }}
           key: docs-ccache-${{ github.run_id }}
+
+      - name: Prune old ccaches
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        uses: ./.github/actions/prune-ccache
+        with:
+          prefix: docs-ccache-
 
       - name: Build docs
         run: |

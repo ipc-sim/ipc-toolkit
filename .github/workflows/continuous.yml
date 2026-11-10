@@ -23,6 +23,10 @@ jobs:
   Build:
     name: ${{ matrix.name }} (${{ matrix.config }})
     runs-on: ${{ matrix.os }}
+    # actions: write lets the prune step delete older ccaches.
+    permissions:
+      contents: read
+      actions: write
     strategy:
       fail-fast: false
       matrix:
@@ -155,6 +159,13 @@ jobs:
         with:
           path: ${{ env.CACHE_PATH }}
           key: ${{ runner.os }}-${{ matrix.config }}-ccache-${{ github.run_id }}
+
+      - name: Prune old ccaches
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        continue-on-error: true
+        uses: ./.github/actions/prune-ccache
+        with:
+          prefix: ${{ runner.os }}-${{ matrix.config }}-ccache-
 
       - name: Tests
         run: cd build; ctest --verbose -j ${{ steps.cpu-cores.outputs.count }}

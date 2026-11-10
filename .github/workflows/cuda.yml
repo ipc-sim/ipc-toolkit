@@ -29,6 +29,10 @@ jobs:
   Build:
     name: ${{ matrix.name }} CUDA (${{ matrix.config }})
     runs-on: ${{ matrix.os }}
+    # actions: write lets the prune step delete older ccaches.
+    permissions:
+      contents: read
+      actions: write
     strategy:
       fail-fast: false
       matrix:
@@ -193,6 +197,13 @@ jobs:
         with:
           path: ${{ env.CACHE_PATH }}
           key: cuda-${{ runner.os }}-${{ matrix.config }}-ccache-${{ github.run_id }}
+
+      - name: Prune old ccaches
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        continue-on-error: true
+        uses: ./.github/actions/prune-ccache
+        with:
+          prefix: cuda-${{ runner.os }}-${{ matrix.config }}-ccache-
 
       # The GPU unit tests, minus the CCD and STQ ones on the cloth and puffer
       # ball meshes, which take several minutes each on a simulated GPU.

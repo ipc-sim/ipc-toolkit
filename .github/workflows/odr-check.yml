@@ -32,6 +32,10 @@ jobs:
   odr:
     name: LTO ODR Check
     runs-on: ubuntu-latest
+    # actions: write lets the prune step delete older ccaches.
+    permissions:
+      contents: read
+      actions: write
 
     steps:
       - name: Checkout repository
@@ -92,6 +96,13 @@ jobs:
         with:
           path: ~/.cache/ccache
           key: ${{ runner.os }}-odr-ccache-${{ github.run_id }}
+
+      - name: Prune old ccaches
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/prune-ccache
+        with:
+          prefix: ${{ runner.os }}-odr-ccache-
 
       - name: Check for ODR violations
         run: |

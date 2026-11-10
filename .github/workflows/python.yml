@@ -50,6 +50,10 @@ jobs:
     needs: Python-Versions
     name: ${{ matrix.name }} Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
+    # actions: write lets the prune step delete older ccaches.
+    permissions:
+      contents: read
+      actions: write
     strategy:
       fail-fast: false
       matrix:
@@ -144,6 +148,13 @@ jobs:
         with:
           path: ${{ env.CACHE_PATH }}
           key: ${{ runner.os }}-Python${{ matrix.python-version }}-ccache-${{ github.run_id }}
+
+      - name: Prune old ccaches
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        continue-on-error: true
+        uses: ./.github/actions/prune-ccache
+        with:
+          prefix: ${{ runner.os }}-Python${{ matrix.python-version }}-ccache-
 
       - name: Tests
         run: |

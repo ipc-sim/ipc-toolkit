@@ -20,6 +20,10 @@ jobs:
   Coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
+    # actions: write lets the prune step delete older ccaches.
+    permissions:
+      contents: read
+      actions: write
     strategy:
       fail-fast: false
     steps:
@@ -83,6 +87,13 @@ jobs:
         with:
           path: ${{ env.CACHE_PATH }}
           key: coverage-ccache-${{ github.run_id }}
+
+      - name: Prune old ccaches
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        continue-on-error: true
+        uses: ./.github/actions/prune-ccache
+        with:
+          prefix: coverage-ccache-
 
       - name: Run Coverage
         run: |
