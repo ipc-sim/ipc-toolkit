@@ -384,3 +384,87 @@ TEST_CASE(
     candidates.build(mesh, V, V, /*inflation_radius=*/0.05);
     CHECK(!candidates.has_all_types);
 }
+
+// A segment followed by three loose points. The loose points are the mesh's
+// codimensional vertices, and because the segment's vertices come first, a
+// loose point's position among the codimensional vertices differs from its
+// vertex id.
+TEST_CASE(
+    "Collision filter applies to codimensional vertices by mesh vertex id",
+    "[candidates][codim][filter]")
+{
+    const int dim = GENERATE(2, 3);
+    const bool continuous = GENERATE(false, true);
+    CAPTURE(dim, continuous);
+
+    Eigen::MatrixXd V = Eigen::MatrixXd::Zero(5, dim);
+    V.row(0)(0) = -1; // segment from (-1, 0) to (1, 0)
+    V.row(1)(0) = 1;
+    V.row(2)(1) = 0.10; // loose points clustered just above its middle
+    V.row(3)(1) = 0.11;
+    V.row(4)(1) = 0.12;
+    Eigen::MatrixXi E(1, 2);
+    E << 0, 1;
+    CollisionMesh mesh(V, E, Eigen::MatrixXi(0, 3));
+    REQUIRE(mesh.num_codim_vertices() == 3);
+
+    const auto build = [&]() {
+        Candidates candidates;
+        if (continuous) {
+            candidates.build(mesh, V, V, /*inflation_radius=*/0.5);
+        } else {
+            candidates.build(mesh, V, /*inflation_radius=*/0.5);
+        }
+        return candidates;
+    };
+    const auto has_vv = [](const Candidates& candidates, index_t a, index_t b) {
+        return std::any_of(
+            candidates.vv_candidates.begin(), candidates.vv_candidates.end(),
+            [&](const VertexVertexCandidate& c) {
+                return (c.vertex0_id == a && c.vertex1_id == b)
+                    || (c.vertex0_id == b && c.vertex1_id == a);
+            });
+    };
+    const auto has_ev = [](const Candidates& candidates, index_t e, index_t v) {
+        return std::any_of(
+            candidates.ev_candidates.begin(), candidates.ev_candidates.end(),
+            [&](const EdgeVertexCandidate& c) {
+                return c.edge_id == e && c.vertex_id == v;
+            });
+    };
+
+    SECTION("Loose points that may not touch each other")
+    {
+        mesh.can_collide = [](size_t vi, size_t vj) {
+            return vi < 2 || vj < 2;
+        };
+        const Candidates candidates = build();
+        CHECK(candidates.vv_candidates.empty());
+        // The segment still sees every loose point.
+        CHECK(has_ev(candidates, 0, 2));
+        CHECK(has_ev(candidates, 0, 3));
+        CHECK(has_ev(candidates, 0, 4));
+    }
+
+    SECTION("One blocked pair of loose points")
+    {
+        mesh.can_collide = [](size_t vi, size_t vj) {
+            return std::minmax(vi, vj) != std::minmax<size_t>(3, 4);
+        };
+        const Candidates candidates = build();
+        CHECK(has_vv(candidates, 2, 3));
+        CHECK(has_vv(candidates, 2, 4));
+        CHECK_FALSE(has_vv(candidates, 3, 4));
+    }
+
+    SECTION("One loose point that may not touch the segment")
+    {
+        mesh.can_collide = [](size_t vi, size_t vj) {
+            return !(std::max(vi, vj) == 4 && std::min(vi, vj) < 2);
+        };
+        const Candidates candidates = build();
+        CHECK(has_ev(candidates, 0, 2));
+        CHECK(has_ev(candidates, 0, 3));
+        CHECK_FALSE(has_ev(candidates, 0, 4));
+    }
+}

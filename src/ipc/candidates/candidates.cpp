@@ -130,7 +130,20 @@ void Candidates::build(
             mesh.has_thickness() ? box_thickness(mesh.codim_vertices())
                                  : Eigen::VectorXd());
 
+        // This broad phase only holds the codim. vertices, so it reports
+        // (and filters) pairs by their index within that subset. The mesh's
+        // filter expects mesh vertex ids, so we translate before asking it.
+        // Without this, a filter is applied to the wrong vertices: it lets
+        // through pairs it should block and blocks pairs it should allow.
+        broad_phase->can_vertices_collide = [&mesh](size_t vi, size_t vj) {
+            return mesh.can_collide(
+                mesh.codim_vertices()[vi], mesh.codim_vertices()[vj]);
+        };
         broad_phase->detect_vertex_vertex_candidates(vv_candidates);
+        // The filter above refers to this call's mesh, so we put the mesh's
+        // own filter back before anyone else uses the broad phase.
+        broad_phase->can_vertices_collide = mesh.can_collide;
+
         for (auto& [vi, vj] : vv_candidates) {
             vi = mesh.codim_vertices()[vi];
             vj = mesh.codim_vertices()[vj];
@@ -172,12 +185,25 @@ void Candidates::build(
 
         // TODO: Can we reuse the broad phase from above?
         broad_phase->clear();
-        // Ignore c-edge to c-edge and c-vertex to c-vertex
+        // Ignore c-edge to c-edge and c-vertex to c-vertex. As in the
+        // codim. vertex pass above, this broad phase indexes its own vertex
+        // list (the codim. vertices, then the codim. edges' vertices), so we
+        // translate to mesh vertex ids before asking the mesh's filter.
+        const auto to_mesh_vertex = [&mesh, &J, nCV](size_t v) {
+            return v < nCV ? size_t(mesh.codim_vertices()[v])
+                           : size_t(J[v - nCV]);
+        };
         broad_phase->can_vertices_collide =
-            make_codim_cross_filter(nCV) & mesh.can_collide;
+            make_codim_cross_filter(nCV)
+            & CollisionFilter([&mesh, to_mesh_vertex](size_t vi, size_t vj) {
+                  return mesh.can_collide(
+                      to_mesh_vertex(vi), to_mesh_vertex(vj));
+              });
         build_broad_phase(V, CE, Eigen::MatrixXi(), V_thickness);
 
         broad_phase->detect_edge_vertex_candidates(ev_candidates);
+        // The filter above refers to locals of this block.
+        broad_phase->can_vertices_collide = mesh.can_collide;
         for (auto& [ei, vi] : ev_candidates) {
             assert(vi < mesh.codim_vertices().size());
             ei = mesh.codim_edges()[ei];    // Map back to mesh.edges
@@ -247,7 +273,20 @@ void Candidates::build(
             mesh.has_thickness() ? box_thickness(mesh.codim_vertices())
                                  : Eigen::VectorXd());
 
+        // This broad phase only holds the codim. vertices, so it reports
+        // (and filters) pairs by their index within that subset. The mesh's
+        // filter expects mesh vertex ids, so we translate before asking it.
+        // Without this, a filter is applied to the wrong vertices: it lets
+        // through pairs it should block and blocks pairs it should allow.
+        broad_phase->can_vertices_collide = [&mesh](size_t vi, size_t vj) {
+            return mesh.can_collide(
+                mesh.codim_vertices()[vi], mesh.codim_vertices()[vj]);
+        };
         broad_phase->detect_vertex_vertex_candidates(vv_candidates);
+        // The filter above refers to this call's mesh, so we put the mesh's
+        // own filter back before anyone else uses the broad phase.
+        broad_phase->can_vertices_collide = mesh.can_collide;
+
         for (auto& [vi, vj] : vv_candidates) {
             vi = mesh.codim_vertices()[vi];
             vj = mesh.codim_vertices()[vj];
@@ -294,12 +333,25 @@ void Candidates::build(
 
         // TODO: Can we reuse the broad phase from above?
         broad_phase->clear();
-        // Ignore c-edge to c-edge and c-vertex to c-vertex
+        // Ignore c-edge to c-edge and c-vertex to c-vertex. As in the
+        // codim. vertex pass above, this broad phase indexes its own vertex
+        // list (the codim. vertices, then the codim. edges' vertices), so we
+        // translate to mesh vertex ids before asking the mesh's filter.
+        const auto to_mesh_vertex = [&mesh, &J, nCV](size_t v) {
+            return v < nCV ? size_t(mesh.codim_vertices()[v])
+                           : size_t(J[v - nCV]);
+        };
         broad_phase->can_vertices_collide =
-            make_codim_cross_filter(nCV) & mesh.can_collide;
+            make_codim_cross_filter(nCV)
+            & CollisionFilter([&mesh, to_mesh_vertex](size_t vi, size_t vj) {
+                  return mesh.can_collide(
+                      to_mesh_vertex(vi), to_mesh_vertex(vj));
+              });
         build_broad_phase(V_t0, V_t1, CE, Eigen::MatrixXi(), V_thickness);
 
         broad_phase->detect_edge_vertex_candidates(ev_candidates);
+        // The filter above refers to locals of this block.
+        broad_phase->can_vertices_collide = mesh.can_collide;
         for (auto& [ei, vi] : ev_candidates) {
             assert(vi < mesh.codim_vertices().size());
             ei = mesh.codim_edges()[ei];    // Map back to mesh.edges
