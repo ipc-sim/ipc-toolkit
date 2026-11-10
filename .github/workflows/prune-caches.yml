@@ -1,0 +1,60 @@
+name: Prune Caches
+
+# Every CI run saves its ccache under a new key (a prefix plus the run ID),
+# because cache entries are immutable. Restores only ever read the newest one,
+# so older copies just take up space. Each push to main saves about 3 GB across
+# all workflows, so without pruning a few pushes are enough to exceed the
+# repository's 10 GB cache limit, at which point GitHub's eviction can also drop
+# the caches we still need.
+#
+# We prune in this separate workflow instead of in the build jobs so that only
+# this job holds `actions: write`. The build jobs run third-party actions and
+# compile dependencies that CPM downloads, and none of that code should get a
+# token that can delete caches, cancel runs, or dispatch other workflows. This
+# job never checks out the repository and runs nothing but `gh`, so pull request
+# code never sees its token, even when a fork's pull request triggers it.
+
+on:
+  # We prune as soon as any workflow that saves a ccache finishes.
+  workflow_run:
+    workflows: [Build, Python, Coverage, CUDA, Docs, ODR Check]
+    types: [completed]
+  # The daily run catches anything a missed or failed trigger left behind.
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+# Every run prunes the whole repository, so we never need two at once. A burst
+# of triggers collapses into one running and one pending run.
+concurrency:
+  group: prune-caches
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    name: Prune old ccaches
+    runs-on: ubuntu-latest
+    steps:
+      # We group the caches by ref and by key minus its trailing run ID, then
+      # delete all but the newest in each group. Keeping the newest by creation
+      # time, instead of a specific key, means a cache saved while this runs is
+      # never deleted. Caches whose keys don't end in -ccache-<run ID> (such as
+      # PantheonSim's toolkit cache) are left alone. A failed delete only
+      # leaves an extra cache behind until the next run.
+      - name: Delete all but the newest ccache per key prefix and ref
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh cache list --repo "$REPO" --limit 1000 --json id,key,ref,createdAt \
+            --jq '[.[] | select(.key | test("-ccache-[0-9]+$"))]
+              | group_by([.ref, (.key | sub("[0-9]+$"; ""))])
+              | .[] | sort_by(.createdAt) | .[:-1][]
+              | "\(.id)\t\(.ref)\t\(.key)"' |
+          while IFS=$'\t' read -r id ref key; do
+            echo "Deleting $key ($ref)"
+            gh cache delete "$id" --repo "$REPO" || true
+          done
