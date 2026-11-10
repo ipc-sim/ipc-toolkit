@@ -115,17 +115,22 @@ jobs:
             $SIMD_ARGS \
             -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 
-      # MSVC's default Debug flags include /Zi, which writes debug info to a
-      # shared PDB that ccache cannot cache, so we drop it the same way the
-      # Linux/macOS configure drops -g.
+      # We replace MSVC's default Debug flags (/Zi /Ob0 /Od /RTC1) for the same
+      # reasons as on Linux/macOS. /Zi writes debug info to a shared PDB that
+      # ccache cannot cache. At /Od the Debug tests took about 13x longer than
+      # Release, so we optimize with /O2 but keep /Ob1, which still inlines
+      # Eigen's small functions. Asserts stay on, and so do the STL iterator
+      # checks from the Debug runtime, which are what Windows Debug catches that
+      # Linux Debug doesn't. The tradeoff is losing /RTC1's stack and
+      # uninitialized-variable checks, since MSVC can't combine them with /O2.
       - name: Configure (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
           cmake -G Ninja ^
             -DIPC_TOOLKIT_BUILD_TESTS=ON ^
-            -DCMAKE_C_FLAGS_DEBUG="/Od /Ob0 /RTC1" ^
-            -DCMAKE_CXX_FLAGS_DEBUG="/Od /Ob0 /RTC1" ^
+            -DCMAKE_C_FLAGS_DEBUG="/O2 /Ob1" ^
+            -DCMAKE_CXX_FLAGS_DEBUG="/O2 /Ob1" ^
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
             -B build ^
             -S .
