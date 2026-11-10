@@ -19,14 +19,42 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  Python-Versions:
+    runs-on: ubuntu-latest
+    outputs:
+      all: ${{ steps.matrix.outputs.all }}
+      pr: ${{ steps.matrix.outputs.pr }}
+    steps:
+      - name: Compute supported Python versions
+        id: matrix
+        env:
+          MIN_MINOR: 11   # our own floor; raise it manually if we ever need to
+        run: |
+          today=$(date +%F)
+          all=$(curl -fsS https://endoflife.date/api/python.json | jq -c \
+            --arg today "$today" --argjson min "$MIN_MINOR" '
+              [ .[]
+                | select(.cycle | startswith("3."))
+                | select((.cycle | split(".")[1] | tonumber) >= $min)
+                | select(.releaseDate <= $today)   # already released
+                | select(.eol > $today)            # not yet EOL
+                | .cycle ]
+              | sort_by(split(".")[1] | tonumber)')
+          # PRs: second-newest release (currently 3.14), so we don't
+          # chase brand-new wheels on every PR
+          pr=$(jq -c '[.[-2]]' <<< "$all")
+          echo "all=$all" >> "$GITHUB_OUTPUT"
+          echo "pr=$pr"   >> "$GITHUB_OUTPUT"
+
   Build:
+    needs: Python-Versions
     name: ${{ matrix.name }} Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ${{ github.event_name == 'pull_request' && fromJSON('["3.14"]') || fromJSON('["3.10", "3.11", "3.12", "3.13", "3.14"]') }}
+        python-version: ${{ github.event_name == 'pull_request' && fromJSON(needs.Python-Versions.outputs.pr) || fromJSON(needs.Python-Versions.outputs.all) }}
         include:
           - os: ubuntu-latest
             name: Linux
@@ -63,6 +91,21 @@ jobs:
           choco install ccache
           "CACHE_PATH=${env:LOCALAPPDATA}\ccache" | Out-File -FilePath $env:GITHUB_ENV -Append
 
+      # scikit-build-core picks the Visual Studio generator on Windows. That
+      # generator ignores CMAKE_<LANG>_COMPILER_LAUNCHER, so ccache never runs,
+      # and it compiles the files of each target one at a time. We use Ninja
+      # instead, which needs the MSVC environment set up first.
+      - name: Setup MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Use Ninja (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          "CMAKE_GENERATOR=Ninja" | Out-File -FilePath $env:GITHUB_ENV -Append
+
       # On Linux, explicitly build for x86-64-v3 instead of -march=native. This
       # avoids issues with ccache restoring from a runner with a different ISA.
       - name: Check x86-64-v3 support (Linux)
@@ -73,12 +116,15 @@ jobs:
           done
           echo "CPU: $(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)"
 
-      - name: Cache Build
-        id: cache-build
-        uses: actions/cache@v5
+      # Cache entries are immutable, so a fixed key is saved once and never
+      # updated. We give each run its own key and restore the newest one by
+      # prefix instead. Only pushes to main save, and PRs restore from those.
+      - name: Restore ccache
+        uses: actions/cache/restore@v5
         with:
           path: ${{ env.CACHE_PATH }}
-          key: ${{ runner.os }}-Python${{ matrix.python-version }}-cache
+          key: ${{ runner.os }}-Python${{ matrix.python-version }}-ccache-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-Python${{ matrix.python-version }}-ccache-
 
       - name: Prepare Ccache
         run: |
@@ -91,6 +137,13 @@ jobs:
           CMAKE_ARGS: ${{ runner.os == 'Linux' && '-DSIMD_CXX_FLAGS=-march=x86-64-v3' || '' }}
         run: |
           pip install --verbose . && ccache --show-stats
+
+      - name: Save ccache
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: ${{ runner.os }}-Python${{ matrix.python-version }}-ccache-${{ github.run_id }}
 
       - name: Tests
         run: |

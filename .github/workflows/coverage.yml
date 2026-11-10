@@ -47,12 +47,15 @@ jobs:
           done
           echo "CPU: $(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2-)"
 
-      - name: Cache Build
-        id: cache-build
-        uses: actions/cache@v5
+      # Cache entries are immutable, so a fixed key is saved once and never
+      # updated. We give each run its own key and restore the newest one by
+      # prefix instead. Only pushes to main save, and PRs restore from those.
+      - name: Restore ccache
+        uses: actions/cache/restore@v5
         with:
           path: ${{ env.CACHE_PATH }}
-          key: coverage-cache
+          key: coverage-ccache-${{ github.run_id }}
+          restore-keys: coverage-ccache-
 
       - name: Prepare ccache
         run: |
@@ -76,6 +79,13 @@ jobs:
         run: |
           cmake --build build -j ${{ steps.cpu-cores.outputs.count }}
           ccache --show-stats
+
+      - name: Save ccache
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: coverage-ccache-${{ github.run_id }}
 
       - name: Run Coverage
         run: |
