@@ -651,6 +651,8 @@ docs/source/api
 !docs/Makefile
 logo
 ipctk
+# The pure-Python ipctk package (wraps the compiled ipctk._ipctk)
+!python/ipctk/
 
 # Python bindings
 !python/src/bindings*

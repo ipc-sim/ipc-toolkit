@@ -9,12 +9,24 @@
 void define_simulator(py::module_& m);
 #endif
 
-PYBIND11_MODULE(ipctk, m)
+// We build this extension as ipctk._ipctk and wrap it in a pure-Python ipctk
+// package (python/ipctk/), so the package can also ship Python modules such as
+// ipctk.demo.rigid.
+PYBIND11_MODULE(_ipctk, m)
 {
     // py::options options;
     // options.disable_function_signatures();
 
     m.doc() = "IPC Toolkit";
+
+    // pybind11 names every class, function, and submodule after the module's
+    // __name__. We present ourselves as "ipctk" while defining them so users
+    // see ipctk.Foo instead of ipctk._ipctk.Foo in reprs, pickles, and the
+    // docs. This also registers the submodules in sys.modules under their
+    // public names (e.g., ipctk.filib), so `from ipctk.filib import Interval`
+    // keeps working. We restore the real name at the end of this function.
+    const py::object module_name = m.attr("__name__");
+    m.attr("__name__") = "ipctk";
 
     // define these early because they are used in other definitions
     define_eigen_ext(m);
@@ -189,4 +201,6 @@ PYBIND11_MODULE(ipctk, m)
         }
         return py::module_::import("ipctk").attr(it->second.c_str());
     });
+
+    m.attr("__name__") = module_name;
 }
