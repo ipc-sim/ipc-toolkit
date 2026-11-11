@@ -1105,7 +1105,9 @@ TEST_CASE(
         face_quad_rule = make_vertex_plus_centroid_quad_rule();
     }
     ESPParameters params(dhat, 1., quad_order);
-    params.set_quad_rule(face_quad_rule);
+    if (!face_quad_rule.empty()) { // else the default vertex rule
+        params.set_quad_rule(face_quad_rule);
+    }
 
     ESPCollisions collisions;
     collisions.build(mesh, V, params);

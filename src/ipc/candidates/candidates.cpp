@@ -19,6 +19,7 @@
 #include <igl/remove_unreferenced.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
+#include <tbb/parallel_invoke.h>
 #include <tbb/parallel_reduce.h>
 #include <tbb/parallel_sort.h>
 
@@ -227,7 +228,8 @@ void Candidates::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
     Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double inflation_radius,
-    BroadPhase* broad_phase)
+    BroadPhase* broad_phase,
+    const bool all_types)
 {
     IPC_TOOLKIT_PROFILE_BLOCK("Candidates::build(dynamic)");
 
@@ -261,10 +263,17 @@ void Candidates::build(
     broad_phase->can_vertices_collide = mesh.can_collide;
     build_broad_phase(
         vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), box_thickness);
-    broad_phase->detect_collision_candidates(*this);
+    broad_phase->detect_collision_candidates(*this, all_types);
+    has_all_types = all_types;
+
+    // With all_types (3D), the whole-mesh pass above already detected the
+    // vertex-vertex and edge-vertex candidates for every primitive, codim. ones
+    // included. The codim.-only passes below would clear those lists and refill
+    // them with codim. pairs only, so skip them (as the static build does).
+    const bool detect_codim = !all_types || dim != 3;
 
     // Codim. vertices to codim. vertices:
-    if (mesh.num_codim_vertices()) {
+    if (detect_codim && mesh.num_codim_vertices()) {
         broad_phase->clear();
         build_broad_phase(
             vertices_t0(mesh.codim_vertices(), Eigen::all),
@@ -297,7 +306,8 @@ void Candidates::build(
     // Only need this in 3D because in 2D, the codim. edges are the same as the
     // edges of the boundary. Only need codim. edge to codim. vertex because
     // codim. edge to non-codim. vertex is the same as edge-edge or face-vertex.
-    if (dim == 3 && mesh.num_codim_vertices() && mesh.num_codim_edges()) {
+    if (detect_codim && dim == 3 && mesh.num_codim_vertices()
+        && mesh.num_codim_edges()) {
         // Extract the vertices of the codim. edges
         Eigen::MatrixXd CE_V_t0, CE_V_t1; // vertices of codim. edges
         Eigen::MatrixXi CE;               // codim. edges (indices into CEV)
@@ -910,17 +920,37 @@ namespace {
                 scattered[size_t(cursor[size_t(row)]++)] = id;
             }
 
+            // Sort and deduplicate the rows in place in parallel, then pack
+            // them: the counting and scattering above are memory bound and
+            // stay serial, but the per-row sorts dominate on large sets.
+            std::vector<index_t> unique_size(size_t(num_rows), 0);
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(0, size_t(num_rows)),
+                [&](const tbb::blocked_range<size_t>& range) {
+                    for (size_t r = range.begin(); r < range.end(); ++r) {
+                        const auto first = scattered.begin() + start[r];
+                        const auto last = scattered.begin() + start[r + 1];
+                        std::sort(first, last);
+                        unique_size[r] =
+                            index_t(std::unique(first, last) - first);
+                    }
+                });
+
             AdjacencyCSR csr;
             csr.offsets.assign(size_t(num_rows) + 1, 0);
-            csr.ids.reserve(scattered.size());
-            for (size_t r = 0; r < size_t(num_rows); ++r) {
-                const auto first = scattered.begin() + start[r];
-                auto last = scattered.begin() + start[r + 1];
-                std::sort(first, last);
-                last = std::unique(first, last);
-                csr.ids.insert(csr.ids.end(), first, last);
-                csr.offsets[r + 1] = index_t(csr.ids.size());
-            }
+            std::partial_sum(
+                unique_size.begin(), unique_size.end(),
+                csr.offsets.begin() + 1);
+            csr.ids.resize(size_t(csr.offsets.back()));
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(0, size_t(num_rows)),
+                [&](const tbb::blocked_range<size_t>& range) {
+                    for (size_t r = range.begin(); r < range.end(); ++r) {
+                        std::copy_n(
+                            scattered.begin() + start[r], unique_size[r],
+                            csr.ids.begin() + csr.offsets[r]);
+                    }
+                });
             return csr;
         }
     };
@@ -978,70 +1008,89 @@ struct Candidates::AdjacencySets {
 
 Candidates::AdjacencySets::AdjacencySets(const Candidates& candidates)
 {
-    // We build one relation at a time so only one pair list is alive at once.
+    // The relations are independent, so we build them concurrently (each
+    // keeps only its own pair list alive).
     const auto build = [&](const Relation relation, const auto& fill) {
         IdPairs pairs;
         fill(pairs);
         stored[relation] = AdjacencyCSR::from_pairs(pairs);
     };
-
-    build(VV, [&](IdPairs& pairs) {
-        pairs.reserve(2 * candidates.vv_candidates.size());
-        for (const auto& vv : candidates.vv_candidates) {
-            pairs.emplace_back(vv.vertex0_id, vv.vertex1_id);
-            pairs.emplace_back(vv.vertex1_id, vv.vertex0_id);
-        }
-    });
-    build(EE, [&](IdPairs& pairs) {
-        pairs.reserve(2 * candidates.ee_candidates.size());
-        for (const auto& ee : candidates.ee_candidates) {
-            pairs.emplace_back(ee.edge0_id, ee.edge1_id);
-            pairs.emplace_back(ee.edge1_id, ee.edge0_id);
-        }
-    });
-    build(FF, [&](IdPairs& pairs) {
-        pairs.reserve(2 * candidates.ff_candidates.size());
-        for (const auto& ff : candidates.ff_candidates) {
-            pairs.emplace_back(ff.face0_id, ff.face1_id);
-            pairs.emplace_back(ff.face1_id, ff.face0_id);
-        }
-    });
-    build(EV, [&](IdPairs& pairs) {
-        pairs.reserve(candidates.ev_candidates.size());
-        for (const auto& ev : candidates.ev_candidates) {
-            pairs.emplace_back(ev.edge_id, ev.vertex_id);
-        }
-    });
-    build(VE, [&](IdPairs& pairs) {
-        pairs.reserve(candidates.ev_candidates.size());
-        for (const auto& ev : candidates.ev_candidates) {
-            pairs.emplace_back(ev.vertex_id, ev.edge_id);
-        }
-    });
-    build(FV, [&](IdPairs& pairs) {
-        pairs.reserve(candidates.fv_candidates.size());
-        for (const auto& fv : candidates.fv_candidates) {
-            pairs.emplace_back(fv.face_id, fv.vertex_id);
-        }
-    });
-    build(VF, [&](IdPairs& pairs) {
-        pairs.reserve(candidates.fv_candidates.size());
-        for (const auto& fv : candidates.fv_candidates) {
-            pairs.emplace_back(fv.vertex_id, fv.face_id);
-        }
-    });
-    build(EF, [&](IdPairs& pairs) {
-        pairs.reserve(candidates.ef_candidates.size());
-        for (const auto& ef : candidates.ef_candidates) {
-            pairs.emplace_back(ef.edge_id, ef.face_id);
-        }
-    });
-    build(FE, [&](IdPairs& pairs) {
-        pairs.reserve(candidates.ef_candidates.size());
-        for (const auto& ef : candidates.ef_candidates) {
-            pairs.emplace_back(ef.face_id, ef.edge_id);
-        }
-    });
+    tbb::parallel_invoke(
+        [&] {
+            build(VV, [&](IdPairs& pairs) {
+                pairs.reserve(2 * candidates.vv_candidates.size());
+                for (const auto& vv : candidates.vv_candidates) {
+                    pairs.emplace_back(vv.vertex0_id, vv.vertex1_id);
+                    pairs.emplace_back(vv.vertex1_id, vv.vertex0_id);
+                }
+            });
+        },
+        [&] {
+            build(EE, [&](IdPairs& pairs) {
+                pairs.reserve(2 * candidates.ee_candidates.size());
+                for (const auto& ee : candidates.ee_candidates) {
+                    pairs.emplace_back(ee.edge0_id, ee.edge1_id);
+                    pairs.emplace_back(ee.edge1_id, ee.edge0_id);
+                }
+            });
+        },
+        [&] {
+            build(FF, [&](IdPairs& pairs) {
+                pairs.reserve(2 * candidates.ff_candidates.size());
+                for (const auto& ff : candidates.ff_candidates) {
+                    pairs.emplace_back(ff.face0_id, ff.face1_id);
+                    pairs.emplace_back(ff.face1_id, ff.face0_id);
+                }
+            });
+        },
+        [&] {
+            build(EV, [&](IdPairs& pairs) {
+                pairs.reserve(candidates.ev_candidates.size());
+                for (const auto& ev : candidates.ev_candidates) {
+                    pairs.emplace_back(ev.edge_id, ev.vertex_id);
+                }
+            });
+        },
+        [&] {
+            build(VE, [&](IdPairs& pairs) {
+                pairs.reserve(candidates.ev_candidates.size());
+                for (const auto& ev : candidates.ev_candidates) {
+                    pairs.emplace_back(ev.vertex_id, ev.edge_id);
+                }
+            });
+        },
+        [&] {
+            build(FV, [&](IdPairs& pairs) {
+                pairs.reserve(candidates.fv_candidates.size());
+                for (const auto& fv : candidates.fv_candidates) {
+                    pairs.emplace_back(fv.face_id, fv.vertex_id);
+                }
+            });
+        },
+        [&] {
+            build(VF, [&](IdPairs& pairs) {
+                pairs.reserve(candidates.fv_candidates.size());
+                for (const auto& fv : candidates.fv_candidates) {
+                    pairs.emplace_back(fv.vertex_id, fv.face_id);
+                }
+            });
+        },
+        [&] {
+            build(EF, [&](IdPairs& pairs) {
+                pairs.reserve(candidates.ef_candidates.size());
+                for (const auto& ef : candidates.ef_candidates) {
+                    pairs.emplace_back(ef.edge_id, ef.face_id);
+                }
+            });
+        },
+        [&] {
+            build(FE, [&](IdPairs& pairs) {
+                pairs.reserve(candidates.ef_candidates.size());
+                for (const auto& ef : candidates.ef_candidates) {
+                    pairs.emplace_back(ef.face_id, ef.edge_id);
+                }
+            });
+        });
 }
 
 AdjacencyList Candidates::AdjacencySets::query(

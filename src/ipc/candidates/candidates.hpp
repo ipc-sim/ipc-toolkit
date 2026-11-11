@@ -45,19 +45,22 @@ public:
 
     /// @brief Initialize the set of continuous collision detection candidates.
     /// @note Assumes the trajectory is linear.
-    /// @note These candidates never include the ESP-only types, so
-    ///       has_all_types is false afterwards.
     /// @param mesh The surface of the collision mesh.
     /// @param vertices_t0 Surface vertex starting positions (rowwise).
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
     /// @param inflation_radius Amount to inflate the bounding boxes. With a mesh thickness, each box is inflated by its primitive's thickness on top of this.
     /// @param broad_phase Broad phase method to use.
+    /// @param all_types Also detect the candidate types only ESP needs
+    ///        (vertex-vertex, edge-vertex, edge-face, face-face in 3D), so
+    ///        ESPCollisions can be built from these candidates at any point of
+    ///        the trajectory.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
         const double inflation_radius = 0,
-        BroadPhase* broad_phase = nullptr);
+        BroadPhase* broad_phase = nullptr,
+        const bool all_types = false);
 
     /// @brief Get the number of collision candidates.
     /// @return The number of collision candidates.
@@ -321,6 +324,12 @@ public:
     /// @note The ve_set() and vf_set() results view storage inside this
     ///       object, so calling this again or clear() invalidates them.
     void convert_candidates_to_sets();
+
+    /// @brief Whether convert_candidates_to_sets() has been called since the
+    /// candidates were last built or cleared. Copies share the sets. Editing
+    /// the candidate lists directly does not reset this: call
+    /// convert_candidates_to_sets() again after doing so.
+    bool has_sets() const { return m_sets != nullptr; }
 
     /// @brief Vertices near vertex id (2D: also the endpoints of nearby edges).
     AdjacencyList vv_set(const CollisionMesh& mesh, index_t id) const;

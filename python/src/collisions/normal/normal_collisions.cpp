@@ -116,6 +116,18 @@ void define_esp_collisions(py::module_& m)
             py::arg("mesh"), py::arg("vertices"), py::arg("param"),
             py::arg("broad_phase") = nullptr)
         .def(
+            "build",
+            py::overload_cast<
+                const Candidates&, const CollisionMesh&,
+                Eigen::ConstRef<Eigen::MatrixXd>, const ESPParameters&>(
+                &ESPCollisions::build),
+            R"ipc_Qu8mg5v7(
+            Initialize the set of collisions from precomputed candidates
+            (built with all_types=True).
+            )ipc_Qu8mg5v7",
+            py::arg("candidates"), py::arg("mesh"), py::arg("vertices"),
+            py::arg("param"))
+        .def(
             "compute_minimum_distance",
             &ESPCollisions::compute_minimum_distance,
             R"ipc_Qu8mg5v7(

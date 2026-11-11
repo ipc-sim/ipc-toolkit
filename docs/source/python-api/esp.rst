@@ -8,6 +8,15 @@ ESP Parameters
 
     .. autoclasstoc::
 
+Edge-Edge Mollifier
+-------------------
+
+.. autoclass:: ipctk.EEMollifierType
+
+.. autoclass:: ipctk.EEMollifierConfig
+
+    .. autoclasstoc::
+
 ESP Collisions
 --------------
 

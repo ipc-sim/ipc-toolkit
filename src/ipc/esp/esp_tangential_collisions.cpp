@@ -13,6 +13,9 @@
 #include <ipc/math/math.hpp>
 #include <ipc/tangent/closest_point.hpp>
 
+#include <algorithm>
+#include <memory>
+
 namespace ipc {
 
 void TangentialCollisions::build(
@@ -28,6 +31,10 @@ void TangentialCollisions::build(
 {
     assert(mu_s.size() == vertices.rows());
     assert(mu_k.size() == vertices.rows());
+    // Under local quadrature transfer (3D faces) each sample's friction
+    // weight is its coefficient in the transferred energy; see below.
+    const bool transfer = params.local_quadrature_transfer && mesh.dim() == 3
+        && params.dbar_factor() > 0;
     // The quadrature loops below index params' rule by the collision sets'
     // per-point entries, so the two must come from the same rule.
     collisions.check_quadrature(params);
@@ -193,9 +200,17 @@ void TangentialCollisions::build(
         //
         // Uses the scalar derivative of params.barrier w.r.t. distance,
         // scaled by outer quadrature weight and barrier stiffness.
-        auto compute_contact_force = [&](const ESPCollision& cc,
-                                         const VertexMatrixView<3>& V_ext,
-                                         const double outer_w) -> double {
+        // Under transfer a sample's near and far potentials can have
+        // different coefficients, so its contact force is
+        // |w_near b_near'(d) + w_far b_far'(d)|; otherwise both are outer_w.
+        std::unique_ptr<NearFarBarrier<>> nf;
+        if (transfer) {
+            nf = std::make_unique<NearFarBarrier<>>(
+                params.barrier, params.dbar_factor());
+        }
+        auto compute_contact_force =
+            [&](const ESPCollision& cc, const VertexMatrixView<3>& V_ext,
+                const double outer_w, const double far_w = -1) -> double {
             const Eigen::VectorXd positions = cc.dof(V_ext);
             double d2 = 0;
             switch (cc.type()) {
@@ -222,9 +237,20 @@ void TangentialCollisions::build(
             }
             const double dist = sqrt(d2);
             const double dhat_val = params.dhat;
-            return (dist > 0 && dist < dhat_val) ? outer_w * normal_stiffness
-                    * std::abs(params.barrier->first_derivative(dist, dhat_val))
-                                                 : 0.0;
+            if (dist > 0 && dist < dhat_val) { // false for NaN, too
+                if (nf && far_w >= 0) {
+                    return normal_stiffness
+                        * std::abs(
+                               outer_w
+                                   * nf->first_derivative_near(dist, dhat_val)
+                               + far_w
+                                   * nf->first_derivative_far(dist, dhat_val));
+                }
+                return outer_w * normal_stiffness
+                    * std::abs(
+                           params.barrier->first_derivative(dist, dhat_val));
+            }
+            return 0.0;
         };
 
         // Helper: assign EE mu values
@@ -256,22 +282,46 @@ void TangentialCollisions::build(
         };
 
         // --- Precompute per-face normalized outer scale ---
-        // ESP outer contribution per face f is: (area_f / 9) [* / total_w_f]
+        // ESP outer contribution per face f is: area_f [* / total_w_f]
         // depending on normalize_weights. total_w_f sums active EE mollifiers
-        // and either face quadrature weights (when active) or 3 (for the 3
-        // face vertices, when face quadrature is not active).
-        const auto& face_quad_rule = params.quad_rule();
-        const bool has_face_quad = !face_quad_rule.empty();
-        double sum_face_qp_w = 0.0;
-        for (const auto& qp : face_quad_rule) {
-            sum_face_qp_w += qp.weight;
+        // and the face rule's weights, which sum to 1. The rule's corner
+        // points are the vertex samples (weighted by the face's corner
+        // weights); its other points are the per-face samples. Under
+        // ESPParameters::set_auto_lattice() each face has its own rule.
+        // Edge-edge weight of an edge pair, as in the potential: cubic
+        // spline times ee_weight times the mollifier, raised to the
+        // mollifier power. Each face also scales its edge-edge samples by
+        // its ee_area_scaling factor (ee_face_scale).
+        const int ee_power = params.ee_mollifier_exponent();
+        const auto ee_mollifier = [&](const index_t e00, const index_t e01,
+                                      const index_t e10, const index_t e11,
+                                      const double dist_sqr) {
+            const auto mtypes = edge_edge_mollifier_type(
+                vertices.row(e00).transpose(), vertices.row(e01).transpose(),
+                vertices.row(e10).transpose(), vertices.row(e11).transpose(),
+                dist_sqr, params.ee_mollifier);
+            const double m = Math<double>::cubic_spline(
+                                 std::sqrt(dist_sqr) / params.ee_support())
+                * params.ee_weight
+                * edge_edge_mollifier<double>(
+                                 vertices.row(e00).transpose(),
+                                 vertices.row(e01).transpose(),
+                                 vertices.row(e10).transpose(),
+                                 vertices.row(e11).transpose(), mtypes,
+                                 dist_sqr, params.ee_mollifier);
+            return std::pow(m, ee_power);
+        };
+        Eigen::VectorXd ee_face_scale = Eigen::VectorXd::Ones(faces.rows());
+        if (params.ee_area_scaling) {
+            for (index_t f = 0; f < faces.rows(); f++) {
+                ee_face_scale(f) = ee_area_scale_factor(
+                    mesh.face_areas()(f), params.ee_area_reference(),
+                    /*face=*/true);
+            }
         }
 
-        // When face quadrature is active, vertices are already included
-        // in the quadrature rule, so don't count the 3 vertex contributions.
-        const double base_w = has_face_quad ? sum_face_qp_w : 3.0;
         Eigen::VectorXd total_w_per_face =
-            Eigen::VectorXd::Constant(faces.rows(), base_w);
+            Eigen::VectorXd::Constant(faces.rows(), 1.0);
         if (normalize_weights) {
             // Add per-face sum of active EE mollifiers (EA_EB only).
             for (const auto& [ei_pair, dict_ptr] :
@@ -287,55 +337,135 @@ void TangentialCollisions::build(
                 const double dist_sqr = edge_edge_distance_parallel_safe(
                     vertices.row(e00), vertices.row(e01), vertices.row(e10),
                     vertices.row(e11), EdgeEdgeDistanceType::EA_EB);
-                const double dist = std::sqrt(dist_sqr);
-                const auto mtypes = edge_edge_mollifier_type(
-                    vertices.row(e00).transpose(),
-                    vertices.row(e01).transpose(),
-                    vertices.row(e10).transpose(),
-                    vertices.row(e11).transpose(), dist_sqr);
-                double mol =
-                    Math<double>::cubic_spline(dist / params.ee_support())
-                    * 1.5;
-                mol *= edge_edge_mollifier<double>(
-                    vertices.row(e00).transpose(),
-                    vertices.row(e01).transpose(),
-                    vertices.row(e10).transpose(),
-                    vertices.row(e11).transpose(), mtypes, dist_sqr);
+                const double mol = ee_mollifier(e00, e01, e10, e11, dist_sqr);
                 // Attribute to every face containing e0 (ESP loop iterates
                 // over faces and each face's 3 edges).
                 for (const index_t f : mesh.edges_to_faces()[e0]) {
-                    total_w_per_face(f) += mol;
+                    total_w_per_face(f) += mol * ee_face_scale(f);
                 }
             }
         }
 
-        // Per-face normalized scale: (area_f / 9) * [1/total_w_f if normalize]
+        // Per-face normalized scale: area_f * [1/total_w_f if normalize]
         Eigen::VectorXd face_scale(faces.rows());
         for (index_t f = 0; f < faces.rows(); f++) {
-            const double w_f = mesh.face_areas()(f) / 9.0;
+            const double w_f = mesh.face_areas()(f);
             face_scale(f) =
                 normalize_weights ? (w_f / total_w_per_face(f)) : w_f;
         }
-        // Precompute per-vertex ESP outer weight = sum_{f ∋ v} face_scale(f).
+        // Per-vertex ESP outer weight:
+        // sum_{f ∋ v} face_scale(f) * corner weight of v in f.
         Eigen::VectorXd v_outer_w = Eigen::VectorXd::Zero(n_verts);
         for (index_t f = 0; f < faces.rows(); f++) {
             for (int lv = 0; lv < 3; lv++) {
-                v_outer_w(faces(f, lv)) += face_scale(f);
+                v_outer_w(faces(f, lv)) += face_scale(f)
+                    * params.face_rule(mesh.face_areas()(f)).corner_weights[lv];
             }
         }
 
+        // Local quadrature transfer (see esp_local_transfer.cpp): per face f
+        //   E_f = w_f [sum_i w_i (N_i + F_i) + sum_q w_q (N_q + F_q)
+        //              + sum_{e in f} c s sum_j m_j (N(q_j) - R_j) / D_e],
+        // R_j = (1 - u_j) N_a + u_j N_b, D_e = 1 + s sum_{j on e} m_j, with
+        // c = half the smaller corner weight of e's endpoints in f (each
+        // corner splits its weight between its two edges) and s the area
+        // scale of c times the face area. The fixed samples are not
+        // normalized, an EE sample's near potential has coefficient
+        // sum_{f ∋ e} w_f c s m_j / D_e, and that mass leaves its edge's
+        // endpoints' near potentials in proportion (1 - u_j, u_j). Far
+        // potentials keep w_f w_i. Every coefficient stays positive: a corner
+        // gives each of its edges less than half its weight. Faces only, as
+        // above.
+        Eigen::VectorXd v_near_w, v_far_w, ee_coef_per_edge;
+        if (transfer) {
+            v_far_w = Eigen::VectorXd::Zero(n_verts);
+            for (index_t f = 0; f < faces.rows(); f++) {
+                const auto& cw =
+                    params.face_rule(mesh.face_areas()(f)).corner_weights;
+                face_scale(f) = params.area_weights
+                    ? mesh.face_areas()(f)
+                    : 1.0; // fixed samples: not normalized
+                for (int lv = 0; lv < 3; lv++) {
+                    v_far_w(faces(f, lv)) += face_scale(f) * cw[lv];
+                }
+            }
+            v_near_w = v_far_w;
+
+            struct ActivePair {
+                index_t e0, e00, e01;
+                double m, u;
+            };
+            std::vector<ActivePair> active;
+            Eigen::VectorXd edge_m = Eigen::VectorXd::Zero(edges.rows());
+            for (const auto& [ei_pair, dict_ptr] :
+                 collisions.maps().edge_edge_collisions) {
+                const index_t e0 = ei_pair.first, e1 = ei_pair.second;
+                const index_t e00 = edges(e0, 0), e01 = edges(e0, 1);
+                const index_t e10 = edges(e1, 0), e11 = edges(e1, 1);
+                const double dist_sqr = edge_edge_distance_parallel_safe(
+                    vertices.row(e00), vertices.row(e01), vertices.row(e10),
+                    vertices.row(e11), EdgeEdgeDistanceType::EA_EB);
+                const double m = ee_mollifier(e00, e01, e10, e11, dist_sqr);
+                const double u = closest_point_uv<double>(
+                    vertices.row(e00).transpose(),
+                    vertices.row(e01).transpose(),
+                    vertices.row(e10).transpose(),
+                    vertices.row(e11).transpose());
+                if (m == 0 || !std::isfinite(u)) {
+                    continue;
+                }
+                active.push_back({ e0, e00, e01, m, u });
+                edge_m(e0) += m;
+            }
+
+            // Coefficient of an EE sample's near potential per unit mollifier
+            // weight: sum_{f ∋ e0} w_f c s / (1 + s M_e0).
+            const double r =
+                params.ee_area_scaling ? params.ee_area_reference() : 0.0;
+            ee_coef_per_edge = Eigen::VectorXd::Zero(edges.rows());
+            for (const auto& p : active) {
+                if (ee_coef_per_edge(p.e0) != 0) {
+                    continue;
+                }
+                double coef = 0;
+                for (const index_t f : mesh.edges_to_faces()[p.e0]) {
+                    const double area = mesh.face_areas()(f);
+                    const auto& cw = params.face_rule(area).corner_weights;
+                    double wa = 0, wb = 0;
+                    for (int lv = 0; lv < 3; lv++) {
+                        if (faces(f, lv) == p.e00) {
+                            wa = cw[lv];
+                        } else if (faces(f, lv) == p.e01) {
+                            wb = cw[lv];
+                        }
+                    }
+                    const double c = 0.5 * std::min(wa, wb);
+                    const double s =
+                        ee_area_scale_factor(c * area, r, /*face=*/true);
+                    coef += face_scale(f) * c * s / (1 + s * edge_m(p.e0));
+                }
+                ee_coef_per_edge(p.e0) = coef;
+            }
+            for (const auto& p : active) {
+                const double moved = ee_coef_per_edge(p.e0) * p.m;
+                v_near_w(p.e00) -= moved * (1 - p.u);
+                v_near_w(p.e01) -= moved * p.u;
+            }
+            v_near_w = v_near_w.cwiseMax(0.0); // round-off only
+            v_outer_w = v_near_w;
+        }
+
         // ---- VERTEX dicts: all vertex IDs are real ----
-        // Skip when face quadrature is active (non-empty rule), which
-        // already includes vertices, matching the normal potential's behavior.
-        if (!has_face_quad) {
+        {
             for (const auto& [vi, dict_ptr] :
                  collisions.maps().vertex_collisions) {
                 VertexMatrixView<3> V_view(vertices);
                 const double v_w = v_outer_w(vi);
+                const double v_far = transfer ? v_far_w(vi) : -1.0;
                 for (int j = 0; j < dict_ptr->size(); j++) {
                     const auto& cc = (*dict_ptr)[j];
                     const double contact_force =
-                        compute_contact_force(cc, V_view, v_w);
+                        compute_contact_force(cc, V_view, v_w, v_far);
                     if (contact_force == 0) {
                         continue;
                     }
@@ -404,11 +534,17 @@ void TangentialCollisions::build(
             }
         }
 
-        // Precompute per-edge ESP outer weight = sum_{f ∋ e} face_scale(f).
+        // Precompute per-edge ESP outer weight of edge-edge samples:
+        // sum_{f ∋ e} face_scale(f) * ee_face_scale(f).
         Eigen::VectorXd e_outer_w = Eigen::VectorXd::Zero(edges.rows());
-        for (index_t f = 0; f < faces.rows(); f++) {
-            for (int le = 0; le < 3; le++) {
-                e_outer_w(mesh.faces_to_edges()(f, le)) += face_scale(f);
+        if (transfer) {
+            e_outer_w = ee_coef_per_edge;
+        } else {
+            for (index_t f = 0; f < faces.rows(); f++) {
+                for (int le = 0; le < 3; le++) {
+                    e_outer_w(mesh.faces_to_edges()(f, le)) +=
+                        face_scale(f) * ee_face_scale(f);
+                }
             }
         }
 
@@ -439,31 +575,23 @@ void TangentialCollisions::build(
             VertexMatrixView<3> V_ext(vertices, virtual_pos);
 
             // ESP potential outer factor for an edge-edge dict (for each face
-            // f containing edge e0): area_f/9 * mollifier. Since the mollifier
-            // depends only on the four edge endpoints (not f), it factors out
-            // and the per-dict outer weight is mollifier * sum_{f∋e0} area_f/9.
+            // f containing edge e0): face weight * ee_face_scale(f) *
+            // mollifier. Since the mollifier depends only on the four edge
+            // endpoints (not f), it factors out of e_outer_w(e0).
             const double dist_sqr_ee = edge_edge_distance_parallel_safe(
                 vertices.row(e00), vertices.row(e01), vertices.row(e10),
                 vertices.row(e11), dtype);
-            const double dist_ee = std::sqrt(dist_sqr_ee);
-            const auto mtypes = edge_edge_mollifier_type(
-                vertices.row(e00).transpose(), vertices.row(e01).transpose(),
-                vertices.row(e10).transpose(), vertices.row(e11).transpose(),
-                dist_sqr_ee);
-            double mollifier =
-                Math<double>::cubic_spline(dist_ee / params.ee_support()) * 1.5;
-            mollifier *= edge_edge_mollifier<double>(
-                vertices.row(e00).transpose(), vertices.row(e01).transpose(),
-                vertices.row(e10).transpose(), vertices.row(e11).transpose(),
-                mtypes, dist_sqr_ee);
+            const double mollifier =
+                ee_mollifier(e00, e01, e10, e11, dist_sqr_ee);
             const double edge_outer_w = mollifier * e_outer_w(e0);
             if (edge_outer_w == 0) {
                 continue;
             }
             for (int j = 0; j < dict_ptr->size(); j++) {
                 const auto& cc = (*dict_ptr)[j];
-                const double contact_force =
-                    compute_contact_force(cc, V_ext, edge_outer_w);
+                // Under transfer an EE sample has only a near potential.
+                const double contact_force = compute_contact_force(
+                    cc, V_ext, edge_outer_w, transfer ? 0.0 : -1.0);
                 if (contact_force == 0) {
                     continue;
                 }
@@ -629,6 +757,8 @@ void TangentialCollisions::build(
             const index_t f2 = faces(fi, 2);
             // ESP potential outer face weight (optionally normalized).
             const double face_w = face_scale(fi);
+            const FaceQuadRule& face_quad_rule =
+                *params.face_rule(mesh.face_areas()(fi)).non_corner;
 
             for (size_t qi = 0; qi < dicts.size(); qi++) {
                 const auto& dict_ptr = dicts[qi];
@@ -641,13 +771,13 @@ void TangentialCollisions::build(
                     + qp.lambda[2] * vertices.row(f2);
                 VertexMatrixView<3> V_ext(vertices, virtual_pos);
 
-                // ESP potential per-quadrature factor: area/9 * qp.weight.
+                // ESP potential per-quadrature factor: area * qp.weight.
                 const double fq_outer_w = face_w * qp.weight;
 
                 for (int j = 0; j < dict_ptr->size(); j++) {
                     const auto& cc = (*dict_ptr)[j];
-                    const double contact_force =
-                        compute_contact_force(cc, V_ext, fq_outer_w);
+                    const double contact_force = compute_contact_force(
+                        cc, V_ext, fq_outer_w, transfer ? fq_outer_w : -1.0);
                     if (contact_force == 0) {
                         continue;
                     }

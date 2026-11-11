@@ -236,6 +236,22 @@ void define_smooth_potential(py::module_& m)
 
 void define_esp_parameters(py::module& m)
 {
+    py::enum_<EEMollifierType>(
+        m, "EEMollifierType", "Shape of the 3D edge-edge mollifier.")
+        .value(
+            "SMOOTHSTEP", EEMollifierType::SMOOTHSTEP,
+            "Smoothstep over a width relative to the gap, w^2 = rel_eps d^2 "
+            "(default)")
+        .value("GCP", EEMollifierType::GCP, "Original GCP mollifier");
+
+    py::class_<EEMollifierConfig>(
+        m, "EEMollifierConfig", "Options of the 3D edge-edge mollifier.")
+        .def(py::init())
+        .def_readwrite("type", &EEMollifierConfig::type)
+        .def_readwrite(
+            "rel_eps", &EEMollifierConfig::rel_eps,
+            "SMOOTHSTEP: squared width over squared gap.");
+
     py::class_<ESPParameters> esp_parameters(m, "ESPParameters");
 
     py::enum_<ESPParameters::IntegrationType>(esp_parameters, "IntegrationType")
@@ -277,7 +293,88 @@ void define_esp_parameters(py::module& m)
         .def_readonly("dbar", &ESPParameters::dbar)
         .def_readonly("quad_order", &ESPParameters::quad_order)
         .def_readonly("area_weights", &ESPParameters::area_weights)
-        .def_readonly("integration_type", &ESPParameters::integration_type);
+        .def_readwrite(
+            "local_quadrature_transfer",
+            &ESPParameters::local_quadrature_transfer,
+            "3D: give edge-edge samples weight taken from their edge's "
+            "endpoint samples instead of renormalizing the element; each "
+            "face corner gives part of half its weight to each of its two "
+            "edges. Needs use_near_far and a face rule with positive corner "
+            "weights.")
+        .def_readwrite(
+            "ee_mollifier", &ESPParameters::ee_mollifier,
+            "Shape of the edge-edge mollifier.")
+        .def_readwrite(
+            "ee_mollifier_power", &ESPParameters::ee_mollifier_power,
+            "Power of the edge-edge sample weight; 0 chooses it from the "
+            "mollifier (1 for smoothstep; round(p) + 1 for GCP under an "
+            "inverse-power barrier of power p).")
+        .def_readwrite(
+            "ee_weight", &ESPParameters::ee_weight,
+            "Weight of an edge-edge sample relative to a vertex sample.")
+        .def_readwrite(
+            "ee_area_scaling", &ESPParameters::ee_area_scaling,
+            "Scale edge-edge samples so each stands for about one r x r "
+            "patch.")
+        .def_readwrite(
+            "ee_area_ref", &ESPParameters::ee_area_ref,
+            "Reference length r of ee_area_scaling; 0 uses dbar.")
+        .def_property_readonly(
+            "ee_mollifier_exponent", &ESPParameters::ee_mollifier_exponent,
+            "Power applied to the edge-edge mollifier weight.")
+        .def_readwrite("barrier", &ESPParameters::barrier)
+        .def_readonly("integration_type", &ESPParameters::integration_type)
+        .def(
+            "set_quad_rule",
+            [](ESPParameters& self, Eigen::ConstRef<Eigen::MatrixXd> points,
+               Eigen::ConstRef<Eigen::VectorXd> weights) {
+                if (points.cols() != 3 || points.rows() != weights.size()) {
+                    throw py::value_error(
+                        "points must be n x 3 barycentric coordinates and "
+                        "weights a length-n vector.");
+                }
+                FaceQuadRule rule(points.rows());
+                for (Eigen::Index i = 0; i < points.rows(); i++) {
+                    rule[i] = { { { points(i, 0), points(i, 1),
+                                    points(i, 2) } },
+                                weights(i) };
+                }
+                self.set_quad_rule(std::move(rule));
+            },
+            R"ipc_Qu8mg5v7(
+            Set the face quadrature rule (3D). The weights are normalized to sum to 1.
+
+            Parameters:
+                points: Barycentric coordinates of the points (n x 3).
+                weights: Weight of each point (n).
+
+            Raises:
+                ValueError: If the rule is empty, a weight is negative or not finite, the weights sum to zero, or a coordinate is negative or not finite.
+            )ipc_Qu8mg5v7",
+            py::arg("points"), py::arg("weights"))
+        .def(
+            "set_lattice_rule",
+            [](ESPParameters& self, const int m) {
+                self.set_quad_rule(ESPParameters::lattice_rule(m));
+            },
+            R"ipc_Qu8mg5v7(
+            Use the composite vertex rule on m x m sub-triangles for every face (3D). m = 1 is the vertex rule.
+            )ipc_Qu8mg5v7",
+            py::arg("m"))
+        .def(
+            "set_auto_lattice", &ESPParameters::set_auto_lattice,
+            R"ipc_Qu8mg5v7(
+            Choose each face's lattice rule from its rest area so the points are about `spacing` apart (3D).
+
+            Parameters:
+                spacing: Target point spacing.
+                max_subdivisions: Cap on the subdivisions per face.
+            )ipc_Qu8mg5v7",
+            py::arg("spacing"), py::arg("max_subdivisions") = 16)
+        .def_property_readonly(
+            "lattice_spacing", &ESPParameters::lattice_spacing,
+            "Target spacing of the automatic lattice rules, or 0 for a fixed "
+            "rule.");
 }
 
 void define_esp_potential(py::module& m)

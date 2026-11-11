@@ -184,6 +184,59 @@ TEST_CASE("Candidates adjacency sets", "[candidates]")
     CHECK(candidates.vf_set(2).empty());
 }
 
+// With all_types, the codim. passes must not replace the whole-mesh
+// vertex-vertex and edge-vertex lists: they clear their output first.
+TEST_CASE(
+    "All-types candidates keep surface pairs next to codim. primitives",
+    "[candidates]")
+{
+    const double c = std::cos(2 * igl::PI / 3), s = std::sin(2 * igl::PI / 3);
+    const double r = std::cos(igl::PI / 3), q = std::sin(igl::PI / 3);
+    // Two tetrahedra apex to apex (vertices 0-7), a rod (8-9) and a free
+    // vertex next to it (10), far from the tetrahedra.
+    Eigen::MatrixXd V(11, 3);
+    V << 0, 0, 0.05, 1, 0, 1, c, s, 1, c, -s, 1,     //
+        0, 0, -0.05, r, q, -1, -1, 0, -1, r, -q, -1, //
+        10, -1, 0, 10, 1, 0, 10.05, 0, 0;
+    Eigen::MatrixXi F(8, 3);
+    F << 0, 2, 1, 0, 3, 2, 0, 1, 3, 1, 2, 3, //
+        4, 5, 6, 4, 6, 7, 4, 7, 5, 5, 7, 6;
+    Eigen::MatrixXi surface_edges;
+    igl::edges(F, surface_edges);
+    Eigen::MatrixXi E(surface_edges.rows() + 1, 2);
+    E << surface_edges, 8, 9;
+    const CollisionMesh mesh(V, E, F);
+    REQUIRE(mesh.num_codim_vertices() == 1);
+    REQUIRE(mesh.num_codim_edges() == 1);
+    const index_t rod = E.rows() - 1;
+
+    const bool ccd = GENERATE(false, true);
+    CAPTURE(ccd);
+    Candidates candidates;
+    if (ccd) {
+        Eigen::MatrixXd V1 = V;
+        V1.col(0).array() += 0.01;
+        candidates.build(mesh, V, V1, /*inflation_radius=*/1, nullptr, true);
+    } else {
+        candidates.build(mesh, V, /*inflation_radius=*/1, nullptr, true);
+    }
+
+    const auto surface_vv = std::count_if(
+        candidates.vv_candidates.begin(), candidates.vv_candidates.end(),
+        [](const auto& vv) { return vv.vertex0_id < 8 && vv.vertex1_id < 8; });
+    const auto surface_ev = std::count_if(
+        candidates.ev_candidates.begin(), candidates.ev_candidates.end(),
+        [&](const auto& ev) { return ev.edge_id != rod && ev.vertex_id < 8; });
+    const bool rod_vertex = std::any_of(
+        candidates.ev_candidates.begin(), candidates.ev_candidates.end(),
+        [&](const auto& ev) {
+            return ev.edge_id == rod && ev.vertex_id == 10;
+        });
+    CHECK(surface_vv > 0);
+    CHECK(surface_ev > 0);
+    CHECK(rod_vertex);
+}
+
 // Two tetrahedra apex to apex, so every primitive pairing has candidates.
 TEST_CASE(
     "Candidate adjacency lists join candidate partners with mesh neighbors",
